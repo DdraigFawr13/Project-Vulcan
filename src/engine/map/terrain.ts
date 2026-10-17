@@ -38,7 +38,7 @@ const draw = (rng: RngStream, [min, max]: readonly number[]): number =>
  * valley floor. The biome comes from the forked temperature-by-rainfall table. Ridged noise on
  * the slopes gives the walls spurs. Massifs (mountains.ts) of varied size stand on the rims and
  * in the valley, each of one rock drawn by weight; the walls outside them share one rock; rock
- * colder than `rock.snowline` is snow-capped (the `snow` layer; the tile keeps its rock).
+ * colder than `rock.snowline` in the top `rock.snowTop` of the heights is snow-capped (the `snow` layer; the tile keeps its rock).
  */
 export function layGround(
   rng: RngStream,
@@ -114,6 +114,7 @@ export function layGround(
   let walls = 0;
   for (const e of elevation) if (e >= wallFrom) walls += 1;
   const screeFrom = quantile(elevation, 1 - walls / elevation.length - gen.rock.scree);
+  const snowFrom = quantile(elevation, 1 - (walls / elevation.length) * gen.rock.snowTop);
   // The valley's walls are one rock; each massif is its own.
   const wallRock = kindIndex(
     rng.weighted(gen.rocks.map((r) => [r.kind, Math.round(r.weight * 10)] as const)),
@@ -141,7 +142,7 @@ export function layGround(
     if (e >= wallFrom || crags[i]! >= outcropFrom) {
       const own = peaks.rock[i]!;
       tiles[i] = own ? kindIndex(own) : wallRock;
-      if (t < gen.rock.snowline) snow[i] = 1;
+      if (t < gen.rock.snowline && e >= snowFrom) snow[i] = 1;
       fertility[i] = 0;
       continue;
     }

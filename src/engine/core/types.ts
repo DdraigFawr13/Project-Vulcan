@@ -141,6 +141,8 @@ export interface TerrainDef {
       /** The picture the renderer lays over snow-capped rock. */
       snowArt: string;
       snowline: number;
+      /** Snow lies only on the highest `snowTop` share of the rock, so ranges keep bare flanks. */
+      snowTop: number;
       /** Rock starts this many metres above the valley floor, within `wall` (shares of the map). */
       line: number;
       wall: Range;

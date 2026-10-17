@@ -217,6 +217,7 @@ export const WORLD_SCHEMAS = {
         screeKind: ref('terrain'),
         snowArt: str(),
         snowline: num(),
+        snowTop: share,
         line: count,
         wall: range(),
         scree: share,

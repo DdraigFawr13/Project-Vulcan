@@ -4,12 +4,14 @@ Goal: a valley worth settling. Entry: Phase 0 done and its playtest signed off b
 
 ## Status
 
-- [x] P1.1 Surface terrain (merged 2026-10-17)
+- [ ] P1.1 Surface terrain (mock-up in review)
 - [ ] P1.2 Water
 - [ ] P1.3 Underground
 - [ ] P1.4 Aura, seasons and weather
 - [ ] P1.5 Lighter world map and site picker
 - [ ] Phase review
+
+Deferred: the `highlands` mountain layout (massifs inside the valley as well as on its rims, Morgan's 2026-10-17 "keep for later") is kept in `terrain.json` `generator.layouts` but unused; `generator.layout` stays `valley`. A later site type or the full worldgen port may use it.
 
 ## Milestones
 
