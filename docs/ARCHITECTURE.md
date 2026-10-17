@@ -1,0 +1,47 @@
+# Architecture
+
+Read only the section your phase file or reading list names.
+
+## Layers
+
+| Layer | Holds | Rule |
+| --- | --- | --- |
+| `src/engine/` | State, systems, pathfinding, jobs, economy, people, magic, threats, storyteller | Pure; id-order iteration; one RNG stream per system |
+| `src/content/` | Forked raws plus Vulcan's own: tiles, buildings, recipes, jobs, laws, storyteller weights | Pure data with validators |
+| `src/worker/` | Worker entry: owns the engine, runs the tick loop, answers messages | Only place the engine is instantiated |
+| `src/render/` | Phaser scenes, tilemap layers, sprites, camera, selection | Reads snapshots, never mutates |
+| `src/ui/` | Panels, inspector, ledger browser, priorities grid, laws, alerts | Sends commands, reads snapshots and events |
+| `src/persist/` | IndexedDB saves, NDJSON export, later cloud and sql.js | Main thread only |
+| `tools/` | Sheet packer, content fork and validator, headless runner, drama check | Node scripts |
+
+## Worker protocol
+
+Main to worker: `init {seed, params, contentHash}`, `load {save}`, `command {tick, cmd}`, `setSpeed`, `requestSnapshot {regions}`, `export {kind}`. Commands are only indirect levers: designate, build, prioritise, zone, forbid, schedule, law, standing order (guard post, alarm, militia roster). Worker to main: `ready`, `snapshot {tick, dirtyChunks, entities, alerts}` at most once per frame, `events {batch}` in log order, `saved`, `error`. Commands carry the tick they apply on, so seed plus command stream replays a game exactly.
+
+## Tick
+
+One tick is one game minute; 10 ticks per second at 1x (a game day in about 2.4 real minutes), 30 at 2x, 100 at 3x; pause at any time, with everything inspectable while paused. Fixed system order each tick; slow systems (weather, growth, aging, beliefs, storyteller) run hourly, daily or monthly. Calendar: 12 months of 28 days, four seasons of three months.
+
+## Map
+
+Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at full depth), each underground level generated from seed and level index when a stair or shaft first reaches it. Tiles in 16 by 16 chunks with dirty flags. Level -1: earth, clay, groundwater. Level -2: copper and tin. Level -3: iron and sulphur. Level -4: gold, rare ore, obsidian, aura spots and cave creatures.
+
+## RNG
+
+`sfc32`, one stream per `(seed, name)`: `worldgen`, `veins`, `weather`, `wildlife`, `jobs`, `needs`, `health`, `social`, `beliefs`, `magic`, `combat`, `threats`, `storyteller`, `trade`.
+
+## Event log
+
+`{id, tick, type, actors[], subjects[], causes[], data}`; `emit` refuses a type without a content template. Append-only in the worker, streamed to the main thread, exported as NDJSON. Legends, storyteller, gossip, memory ledgers and the inspector all read this one log.
+
+## Save
+
+`{version, seed, params, contentHash, tick, state, commandLog, eventLog (truncatable)}` in IndexedDB with name and thumbnail. Rebuilding from `seed + commandLog` is the determinism test. Old saves need not load before launch.
+
+## Imports
+
+`npm run boundaries` enforces: engine and content are pure; each layer imports only the layers its row allows (engine ← content ← worker ← render/persist ← ui); Phaser only in render and ui; a system folder is reached only through its `index.ts`.
+
+## Reading in pieces
+
+Each layer and each system folder has a `MODULE.md` contract (at most 40 lines, template in `docs/templates/MODULE.md`); `docs/CODEMAP.md` lists them all with their exports. Read a neighbour's contract, not its code. `npm run limits` caps source files at 400 lines.

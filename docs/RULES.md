@@ -1,0 +1,86 @@
+# Vulcan working rules
+
+Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions rules (synced into the repo as `.claude/master/RULES.md`); where a shared rule already says it, the id is given instead of a copy. Ids are stable: never renumber or reuse one; retire a rule as `SUPERSEDED by <id>: <reason>`. This file is their home from the repo setup PR on. `PLAN.md` below means the project plan in the project files (`/mnt/project-files/vulcan/plan/PLAN.md`); its §4 is the pickup protocol and §6 the efficiency budgets.
+
+## 1. Delegation
+
+- **VR-01** Routine work goes to cheaper agents: spec'd coding to the Sonnet `implementer`, long check runs (multi-seed balance, sweeps) to the Haiku `test-runner`, broad searches to a Haiku Explore agent, red CI to `ci-fixer` (DEL-03).
+- **VR-02** The main session keeps the design decisions, questions for Morgan, architecture, reviews, commits and merges (DEL-01).
+- **VR-03** Run quick checks and small edits directly; a cold agent costs 20 to 60k tokens to read in (DEL-02).
+- **VR-04** Every brief is self-contained: goal, files, rules that apply, done criteria, commands, "do not commit", report length (DEL-04). Every delegated diff is reviewed before it is committed (DEL-05).
+
+## 2. Review before Morgan sees it
+
+- **VR-05** Each milestone PR gets a review by Claude (the `reviewer` agent for diffs over about 500 lines) before merge; findings are fixed or answered in the PR.
+- **VR-06** When a phase's last milestone merges, Claude runs a phase review on `main`: play the phase's playtest itself on the production build, read the phase's whole diff for bugs and rule breaks, and check every milestone's "done when". Fixes go in one follow-up PR.
+- **VR-07** Only after those fixes merge does the phase go to Morgan, as one message: what to try, a link to the live build, screenshots as an artifact, and what is known to be rough. Morgan's findings come back as the next PR, and each correction Morgan makes is logged in LESSONS.md.
+
+## 3. A clean, efficient repo
+
+- **VR-08** One branch per milestone, cut from the latest `main`; one PR per branch; squash-merge on green CI (GIT-01, GIT-05).
+- **VR-09** Merged branches are deleted at once: GitHub's auto-delete setting on, plus the synced prune workflow. A branch is never reused after its merge (GIT-02).
+- **VR-10** No build output, reports, scratch files, worktrees or secrets in git; `.gitignore` covers them (DEL-06, SAFE-02).
+- **VR-11** No new runtime dependency without asking (SAFE-03). Delete code a change makes dead in the same PR.
+- **VR-12** CI runs only on PRs and `main`, cancels superseded runs, and stays under 5 minutes (CI-06).
+
+## 4. Asking
+
+- **VR-13** When the direction is unclear, or Claude is not sure exactly what Morgan wants, ask before building. One question at a time, with short options and a recommendation, on a decision card (WS-03).
+- **VR-14** For small forks that do not change what Morgan sees or the plan, pick the reasonable default, say which, and keep going (WS-02).
+- **VR-15** Never invent a mechanic or a fact about the world to fill a gap; ask, or label it an assumption (WS-06).
+
+## 5. Plan and status
+
+- **VR-16** The plan lives in the project files at `vulcan/plan/PLAN.md` and is updated there whenever a milestone merges or the plan changes. Decisions, architecture, rules, lessons, toolkit and art plan live in this repo's `docs/`; the plan links to them rather than copying them (SRC-01).
+- **VR-17** Milestone status lives in the repo's `docs/phases/PHASE_N.md` Status section; phase status lives in PLAN.md's phase table. Both are updated in the same turn as the merge.
+- **VR-18** No code for a phase before its spec is approved, and none at all before the plan is approved (LESSONS 2026-10-17).
+
+## 6. Images, mock-ups and documents
+
+- **VR-19** Every mock-up, screenshot, art sheet and map render is published as an artifact that reads on a phone (fits a narrow screen, no hover-only content) and linked in the thread. The source image is also kept under `vulcan/<milestone>/` in the project files.
+- **VR-41** Anything Morgan needs to read (plans, rules, specs, reports, reviews) is published as an artifact page as well as kept as a file; Morgan can't open .md files on a phone. Republish the page to the same link whenever the file changes (LESSONS 2026-10-17).
+- **VR-20** Look at every UI result before calling it done (VER-06); the artifact is the evidence.
+
+## 7. Lean testing
+
+- **VR-21** One determinism test for the whole engine (same seed and commands, same log), not one per system (GAME-06).
+- **VR-22** Unit tests cover rules with an outcome a player would notice, at a system's boundary, not its internals. Content entries are checked by validators, not one test each.
+- **VR-23** One browser smoke test: the game boots, runs, saves and reloads. New browser tests only for a bug that reached Morgan.
+- **VR-24** A test that needs an example event searches a fixed seed list instead of pinning one seed; expected values are computed at test time, never hand-saved (Story Generator LESSONS 2026-10-16).
+- **VR-25** Budgets: `npm run check` under 60 s, CI under 5 minutes. A change that breaks a budget removes or merges tests before it adds more. When a new test covers an old one, delete the old one.
+- **VR-26** Each bug fix adds one regression test at the level where the bug lived, and no more.
+- **VR-27** While iterating, run only the related tests; run the full check once before each push (VER-02).
+
+## 8. Design rules for this game
+
+- **VR-28** Indirect control only. The player acts through designations, priorities, zones, buildings, laws and standing orders. No command moves, drafts or targets one colonist, including in combat (V-015).
+- **VR-29** Every consequence is visible and traceable. Each state change is an event with its causes; the inspector can walk any number, mood or item back to them (GAME-04).
+- **VR-30** Content over code. A new item, crop, law, creature or spell is a data entry; an engine special case for one entry is a design smell to raise, not to ship (GAME-04).
+- **VR-31** One mechanism per idea. Warmth, mood, quality and legitimacy each have one system that every feature feeds, never a parallel one bolted on (WS-05).
+- **VR-32** No gamey shortcuts: no teleporting items, no free resources, no events without a cause in the world. If it would not happen in the valley, it does not happen in the game.
+- **VR-33** Simulate what the player can see or what feeds something they can see. Anything else is aggregated or left out until it matters.
+- **VR-34** Failure is a story. A colony may fail, but the ledger must explain why in the player's terms; a death or collapse with no readable cause is a bug.
+- **VR-35** Magic stays rare and costs something. A feature that makes casters common or casting free needs Morgan's approval.
+- **VR-36** Pause is a full tool: everything is inspectable while paused, and no information is shown only while the game runs.
+- **VR-37** Readable at a glance: art reads at 32 px, colour is never the only signal, text uses plain words, and every alert names who, what and where.
+- **VR-38** Performance is a design constraint: the full map (150 by 150 by 5 levels) holds 60 fps at 3x on the production build. A feature that breaks it is not done.
+- **VR-39** Determinism is sacred: engine code obeys V-006, and any new randomness gets its own named RNG stream.
+
+## 9. Lessons
+
+- **VR-40** Each mistake Morgan corrects becomes a dated one-line entry in LESSONS.md: area, mistake, root cause, rule, count. At a count of 2 the rule also goes into this file (SRC-05).
+
+## 10. Efficiency
+
+- **VR-42** A thread reads only what its work needs: PLAN.md §1, §2 and §4, its own phase file and the parts it names, RULES, LESSONS, then the repo's AGENT_BRIEF, CODEMAP and the milestone's reading list. Never the whole plan or the whole codebase (PLAN.md §4).
+- **VR-43** Every brief for a thread or agent names its phase file, milestone and reading list, so nobody searches for where to start.
+- **VR-44** Code is built to be read in pieces: one folder per system, `index.ts` as its only public surface, a `MODULE.md` contract of at most 40 lines kept current in the same PR as any API change, files under 400 lines (PLAN.md §6).
+- **VR-45** Read a neighbouring system's `MODULE.md`, not its code. Needing its code is a sign the contract is missing something; fix the contract in the same PR.
+- **VR-46** Setup time is measured on every thread and logged in `vulcan/process/thread-times.md` at merge. Budgets: 10 minutes and 60 KB read before the first edit, 2 minutes for the session hook, 60 s for `npm run check`, 2 s per test file, 5 minutes of CI (PLAN.md §6).
+- **VR-47** Going over a budget is flagged, never absorbed: say the number in the delivery reply, add a LESSONS line with the cause, and fix the cause by the phase review at the latest.
+- **VR-48** Efficient programming: write the interface and the `MODULE.md` first, then the code; no abstraction before its second use; bulk code goes to the `implementer` with the reading list in its brief (VR-01).
+- **VR-49** Efficient testing from day one: tests next to their code, the related tests only while iterating (`npx vitest related <files>`), the slow-test flag on, and a test removed when a newer one covers it (VR-21 to VR-27).
+- **VR-50** Docs every thread reads stay small: AGENT_BRIEF under 6 KB, each phase file under 4 KB, LESSONS one line per entry. The check enforces the repo's limits.
+- **VR-51** Hand off to an agent only when it is cheaper than doing the work directly: over about 30k tokens of reading or output, over about 150 lines of spec'd code, or work that runs in parallel. Checks under a minute and fixes under about 30 lines stay in the main session ([TOOLKIT.md](TOOLKIT.md) §1).
+- **VR-52** Log each handoff (agent, tokens, minutes, rework needed) in the thread-times line. An agent or skill that costs more than the direct route, or needs rework twice in a phase, is changed or dropped at the phase review (DEL-07).
+- **VR-53** Deterministic chores are scripts, not agents or skills.
