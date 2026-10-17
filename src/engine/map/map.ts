@@ -125,11 +125,12 @@ export const mapSystem: System = {
         startMet: start.met ? 1 : 0,
       },
     });
-    ctx.emit('map.watered', {
+    const watered = ctx.emit('map.watered', {
       causes: [formed],
       data: { exit: water.exit, lakes: water.lakes, springs: water.springs },
     });
-    map.tileCauses = new Array<number>(width * height).fill(formed);
+    // Water cites the gathering of the waters; everything else, shores too, the valley's forming.
+    map.tileCauses = water.body.map((b) => (b ? watered : formed));
   },
 };
 

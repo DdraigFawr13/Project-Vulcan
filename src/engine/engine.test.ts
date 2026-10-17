@@ -130,10 +130,17 @@ describe('engine', () => {
     expect(() => setTile(ctx, 150 - 1, 17, 1, 9999)).toThrow('without a ledger line');
     setTile(ctx, 150 - 1, 17, 1, 3);
     expect(world.map.chunkVersions[1 * 10 + 9]).toBe(2);
-    // Every tile cites the line that laid it out until something changes it; "why?" walks back.
+    // Every tile cites the line that laid it out until something changes it (water the
+    // waters' line, the rest the valley's); "why?" walks back.
     const formed = world.log.find((e) => e.type === 'map.formed')!;
+    const watered = world.log.find((e) => e.type === 'map.watered')!;
     expect(world.map.tileCauses[17 * 150 + 149]).toBe(3);
-    expect(world.map.tileCauses.filter((c) => c !== formed.id)).toHaveLength(1);
+    expect(world.map.tileCauses.filter((c) => c === watered.id).length).toBeGreaterThan(0);
+    // Every water tile cites the waters; each other tile one of the two generator lines.
+    expect(world.map.tileCauses.every((c, i) => !world.map.water[i] || c === watered.id)).toBe(
+      true,
+    );
+    expect(world.map.tileCauses.every((c) => c === formed.id || c === watered.id)).toBe(true);
     expect(whyOf(world.log, world.log[86]!.id).map((w) => [w.event.type, w.depth])).toEqual([
       ['calendar.month', 1],
       ['world.begun', 2],

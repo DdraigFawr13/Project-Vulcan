@@ -181,11 +181,21 @@ export interface TerrainDef {
       flowRain: number;
       streamFlow: number;
       riverFlow: number;
+      /** Rivers three wide past `riverFlow` times this. */
+      widenFlow: number;
       wideFlow: number;
+      /** Squared reach of a wide river's disc. */
+      wideReach: number;
+      /** Width flow is scaled by swellMin + swellSpan times the swell noise. */
+      swellMin: number;
+      swellSpan: number;
       widthCell: number;
       lakeDepth: number;
       lakeArea: number;
+      /** Metres of hollow a lake basin still spreads through. */
+      basinDepth: number;
       lakeGrow: number;
+      /** Equal to lakeDepth by design: a lake's floor past its seed depth is deep, its rim shallow. */
       deepDepth: number;
       bankCell: number;
       marshWet: number;

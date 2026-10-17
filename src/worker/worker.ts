@@ -125,7 +125,7 @@ function tileView(w: WorldState, x: number, y: number): TileView | undefined {
   };
 }
 
-const BODIES: Record<string, (exit: string) => string> = {
+const BODIES: Record<Exclude<(typeof WATER)[number], ''>, (exit: string) => string> = {
   stream: () => 'a stream',
   river: (exit) => `the river, flowing to the ${exit} edge`,
   lake: () => 'a lake',

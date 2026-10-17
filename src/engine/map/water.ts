@@ -38,7 +38,7 @@ export interface Water {
  * courses wind instead of running in 45-degree lines. Rain falls `mountainRain` times as heavily
  * within `mountainFoot` metres of the rock line as the floor's `floorRain`. Where the gathered rain
  * passes `streamFlow` below the rock line a stream runs; past `riverFlow` a river, two tiles wide,
- * three past 1.5 times that and five past `wideFlow`. A course runs on to the map's edge or a lake,
+ * three past `widenFlow` times that and five past `wideFlow` (a disc of `wideReach` squared tiles). A course runs on to the map's edge or a lake,
  * cutting through floor crags if it must. Hollows deeper than `lakeDepth` and at least `lakeArea`
  * tiles become lakes, deep past `deepDepth`, spreading onto shores within `lakeGrow` metres of the
  * brim. Each stream's head is a spring. Rivers stay shallow (Morgan, 2026-10-17).
@@ -130,11 +130,11 @@ export function carveWater(
   const wide = body.slice();
   for (let i = 0; i < n; i += 1) {
     if (!course[i]) continue;
-    const f = flow[i]! * scale * (0.7 + 0.6 * swell[i]!);
+    const f = flow[i]! * scale * (dials.swellMin + dials.swellSpan * swell[i]!);
     if (f < dials.riverFlow) continue;
     const x = i % width;
     const y = (i - x) / width;
-    if (f < dials.riverFlow * 1.5) {
+    if (f < dials.riverFlow * dials.widenFlow) {
       // Two wide: the lower of the dry side neighbours joins.
       let side = -1;
       for (const j of [at(x + 1, y), at(x - 1, y), at(x, y + 1), at(x, y - 1)])
@@ -142,7 +142,7 @@ export function carveWater(
       if (side >= 0) wide[side] = RIVER;
       continue;
     }
-    const reach = f >= dials.wideFlow ? 4.5 : 1;
+    const reach = f >= dials.wideFlow ? dials.wideReach : 1;
     for (let dy = -2; dy <= 2; dy += 1)
       for (let dx = -2; dx <= 2; dx += 1) {
         const j = at(x + dx, y + dy);
@@ -180,7 +180,7 @@ export function carveWater(
       shore[i] = ground.elevation[i]! >= ground.wallFrom - dials.hills ? SCREE : BEACH;
   }
 
-  return { body, deep, shore, exit: exitOf(flow, width, height), lakes, springs };
+  return { body, deep, shore, exit: exitOf(flow, body, width, height), lakes, springs };
 }
 
 /**
@@ -242,7 +242,7 @@ function fillLakes(
     seen[s] = 1;
     for (let q = 0; q < basin.length; q += 1)
       for (const j of near(basin[q]!)) {
-        if (seen[j] || isRock[j] || depth[j]! < 0.5) continue;
+        if (seen[j] || isRock[j] || depth[j]! < dials.basinDepth) continue;
         seen[j] = 1;
         basin.push(j);
       }
@@ -263,18 +263,26 @@ function fillLakes(
   return lakes;
 }
 
-/** The side of the map where the most water leaves. */
-function exitOf(flow: readonly number[], width: number, height: number): Water['exit'] {
+/** The side of the map where the most water leaves by a river or stream (any edge if none does). */
+function exitOf(
+  flow: readonly number[],
+  body: readonly number[],
+  width: number,
+  height: number,
+): Water['exit'] {
   let best = -1;
   let exit = 0;
-  for (let i = 0; i < width * height; i += 1) {
-    const x = i % width;
-    const y = (i - x) / width;
-    if ((x === 0 || y === 0 || x === width - 1 || y === height - 1) && flow[i]! > best) {
-      best = flow[i]!;
-      exit = i;
+  for (let pass = 0; pass < 2 && best < 0; pass += 1)
+    for (let i = 0; i < width * height; i += 1) {
+      const x = i % width;
+      const y = (i - x) / width;
+      const edge = x === 0 || y === 0 || x === width - 1 || y === height - 1;
+      const runs = body[i] === RIVER || body[i] === STREAM || pass === 1;
+      if (edge && runs && flow[i]! > best) {
+        best = flow[i]!;
+        exit = i;
+      }
     }
-  }
   const x = exit % width;
   const y = (exit - x) / width;
   return y === 0 ? 'north' : y === height - 1 ? 'south' : x === 0 ? 'west' : 'east';

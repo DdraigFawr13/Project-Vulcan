@@ -1,6 +1,9 @@
 // Priority flood: fills every hollow of a height field to its brim from the map's edges, so water
 // has somewhere to go from every tile. Plain arithmetic only (V-006).
 
+/** How much higher each step into a filled hollow stands, so water always has a way down. */
+const RISE = 0.001;
+
 /** The eight neighbours, edges first. */
 export const N8: readonly (readonly [number, number])[] = [
   [1, 0],
@@ -103,7 +106,7 @@ export function flood(surface: readonly number[], width: number, height: number)
       const j = ny * width + nx;
       if (done[j]) continue;
       done[j] = 1;
-      level[j] = Math.max(surface[j]!, level[i]! + 0.001);
+      level[j] = Math.max(surface[j]!, level[i]! + RISE);
       heap.push(j, level[j]!);
     }
   }
