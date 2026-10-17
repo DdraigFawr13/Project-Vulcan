@@ -5,6 +5,8 @@ import { raiseMountains } from './mountains.ts';
 import { AXES, bake, fractalNoise, quantile } from './noise.ts';
 
 export interface Ground {
+  /** The valley floor's height (m): the share `valleyFloor` of tiles lie lower. */
+  floor: number;
   climate: string;
   temperature: number;
   rainfall: number;
@@ -157,6 +159,7 @@ export function layGround(
     fertility[i] = Math.round(clamp(e >= screeFrom ? base / 4 : base, 0, 100));
   }
   return {
+    floor: valleyFloor,
     wallFrom,
     axis: [ax, ay],
     wet,

@@ -3,7 +3,8 @@
 // view state only; game state comes from snapshots.
 import Phaser from 'phaser';
 import { content } from '../content/index.ts';
-import type { ChunkView } from '../worker/index.ts';
+import type { AuraView, ChunkView } from '../worker/index.ts';
+import { glowTiles } from './aura-art.ts';
 import { CameraControls } from './camera.ts';
 import { waterPicture } from './water-art.ts';
 
@@ -44,11 +45,13 @@ export class ValleyScene extends Phaser.Scene {
   private snowFrame = 0;
   /** Kind index, snow and feature of every tile received so far, per level (0 the surface):
    * the readout, and the water pictures, which depend on a tile's neighbours, read them. */
-  private levels: { ground: Uint8Array; snow: Uint8Array; things: Uint8Array }[] = [];
+  private levels: { ground: Uint8Array; snow: Uint8Array; ice: Uint8Array; things: Uint8Array }[] =
+    [];
   /** The level on screen; `ground`, `snow` and `things` are its arrays, empty if not reached. */
   private z = 0;
   private ground: Uint8Array = new Uint8Array(0);
   private snow: Uint8Array = new Uint8Array(0);
+  private ice: Uint8Array = new Uint8Array(0);
   private things: Uint8Array = new Uint8Array(0);
   /** Per terrain kind: 0 dry, 1 shallow water, 2 deep water. */
   private kindWater: number[] = [];
@@ -57,6 +60,12 @@ export class ValleyScene extends Phaser.Scene {
   /** The picture under open deep water: the shallow kind's first frame. */
   private shallowFrame = 0;
   private waterLayer: Phaser.Tilemaps.TilemapLayer | undefined;
+  /** The aura glow, over the features; and the spots it was last drawn from. */
+  private auraLayer: Phaser.Tilemaps.TilemapLayer | undefined;
+  private spots: AuraView[] = [];
+  private spotsKey = '';
+  /** Open ice over a frozen lake tile's ground. */
+  private iceFrame = 0;
   private waterFrames = new Map<string, number>();
   private size = { width: 0, height: 0 };
   /** The first tile index of the nature tileset. */
@@ -82,6 +91,7 @@ export class ValleyScene extends Phaser.Scene {
       Array.from({ length: kind.variants }, (_, v) => this.groundFrame(`${kind.art}.${v + 1}`)),
     );
     this.snowFrame = this.groundFrame(`${content.terrain.generator.rock.snowArt}.1`);
+    this.iceFrame = this.groundFrame('tile.ice.1');
     this.featureFrames = content.features.map((f) => this.frameIndex(NATURE, `${f.art}.1`));
     const { kinds } = content.terrain;
     this.kindWater = kinds.map((k) => (k.water === 'deep' ? 2 : k.water ? 1 : 0));
@@ -153,12 +163,40 @@ export class ValleyScene extends Phaser.Scene {
       for (const layer of [this.layer, this.waterLayer, this.featureLayer])
         this.map!.putTilesAt(blank, 0, 0, false, layer);
     }
+    this.paintAura();
+  }
+
+  /** Draws the aura spots' glow on the level on screen, when the spots change. */
+  setAura(spots: readonly AuraView[]): void {
+    const key = JSON.stringify(spots);
+    if (key === this.spotsKey) return;
+    this.spotsKey = key;
+    this.spots = [...spots];
+    this.paintAura();
+  }
+
+  private paintAura(): void {
+    const layer = this.auraLayer;
+    if (!layer || !this.map) return;
+    const { width, height } = this.size;
+    this.map.putTilesAt(
+      Array.from({ length: height }, () => new Array<number>(width).fill(-1)),
+      0,
+      0,
+      false,
+      layer,
+    );
+    for (const { x, y, frame, alpha } of glowTiles(this.spots, this.z)) {
+      if (x < 0 || y < 0 || x >= width || y >= height) continue;
+      this.map.putTileAt(this.waterFrame(frame), x, y, false, layer)?.setAlpha(alpha);
+    }
   }
 
   private show(): void {
     const level = this.levels[this.z];
     this.ground = level?.ground ?? new Uint8Array(0);
     this.snow = level?.snow ?? new Uint8Array(0);
+    this.ice = level?.ice ?? new Uint8Array(0);
     this.things = level?.things ?? new Uint8Array(0);
   }
 
@@ -202,8 +240,11 @@ export class ValleyScene extends Phaser.Scene {
     // own, -1 where a tile is bare.
     const water = map.createBlankLayer('water', ground, 0, 0, width, height);
     const features = map.createBlankLayer('features', nature, 0, 0, width, height);
-    if (!layer || !water || !features) throw new Error('The map layers could not be made.');
+    const aura = map.createBlankLayer('aura', ground, 0, 0, width, height);
+    if (!layer || !water || !features || !aura)
+      throw new Error('The map layers could not be made.');
     this.waterLayer = water;
+    this.auraLayer = aura;
     this.map = map;
     this.layer = layer;
     this.featureLayer = features;
@@ -213,11 +254,12 @@ export class ValleyScene extends Phaser.Scene {
     this.applyChunks(waiting);
   }
 
-  private store({ x, y, z, w, h, tiles, features, snow }: ChunkView): void {
+  private store({ x, y, z, w, h, tiles, features, snow, ice }: ChunkView): void {
     const n = this.size.width * this.size.height;
     const level = (this.levels[z] ??= {
       ground: new Uint8Array(n),
       snow: new Uint8Array(n),
+      ice: new Uint8Array(n),
       things: new Uint8Array(n),
     });
     for (let row = 0; row < h; row += 1)
@@ -225,6 +267,7 @@ export class ValleyScene extends Phaser.Scene {
         const i = (y + row) * this.size.width + x + col;
         level.ground[i] = tiles[row * w + col]!;
         level.snow[i] = snow[row * w + col]!;
+        level.ice[i] = ice[row * w + col]!;
         level.things[i] = features[row * w + col]!;
       }
   }
@@ -247,12 +290,18 @@ export class ValleyScene extends Phaser.Scene {
       for (let col = x; col < x + w; col += 1) {
         const i = row * width + col;
         const picture = waterPicture(col, row, width, height, water);
+        // Frozen water shows the same shapes in ice (tools/draw-ice.mjs).
+        const frozen = this.ice[i] === 1;
+        const iced = (name: string): string => (frozen ? name.replace('water.', 'ice.') : name);
         if (picture.kind === 'shore') {
           line.push(this.pictureOf(picture.under, col, row));
-          wet.push(this.waterFrame(picture.frame));
+          wet.push(this.waterFrame(iced(picture.frame)));
         } else if (picture.kind === 'open' && picture.deep) {
-          line.push(this.shallowFrame);
-          wet.push(this.waterFrame(picture.deep));
+          line.push(frozen ? this.iceFrame : this.shallowFrame);
+          wet.push(this.waterFrame(iced(picture.deep)));
+        } else if (picture.kind === 'open' && frozen) {
+          line.push(this.iceFrame);
+          wet.push(-1);
         } else {
           line.push(this.pictureOf(i, col, row));
           wet.push(-1);

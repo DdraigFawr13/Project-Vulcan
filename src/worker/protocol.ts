@@ -52,6 +52,25 @@ export interface ChunkView {
   features: Uint8Array;
   /** 1 where the rock is snow-capped; always 0 below the surface. */
   snow: Uint8Array;
+  /** 1 where still water is frozen over; always 0 below the surface. */
+  ice: Uint8Array;
+}
+
+/** Today's weather in the valley, for the top bar. */
+export interface WeatherView {
+  /** The weather in words at today's temperature, e.g. "Snow falls". */
+  words: string;
+  /** Degrees C on the valley floor. */
+  temperature: number;
+}
+
+/** A strong aura spot, for the map's glow: its school id and where it lies. */
+export interface AuraView {
+  school: string;
+  x: number;
+  y: number;
+  z: number;
+  strength: number;
 }
 
 /** A ledger line as the page shows it: the worker fills the text from content templates. */
@@ -87,6 +106,12 @@ export interface TileView {
   drinkable?: boolean;
   /** How the tile's water can be crossed, e.g. "can be waded"; absent on dry land. */
   crossing?: string;
+  /** Surface only: degrees C at the tile today, colder with height. */
+  temperature?: number;
+  /** Surface water only: "frozen over" or "open water". */
+  ice?: string;
+  /** The tile's aura, e.g. "78, Mind (a spot: the still middle of a deep lake)" or "6 (faint)". */
+  aura?: string;
   /** What grows or lies on the tile, with what it yields, e.g. "ash (25 logs)" or
    * "copper vein (20 copper ore)". */
   feature?: string;
@@ -122,6 +147,9 @@ export type FromWorker =
       chunks: ChunkView[];
       /** Which levels below have been reached, index 0 for level 1. */
       reached: boolean[];
+      weather: WeatherView;
+      /** Every aura spot so far, on any reached level. */
+      aura: AuraView[];
     }
   /** New ledger lines in log order, posted just before the snapshot that follows them. */
   | { type: 'events'; batch: LedgerLine[] }

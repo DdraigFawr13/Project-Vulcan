@@ -4,3 +4,4 @@ export type { RngState } from './rng.ts';
 export { clockAt, ticksPerMonth, START_TICK, TICKS_PER_DAY, TICKS_PER_HOUR } from './clock.ts';
 export type { Clock } from './clock.ts';
 export * from './types.ts';
+export * from './climate.ts';

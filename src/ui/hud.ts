@@ -1,7 +1,7 @@
 // The heads-up display over the map: clock, speed and panel buttons, the Paused label, the tile
 // readout, level and zoom buttons, a debug line, and the starting, loading and error screens. Shows what it is given; it
 // computes no game rule (GAME-02).
-import type { ClockView, Speed } from '../worker/index.ts';
+import type { ClockView, Speed, WeatherView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
 const SPEED_LABELS: Record<Speed, string> = { 0: '❚❚', 1: '1×', 2: '2×', 3: '3×' };
@@ -98,11 +98,12 @@ export class Hud {
     this.showScreen('Waking the valley', 'Loading the content and laying out the map.');
   }
 
-  showClock(clock: ClockView, tick: number, speed: Speed, at: number): void {
+  showClock(clock: ClockView, tick: number, speed: Speed, at: number, weather?: WeatherView): void {
     const pad = (n: number) => String(n).padStart(2, '0');
     const season = clock.season.charAt(0).toUpperCase() + clock.season.slice(1);
+    const sky = weather ? ` · ${weather.words}, ${weather.temperature} °C` : '';
     this.clock.textContent = `${pad(clock.hour)}:${pad(clock.minute)} · Day ${clock.day} of ${clock.monthName}, Year ${clock.year}`;
-    this.clock.append(el('small', {}, `${season} · ${this.where}`));
+    this.clock.append(el('small', {}, `${season}${sky} · ${this.where}`));
     this.paused.hidden = speed !== 0;
     for (const [s, button] of this.speeds) button.setAttribute('aria-pressed', String(s === speed));
     this.debug.dataset['tick'] = String(tick);

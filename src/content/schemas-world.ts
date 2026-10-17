@@ -283,6 +283,31 @@ export const WORLD_SCHEMAS = {
       // each range's rock runs down beneath it within `roots` tiles (more per level down), the
       // rest is bedrock bodies; level 1 is earth under the valley floor; caves are tunnels and
       // caverns, as shares of each level by depth (index 0 is level 1). Veins are in features.
+      // Aura spots (src/engine/map/aura.ts): a faint background up to `base`, and strong spots
+      // fading by `falloff` a ring out to `radius`; each site kind (code) gives its school here.
+      aura: obj({
+        base: count,
+        cell: num({ min: 2 }),
+        strength: range(),
+        radius: count,
+        falloff: count,
+        count: range(),
+        spacing: count,
+        margin: count,
+        peakShare: share,
+        wood: obj({ reach: count, trees: count }),
+        lake: count,
+        cavern: obj({ reach: count, open: count }),
+        deepLevel: count,
+        sites: list(
+          obj({
+            site: oneOf('peak', 'spring', 'wood', 'lake', 'cavern', 'obsidian'),
+            school: ref('schools'),
+            words: text,
+            deep: opt(bool()),
+          }),
+        ),
+      }),
       underground: obj({
         depth: num({ min: 1, max: 8 }),
         roots: obj({ reach: count, perLevel: count, warp: count, fine: count }),

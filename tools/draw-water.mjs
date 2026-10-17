@@ -73,7 +73,7 @@ function landAt(x, y, m, base, round) {
 }
 
 /** One overlay frame: `fill` pixels where water is, a light rim along the bank, clear land. */
-function frame(m, fill, rim, base, round) {
+export function frame(m, fill, rim, base, round) {
   const image = createImage(S, S);
   const water = (x, y) =>
     x < 0 || y < 0 || x >= S || y >= S ? true : !landAt(x + 0.5, y + 0.5, m, base, round);
@@ -88,7 +88,8 @@ function frame(m, fill, rim, base, round) {
 }
 
 /** The four-sided masks of the deep set: bits N, E, S, W of deep neighbours. */
-const toBlob = (m4) => (m4 & 1 ? N : 0) | (m4 & 2 ? E : 0) | (m4 & 4 ? SO : 0) | (m4 & 8 ? W : 0);
+export const toBlob = (m4) =>
+  (m4 & 1 ? N : 0) | (m4 & 2 ? E : 0) | (m4 & 4 ? SO : 0) | (m4 & 8 ? W : 0);
 
 function spring(p) {
   const image = createImage(S, S);

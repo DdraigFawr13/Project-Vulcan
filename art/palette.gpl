@@ -87,3 +87,12 @@ Columns: 4
 120  70 150	gem purple
 175 125 205	gem purple light
 170  50  70	gem red
+160 196 212	ice shade
+196 222 232	ice
+226 240 246	ice light
+255 236 120	aura air
+ 60 200 255	aura water
+ 90 230 100	aura life
+210 120 255	aura mind
+230 170  60	aura earth
+255  90  40	aura fire

@@ -6,10 +6,12 @@
 import {
   streamFor,
   WATER,
+  type AuraSpot,
   type EngineContent,
   type MapState,
   type RngStream,
 } from '../core/index.ts';
+import { deepSpot } from './aura.ts';
 import { bake, fractalNoise, quantile } from './noise.ts';
 
 /** A state of the `veins` stream for one part of the underground, derived afresh from the seed
@@ -52,7 +54,7 @@ export function makeLevel(
   content: EngineContent,
   map: MapState,
   depth: number,
-): { tiles: Uint8Array; features: Uint8Array } {
+): { tiles: Uint8Array; features: Uint8Array; spot: AuraSpot | undefined } {
   const dials = content.terrain.generator.underground;
   const { kinds } = content.terrain;
   const kind = (id: string): number => kinds.findIndex((k) => k.id === id);
@@ -130,7 +132,8 @@ export function makeLevel(
   if (depth === 1) layEarth(rng, content, map, tiles, dist);
   digCaves(rng, content, W, H, depth, tiles);
   placeVeins(rng, content, map, depth, tiles, features);
-  return { tiles, features };
+  // The deepest level's aura spot comes last, from the same stream, after its veins.
+  return { tiles, features, spot: deepSpot(rng, content, W, H, depth, tiles, features) };
 }
 
 /** Level 1: soil under the valley floor away from the mountain foot, clay by the water,

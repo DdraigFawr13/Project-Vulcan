@@ -1,7 +1,8 @@
 // `npm run map:stats` (or `map:render`): lays out the surface for every seed in the map seed list and
 // prints one table (climate, biome shares, rock, trees, water, start counts, generation time) against
 // the P1.1 and P1.2 done-whens, then makes the four levels below and prints a second table against
-// P1.3's. With --render, writes one PNG per seed and level to tmp/maps/ (not committed).
+// P1.3's, then runs a year of weather on each (P1.4, tools/map-weather.mjs). With --render,
+// writes one PNG per seed and level to tmp/maps/ (not committed).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { root } from './lib.mjs';
@@ -11,6 +12,7 @@ import { strandedWater, waterNearStart } from '../src/engine/map/checks.ts';
 import { reachableAround } from '../src/engine/map/features.ts';
 import { MAP_SEEDS } from '../src/engine/map/seeds.ts';
 import { makeLevel } from '../src/engine/map/underground.ts';
+import { WEATHER_HEAD, weatherRow } from './map-weather.mjs';
 
 const json = (name) => JSON.parse(readFileSync(path.join(root, 'src/content/data', name), 'utf8'));
 const content = {
@@ -19,6 +21,9 @@ const content = {
   terrain: json('terrain.json'),
   biomes: json('biomes.json'),
   features: json('features.json'),
+  weather: json('weather.json'),
+  seasons: json('seasons.json'),
+  schools: json('schools.json'),
 };
 const render = process.argv.includes('--render');
 const sim = createSim(content);
@@ -28,6 +33,8 @@ const rows = [];
 const below = [];
 let failures = 0;
 let levelFailures = 0;
+let weatherFailures = 0;
+const years = [];
 const ORE_COLOUR = {
   copper: [60, 170, 130],
   tin: [215, 220, 230],
@@ -96,6 +103,9 @@ for (const seed of MAP_SEEDS) {
   );
   if (render) drawMap(seed, m);
   below.push(levelRow(seed, m));
+  const year = weatherRow(sim, seed, world, render);
+  if (!year.ok) weatherFailures += 1;
+  years.push(year.row);
 }
 process.stdout.write(
   `| seed | climate | main biomes | rock | trees | water | lakes / springs | fertility | start | build / wood / stone / water within ${need.radius} | inland ends | done | ms |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`,
@@ -109,7 +119,11 @@ process.stdout.write(
 process.stdout.write(
   `${MAP_SEEDS.length - levelFailures} of ${MAP_SEEDS.length} seeds meet P1.3's done-when (copper and tin within ${need.radius} tiles of the start on level 2; each level under 300 ms).\n`,
 );
-if (failures + levelFailures > 0) process.exitCode = 1;
+process.stdout.write(`\n${WEATHER_HEAD}\n${years.join('\n')}\n`);
+process.stdout.write(
+  `${MAP_SEEDS.length - weatherFailures} of ${MAP_SEEDS.length} seeds meet P1.4's done-when (a year of weather freezes still water).\n`,
+);
+if (failures + levelFailures + weatherFailures > 0) process.exitCode = 1;
 
 function drawMap(seed, m) {
   const S = 3;

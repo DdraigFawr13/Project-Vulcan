@@ -49,6 +49,7 @@ export function validateContent(files: Files): string[] {
     'jobs',
     'conditions',
     'tiers',
+    'weather',
   ] as const)
     index(target, target, files[target]);
   const part = (file: string, key: string): unknown =>
@@ -57,15 +58,7 @@ export function validateContent(files: Files): string[] {
   index('faiths', 'faiths.defs', part('faiths', 'defs'));
   index('terrain', 'terrain.kinds', part('terrain', 'kinds'));
   // Lists nothing refers to yet still need unique ids.
-  for (const file of [
-    'features',
-    'resources',
-    'weather',
-    'awakenings',
-    'ailments',
-    'diseases',
-    'events',
-  ])
+  for (const file of ['features', 'resources', 'awakenings', 'ailments', 'diseases', 'events'])
     unique(file, files[file]);
   unique('great-works.kinds', part('great-works', 'kinds'));
   unique('dragons.tempers', part('dragons', 'tempers'));
@@ -131,6 +124,18 @@ function checkTerrain(files: Files): string[] {
     if (!Number.isInteger(surface[side]) || surface[side] < 1)
       errors.push(`terrain.surface.${side}: ${surface[side]} is not a whole number of tiles`);
   if (kinds.length > 256) errors.push(`terrain.kinds: ${kinds.length} kinds, at most 256`);
+  // The weather reads one seasons entry per weather kind and one month offset per month, and keeps
+  // the ice count in 7 bits (src/engine/weather).
+  const seasons = files['seasons'] as
+    { months: unknown[]; kinds: { weather: string }[]; ice: { cap: number } } | undefined;
+  const calendar = files['calendar'] as { monthsPerYear: number } | undefined;
+  if (seasons && calendar && seasons.months.length !== calendar.monthsPerYear)
+    errors.push(`seasons.months: ${seasons.months.length} entries, one per month needed`);
+  for (const w of (files['weather'] as { id: string }[] | undefined) ?? [])
+    if (seasons && !seasons.kinds.some((k) => k.weather === w.id))
+      errors.push(`seasons.kinds: no entry for the weather "${w.id}"`);
+  if (seasons && seasons.ice.cap > 127)
+    errors.push(`seasons.ice.cap: ${seasons.ice.cap}, at most 127`);
   // Features travel as bytes too, with 0 for a bare tile.
   const features = files['features'] as unknown[];
   if (features.length > 255) errors.push(`features: ${features.length} kinds, at most 255`);

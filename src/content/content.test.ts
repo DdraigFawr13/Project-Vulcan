@@ -42,6 +42,7 @@ describe('content', () => {
     broken.calendar.monthsPerYear = 14;
     broken.calendar.daysPerMonth = 0;
     expect(validateContent(broken)).toEqual([
+      'seasons.months: 12 entries, one per month needed',
       'calendar.daysPerMonth: 0 is not a whole number above 0',
       'calendar.monthNames: 12 names for 14 months',
       "calendar.seasons: 4 seasons don't split 14 months evenly",

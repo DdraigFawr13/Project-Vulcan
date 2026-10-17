@@ -43,7 +43,7 @@ const isCount = (v: unknown): v is number => Number.isSafeInteger(v) && (v as nu
 export function checkSave(
   save: unknown,
   contentHash: string,
-  content: Pick<EngineContent, 'terrain' | 'biomes' | 'features'>,
+  content: Pick<EngineContent, 'terrain' | 'biomes' | 'features' | 'schools'>,
 ): WorldState {
   if (!isObject(save) || !isObject(save['state'])) throw new Error('The save is damaged.');
   if (save['version'] !== SAVE_VERSION)
@@ -84,6 +84,11 @@ export function checkSave(
     layer(map['snow'], Uint8Array, map['tiles'].length) &&
     layer(map['water'], Uint8Array, map['tiles'].length) &&
     layer(map['rock'], Uint8Array, map['tiles'].length) &&
+    layer(map['aura'], Uint8Array, map['tiles'].length) &&
+    layer(map['ice'], Uint8Array, map['tiles'].length) &&
+    Number.isSafeInteger(map['floor']) &&
+    Array.isArray(map['auraSpots']) &&
+    map['auraSpots'].every(isObject) &&
     isCount(map['startX']) &&
     isCount(map['startY']) &&
     Array.isArray(map['levels']) &&
@@ -110,6 +115,15 @@ export function checkSave(
     w.features.every((f) => f <= content.features.length) &&
     w.water.every((b) => b < WATER.length) &&
     w.rock.every((r) => r <= kinds.length) &&
+    // Each aura spot names a school and lies on the map, on the surface or a reached level.
+    w.auraSpots.every(
+      (s) =>
+        content.schools.some((d) => d.id === s.school) &&
+        [s.x, s.y, s.z, s.strength].every(isCount) &&
+        s.x < w.width &&
+        s.y < w.height &&
+        (s.z === 0 || w.levels[s.z - 1] != null),
+    ) &&
     w.levels.length === content.terrain.generator.underground.depth &&
     // Levels are reached from the top down, so none is made below one that is not.
     w.levels.every(

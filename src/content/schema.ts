@@ -16,7 +16,8 @@ export type RefTarget =
   | 'conditions'
   | 'faiths'
   | 'tiers'
-  | 'terrain';
+  | 'terrain'
+  | 'weather';
 
 export interface StrSpec<V extends string = string> {
   readonly k: 'str';

@@ -44,6 +44,8 @@ describe('saves', () => {
       (s: SaveFile) => (s.state.map.startX = 1e6),
       (s: SaveFile) => s.state.map.levels.pop(),
       (s: SaveFile) => (s.state.map.rock = new Uint8Array(3)),
+      (s: SaveFile) => (s.state.map.ice = new Uint8Array(3)),
+      (s: SaveFile) => s.state.map.auraSpots.push({ ...s.state.map.auraSpots[0]!, school: 'none' }),
       // A level below one nobody has reached.
       (s: SaveFile) =>
         (s.state.map.levels[1] = {

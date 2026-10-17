@@ -1,5 +1,6 @@
 // World state and event shapes. The whole world is plain data (numbers, strings, arrays and typed
 // arrays), so the worker can post it, P0.5 can save it and tests can compare it.
+import type { AuraDials, AuraSpot, SeasonsDef, WeatherDef } from './climate.ts';
 import type { RngState } from './rng.ts';
 
 /** The named RNG streams (docs/ARCHITECTURE.md "RNG"). A system draws only from its own. */
@@ -103,6 +104,14 @@ export interface MapState {
   climate: string;
   temperature: number;
   rainfall: number;
+  /** The valley floor's height (m): temperatures are for it, colder with height above it. */
+  floor: number;
+  /** The faint background aura of each surface tile, 0 to `aura.base`. */
+  aura: Uint8Array;
+  /** The strong aura spots, surface ones from the start and level ones as they are reached. */
+  auraSpots: AuraSpot[];
+  /** Freezing degree-days on each still-water tile (the weather's ice count); 0 elsewhere. */
+  ice: Uint8Array;
   /** The levels below, index 0 for level 1 down: null until stairs or a shaft first reach one
    * (DECISIONS V-014), so a level nobody has reached costs no memory and no save space. */
   levels: (LevelState | null)[];
@@ -226,6 +235,7 @@ export interface TerrainDef {
       beach: string;
       marsh: string;
     };
+    aura: AuraDials;
     /** The levels below (src/content/schemas-world.ts has the meaning of each dial). */
     underground: {
       depth: number;
@@ -332,4 +342,8 @@ export interface EngineContent {
   terrain: TerrainDef;
   biomes: BiomesDef;
   features: readonly FeatureDef[];
+  weather: readonly WeatherDef[];
+  seasons: SeasonsDef;
+  /** The six schools of magic (forked schools.json): aura spots name theirs. */
+  schools: readonly { id: string; name: string }[];
 }

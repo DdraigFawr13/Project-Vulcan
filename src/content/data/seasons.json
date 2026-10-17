@@ -1,0 +1,13 @@
+{
+"months": [-4,0,4,7,8,7,4,0,-4,-8,-10,-8],
+"change": 0.35,
+"jitter": 2,
+"rainfall": 700,
+"kinds": [
+{"weather":"mild","shift":0,"wet":0.25,"words":[{"below":1,"words":"A still, frosty spell"},{"below":18,"words":"Fair weather"},{"below":99,"words":"Warm, fair weather"}]},
+{"weather":"wet","shift":-1,"wet":0.9,"words":[{"below":-1,"words":"Snow falls"},{"below":2,"words":"Sleet"},{"below":99,"words":"Rain sets in"}]},
+{"weather":"dry","shift":2,"wet":0,"words":[{"below":0,"words":"Clear and bitter cold"},{"below":20,"words":"Clear skies"},{"below":99,"words":"Hot and dry"}]},
+{"weather":"harsh","shift":-7,"wet":0.5,"words":[{"below":-5,"words":"A blizzard blows"},{"below":1,"words":"A hard frost sets in"},{"below":99,"words":"Gales and cold rain"}]}
+],
+"ice": {"shallow":10,"deep":40,"thaw":2,"cap":120,"over":0.9}
+}

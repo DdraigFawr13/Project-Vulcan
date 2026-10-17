@@ -27,6 +27,9 @@ const fixtureContent: EngineContent = {
   terrain: content.terrain,
   biomes: content.biomes,
   features: content.features,
+  weather: content.weather,
+  seasons: content.seasons,
+  schools: content.schools,
   events: [
     ...content.events,
     { id: 'test.roll', template: 'The dice showed {value}.' },
@@ -88,9 +91,11 @@ describe('engine', () => {
   });
 
   it('writes the calendar lines with short "why?" chains', () => {
-    const world = createWorld(createSim(content), 'hollow-oak');
-    step(world, createSim(content), 3 * month);
-    const text = (id: number) => renderEvent(world.log[id - 1]!, createSim(content).templates);
+    // The map and calendar alone: the weather's lines come in their own test.
+    const sim = createSim(content, [mapSystem, calendarSystem]);
+    const world = createWorld(sim, 'hollow-oak');
+    step(world, sim, 3 * month);
+    const text = (id: number) => renderEvent(world.log[id - 1]!, sim.templates);
     expect(text(1)).toBe('A new world began from seed "hollow-oak".');
     expect(text(2)).toMatch(
       /^The valley took shape: 150 by 150 tiles, mostly [a-z ]+, with a [a-z]+ climate \(-?[0-9.]+ °C on the valley floor, [0-9]+ mm of rain a year\)\.$/,
@@ -100,18 +105,21 @@ describe('engine', () => {
       /^Its waters gathered: a river leaving by the (north|south|east|west), [0-9]+ lakes and [0-9]+ springs\.$/,
     );
     expect(world.log[2]).toMatchObject({ type: 'map.watered', causes: [2] });
+    // The aura spots' line is part of the world as it began, so it cites only that.
+    expect(text(4)).toMatch(/^Old power gathers in the valley at .+\.$/);
+    expect(world.log[3]).toMatchObject({ type: 'map.aura', causes: [1] });
     // The world's first month and season get their lines when it begins.
-    expect(text(4)).toBe('Thawmonth began.');
-    expect(world.log[3]).toMatchObject({ type: 'calendar.month', causes: [1] });
-    expect(text(5)).toBe('Spring came to the valley.');
-    expect(world.log[4]).toMatchObject({ type: 'calendar.season', causes: [4] });
-    expect(text(6)).toBe('Day 2 of Thawmonth began.');
-    expect(world.log[5]).toMatchObject({ type: 'calendar.day', causes: [4] });
-    expect(world.log[32]).toMatchObject({ id: 33, type: 'calendar.month', causes: [1] });
-    expect(world.log[33]).toMatchObject({ type: 'calendar.day', causes: [33] });
-    expect(text(89)).toBe('Highsun began.');
-    expect(world.log[89]).toMatchObject({ type: 'calendar.season', causes: [89] });
-    expect(text(90)).toBe('Summer came to the valley.');
+    expect(text(5)).toBe('Thawmonth began.');
+    expect(world.log[4]).toMatchObject({ type: 'calendar.month', causes: [1] });
+    expect(text(6)).toBe('Spring came to the valley.');
+    expect(world.log[5]).toMatchObject({ type: 'calendar.season', causes: [5] });
+    expect(text(7)).toBe('Day 2 of Thawmonth began.');
+    expect(world.log[6]).toMatchObject({ type: 'calendar.day', causes: [5] });
+    expect(world.log[33]).toMatchObject({ id: 34, type: 'calendar.month', causes: [1] });
+    expect(world.log[34]).toMatchObject({ type: 'calendar.day', causes: [34] });
+    expect(text(90)).toBe('Highsun began.');
+    expect(world.log[90]).toMatchObject({ type: 'calendar.season', causes: [90] });
+    expect(text(91)).toBe('Summer came to the valley.');
     // The map is cut into 10 by 10 chunks with narrower edge chunks; each carries its features.
     expect(world.map.chunkVersions).toHaveLength(100);
     const edge = chunkTiles(world.map, 9, 9);
