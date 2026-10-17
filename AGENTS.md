@@ -24,7 +24,7 @@ Cloud sessions: the synced session hook installs Node 24.19.0 and npm 11.9.0 and
 
 ## What CI runs
 
-`ci.yml`: `core` (the same steps as `npm run check`) and `browser` (Chromium smoke on the production build) on every PR and `main` push; target under 5 minutes. `prune-merged-branches.yml` deletes merged branches.
+`ci.yml`: `core` (the same steps as `npm run check`) and `browser` (Chromium smoke on the production build), target under 5 minutes. It runs once, when a PR is marked ready for review, and never on a draft or on `main` after a merge (RULES VR-54). So: open PRs as drafts, push freely, run the checks locally, and mark ready only when the PR is done. A push to a ready PR re-runs CI. `prune-merged-branches.yml` deletes merged branches until GitHub's auto-delete setting is on.
 
 ## Overrides
 

@@ -4,11 +4,16 @@ name: CI
 #   core:    `npm run check` (AI-master drift, format, typecheck, boundaries, size limits,
 #            code map, reading cost, unit tests, build)
 #   browser: the Chromium smoke (tests/browser) against the production build
+#
+# When it runs (Morgan, 2026-10-17; RULES VR-54): once, when a PR is marked ready for review.
+# Draft PRs never run CI; threads run `npm run check` and the browser smoke locally instead.
+# A push to a PR that is already ready runs it again, so PRs stay draft until the work is done.
+# No run on `main` after a merge: the squash commit is the code CI already passed.
+# `workflow_dispatch` runs it by hand from the Actions tab.
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:
@@ -21,6 +26,7 @@ concurrency:
 
 jobs:
   core:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -35,6 +41,7 @@ jobs:
       - run: npm run check
 
   browser:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
