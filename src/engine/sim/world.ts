@@ -55,6 +55,7 @@ export function createWorld(sim: Sim, seed: string): WorldState {
       biomes: new Uint8Array(0),
       fertility: new Uint8Array(0),
       features: new Uint8Array(0),
+      snow: new Uint8Array(0),
       startX: 0,
       startY: 0,
       climate: '',

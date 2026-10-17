@@ -211,9 +211,10 @@ export const WORLD_SCHEMAS = {
       }),
       rock: obj({
         screeKind: ref('terrain'),
-        snowcapKind: ref('terrain'),
+        snowArt: str(),
         snowline: num(),
-        wall: share,
+        line: count,
+        wall: range(),
         scree: share,
         outcrops: share,
         outcropCell: num({ min: 2 }),

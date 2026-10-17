@@ -86,7 +86,7 @@ function snapshot(w: WorldState): void {
     }
   post(
     { type: 'snapshot', tick: w.tick, speed: pace.speed, clock: clockView(w.tick), chunks },
-    chunks.flatMap((chunk) => [chunk.tiles.buffer, chunk.features.buffer]),
+    chunks.flatMap((chunk) => [chunk.tiles.buffer, chunk.features.buffer, chunk.snow.buffer]),
   );
 }
 
@@ -104,7 +104,7 @@ function tileView(w: WorldState, x: number, y: number): TileView | undefined {
   return {
     x,
     y,
-    ground: content.terrain.kinds[map.tiles[i]!]!.name,
+    ground: `${content.terrain.kinds[map.tiles[i]!]!.name}${map.snow[i] ? ', snow-capped' : ''}`,
     biome: content.biomes.biomes[map.biomes[i]!]!.name,
     elevation: map.elevation[i]!,
     fertility: map.fertility[i]!,

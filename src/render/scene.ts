@@ -38,6 +38,8 @@ export class ValleyScene extends Phaser.Scene {
   private frames: number[][] = [];
   /** Tile index in the nature tileset for each feature, by content index. */
   private featureFrames: number[] = [];
+  /** The ground frame laid over snow-capped rock. */
+  private snowFrame = 0;
   /** Kind index of every tile drawn so far, for the readout. */
   private ground: Uint8Array = new Uint8Array(0);
   private size = { width: 0, height: 0 };
@@ -63,6 +65,7 @@ export class ValleyScene extends Phaser.Scene {
     this.frames = content.terrain.kinds.map((kind) =>
       Array.from({ length: kind.variants }, (_, v) => this.groundFrame(`${kind.art}.${v + 1}`)),
     );
+    this.snowFrame = this.groundFrame(`${content.terrain.generator.rock.snowArt}.1`);
     this.featureFrames = content.features.map((f) => this.frameIndex(NATURE, `${f.art}.1`));
     this.select = this.add
       .image(0, 0, SHEET, 'overlay.select')
@@ -159,7 +162,7 @@ export class ValleyScene extends Phaser.Scene {
   }
 
   // A changed chunk rewrites only its own tiles.
-  private drawChunk({ x, y, w, h, tiles, features }: ChunkView): void {
+  private drawChunk({ x, y, w, h, tiles, features, snow }: ChunkView): void {
     const rows: number[][] = [];
     const things: number[][] = [];
     for (let row = 0; row < h; row += 1) {
@@ -169,7 +172,11 @@ export class ValleyScene extends Phaser.Scene {
         const kind = tiles[row * w + col]!;
         const pictures = this.frames[kind];
         if (!pictures) throw new Error(`Terrain ${kind} has no art.`);
-        line.push(pictures[variantOf(x + col, y + row, pictures.length) - 1]!);
+        line.push(
+          snow[row * w + col]
+            ? this.snowFrame
+            : pictures[variantOf(x + col, y + row, pictures.length) - 1]!,
+        );
         this.ground[(y + row) * this.size.width + x + col] = kind;
         const feature = features[row * w + col]!;
         on.push(feature > 0 ? this.natureGid + this.featureFrames[feature - 1]! : -1);

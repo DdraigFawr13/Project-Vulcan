@@ -6,7 +6,7 @@ import path from 'node:path';
 import { root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
 import { createSim, createWorld } from '../src/engine/index.ts';
-import { countsAround } from '../src/engine/map/features.ts';
+import { reachableAround } from '../src/engine/map/features.ts';
 import { MAP_SEEDS } from '../src/engine/map/seeds.ts';
 
 const json = (name) => JSON.parse(readFileSync(path.join(root, 'src/content/data', name), 'utf8'));
@@ -39,7 +39,7 @@ for (const seed of MAP_SEEDS) {
   const rock = m.tiles.filter((t) => content.terrain.kinds[t].stone).length;
   const kindOf = (f) => (f > 0 ? content.features[f - 1].kind : '');
   const trees = m.features.filter((f) => kindOf(f) === 'tree').length;
-  const c = countsAround(
+  const c = reachableAround(
     content,
     m.tiles,
     m.features,
@@ -88,7 +88,7 @@ function drawMap(seed, m) {
   for (let y = 0; y < m.height; y++)
     for (let x = 0; x < m.width; x++) {
       const i = y * m.width + x;
-      const kind = content.terrain.kinds[m.tiles[i]].id;
+      const kind = m.snow[i] ? 'snowcap' : content.terrain.kinds[m.tiles[i]].id;
       const biome = content.biomes.biomes[m.biomes[i]];
       // Shade by height so the valley's shape shows.
       const shade = 0.75 + 0.35 * ((m.elevation[i] % 400) / 400 < 0.5 ? 0 : 0.15);

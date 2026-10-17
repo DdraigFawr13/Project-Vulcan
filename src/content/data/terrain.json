@@ -2,7 +2,7 @@
 "surface": {"width":150,"height":150,"ground":"grass"},
 "generator": {
 "climates": [
-{"id":"temperate","name":"temperate","weight":7,"temperature":[7,13],"rainfall":[520,900]},
+{"id":"temperate","name":"temperate","weight":7,"temperature":[9,14],"rainfall":[520,900]},
 {"id":"pine-valley","name":"cool","weight":1.5,"temperature":[5.5,8],"rainfall":[500,900]},
 {"id":"steppe","name":"dry","weight":1.5,"temperature":[9,15],"rainfall":[320,560]}
 ],
@@ -12,8 +12,8 @@
 "ridges": {"cell":28,"weight":0.45},
 "rocks": [{"kind":"rock-wall","weight":4},{"kind":"slate","weight":3},{"kind":"limestone","weight":3},{"kind":"sandstone","weight":2}],
 "mountains": {"count":[3,7],"radius":[8,40],"height":[500,1800],"rimShare":0.65,"rim":[0.5,0.95],"inside":0.45,"rough":[0.6,0.8],"stretch":[1,2.8],"warp":1.1,"warpCell":9},
-"rock": {"screeKind":"gravel","snowcapKind":"snowcap","snowline":-4,"wall":0.16,"scree":0.03,"outcrops":0.015,"outcropCell":10},
-"valleyFloor": 0.02,
+"rock": {"screeKind":"gravel","snowArt":"tile.snowcap","snowline":-4,"line":900,"wall":[0.12,0.25],"scree":0.03,"outcrops":0.015,"outcropCell":10},
+"valleyFloor": 0.3,
 "alpine": "alpine",
 "swamp": "swamp",
 "swampLowland": 0.08,
@@ -39,7 +39,6 @@
 {"id":"snow","name":"snow","art":"tile.snow","variants":1,"buildable":true},
 {"id":"slate","name":"slate","art":"tile.slate","variants":1,"stone":true},
 {"id":"limestone","name":"limestone","art":"tile.limestone","variants":1,"stone":true},
-{"id":"sandstone","name":"sandstone","art":"tile.sandstone","variants":1,"stone":true},
-{"id":"snowcap","name":"snow-capped rock","art":"tile.snowcap","variants":1,"stone":true}
+{"id":"sandstone","name":"sandstone","art":"tile.sandstone","variants":1,"stone":true}
 ]
 }

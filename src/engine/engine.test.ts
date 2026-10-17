@@ -120,6 +120,7 @@ describe('engine', () => {
       ),
     );
     expect(edge.features).toHaveLength(36);
+    expect(edge.snow).toHaveLength(36);
     // Changing a tile marks only its chunk for resending.
     const ctx = { world, content } as unknown as Parameters<typeof setTile>[0];
     expect(() => setTile(ctx, 150 - 1, 17, 1, 9999)).toThrow('without a ledger line');

@@ -12,6 +12,8 @@ export interface Ground {
   biomes: number[];
   fertility: number[];
   tiles: number[];
+  /** 1 where rock is snow-capped. */
+  snow: number[];
 }
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
@@ -29,14 +31,14 @@ const draw = (rng: RngStream, [min, max]: readonly number[]): number =>
 
 /**
  * Lays out the ground of a width by height valley. Elevation is a trough along a random axis
- * through the middle, roughened by fractal noise; the top `rock.wall` share of tiles is rock and
- * the next `rock.scree` share scree, and the peaks of a fine noise field (`rock.outcrops` of the
+ * through the middle, roughened by fractal noise; rock starts `rock.line` metres above the valley floor (held
+ * between the `rock.wall` shares of the map) and the next `rock.scree` share is scree, and the peaks of a fine noise field (`rock.outcrops` of the
  * map) are crags of rock on the floor. Temperature falls with height by `lapse` degrees a
  * kilometre; rainfall is the climate's, varied by a broad moisture field and raised on the
  * valley floor. The biome comes from the forked temperature-by-rainfall table. Ridged noise on
  * the slopes gives the walls spurs. Massifs (mountains.ts) of varied size stand on the rims and
  * in the valley, each of one rock drawn by weight; the walls outside them share one rock; rock
- * colder than `rock.snowline` is snow-capped.
+ * colder than `rock.snowline` is snow-capped (the `snow` layer; the tile keeps its rock).
  */
 export function layGround(
   rng: RngStream,
@@ -98,16 +100,24 @@ export function layGround(
   for (let i = 0; i < width * height; i += 1)
     elevation[i] = Math.round(elevation[i]! + peaks.lift[i]!);
 
-  const wallFrom = quantile(elevation, 1 - gen.rock.wall);
-  const screeFrom = quantile(elevation, 1 - gen.rock.wall - gen.rock.scree);
   const outcropFrom = quantile(crags, 1 - gen.rock.outcrops);
   const lowland = quantile(elevation, gen.swampLowland);
   const valleyFloor = quantile(elevation, gen.valleyFloor);
+  // Rock from a height above the valley floor, so big mountains add rock, held between the
+  // `wall` shares of the map; scree is the next `scree` share below it.
+  const [fewest, most] = gen.rock.wall;
+  const wallFrom = clamp(
+    valleyFloor + gen.rock.line,
+    quantile(elevation, 1 - most!),
+    quantile(elevation, 1 - fewest!),
+  );
+  let walls = 0;
+  for (const e of elevation) if (e >= wallFrom) walls += 1;
+  const screeFrom = quantile(elevation, 1 - walls / elevation.length - gen.rock.scree);
   // The valley's walls are one rock; each massif is its own.
   const wallRock = kindIndex(
     rng.weighted(gen.rocks.map((r) => [r.kind, Math.round(r.weight * 10)] as const)),
   );
-  const snowcap = kindIndex(gen.rock.snowcapKind);
   const scree = kindIndex(gen.rock.screeKind);
   const alpine = biomeIndex(gen.alpine);
   const swamp = biomeIndex(gen.swamp);
@@ -115,6 +125,7 @@ export function layGround(
   const tiles = new Array<number>(width * height);
   const biomeOf = new Array<number>(width * height);
   const fertility = new Array<number>(width * height);
+  const snow = new Array<number>(width * height).fill(0);
   for (let i = 0; i < width * height; i += 1) {
     const e = elevation[i]!;
     const t = temperature - (gen.elevation.lapse * (e - valleyFloor)) / 1000;
@@ -129,7 +140,8 @@ export function layGround(
     // Rock: the heights, plus a scatter of crags standing out of the valley floor.
     if (e >= wallFrom || crags[i]! >= outcropFrom) {
       const own = peaks.rock[i]!;
-      tiles[i] = t < gen.rock.snowline ? snowcap : own ? kindIndex(own) : wallRock;
+      tiles[i] = own ? kindIndex(own) : wallRock;
+      if (t < gen.rock.snowline) snow[i] = 1;
       fertility[i] = 0;
       continue;
     }
@@ -146,5 +158,6 @@ export function layGround(
     biomes: biomeOf,
     fertility,
     tiles,
+    snow,
   };
 }

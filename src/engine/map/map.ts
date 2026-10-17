@@ -12,25 +12,35 @@ export const CHUNK = 16;
 export const chunksAcross = (map: MapState): number => Math.ceil(map.width / CHUNK);
 export const chunksDown = (map: MapState): number => Math.ceil(map.height / CHUNK);
 
-/** The ground and features of chunk (cx, cy), row by row; edge chunks are narrower or shorter. */
+/** The ground, features and snow of chunk (cx, cy), row by row; edge chunks are narrower or shorter. */
 export function chunkTiles(
   map: MapState,
   cx: number,
   cy: number,
-): { x: number; y: number; w: number; h: number; tiles: Uint8Array; features: Uint8Array } {
+): {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  tiles: Uint8Array;
+  features: Uint8Array;
+  snow: Uint8Array;
+} {
   const x = cx * CHUNK;
   const y = cy * CHUNK;
   const w = Math.min(CHUNK, map.width - x);
   const h = Math.min(CHUNK, map.height - y);
   const tiles = new Uint8Array(w * h);
   const features = new Uint8Array(w * h);
+  const snow = new Uint8Array(w * h);
   for (let row = 0; row < h; row += 1)
     for (let col = 0; col < w; col += 1) {
       const from = (y + row) * map.width + x + col;
       tiles[row * w + col] = map.tiles[from]!;
       features[row * w + col] = map.features[from]!;
+      snow[row * w + col] = map.snow[from]!;
     }
-  return { x, y, w, h, tiles, features };
+  return { x, y, w, h, tiles, features, snow };
 }
 
 /**
@@ -77,6 +87,7 @@ export const mapSystem: System = {
     map.biomes = Uint8Array.from(ground.biomes);
     map.fertility = Uint8Array.from(ground.fertility);
     map.features = Uint8Array.from(features);
+    map.snow = Uint8Array.from(ground.snow);
     map.startX = start.x;
     map.startY = start.y;
     map.climate = ground.climate;

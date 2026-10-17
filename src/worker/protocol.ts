@@ -46,6 +46,8 @@ export interface ChunkView {
   tiles: Uint8Array;
   /** 0 for a bare tile, else 1 + an index into content `features`. */
   features: Uint8Array;
+  /** 1 where the rock is snow-capped. */
+  snow: Uint8Array;
 }
 
 /** A ledger line as the page shows it: the worker fills the text from content templates. */

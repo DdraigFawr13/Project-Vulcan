@@ -86,6 +86,8 @@ export interface MapState {
   /** What grows or lies on each tile: 0 for nothing, else 1 + an index into
    * `EngineContent.features`. */
   features: Uint8Array;
+  /** 1 where rock lies under snow (colder than the snow line), else 0. The tile keeps its rock. */
+  snow: Uint8Array;
   /** Where the settlers' cart stops: the generator's chosen start tile. */
   startX: number;
   startY: number;
@@ -128,9 +130,12 @@ export interface TerrainDef {
     };
     rock: {
       screeKind: string;
-      snowcapKind: string;
+      /** The picture the renderer lays over snow-capped rock. */
+      snowArt: string;
       snowline: number;
-      wall: number;
+      /** Rock starts this many metres above the valley floor, within `wall` (shares of the map). */
+      line: number;
+      wall: Range;
       scree: number;
       outcrops: number;
       outcropCell: number;

@@ -142,9 +142,62 @@ export function countsAround(
 }
 
 /**
+ * Counts within `radius` of (x, y), as `countsAround` does, but only what the settlers can reach:
+ * open ground joined to (x, y) by steps along rows and columns that never cross rock, plus the rock
+ * faces that ground touches. So a range across the square cannot hide land behind it.
+ */
+export function reachableAround(
+  content: EngineContent,
+  tiles: readonly number[],
+  features: ArrayLike<number>,
+  width: number,
+  height: number,
+  radius: number,
+): (x: number, y: number) => StartCounts {
+  const uses = tileUses(content, tiles, features);
+  const rock = tiles.map((t) => content.terrain.kinds[t]!.stone === true);
+  return (x, y) => {
+    const seen = new Set<number>();
+    const faces = new Set<number>();
+    const out = { buildable: 0, wood: 0, stone: 0 };
+    const queue = [y * width + x];
+    seen.add(queue[0]!);
+    for (let k = 0; k < queue.length; k += 1) {
+      const i = queue[k]!;
+      if (uses.buildable[i]) out.buildable += 1;
+      if (uses.wood[i]) out.wood += 1;
+      if (uses.stone[i]) out.stone += 1;
+      const tx = i % width;
+      const ty = Math.floor(i / width);
+      for (const [dx, dy] of STEPS) {
+        const nx = tx + dx;
+        const ny = ty + dy;
+        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+        if (Math.abs(nx - x) > radius || Math.abs(ny - y) > radius) continue;
+        const n = ny * width + nx;
+        if (rock[n]) faces.add(n);
+        else if (!seen.has(n)) {
+          seen.add(n);
+          queue.push(n);
+        }
+      }
+    }
+    out.stone += faces.size;
+    return out;
+  };
+}
+
+const STEPS = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+] as const;
+
+/**
  * The start tile: the buildable tile nearest the middle (ties by row, then column) with at least
  * `start.buildable` buildable tiles, `start.wood` trees and `start.stone` stone within
- * `start.radius`. If no tile has all three, the one with the best worst share of them, with `met`
+ * `start.radius` that it can reach (`reachableAround`). If no tile has all three, the one with the best worst share of them, with `met`
  * false (the `map.formed` line records it).
  */
 export function findStart(
@@ -156,6 +209,7 @@ export function findStart(
 ): { x: number; y: number; met: boolean } {
   const need = content.terrain.generator.start;
   const around = countsAround(content, tiles, features, width, height, need.radius);
+  const reach = reachableAround(content, tiles, features, width, height, need.radius);
   const { buildable } = tileUses(content, tiles, features);
   const cx = (width - 1) / 2;
   const cy = (height - 1) / 2;
@@ -177,7 +231,13 @@ export function findStart(
       c.stone / need.stone,
       1,
     );
-    if (score >= 1) return { x: i % width, y: Math.floor(i / width), met: true };
+    if (score >= 1) {
+      // The square has enough; check the settlers can reach it (a flood fill, so only here).
+      const r = reach(i % width, Math.floor(i / width));
+      if (r.buildable >= need.buildable && r.wood >= need.wood && r.stone >= need.stone)
+        return { x: i % width, y: Math.floor(i / width), met: true };
+      continue;
+    }
     if (score > bestScore) {
       bestScore = score;
       best = i;

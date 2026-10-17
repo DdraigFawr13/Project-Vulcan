@@ -75,6 +75,7 @@ export function checkSave(
     layer(map['biomes'], Uint8Array, map['tiles'].length) &&
     layer(map['fertility'], Uint8Array, map['tiles'].length) &&
     layer(map['features'], Uint8Array, map['tiles'].length) &&
+    layer(map['snow'], Uint8Array, map['tiles'].length) &&
     isCount(map['startX']) &&
     isCount(map['startY']) &&
     typeof map['climate'] === 'string';
