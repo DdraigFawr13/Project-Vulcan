@@ -9,7 +9,7 @@
   "books": {"lendEveryDays":7,"maxLoanDays":84,"lossPerDay":0.0025,"minOpinion":0,"burnChance":0.5,"lostSting":-20},
   "effects": {"warmthShare":0.5,"mendPerUse":0.0167,"soothePower":0.5,"frostShare":0.4,"calmStress":15},
   "castRest": 5,
-  "dependencies": {"aura":{"races":["tylwyth"],"below":22,"memory":"far-from-aura"},"ore":{"races":["dvergar"],"days":14,"jobs":["mine","quarry"],"memory":"no-ore-work"}},
+  "dependencies": {"aura":{"races":["elf"],"below":22,"memory":"far-from-aura"},"ore":{"races":["dwarf"],"days":14,"jobs":["mine","quarry"],"memory":"no-ore-work"}},
   "events": {"learned":"site_cantrip_learned","hedgeWitch":"site_hedge_witch","lent":"site_book_lent","returned":"site_book_returned","lost":"site_book_lost","burned":"site_book_burned","awakened":"site_awakened","frostRead":"site_frost_read","lastSource":"site_last_book"},
   "memoryOf": {"learned":"learned-cantrip","taught":"taught-cantrip","bookLost":"book-lost","awakened":"awakened"}
 }

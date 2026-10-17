@@ -68,27 +68,28 @@ export const opt = <T extends Spec>(of: T): OptSpec<T> => ({ k: 'opt', of });
 /** A number pair such as `[min, max]`. */
 export const range = (): ListSpec<NumSpec> => list(num(), 2);
 
-type Required<F extends Fields> = { [K in keyof F as F[K] extends OptSpec ? never : K]: F[K] };
-type Optional<F extends Fields> = { [K in keyof F as F[K] extends OptSpec ? K : never]: F[K] };
-type InferFields<F extends Fields> = { readonly [K in keyof Required<F>]: Infer<F[K]> } & {
-  readonly [K in keyof Optional<F>]?: F[K] extends OptSpec<infer T> ? Infer<T> : never;
+type RequiredKeys<F extends Fields> = { [K in keyof F]: F[K] extends OptSpec ? never : K }[keyof F];
+type OptionalKeys<F extends Fields> = Exclude<keyof F, RequiredKeys<F>>;
+type InferFields<F extends Fields> = { readonly [K in RequiredKeys<F>]: Infer<F[K]> } & {
+  readonly [K in OptionalKeys<F>]?: F[K] extends OptSpec<infer T> ? Infer<T> : never;
 };
-
-export type Infer<S> = S extends StrSpec
+type InferPlain<S> = S extends StrSpec
   ? string
   : S extends NumSpec
     ? number
     : S extends BoolSpec
       ? boolean
-      : S extends ListSpec<infer T>
-        ? readonly Infer<T>[]
-        : S extends ObjSpec<infer F>
-          ? InferFields<F>
-          : S extends MapSpec<infer T>
-            ? { readonly [key: string]: Infer<T> }
-            : S extends OptSpec<infer T>
-              ? Infer<T> | undefined
-              : unknown;
+      : unknown;
+
+/** The TypeScript type of the values a spec accepts. */
+export type Infer<S> =
+  S extends ListSpec<infer T>
+    ? readonly Infer<T>[]
+    : S extends ObjSpec<infer F>
+      ? InferFields<F>
+      : S extends MapSpec<infer T>
+        ? { readonly [key: string]: Infer<T> }
+        : InferPlain<S>;
 
 /** A reference found while checking, resolved once every file's ids are known. */
 export interface RefUse {
