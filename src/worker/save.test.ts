@@ -2,7 +2,7 @@
 // postMessage do to it) whole, and one from other content, another format or damaged is refused.
 import { describe, expect, it } from 'vitest';
 import { content, contentHash } from '../content/index.ts';
-import { createSim, createWorld, step } from '../engine/index.ts';
+import { createSim, createWorld, step, toNdjson } from '../engine/index.ts';
 import { checkSave, SAVE_VERSION, saveOf, type SaveFile } from './save.ts';
 
 const sim = createSim(content);
@@ -13,7 +13,13 @@ describe('saves', () => {
   it('round-trips a world through a structured clone unchanged', () => {
     const save = structuredClone(saveOf(world, contentHash));
     expect(save).toMatchObject({ version: SAVE_VERSION, seed: 'save-test', tick: world.tick });
-    expect(checkSave(save, contentHash, content)).toEqual(world);
+    const loaded = checkSave(save, contentHash, content);
+    expect(loaded).toEqual(world);
+    // Save, reload and continue gives the same ledger as an unbroken run (the P0.5 done-when).
+    const unbroken = structuredClone(world);
+    step(loaded, sim, 40320);
+    step(unbroken, sim, 40320);
+    expect(toNdjson(loaded.log)).toBe(toNdjson(unbroken.log));
   });
 
   it('refuses a save from other content, another format or damaged', () => {

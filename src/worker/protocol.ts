@@ -53,6 +53,8 @@ export interface LedgerLine {
   type: string;
   text: string;
   causes: number[];
+  /** Whether "why?" has more to say than "the world began": false for world-generation lines. */
+  why: boolean;
   clock: ClockView;
 }
 

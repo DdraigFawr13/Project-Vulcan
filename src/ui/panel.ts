@@ -150,7 +150,7 @@ export class Panel {
     const row = el('div', { class: 'line', 'data-line': String(line.id) });
     row.append(el('span', { class: 'when' }, `${prefix}${when(line.clock)} · #${line.id}`));
     const text = el('span', {}, line.text);
-    if (why && line.causes.length) {
+    if (why && line.why) {
       text.append(' ');
       text.append(
         el('button', { type: 'button', class: 'why', 'data-why': String(line.id) }, 'why?'),

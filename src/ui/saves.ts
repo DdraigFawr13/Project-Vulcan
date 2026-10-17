@@ -30,6 +30,8 @@ export class Saves {
   ledger: LedgerLine[] = [];
   /** The tick of the last snapshot. */
   tick = 0;
+  /** The tick the world began or was loaded at, from its first snapshot. */
+  private startTick: number | undefined;
   /** A load is on its way to the worker. */
   loading = false;
   private readonly deps: SavesDeps;
@@ -59,9 +61,19 @@ export class Saves {
     this.deps.panel.addLines(newest);
   }
 
-  /** Asks for an autosave unless nothing has run since the last one. */
+  /** Records a snapshot's tick; the first after a start or a load is where the world began. */
+  seen(tick: number): void {
+    this.tick = tick;
+    this.startTick ??= tick;
+  }
+
+  /**
+   * Asks for an autosave unless nothing has run since the last one, or since the world began or
+   * was loaded: a fresh or just-loaded world must not replace the one autosave slot.
+   */
   autosave(): void {
     if (!this.deps.running() || this.loading || this.tick === this.lastAutoTick) return;
+    if (this.startTick === undefined || this.tick <= this.startTick) return;
     this.lastAutoTick = this.tick;
     this.deps.send({ type: 'save', auto: true });
   }
@@ -118,6 +130,7 @@ export class Saves {
     this.loading = false;
     this.ledger = [];
     this.lastAutoTick = -1;
+    this.startTick = undefined;
   }
 
   async remove(meta: SaveMeta): Promise<void> {

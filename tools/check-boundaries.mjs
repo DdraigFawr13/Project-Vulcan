@@ -38,6 +38,13 @@ const forbiddenCoreNames = new Set([
   'localeCompare',
   'random',
 ]);
+// Methods whose result follows the browser's locale, forbidden in the core even as properties.
+const localeMethods = new Set([
+  'localeCompare',
+  'toLocaleString',
+  'toLocaleDateString',
+  'toLocaleTimeString',
+]);
 // Safe math for determinism (DECISIONS V-006): transcendental Math functions can differ
 // between JS engines, so the new engine and content use lookup tables instead.
 const safeMathLayers = new Set(['engine', 'content']);
@@ -136,6 +143,8 @@ export function checkModule(fileName, sourceText) {
     // Property names (rng.random, { process: ... }) are not globals; check only the object side.
     if (node.type === 'MemberExpression' && !node.computed) {
       checkMath(node);
+      if (pureLayers.has(layer) && localeMethods.has(node.property.name))
+        errors.push(`Simulation core cannot use ${node.property.name}.`);
       visit(node.object);
       return;
     }
@@ -168,7 +177,11 @@ export function checkModule(fileName, sourceText) {
       errors.push(`Simulation core cannot use ${node.property.value}.`);
     }
     checkMath(node);
-    if (safeMathLayers.has(layer) && node.type === 'BinaryExpression' && node.operator === '**') {
+    if (
+      safeMathLayers.has(layer) &&
+      ((node.type === 'BinaryExpression' && node.operator === '**') ||
+        (node.type === 'AssignmentExpression' && node.operator === '**='))
+    ) {
       errors.push('Engine math must be deterministic: ** is not allowed.');
     }
     for (const child of Object.values(node)) {

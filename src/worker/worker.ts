@@ -66,6 +66,7 @@ const lineOf = (e: SimEvent): LedgerLine => ({
   type: e.type,
   text: renderEvent(e, sim.templates),
   causes: [...e.causes],
+  why: e.causes.some((c) => c !== world?.begunEvent),
   clock: clockView(e.tick),
 });
 

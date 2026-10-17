@@ -37,6 +37,17 @@ describe('content', () => {
     ]);
   });
 
+  it('refuses a calendar the clock cannot count with', () => {
+    const broken = copy();
+    broken.calendar.monthsPerYear = 14;
+    broken.calendar.daysPerMonth = 0;
+    expect(validateContent(broken)).toEqual([
+      'calendar.daysPerMonth: 0 is not a whole number above 0',
+      'calendar.monthNames: 12 names for 14 months',
+      "calendar.seasons: 4 seasons don't split 14 months evenly",
+    ]);
+  });
+
   it('changes its fingerprint when any entry changes', () => {
     const changed = copy();
     changed.items[0].per += 0.001;

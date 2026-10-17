@@ -46,7 +46,8 @@ const done = <T>(request: IDBRequest<T>, doing: string): Promise<T> =>
 const finished = (tx: IDBTransaction, doing: string): Promise<void> =>
   new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(reason(tx.error, doing));
+    // A failed request reaches here first, before the transaction carries its error.
+    tx.onerror = (e) => reject(reason((e.target as IDBRequest).error, doing));
     tx.onabort = () => reject(reason(tx.error, doing));
   });
 

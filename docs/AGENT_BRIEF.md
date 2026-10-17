@@ -36,4 +36,4 @@ Setup 10 min and 60 KB before the first edit; session hook 2 min; `npm run check
 - Thread-times log: `/mnt/project-files/vulcan/process/thread-times.md`.
 - Mock-up and art sources: `/mnt/project-files/vulcan/<milestone>/`.
 - Code map: `docs/CODEMAP.md`. Module contract template: `docs/templates/MODULE.md`.
-- Deploy: Vercel from `main` only (V-018); after a merge, check the live deploy is the merge commit (CI-05).
+- Deploy: Vercel from `main` only (V-018), live at https://project-vulcan-five.vercel.app; after a merge, check the live deploy is the merge commit (CI-05).
