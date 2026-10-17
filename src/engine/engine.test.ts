@@ -16,6 +16,7 @@ import {
   submitCommand,
   ticksPerMonth,
   toNdjson,
+  whyOf,
   type EngineContent,
   type System,
 } from './index.ts';
@@ -102,8 +103,16 @@ describe('engine', () => {
     expect(chunkTiles(world.map, 9, 9).tiles.every((t) => t === 0)).toBe(true);
     // Changing a tile marks only its chunk for resending.
     const ctx = { world, content } as unknown as Parameters<typeof setTile>[0];
-    setTile(ctx, 150 - 1, 17, 1);
+    setTile(ctx, 150 - 1, 17, 1, 99);
     expect(world.map.chunkVersions[1 * 10 + 9]).toBe(2);
+    // Every tile cites the line that laid it out until something changes it; "why?" walks back.
+    const formed = world.log.find((e) => e.type === 'map.formed')!;
+    expect(world.map.tileCauses[17 * 150 + 149]).toBe(99);
+    expect(world.map.tileCauses.filter((c) => c !== formed.id)).toHaveLength(1);
+    expect(whyOf(world.log, world.log[86]!.id).map((w) => [w.event.type, w.depth])).toEqual([
+      ['calendar.month', 1],
+      ['world.begun', 2],
+    ]);
     expect(world.map.chunkVersions.filter((v) => v === 2)).toHaveLength(1);
   });
 

@@ -45,7 +45,7 @@ export function createWorld(sim: Sim, seed: string): WorldState {
     log: [],
     begunEvent: 0,
     systems: {},
-    map: { width: 0, height: 0, tiles: [], chunkVersions: [] },
+    map: { width: 0, height: 0, tiles: [], tileCauses: [], chunkVersions: [] },
   };
   for (const system of sim.systems) world.systems[system.id] = { ...system.initialState };
   world.begunEvent = emit(world, sim.templates, 'world.begun', { data: { seed } });

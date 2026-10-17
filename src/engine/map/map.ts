@@ -27,16 +27,24 @@ export function chunkTiles(
 }
 
 /**
- * The only writer of a tile after the map is formed: sets the kind and raises the chunk's version
- * so the worker resends it. The caller emits the event that explains the change.
+ * The only writer of a tile after the map is formed: sets the kind, records `cause` (the event
+ * that explains the change, which the caller emits first) for the inspector, and raises the
+ * chunk's version so the worker resends it.
  */
-export function setTile(ctx: SystemContext, x: number, y: number, kind: number): void {
+export function setTile(
+  ctx: SystemContext,
+  x: number,
+  y: number,
+  kind: number,
+  cause: number,
+): void {
   const map = ctx.world.map;
   if (!ctx.content.terrain.kinds[kind]) throw new Error(`Terrain ${kind} is not a terrain kind.`);
   if (x < 0 || y < 0 || x >= map.width || y >= map.height)
     throw new Error(`Tile ${x}, ${y} is off the map.`);
   if (map.tiles[y * map.width + x] === kind) return;
   map.tiles[y * map.width + x] = kind;
+  map.tileCauses[y * map.width + x] = cause;
   map.chunkVersions[Math.floor(y / CHUNK) * chunksAcross(map) + Math.floor(x / CHUNK)]! += 1;
 }
 
@@ -55,9 +63,10 @@ export const mapSystem: System = {
     map.height = surface.height;
     map.tiles = new Array<number>(surface.width * surface.height).fill(ground);
     map.chunkVersions = new Array<number>(chunksAcross(map) * chunksDown(map)).fill(1);
-    ctx.emit('map.formed', {
+    const formed = ctx.emit('map.formed', {
       causes: [ctx.world.begunEvent],
       data: { width: map.width, height: map.height, ground: kinds[ground]!.name },
     });
+    map.tileCauses = new Array<number>(surface.width * surface.height).fill(formed);
   },
 };

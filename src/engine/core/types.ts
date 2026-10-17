@@ -70,6 +70,9 @@ export interface MapState {
   height: number;
   /** Index into `EngineContent.terrain.kinds`, at `y * width + x`. */
   tiles: number[];
+  /** The id of the ledger line that last changed each tile, at `y * width + x` (the inspector's
+   * "last changed"). */
+  tileCauses: number[];
   /** One counter per 16 by 16 chunk, row by row; it goes up whenever a tile in the chunk changes. */
   chunkVersions: number[];
 }
