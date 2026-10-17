@@ -18,21 +18,23 @@ export function validateContent(files: Files): string[] {
   const errors: string[] = [];
   const refs: RefUse[] = [];
   for (const [name, spec] of Object.entries(SCHEMAS)) {
-    if (!(name in files)) errors.push(`${name}: file missing`);
+    if (!Object.hasOwn(files, name)) errors.push(`${name}: file missing`);
     else check(spec, files[name], name, errors, refs);
   }
   for (const name of Object.keys(files))
-    if (!(name in SCHEMAS)) errors.push(`${name}: no schema for this file`);
+    if (!Object.hasOwn(SCHEMAS, name)) errors.push(`${name}: no schema for this file`);
 
   const known = new Map<RefTarget, Set<string>>();
-  const index = (target: RefTarget, file: string, list: unknown): void => {
-    const ids = idsOf(list);
+  const unique = (file: string, list: unknown): Set<string> => {
     const seen = new Set<string>();
-    for (const id of ids) {
+    for (const id of idsOf(list)) {
       if (seen.has(id)) errors.push(`${file}[${id}]: duplicate id`);
       seen.add(id);
     }
-    known.set(target, seen);
+    return seen;
+  };
+  const index = (target: RefTarget, file: string, list: unknown): void => {
+    known.set(target, unique(file, list));
   };
   for (const target of [
     'races',
@@ -49,7 +51,15 @@ export function validateContent(files: Files): string[] {
     'tiers',
   ] as const)
     index(target, target, files[target]);
-  index('biomes', 'biomes', (files['biomes'] as { biomes?: unknown } | undefined)?.biomes);
+  const part = (file: string, key: string): unknown =>
+    (files[file] as Record<string, unknown> | undefined)?.[key];
+  index('biomes', 'biomes.biomes', part('biomes', 'biomes'));
+  index('faiths', 'faiths.defs', part('faiths', 'defs'));
+  // Lists nothing refers to yet still need unique ids.
+  for (const file of ['resources', 'weather', 'awakenings', 'ailments', 'diseases'])
+    unique(file, files[file]);
+  unique('great-works.kinds', part('great-works', 'kinds'));
+  unique('dragons.tempers', part('dragons', 'tempers'));
 
   for (const use of refs) {
     const ids = known.get(use.target) ?? new Set<string>();
@@ -58,6 +68,7 @@ export function validateContent(files: Files): string[] {
       errors.push(`${use.path}: "${use.value}" is not in ${use.target} (known: ${some}, …)`);
     }
   }
+  // Tier caps read the files as typed, so they run only once every shape is valid.
   if (errors.length === 0) errors.push(...checkTierCaps(files));
   return errors;
 }

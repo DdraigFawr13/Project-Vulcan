@@ -14,11 +14,12 @@ export type RefTarget =
   | 'memories'
   | 'jobs'
   | 'conditions'
+  | 'faiths'
   | 'tiers';
 
-export interface StrSpec {
+export interface StrSpec<V extends string = string> {
   readonly k: 'str';
-  readonly oneOf?: readonly string[];
+  readonly oneOf?: readonly V[];
   readonly ref?: RefTarget;
 }
 export interface NumSpec {
@@ -54,7 +55,10 @@ export type Spec = StrSpec | NumSpec | BoolSpec | ListSpec | ObjSpec | MapSpec |
 export type Fields = { readonly [key: string]: Spec };
 
 export const str = (o: Omit<StrSpec, 'k'> = {}): StrSpec => ({ k: 'str', ...o });
-export const oneOf = (...values: string[]): StrSpec => ({ k: 'str', oneOf: values });
+export const oneOf = <const V extends string>(...values: V[]): StrSpec<V> => ({
+  k: 'str',
+  oneOf: values,
+});
 export const ref = (target: RefTarget): StrSpec => ({ k: 'str', ref: target });
 export const num = (o: Omit<NumSpec, 'k'> = {}): NumSpec => ({ k: 'num', ...o });
 export const bool = (): BoolSpec => ({ k: 'bool' });
@@ -73,13 +77,14 @@ type OptionalKeys<F extends Fields> = Exclude<keyof F, RequiredKeys<F>>;
 type InferFields<F extends Fields> = { readonly [K in RequiredKeys<F>]: Infer<F[K]> } & {
   readonly [K in OptionalKeys<F>]?: F[K] extends OptSpec<infer T> ? Infer<T> : never;
 };
-type InferPlain<S> = S extends StrSpec
-  ? string
-  : S extends NumSpec
-    ? number
-    : S extends BoolSpec
-      ? boolean
-      : unknown;
+type InferPlain<S> =
+  S extends StrSpec<infer V>
+    ? V
+    : S extends NumSpec
+      ? number
+      : S extends BoolSpec
+        ? boolean
+        : unknown;
 
 /** The TypeScript type of the values a spec accepts. */
 export type Infer<S> =
@@ -89,7 +94,9 @@ export type Infer<S> =
       ? InferFields<F>
       : S extends MapSpec<infer T>
         ? { readonly [key: string]: Infer<T> }
-        : InferPlain<S>;
+        : S extends OptSpec<infer T>
+          ? Infer<T> | undefined
+          : InferPlain<S>;
 
 /** A reference found while checking, resolved once every file's ids are known. */
 export interface RefUse {
@@ -117,7 +124,7 @@ export function check(
       return;
     case 'str':
       if (typeof value !== 'string') errors.push(`${path}: expected text, got ${show(value)}`);
-      else if (spec.oneOf && !spec.oneOf.includes(value))
+      else if (spec.oneOf && !(spec.oneOf as readonly string[]).includes(value))
         errors.push(`${path}: "${value}" is not one of ${spec.oneOf.join(', ')}`);
       else if (spec.ref) refs.push({ path, target: spec.ref, value });
       return;
@@ -130,7 +137,8 @@ export function check(
         errors.push(`${path}: ${value} is above ${spec.max}`);
       return;
     case 'bool':
-      if (typeof value !== 'boolean') errors.push(`${path}: expected true or false`);
+      if (typeof value !== 'boolean')
+        errors.push(`${path}: expected true or false, got ${show(value)}`);
       return;
     case 'list':
       if (!Array.isArray(value)) errors.push(`${path}: expected a list, got ${show(value)}`);
@@ -157,7 +165,7 @@ export function check(
         else check(field, value[key], `${path}.${key}`, errors, refs);
       }
       for (const key of Object.keys(value))
-        if (!(key in spec.fields)) errors.push(`${path}.${key}: unknown field`);
+        if (!Object.hasOwn(spec.fields, key)) errors.push(`${path}.${key}: unknown field`);
       return;
   }
 }
@@ -169,6 +177,7 @@ function label(v: unknown, i: number): string {
 
 function show(v: unknown): string {
   if (v === undefined) return 'nothing';
+  if (v === null) return 'null';
   if (Array.isArray(v)) return 'a list';
   return typeof v === 'object' ? 'an entry' : JSON.stringify(v);
 }

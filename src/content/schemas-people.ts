@@ -41,7 +41,7 @@ export const PEOPLE_SCHEMAS = {
       government: str(),
       succession: str(),
       magic: str(),
-      religion: obj({ id: str(), name: text }),
+      religion: obj({ id: ref('faiths'), name: text }),
       preferredBiomes: list(ref('biomes')),
       sitePreferences: texts,
       names: obj({

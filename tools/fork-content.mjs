@@ -53,6 +53,7 @@ export function formatData(value) {
   const line = (v) =>
     JSON.stringify(v, (_, x) => {
       if (typeof x === 'function') throw new Error('content holds a function; fork data only');
+      if (typeof x === 'number' && !Number.isFinite(x)) throw new Error(`non-finite number ${x}`);
       return x;
     });
   if (Array.isArray(value)) return `[\n${value.map((v) => `  ${line(v)}`).join(',\n')}\n]\n`;
@@ -104,7 +105,12 @@ async function fork(from, force) {
     '<!-- fork:end -->',
   ].join('\n');
   const doc = existsSync(forkDoc) ? readFileSync(forkDoc, 'utf8') : `# Content fork\n\n${record}\n`;
-  writeFileSync(forkDoc, doc.replace(/<!-- fork:start[\s\S]*<!-- fork:end -->/, record));
+  writeFileSync(
+    forkDoc,
+    doc.replace(/<!-- fork:start[\s\S]*?<!-- fork:end -->/, () => record),
+  );
+  if (force)
+    process.stdout.write('Data reset to the fork; update the FORK.md change log to match.\n');
   process.stdout.write(
     `Forked ${FILES.length} files from ${commit.slice(0, 7)} into src/content/data.\n`,
   );
@@ -113,8 +119,11 @@ async function fork(from, force) {
 if (isMain(import.meta.url)) {
   const args = process.argv.slice(2);
   const at = args.indexOf('--from');
-  const from = path.resolve(at >= 0 ? args[at + 1] : path.join(root, '../Story-Generator'));
-  fork(from, args.includes('--force')).catch((e) => {
+  const given = at >= 0 ? args[at + 1] : path.join(root, '../Story-Generator');
+  const run = given
+    ? fork(path.resolve(given), args.includes('--force'))
+    : Promise.reject(new Error('--from needs a path'));
+  run.catch((e) => {
     process.stderr.write(`fork-content: ${e.message}\n`);
     process.exitCode = 1;
   });
