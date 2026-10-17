@@ -58,6 +58,9 @@ export class Panel {
       ['biome', tile.biome],
       ['height', `${tile.elevation} m`],
       ['fertility', `${tile.fertility} of 100`],
+      ...(tile.water ? [['water', tile.water]] : []),
+      ...(tile.drinkable !== undefined ? [['drinkable', tile.drinkable ? 'yes' : 'no']] : []),
+      ...(tile.crossing ? [['crossing', tile.crossing]] : []),
       ...(tile.feature ? [['on it', tile.feature]] : []),
       ['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`],
     ])

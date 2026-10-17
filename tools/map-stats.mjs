@@ -1,11 +1,12 @@
 // `npm run map:stats` (or `map:render`): lays out the surface for every seed in the map seed list and
-// prints one table (climate, biome shares, rock, trees, start counts, generation time) against
-// the P1.1 done-when. With --render, writes one PNG per seed to tmp/maps/ (not committed).
+// prints one table (climate, biome shares, rock, trees, water, start counts, generation time) against
+// the P1.1 and P1.2 done-whens. With --render, writes one PNG per seed to tmp/maps/ (not committed).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
 import { createSim, createWorld } from '../src/engine/index.ts';
+import { strandedWater, waterNearStart } from '../src/engine/map/checks.ts';
 import { reachableAround } from '../src/engine/map/features.ts';
 import { MAP_SEEDS } from '../src/engine/map/seeds.ts';
 
@@ -47,22 +48,34 @@ for (const seed of MAP_SEEDS) {
     m.height,
     need.radius,
   )(m.startX, m.startY);
-  const ok = c.buildable >= need.buildable && c.wood >= need.wood && c.stone >= need.stone;
+  const water = m.water.filter((w) => w > 0).length;
+  const { lakes, springs } = world.log.find((e) => e.type === 'map.watered').data;
+  const drink = waterNearStart(content, m, need.radius);
+  const stranded = strandedWater(m);
+  const ok =
+    c.buildable >= need.buildable &&
+    c.wood >= need.wood &&
+    c.stone >= need.stone &&
+    drink > 0 &&
+    stranded === 0 &&
+    water >= 0.06 * n &&
+    water <= 0.14 * n &&
+    ms <= 300;
   if (!ok) failures += 1;
   const meanFert = Math.round(
     m.fertility.reduce((s, v, i) => s + (content.terrain.kinds[m.tiles[i]].buildable ? v : 0), 0) /
       n,
   );
   rows.push(
-    `| ${seed} | ${m.climate} ${m.temperature} °C ${m.rainfall} mm | ${top} | ${pct(rock, n)} | ${pct(trees, n)} | ${meanFert} | ${m.startX},${m.startY} | ${c.buildable} / ${c.wood} / ${c.stone} | ${ok ? 'yes' : 'NO'} | ${ms.toFixed(0)} |`,
+    `| ${seed} | ${m.climate} ${m.temperature} °C ${m.rainfall} mm | ${top} | ${pct(rock, n)} | ${pct(trees, n)} | ${pct(water, n)} | ${lakes} / ${springs} | ${meanFert} | ${m.startX},${m.startY} | ${c.buildable} / ${c.wood} / ${c.stone} / ${drink} | ${stranded} | ${ok ? 'yes' : 'NO'} | ${ms.toFixed(0)} |`,
   );
   if (render) drawMap(seed, m);
 }
 process.stdout.write(
-  `| seed | climate | main biomes | rock | trees | fertility | start | build / wood / stone within ${need.radius} | done | ms |\n|---|---|---|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`,
+  `| seed | climate | main biomes | rock | trees | water | lakes / springs | fertility | start | build / wood / stone / water within ${need.radius} | inland ends | done | ms |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`,
 );
 process.stdout.write(
-  `${MAP_SEEDS.length - failures} of ${MAP_SEEDS.length} seeds meet the start rule (${need.buildable} buildable, ${need.wood} trees, ${need.stone} stone).\n`,
+  `${MAP_SEEDS.length - failures} of ${MAP_SEEDS.length} seeds meet the done-whens (${need.buildable} buildable, ${need.wood} trees, ${need.stone} stone and drinkable water near the start; no inland ends; water 6 to 14% of the map; under 300 ms).\n`,
 );
 if (failures > 0) process.exitCode = 1;
 
@@ -77,6 +90,11 @@ function drawMap(seed, m) {
     snowcap: [225, 228, 232],
     gravel: [140, 134, 124],
     snow: [235, 238, 240],
+    sand: [214, 196, 140],
+    marsh: [96, 112, 74],
+    'water-shallow': [86, 140, 190],
+    'water-deep': [38, 78, 140],
+    spring: [170, 230, 255],
   };
   const featureColour = {
     tree: [28, 64, 30],
@@ -91,7 +109,7 @@ function drawMap(seed, m) {
       const kind = m.snow[i] ? 'snowcap' : content.terrain.kinds[m.tiles[i]].id;
       const biome = content.biomes.biomes[m.biomes[i]];
       // Shade by height so the valley's shape shows.
-      const shade = 0.75 + 0.35 * ((m.elevation[i] % 400) / 400 < 0.5 ? 0 : 0.15);
+      const shade = m.water[i] ? 1 : 0.75 + 0.35 * ((m.elevation[i] % 400) / 400 < 0.5 ? 0 : 0.15);
       const base = (kindColour[kind] ?? biome.color).map((v) => Math.min(255, v * shade));
       for (let dy = 0; dy < S; dy++)
         for (let dx = 0; dx < S; dx++)

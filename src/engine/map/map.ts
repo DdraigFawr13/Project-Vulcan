@@ -5,6 +5,7 @@ import { findEvent } from '../log/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { findStart, placeFeatures } from './features.ts';
 import { layGround } from './terrain.ts';
+import { BEACH, carveWater, MARSH, SCREE, SPRING } from './water.ts';
 
 /** Tiles per chunk side. The worker sends the map to the screen a chunk at a time. */
 export const CHUNK = 16;
@@ -72,11 +73,25 @@ export const mapSystem: System = {
   id: 'map',
   every: 'day', // a cadence is required; the surface has no daily work yet
   stream: 'worldgen',
-  emits: ['map.formed'],
+  emits: ['map.formed', 'map.watered'],
   init(ctx) {
     const { width, height } = ctx.content.terrain.surface;
     const rng = ctx.rng();
     const ground = layGround(rng, ctx.content, width, height);
+    const water = carveWater(rng, ctx.content, ground, width, height);
+    const dials = ctx.content.terrain.generator.water;
+    const kind = (id: string): number => ctx.content.terrain.kinds.findIndex((k) => k.id === id);
+    const shores: Record<number, number> = {
+      [BEACH]: kind(dials.beach),
+      [SCREE]: kind(ctx.content.terrain.generator.rock.screeKind),
+      [MARSH]: kind(dials.marsh),
+    };
+    for (let i = 0; i < width * height; i += 1) {
+      const body = water.body[i]!;
+      if (body === SPRING) ground.tiles[i] = kind(dials.spring);
+      else if (body) ground.tiles[i] = kind(water.deep[i] ? dials.deep : dials.shallow);
+      else if (water.shore[i]) ground.tiles[i] = shores[water.shore[i]!]!;
+    }
     const features = placeFeatures(rng, ctx.content, ground, width, height);
     const start = findStart(ctx.content, ground.tiles, features, width, height);
     const map = ctx.world.map;
@@ -88,6 +103,8 @@ export const mapSystem: System = {
     map.fertility = Uint8Array.from(ground.fertility);
     map.features = Uint8Array.from(features);
     map.snow = Uint8Array.from(ground.snow);
+    map.water = Uint8Array.from(water.body);
+    map.riverExit = water.exit;
     map.startX = start.x;
     map.startY = start.y;
     map.climate = ground.climate;
@@ -108,7 +125,12 @@ export const mapSystem: System = {
         startMet: start.met ? 1 : 0,
       },
     });
-    map.tileCauses = new Array<number>(width * height).fill(formed);
+    const watered = ctx.emit('map.watered', {
+      causes: [formed],
+      data: { exit: water.exit, lakes: water.lakes, springs: water.springs },
+    });
+    // Water cites the gathering of the waters; everything else, shores too, the valley's forming.
+    map.tileCauses = water.body.map((b) => (b ? watered : formed));
   },
 };
 

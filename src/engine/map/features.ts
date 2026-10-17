@@ -9,7 +9,7 @@ import type { Ground } from './terrain.ts';
  * field (`groves.low` to `groves.high`), times `oldGrowth.factor` in the old-growth share of the
  * map, so woods come in clumps, clearings and dense old stands; `glades` features are
  * `glades.factor` times likelier in the clearings' heart; boulders gain
- * `nearRock.density` within `nearRock.reach` tiles of rock. Rock tiles stay bare. Returns
+ * `nearRock.density` within `nearRock.reach` tiles of rock. Rock and water tiles stay bare. Returns
  * 0 for a bare tile, else 1 + the feature's index.
  */
 export function placeFeatures(
@@ -32,7 +32,7 @@ export function placeFeatures(
   const out = new Array<number>(width * height).fill(0);
   for (let i = 0; i < width * height; i += 1) {
     const roll = rng.int(1_000_000) / 1_000_000;
-    if (isRock[i]) continue;
+    if (isRock[i] || content.terrain.kinds[ground.tiles[i]!]!.water) continue;
     const biome = biomes[ground.biomes[i]!]!.id;
     // Old growth: dense woods where its field peaks. Glades: the grove field's lowest ground.
     const clump =

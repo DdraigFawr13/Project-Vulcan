@@ -88,6 +88,10 @@ export interface MapState {
   features: Uint8Array;
   /** 1 where rock lies under snow (colder than the snow line), else 0. The tile keeps its rock. */
   snow: Uint8Array;
+  /** Which body of water each tile belongs to (`WATER` below), else 0. Set once by the generator. */
+  water: Uint8Array;
+  /** The map edge the main river leaves by: north, south, east or west. */
+  riverExit: string;
   /** Where the settlers' cart stops: the generator's chosen start tile. */
   startX: number;
   startY: number;
@@ -97,6 +101,9 @@ export interface MapState {
   temperature: number;
   rainfall: number;
 }
+
+/** The bodies of water in `MapState.water`, by their code: 0 is dry land. */
+export const WATER = ['', 'stream', 'river', 'lake', 'spring'] as const;
 
 type Range = readonly number[];
 
@@ -162,6 +169,45 @@ export interface TerrainDef {
       oldGrowth: { cell: number; share: number; factor: number };
       glades: { share: number; factor: number };
     };
+    /** Rivers, streams, lakes and springs: see the schema in src/content/schemas-world.ts. */
+    water: {
+      tilt: number;
+      jitter: number;
+      meander: number;
+      meanderCell: number;
+      mountainFoot: number;
+      mountainRain: number;
+      floorRain: number;
+      flowRain: number;
+      streamFlow: number;
+      riverFlow: number;
+      /** Rivers three wide past `riverFlow` times this. */
+      widenFlow: number;
+      wideFlow: number;
+      /** Squared reach of a wide river's disc. */
+      wideReach: number;
+      /** Width flow is scaled by swellMin + swellSpan times the swell noise. */
+      swellMin: number;
+      swellSpan: number;
+      widthCell: number;
+      lakeDepth: number;
+      lakeArea: number;
+      /** Metres of hollow a lake basin still spreads through. */
+      basinDepth: number;
+      lakeGrow: number;
+      /** Equal to lakeDepth by design: a lake's floor past its seed depth is deep, its rim shallow. */
+      deepDepth: number;
+      bankCell: number;
+      marshWet: number;
+      marshBank: number;
+      beachBank: number;
+      hills: number;
+      shallow: string;
+      deep: string;
+      spring: string;
+      beach: string;
+      marsh: string;
+    };
     start: {
       woodItem: string;
       stoneItem: string;
@@ -179,6 +225,9 @@ export interface TerrainDef {
     variants: number;
     buildable?: boolean;
     stone?: boolean;
+    water?: 'shallow' | 'deep';
+    drinkable?: boolean;
+    marker?: string;
   }[];
 }
 

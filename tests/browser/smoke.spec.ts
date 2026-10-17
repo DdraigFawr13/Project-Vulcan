@@ -17,6 +17,11 @@ const reading = async (page: Page) => {
 test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports', async ({
   page,
 }) => {
+  // The whole round makes the world three times (boot, reload, load) and takes about 17 s here; CI's
+  // runner takes about 1.5 to 2 times as long, past Playwright's default 30 s per test once P1.2's
+  // water joined each generation (P1.1's green run already used about 26 s). The steps keep their
+  // own waits; this is the round's overall budget.
+  test.setTimeout(60_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {

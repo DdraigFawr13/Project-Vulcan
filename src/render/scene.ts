@@ -4,6 +4,7 @@ import Phaser from 'phaser';
 import { content } from '../content/index.ts';
 import type { ChunkView } from '../worker/index.ts';
 import { CameraControls } from './camera.ts';
+import { waterPicture } from './water-art.ts';
 
 export const TILE = 32;
 const SHEET = 'tiles-base';
@@ -40,8 +41,19 @@ export class ValleyScene extends Phaser.Scene {
   private featureFrames: number[] = [];
   /** The ground frame laid over snow-capped rock. */
   private snowFrame = 0;
-  /** Kind index of every tile drawn so far, for the readout. */
+  /** Kind index, snow and feature of every tile received so far: the readout, and the water
+   * pictures, which depend on a tile's neighbours, read them. */
   private ground: Uint8Array = new Uint8Array(0);
+  private snow: Uint8Array = new Uint8Array(0);
+  private things: Uint8Array = new Uint8Array(0);
+  /** Per terrain kind: 0 dry, 1 shallow water, 2 deep water. */
+  private kindWater: number[] = [];
+  /** Per terrain kind: the nature-sheet marker drawn over it (a spring's), else -1. */
+  private markers: number[] = [];
+  /** The picture under open deep water: the shallow kind's first frame. */
+  private shallowFrame = 0;
+  private waterLayer: Phaser.Tilemaps.TilemapLayer | undefined;
+  private waterFrames = new Map<string, number>();
   private size = { width: 0, height: 0 };
   /** The first tile index of the nature tileset. */
   private natureGid = 0;
@@ -67,6 +79,11 @@ export class ValleyScene extends Phaser.Scene {
     );
     this.snowFrame = this.groundFrame(`${content.terrain.generator.rock.snowArt}.1`);
     this.featureFrames = content.features.map((f) => this.frameIndex(NATURE, `${f.art}.1`));
+    const { kinds } = content.terrain;
+    this.kindWater = kinds.map((k) => (k.water === 'deep' ? 2 : k.water ? 1 : 0));
+    this.markers = kinds.map((k) => (k.marker ? this.frameIndex(NATURE, `${k.marker}.1`) : -1));
+    const shallow = kinds.find((k) => k.id === content.terrain.generator.water.shallow)!;
+    this.shallowFrame = this.groundFrame(`${shallow.art}.1`);
     this.select = this.add
       .image(0, 0, SHEET, 'overlay.select')
       .setOrigin(0)
@@ -102,6 +119,8 @@ export class ValleyScene extends Phaser.Scene {
   setMapSize(width: number, height: number): void {
     this.size = { width, height };
     this.ground = new Uint8Array(width * height);
+    this.snow = new Uint8Array(width * height);
+    this.things = new Uint8Array(width * height);
     if (this.sys.isActive() && this.frames.length) this.buildMap();
   }
 
@@ -110,7 +129,9 @@ export class ValleyScene extends Phaser.Scene {
       this.waiting.push(...chunks);
       return;
     }
-    for (const chunk of chunks) this.drawChunk(chunk);
+    for (const chunk of chunks) this.store(chunk);
+    // Water pictures depend on neighbours, so each chunk repaints a tile past its edges too.
+    for (const { x, y, w, h } of chunks) this.paint(x - 1, y - 1, w + 2, h + 2);
   }
 
   zoomStep(direction: 1 | -1): void {
@@ -149,9 +170,12 @@ export class ValleyScene extends Phaser.Scene {
     if (!nature) throw new Error(`The ${NATURE} sheet did not load.`);
     this.natureGid = gid;
     const layer = map.createLayer(0, ground, 0, 0, false) as Phaser.Tilemaps.TilemapLayer | null;
-    // The features sit on a second plain layer over the ground, -1 where a tile is bare.
+    // Shore and deep-water frames lie over the ground, then features on a plain layer of their
+    // own, -1 where a tile is bare.
+    const water = map.createBlankLayer('water', ground, 0, 0, width, height);
     const features = map.createBlankLayer('features', nature, 0, 0, width, height);
-    if (!layer || !features) throw new Error('The map layers could not be made.');
+    if (!layer || !water || !features) throw new Error('The map layers could not be made.');
+    this.waterLayer = water;
     this.map = map;
     this.layer = layer;
     this.featureLayer = features;
@@ -161,31 +185,79 @@ export class ValleyScene extends Phaser.Scene {
     this.applyChunks(waiting);
   }
 
-  // A changed chunk rewrites only its own tiles.
-  private drawChunk({ x, y, w, h, tiles, features, snow }: ChunkView): void {
-    const rows: number[][] = [];
-    const things: number[][] = [];
-    for (let row = 0; row < h; row += 1) {
-      const line: number[] = [];
-      const on: number[] = [];
+  private store({ x, y, w, h, tiles, features, snow }: ChunkView): void {
+    for (let row = 0; row < h; row += 1)
       for (let col = 0; col < w; col += 1) {
-        const kind = tiles[row * w + col]!;
-        const pictures = this.frames[kind];
-        if (!pictures) throw new Error(`Terrain ${kind} has no art.`);
-        line.push(
-          snow[row * w + col]
-            ? this.snowFrame
-            : pictures[variantOf(x + col, y + row, pictures.length) - 1]!,
+        const i = (y + row) * this.size.width + x + col;
+        this.ground[i] = tiles[row * w + col]!;
+        this.snow[i] = snow[row * w + col]!;
+        this.things[i] = features[row * w + col]!;
+      }
+  }
+
+  // Rewrites the ground, water and feature pictures of a rectangle, clipped to the map.
+  private paint(x0: number, y0: number, w0: number, h0: number): void {
+    const { width, height } = this.size;
+    const x = Math.max(0, x0);
+    const y = Math.max(0, y0);
+    const w = Math.min(width, x0 + w0) - x;
+    const h = Math.min(height, y0 + h0) - y;
+    const water = (i: number): number => this.kindWater[this.ground[i]!]!;
+    const rows: number[][] = [];
+    const over: number[][] = [];
+    const things: number[][] = [];
+    for (let row = y; row < y + h; row += 1) {
+      const line: number[] = [];
+      const wet: number[] = [];
+      const on: number[] = [];
+      for (let col = x; col < x + w; col += 1) {
+        const i = row * width + col;
+        const picture = waterPicture(col, row, width, height, water);
+        if (picture.kind === 'shore') {
+          line.push(this.pictureOf(picture.under, col, row));
+          wet.push(this.waterFrame(picture.frame));
+        } else if (picture.kind === 'open' && picture.deep) {
+          line.push(this.shallowFrame);
+          wet.push(this.waterFrame(picture.deep));
+        } else {
+          line.push(this.pictureOf(i, col, row));
+          wet.push(-1);
+        }
+        const feature = this.things[i]!;
+        const marker = this.markers[this.ground[i]!]!;
+        on.push(
+          feature > 0
+            ? this.natureGid + this.featureFrames[feature - 1]!
+            : marker >= 0
+              ? this.natureGid + marker
+              : -1,
         );
-        this.ground[(y + row) * this.size.width + x + col] = kind;
-        const feature = features[row * w + col]!;
-        on.push(feature > 0 ? this.natureGid + this.featureFrames[feature - 1]! : -1);
       }
       rows.push(line);
+      over.push(wet);
       things.push(on);
     }
     this.map!.putTilesAt(rows, x, y, false, this.layer);
+    this.map!.putTilesAt(over, x, y, false, this.waterLayer);
     this.map!.putTilesAt(things, x, y, false, this.featureLayer);
+  }
+
+  /** Tile `i`'s own picture, its variant picked by where it is drawn (at col, row). */
+  private pictureOf(i: number, col: number, row: number): number {
+    if (this.snow[i]) return this.snowFrame;
+    const kind = this.ground[i]!;
+    const pictures = this.frames[kind];
+    if (!pictures) throw new Error(`Terrain ${kind} has no art.`);
+    return pictures[variantOf(col, row, pictures.length) - 1]!;
+  }
+
+  private waterFrame(name: string): number {
+    let index = this.waterFrames.get(name);
+    if (index === undefined) {
+      index = this.groundFrame(name);
+      this.waterFrames.set(name, index);
+    }
+    return index;
   }
 
   // A tileset is its packed sheet's grid (tools/pack-sheet: margin 1, spacing 2), so a frame's

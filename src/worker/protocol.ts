@@ -72,6 +72,12 @@ export interface TileView {
   elevation: number;
   /** 0 to 100. */
   fertility: number;
+  /** The body of water the tile belongs to, e.g. "the river, flowing to the east edge". */
+  water?: string;
+  /** Whether the tile's water can be drunk; absent on dry land. */
+  drinkable?: boolean;
+  /** How the tile's water can be crossed, e.g. "can be waded"; absent on dry land. */
+  crossing?: string;
   /** What grows or lies on the tile, with what it yields, e.g. "ash (25 logs)". */
   feature?: string;
   chunkX: number;

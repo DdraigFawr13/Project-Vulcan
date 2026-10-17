@@ -1,6 +1,12 @@
 // The save record and its check. The worker builds a save from the running world and checks one
 // before it replaces the running world, so a refused save never touches the game in progress.
-import { chunksAcross, chunksDown, type EngineContent, type WorldState } from '../engine/index.ts';
+import {
+  chunksAcross,
+  chunksDown,
+  type EngineContent,
+  WATER,
+  type WorldState,
+} from '../engine/index.ts';
 
 /** Raised when a save's format version changes; older saves need not load before launch. */
 export const SAVE_VERSION = 1;
@@ -76,9 +82,11 @@ export function checkSave(
     layer(map['fertility'], Uint8Array, map['tiles'].length) &&
     layer(map['features'], Uint8Array, map['tiles'].length) &&
     layer(map['snow'], Uint8Array, map['tiles'].length) &&
+    layer(map['water'], Uint8Array, map['tiles'].length) &&
     isCount(map['startX']) &&
     isCount(map['startY']) &&
-    typeof map['climate'] === 'string';
+    typeof map['climate'] === 'string' &&
+    typeof map['riverExit'] === 'string';
   if (!ok) throw new Error('The save is damaged.');
   const world = state as unknown as WorldState;
   // Deeper checks a matching content hash makes cheap: the map fits the content, and the ledger's
@@ -95,6 +103,8 @@ export function checkSave(
     w.startY < w.height &&
     w.biomes.every((b) => b < content.biomes.biomes.length) &&
     w.features.every((f) => f <= content.features.length) &&
+    w.water.every((b) => b < WATER.length) &&
+    ['north', 'south', 'east', 'west'].includes(w.riverExit) &&
     world.log.every((e) => isObject(e) && isCount(e.id) && e.id > last && ((last = e.id), true)) &&
     world.nextEventId > last;
   if (!sound) throw new Error('The save is damaged.');
