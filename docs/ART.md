@@ -6,6 +6,7 @@ Flat-shaded pixel art in the muted palette, readable at 32 px, nothing drawn bef
 | --- | --- | --- |
 | P0.4 | `tiles-base` | grass, dirt, sand, gravel, stone floor, rock wall, darkness, shallow and deep water; selection and designation overlays |
 | P1.1 to P1.3 | `tiles-world`, `sprites-nature` | biome floors, snow, ice, ore veins, aura, stairs, shaft, shore autotile (47-tile blob, `water.shore.<mask>`) and deep water inside shallow (16 frames, `water.deep.<mask>`), both by `tools/draw-water.mjs` (a deep tile on a bank draws its shore frame, so it shows shallow; rare, as lake rims are shallow); trees, bushes, boulders, herbs, spring marker |
+| P1.4 | `tiles-world` | ice over lake water (47 shore frames `ice.shore.<mask>`, 16 deep `ice.deep.<mask>`, `tile.ice.1`) and a core and ring glow for each of the six schools (`aura.<school>.core`, `aura.<school>.1`), by `tools/draw-ice.mjs` |
 | P2.1, P2.4 | `sprites-people`, `items` | one body per race, 4 facings, 2 walk frames, tinted hair and clothing overlays, carried-item slot; icons for logs, stone, ores, ingots, food, tools, weapons, cloth, leather, herbs |
 | P3.2 | `buildings` | autotiled walls by material, doors, floors, bed, table, chair, chest, shelf, carpentry bench |
 | P4.5 | `workshops` | charcoal clamp, smelter, smithy, anvil, bellows, waterwheel (2 frames), power lines |

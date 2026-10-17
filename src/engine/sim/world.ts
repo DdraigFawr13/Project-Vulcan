@@ -64,6 +64,10 @@ export function createWorld(sim: Sim, seed: string): WorldState {
       climate: '',
       temperature: 0,
       rainfall: 0,
+      floor: 0,
+      aura: new Uint8Array(0),
+      auraSpots: [],
+      ice: new Uint8Array(0),
       levels: [],
     },
   };

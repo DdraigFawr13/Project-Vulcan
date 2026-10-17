@@ -5,6 +5,7 @@
 import type { Command, EngineContent, LevelState } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { chunksAcross, chunksDown, layerOf, setTile } from './tiles.ts';
+import { placesOf } from './aura.ts';
 import { makeLevel } from './underground.ts';
 
 const levelName = (z: number): string => (z === 0 ? 'the surface' : `level ${z}`);
@@ -25,6 +26,13 @@ export function reachLevel(ctx: SystemContext, z: number, cause: number): void {
     chunkVersions: new Array<number>(chunksAcross(map) * chunksDown(map)).fill(1),
   };
   map.levels[z - 1] = level;
+  if (made.spot) {
+    map.auraSpots.push(made.spot);
+    ctx.emit('map.auraDeep', {
+      causes: [reached],
+      data: { level: z, places: placesOf(ctx.content, [made.spot]) },
+    });
+  }
 }
 
 /** The new level in a few words for its ledger line: its main rocks and what lies in them. */

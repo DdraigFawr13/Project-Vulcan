@@ -2,6 +2,7 @@
 // the page. The only place the engine is instantiated (MODULE.md).
 import { content, contentHash } from '../content/index.ts';
 import {
+  auraAt,
   CHUNK,
   chunksAcross,
   chunksDown,
@@ -10,15 +11,18 @@ import {
   createSim,
   createWorld,
   findEvent,
+  isFrozen,
   layerOf,
   renderEvent,
   step,
   submitCommand,
+  tileTemperature,
   toNdjson,
   whyOf,
   type SimEvent,
   type WorldState,
   WATER,
+  weatherWords,
 } from '../engine/index.ts';
 import { createPace, setSpeed, ticksDue } from './pace.ts';
 import type {
@@ -100,9 +104,37 @@ function snapshot(w: WorldState): void {
       clock: clockView(w.tick),
       chunks,
       reached: w.map.levels.map((level) => level !== null),
+      weather: weatherOf(w),
+      aura: w.map.auraSpots.map(({ school, x, y, z, strength }) => ({ school, x, y, z, strength })),
     },
-    chunks.flatMap((chunk) => [chunk.tiles.buffer, chunk.features.buffer, chunk.snow.buffer]),
+    chunks.flatMap((c) => [c.tiles.buffer, c.features.buffer, c.snow.buffer, c.ice.buffer]),
   );
+}
+
+/** Today's weather from the weather system's state. */
+function weatherOf(w: WorldState): { words: string; temperature: number } {
+  const state = w.systems['weather'] ?? {};
+  const temperature = state['temp'] ?? 0;
+  return { words: weatherWords(content, state['kind'] ?? 0, temperature), temperature };
+}
+
+/** The inspector's temperature, ice and aura rows for surface tile `i` (aura on any level). */
+function climateOf(w: WorldState, x: number, y: number, z: number): Partial<TileView> {
+  const { map } = w;
+  const i = y * map.width + x;
+  const { aura, spot } = auraAt(content, map, x, y, z);
+  const site = spot && content.terrain.generator.aura.sites.find((s) => s.site === spot.site);
+  const school = spot && content.schools.find((s) => s.id === spot.school);
+  return {
+    ...(z === 0 && {
+      temperature: tileTemperature(content, map, w.systems['weather']?.['temp'] ?? 0, i),
+    }),
+    ...(z === 0 &&
+      WATER[map.water[i]!] === 'lake' && { ice: isFrozen(map, i) ? 'frozen over' : 'open water' }),
+    ...((aura > 0 || spot) && {
+      aura: spot ? `${aura}, ${school?.name} (a spot: ${site?.words})` : `${aura} (faint)`,
+    }),
+  };
 }
 
 const itemName = (id: string): string => content.items.find((item) => item.id === id)?.name ?? id;
@@ -137,6 +169,7 @@ function tileView(w: WorldState, x: number, y: number, z: number): TileView | un
         : `level ${z + 1}, not reached`,
     }),
     ...waterOf(map, layer.tiles[i]!, z === 0 ? map.water[i]! : 0),
+    ...climateOf(w, x, y, z),
     ...(feature && { feature: `${feature.name} (${feature.amount} ${itemName(feature.yields)})` }),
     chunkX,
     chunkY,

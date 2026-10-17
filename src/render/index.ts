@@ -1,7 +1,7 @@
 // Public surface of the render layer: boots Phaser with the valley scene and hands the page a
 // small handle to feed it snapshots and drive the camera.
 import Phaser from 'phaser';
-import type { ChunkView } from '../worker/index.ts';
+import type { AuraView, ChunkView } from '../worker/index.ts';
 import { ValleyScene, type Hover } from './scene.ts';
 
 export type { Hover } from './scene.ts';
@@ -10,6 +10,8 @@ export interface Renderer {
   setMapSize(width: number, height: number): void;
   /** Draws changed chunks; ones that arrive before the scene is ready are held until it is. */
   applyChunks(chunks: readonly ChunkView[]): void;
+  /** Draws the aura spots' glow (the snapshot's `aura`); a no-op while they are unchanged. */
+  setAura(spots: readonly AuraView[]): void;
   zoomStep(direction: 1 | -1): void;
   /** Shows level `z`: 0 the surface, 1 to 4 below. */
   setLevel(z: number): void;
@@ -45,6 +47,7 @@ export function startRenderer(
   return {
     setMapSize: (width, height) => scene.setMapSize(width, height),
     applyChunks: (chunks) => scene.applyChunks(chunks),
+    setAura: (spots) => scene.setAura(spots),
     zoomStep: (direction) => scene.zoomStep(direction),
     setLevel: (z) => scene.setLevel(z),
     mark: (tile) => scene.mark(tile),

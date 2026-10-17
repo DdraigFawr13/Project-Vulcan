@@ -125,9 +125,10 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       worldTick = message.tick;
       reached = message.reached;
       renderer.applyChunks(message.chunks);
+      renderer.setAura(message.aura);
       hud.showLevel(level, depth, level === 0 || reached[level - 1] === true);
       hud.fps = Math.round(renderer.fps());
-      hud.showClock(message.clock, message.tick, message.speed, message.at);
+      hud.showClock(message.clock, message.tick, message.speed, message.at, message.weather);
       saves.seen(message.tick);
       if (covering && !saves.loading) {
         hud.hideScreen();

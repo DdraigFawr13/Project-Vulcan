@@ -1,6 +1,7 @@
 // Public surface of the worker layer: the message protocol and a way to start the worker.
 export { TICKS_PER_SECOND } from './protocol.ts';
 export type {
+  AuraView,
   ChunkView,
   ClockView,
   FromWorker,
@@ -8,6 +9,7 @@ export type {
   Speed,
   TileView,
   ToWorker,
+  WeatherView,
 } from './protocol.ts';
 export { SAVE_VERSION } from './save.ts';
 export type { SaveFile } from './save.ts';

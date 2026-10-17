@@ -7,7 +7,7 @@ Goal: a valley worth settling. Entry: Phase 0 done and its playtest signed off b
 - [x] P1.1 Surface terrain (merged 2026-10-17)
 - [x] P1.2 Water (merged 2026-10-17)
 - [x] P1.3 Underground (merged 2026-10-17)
-- [ ] P1.4 Aura, seasons and weather
+- [x] P1.4 Aura, seasons and weather (merged 2026-10-17)
 - [ ] P1.5 Lighter world map and site picker
 - [ ] Phase review
 

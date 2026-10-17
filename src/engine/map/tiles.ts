@@ -16,8 +16,8 @@ export function layerOf(map: MapState, z: number): MapState | LevelState | undef
   return map.levels[z - 1] ?? undefined;
 }
 
-/** The ground, features and snow of chunk (cx, cy) on level `z`, row by row; edge chunks are
- * narrower or shorter. Below the surface there is no snow. */
+/** The ground, features, snow and ice of chunk (cx, cy) on level `z`, row by row; edge chunks
+ * are narrower or shorter. Below the surface there is no snow or ice. */
 export function chunkTiles(
   map: MapState,
   cx: number,
@@ -32,6 +32,7 @@ export function chunkTiles(
   tiles: Uint8Array;
   features: Uint8Array;
   snow: Uint8Array;
+  ice: Uint8Array;
 } {
   const layer = layerOf(map, z);
   if (!layer) throw new Error(`Level ${z} has not been reached.`);
@@ -42,14 +43,16 @@ export function chunkTiles(
   const tiles = new Uint8Array(w * h);
   const features = new Uint8Array(w * h);
   const snow = new Uint8Array(w * h);
+  const ice = new Uint8Array(w * h);
   for (let row = 0; row < h; row += 1)
     for (let col = 0; col < w; col += 1) {
       const from = (y + row) * map.width + x + col;
       tiles[row * w + col] = layer.tiles[from]!;
       features[row * w + col] = layer.features[from]!;
       if (z === 0) snow[row * w + col] = map.snow[from]!;
+      if (z === 0) ice[row * w + col] = map.ice[from]! >> 7;
     }
-  return { x, y, z, w, h, tiles, features, snow };
+  return { x, y, z, w, h, tiles, features, snow, ice };
 }
 
 /**
@@ -81,4 +84,12 @@ export function setTile(
   layer.tileCauses[i] = cause;
   if (z > 0 && !def.stone) layer.features[i] = 0;
   layer.chunkVersions[Math.floor(y / CHUNK) * chunksAcross(map) + Math.floor(x / CHUNK)]! += 1;
+}
+
+/** Raises the version of the chunk holding (x, y) on level `z`, so the worker resends it: for
+ * changes that are not a new kind, such as a lake tile freezing. */
+export function raiseChunk(map: MapState, x: number, y: number, z = 0): void {
+  const layer = layerOf(map, z);
+  if (layer)
+    layer.chunkVersions[Math.floor(y / CHUNK) * chunksAcross(map) + Math.floor(x / CHUNK)]! += 1;
 }

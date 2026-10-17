@@ -1,6 +1,7 @@
 // The surface map: laid out once when a world begins by the terrain generator, from the reserved
 // `worldgen` stream; afterwards only `setTile` changes a tile. The levels below wait in levels.ts.
 import type { System, SystemContext } from '../sim/index.ts';
+import { layAura, placesOf } from './aura.ts';
 import { findStart, placeFeatures } from './features.ts';
 import { digCommands } from './levels.ts';
 import { chunksAcross, chunksDown } from './tiles.ts';
@@ -15,6 +16,8 @@ export const mapSystem: System = {
   emits: [
     'map.formed',
     'map.watered',
+    'map.aura',
+    'map.auraDeep',
     'map.levelReached',
     'map.stairsCut',
     'map.shaftSunk',
@@ -60,6 +63,8 @@ export const mapSystem: System = {
     map.climate = ground.climate;
     map.temperature = ground.temperature;
     map.rainfall = ground.rainfall;
+    map.floor = Math.round(ground.floor);
+    map.ice = new Uint8Array(width * height);
     map.chunkVersions = new Array<number>(chunksAcross(map) * chunksDown(map)).fill(1);
     // The levels below are made only when first reached (levels.ts).
     map.levels = new Array<null>(ctx.content.terrain.generator.underground.depth).fill(null);
@@ -83,6 +88,16 @@ export const mapSystem: System = {
     });
     // Water cites the gathering of the waters; everything else, shores too, the valley's forming.
     map.tileCauses = water.body.map((b) => (b ? watered : formed));
+    // Aura last, so its draws come after everything above and change none of it.
+    const aura = layAura(rng, ctx.content, map);
+    map.aura = aura.aura;
+    map.auraSpots = aura.spots;
+    // Like the valley's forming, the spots are part of the world as it began: no "why?" to offer.
+    if (aura.spots.length)
+      ctx.emit('map.aura', {
+        causes: [ctx.world.begunEvent],
+        data: { places: placesOf(ctx.content, aura.spots) },
+      });
   },
 };
 
