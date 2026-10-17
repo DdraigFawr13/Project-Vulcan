@@ -182,4 +182,10 @@ export const WORLD_SCHEMAS = {
   // Vulcan's own, not forked: the ledger text of every event type the engine may emit.
   // Slots are {actorN}, {subjectN} and data keys; the engine refuses an event that leaves one empty.
   events: list(obj({ id, importance: num({ min: 1, max: 3 }), template: text })),
+  // Vulcan's own: the ground kinds a map tile can be, and the surface map's size and starting
+  // ground. `art` names a frame family in the art sheets; `variants` frames end in .1, .2, ...
+  terrain: obj({
+    surface: obj({ width: count, height: count, ground: ref('terrain') }),
+    kinds: list(obj({ id, name: text, art: str(), variants: num({ min: 1 }) })),
+  }),
 };

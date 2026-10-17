@@ -1,7 +1,7 @@
 // The world record and the simulation it runs under: content, templates and the system list.
 import { START_TICK, type EngineContent, type WorldState } from '../core/index.ts';
 import { emit, templatesOf, type Templates } from '../log/index.ts';
-import type { System } from './system.ts';
+import { contextFor, type System } from './system.ts';
 
 /** Everything a world runs under that is not saved state: content and code. */
 export interface Sim {
@@ -45,8 +45,10 @@ export function createWorld(sim: Sim, seed: string): WorldState {
     log: [],
     begunEvent: 0,
     systems: {},
+    map: { width: 0, height: 0, tiles: [], chunkVersions: [] },
   };
   for (const system of sim.systems) world.systems[system.id] = { ...system.initialState };
   world.begunEvent = emit(world, sim.templates, 'world.begun', { data: { seed } });
+  for (const system of sim.systems) system.init?.(contextFor(world, sim, system));
   return world;
 }

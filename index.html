@@ -6,17 +6,149 @@
     <title>Ledger</title>
     <link rel="icon" href="data:," />
     <style>
+      :root {
+        --ink: #1c1a17;
+        --hud: rgba(28, 26, 23, 0.88);
+        --fg: #e9e2d4;
+        --muted: #a39d8f;
+        --on: #d79b62;
+        --line: #3d3a33;
+      }
       html,
       body,
       #game {
         margin: 0;
         height: 100%;
-        background: #1c1a17;
+        background: var(--ink);
+        overflow: hidden;
+        font-family: system-ui, sans-serif;
+      }
+      #hud .hud {
+        position: fixed;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--hud);
+        color: var(--fg);
+        font-size: 12px;
+      }
+      #hud button {
+        font:
+          600 12px/1 ui-monospace,
+          monospace;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        min-width: 32px;
+        min-height: 28px;
+        cursor: pointer;
+      }
+      #hud button:focus-visible {
+        outline: 2px solid var(--on);
+      }
+      #hud button[aria-pressed='true'] {
+        background: var(--on);
+        border-color: var(--on);
+        color: var(--ink);
+      }
+      .bar {
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 6px max(8px, env(safe-area-inset-right)) 6px max(8px, env(safe-area-inset-left));
+        justify-content: space-between;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--line);
+      }
+      .clock {
+        font:
+          600 12px/1.2 ui-monospace,
+          monospace;
+      }
+      .clock small {
+        display: block;
+        font:
+          400 11px/1.2 system-ui,
+          sans-serif;
+        color: var(--muted);
+      }
+      .status,
+      .speeds {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .pill {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 4px 6px;
+        border-radius: 3px;
+        background: var(--on);
+        color: var(--ink);
+        margin-right: 4px;
+      }
+      .readout {
+        left: 8px;
+        bottom: max(8px, env(safe-area-inset-bottom));
+        padding: 6px 8px;
+        border-radius: 4px;
+        font-family: ui-monospace, monospace;
+      }
+      .debug {
+        right: 8px;
+        bottom: max(8px, env(safe-area-inset-bottom));
+        padding: 4px 6px;
+        border-radius: 4px;
+        font-family: ui-monospace, monospace;
+        color: var(--muted) !important;
+      }
+      .zoom {
+        right: 8px;
+        bottom: calc(max(8px, env(safe-area-inset-bottom)) + 30px);
+        flex-direction: column;
+        gap: 0 !important;
+        border-radius: 4px;
+      }
+      .zoom button {
+        border: 0 !important;
+        font-size: 16px !important;
+        color: var(--fg) !important;
+      }
+      .screen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 16px;
+        text-align: center;
+        background: var(--ink);
+        color: var(--muted);
+      }
+      .screen b {
+        font:
+          700 20px/1.2 Georgia,
+          serif;
+        color: var(--fg);
+      }
+      .screen button {
+        color: var(--on) !important;
+        border-color: var(--on) !important;
+        padding: 6px 12px;
+      }
+      [hidden] {
+        display: none !important;
       }
     </style>
   </head>
   <body>
     <main id="game" data-testid="game" aria-label="Map"></main>
+    <div id="hud"></div>
     <script type="module" src="/src/ui/main.ts"></script>
   </body>
 </html>

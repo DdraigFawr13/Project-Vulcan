@@ -1,0 +1,13 @@
+{
+"surface": {"width":150,"height":150,"ground":"grass"},
+"kinds": [
+{"id":"grass","name":"grass","art":"tile.grass","variants":3},
+{"id":"dirt","name":"dirt","art":"tile.dirt","variants":1},
+{"id":"sand","name":"sand","art":"tile.sand","variants":1},
+{"id":"gravel","name":"gravel","art":"tile.gravel","variants":1},
+{"id":"stone-floor","name":"stone floor","art":"tile.stone-floor","variants":1},
+{"id":"rock-wall","name":"rock wall","art":"tile.rock-wall","variants":1},
+{"id":"water-shallow","name":"shallow water","art":"tile.water-shallow","variants":1},
+{"id":"water-deep","name":"deep water","art":"tile.water-deep","variants":1}
+]
+}

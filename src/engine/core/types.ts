@@ -60,6 +60,24 @@ export interface WorldState {
   begunEvent: number;
   /** State owned by systems, by system id. Plain data only. */
   systems: Record<string, Record<string, number>>;
+  /** The surface map, owned by the map system. */
+  map: MapState;
+}
+
+/** The surface map: one terrain index per tile, row by row (docs/ARCHITECTURE.md "Map"). */
+export interface MapState {
+  width: number;
+  height: number;
+  /** Index into `EngineContent.terrain.kinds`, at `y * width + x`. */
+  tiles: number[];
+  /** One counter per 16 by 16 chunk, row by row; it goes up whenever a tile in the chunk changes. */
+  chunkVersions: number[];
+}
+
+/** Ground kinds and the surface map's size (src/content/data/terrain.json). */
+export interface TerrainDef {
+  surface: { width: number; height: number; ground: string };
+  kinds: readonly { id: string; name: string; art: string; variants: number }[];
 }
 
 /** The forked calendar (src/content/data/calendar.json). */
@@ -74,4 +92,5 @@ export interface CalendarDef {
 export interface EngineContent {
   calendar: CalendarDef;
   events: readonly { id: string; template: string }[];
+  terrain: TerrainDef;
 }

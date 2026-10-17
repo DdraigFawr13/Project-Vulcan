@@ -16,7 +16,7 @@ Read only the section your phase file or reading list names.
 
 ## Worker protocol
 
-Main to worker: `init {seed, params, contentHash}`, `load {save}`, `command {tick, cmd}`, `setSpeed`, `requestSnapshot {regions}`, `export {kind}`. Commands are only indirect levers: designate, build, prioritise, zone, forbid, schedule, law, standing order (guard post, alarm, militia roster). Worker to main: `ready`, `snapshot {tick, dirtyChunks, entities, alerts}` at most once per frame, `events {batch}` in log order, `saved`, `error`. Commands carry the tick they apply on, so seed plus command stream replays a game exactly.
+Main to worker: `init {seed, params, contentHash}`, `load {save}`, `command {tick, cmd}`, `setSpeed`, `requestSnapshot {regions}`, `export {kind}`. Commands are only indirect levers: designate, build, prioritise, zone, forbid, schedule, law, standing order (guard post, alarm, militia roster). Worker to main: `ready`, `snapshot {tick, dirtyChunks, entities, alerts}` at most once per frame, `events {batch}` in log order, `saved`, `error`. Commands carry the tick they apply on, so seed plus command stream replays a game exactly. Speed and pause are worker settings, never commands. Snapshots are pulled: the page sends `requestSnapshot` once per frame with at most one in flight, and changed chunks travel as transferred typed arrays. As built from P0.4: `src/worker/MODULE.md`.
 
 ## Tick
 

@@ -55,6 +55,7 @@ export function validateContent(files: Files): string[] {
     (files[file] as Record<string, unknown> | undefined)?.[key];
   index('biomes', 'biomes.biomes', part('biomes', 'biomes'));
   index('faiths', 'faiths.defs', part('faiths', 'defs'));
+  index('terrain', 'terrain.kinds', part('terrain', 'kinds'));
   // Lists nothing refers to yet still need unique ids.
   for (const file of ['resources', 'weather', 'awakenings', 'ailments', 'diseases', 'events'])
     unique(file, files[file]);
