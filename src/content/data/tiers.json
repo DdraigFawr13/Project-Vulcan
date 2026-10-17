@@ -1,0 +1,8 @@
+[
+  {"id":"none","minPower":0,"maxPower":0,"soldiers":[1,1],"caps":{"maxDamage":0,"maxAreaRadius":0,"maxUsesPerDay":0}},
+  {"id":"faint","minPower":1,"maxPower":2,"soldiers":[1,1],"caps":{"maxDamage":0.5,"maxAreaRadius":0,"maxUsesPerDay":3}},
+  {"id":"gifted","minPower":3,"maxPower":6,"soldiers":[1,2],"caps":{"maxDamage":1,"maxAreaRadius":0,"maxUsesPerDay":5}},
+  {"id":"strong","minPower":7,"maxPower":12,"soldiers":[5,15],"caps":{"maxDamage":3,"maxAreaRadius":3,"maxUsesPerDay":6}},
+  {"id":"exceptional","minPower":13,"maxPower":16,"soldiers":[30,80],"caps":{"maxDamage":6,"maxAreaRadius":10,"maxUsesPerDay":12}},
+  {"id":"legendary","minPower":17,"maxPower":20,"soldiers":[500,1000],"caps":{"maxDamage":10,"maxAreaRadius":40,"maxUsesPerDay":3}}
+]

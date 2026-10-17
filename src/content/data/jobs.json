@@ -1,0 +1,15 @@
+[
+  {"id":"farm","name":"Farming","worker":"farmer","skill":"farming","requirements":{},"workplace":"field","action":"farm","serves":"food","tools":true,"perWorkplace":4,"likedBy":["steady"]},
+  {"id":"forage","name":"Foraging","worker":"forager","skill":"foraging","requirements":{},"workplace":"wild","outputs":{"berries":0.7},"pool":"berries","serves":"food","likedBy":["restless"]},
+  {"id":"fish","name":"Fishing","worker":"fisher","skill":"fishing","requirements":{},"workplace":"water","outputs":{"fish":0.95},"pool":"fish","serves":"food","likedBy":["solitary"]},
+  {"id":"hunt","risk":0.002,"name":"Hunting","worker":"hunter","skill":"hunting","requirements":{"agility":8,"perception":8},"workplace":"wild","outputs":{"game":0.85},"pool":"game","serves":"food","heavy":true,"likedBy":["restless"]},
+  {"id":"fell","risk":0.002,"name":"Felling","worker":"woodcutter","skill":"woodcutting","requirements":{"strength":8},"workplace":"trees","outputs":{"logs":1.2},"pool":"wood","serves":"materials","heavy":true,"tools":true},
+  {"id":"quarry","risk":0.002,"name":"Quarrying","worker":"quarrier","skill":"stoneworking","requirements":{"strength":9,"endurance":8},"workplace":"stone","outputs":{"stone":2},"serves":"materials","heavy":true,"tools":true},
+  {"id":"mine","risk":0.003,"name":"Mining","worker":"miner","skill":"mining","requirements":{"strength":10,"endurance":9},"workplace":"ore","outputs":{"ore":1},"serves":"materials","heavy":true,"tools":true},
+  {"id":"cook","name":"Cooking","worker":"cook","skill":"cooking","requirements":{},"workplace":"kitchen","rawFood":3,"outputs":{"meal":4},"serves":"food"},
+  {"id":"build","risk":0.001,"name":"Building","worker":"builder","skill":"building","requirements":{"strength":8},"workplace":"construction","action":"build","serves":"shelter","heavy":true},
+  {"id":"craft-tools","name":"Toolmaking","worker":"toolmaker","skill":"crafting","requirements":{"agility":9},"workplace":"forge","inputs":{"ore":1,"logs":1},"outputs":{"tools":1},"serves":"tools"},
+  {"id":"craft-wares","name":"Crafting","worker":"craftsman","skill":"crafting","requirements":{"agility":9},"workplace":"workshop","inputs":{"logs":0.25},"reserve":{"logs":300},"outputs":{"wares":1},"serves":"goods"},
+  {"id":"heal","name":"Herbalism","worker":"herbalist","skill":"herbalism","requirements":{"intellect":10},"workplace":"herbs","outputs":{"herbs":1},"serves":"health"},
+  {"id":"haul","risk":0.0005,"name":"Hauling","worker":"hauler","requirements":{},"workplace":"construction","action":"haul","serves":"shelter","heavy":true}
+]

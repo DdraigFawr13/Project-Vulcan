@@ -1,0 +1,4 @@
+[
+  {"id":"long-study","source":"book","afterDays":168,"monthlyChance":0.08,"maxFromTier":"faint","how":"after long study of {item}"},
+  {"id":"bound-item","source":"item","afterDays":336,"monthlyChance":0.05,"maxFromTier":"gifted","how":"through long keeping of {item}"}
+]

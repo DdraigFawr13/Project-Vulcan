@@ -1,0 +1,6 @@
+[
+  {"id":"mild","name":"Mild","warmth":0,"seasonWeights":{"spring":5,"summer":4,"autumn":5,"winter":1}},
+  {"id":"wet","name":"Wet","warmth":-5,"seasonWeights":{"spring":3,"summer":1,"autumn":3,"winter":2}},
+  {"id":"dry","name":"Dry","warmth":5,"seasonWeights":{"spring":1,"summer":3,"autumn":1,"winter":0}},
+  {"id":"harsh","name":"Harsh","warmth":-30,"seasonWeights":{"spring":0,"summer":0,"autumn":1,"winter":4}}
+]

@@ -1,0 +1,21 @@
+{
+  "defs": [{"id":"wells","gods":["Nodens"],"priestTitle":"Wellkeeper","sacred":["kin","learning"],"abhors":"war","schismNames":["The Deep Wells","The Seven Springs","The Still Pool"]},{"id":"hall","gods":["Wodar","Thrunn","Freyna","Hald"],"priestTitle":"Gothi","sacred":["honour","war"],"abhors":"order","schismNames":["The Ash Hall","The Mead Benches","The Oar Oath"]},{"id":"eternal-sky","gods":["Tengre"],"priestTitle":"Great Kam","sacred":["freedom","war"],"abhors":"order","schismNames":["The Blue Wolf","The Silent Steppe","The Grey Banner"]},{"id":"river-mothers","gods":["Isheret","Nuum","Sabbet"],"priestTitle":"Tidewarden","sacred":["order","learning"],"abhors":"freedom","schismNames":["The Silt Mothers","The Flood Rite","The Dry Canal"]},{"id":"the-grove","gods":["Cernun"],"priestTitle":"Archdruid","sacred":["learning","kin"],"abhors":"wealth","schismNames":["The Oak Circle","The Yew Covenant","The Hollow Grove"]},{"id":"ancestor-stones","gods":["Gundar","Modrek","Brannlin"],"priestTitle":"Stone-Reader","sacred":["kin","order"],"abhors":"freedom","schismNames":["The Hollow Stones","The Deep Forge","The Rune Heirs"]},{"id":"the-scales","gods":["Mercato","Aurelis"],"priestTitle":"Weighmaster","sacred":["wealth","freedom"],"abhors":"war","schismNames":["The Open Ledger","The Gilded Scale","The Harbour Pact"]},{"id":"mother-hills","gods":["Brigha"],"priestTitle":"Hill-Mother","sacred":["kin","honour"],"abhors":"wealth","schismNames":["The Cairn Daughters","The Red Heather","The High Pastures"]},{"id":"the-wild-hunt","gods":["Gwynn"],"priestTitle":"Huntmaster","sacred":["freedom","learning"],"abhors":"order","schismNames":["The Pale Riders","The Hollow Horn","The Fen Lights"]},{"id":"drowned-kings","gods":["Balor","Tethra","Elatha"],"priestTitle":"Tidecaller","sacred":["war","freedom"],"abhors":"learning","schismNames":["The Sunken Throne","The Black Tide","The Salt Crown"]},{"id":"blood-moon","gods":["Urgash","Moka"],"priestTitle":"Blood-Shaman","sacred":["honour","war"],"abhors":"wealth","schismNames":["The Red Tusk","The Waning Moon","The Bone Drum"]},{"id":"the-sleepers","gods":["Mawr"],"priestTitle":"Dreamkeeper","sacred":["kin","freedom"],"abhors":"order","schismNames":["The Waking","The Moor Stones","The Last Dream"]},{"id":"the-hearth","gods":["Embra","Old Tallow"],"priestTitle":"Hearthwarden","sacred":["kin","freedom"],"abhors":"war","schismNames":["The Cold Hearth","The Open Door","The Long Table"]},{"id":"the-moon-hag","gods":["Hagwen"],"priestTitle":"Moon-Crone","sacred":["wealth","war"],"abhors":"honour","schismNames":["The Waning Crone","The Fen Candle","The Black Sack"]}],
+  "minZeal": 5,
+  "holyZeal": 5,
+  "heresyChance": 0.2,
+  "heresyGrievance": 1,
+  "desecrationGrievance": 3,
+  "holyConvert": 0.5,
+  "holyWeary": 1.5,
+  "convertChance": 0.15,
+  "rulerConvertShare": 0.6,
+  "rulerConvertChance": 0.3,
+  "minorityBreakaway": 2,
+  "sameFaithWar": 0.7,
+  "sameFaithPact": 2,
+  "prophetChance": 0.04,
+  "maxProphets": 3,
+  "fame": {"priest":30,"prophet":45},
+  "prophetActs": {"preach":1,"schism":1,"mission":1},
+  "preachGrievance": 4
+}
