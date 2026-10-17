@@ -85,7 +85,14 @@ function snapshot(w: WorldState): void {
       chunks.push(chunkTiles(w.map, cx, cy));
     }
   post(
-    { type: 'snapshot', tick: w.tick, speed: pace.speed, clock: clockView(w.tick), chunks },
+    {
+      type: 'snapshot',
+      tick: w.tick,
+      at: performance.now(),
+      speed: pace.speed,
+      clock: clockView(w.tick),
+      chunks,
+    },
     chunks.flatMap((chunk) => [chunk.tiles.buffer, chunk.features.buffer, chunk.snow.buffer]),
   );
 }

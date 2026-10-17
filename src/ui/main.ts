@@ -99,7 +99,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       waiting = false;
       renderer.applyChunks(message.chunks);
       hud.fps = Math.round(renderer.fps());
-      hud.showClock(message.clock, message.tick, message.speed);
+      hud.showClock(message.clock, message.tick, message.speed, message.at);
       saves.seen(message.tick);
       if (covering && !saves.loading) {
         hud.hideScreen();

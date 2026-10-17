@@ -5,6 +5,14 @@ import { expect, test, type Page } from '@playwright/test';
 // survives a page reload and carries on; the ledger exports.
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
+/** The last snapshot's tick and the worker's clock when it was sent (ms). */
+const reading = async (page: Page) => {
+  const debug = page.getByTestId('debug');
+  return {
+    tick: Number(await debug.getAttribute('data-tick')),
+    at: Number(await debug.getAttribute('data-at')),
+  };
+};
 
 test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports', async ({
   page,
@@ -24,15 +32,16 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.waitForTimeout(500);
   expect(await tick(page)).toBe(start);
 
-  // 3x runs 100 game minutes a second; allow for timer jitter in a busy CI runner. Count from
-  // after the click returns: the click itself waits on animation frames, so its length follows
-  // the frame rate, and 3x may already be running for part of it.
+  // 3x runs 100 game minutes a second; allow for timer jitter in a busy CI runner. Time it by the
+  // worker's own clock on each snapshot: the page can show a snapshot late when its thread is busy,
+  // and a late first reading made a correct rate look 45% fast in CI.
   await page.getByTestId('speed-3').click();
-  const from = await tick(page);
+  const from = await reading(page);
   await page.waitForTimeout(1000);
-  const ran = (await tick(page)) - from;
-  expect(ran).toBeGreaterThan(50);
-  expect(ran).toBeLessThan(130);
+  const to = await reading(page);
+  const ran = ((to.tick - from.tick) * 1000) / (to.at - from.at);
+  expect(ran, `${to.tick - from.tick} ticks in ${to.at - from.at} ms`).toBeGreaterThan(50);
+  expect(ran, `${to.tick - from.tick} ticks in ${to.at - from.at} ms`).toBeLessThan(130);
 
   // Pause stops the tick: one snapshot may still be on its way, then nothing moves.
   await page.keyboard.press('Space');

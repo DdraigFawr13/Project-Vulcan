@@ -95,6 +95,8 @@ export type FromWorker =
   | {
       type: 'snapshot';
       tick: number;
+      /** The worker's clock when it sent this (ms), so a rate can be timed without the page's lag. */
+      at: number;
       speed: Speed;
       clock: ClockView;
       /** Chunks changed since the last snapshot; the first one after `ready` carries them all. */
