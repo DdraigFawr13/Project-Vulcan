@@ -24,10 +24,13 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.waitForTimeout(500);
   expect(await tick(page)).toBe(start);
 
-  // 3x runs 100 game minutes a second; allow for timer jitter in a busy CI runner.
+  // 3x runs 100 game minutes a second; allow for timer jitter in a busy CI runner. Count from
+  // after the click returns: the click itself waits on animation frames, so its length follows
+  // the frame rate, and 3x may already be running for part of it.
   await page.getByTestId('speed-3').click();
+  const from = await tick(page);
   await page.waitForTimeout(1000);
-  const ran = (await tick(page)) - start;
+  const ran = (await tick(page)) - from;
   expect(ran).toBeGreaterThan(50);
   expect(ran).toBeLessThan(130);
 
