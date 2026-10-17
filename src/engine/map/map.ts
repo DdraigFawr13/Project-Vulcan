@@ -1,8 +1,10 @@
-// The surface map: laid out once when a world begins, flat ground of the content's starting kind
-// until Phase 1's terrain generator (which will draw from the reserved `worldgen` stream).
+// The surface map: laid out once when a world begins by the terrain generator, from the reserved
+// `worldgen` stream; afterwards only `setTile` changes a tile.
 import type { MapState } from '../core/index.ts';
 import { findEvent } from '../log/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
+import { findStart, placeFeatures } from './features.ts';
+import { layGround } from './terrain.ts';
 
 /** Tiles per chunk side. The worker sends the map to the screen a chunk at a time. */
 export const CHUNK = 16;
@@ -10,21 +12,35 @@ export const CHUNK = 16;
 export const chunksAcross = (map: MapState): number => Math.ceil(map.width / CHUNK);
 export const chunksDown = (map: MapState): number => Math.ceil(map.height / CHUNK);
 
-/** The tiles of chunk (cx, cy), row by row; edge chunks are narrower or shorter. */
+/** The ground, features and snow of chunk (cx, cy), row by row; edge chunks are narrower or shorter. */
 export function chunkTiles(
   map: MapState,
   cx: number,
   cy: number,
-): { x: number; y: number; w: number; h: number; tiles: Uint8Array } {
+): {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  tiles: Uint8Array;
+  features: Uint8Array;
+  snow: Uint8Array;
+} {
   const x = cx * CHUNK;
   const y = cy * CHUNK;
   const w = Math.min(CHUNK, map.width - x);
   const h = Math.min(CHUNK, map.height - y);
   const tiles = new Uint8Array(w * h);
+  const features = new Uint8Array(w * h);
+  const snow = new Uint8Array(w * h);
   for (let row = 0; row < h; row += 1)
-    for (let col = 0; col < w; col += 1)
-      tiles[row * w + col] = map.tiles[(y + row) * map.width + x + col]!;
-  return { x, y, w, h, tiles };
+    for (let col = 0; col < w; col += 1) {
+      const from = (y + row) * map.width + x + col;
+      tiles[row * w + col] = map.tiles[from]!;
+      features[row * w + col] = map.features[from]!;
+      snow[row * w + col] = map.snow[from]!;
+    }
+  return { x, y, w, h, tiles, features, snow };
 }
 
 /**
@@ -54,21 +70,53 @@ export function setTile(
 /** Lays out the map in `init` (generation belongs there, not in a cadence); it never runs on load. */
 export const mapSystem: System = {
   id: 'map',
-  every: 'day', // a cadence is required; the map has no daily work until Phase 1
+  every: 'day', // a cadence is required; the surface has no daily work yet
+  stream: 'worldgen',
   emits: ['map.formed'],
   init(ctx) {
-    const { surface, kinds } = ctx.content.terrain;
-    const ground = kinds.findIndex((k) => k.id === surface.ground);
-    if (ground < 0) throw new Error(`Terrain "${surface.ground}" is not a terrain kind.`);
+    const { width, height } = ctx.content.terrain.surface;
+    const rng = ctx.rng();
+    const ground = layGround(rng, ctx.content, width, height);
+    const features = placeFeatures(rng, ctx.content, ground, width, height);
+    const start = findStart(ctx.content, ground.tiles, features, width, height);
     const map = ctx.world.map;
-    map.width = surface.width;
-    map.height = surface.height;
-    map.tiles = new Array<number>(surface.width * surface.height).fill(ground);
+    map.width = width;
+    map.height = height;
+    map.tiles = ground.tiles;
+    map.elevation = Int16Array.from(ground.elevation);
+    map.biomes = Uint8Array.from(ground.biomes);
+    map.fertility = Uint8Array.from(ground.fertility);
+    map.features = Uint8Array.from(features);
+    map.snow = Uint8Array.from(ground.snow);
+    map.startX = start.x;
+    map.startY = start.y;
+    map.climate = ground.climate;
+    map.temperature = ground.temperature;
+    map.rainfall = ground.rainfall;
     map.chunkVersions = new Array<number>(chunksAcross(map) * chunksDown(map)).fill(1);
     const formed = ctx.emit('map.formed', {
       causes: [ctx.world.begunEvent],
-      data: { width: map.width, height: map.height, ground: kinds[ground]!.name },
+      data: {
+        width,
+        height,
+        climate: ctx.content.terrain.generator.climates.find((c) => c.id === ground.climate)!.name,
+        biome: mainBiome(ctx, ground.biomes),
+        temperature: ground.temperature,
+        rainfall: ground.rainfall,
+        startX: start.x,
+        startY: start.y,
+        startMet: start.met ? 1 : 0,
+      },
     });
-    map.tileCauses = new Array<number>(surface.width * surface.height).fill(formed);
+    map.tileCauses = new Array<number>(width * height).fill(formed);
   },
 };
+
+/** The name of the biome covering the most tiles (ties to the earlier biome). */
+function mainBiome(ctx: SystemContext, biomes: readonly number[]): string {
+  const counts = new Array<number>(ctx.content.biomes.biomes.length).fill(0);
+  for (const b of biomes) counts[b]! += 1;
+  let best = 0;
+  for (let b = 1; b < counts.length; b += 1) if (counts[b]! > counts[best]!) best = b;
+  return ctx.content.biomes.biomes[best]!.name.toLowerCase();
+}

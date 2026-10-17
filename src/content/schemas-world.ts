@@ -186,6 +186,94 @@ export const WORLD_SCHEMAS = {
   // ground. `art` names a frame family in the art sheets; `variants` frames end in .1, .2, ...
   terrain: obj({
     surface: obj({ width: count, height: count, ground: ref('terrain') }),
-    kinds: list(obj({ id, name: text, art: str(), variants: num({ min: 1 }) })),
+    // The surface generator's dials (src/engine/map/terrain.ts): ranges are [min, max] drawn once
+    // per seed; shares are of the map's tiles; elevations are metres, temperatures degrees C.
+    generator: obj({
+      climates: list(
+        obj({ id, name: text, weight: count, temperature: range(), rainfall: range() }),
+      ),
+      elevation: obj({ floor: range(), relief: range(), lapse: count, axisNoise: share }),
+      noise: obj({ cell: num({ min: 2 }), octaves: num({ min: 1, max: 8 }) }),
+      moisture: obj({ cell: num({ min: 2 }), low: count, span: count }),
+      ridges: obj({ cell: num({ min: 2 }), weight: count }),
+      rocks: list(obj({ kind: ref('terrain'), weight: count })),
+      layout: str(),
+      layouts: map(
+        obj({
+          count: range(),
+          radius: range(),
+          height: range(),
+          rimShare: share,
+          rim: range(),
+          inside: share,
+          align: share,
+          rough: range(),
+          stretch: range(),
+          warp: count,
+          warpCell: num({ min: 2 }),
+        }),
+      ),
+      rock: obj({
+        screeKind: ref('terrain'),
+        snowArt: str(),
+        snowline: num(),
+        snowTop: share,
+        line: count,
+        wall: range(),
+        scree: share,
+        outcrops: share,
+        outcropCell: num({ min: 2 }),
+      }),
+      valleyFloor: share,
+      alpine: ref('biomes'),
+      swamp: ref('biomes'),
+      swampLowland: share,
+      lowlandRain: count,
+      groves: obj({
+        cell: num({ min: 2 }),
+        low: count,
+        high: count,
+        oldGrowth: obj({ cell: num({ min: 2 }), share, factor: count }),
+        glades: obj({ share, factor: count }),
+      }),
+      start: obj({
+        woodItem: ref('items'),
+        stoneItem: ref('items'),
+        radius: count,
+        buildable: num({ min: 1 }),
+        wood: num({ min: 1 }),
+        stone: num({ min: 1 }),
+      }),
+    }),
+    // The ground kind each biome's land shows.
+    floors: map(ref('terrain'), 'biomes'),
+    kinds: list(
+      obj({
+        id,
+        name: text,
+        art: str(),
+        variants: num({ min: 1 }),
+        buildable: opt(bool()),
+        stone: opt(bool()),
+      }),
+    ),
   }),
+  // Vulcan's own: what grows or lies on a tile (src/engine/map/features.ts). `density` is the
+  // chance a tile of that biome holds it; trees cluster in groves; `nearRock` adds boulders below
+  // rock faces.
+  features: list(
+    obj({
+      id,
+      name: text,
+      kind: oneOf('tree', 'bush', 'herb', 'log', 'boulder'),
+      art: str(),
+      yields: ref('items'),
+      amount: count,
+      blocks: opt(bool()),
+      clumps: opt(bool()),
+      glades: opt(bool()),
+      density: map(share, 'biomes'),
+      nearRock: opt(obj({ reach: count, density: share })),
+    }),
+  ),
 };

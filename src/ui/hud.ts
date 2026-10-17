@@ -83,7 +83,7 @@ export class Hud {
     this.showScreen('Waking the valley', 'Loading the content and laying out the map.');
   }
 
-  showClock(clock: ClockView, tick: number, speed: Speed): void {
+  showClock(clock: ClockView, tick: number, speed: Speed, at: number): void {
     const pad = (n: number) => String(n).padStart(2, '0');
     const season = clock.season.charAt(0).toUpperCase() + clock.season.slice(1);
     this.clock.textContent = `${pad(clock.hour)}:${pad(clock.minute)} · Day ${clock.day} of ${clock.monthName}, Year ${clock.year}`;
@@ -91,6 +91,7 @@ export class Hud {
     this.paused.hidden = speed !== 0;
     for (const [s, button] of this.speeds) button.setAttribute('aria-pressed', String(s === speed));
     this.debug.dataset['tick'] = String(tick);
+    this.debug.dataset['at'] = String(Math.round(at));
     this.debug.textContent = `${this.fps} fps · tick ${tick}`;
   }
 

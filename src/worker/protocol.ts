@@ -44,6 +44,10 @@ export interface ChunkView {
   w: number;
   h: number;
   tiles: Uint8Array;
+  /** 0 for a bare tile, else 1 + an index into content `features`. */
+  features: Uint8Array;
+  /** 1 where the rock is snow-capped. */
+  snow: Uint8Array;
 }
 
 /** A ledger line as the page shows it: the worker fills the text from content templates. */
@@ -63,6 +67,13 @@ export interface TileView {
   x: number;
   y: number;
   ground: string;
+  biome: string;
+  /** Metres above the sea. */
+  elevation: number;
+  /** 0 to 100. */
+  fertility: number;
+  /** What grows or lies on the tile, with what it yields, e.g. "ash (25 logs)". */
+  feature?: string;
   chunkX: number;
   chunkY: number;
   /** The chunk's version: how many times a tile in it has been changed, plus one. */
@@ -84,6 +95,8 @@ export type FromWorker =
   | {
       type: 'snapshot';
       tick: number;
+      /** The worker's clock when it sent this (ms), so a rate can be timed without the page's lag. */
+      at: number;
       speed: Speed;
       clock: ClockView;
       /** Chunks changed since the last snapshot; the first one after `ready` carries them all. */

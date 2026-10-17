@@ -45,7 +45,23 @@ export function createWorld(sim: Sim, seed: string): WorldState {
     log: [],
     begunEvent: 0,
     systems: {},
-    map: { width: 0, height: 0, tiles: [], tileCauses: [], chunkVersions: [] },
+    map: {
+      width: 0,
+      height: 0,
+      tiles: [],
+      tileCauses: [],
+      chunkVersions: [],
+      elevation: new Int16Array(0),
+      biomes: new Uint8Array(0),
+      fertility: new Uint8Array(0),
+      features: new Uint8Array(0),
+      snow: new Uint8Array(0),
+      startX: 0,
+      startY: 0,
+      climate: '',
+      temperature: 0,
+      rainfall: 0,
+    },
   };
   for (const system of sim.systems) world.systems[system.id] = { ...system.initialState };
   world.begunEvent = emit(world, sim.templates, 'world.begun', { data: { seed } });
