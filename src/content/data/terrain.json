@@ -23,6 +23,7 @@
 "swampLowland": 0.08,
 "lowlandRain": 150,
 "groves": {"cell":12,"low":0.35,"high":1.65,"oldGrowth":{"cell":22,"share":0.1,"factor":2.6},"glades":{"share":0.12,"factor":4}},
+"water": {"tilt":350,"jitter":6,"meander":60,"meanderCell":10,"mountainFoot":150,"mountainRain":3,"floorRain":0.3,"flowRain":700,"streamFlow":420,"riverFlow":1500,"wideFlow":4000,"widthCell":12,"lakeDepth":8,"lakeArea":30,"lakeGrow":4,"deepDepth":8,"bankCell":6,"marshWet":0.6,"marshBank":0.45,"beachBank":0.62,"hills":250,"shallow":"water-shallow","deep":"water-deep","spring":"spring","beach":"sand","marsh":"marsh"},
 "start": {"woodItem":"logs","stoneItem":"stone","radius":30,"buildable":400,"wood":40,"stone":20}
 },
 "floors": {"grassland":"grass","temperate-forest":"forest-floor","taiga":"needles","steppe":"dry-grass","savanna":"dry-grass","tundra":"tundra","alpine":"snow","desert":"sand","swamp":"marsh","jungle":"forest-floor"},
@@ -33,8 +34,8 @@
 {"id":"gravel","name":"scree","art":"tile.gravel","variants":1,"buildable":true},
 {"id":"stone-floor","name":"stone floor","art":"tile.stone-floor","variants":1,"buildable":true},
 {"id":"rock-wall","name":"granite","art":"tile.rock-wall","variants":1,"stone":true},
-{"id":"water-shallow","name":"shallow water","art":"tile.water-shallow","variants":1},
-{"id":"water-deep","name":"deep water","art":"tile.water-deep","variants":1},
+{"id":"water-shallow","name":"shallow water","art":"tile.water-shallow","variants":1,"water":"shallow","drinkable":true},
+{"id":"water-deep","name":"deep water","art":"tile.water-deep","variants":1,"water":"deep","drinkable":true},
 {"id":"forest-floor","name":"leaf litter","art":"tile.forest-floor","variants":2,"buildable":true},
 {"id":"needles","name":"pine needles","art":"tile.needles","variants":2,"buildable":true},
 {"id":"dry-grass","name":"dry grass","art":"tile.dry-grass","variants":2,"buildable":true},
@@ -43,6 +44,7 @@
 {"id":"snow","name":"snow","art":"tile.snow","variants":1,"buildable":true},
 {"id":"slate","name":"slate","art":"tile.slate","variants":1,"stone":true},
 {"id":"limestone","name":"limestone","art":"tile.limestone","variants":1,"stone":true},
-{"id":"sandstone","name":"sandstone","art":"tile.sandstone","variants":1,"stone":true}
+{"id":"sandstone","name":"sandstone","art":"tile.sandstone","variants":1,"stone":true},
+{"id":"spring","name":"spring","art":"tile.water-shallow","variants":1,"water":"shallow","drinkable":true,"marker":"spring"}
 ]
 }

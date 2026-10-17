@@ -5,7 +5,7 @@ Goal: a valley worth settling. Entry: Phase 0 done and its playtest signed off b
 ## Status
 
 - [x] P1.1 Surface terrain (merged 2026-10-17)
-- [ ] P1.2 Water
+- [x] P1.2 Water (merged 2026-10-17)
 - [ ] P1.3 Underground
 - [ ] P1.4 Aura, seasons and weather
 - [ ] P1.5 Lighter world map and site picker
@@ -25,7 +25,7 @@ Elevation, climate, biomes, fertility, trees, bushes, herbs and stone from conte
 
 ### P1.2 Water
 
-Rivers, lakes, shallow and deep water, springs, carved from P1.1's elevation; river autotile (47-tile blob). Mock-up: UI. Done when: each seed has drinkable water; no river ends inland without a lake.
+Rivers, lakes, shallow and deep water, springs, carved from P1.1's elevation; shore autotile (47-tile blob). Mock-up: UI and engine (maps, numbers, in-game views). Done when: each seed has drinkable water within 30 tiles of the start; no river ends inland without a lake. Morgan's calls (2026-10-17): the main river stays shallow enough to wade for now; lakes a little larger. Whether springs freeze is P1.4's.
 
 - Reading list: `src/engine/map/MODULE.md`; `docs/ART.md` row P1.1 to P1.3; `src/render/MODULE.md`; the map stats table (run it, don't read code)
 

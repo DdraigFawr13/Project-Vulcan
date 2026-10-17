@@ -14,6 +14,11 @@ export interface Ground {
   tiles: number[];
   /** 1 where rock is snow-capped. */
   snow: number[];
+  /** The height rock starts at (metres), the valley's axis as a unit vector, and the broad
+   * moisture field in [0, 1], for the water that follows. */
+  wallFrom: number;
+  axis: readonly [number, number];
+  wet: number[];
 }
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
@@ -152,6 +157,9 @@ export function layGround(
     fertility[i] = Math.round(clamp(e >= screeFrom ? base / 4 : base, 0, 100));
   }
   return {
+    wallFrom,
+    axis: [ax, ay],
+    wet,
     climate: climate.id,
     temperature,
     rainfall,

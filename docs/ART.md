@@ -5,7 +5,7 @@ Flat-shaded pixel art in the muted palette, readable at 32 px, nothing drawn bef
 | Milestone | Sheet | Contents |
 | --- | --- | --- |
 | P0.4 | `tiles-base` | grass, dirt, sand, gravel, stone floor, rock wall, darkness, shallow and deep water; selection and designation overlays |
-| P1.1 to P1.3 | `tiles-world`, `sprites-nature` | biome floors, snow, ice, ore veins, aura, stairs, shaft, river autotile (47-tile blob); trees, bushes, boulders, herbs |
+| P1.1 to P1.3 | `tiles-world`, `sprites-nature` | biome floors, snow, ice, ore veins, aura, stairs, shaft, shore autotile (47-tile blob, `water.shore.<mask>`) and deep water inside shallow (16 frames, `water.deep.<mask>`), both by `tools/draw-water.mjs`; trees, bushes, boulders, herbs, spring marker |
 | P2.1, P2.4 | `sprites-people`, `items` | one body per race, 4 facings, 2 walk frames, tinted hair and clothing overlays, carried-item slot; icons for logs, stone, ores, ingots, food, tools, weapons, cloth, leather, herbs |
 | P3.2 | `buildings` | autotiled walls by material, doors, floors, bed, table, chair, chest, shelf, carpentry bench |
 | P4.5 | `workshops` | charcoal clamp, smelter, smithy, anvil, bellows, waterwheel (2 frames), power lines |

@@ -5,5 +5,6 @@
 {"id":"calendar.day","importance":1,"template":"Day {day} of {month} began."},
 {"id":"calendar.month","importance":2,"template":"{month} began."},
 {"id":"map.formed","importance":1,"template":"The valley took shape: {width} by {height} tiles, mostly {biome}, with a {climate} climate ({temperature} °C on the valley floor, {rainfall} mm of rain a year)."},
+{"id":"map.watered","importance":1,"template":"Its waters gathered: a river leaving by the {exit}, {lakes} lakes and {springs} springs."},
 {"id":"calendar.season","importance":2,"template":"{seasonName} came to the valley."}
 ]

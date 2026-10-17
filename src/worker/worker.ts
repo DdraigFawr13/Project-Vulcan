@@ -17,6 +17,7 @@ import {
   whyOf,
   type SimEvent,
   type WorldState,
+  WATER,
 } from '../engine/index.ts';
 import { createPace, setSpeed, ticksDue } from './pace.ts';
 import type {
@@ -115,11 +116,31 @@ function tileView(w: WorldState, x: number, y: number): TileView | undefined {
     biome: content.biomes.biomes[map.biomes[i]!]!.name,
     elevation: map.elevation[i]!,
     fertility: map.fertility[i]!,
+    ...waterOf(map, i),
     ...(feature && { feature: `${feature.name} (${feature.amount} ${itemName(feature.yields)})` }),
     chunkX,
     chunkY,
     version: map.chunkVersions[chunkY * chunksAcross(map) + chunkX]!,
     ...(changedBy && { changedBy: lineOf(changedBy) }),
+  };
+}
+
+const BODIES: Record<string, (exit: string) => string> = {
+  stream: () => 'a stream',
+  river: (exit) => `the river, flowing to the ${exit} edge`,
+  lake: () => 'a lake',
+  spring: () => 'a spring, the head of a stream',
+};
+
+/** The inspector's water rows for tile `i`: none on dry land. */
+function waterOf(map: WorldState['map'], i: number): Partial<TileView> {
+  const kind = content.terrain.kinds[map.tiles[i]!]!;
+  if (!kind.water) return {};
+  const body = WATER[map.water[i]!];
+  return {
+    ...(body && { water: BODIES[body]!(map.riverExit) }),
+    drinkable: kind.drinkable === true,
+    crossing: kind.water === 'deep' ? 'too deep to cross' : 'can be waded',
   };
 }
 
