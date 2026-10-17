@@ -26,7 +26,8 @@ let frame = 0;
 let covering = true;
 
 const setSpeed = (next: Speed): void => {
-  if (stopped) return;
+  // Until a world is ready, or while a save loads, the worker resets the speed itself.
+  if (stopped || !ready || saves.loading) return;
   speed = next;
   if (next !== 0) lastRunning = next;
   send({ type: 'setSpeed', speed: next });
@@ -34,7 +35,6 @@ const setSpeed = (next: Speed): void => {
 
 const renderer = startRenderer(parent, {
   onHover: (tile) => hud.showTile(tile),
-  onZoom: () => {},
   onSelect: (tile) => send({ type: 'inspect', ...tile }),
 });
 hudRoot.replaceChildren();
@@ -100,7 +100,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       renderer.applyChunks(message.chunks);
       hud.fps = Math.round(renderer.fps());
       hud.showClock(message.clock, message.tick, message.speed);
-      saves.tick = message.tick;
+      saves.seen(message.tick);
       if (covering && !saves.loading) {
         hud.hideScreen();
         covering = false;
@@ -192,5 +192,4 @@ import.meta.hot?.dispose(() => {
 });
 
 send({ type: 'init', seed, contentHash });
-setSpeed(0);
 frame = requestAnimationFrame(tick);

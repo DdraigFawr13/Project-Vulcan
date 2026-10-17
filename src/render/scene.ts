@@ -39,7 +39,6 @@ export class ValleyScene extends Phaser.Scene {
   private waiting: ChunkView[] = [];
   private pointerIn = false;
   onHover: (hover: Hover | undefined) => void = () => {};
-  onZoom: (zoom: number) => void = () => {};
   /** A tap or click on a tile that was not the end of a drag or pinch. */
   onSelect: (tile: { x: number; y: number }) => void = () => {};
 
@@ -64,7 +63,7 @@ export class ValleyScene extends Phaser.Scene {
       .setDepth(9)
       .setVisible(false);
     // The camera's controls listen first, so a release that ends a drag still reads as one here.
-    this.controls = new CameraControls(this, (zoom) => this.onZoom(zoom));
+    this.controls = new CameraControls(this);
     this.input.on('pointermove', () => (this.pointerIn = true));
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => {
       this.hoverAt(p);
@@ -97,9 +96,6 @@ export class ValleyScene extends Phaser.Scene {
       return;
     }
     for (const chunk of chunks) this.drawChunk(chunk);
-    // A GPU layer keeps its tiles in a data texture, rebuilt once per batch of changed chunks.
-    if (chunks.length && 'generateLayerDataTexture' in this.layer)
-      this.layer.generateLayerDataTexture();
   }
 
   zoomStep(direction: 1 | -1): void {
@@ -121,13 +117,14 @@ export class ValleyScene extends Phaser.Scene {
   private buildMap(): void {
     if (this.layer) return;
     const { width, height } = this.size;
-    // A GPU layer draws the whole map as one quad (WebGL only); Canvas falls back to a plain layer.
+    // A plain layer, not Phaser's GPU layer: the GPU layer's shader reads tile indices back from a
+    // texture without rounding, and on some phones index 4 came back as 3.99, drawing a sliver of
+    // the dirt frame stretched over every first grass picture (Morgan's playtest, 2026-10-17).
     const blank = Array.from({ length: height }, () => new Array<number>(width).fill(-1));
     const map = this.make.tilemap({ data: blank, tileWidth: TILE, tileHeight: TILE });
     const tileset = map.addTilesetImage(SHEET, SHEET, TILE, TILE, 1, 2);
     if (!tileset) throw new Error('The tiles-base sheet did not load.');
-    const gpu = this.renderer.type === Phaser.WEBGL;
-    const layer = map.createLayer(0, tileset, 0, 0, gpu);
+    const layer = map.createLayer(0, tileset, 0, 0, false);
     if (!layer) throw new Error('The map layer could not be made.');
     this.map = map;
     this.layer = layer;

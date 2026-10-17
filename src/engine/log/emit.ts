@@ -41,7 +41,8 @@ function filled(slot: string, fields: EventFields): boolean {
 
 /**
  * Appends an event to the world's ledger and returns its id. Throws when the type has no
- * template, or the template has a slot the fields leave empty (DECISIONS V-006).
+ * template, the template has a slot the fields leave empty (DECISIONS V-006), or a cause is not
+ * an earlier line, so every "why?" chain ends at a real line.
  */
 export function emit(
   world: WorldState,
@@ -54,6 +55,9 @@ export function emit(
   for (const slot of slots)
     if (!filled(slot, fields))
       throw new Error(`Event "${type}": template needs "${slot}", which the event didn't give.`);
+  for (const cause of fields.causes ?? [])
+    if (!Number.isInteger(cause) || cause < 1 || cause >= world.nextEventId)
+      throw new Error(`Event "${type}": cause ${cause} is not an earlier ledger line.`);
   const event: SimEvent = {
     id: world.nextEventId,
     tick: world.tick,

@@ -91,12 +91,18 @@ describe('engine', () => {
     expect(text(1)).toBe('A new world began from seed "hollow-oak".');
     expect(text(2)).toBe("The valley's ground was laid out: 150 by 150 tiles of grass.");
     expect(world.log[1]).toMatchObject({ type: 'map.formed', causes: [1] });
-    expect(text(3)).toBe('Day 2 of Thawmonth began.');
-    expect(world.log[29]).toMatchObject({ id: 30, type: 'calendar.month', causes: [1] });
-    expect(world.log[30]).toMatchObject({ type: 'calendar.day', causes: [30] });
-    expect(text(86)).toBe('Highsun began.');
-    expect(world.log[86]).toMatchObject({ type: 'calendar.season', causes: [86] });
-    expect(text(87)).toBe('Summer came to the valley.');
+    // The world's first month and season get their lines when it begins.
+    expect(text(3)).toBe('Thawmonth began.');
+    expect(world.log[2]).toMatchObject({ type: 'calendar.month', causes: [1] });
+    expect(text(4)).toBe('Spring came to the valley.');
+    expect(world.log[3]).toMatchObject({ type: 'calendar.season', causes: [3] });
+    expect(text(5)).toBe('Day 2 of Thawmonth began.');
+    expect(world.log[4]).toMatchObject({ type: 'calendar.day', causes: [3] });
+    expect(world.log[31]).toMatchObject({ id: 32, type: 'calendar.month', causes: [1] });
+    expect(world.log[32]).toMatchObject({ type: 'calendar.day', causes: [32] });
+    expect(text(88)).toBe('Highsun began.');
+    expect(world.log[88]).toMatchObject({ type: 'calendar.season', causes: [88] });
+    expect(text(89)).toBe('Summer came to the valley.');
     // The map is the content's flat ground, cut into 10 by 10 chunks with narrower edge chunks.
     expect(world.map.chunkVersions).toHaveLength(100);
     expect(chunkTiles(world.map, 9, 9)).toMatchObject({ x: 144, y: 144, w: 6, h: 6 });
@@ -156,6 +162,19 @@ describe('engine', () => {
         );
     expect(emit('test.nothing')).toThrow('Event type "test.nothing" has no template');
     expect(emit('calendar.month')).toThrow('template needs "month"');
+    const cited = (cause: number) => () =>
+      step(
+        world,
+        createSim(fixtureContent, [
+          {
+            id: 'z',
+            every: 'minute',
+            run: (c) => void c.emit('world.begun', { causes: [cause], data: { seed: 's' } }),
+          },
+        ]),
+      );
+    expect(cited(world.nextEventId)).toThrow('is not an earlier ledger line');
+    expect(cited(0)).toThrow('is not an earlier ledger line');
     expect(() =>
       createSim(fixtureContent, [{ id: 'y', every: 'day', emits: ['test.nothing'] }]),
     ).toThrow('No template in content events for: test.nothing.');

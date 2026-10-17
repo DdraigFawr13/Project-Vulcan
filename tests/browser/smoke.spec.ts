@@ -39,13 +39,18 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.waitForTimeout(1000);
   expect(await tick(page)).toBe(paused);
 
-  // The inspector: a tap names the tile and the line that laid it out; "why?" reaches the root.
+  // The inspector: a tap names the tile and the line that laid it out, a world-generation line
+  // with no "why?". In the ledger, the first season's "why?" walks back to the root.
   const panel = page.getByTestId('panel');
   await page.getByTestId('game').locator('canvas').click();
   await expect(panel).toContainText('Tile');
   await expect(panel).toContainText("The valley's ground was laid out");
-  await panel.getByRole('button', { name: 'why?' }).click();
-  await expect(panel.getByTestId('chain')).toContainText('A new world began from seed "smoke".');
+  await expect(panel.getByRole('button', { name: 'why?' })).toHaveCount(0);
+  await page.getByTestId('open-ledger').click();
+  const spring = panel.locator('[data-line]', { hasText: 'Spring came to the valley.' });
+  await spring.getByRole('button', { name: 'why?' }).click();
+  await expect(spring.getByTestId('chain')).toContainText('Thawmonth began.');
+  await expect(spring.getByTestId('chain')).toContainText('A new world began from seed "smoke".');
 
   // Save, export, reload the page, load: the clock picks up at the saved tick and keeps going.
   await page.getByTestId('open-saves').click();

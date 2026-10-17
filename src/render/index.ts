@@ -5,7 +5,6 @@ import type { ChunkView } from '../worker/index.ts';
 import { ValleyScene, type Hover } from './scene.ts';
 
 export type { Hover } from './scene.ts';
-export { ZOOMS } from './camera.ts';
 
 export interface Renderer {
   setMapSize(width: number, height: number): void;
@@ -25,13 +24,11 @@ export function startRenderer(
   parent: HTMLElement,
   hooks: {
     onHover(hover: Hover | undefined): void;
-    onZoom(zoom: number): void;
     onSelect(tile: { x: number; y: number }): void;
   },
 ): Renderer {
   const scene = new ValleyScene();
   scene.onHover = hooks.onHover;
-  scene.onZoom = hooks.onZoom;
   scene.onSelect = hooks.onSelect;
   const game = new Phaser.Game({
     type: Phaser.AUTO,

@@ -70,7 +70,8 @@ export function validateContent(files: Files): string[] {
     }
   }
   // Tier caps read the files as typed, so they run only once every shape is valid.
-  if (errors.length === 0) errors.push(...checkTierCaps(files), ...checkTerrain(files));
+  if (errors.length === 0)
+    errors.push(...checkTierCaps(files), ...checkTerrain(files), ...checkCalendar(files));
   return errors;
 }
 
@@ -125,5 +126,27 @@ function checkTerrain(files: Files): string[] {
   for (const kind of kinds)
     if (!Number.isInteger(kind.variants))
       errors.push(`terrain.kinds[${kind.id}].variants: ${kind.variants} is not a whole number`);
+  return errors;
+}
+
+// The clock divides by these and indexes the names with them (src/engine/core/clock.ts).
+function checkCalendar(files: Files): string[] {
+  const c = files['calendar'] as {
+    daysPerWeek: number;
+    daysPerMonth: number;
+    monthsPerYear: number;
+    seasons: string[];
+    monthNames: string[];
+  };
+  const errors: string[] = [];
+  for (const field of ['daysPerWeek', 'daysPerMonth', 'monthsPerYear'] as const)
+    if (!Number.isInteger(c[field]) || c[field] < 1)
+      errors.push(`calendar.${field}: ${c[field]} is not a whole number above 0`);
+  if (c.monthNames.length !== c.monthsPerYear)
+    errors.push(`calendar.monthNames: ${c.monthNames.length} names for ${c.monthsPerYear} months`);
+  if (c.seasons.length < 1 || c.monthsPerYear % c.seasons.length !== 0)
+    errors.push(
+      `calendar.seasons: ${c.seasons.length} seasons don't split ${c.monthsPerYear} months evenly`,
+    );
   return errors;
 }

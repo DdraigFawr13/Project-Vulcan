@@ -54,8 +54,7 @@ export function setTile(
 /** Lays out the map in `init` (generation belongs there, not in a cadence); it never runs on load. */
 export const mapSystem: System = {
   id: 'map',
-  every: 'day',
-  stream: 'worldgen',
+  every: 'day', // a cadence is required; the map has no daily work until Phase 1
   emits: ['map.formed'],
   init(ctx) {
     const { surface, kinds } = ctx.content.terrain;

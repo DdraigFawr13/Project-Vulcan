@@ -11,6 +11,8 @@ describe('boundaries check', () => {
       'export const x = Math.random();',
       'export const x = Math.sin(1);',
       'export const x = Date.now();',
+      'let y = 2; y **= 2;',
+      'export const x = (1).toLocaleString();',
       "import '../ui/main.ts';",
       "import 'phaser';",
     ])
