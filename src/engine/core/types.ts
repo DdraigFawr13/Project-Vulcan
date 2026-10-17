@@ -90,6 +90,9 @@ export interface MapState {
   snow: Uint8Array;
   /** Which body of water each tile belongs to (`WATER` below), else 0. Set once by the generator. */
   water: Uint8Array;
+  /** The rock each tile showed when the valley was made (1 + a terrain index), else 0. Set once by
+   * the generator: it is what runs down into the levels below, whatever is dug on the surface. */
+  rock: Uint8Array;
   /** The map edge the main river leaves by: north, south, east or west. */
   riverExit: string;
   /** Where the settlers' cart stops: the generator's chosen start tile. */
@@ -100,6 +103,21 @@ export interface MapState {
   climate: string;
   temperature: number;
   rainfall: number;
+  /** The levels below, index 0 for level 1 down: null until stairs or a shaft first reach one
+   * (DECISIONS V-014), so a level nobody has reached costs no memory and no save space. */
+  levels: (LevelState | null)[];
+}
+
+/** One level below the surface, the same size as it, made from the seed when first reached. */
+export interface LevelState {
+  /** Index into `EngineContent.terrain.kinds`, at `y * width + x`. */
+  tiles: Uint8Array;
+  /** The id of the ledger line that last changed each tile: at first, the line that reached it. */
+  tileCauses: Int32Array;
+  /** 0, or 1 + an index into `EngineContent.features` (a vein in the rock). */
+  features: Uint8Array;
+  /** One counter per chunk, as on the surface. */
+  chunkVersions: number[];
 }
 
 /** The bodies of water in `MapState.water`, by their code: 0 is dry land. */
@@ -208,6 +226,38 @@ export interface TerrainDef {
       beach: string;
       marsh: string;
     };
+    /** The levels below (src/content/schemas-world.ts has the meaning of each dial). */
+    underground: {
+      depth: number;
+      roots: { reach: number; perLevel: number; warp: number; fine: number };
+      warpCell: number;
+      bodies: { count: Range; bend: number; bendCell: number; fine: number; fineCell: number };
+      earth: {
+        soil: string;
+        clay: string;
+        groundwater: string;
+        foot: number;
+        footNoise: number;
+        soilCell: number;
+        clayReach: number;
+        clayShare: number;
+        wetShare: number;
+      };
+      caves: {
+        kind: string;
+        tunnels: Range;
+        caverns: Range;
+        length: Range;
+        turn: number;
+        swing: number;
+        wide: number;
+        cavernCell: number;
+      };
+      stairsDown: string;
+      stairsUp: string;
+      stairs: string;
+      shaft: string;
+    };
     start: {
       woodItem: string;
       stoneItem: string;
@@ -228,6 +278,7 @@ export interface TerrainDef {
     water?: 'shallow' | 'deep';
     drinkable?: boolean;
     marker?: string;
+    solid?: boolean;
   }[];
 }
 
@@ -248,7 +299,7 @@ export interface BiomesDef {
 export interface FeatureDef {
   id: string;
   name: string;
-  kind: 'tree' | 'bush' | 'herb' | 'log' | 'boulder';
+  kind: 'tree' | 'bush' | 'herb' | 'log' | 'boulder' | 'vein';
   art: string;
   yields: string;
   amount: number;
@@ -257,6 +308,13 @@ export interface FeatureDef {
   glades?: boolean;
   density: Readonly<Record<string, number>>;
   nearRock?: { reach: number; density: number };
+  vein?: {
+    level: number;
+    per10k: number;
+    size: Range;
+    near: number;
+    rocks: Readonly<Record<string, number>>;
+  };
 }
 
 /** The forked calendar (src/content/data/calendar.json). */

@@ -16,7 +16,7 @@ Read only the section your phase file or reading list names.
 
 ## Worker protocol
 
-Main to worker: `init {seed, contentHash}` (world params join in Phase 1), `load {save}`, `command {tick, kind, data}`, `setSpeed`, `requestSnapshot`, `save {auto}`, `export {kind}`, and the inspector's `inspect {x, y}` and `why {id}`, which only read the world: they never step it, emit or draw from an RNG stream. Commands are only indirect levers: designate, build, prioritise, zone, forbid, schedule, law, standing order (guard post, alarm, militia roster). Worker to main: `ready`, `snapshot {tick, speed, clock, chunks}` (entities and alerts join with the phases that add them) at most once per frame, `events {batch}` in log order (rendered to text by the worker), `saved`, `loadRefused`, `exported`, `inspected`, `causes`, `error`. Commands carry the tick they apply on, so seed plus command stream replays a game exactly. Speed and pause are worker settings, never commands. Snapshots are pulled: the page sends `requestSnapshot` once per frame with at most one in flight, and changed chunks travel as transferred typed arrays. As built from P0.5: `src/worker/MODULE.md`.
+Main to worker: `init {seed, contentHash}` (world params join in Phase 1), `load {save}`, `command {tick, kind, data}`, `setSpeed`, `requestSnapshot`, `save {auto}`, `export {kind}`, and the inspector's `inspect {x, y, z}` and `why {id}`, which only read the world: they never step it, emit or draw from an RNG stream. Commands are only indirect levers: designate, build, prioritise, zone, forbid, schedule, law, standing order (guard post, alarm, militia roster). Worker to main: `ready`, `snapshot {tick, speed, clock, chunks, reached}` (each chunk names its level `z`) (entities and alerts join with the phases that add them) at most once per frame, `events {batch}` in log order (rendered to text by the worker), `saved`, `loadRefused`, `exported`, `inspected`, `causes`, `error`. Commands carry the tick they apply on, so seed plus command stream replays a game exactly. Speed and pause are worker settings, never commands. Snapshots are pulled: the page sends `requestSnapshot` once per frame with at most one in flight, and changed chunks travel as transferred typed arrays. As built from P0.5: `src/worker/MODULE.md`.
 
 ## Tick
 
@@ -24,11 +24,11 @@ One tick is one game minute; 10 ticks per second at 1x (a game day in about 2.4 
 
 ## Map
 
-Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at full depth), each underground level generated from seed and level index when a stair or shaft first reaches it. Tiles in 16 by 16 chunks with dirty flags. Level -1: earth, clay, groundwater. Level -2: copper and tin. Level -3: iron and sulphur. Level -4: gold, rare ore, obsidian, aura spots and cave creatures.
+Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at full depth), each underground level generated from seed and level index when a stair or shaft first reaches it (`MapState.levels`, null until then, so an unreached level costs no memory or save space). Tiles in 16 by 16 chunks with dirty flags, per level. Each mountain range's rock runs down beneath it, read from the surface rock as generated (`MapState.rock`, never changed by digging); the rest is bedrock bodies drawn once per seed; tunnels and caverns open deeper down. Level -1: earth, clay, groundwater. Level -2: copper and tin. Level -3: iron and sulphur. Level -4: gold, silver, gems, obsidian; aura spots (P1.4) and cave creatures (Phase 8) later. Veins are features in the rock (`features.json` `vein`), visible once their level is reached (Morgan, 2026-10-17). As built from P1.3: `src/engine/map/MODULE.md`.
 
 ## RNG
 
-`sfc32`, one stream per `(seed, name)`: `worldgen`, `veins`, `weather`, `wildlife`, `jobs`, `needs`, `health`, `social`, `beliefs`, `magic`, `combat`, `threats`, `storyteller`, `trade`.
+`sfc32`, one stream per `(seed, name)`: `worldgen`, `veins`, `weather`, `wildlife`, `jobs`, `needs`, `health`, `social`, `beliefs`, `magic`, `combat`, `threats`, `storyteller`, `trade`. The levels below draw from sub-states of `veins` (`veins:<level>` for each level's own draws, `veins:bedrock` and `veins:warp` for the bedrock bodies every level shares), each derived afresh from the seed and never saved, so the order levels are reached in cannot change them. No other stream names are added.
 
 ## Event log
 

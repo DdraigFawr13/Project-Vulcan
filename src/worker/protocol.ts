@@ -22,8 +22,9 @@ export type ToWorker =
   | { type: 'save'; auto: boolean }
   /** The whole ledger as NDJSON. */
   | { type: 'export'; kind: 'ndjson' }
-  /** The inspector: one tile's record and the ledger line that last changed it. */
-  | { type: 'inspect'; x: number; y: number }
+  /** The inspector: one tile's record on level `z` (0 the surface, 1 to 4 below) and the ledger
+   * line that last changed it. */
+  | { type: 'inspect'; x: number; y: number; z?: number }
   /** "why?": a ledger line's causes back to the world's first line. */
   | { type: 'why'; id: number };
 
@@ -37,16 +38,19 @@ export interface ClockView {
   season: string;
 }
 
-/** One changed 16 by 16 chunk: its origin, size and terrain indices, row by row (transferred). */
+/** One changed 16 by 16 chunk: its origin, level, size and terrain indices, row by row
+ * (transferred). */
 export interface ChunkView {
   x: number;
   y: number;
+  /** 0 for the surface, 1 to 4 for the levels below. */
+  z: number;
   w: number;
   h: number;
   tiles: Uint8Array;
   /** 0 for a bare tile, else 1 + an index into content `features`. */
   features: Uint8Array;
-  /** 1 where the rock is snow-capped. */
+  /** 1 where the rock is snow-capped; always 0 below the surface. */
   snow: Uint8Array;
 }
 
@@ -66,19 +70,25 @@ export interface LedgerLine {
 export interface TileView {
   x: number;
   y: number;
+  /** 0 for the surface, 1 to 4 below. */
+  z: number;
   ground: string;
-  biome: string;
+  /** Surface only, like elevation and fertility. */
+  biome?: string;
   /** Metres above the sea. */
-  elevation: number;
+  elevation?: number;
   /** 0 to 100. */
-  fertility: number;
+  fertility?: number;
+  /** The tile straight below: its ground, or that its level is not reached; absent on the deepest. */
+  below?: string;
   /** The body of water the tile belongs to, e.g. "the river, flowing to the east edge". */
   water?: string;
   /** Whether the tile's water can be drunk; absent on dry land. */
   drinkable?: boolean;
   /** How the tile's water can be crossed, e.g. "can be waded"; absent on dry land. */
   crossing?: string;
-  /** What grows or lies on the tile, with what it yields, e.g. "ash (25 logs)". */
+  /** What grows or lies on the tile, with what it yields, e.g. "ash (25 logs)" or
+   * "copper vein (20 copper ore)". */
   feature?: string;
   chunkX: number;
   chunkY: number;
@@ -97,6 +107,8 @@ export type FromWorker =
       contentHash: string;
       width: number;
       height: number;
+      /** How many levels lie below the surface. */
+      depth: number;
     }
   | {
       type: 'snapshot';
@@ -105,8 +117,11 @@ export type FromWorker =
       at: number;
       speed: Speed;
       clock: ClockView;
-      /** Chunks changed since the last snapshot; the first one after `ready` carries them all. */
+      /** Chunks changed since the last snapshot, on every reached level; the first one after
+       * `ready`, and the first after a level is reached, carry all of that level's. */
       chunks: ChunkView[];
+      /** Which levels below have been reached, index 0 for level 1. */
+      reached: boolean[];
     }
   /** New ledger lines in log order, posted just before the snapshot that follows them. */
   | { type: 'events'; batch: LedgerLine[] }

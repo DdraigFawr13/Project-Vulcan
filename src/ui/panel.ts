@@ -16,6 +16,8 @@ export interface PanelActions {
   load(meta: SaveMeta): void;
   remove(meta: SaveMeta): void;
   newGame(seed: string): void;
+  /** The test levers: stairs down, or a shaft down to level `to`, from the tile shown. */
+  dig(tile: TileView, kind: 'cutStairs' | 'sinkShaft', to?: number): void;
   close(): void;
 }
 
@@ -50,22 +52,41 @@ export class Panel {
     this.root.hidden = true;
   }
 
-  showTile(tile: TileView): void {
-    this.open('tile', `Tile ${tile.x}, ${tile.y}`);
+  /** The tile inspector; `depth` levels lie below the surface. */
+  showTile(tile: TileView, depth: number): void {
+    const where = tile.z === 0 ? '' : ` · ${tile.z} level${tile.z > 1 ? 's' : ''} down`;
+    this.open('tile', `Tile ${tile.x}, ${tile.y}${where}`);
     const facts = el('dl', { class: 'kv' });
     for (const [key, value] of [
       ['ground', tile.ground],
-      ['biome', tile.biome],
-      ['height', `${tile.elevation} m`],
-      ['fertility', `${tile.fertility} of 100`],
+      ...(tile.biome ? [['biome', tile.biome]] : []),
+      ...(tile.elevation !== undefined ? [['height', `${tile.elevation} m`]] : []),
+      ...(tile.fertility !== undefined ? [['fertility', `${tile.fertility} of 100`]] : []),
       ...(tile.water ? [['water', tile.water]] : []),
       ...(tile.drinkable !== undefined ? [['drinkable', tile.drinkable ? 'yes' : 'no']] : []),
       ...(tile.crossing ? [['crossing', tile.crossing]] : []),
-      ...(tile.feature ? [['on it', tile.feature]] : []),
+      ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
+      ...(tile.below ? [['below', tile.below]] : []),
       ['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`],
     ])
       facts.append(el('dt', {}, key), el('dd', {}, value));
     this.body.replaceChildren(facts);
+    if (tile.z < depth) {
+      const acts = el('div', { class: 'row' });
+      const stairs = el('button', { type: 'button' }, 'Cut stairs down');
+      stairs.addEventListener('click', () => this.actions.dig(tile, 'cutStairs'));
+      const shaft = el('button', { type: 'button' }, `Sink a shaft to −${depth}`);
+      shaft.addEventListener('click', () => this.actions.dig(tile, 'sinkShaft', depth));
+      acts.append(stairs, shaft);
+      this.body.append(
+        acts,
+        el(
+          'p',
+          { class: 'muted' },
+          'Test tools until colonists can dig (stairs in Phase 3, mining in Phase 4). They finish on the next game minute.',
+        ),
+      );
+    }
     if (tile.changedBy) this.body.append(this.line(tile.changedBy, 'Last changed · '));
     else this.body.append(el('p', { class: 'muted' }, 'The line that last changed it is gone.'));
   }

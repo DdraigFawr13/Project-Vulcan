@@ -5,6 +5,7 @@ import path from 'node:path';
 import { isMain, root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
 import { readPalette } from './draw-tiles-base.mjs';
+import { undergroundTiles, undergroundVeins } from './draw-underground.mjs';
 import { slate, limestone, sandstone, snowcap, log } from './draw-nature-rock.mjs';
 
 export const S = 32;
@@ -137,6 +138,7 @@ export function drawTilesWorld(p = readPalette()) {
     'tile.limestone.1': limestone(p, 171),
     'tile.sandstone.1': sandstone(p, 181),
     'tile.snowcap.1': snowcap(p, 191),
+    ...undergroundTiles(p),
   };
 }
 
@@ -358,6 +360,7 @@ export function drawSpritesNature(p = readPalette()) {
     'herb.wild.1': herb(p),
     'boulder.1': boulder(p),
     'log.fallen.1': log(p),
+    ...undergroundVeins(p),
   };
 }
 

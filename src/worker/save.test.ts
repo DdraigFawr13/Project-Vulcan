@@ -1,8 +1,9 @@
 // The save boundary: a save survives the browser's structured clone (what IndexedDB and
 // postMessage do to it) whole, and one from other content, another format or damaged is refused.
+import { serialize } from 'node:v8';
 import { describe, expect, it } from 'vitest';
 import { content, contentHash } from '../content/index.ts';
-import { createSim, createWorld, step, toNdjson } from '../engine/index.ts';
+import { createSim, createWorld, step, submitCommand, toNdjson } from '../engine/index.ts';
 import { checkSave, SAVE_VERSION, saveOf, type SaveFile } from './save.ts';
 
 const sim = createSim(content);
@@ -41,11 +42,42 @@ describe('saves', () => {
       (s: SaveFile) => (s.state.map.features[0] = 250),
       (s: SaveFile) => (s.state.map.snow = new Uint8Array(3)),
       (s: SaveFile) => (s.state.map.startX = 1e6),
+      (s: SaveFile) => s.state.map.levels.pop(),
+      (s: SaveFile) => (s.state.map.rock = new Uint8Array(3)),
+      // A level below one nobody has reached.
+      (s: SaveFile) =>
+        (s.state.map.levels[1] = {
+          tiles: new Uint8Array(s.state.map.tiles.length),
+          tileCauses: new Int32Array(s.state.map.tiles.length),
+          features: new Uint8Array(s.state.map.tiles.length),
+          chunkVersions: [...s.state.map.chunkVersions],
+        }),
     ];
     for (const hurt of damage) {
       const bad = save();
       hurt(bad);
       expect(check(bad)).toThrow('damaged');
     }
+  });
+
+  // P1.3 done-when: a level not yet reached costs no memory. Structured-clone bytes (what
+  // IndexedDB stores) are measured before and after stairs reach level 1.
+  it('stores nothing for a level until it is reached', () => {
+    const fresh = createWorld(sim, 'save-test');
+    const bytes = () => serialize(saveOf(fresh, contentHash)).length;
+    const before = bytes();
+    expect(fresh.map.levels.every((level) => level === null)).toBe(true);
+    const { startX: x, startY: y } = fresh.map;
+    submitCommand(fresh, { tick: fresh.tick + 1, kind: 'cutStairs', data: { x, y, z: 0 } });
+    step(fresh, sim, 1);
+    const after = bytes();
+    const level = fresh.map.levels[0]!;
+    const own = level.tiles.byteLength + level.tileCauses.byteLength + level.features.byteLength;
+    // The reached level adds its own arrays and little else (chunk versions, two ledger lines).
+    expect(after - before).toBeGreaterThanOrEqual(own);
+    expect(after - before).toBeLessThan(own + 4000);
+    expect(checkSave(structuredClone(saveOf(fresh, contentHash)), contentHash, content)).toEqual(
+      fresh,
+    );
   });
 });

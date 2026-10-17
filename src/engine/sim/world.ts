@@ -57,12 +57,14 @@ export function createWorld(sim: Sim, seed: string): WorldState {
       features: new Uint8Array(0),
       snow: new Uint8Array(0),
       water: new Uint8Array(0),
+      rock: new Uint8Array(0),
       riverExit: '',
       startX: 0,
       startY: 0,
       climate: '',
       temperature: 0,
       rainfall: 0,
+      levels: [],
     },
   };
   for (const system of sim.systems) world.systems[system.id] = { ...system.initialState };
