@@ -38,7 +38,7 @@ const forbiddenCoreNames = new Set([
   'localeCompare',
   'random',
 ]);
-// Safe math for determinism (DECISIONS D-003): transcendental Math functions can differ
+// Safe math for determinism (DECISIONS V-006): transcendental Math functions can differ
 // between JS engines, so the new engine and content use lookup tables instead.
 const safeMathLayers = new Set(['engine', 'content']);
 const unsafeMathNames = new Set([
@@ -87,7 +87,8 @@ export function checkModule(fileName, sourceText) {
       errors.push('Computed module imports are not allowed in production source.');
       return;
     }
-    const name = specifier.value;
+    // Vite suffixes such as ?worker or ?raw don't change which file is imported.
+    const name = specifier.value.replace(/\?.*$/, '');
     if (!name.startsWith('.')) {
       if (!externals[layer]?.has(name))
         errors.push(`${layer} cannot import external module ${name}.`);
@@ -104,18 +105,44 @@ export function checkModule(fileName, sourceText) {
       return;
     }
     // A system folder (src/<layer>/<system>/) is reached only through its index.ts (VR-44).
+    // Exceptions: content data folders, and a layer's root files from inside that layer.
     const toModule = moduleOf(to);
-    if (toModule !== moduleOf(from) && to.length > toModule.split('/').length + 1) {
+    if (toModule === moduleOf(from) || (to[0] === 'content' && to[1] === 'data')) return;
+    if (to.length === 2 && to[0] === from[0]) return;
+    const depth = toModule.split('/').length + 1;
+    if (to.length !== depth || to.at(-1) !== 'index.ts')
       errors.push(`Import ${toModule} through its index.ts, not ${name}.`);
-    } else if (
-      toModule !== moduleOf(from) &&
-      to.length === toModule.split('/').length + 1 &&
-      !/^index(\.tsx?)?$/.test(to.at(-1))
+  }
+  function checkMath(node) {
+    if (
+      safeMathLayers.has(layer) &&
+      node.type === 'MemberExpression' &&
+      node.object.type === 'Identifier' &&
+      node.object.name === 'Math'
     ) {
-      errors.push(`Import ${toModule} through its index.ts, not ${name}.`);
+      const name = node.computed
+        ? node.property.type === 'StringLiteral'
+          ? node.property.value
+          : null
+        : node.property.name;
+      if (name === null) errors.push('Computed Math access is not allowed in the engine.');
+      else if (name === 'random')
+        errors.push('Simulation core cannot use Math.random; use a named RNG stream.');
+      else if (unsafeMathNames.has(name))
+        errors.push(`Engine math must be deterministic: Math.${name} is not allowed.`);
     }
   }
   function visit(node) {
+    // Property names (rng.random, { process: ... }) are not globals; check only the object side.
+    if (node.type === 'MemberExpression' && !node.computed) {
+      checkMath(node);
+      visit(node.object);
+      return;
+    }
+    if (node.type === 'ObjectProperty' && !node.computed) {
+      visit(node.value);
+      return;
+    }
     if (
       ['ImportDeclaration', 'ExportNamedDeclaration', 'ExportAllDeclaration'].includes(node.type) &&
       node.source
@@ -140,21 +167,7 @@ export function checkModule(fileName, sourceText) {
     ) {
       errors.push(`Simulation core cannot use ${node.property.value}.`);
     }
-    if (
-      safeMathLayers.has(layer) &&
-      node.type === 'MemberExpression' &&
-      node.object.type === 'Identifier' &&
-      node.object.name === 'Math'
-    ) {
-      const name = node.computed
-        ? node.property.type === 'StringLiteral'
-          ? node.property.value
-          : null
-        : node.property.name;
-      if (name === null) errors.push('Computed Math access is not allowed in the engine.');
-      else if (unsafeMathNames.has(name))
-        errors.push(`Engine math must be deterministic: Math.${name} is not allowed.`);
-    }
+    checkMath(node);
     if (safeMathLayers.has(layer) && node.type === 'BinaryExpression' && node.operator === '**') {
       errors.push('Engine math must be deterministic: ** is not allowed.');
     }

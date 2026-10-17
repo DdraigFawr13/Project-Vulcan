@@ -4,12 +4,12 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 
 | ID | Decision |
 | --- | --- |
-| V-001 | Browser game: Phaser 3 + TypeScript + Vite. Repo `DdraigFawr13/Project-Vulcan`, owned by Morgan. |
+| V-001 | Browser game: Phaser 4 + TypeScript + Vite (Phaser 4 chosen over 3 on 2026-10-17, pinned at 4.2.1). Repo `DdraigFawr13/Project-Vulcan`, owned by Morgan. |
 | V-002 | Deterministic seeded simulation in a Web Worker at a fixed tick; renderer and UI on the main thread. |
 | V-003 | Top-down 2D pixel art, 32 px tiles, muted earthy palette. Claude makes placeholder art; Morgan does an art pass later. |
 | V-004 | Local saves in IndexedDB; cloud saves later. Event log exportable as NDJSON; optional sql.js export later. |
 | V-005 | Process as AI-Master-Instructions and the Story Generator: phase spec of at most two pages approved by Morgan before code; mock-up round before a build; PRs of 300 to 1,500 lines, one milestone each; squash-merge on green CI; merged branches deleted. |
-| V-006 | Engine purity: no DOM, `Date`, `Math.random`, timers or I/O in `src/engine` or `src/content`; named RNG streams; every state change emits an event with cause links. A boundaries check in CI enforces it. |
+| V-006 | Engine purity: no DOM, `Date`, `Math.random`, transcendental `Math` (sin, pow, log and the like, which can differ between browsers), timers or I/O in `src/engine` or `src/content`; named RNG streams; every state change emits an event with cause links. A boundaries check in CI enforces it. |
 | V-007 | Content over code. Locked decisions live in `docs/DECISIONS.md`. |
 | V-008 | Content is a forked copy of the Story Generator raws (cultures, races, names, 336-day calendar of 12 months of 28 days, creatures, items, abilities, six schools, tiers None to Legendary, awakenings, lore, faiths, great works, dragons). Vulcan tunes its own copy. |
 | V-009 | Default site is a Gwerin valley. |

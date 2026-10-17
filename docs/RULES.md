@@ -80,7 +80,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-47** Going over a budget is flagged, never absorbed: say the number in the delivery reply, add a LESSONS line with the cause, and fix the cause by the phase review at the latest.
 - **VR-48** Efficient programming: write the interface and the `MODULE.md` first, then the code; no abstraction before its second use; bulk code goes to the `implementer` with the reading list in its brief (VR-01).
 - **VR-49** Efficient testing from day one: tests next to their code, the related tests only while iterating (`npx vitest related <files>`), the slow-test flag on, and a test removed when a newer one covers it (VR-21 to VR-27).
-- **VR-50** Docs every thread reads stay small: AGENT_BRIEF under 6 KB, each phase file under 4 KB, LESSONS one line per entry. The check enforces the repo's limits.
+- **VR-50** Docs every thread reads stay small: AGENT_BRIEF under 6 KB, each plan phase file under 4 KB, each repo phase spec about two pages (9 KB), LESSONS one line per entry. `npm run limits` enforces the repo's limits.
 - **VR-51** Hand off to an agent only when it is cheaper than doing the work directly: over about 30k tokens of reading or output, over about 150 lines of spec'd code, or work that runs in parallel. Checks under a minute and fixes under about 30 lines stay in the main session ([TOOLKIT.md](TOOLKIT.md) §1).
 - **VR-52** Log each handoff (agent, tokens, minutes, rework needed) in the thread-times line. An agent or skill that costs more than the direct route, or needs rework twice in a phase, is changed or dropped at the phase review (DEL-07).
 - **VR-53** Deterministic chores are scripts, not agents or skills.

@@ -12,7 +12,7 @@ export const limits = {
 
 export function checkLimits() {
   const errors = [];
-  const lines = (file) => readFileSync(file, 'utf8').split('\n').length;
+  const lines = (file) => readFileSync(file, 'utf8').trimEnd().split('\n').length;
   const code = walk(path.join(root, 'src'), (f) => /\.(ts|tsx|mjs)$/.test(f))
     .concat(walk(path.join(root, 'tools'), (f) => /\.(ts|mjs)$/.test(f)))
     .filter((f) => !rel(f).startsWith('src/content/data/'));

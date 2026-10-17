@@ -21,7 +21,7 @@ function exportsOf(folder) {
   const text = readFileSync(file, 'utf8');
   const names = [
     ...text.matchAll(
-      /export\s+(?:declare\s+)?(?:const|let|function|class|type|interface|enum)\s+(\w+)/g,
+      /export\s+(?:declare\s+)?(?:async\s+)?(?:abstract\s+)?(?:const\s+enum|const|let|function\*?|class|type|interface|enum)\s+(\w+)/g,
     ),
   ].map((m) => m[1]);
   for (const m of text.matchAll(/export\s+(?:type\s+)?\{([^}]*)\}/g))
@@ -31,11 +31,14 @@ function exportsOf(folder) {
         .map((n) =>
           n
             .trim()
+            .replace(/^type\s+/, '')
             .split(/\s+as\s+/)
             .at(-1),
         )
         .filter(Boolean),
     );
+  for (const m of text.matchAll(/export\s+\*\s+(?:as\s+(\w+)\s+)?from\s+'([^']+)'/g))
+    names.push(m[1] ?? `* from ${m[2]}`);
   return [...new Set(names)].sort();
 }
 
