@@ -31,6 +31,7 @@ const renderer = startRenderer(parent, {
   onHover: (tile) => hud.showTile(tile),
   onZoom: () => {},
 });
+hudRoot.replaceChildren();
 const hud = new Hud(hudRoot, {
   setSpeed,
   zoom: (direction) => renderer.zoomStep(direction),
@@ -39,25 +40,31 @@ const hud = new Hud(hudRoot, {
 
 worker.onmessage = (e: MessageEvent<FromWorker>) => {
   const message = e.data;
-  if (message.type === 'ready') {
-    renderer.setMapSize(message.width, message.height);
-    ready = true;
-    hud.hideScreen();
-  } else if (message.type === 'snapshot') {
-    waiting = false;
-    renderer.applyChunks(message.chunks);
-    hud.fps = Math.round(renderer.fps());
-    hud.showClock(message.clock, message.tick, message.speed);
-  } else if (message.type === 'error') {
-    stop();
-    hud.showError(message.message);
+  try {
+    if (message.type === 'ready') {
+      renderer.setMapSize(message.width, message.height);
+      ready = true;
+    } else if (message.type === 'snapshot') {
+      waiting = false;
+      renderer.applyChunks(message.chunks);
+      hud.fps = Math.round(renderer.fps());
+      hud.showClock(message.clock, message.tick, message.speed);
+      hud.hideScreen();
+    } else if (message.type === 'error') {
+      fail(message.message);
+    }
+  } catch (error) {
+    // The worker has marked these chunks as sent, so a drawing failure must stop the game too.
+    fail(error instanceof Error ? error.message : String(error));
   }
   // `events` batches are kept for the ledger panel (P0.5); P0.4 only receives them.
 };
-worker.onerror = (e) => {
+worker.onerror = (e) => fail(e.message || 'The simulation worker failed to start.');
+
+function fail(message: string): void {
   stop();
-  hud.showError(e.message || 'The simulation worker failed to start.');
-};
+  hud.showError(message);
+}
 
 function tick(): void {
   if (ready && !waiting && !stopped) {
@@ -73,18 +80,42 @@ function stop(): void {
   worker.terminate();
 }
 
-addEventListener('keydown', (e) => {
-  if (e.repeat && e.key === ' ') return;
+function onKey(e: KeyboardEvent): void {
+  // Leave the browser's own shortcuts (zoom, tab switching) alone.
+  if (e.ctrlKey || e.metaKey || e.altKey || (e.repeat && e.key === ' ')) return;
   if (e.key === ' ') setSpeed(speed === 0 ? lastRunning : 0);
   else if (e.key === '1' || e.key === '2' || e.key === '3') setSpeed(Number(e.key) as Speed);
   else if (e.key === '+' || e.key === '=') renderer.zoomStep(1);
   else if (e.key === '-' || e.key === '_') renderer.zoomStep(-1);
   else return;
   e.preventDefault();
-});
-addEventListener('pagehide', stop);
+}
+
+// A hidden tab pauses, so no game time passes unseen, and resumes at its speed when shown again.
+let hiddenAt: Speed | undefined;
+function onVisibility(): void {
+  if (document.hidden && hiddenAt === undefined) {
+    hiddenAt = speed;
+    if (speed !== 0) send({ type: 'setSpeed', speed: 0 });
+  } else if (!document.hidden && hiddenAt !== undefined) {
+    if (!stopped && hiddenAt !== 0) send({ type: 'setSpeed', speed: hiddenAt });
+    hiddenAt = undefined;
+  }
+}
+
+// A page kept in the back-forward cache keeps its worker; only a real unload stops it.
+const onPageHide = (e: PageTransitionEvent): void => {
+  if (!e.persisted) stop();
+};
+
+addEventListener('keydown', onKey);
+addEventListener('pagehide', onPageHide);
+document.addEventListener('visibilitychange', onVisibility);
 import.meta.hot?.dispose(() => {
   stop();
+  removeEventListener('keydown', onKey);
+  removeEventListener('pagehide', onPageHide);
+  document.removeEventListener('visibilitychange', onVisibility);
   renderer.destroy();
 });
 

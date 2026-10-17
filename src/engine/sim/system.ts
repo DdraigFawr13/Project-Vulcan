@@ -24,7 +24,8 @@ export interface System {
   /** Every event type it may emit; `createSim` checks each has a template before a tick runs. */
   emits?: readonly string[];
   initialState?: Readonly<Record<string, number>>;
-  /** Runs once when a world is created, after `world.begun`, in list order. */
+  /** Runs once when a world is created from a seed, after `world.begun`, in list order; never
+   * when a world is loaded from a save, which already holds what it laid out. */
   init?(ctx: SystemContext): void;
   run?(ctx: SystemContext): void;
   /** Handlers by command kind. `cause` is the `command.applied` event, for cause links. */

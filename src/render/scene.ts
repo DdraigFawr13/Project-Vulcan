@@ -35,6 +35,7 @@ export class ValleyScene extends Phaser.Scene {
   private size = { width: 0, height: 0 };
   /** Chunks that arrived before `create` ran, or before the map size was known. */
   private waiting: ChunkView[] = [];
+  private pointerIn = false;
   onHover: (hover: Hover | undefined) => void = () => {};
   onZoom: (zoom: number) => void = () => {};
 
@@ -54,14 +55,18 @@ export class ValleyScene extends Phaser.Scene {
       .setDepth(10)
       .setVisible(false);
     this.controls = new CameraControls(this, (zoom) => this.onZoom(zoom));
-    this.input.on('pointermove', (p: Phaser.Input.Pointer) => this.hoverAt(p));
+    this.input.on('pointermove', () => (this.pointerIn = true));
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.hoverAt(p));
-    this.input.on('gameout', () => this.hoverAt(undefined));
+    this.input.on('gameout', () => (this.pointerIn = false));
     if (this.size.width) this.buildMap();
   }
 
   override update(_time: number, delta: number): void {
     this.controls?.update(delta);
+    // Panning, zooming and redraws move the map under a still pointer, so check it every frame.
+    const pointer = this.input.activePointer;
+    if (pointer.wasTouch && !pointer.isDown) return; // a finger keeps its last tapped tile
+    this.hoverAt(this.pointerIn ? pointer : undefined);
   }
 
   /** Sizes the map once the worker is ready. */
@@ -99,7 +104,7 @@ export class ValleyScene extends Phaser.Scene {
     if (!layer) throw new Error('The map layer could not be made.');
     this.map = map;
     this.layer = layer;
-    this.controls?.fitTo(width * TILE, height * TILE);
+    this.controls?.frameMap(width * TILE, height * TILE);
     const waiting = this.waiting;
     this.waiting = [];
     this.applyChunks(waiting);
@@ -138,9 +143,10 @@ export class ValleyScene extends Phaser.Scene {
   }
 
   private hoverAt(pointer: Phaser.Input.Pointer | undefined): void {
-    if (!pointer || !this.layer || this.controls?.dragging) {
-      if (!pointer) this.select?.setVisible(false);
-      if (!pointer) this.onHover(undefined);
+    if (!this.layer) return;
+    if (!pointer || this.controls?.dragging) {
+      this.select?.setVisible(false);
+      this.report(undefined);
       return;
     }
     const world = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
@@ -149,6 +155,15 @@ export class ValleyScene extends Phaser.Scene {
     const inside = x >= 0 && y >= 0 && x < this.size.width && y < this.size.height;
     this.select?.setVisible(inside).setPosition(x * TILE, y * TILE);
     const kind = content.terrain.kinds[this.ground[y * this.size.width + x]!];
-    this.onHover(inside && kind ? { x, y, ground: kind.name } : undefined);
+    this.report(inside && kind ? { x, y, ground: kind.name } : undefined);
+  }
+
+  private last = '';
+  // Tells the page only when the tile or its ground changes, not every frame.
+  private report(hover: Hover | undefined): void {
+    const key = hover ? `${hover.x},${hover.y},${hover.ground}` : '';
+    if (key === this.last) return;
+    this.last = key;
+    this.onHover(hover);
   }
 }

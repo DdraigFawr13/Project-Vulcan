@@ -8,7 +8,7 @@ export const MAX_CATCH_UP_MS = 250;
 
 export interface Pace {
   speed: Speed;
-  /** Ticks owed but not yet run, times 1000 (kept scaled so whole milliseconds add up exactly). */
+  /** Ticks owed but not yet run, times 1000 (scaled, so whole milliseconds add up without drift). */
   owed: number;
   /** Real time of the last wake, in ms. */
   last: number;

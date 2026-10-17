@@ -9,6 +9,7 @@ import {
   createWorld,
   hashString,
   mapSystem,
+  setTile,
   renderEvent,
   replay,
   step,
@@ -99,6 +100,11 @@ describe('engine', () => {
     expect(world.map.chunkVersions).toHaveLength(100);
     expect(chunkTiles(world.map, 9, 9)).toMatchObject({ x: 144, y: 144, w: 6, h: 6 });
     expect(chunkTiles(world.map, 9, 9).tiles.every((t) => t === 0)).toBe(true);
+    // Changing a tile marks only its chunk for resending.
+    const ctx = { world, content } as unknown as Parameters<typeof setTile>[0];
+    setTile(ctx, 150 - 1, 17, 1);
+    expect(world.map.chunkVersions[1 * 10 + 9]).toBe(2);
+    expect(world.map.chunkVersions.filter((v) => v === 2)).toHaveLength(1);
   });
 
   it('applies a late lever on the next tick and logs an unknown one as refused', () => {

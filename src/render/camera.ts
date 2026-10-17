@@ -43,7 +43,8 @@ export class CameraControls {
     return this.scene.cameras.main;
   }
 
-  fitTo(width: number, height: number): void {
+  /** Bounds the camera to the map and centres it there at the current zoom. */
+  frameMap(width: number, height: number): void {
     this.camera.setBounds(0, 0, width, height).setZoom(ZOOMS[this.zoomIndex]);
     this.camera.centerOn(width / 2, height / 2);
     this.onZoom(this.camera.zoom);

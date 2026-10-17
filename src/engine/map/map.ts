@@ -1,7 +1,7 @@
 // The surface map: laid out once when a world begins, flat ground of the content's starting kind
 // until Phase 1's terrain generator (which will draw from the reserved `worldgen` stream).
 import type { MapState } from '../core/index.ts';
-import type { System } from '../sim/index.ts';
+import type { System, SystemContext } from '../sim/index.ts';
 
 /** Tiles per chunk side. The worker sends the map to the screen a chunk at a time. */
 export const CHUNK = 16;
@@ -26,6 +26,21 @@ export function chunkTiles(
   return { x, y, w, h, tiles };
 }
 
+/**
+ * The only writer of a tile after the map is formed: sets the kind and raises the chunk's version
+ * so the worker resends it. The caller emits the event that explains the change.
+ */
+export function setTile(ctx: SystemContext, x: number, y: number, kind: number): void {
+  const map = ctx.world.map;
+  if (!ctx.content.terrain.kinds[kind]) throw new Error(`Terrain ${kind} is not a terrain kind.`);
+  if (x < 0 || y < 0 || x >= map.width || y >= map.height)
+    throw new Error(`Tile ${x}, ${y} is off the map.`);
+  if (map.tiles[y * map.width + x] === kind) return;
+  map.tiles[y * map.width + x] = kind;
+  map.chunkVersions[Math.floor(y / CHUNK) * chunksAcross(map) + Math.floor(x / CHUNK)]! += 1;
+}
+
+/** Lays out the map in `init` (generation belongs there, not in a cadence); it never runs on load. */
 export const mapSystem: System = {
   id: 'map',
   every: 'day',

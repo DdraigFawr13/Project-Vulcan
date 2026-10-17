@@ -20,7 +20,7 @@ const WAKE_MS = 10;
 
 const sim = createSim(content);
 let world: WorldState | undefined;
-const pace = createPace(performance.now());
+let pace = createPace(performance.now());
 /** Chunk versions the page has already been sent; empty until the first snapshot. */
 let sent: number[] = [];
 /** Index of the first ledger line not yet posted. */
@@ -68,22 +68,24 @@ function snapshot(w: WorldState): void {
   );
 }
 
+/** Makes `w` the running world, paused, with everything sent afresh. P0.5's `load` ends here too. */
+function adopt(w: WorldState): void {
+  world = w;
+  sent = [];
+  posted = 0;
+  pace = createPace(performance.now());
+  timer ??= setInterval(() => guarded(() => run(ticksDue(pace, performance.now()))), WAKE_MS);
+  post({ type: 'ready', seed: w.seed, contentHash, width: w.map.width, height: w.map.height });
+}
+
 function handle(message: ToWorker): void {
   switch (message.type) {
     case 'init':
       if (message.contentHash !== contentHash)
-        throw new Error(`The page and the worker have different content (${contentHash}).`);
-      world = createWorld(sim, message.seed);
-      sent = [];
-      posted = 0;
-      timer ??= setInterval(() => guarded(() => run(ticksDue(pace, performance.now()))), WAKE_MS);
-      post({
-        type: 'ready',
-        seed: world.seed,
-        contentHash,
-        width: world.map.width,
-        height: world.map.height,
-      });
+        throw new Error(
+          `The page's content (${message.contentHash}) differs from the worker's (${contentHash}).`,
+        );
+      adopt(createWorld(sim, message.seed));
       return;
     case 'setSpeed':
       run(setSpeed(pace, message.speed, performance.now()));
