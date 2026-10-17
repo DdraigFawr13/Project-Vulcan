@@ -1,9 +1,9 @@
 // The scheduler and the lever queue: one tick applies that tick's commands, then runs the
 // systems that are due, in list order.
-import { streamFor, ticksPerMonth, TICKS_PER_DAY, TICKS_PER_HOUR } from '../core/index.ts';
+import { ticksPerMonth, TICKS_PER_DAY, TICKS_PER_HOUR } from '../core/index.ts';
 import type { Command, EventData, WorldState } from '../core/index.ts';
 import { emit } from '../log/index.ts';
-import type { Cadence, System, SystemContext } from './system.ts';
+import { contextFor, type Cadence } from './system.ts';
 import { createWorld, type Sim } from './world.ts';
 
 /**
@@ -38,20 +38,6 @@ function enqueue(world: WorldState, command: Command): void {
   world.pending.splice(at, 0, command);
 }
 
-function context(world: WorldState, sim: Sim, system: System): SystemContext {
-  return {
-    world,
-    content: sim.content,
-    // A world saved before this system existed gets its initial state on first use.
-    state: (world.systems[system.id] ??= { ...system.initialState }),
-    rng() {
-      if (!system.stream) throw new Error(`System "${system.id}" has no RNG stream.`);
-      return streamFor(world, system.stream);
-    },
-    emit: (type, fields) => emit(world, sim.templates, type, fields),
-  };
-}
-
 function due(every: Cadence, tick: number, sim: Sim): boolean {
   if (every === 'minute') return true;
   if (every === 'hour') return tick % TICKS_PER_HOUR === 0;
@@ -67,7 +53,7 @@ function applyCommand(world: WorldState, sim: Sim, command: Command): void {
     return;
   }
   const cause = emit(world, sim.templates, 'command.applied', { data });
-  system.commands![command.kind]!(context(world, sim, system), command, cause);
+  system.commands![command.kind]!(contextFor(world, sim, system), command, cause);
 }
 
 /** Advances the world by `ticks` game minutes. Returns the events written, oldest first; they are
@@ -79,7 +65,8 @@ export function step(world: WorldState, sim: Sim, ticks = 1): WorldState['log'] 
     while (world.pending[0] && world.pending[0].tick <= world.tick)
       applyCommand(world, sim, world.pending.shift()!);
     for (const system of sim.systems)
-      if (system.run && due(system.every, world.tick, sim)) system.run(context(world, sim, system));
+      if (system.run && due(system.every, world.tick, sim))
+        system.run(contextFor(world, sim, system));
   }
   return world.log.slice(from);
 }

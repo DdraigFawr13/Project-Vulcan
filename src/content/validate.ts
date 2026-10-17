@@ -55,6 +55,7 @@ export function validateContent(files: Files): string[] {
     (files[file] as Record<string, unknown> | undefined)?.[key];
   index('biomes', 'biomes.biomes', part('biomes', 'biomes'));
   index('faiths', 'faiths.defs', part('faiths', 'defs'));
+  index('terrain', 'terrain.kinds', part('terrain', 'kinds'));
   // Lists nothing refers to yet still need unique ids.
   for (const file of ['resources', 'weather', 'awakenings', 'ailments', 'diseases', 'events'])
     unique(file, files[file]);
@@ -69,7 +70,7 @@ export function validateContent(files: Files): string[] {
     }
   }
   // Tier caps read the files as typed, so they run only once every shape is valid.
-  if (errors.length === 0) errors.push(...checkTierCaps(files));
+  if (errors.length === 0) errors.push(...checkTierCaps(files), ...checkTerrain(files));
   return errors;
 }
 
@@ -107,5 +108,22 @@ function checkTierCaps(files: Files): string[] {
     over(a.effect.areaRadius, tier.caps.maxAreaRadius, 'areaRadius');
     over(a.effect.usesPerDay, tier.caps.maxUsesPerDay, 'usesPerDay');
   }
+  return errors;
+}
+
+// Map tiles are whole-number sizes and travel as bytes (src/engine/map), so at most 256 kinds.
+function checkTerrain(files: Files): string[] {
+  const { surface, kinds } = files['terrain'] as {
+    surface: { width: number; height: number };
+    kinds: { id: string; variants: number }[];
+  };
+  const errors: string[] = [];
+  for (const side of ['width', 'height'] as const)
+    if (!Number.isInteger(surface[side]) || surface[side] < 1)
+      errors.push(`terrain.surface.${side}: ${surface[side]} is not a whole number of tiles`);
+  if (kinds.length > 256) errors.push(`terrain.kinds: ${kinds.length} kinds, at most 256`);
+  for (const kind of kinds)
+    if (!Number.isInteger(kind.variants))
+      errors.push(`terrain.kinds[${kind.id}].variants: ${kind.variants} is not a whole number`);
   return errors;
 }

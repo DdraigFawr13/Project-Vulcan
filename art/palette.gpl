@@ -1,0 +1,32 @@
+GIMP Palette
+Name: Vulcan muted earth
+Columns: 4
+# The placeholder palette (docs/ART.md). Every tile in art/src uses only these colours.
+ 28  26  23	ink
+ 15  14  12	darkness
+233 226 212	bone
+215 155  98	amber
+ 63  74  42	grass dark
+ 79  91  51	grass
+ 93 106  58	grass light
+110 122  69	grass tip
+ 90  66  48	dirt dark
+107  79  54	dirt
+125  94  64	dirt light
+168 144  98	sand dark
+184 162 114	sand
+201 180 132	sand light
+ 98  94  86	gravel dark
+122 117 107	gravel
+142 136 124	gravel light
+119 114 106	floor dark
+138 132 120	floor
+155 150 138	floor light
+ 58  54  50	rock dark
+ 74  70  64	rock
+ 90  85  77	rock light
+106 100  90	rock edge
+ 46  77  90	deep water
+ 58  93 106	deep water light
+ 79 122 122	shallow water
+ 95 140 136	shallow water light

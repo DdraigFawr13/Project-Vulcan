@@ -22,6 +22,7 @@ import needs from './data/needs.json';
 import races from './data/races.json';
 import resources from './data/resources.json';
 import schools from './data/schools.json';
+import terrain from './data/terrain.json';
 import tiers from './data/tiers.json';
 import traits from './data/traits.json';
 import weather from './data/weather.json';
@@ -58,6 +59,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   races,
   resources,
   schools,
+  terrain,
   tiers,
   traits,
   weather,

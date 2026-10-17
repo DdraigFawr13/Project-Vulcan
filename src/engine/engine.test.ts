@@ -4,9 +4,12 @@ import { describe, expect, it } from 'vitest';
 import { content } from '../content/index';
 import {
   calendarSystem,
+  chunkTiles,
   createSim,
   createWorld,
   hashString,
+  mapSystem,
+  setTile,
   renderEvent,
   replay,
   step,
@@ -20,6 +23,7 @@ import {
 // Test-only fixtures: a system that rolls its dice every hour and a lever with no game meaning.
 const fixtureContent: EngineContent = {
   calendar: content.calendar,
+  terrain: content.terrain,
   events: [
     ...content.events,
     { id: 'test.roll', template: 'The dice showed {value}.' },
@@ -37,7 +41,7 @@ const dice: System = {
       void ctx.emit('test.marked', { causes: [cause], data: { place: command.data['place']! } }),
   },
 };
-const sim = createSim(fixtureContent, [calendarSystem, dice]);
+const sim = createSim(fixtureContent, [mapSystem, calendarSystem, dice]);
 const month = ticksPerMonth(content.calendar);
 
 /** A game month from `seed`, with three levers sent at different points of the run. */
@@ -57,6 +61,7 @@ describe('engine', () => {
     const b = runMonth('hollow-oak');
     expect(toNdjson(a.log)).toBe(toNdjson(b.log));
     expect(a.rng).toEqual(b.rng);
+    expect(a.map).toEqual(b.map);
     // Seed plus command log alone rebuild the whole world, not only its ledger.
     expect(replay(sim, 'hollow-oak', a.commandLog, a.tick)).toEqual(a);
     // Another seed changes the dice, not just the seed printed in the first line.
@@ -83,12 +88,23 @@ describe('engine', () => {
     step(world, createSim(content), 3 * month);
     const text = (id: number) => renderEvent(world.log[id - 1]!, createSim(content).templates);
     expect(text(1)).toBe('A new world began from seed "hollow-oak".');
-    expect(text(2)).toBe('Day 2 of Thawmonth began.');
-    expect(world.log[28]).toMatchObject({ id: 29, type: 'calendar.month', causes: [1] });
-    expect(world.log[29]).toMatchObject({ type: 'calendar.day', causes: [29] });
-    expect(text(85)).toBe('Highsun began.');
-    expect(world.log[85]).toMatchObject({ type: 'calendar.season', causes: [85] });
-    expect(text(86)).toBe('Summer came to the valley.');
+    expect(text(2)).toBe("The valley's ground was laid out: 150 by 150 tiles of grass.");
+    expect(world.log[1]).toMatchObject({ type: 'map.formed', causes: [1] });
+    expect(text(3)).toBe('Day 2 of Thawmonth began.');
+    expect(world.log[29]).toMatchObject({ id: 30, type: 'calendar.month', causes: [1] });
+    expect(world.log[30]).toMatchObject({ type: 'calendar.day', causes: [30] });
+    expect(text(86)).toBe('Highsun began.');
+    expect(world.log[86]).toMatchObject({ type: 'calendar.season', causes: [86] });
+    expect(text(87)).toBe('Summer came to the valley.');
+    // The map is the content's flat ground, cut into 10 by 10 chunks with narrower edge chunks.
+    expect(world.map.chunkVersions).toHaveLength(100);
+    expect(chunkTiles(world.map, 9, 9)).toMatchObject({ x: 144, y: 144, w: 6, h: 6 });
+    expect(chunkTiles(world.map, 9, 9).tiles.every((t) => t === 0)).toBe(true);
+    // Changing a tile marks only its chunk for resending.
+    const ctx = { world, content } as unknown as Parameters<typeof setTile>[0];
+    setTile(ctx, 150 - 1, 17, 1);
+    expect(world.map.chunkVersions[1 * 10 + 9]).toBe(2);
+    expect(world.map.chunkVersions.filter((v) => v === 2)).toHaveLength(1);
   });
 
   it('applies a late lever on the next tick and logs an unknown one as refused', () => {
