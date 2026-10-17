@@ -1,6 +1,6 @@
 // World state and event shapes. The whole world is plain data (numbers, strings, arrays), so the
 // worker can post it, P0.5 can save it and tests can compare it.
-import type { RngState } from './rng';
+import type { RngState } from './rng.ts';
 
 /** The named RNG streams (docs/ARCHITECTURE.md "RNG"). A system draws only from its own. */
 export const STREAMS = [

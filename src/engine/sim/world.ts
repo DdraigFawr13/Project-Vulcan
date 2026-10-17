@@ -1,7 +1,7 @@
 // The world record and the simulation it runs under: content, templates and the system list.
 import { START_TICK, type EngineContent, type WorldState } from '../core/index.ts';
 import { emit, templatesOf, type Templates } from '../log/index.ts';
-import type { System } from './system';
+import type { System } from './system.ts';
 
 /** Everything a world runs under that is not saved state: content and code. */
 export interface Sim {
@@ -18,11 +18,18 @@ export function createSim(content: EngineContent, systems: readonly System[]): S
     if (ids.has(system.id)) throw new Error(`System "${system.id}" is listed twice.`);
     ids.add(system.id);
     for (const kind of Object.keys(system.commands ?? {})) {
+      // Object.keys lists own keys only, so an inherited name such as "constructor" never counts.
       if (kinds.has(kind)) throw new Error(`Command "${kind}" has two handlers.`);
       kinds.add(kind);
     }
   }
-  return { content, templates: templatesOf(content.events), systems };
+  const templates = templatesOf(content.events);
+  const core = ['world.begun', 'command.applied', 'command.refused'];
+  const missing = [...core, ...systems.flatMap((s) => s.emits ?? [])].filter(
+    (t) => !templates.has(t),
+  );
+  if (missing.length) throw new Error(`No template in content events for: ${missing.join(', ')}.`);
+  return { content, templates, systems };
 }
 
 /** A new world at 06:00 on day 1, its first ledger line already written. */

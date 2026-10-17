@@ -1,5 +1,5 @@
 // Game time from a tick count: one tick is one game minute (docs/ARCHITECTURE.md "Tick").
-import type { CalendarDef } from './types';
+import type { CalendarDef } from './types.ts';
 
 export const TICKS_PER_HOUR = 60;
 export const TICKS_PER_DAY = 1440;

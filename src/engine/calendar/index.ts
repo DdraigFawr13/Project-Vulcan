@@ -1,2 +1,2 @@
 // Public surface of the calendar system.
-export { calendarSystem } from './calendar';
+export { calendarSystem } from './calendar.ts';

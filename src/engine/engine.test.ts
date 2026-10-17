@@ -15,7 +15,7 @@ import {
   toNdjson,
   type EngineContent,
   type System,
-} from './index';
+} from './index.ts';
 
 // Test-only fixtures: a system that rolls its dice every hour and a lever with no game meaning.
 const fixtureContent: EngineContent = {
@@ -30,6 +30,7 @@ const dice: System = {
   id: 'test-dice',
   every: 'hour',
   stream: 'weather',
+  emits: ['test.roll', 'test.marked'],
   run: (ctx) => void ctx.emit('test.roll', { data: { value: ctx.rng().between(1, 6) } }),
   commands: {
     'test.mark': (ctx, command, cause) =>
@@ -56,9 +57,25 @@ describe('engine', () => {
     const b = runMonth('hollow-oak');
     expect(toNdjson(a.log)).toBe(toNdjson(b.log));
     expect(a.rng).toEqual(b.rng);
-    // Rebuilding from the seed and the command log alone gives the same ledger (the save check).
-    expect(toNdjson(replay(sim, 'hollow-oak', a.commandLog, a.tick).log)).toBe(toNdjson(a.log));
-    expect(hashString(toNdjson(runMonth('stone-weir').log))).not.toBe(hashString(toNdjson(a.log)));
+    // Seed plus command log alone rebuild the whole world, not only its ledger.
+    expect(replay(sim, 'hollow-oak', a.commandLog, a.tick)).toEqual(a);
+    // Another seed changes the dice, not just the seed printed in the first line.
+    const rolls = (log: typeof a.log) =>
+      log.filter((e) => e.type === 'test.roll').map((e) => e.data['value']);
+    expect(rolls(runMonth('stone-weir').log)).not.toEqual(rolls(a.log));
+  });
+
+  it('continues a world restored from JSON exactly as an unbroken run', () => {
+    const unbroken = runMonth('hollow-oak');
+    const world = createWorld(sim, 'hollow-oak');
+    submitCommand(world, { tick: 16380, kind: 'test.mark', data: { place: 'north field' } });
+    step(world, sim, 20000);
+    const restored = JSON.parse(JSON.stringify(world)) as typeof world;
+    submitCommand(restored, { tick: 100, kind: 'test.mark', data: { place: 'old ford' } });
+    submitCommand(restored, { tick: restored.tick + 500, kind: 'test.unknown' });
+    step(restored, sim, month - 20000);
+    expect(toNdjson(restored.log)).toBe(toNdjson(unbroken.log));
+    expect(hashString(toNdjson(restored.log))).toBe(hashString(toNdjson(unbroken.log)));
   });
 
   it('writes the calendar lines with short "why?" chains', () => {
@@ -89,6 +106,15 @@ describe('engine', () => {
       ['command.refused', 20860],
     ]);
     expect(lines[1]!.causes).toEqual([lines[0]!.id]);
+    // An inherited property name is not a handler, and a tick must be a whole minute.
+    submitCommand(world, { tick: world.tick + 1, kind: 'constructor' });
+    expect(step(world, sim)[0]).toMatchObject({
+      type: 'command.refused',
+      data: { kind: 'constructor' },
+    });
+    expect(() => submitCommand(world, { tick: Number.NaN, kind: 'test.mark' })).toThrow(
+      'whole minutes',
+    );
   });
 
   it('refuses an event type with no template, or a template slot left empty', () => {
@@ -104,5 +130,8 @@ describe('engine', () => {
         );
     expect(emit('test.nothing')).toThrow('Event type "test.nothing" has no template');
     expect(emit('calendar.month')).toThrow('template needs "month"');
+    expect(() =>
+      createSim(fixtureContent, [{ id: 'y', every: 'day', emits: ['test.nothing'] }]),
+    ).toThrow('No template in content events for: test.nothing.');
   });
 });

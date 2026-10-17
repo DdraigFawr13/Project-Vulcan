@@ -19,6 +19,8 @@ export interface System {
   id: string;
   every: Cadence;
   stream?: StreamName;
+  /** Every event type it may emit; `createSim` checks each has a template before a tick runs. */
+  emits?: readonly string[];
   initialState?: Readonly<Record<string, number>>;
   run?(ctx: SystemContext): void;
   /** Handlers by command kind. `cause` is the `command.applied` event, for cause links. */

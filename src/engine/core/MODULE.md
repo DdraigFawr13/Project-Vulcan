@@ -6,4 +6,4 @@ The engine's shared vocabulary: world and event types, the named RNG streams, st
 - **Events:** none.
 - **State owned:** none; it defines the shapes. `WorldState.rng` holds each stream's four sfc32 words.
 - **Invariants:** a stream's start depends only on `(seed, name)`, so a new stream never reshuffles the others; only 32-bit integer operations, identical in every JS engine. One tick is one game minute.
-- **Tests:** covered by `src/engine/engine.test.ts`. RNG salvaged from PR #1 (commit f054061).
+- **Tests:** exercised through `src/engine/engine.test.ts` (a stream's rolls differ by seed and replay exactly); no test of its own (VR-21, VR-22). RNG salvaged from PR #1 (commit f054061).

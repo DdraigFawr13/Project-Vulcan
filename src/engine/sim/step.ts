@@ -3,8 +3,8 @@
 import { streamFor, ticksPerMonth, TICKS_PER_DAY, TICKS_PER_HOUR } from '../core/index.ts';
 import type { Command, EventData, WorldState } from '../core/index.ts';
 import { emit } from '../log/index.ts';
-import type { Cadence, System, SystemContext } from './system';
-import { createWorld, type Sim } from './world';
+import type { Cadence, System, SystemContext } from './system.ts';
+import { createWorld, type Sim } from './world.ts';
 
 /**
  * Queues a command and returns it as stamped. It applies on `max(asked, world.tick + 1)`, so a
@@ -14,6 +14,10 @@ export function submitCommand(
   world: WorldState,
   command: { tick: number; kind: string; data?: EventData },
 ): Command {
+  if (!Number.isSafeInteger(command.tick))
+    throw new Error(
+      `Command "${command.kind}" asks for tick ${command.tick}; ticks are whole minutes.`,
+    );
   const stamped: Command = {
     tick: Math.max(command.tick, world.tick + 1),
     asked: command.tick,
@@ -24,7 +28,7 @@ export function submitCommand(
   world.nextCommandSeq += 1;
   world.commandLog.push(stamped);
   enqueue(world, stamped);
-  return stamped;
+  return { ...stamped, data: { ...stamped.data } };
 }
 
 // Keeps `pending` sorted by tick then seq; seq only grows, so insert after every command due no later.
@@ -38,7 +42,8 @@ function context(world: WorldState, sim: Sim, system: System): SystemContext {
   return {
     world,
     content: sim.content,
-    state: world.systems[system.id]!,
+    // A world saved before this system existed gets its initial state on first use.
+    state: (world.systems[system.id] ??= { ...system.initialState }),
     rng() {
       if (!system.stream) throw new Error(`System "${system.id}" has no RNG stream.`);
       return streamFor(world, system.stream);
@@ -55,7 +60,7 @@ function due(every: Cadence, tick: number, sim: Sim): boolean {
 }
 
 function applyCommand(world: WorldState, sim: Sim, command: Command): void {
-  const system = sim.systems.find((s) => s.commands?.[command.kind]);
+  const system = sim.systems.find((s) => s.commands && Object.hasOwn(s.commands, command.kind));
   const data = { kind: command.kind, asked: command.asked, seq: command.seq };
   if (!system) {
     emit(world, sim.templates, 'command.refused', { data: { ...data, reason: 'unknown order' } });
@@ -65,7 +70,8 @@ function applyCommand(world: WorldState, sim: Sim, command: Command): void {
   system.commands![command.kind]!(context(world, sim, system), command, cause);
 }
 
-/** Advances the world by `ticks` game minutes. Returns the events written, oldest first. */
+/** Advances the world by `ticks` game minutes. Returns the events written, oldest first; they are
+ * the ledger's own records, so treat them as read-only. */
 export function step(world: WorldState, sim: Sim, ticks = 1): WorldState['log'] {
   const from = world.log.length;
   for (let i = 0; i < ticks; i += 1) {

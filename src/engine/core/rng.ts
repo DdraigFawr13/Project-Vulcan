@@ -81,11 +81,6 @@ export class RngStream {
     if (!states[name]) throw new Error(`RNG stream "${name}" has no state.`);
   }
 
-  /** A standalone stream outside any world, e.g. for previews that must not change history. */
-  static detached(seed: string, name: string): RngStream {
-    return new RngStream({ [name]: deriveStreamState(seed, name) }, name);
-  }
-
   private next(): number {
     return nextUint32(this.states[this.name]!);
   }

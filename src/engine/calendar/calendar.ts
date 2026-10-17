@@ -1,17 +1,18 @@
 // The calendar's ledger lines: a line each new day, a month line on the first of each month and
 // a season line when a season turns. Day lines cite their month line and month lines the
 // world's beginning, so any "why?" reaches the start in two steps.
-import { clockAt } from '../core/index.ts';
+import { clockAt, TICKS_PER_DAY } from '../core/index.ts';
 import type { System } from '../sim/index.ts';
 
 export const calendarSystem: System = {
   id: 'calendar',
   every: 'day',
+  emits: ['calendar.day', 'calendar.month', 'calendar.season'],
   initialState: { monthEvent: 0 },
   run(ctx) {
     const { calendar } = ctx.content;
     const clock = clockAt(ctx.world.tick, calendar);
-    const month = calendar.monthNames[clock.month] ?? `Month ${clock.month + 1}`;
+    const month = calendar.monthNames[clock.month]!;
     if (clock.day > 1) {
       const cause = ctx.state['monthEvent'] || ctx.world.begunEvent;
       ctx.emit('calendar.day', { causes: [cause], data: { day: clock.day, month } });
@@ -22,9 +23,10 @@ export const calendarSystem: System = {
       data: { month, year: clock.year },
     });
     ctx.state['monthEvent'] = monthEvent;
-    const monthsPerSeason = calendar.monthsPerYear / calendar.seasons.length;
-    if (clock.month % monthsPerSeason === 0) {
-      const season = calendar.seasons[clock.season] ?? `season ${clock.season + 1}`;
+    // A season turns when this month's season differs from the last month's (clockAt decides both).
+    const before = clockAt(ctx.world.tick - TICKS_PER_DAY, calendar).season;
+    if (clock.season !== before) {
+      const season = calendar.seasons[clock.season]!;
       ctx.emit('calendar.season', {
         causes: [monthEvent],
         data: { season, seasonName: season.charAt(0).toUpperCase() + season.slice(1) },
