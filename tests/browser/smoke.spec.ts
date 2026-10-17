@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 // The one browser smoke (RULES.md VR-23): the game boots with no page errors, draws the map,
 // starts paused, runs at 3x and stops dead when paused; the inspector answers "why?"; a save
-// survives a page reload and carries on; the ledger exports.
+// survives a page reload and carries on; the ledger exports; a shaft opens the level below.
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
 /** The last snapshot's tick and the worker's clock when it was sent (ms). */
@@ -91,5 +91,28 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(page.getByText('Paused')).toBeVisible();
   await page.getByTestId('speed-3').click();
   await expect.poll(() => tick(page)).toBeGreaterThan(paused);
+
+  // The levels below: level 1 is blank until a shaft reaches it, then it opens and inspects.
+  await page.keyboard.press('>');
+  await expect(page.getByTestId('level')).toHaveText('−1');
+  await expect(page.getByTestId('unreached')).toBeVisible();
+  await page.keyboard.press('<');
+  // A shaft cannot go down through a tree or water, so tap around the centre for open ground.
+  const canvas = page.getByTestId('game').locator('canvas');
+  const box = (await canvas.boundingBox())!;
+  for (const [dx, dy] of [0, 40, -40, 80, -80].flatMap((dx) =>
+    [0, 40, -40].map((dy) => [dx, dy]),
+  )) {
+    await canvas.click({ position: { x: box.width / 2 + dx!, y: box.height / 2 + dy! } });
+    await expect(panel).toContainText('ground');
+    const text = await panel.innerText();
+    if (!/on it|water/.test(text)) break;
+  }
+  await panel.getByRole('button', { name: 'Sink a shaft to −4' }).click();
+  await page.keyboard.press('>');
+  await expect(page.getByTestId('unreached')).toBeHidden();
+  await page.getByTestId('game').locator('canvas').click();
+  await expect(panel).toContainText('1 level down');
+  await expect(panel).toContainText('shaft');
   expect(errors).toEqual([]);
 });

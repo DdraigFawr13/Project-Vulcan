@@ -11,6 +11,8 @@ export interface Renderer {
   /** Draws changed chunks; ones that arrive before the scene is ready are held until it is. */
   applyChunks(chunks: readonly ChunkView[]): void;
   zoomStep(direction: 1 | -1): void;
+  /** Shows level `z`: 0 the surface, 1 to 4 below. */
+  setLevel(z: number): void;
   /** Marks the inspected tile, or clears the mark. */
   mark(tile: { x: number; y: number } | undefined): void;
   /** A small picture of the current view as a JPEG data URL, for the save list; '' if none. */
@@ -44,6 +46,7 @@ export function startRenderer(
     setMapSize: (width, height) => scene.setMapSize(width, height),
     applyChunks: (chunks) => scene.applyChunks(chunks),
     zoomStep: (direction) => scene.zoomStep(direction),
+    setLevel: (z) => scene.setLevel(z),
     mark: (tile) => scene.mark(tile),
     thumbnail: () => thumbnailOf(game),
     fps: () => game.loop.actualFps,

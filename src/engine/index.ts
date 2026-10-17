@@ -10,7 +10,15 @@ export * from './log/index.ts';
 export { createWorld, replay, step, submitCommand } from './sim/index.ts';
 export type { Cadence, Sim, System, SystemContext } from './sim/index.ts';
 export { calendarSystem } from './calendar/index.ts';
-export { CHUNK, chunksAcross, chunksDown, chunkTiles, mapSystem, setTile } from './map/index.ts';
+export {
+  CHUNK,
+  chunksAcross,
+  chunksDown,
+  chunkTiles,
+  layerOf,
+  mapSystem,
+  setTile,
+} from './map/index.ts';
 
 /** The game's systems in tick order. Later milestones add theirs here. */
 export const SYSTEMS: readonly System[] = [mapSystem, calendarSystem];

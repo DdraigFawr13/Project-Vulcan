@@ -10,6 +10,7 @@ import {
   createSim,
   createWorld,
   findEvent,
+  layerOf,
   renderEvent,
   step,
   submitCommand,
@@ -36,8 +37,8 @@ const WAKE_MS = 10;
 const sim = createSim(content);
 let world: WorldState | undefined;
 let pace = createPace(performance.now());
-/** Chunk versions the page has already been sent; empty until the first snapshot. */
-let sent: number[] = [];
+/** Chunk versions the page has already been sent, per level; empty until the first snapshot. */
+let sent: number[][] = [];
 /** Index of the first ledger line not yet posted. */
 let posted = 0;
 let timer: ReturnType<typeof setInterval> | undefined;
@@ -78,13 +79,18 @@ function snapshot(w: WorldState): void {
   }
   const chunks: ChunkView[] = [];
   const across = chunksAcross(w.map);
-  for (let cy = 0; cy < chunksDown(w.map); cy += 1)
-    for (let cx = 0; cx < across; cx += 1) {
-      const i = cy * across + cx;
-      if (sent[i] === w.map.chunkVersions[i]) continue;
-      sent[i] = w.map.chunkVersions[i]!;
-      chunks.push(chunkTiles(w.map, cx, cy));
-    }
+  for (let z = 0; z <= w.map.levels.length; z += 1) {
+    const layer = layerOf(w.map, z);
+    if (!layer) continue;
+    const seen = (sent[z] ??= []);
+    for (let cy = 0; cy < chunksDown(w.map); cy += 1)
+      for (let cx = 0; cx < across; cx += 1) {
+        const i = cy * across + cx;
+        if (seen[i] === layer.chunkVersions[i]) continue;
+        seen[i] = layer.chunkVersions[i]!;
+        chunks.push(chunkTiles(w.map, cx, cy, z));
+      }
+  }
   post(
     {
       type: 'snapshot',
@@ -93,6 +99,7 @@ function snapshot(w: WorldState): void {
       speed: pace.speed,
       clock: clockView(w.tick),
       chunks,
+      reached: w.map.levels.map((level) => level !== null),
     },
     chunks.flatMap((chunk) => [chunk.tiles.buffer, chunk.features.buffer, chunk.snow.buffer]),
   );
@@ -100,27 +107,40 @@ function snapshot(w: WorldState): void {
 
 const itemName = (id: string): string => content.items.find((item) => item.id === id)?.name ?? id;
 
-function tileView(w: WorldState, x: number, y: number): TileView | undefined {
+/** Tile (x, y) on level `z` for the inspector; undefined off the map or on an unreached level. */
+function tileView(w: WorldState, x: number, y: number, z: number): TileView | undefined {
   const { map } = w;
-  if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0) return undefined;
+  if (![x, y, z].every(Number.isInteger) || x < 0 || y < 0) return undefined;
   if (x >= map.width || y >= map.height) return undefined;
+  const layer = z >= 0 ? layerOf(map, z) : undefined;
+  if (!layer) return undefined;
   const chunkX = Math.floor(x / CHUNK);
   const chunkY = Math.floor(y / CHUNK);
   const i = y * map.width + x;
-  const changedBy = findEvent(w.log, map.tileCauses[i]!);
-  const feature = map.features[i]! > 0 ? content.features[map.features[i]! - 1] : undefined;
+  const changedBy = findEvent(w.log, layer.tileCauses[i]!);
+  const feature = layer.features[i]! > 0 ? content.features[layer.features[i]! - 1] : undefined;
+  const snowy = z === 0 && map.snow[i] === 1;
+  const under = z < map.levels.length ? layerOf(map, z + 1) : undefined;
   return {
     x,
     y,
-    ground: `${content.terrain.kinds[map.tiles[i]!]!.name}${map.snow[i] ? ', snow-capped' : ''}`,
-    biome: content.biomes.biomes[map.biomes[i]!]!.name,
-    elevation: map.elevation[i]!,
-    fertility: map.fertility[i]!,
-    ...waterOf(map, i),
+    z,
+    ground: `${content.terrain.kinds[layer.tiles[i]!]!.name}${snowy ? ', snow-capped' : ''}`,
+    ...(z === 0 && {
+      biome: content.biomes.biomes[map.biomes[i]!]!.name,
+      elevation: map.elevation[i]!,
+      fertility: map.fertility[i]!,
+    }),
+    ...(z < map.levels.length && {
+      below: under
+        ? `${content.terrain.kinds[under.tiles[i]!]!.name} (level ${z + 1})`
+        : `level ${z + 1}, not reached`,
+    }),
+    ...waterOf(map, layer.tiles[i]!, z === 0 ? map.water[i]! : 0),
     ...(feature && { feature: `${feature.name} (${feature.amount} ${itemName(feature.yields)})` }),
     chunkX,
     chunkY,
-    version: map.chunkVersions[chunkY * chunksAcross(map) + chunkX]!,
+    version: layer.chunkVersions[chunkY * chunksAcross(map) + chunkX]!,
     ...(changedBy && { changedBy: lineOf(changedBy) }),
   };
 }
@@ -132,11 +152,12 @@ const BODIES: Record<Exclude<(typeof WATER)[number], ''>, (exit: string) => stri
   spring: () => 'a spring, the head of a stream',
 };
 
-/** The inspector's water rows for tile `i`: none on dry land. */
-function waterOf(map: WorldState['map'], i: number): Partial<TileView> {
-  const kind = content.terrain.kinds[map.tiles[i]!]!;
+/** The inspector's water rows for a tile of terrain `tile` in water body `code`: none on dry
+ * land; groundwater below belongs to no body. */
+function waterOf(map: WorldState['map'], tile: number, code: number): Partial<TileView> {
+  const kind = content.terrain.kinds[tile]!;
   if (!kind.water) return {};
-  const body = WATER[map.water[i]!];
+  const body = WATER[code];
   return {
     ...(body && { water: BODIES[body]!(map.riverExit) }),
     drinkable: kind.drinkable === true,
@@ -159,6 +180,7 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
     contentHash,
     width: w.map.width,
     height: w.map.height,
+    depth: w.map.levels.length,
   });
 }
 
@@ -216,7 +238,11 @@ function handle(message: ToWorker): void {
         });
       return;
     case 'inspect':
-      if (world) post({ type: 'inspected', tile: tileView(world, message.x, message.y) });
+      if (world)
+        post({
+          type: 'inspected',
+          tile: tileView(world, message.x, message.y, message.z ?? 0),
+        });
       return;
     case 'why':
       if (world)

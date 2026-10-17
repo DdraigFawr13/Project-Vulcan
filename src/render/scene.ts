@@ -1,5 +1,6 @@
-// The valley scene: a ground layer and a features layer drawn from the worker's chunks, the
-// selection corners over the tile under the pointer, and the camera. Holds view state only; game state comes from snapshots.
+// The valley scene: a ground layer and a features layer drawn from the worker's chunks for the
+// level on screen, the selection corners over the tile under the pointer, and the camera. Holds
+// view state only; game state comes from snapshots.
 import Phaser from 'phaser';
 import { content } from '../content/index.ts';
 import type { ChunkView } from '../worker/index.ts';
@@ -41,8 +42,11 @@ export class ValleyScene extends Phaser.Scene {
   private featureFrames: number[] = [];
   /** The ground frame laid over snow-capped rock. */
   private snowFrame = 0;
-  /** Kind index, snow and feature of every tile received so far: the readout, and the water
-   * pictures, which depend on a tile's neighbours, read them. */
+  /** Kind index, snow and feature of every tile received so far, per level (0 the surface):
+   * the readout, and the water pictures, which depend on a tile's neighbours, read them. */
+  private levels: { ground: Uint8Array; snow: Uint8Array; things: Uint8Array }[] = [];
+  /** The level on screen; `ground`, `snow` and `things` are its arrays, empty if not reached. */
+  private z = 0;
   private ground: Uint8Array = new Uint8Array(0);
   private snow: Uint8Array = new Uint8Array(0);
   private things: Uint8Array = new Uint8Array(0);
@@ -99,7 +103,7 @@ export class ValleyScene extends Phaser.Scene {
     this.input.on('pointermove', () => (this.pointerIn = true));
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => {
       this.hoverAt(p);
-      if (this.controls?.dragging || !this.layer) return;
+      if (this.controls?.dragging || !this.layer || !this.ground.length) return;
       const tile = this.tileAt(p);
       if (tile) this.onSelect(tile);
     });
@@ -118,9 +122,9 @@ export class ValleyScene extends Phaser.Scene {
   /** Sizes the map once the worker is ready. */
   setMapSize(width: number, height: number): void {
     this.size = { width, height };
-    this.ground = new Uint8Array(width * height);
-    this.snow = new Uint8Array(width * height);
-    this.things = new Uint8Array(width * height);
+    this.levels = [];
+    this.z = 0;
+    this.show();
     if (this.sys.isActive() && this.frames.length) this.buildMap();
   }
 
@@ -130,8 +134,32 @@ export class ValleyScene extends Phaser.Scene {
       return;
     }
     for (const chunk of chunks) this.store(chunk);
+    // A level's first chunks arrive when it is reached: if it is on screen, draw it whole.
+    if (this.ground.length === 0 && this.levels[this.z]) return this.setLevel(this.z);
     // Water pictures depend on neighbours, so each chunk repaints a tile past its edges too.
-    for (const { x, y, w, h } of chunks) this.paint(x - 1, y - 1, w + 2, h + 2);
+    for (const { x, y, z, w, h } of chunks)
+      if (z === this.z) this.paint(x - 1, y - 1, w + 2, h + 2);
+  }
+
+  /** Shows level `z` (0 the surface): its tiles if reached, else nothing until they arrive. */
+  setLevel(z: number): void {
+    this.z = z;
+    this.show();
+    if (!this.layer) return;
+    const { width, height } = this.size;
+    if (this.ground.length) this.paint(0, 0, width, height);
+    else {
+      const blank = Array.from({ length: height }, () => new Array<number>(width).fill(-1));
+      for (const layer of [this.layer, this.waterLayer, this.featureLayer])
+        this.map!.putTilesAt(blank, 0, 0, false, layer);
+    }
+  }
+
+  private show(): void {
+    const level = this.levels[this.z];
+    this.ground = level?.ground ?? new Uint8Array(0);
+    this.snow = level?.snow ?? new Uint8Array(0);
+    this.things = level?.things ?? new Uint8Array(0);
   }
 
   zoomStep(direction: 1 | -1): void {
@@ -185,13 +213,19 @@ export class ValleyScene extends Phaser.Scene {
     this.applyChunks(waiting);
   }
 
-  private store({ x, y, w, h, tiles, features, snow }: ChunkView): void {
+  private store({ x, y, z, w, h, tiles, features, snow }: ChunkView): void {
+    const n = this.size.width * this.size.height;
+    const level = (this.levels[z] ??= {
+      ground: new Uint8Array(n),
+      snow: new Uint8Array(n),
+      things: new Uint8Array(n),
+    });
     for (let row = 0; row < h; row += 1)
       for (let col = 0; col < w; col += 1) {
         const i = (y + row) * this.size.width + x + col;
-        this.ground[i] = tiles[row * w + col]!;
-        this.snow[i] = snow[row * w + col]!;
-        this.things[i] = features[row * w + col]!;
+        level.ground[i] = tiles[row * w + col]!;
+        level.snow[i] = snow[row * w + col]!;
+        level.things[i] = features[row * w + col]!;
       }
   }
 
@@ -290,7 +324,7 @@ export class ValleyScene extends Phaser.Scene {
       this.report(undefined);
       return;
     }
-    const tile = this.tileAt(pointer);
+    const tile = this.ground.length ? this.tileAt(pointer) : undefined;
     this.select?.setVisible(!!tile).setPosition((tile?.x ?? 0) * TILE, (tile?.y ?? 0) * TILE);
     const kind = tile && content.terrain.kinds[this.ground[tile.y * this.size.width + tile.x]!];
     this.report(tile && kind ? { ...tile, ground: kind.name } : undefined);

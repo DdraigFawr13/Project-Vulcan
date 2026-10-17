@@ -279,6 +279,47 @@ export const WORLD_SCHEMAS = {
         wood: num({ min: 1 }),
         stone: num({ min: 1 }),
       }),
+      // The four levels below (src/engine/map/underground.ts), each made when first reached:
+      // each range's rock runs down beneath it within `roots` tiles (more per level down), the
+      // rest is bedrock bodies; level 1 is earth under the valley floor; caves are tunnels and
+      // caverns, as shares of each level by depth (index 0 is level 1). Veins are in features.
+      underground: obj({
+        depth: num({ min: 1, max: 8 }),
+        roots: obj({ reach: count, perLevel: count, warp: count, fine: count }),
+        warpCell: num({ min: 2 }),
+        bodies: obj({
+          count: range(),
+          bend: count,
+          bendCell: num({ min: 2 }),
+          fine: count,
+          fineCell: num({ min: 2 }),
+        }),
+        earth: obj({
+          soil: ref('terrain'),
+          clay: ref('terrain'),
+          groundwater: ref('terrain'),
+          foot: count,
+          footNoise: count,
+          soilCell: num({ min: 2 }),
+          clayReach: count,
+          clayShare: share,
+          wetShare: share,
+        }),
+        caves: obj({
+          kind: ref('terrain'),
+          tunnels: list(share),
+          caverns: list(share),
+          length: range(),
+          turn: share,
+          swing: share,
+          wide: share,
+          cavernCell: num({ min: 2 }),
+        }),
+        stairsDown: ref('terrain'),
+        stairsUp: ref('terrain'),
+        stairs: ref('terrain'),
+        shaft: ref('terrain'),
+      }),
     }),
     // The ground kind each biome's land shows.
     floors: map(ref('terrain'), 'biomes'),
@@ -295,6 +336,8 @@ export const WORLD_SCHEMAS = {
         water: opt(oneOf('shallow', 'deep')),
         drinkable: opt(bool()),
         marker: opt(str()),
+        // Earth and clay underground: walls until dug, like rock, but not stone.
+        solid: opt(bool()),
       }),
     ),
   }),
@@ -305,7 +348,7 @@ export const WORLD_SCHEMAS = {
     obj({
       id,
       name: text,
-      kind: oneOf('tree', 'bush', 'herb', 'log', 'boulder'),
+      kind: oneOf('tree', 'bush', 'herb', 'log', 'boulder', 'vein'),
       art: str(),
       yields: ref('items'),
       amount: count,
@@ -314,6 +357,18 @@ export const WORLD_SCHEMAS = {
       glades: opt(bool()),
       density: map(share, 'biomes'),
       nearRock: opt(obj({ reach: count, density: share })),
+      // Ore in the rock of one level below (src/engine/map/underground.ts): `per10k` clusters
+      // per 10,000 tiles of `size` tiles, `near` of them within the start radius, placed in
+      // solid rock with `rocks` weighting the rock kinds it prefers (1 for any other).
+      vein: opt(
+        obj({
+          level: num({ min: 1 }),
+          per10k: count,
+          size: range(),
+          near: count,
+          rocks: map(count, 'terrain'),
+        }),
+      ),
     }),
   ),
 };

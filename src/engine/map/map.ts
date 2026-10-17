@@ -1,79 +1,26 @@
 // The surface map: laid out once when a world begins by the terrain generator, from the reserved
-// `worldgen` stream; afterwards only `setTile` changes a tile.
-import type { MapState } from '../core/index.ts';
-import { findEvent } from '../log/index.ts';
+// `worldgen` stream; afterwards only `setTile` changes a tile. The levels below wait in levels.ts.
 import type { System, SystemContext } from '../sim/index.ts';
 import { findStart, placeFeatures } from './features.ts';
+import { digCommands } from './levels.ts';
+import { chunksAcross, chunksDown } from './tiles.ts';
 import { layGround } from './terrain.ts';
 import { BEACH, carveWater, MARSH, SCREE, SPRING } from './water.ts';
-
-/** Tiles per chunk side. The worker sends the map to the screen a chunk at a time. */
-export const CHUNK = 16;
-
-export const chunksAcross = (map: MapState): number => Math.ceil(map.width / CHUNK);
-export const chunksDown = (map: MapState): number => Math.ceil(map.height / CHUNK);
-
-/** The ground, features and snow of chunk (cx, cy), row by row; edge chunks are narrower or shorter. */
-export function chunkTiles(
-  map: MapState,
-  cx: number,
-  cy: number,
-): {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  tiles: Uint8Array;
-  features: Uint8Array;
-  snow: Uint8Array;
-} {
-  const x = cx * CHUNK;
-  const y = cy * CHUNK;
-  const w = Math.min(CHUNK, map.width - x);
-  const h = Math.min(CHUNK, map.height - y);
-  const tiles = new Uint8Array(w * h);
-  const features = new Uint8Array(w * h);
-  const snow = new Uint8Array(w * h);
-  for (let row = 0; row < h; row += 1)
-    for (let col = 0; col < w; col += 1) {
-      const from = (y + row) * map.width + x + col;
-      tiles[row * w + col] = map.tiles[from]!;
-      features[row * w + col] = map.features[from]!;
-      snow[row * w + col] = map.snow[from]!;
-    }
-  return { x, y, w, h, tiles, features, snow };
-}
-
-/**
- * The only writer of a tile after the map is formed: sets the kind, records `cause` (the event
- * that explains the change, which the caller emits first) for the inspector, and raises the
- * chunk's version so the worker resends it.
- */
-export function setTile(
-  ctx: SystemContext,
-  x: number,
-  y: number,
-  kind: number,
-  cause: number,
-): void {
-  const map = ctx.world.map;
-  if (!ctx.content.terrain.kinds[kind]) throw new Error(`Terrain ${kind} is not a terrain kind.`);
-  if (x < 0 || y < 0 || x >= map.width || y >= map.height)
-    throw new Error(`Tile ${x}, ${y} is off the map.`);
-  if (!findEvent(ctx.world.log, cause))
-    throw new Error(`Tile ${x}, ${y} was changed without a ledger line (cause ${cause}).`);
-  if (map.tiles[y * map.width + x] === kind) return;
-  map.tiles[y * map.width + x] = kind;
-  map.tileCauses[y * map.width + x] = cause;
-  map.chunkVersions[Math.floor(y / CHUNK) * chunksAcross(map) + Math.floor(x / CHUNK)]! += 1;
-}
 
 /** Lays out the map in `init` (generation belongs there, not in a cadence); it never runs on load. */
 export const mapSystem: System = {
   id: 'map',
   every: 'day', // a cadence is required; the surface has no daily work yet
   stream: 'worldgen',
-  emits: ['map.formed', 'map.watered'],
+  emits: [
+    'map.formed',
+    'map.watered',
+    'map.levelReached',
+    'map.stairsCut',
+    'map.shaftSunk',
+    'map.digRefused',
+  ],
+  commands: digCommands,
   init(ctx) {
     const { width, height } = ctx.content.terrain.surface;
     const rng = ctx.rng();
@@ -104,6 +51,9 @@ export const mapSystem: System = {
     map.features = Uint8Array.from(features);
     map.snow = Uint8Array.from(ground.snow);
     map.water = Uint8Array.from(water.body);
+    map.rock = Uint8Array.from(ground.tiles, (t) =>
+      ctx.content.terrain.kinds[t]!.stone ? t + 1 : 0,
+    );
     map.riverExit = water.exit;
     map.startX = start.x;
     map.startY = start.y;
@@ -111,6 +61,8 @@ export const mapSystem: System = {
     map.temperature = ground.temperature;
     map.rainfall = ground.rainfall;
     map.chunkVersions = new Array<number>(chunksAcross(map) * chunksDown(map)).fill(1);
+    // The levels below are made only when first reached (levels.ts).
+    map.levels = new Array<null>(ctx.content.terrain.generator.underground.depth).fill(null);
     const formed = ctx.emit('map.formed', {
       causes: [ctx.world.begunEvent],
       data: {

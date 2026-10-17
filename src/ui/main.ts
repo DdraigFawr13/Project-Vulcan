@@ -19,6 +19,11 @@ let speed: Speed = 0;
 /** The speed Space resumes to. */
 let lastRunning: Exclude<Speed, 0> = 1;
 let ready = false;
+/** The level on screen (0 the surface), how many lie below, and which of them are reached. */
+let level = 0;
+let depth = 0;
+let reached: boolean[] = [];
+let worldTick = 0;
 let waiting = false;
 let stopped = false;
 let frame = 0;
@@ -35,12 +40,13 @@ const setSpeed = (next: Speed): void => {
 
 const renderer = startRenderer(parent, {
   onHover: (tile) => hud.showTile(tile),
-  onSelect: (tile) => send({ type: 'inspect', ...tile }),
+  onSelect: (tile) => send({ type: 'inspect', ...tile, z: level }),
 });
 hudRoot.replaceChildren();
 const hud = new Hud(hudRoot, {
   setSpeed,
   zoom: (direction) => renderer.zoomStep(direction),
+  level: (direction) => setLevel(level + direction),
   reload: () => location.reload(),
   togglePanel: (kind) => (panel.kind === kind ? closePanel() : openPanel(kind)),
   dismissed: () => saves.dismissed(),
@@ -51,6 +57,13 @@ const panel = new Panel(hudRoot, {
   exportLedger: () => send({ type: 'export', kind: 'ndjson' }),
   load: (meta) => void saves.load(meta),
   remove: (meta) => void saves.remove(meta),
+  dig: (tile, kind, to) =>
+    send({
+      type: 'command',
+      tick: worldTick + 1,
+      kind,
+      data: { x: tile.x, y: tile.y, z: tile.z, ...(to !== undefined && { to }) },
+    }),
   newGame: (next) => {
     location.search = `?seed=${encodeURIComponent(next)}`;
   },
@@ -66,6 +79,14 @@ const saves = new Saves({
   setSpeed,
   running: () => ready && !stopped,
 });
+
+function setLevel(z: number): void {
+  if (!ready || z < 0 || z > depth || z === level) return;
+  level = z;
+  closePanel();
+  renderer.setLevel(z);
+  hud.showLevel(z, depth, z === 0 || reached[z - 1] === true);
+}
 
 function openPanel(kind: 'ledger' | 'saves'): void {
   renderer.mark(undefined);
@@ -86,6 +107,10 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
     if (message.type === 'ready') {
       renderer.setMapSize(message.width, message.height);
       ready = true;
+      depth = message.depth;
+      reached = [];
+      level = 0;
+      hud.showLevel(0, depth, true);
       // A loaded world starts paused, like a new one.
       speed = 0;
       if (message.from === 'save') {
@@ -97,7 +122,10 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       }
     } else if (message.type === 'snapshot') {
       waiting = false;
+      worldTick = message.tick;
+      reached = message.reached;
       renderer.applyChunks(message.chunks);
+      hud.showLevel(level, depth, level === 0 || reached[level - 1] === true);
       hud.fps = Math.round(renderer.fps());
       hud.showClock(message.clock, message.tick, message.speed, message.at);
       saves.seen(message.tick);
@@ -108,8 +136,9 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
     } else if (message.type === 'events') {
       saves.addLines(message.batch);
     } else if (message.type === 'inspected') {
-      if (message.tile) {
-        panel.showTile(message.tile);
+      // A reply about a level the player has since left is dropped.
+      if (message.tile && message.tile.z === level) {
+        panel.showTile(message.tile, depth);
         renderer.mark(message.tile);
         hud.showPanel(undefined);
       }
@@ -157,6 +186,8 @@ function onKey(e: KeyboardEvent): void {
   else if (e.key === '1' || e.key === '2' || e.key === '3') setSpeed(Number(e.key) as Speed);
   else if (e.key === '+' || e.key === '=') renderer.zoomStep(1);
   else if (e.key === '-' || e.key === '_') renderer.zoomStep(-1);
+  else if (e.key === '>' || e.key === 'PageDown') setLevel(level + 1);
+  else if (e.key === '<' || e.key === 'PageUp') setLevel(level - 1);
   else return;
   e.preventDefault();
 }

@@ -1,5 +1,5 @@
 // The heads-up display over the map: clock, speed and panel buttons, the Paused label, the tile
-// readout, zoom buttons, a debug line, and the starting, loading and error screens. Shows what it is given; it
+// readout, level and zoom buttons, a debug line, and the starting, loading and error screens. Shows what it is given; it
 // computes no game rule (GAME-02).
 import type { ClockView, Speed } from '../worker/index.ts';
 import { el } from './dom.ts';
@@ -9,6 +9,8 @@ const SPEED_LABELS: Record<Speed, string> = { 0: '❚❚', 1: '1×', 2: '2×', 3
 export interface HudActions {
   setSpeed(speed: Speed): void;
   zoom(direction: 1 | -1): void;
+  /** One level down (1) or up (-1). */
+  level(direction: 1 | -1): void;
   reload(): void;
   /** Opens a panel, or closes it if it is the one showing. */
   togglePanel(kind: 'ledger' | 'saves'): void;
@@ -24,6 +26,16 @@ export class Hud {
   private readonly readout = el('div', { class: 'hud readout', hidden: '' });
   private readonly debug = el('div', { class: 'hud debug', 'data-testid': 'debug' });
   private readonly screen = el('div', { class: 'screen' });
+  private readonly levelLabel = el('span', { class: 'level', 'data-testid': 'level' }, 'S');
+  private readonly up = el('button', { type: 'button', 'aria-label': 'Level up' }, '▲');
+  private readonly down = el('button', { type: 'button', 'aria-label': 'Level down' }, '▼');
+  private readonly unreached = el('div', {
+    class: 'unreached',
+    'data-testid': 'unreached',
+    hidden: '',
+  });
+  /** "surface" or "2 levels down", after the season under the clock. */
+  private where = 'surface';
   /** Frames per second the renderer measured, shown on the debug line. */
   fps = 0;
 
@@ -59,6 +71,9 @@ export class Hud {
     status.append(this.paused, group, panels);
     bar.append(this.clock, status);
     const zoom = el('div', { class: 'hud zoom' });
+    this.up.addEventListener('click', () => actions.level(-1));
+    this.down.addEventListener('click', () => actions.level(1));
+    zoom.append(this.up, this.levelLabel, this.down);
     for (const [label, direction] of [
       ['+', 1],
       ['−', -1],
@@ -79,7 +94,7 @@ export class Hud {
         actions.dismissed();
       }
     });
-    root.append(bar, this.readout, zoom, this.debug, this.screen);
+    root.append(this.unreached, bar, this.readout, zoom, this.debug, this.screen);
     this.showScreen('Waking the valley', 'Loading the content and laying out the map.');
   }
 
@@ -87,7 +102,7 @@ export class Hud {
     const pad = (n: number) => String(n).padStart(2, '0');
     const season = clock.season.charAt(0).toUpperCase() + clock.season.slice(1);
     this.clock.textContent = `${pad(clock.hour)}:${pad(clock.minute)} · Day ${clock.day} of ${clock.monthName}, Year ${clock.year}`;
-    this.clock.append(el('small', {}, season));
+    this.clock.append(el('small', {}, `${season} · ${this.where}`));
     this.paused.hidden = speed !== 0;
     for (const [s, button] of this.speeds) button.setAttribute('aria-pressed', String(s === speed));
     this.debug.dataset['tick'] = String(tick);
@@ -103,6 +118,23 @@ export class Hud {
         el('b', {}, `${tile.x}, ${tile.y}`),
         ` · ${tile.ground}`,
       );
+  }
+
+  /** Level `z` of `depth` is on screen (0 the surface); `reached` says whether it has tiles. */
+  showLevel(z: number, depth: number, reached: boolean): void {
+    this.where = z === 0 ? 'surface' : `${z} level${z > 1 ? 's' : ''} down`;
+    this.levelLabel.textContent = z === 0 ? 'S' : `−${z}`;
+    this.up.disabled = z === 0;
+    this.down.disabled = z >= depth;
+    this.unreached.hidden = reached;
+    this.unreached.replaceChildren(
+      el('b', {}, 'Not reached yet'),
+      el(
+        'span',
+        {},
+        `Nothing has been dug down this far. Stairs or a shaft will open level ${z} the first time they reach it.`,
+      ),
+    );
   }
 
   /** Marks which panel is open on its button. */

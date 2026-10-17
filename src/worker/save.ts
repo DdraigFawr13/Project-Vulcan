@@ -83,8 +83,13 @@ export function checkSave(
     layer(map['features'], Uint8Array, map['tiles'].length) &&
     layer(map['snow'], Uint8Array, map['tiles'].length) &&
     layer(map['water'], Uint8Array, map['tiles'].length) &&
+    layer(map['rock'], Uint8Array, map['tiles'].length) &&
     isCount(map['startX']) &&
     isCount(map['startY']) &&
+    Array.isArray(map['levels']) &&
+    map['levels'].every(
+      (level) => level === null || levelShaped(level, (map['tiles'] as unknown[]).length),
+    ) &&
     typeof map['climate'] === 'string' &&
     typeof map['riverExit'] === 'string';
   if (!ok) throw new Error('The save is damaged.');
@@ -104,6 +109,18 @@ export function checkSave(
     w.biomes.every((b) => b < content.biomes.biomes.length) &&
     w.features.every((f) => f <= content.features.length) &&
     w.water.every((b) => b < WATER.length) &&
+    w.rock.every((r) => r <= kinds.length) &&
+    w.levels.length === content.terrain.generator.underground.depth &&
+    // Levels are reached from the top down, so none is made below one that is not.
+    w.levels.every(
+      (level, k) =>
+        level === null ||
+        ((k === 0 || w.levels[k - 1] !== null) &&
+          level.chunkVersions.length === w.chunkVersions.length &&
+          level.chunkVersions.every((v) => Number.isSafeInteger(v) && v >= 1) &&
+          level.tiles.every((t) => t < kinds.length) &&
+          level.features.every((f) => f <= content.features.length)),
+    ) &&
     ['north', 'south', 'east', 'west'].includes(w.riverExit) &&
     world.log.every((e) => isObject(e) && isCount(e.id) && e.id > last && ((last = e.id), true)) &&
     world.nextEventId > last;
@@ -112,5 +129,16 @@ export function checkSave(
 }
 
 // A generator layer: a typed array of the map's length (structured clones keep the type).
-const layer = (value: unknown, type: typeof Int16Array | typeof Uint8Array, length: number) =>
-  value instanceof type && value.length === length;
+const layer = (
+  value: unknown,
+  type: typeof Int16Array | typeof Int32Array | typeof Uint8Array,
+  length: number,
+) => value instanceof type && value.length === length;
+
+// A reached level below: its tiles, causes and features, each one per surface tile.
+const levelShaped = (value: unknown, length: number): boolean =>
+  isObject(value) &&
+  layer(value['tiles'], Uint8Array, length) &&
+  layer(value['tileCauses'], Int32Array, length) &&
+  layer(value['features'], Uint8Array, length) &&
+  Array.isArray(value['chunkVersions']);
