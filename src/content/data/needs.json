@@ -1,0 +1,10 @@
+[
+  {"id":"food","name":"Food","decayPerDay":35,"restore":{"eat":60,"steal":30},"awayShare":1,"lowAt":30,"moodAtZero":-30,"lowWord":"Hungry","missing":"no meal"},
+  {"id":"water","name":"Water","decayPerDay":50,"restore":{"eat":40,"work":15,"errand":15,"play":15,"socialise":15,"despair":25,"wander":25,"tantrum":10,"steal":10,"fight":15,"defend":15,"shelter":15,"flee":25},"abed":15,"awayShare":1,"lowAt":30,"moodAtZero":-30,"lowWord":"Thirsty","missing":"no drink"},
+  {"id":"rest","name":"Rest","decayPerDay":40,"restore":{"sleep":70,"despair":15,"shelter":35},"awayShare":0.5,"lowAt":30,"moodAtZero":-20,"lowWord":"Tired","missing":"no proper sleep"},
+  {"id":"warmth","name":"Warmth","decayPerDay":0,"restore":{"sleep":50,"eat":20,"despair":20,"shelter":30},"awayShare":0,"lowAt":30,"moodAtZero":-25,"lowWord":"Cold","missing":"no warm hearth"},
+  {"id":"safety","name":"Safety","decayPerDay":6,"restore":{"sleep":10,"shelter":10},"awayShare":0,"lowAt":30,"moodAtZero":-15,"lowWord":"Uneasy","missing":"no safe night"},
+  {"id":"companionship","name":"Company","decayPerDay":10,"restore":{"eat":12,"socialise":12,"play":8,"worship":6,"work":3,"errand":3,"fight":3,"defend":3,"shelter":8},"awayShare":1,"needsCompany":true,"lowAt":30,"moodAtZero":-15,"lowWord":"Lonely","missing":"no company"},
+  {"id":"purpose","name":"Purpose","decayPerDay":8,"restore":{"work":6,"errand":6,"play":6,"socialise":6,"fight":6,"defend":6,"worship":4},"abed":2,"awayShare":1,"lowAt":30,"moodAtZero":-12,"lowWord":"Idle","missing":"no work"},
+  {"id":"faith","name":"Faith","decayPerDay":5,"restore":{"worship":70},"awayShare":1,"lowAt":30,"moodAtZero":-10,"lowWord":"Faithless","missing":"no worship","minCultureFaith":3}
+]

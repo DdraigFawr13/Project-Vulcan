@@ -1,0 +1,7 @@
+{
+  "daysPerWeek": 7,
+  "daysPerMonth": 28,
+  "monthsPerYear": 12,
+  "seasons": ["spring","summer","autumn","winter"],
+  "monthNames": ["Thawmonth","Seedmonth","Bloommonth","Highsun","Goldmonth","Harvestmonth","Leaffall","Mistmonth","Firstfrost","Deepwinter","Frostmonth","Lastsnow"]
+}

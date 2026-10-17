@@ -1,0 +1,12 @@
+[
+  {"id":"hot-tempered","name":"hot-tempered","description":"Quick to anger; breaks down in a rage.","weight":10,"excludes":["steady"],"mood":0,"breakdownAt":0.85,"breakdown":"tantrum"},
+  {"id":"melancholic","name":"melancholic","description":"Prone to low spirits; breaks down in despair.","weight":10,"excludes":["cheerful"],"mood":-4,"breakdownAt":0.9,"breakdown":"despair"},
+  {"id":"restless","name":"restless","description":"Needs to be doing; breaks down by wandering off.","weight":10,"excludes":[],"mood":0,"breakdownAt":1,"breakdown":"wandering","needRates":{"purpose":1.4}},
+  {"id":"greedy","name":"greedy","description":"Wants more than a share; breaks down by stealing.","weight":8,"excludes":[],"mood":0,"breakdownAt":1,"breakdown":"theft"},
+  {"id":"cheerful","name":"cheerful","description":"Takes hardship lightly.","weight":10,"excludes":["melancholic"],"mood":6,"breakdownAt":1.2},
+  {"id":"steady","name":"steady","description":"Hard to shake.","weight":8,"excludes":["hot-tempered"],"mood":0,"breakdownAt":1.3},
+  {"id":"sociable","name":"sociable","description":"Needs company more than most.","weight":10,"excludes":["solitary"],"mood":2,"breakdownAt":1,"needRates":{"companionship":1.3}},
+  {"id":"solitary","name":"solitary","description":"Content with little company.","weight":7,"excludes":["sociable"],"mood":0,"breakdownAt":1,"needRates":{"companionship":0.4}},
+  {"id":"hardy","name":"hardy","description":"Feels cold and weariness less.","weight":8,"excludes":[],"mood":0,"breakdownAt":1.1,"needRates":{"warmth":0.6,"rest":0.8}},
+  {"id":"devout","name":"devout","description":"Needs worship more than most.","weight":7,"excludes":[],"mood":0,"breakdownAt":1,"needRates":{"faith":1.8}}
+]

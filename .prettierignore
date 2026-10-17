@@ -6,6 +6,8 @@ docs/
 *.md
 package-lock.json
 .claude/worktrees/
+# Forked content data: one entry per line, as tools/fork-content.mjs writes it (WEB-03).
+src/content/data/
 
 # ai-master:start (managed by .claude/master/sync.mjs)
 .ai-master.lock

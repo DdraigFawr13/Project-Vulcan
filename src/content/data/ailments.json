@@ -1,0 +1,4 @@
+[
+  {"id":"chill","name":"the chill","conditionId":"chill","incubation":1,"duration":[5,10],"peak":[10,35],"infectivity":0.015,"ageRisk":{"child":2,"adult":1,"elder":3},"immuneDays":56,"grave":{"chance":0.05,"mul":3,"cap":150},"sources":{"condition":{"chilled":0.03},"coldHome":0.01,"background":{"chance":0.0003,"months":[8,9,10,11,0]}}},
+  {"id":"flux","name":"the bloody flux","conditionId":"flux","incubation":1,"duration":[4,8],"peak":[25,50],"infectivity":0.05,"householdOnly":true,"ageRisk":{"child":2.5,"adult":1,"elder":2.5},"immuneDays":56,"grave":{"chance":0.05,"mul":3,"cap":150},"sources":{"wellLow":0.002,"background":{"chance":0.00015,"months":[3,4,5]}},"season":{"months":[3,5],"mul":2}}
+]

@@ -1,0 +1,19 @@
+[
+  {"id":"starving","name":"Starving","kind":"need","harm":1,"deathCause":"famine","words":{"onset":"hunger","death":"hunger"},"need":{"need":"food","days":2,"gain":3,"ease":10,"cause":"stores","vulnerable":{"child":1.5,"elder":1.5}}},
+  {"id":"parched","name":"Parched","kind":"need","harm":1,"deathCause":"thirst","words":{"onset":"thirst","death":"thirst"},"need":{"need":"water","days":2,"gain":12,"ease":40,"cause":"well"}},
+  {"id":"chilled","name":"Chilled","kind":"need","harm":1,"deathCause":"exposure","words":{"onset":"the cold","death":"the cold"},"need":{"need":"warmth","days":1,"gain":10,"ease":15,"cause":"cold","vulnerable":{"child":1.5,"elder":1.5}}},
+  {"id":"exhausted","name":"Exhausted","kind":"need","harm":0.3,"deathCause":"illness","words":{"onset":"weariness","death":"weariness"},"need":{"need":"rest","days":1,"gain":10,"ease":25,"cap":60}},
+  {"id":"minor-wound","name":"Minor wound","kind":"wound","harm":1,"deathCause":"wound","words":{"onset":"a cut","death":"a wound"},"wound":{"start":15,"heal":3,"share":75,"fester":[0.02,0.005],"silent":true}},
+  {"id":"serious-wound","name":"Serious wound","kind":"wound","harm":1,"deathCause":"wound","words":{"onset":"a bad wound","death":"a wound"},"wound":{"start":40,"heal":1.5,"share":20,"fester":[0.15,0.04]}},
+  {"id":"critical-wound","name":"Critical wound","kind":"wound","harm":1,"deathCause":"wound","words":{"onset":"a terrible wound","death":"a wound"},"wound":{"start":70,"heal":1,"share":5,"fester":[0.35,0.1],"lasting":0.5}},
+  {"id":"festering","name":"Festering wound","kind":"wound","harm":1,"deathCause":"wound","words":{"onset":"a festering wound","death":"a festering wound"}},
+  {"id":"old-wound","name":"Old wound","kind":"chronic","harm":0,"deathCause":"wound","words":{"onset":"an old wound","death":"an old wound"}},
+  {"id":"chill","name":"The chill","kind":"disease","harm":1,"deathCause":"disease","abed":true,"words":{"onset":"the chill","death":"the chill"}},
+  {"id":"flux","name":"The bloody flux","kind":"disease","harm":1,"deathCause":"disease","abed":true,"words":{"onset":"the bloody flux","death":"the bloody flux"}},
+  {"id":"sickness","name":"Sickness","kind":"disease","harm":1,"deathCause":"disease","abed":true,"words":{"onset":"sickness","death":"sickness"}},
+  {"id":"wasting-cough","name":"Wasting cough","kind":"chronic","harm":1,"deathCause":"illness","words":{"onset":"a wasting cough","death":"a wasting cough"},"chronic":{"start":[10,25],"growth":[5,15]}},
+  {"id":"bad-heart","name":"Bad heart","kind":"chronic","harm":1,"deathCause":"illness","words":{"onset":"a failing heart","death":"a failing heart"},"chronic":{"start":[10,25],"growth":[5,15]}},
+  {"id":"joint-ill","name":"Joint-ill","kind":"chronic","harm":1,"deathCause":"illness","words":{"onset":"stiff and aching joints","death":"a long illness of the joints"},"chronic":{"start":[10,25],"growth":[5,15]}},
+  {"id":"frailty","name":"Frailty","kind":"age","harm":1,"deathCause":"old-age","words":{"onset":"frailty","death":"old age"}},
+  {"id":"childbirth","name":"Childbirth","kind":"birth","harm":1,"deathCause":"childbirth","words":{"onset":"childbirth","death":"childbirth"},"birth":{"untended":0.02,"tended":0.006,"start":40,"heal":12}}
+]

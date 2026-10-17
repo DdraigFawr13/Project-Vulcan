@@ -1,0 +1,8 @@
+[
+  {"id":"fire","name":"Fire","castingCost":{"fatigue":5}},
+  {"id":"water","name":"Water","castingCost":{"fatigue":5}},
+  {"id":"earth","name":"Earth","castingCost":{"fatigue":5}},
+  {"id":"air","name":"Air","castingCost":{"fatigue":5}},
+  {"id":"life","name":"Life","castingCost":{"fatigue":5}},
+  {"id":"mind","name":"Mind","castingCost":{"fatigue":5}}
+]
