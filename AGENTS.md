@@ -18,6 +18,7 @@ Open [docs/RULES.md](docs/RULES.md), [docs/DECISIONS.md](docs/DECISIONS.md), [do
 - While iterating: `npm run test:related -- <changed files>`.
 - Every push: `npm run check` (AI-master drift, format, typecheck, boundaries, size limits, code map, reading cost, unit tests, build), with step timings against its 60 s budget.
 - UI or render changes: also `npm run test:browser`.
+- Map or terrain changes: `npm run map:stats` (the seed table against Phase 1's done-whens; seeds in `src/engine/map/seeds.ts`) and `npm run map:render` (PNGs in `tmp/maps/`, not committed), as the `map-check` skill says.
 - After adding or changing a module's `index.ts` or `MODULE.md`: `npm run codemap`.
 
 Cloud sessions: the synced session hook installs Node 24.19.0 and npm 11.9.0 and sets `PLAYWRIGHT_CHROMIUM_PATH`. Don't download Node or browsers by hand.

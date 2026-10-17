@@ -37,7 +37,7 @@ const isCount = (v: unknown): v is number => Number.isSafeInteger(v) && (v as nu
 export function checkSave(
   save: unknown,
   contentHash: string,
-  content: Pick<EngineContent, 'terrain'>,
+  content: Pick<EngineContent, 'terrain' | 'biomes' | 'features'>,
 ): WorldState {
   if (!isObject(save) || !isObject(save['state'])) throw new Error('The save is damaged.');
   if (save['version'] !== SAVE_VERSION)
@@ -70,7 +70,14 @@ export function checkSave(
     map['tiles'].length === map['width'] * map['height'] &&
     Array.isArray(map['tileCauses']) &&
     map['tileCauses'].length === map['tiles'].length &&
-    Array.isArray(map['chunkVersions']);
+    Array.isArray(map['chunkVersions']) &&
+    layer(map['elevation'], Int16Array, map['tiles'].length) &&
+    layer(map['biomes'], Uint8Array, map['tiles'].length) &&
+    layer(map['fertility'], Uint8Array, map['tiles'].length) &&
+    layer(map['features'], Uint8Array, map['tiles'].length) &&
+    isCount(map['startX']) &&
+    isCount(map['startY']) &&
+    typeof map['climate'] === 'string';
   if (!ok) throw new Error('The save is damaged.');
   const world = state as unknown as WorldState;
   // Deeper checks a matching content hash makes cheap: the map fits the content, and the ledger's
@@ -83,8 +90,14 @@ export function checkSave(
     w.height === surface.height &&
     w.chunkVersions.length === chunksAcross(w) * chunksDown(w) &&
     w.tiles.every((t) => Number.isInteger(t) && t >= 0 && t < kinds.length) &&
+    w.biomes.every((b) => b < content.biomes.biomes.length) &&
+    w.features.every((f) => f <= content.features.length) &&
     world.log.every((e) => isObject(e) && isCount(e.id) && e.id > last && ((last = e.id), true)) &&
     world.nextEventId > last;
   if (!sound) throw new Error('The save is damaged.');
   return world;
 }
+
+// A generator layer: a typed array of the map's length (structured clones keep the type).
+const layer = (value: unknown, type: typeof Int16Array | typeof Uint8Array, length: number) =>
+  value instanceof type && value.length === length;

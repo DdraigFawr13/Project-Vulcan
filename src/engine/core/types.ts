@@ -1,5 +1,5 @@
-// World state and event shapes. The whole world is plain data (numbers, strings, arrays), so the
-// worker can post it, P0.5 can save it and tests can compare it.
+// World state and event shapes. The whole world is plain data (numbers, strings, arrays and typed
+// arrays), so the worker can post it, P0.5 can save it and tests can compare it.
 import type { RngState } from './rng.ts';
 
 /** The named RNG streams (docs/ARCHITECTURE.md "RNG"). A system draws only from its own. */
@@ -75,12 +75,83 @@ export interface MapState {
   tileCauses: number[];
   /** One counter per 16 by 16 chunk, row by row; it goes up whenever a tile in the chunk changes. */
   chunkVersions: number[];
+  /** Height above the sea in metres, at `y * width + x`. Set once by the generator. The
+   * generator's layers are typed arrays: still plain data to a structured clone, at a fifth of
+   * the size of number arrays. */
+  elevation: Int16Array;
+  /** Index into `EngineContent.biomes.biomes`, at `y * width + x`. */
+  biomes: Uint8Array;
+  /** How well the ground grows crops, 0 to 100, at `y * width + x`. */
+  fertility: Uint8Array;
+  /** What grows or lies on each tile: 0 for nothing, else 1 + an index into
+   * `EngineContent.features`. */
+  features: Uint8Array;
+  /** Where the settlers' cart stops: the generator's chosen start tile. */
+  startX: number;
+  startY: number;
+  /** The valley's climate, drawn once per seed: mean temperature (degrees C) on the valley floor
+   * and yearly rainfall (mm). */
+  climate: string;
+  temperature: number;
+  rainfall: number;
 }
 
-/** Ground kinds and the surface map's size (src/content/data/terrain.json). */
+type Range = readonly number[];
+
+/** Ground kinds, the surface map's size and the generator's dials (src/content/data/terrain.json). */
 export interface TerrainDef {
   surface: { width: number; height: number; ground: string };
-  kinds: readonly { id: string; name: string; art: string; variants: number }[];
+  generator: {
+    climates: readonly {
+      id: string;
+      name: string;
+      weight: number;
+      temperature: Range;
+      rainfall: Range;
+    }[];
+    elevation: { floor: Range; relief: Range; lapse: number; axisNoise: number };
+    noise: { cell: number; octaves: number };
+    rock: { wall: number; scree: number; outcrops: number; outcropCell: number };
+    swampLowland: number;
+    lowlandRain: number;
+    groves: { cell: number; low: number; high: number };
+    start: { radius: number; buildable: number; wood: number; stone: number };
+  };
+  floors: Readonly<Record<string, string>>;
+  kinds: readonly {
+    id: string;
+    name: string;
+    art: string;
+    variants: number;
+    buildable?: boolean;
+    stone?: boolean;
+  }[];
+}
+
+/** The forked biome table (src/content/data/biomes.json); only the fields the map reads. */
+export interface BiomesDef {
+  biomes: readonly { id: string; name: string; fertility: number; forest?: boolean }[];
+  rules: {
+    temperatureBands: readonly number[];
+    rainfallBands: readonly number[];
+    table: readonly (readonly string[])[];
+    alpineElevation: number;
+    swampRainfall: number;
+    swampMinTemp: number;
+  };
+}
+
+/** Trees, bushes, herbs and boulders (src/content/data/features.json). */
+export interface FeatureDef {
+  id: string;
+  name: string;
+  kind: 'tree' | 'bush' | 'herb' | 'boulder';
+  art: string;
+  yields: string;
+  amount: number;
+  blocks?: boolean;
+  density: Readonly<Record<string, number>>;
+  nearRock?: { reach: number; density: number };
 }
 
 /** The forked calendar (src/content/data/calendar.json). */
@@ -96,4 +167,6 @@ export interface EngineContent {
   calendar: CalendarDef;
   events: readonly { id: string; template: string }[];
   terrain: TerrainDef;
+  biomes: BiomesDef;
+  features: readonly FeatureDef[];
 }

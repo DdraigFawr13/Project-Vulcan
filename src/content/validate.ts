@@ -57,7 +57,15 @@ export function validateContent(files: Files): string[] {
   index('faiths', 'faiths.defs', part('faiths', 'defs'));
   index('terrain', 'terrain.kinds', part('terrain', 'kinds'));
   // Lists nothing refers to yet still need unique ids.
-  for (const file of ['resources', 'weather', 'awakenings', 'ailments', 'diseases', 'events'])
+  for (const file of [
+    'features',
+    'resources',
+    'weather',
+    'awakenings',
+    'ailments',
+    'diseases',
+    'events',
+  ])
     unique(file, files[file]);
   unique('great-works.kinds', part('great-works', 'kinds'));
   unique('dragons.tempers', part('dragons', 'tempers'));
@@ -123,6 +131,9 @@ function checkTerrain(files: Files): string[] {
     if (!Number.isInteger(surface[side]) || surface[side] < 1)
       errors.push(`terrain.surface.${side}: ${surface[side]} is not a whole number of tiles`);
   if (kinds.length > 256) errors.push(`terrain.kinds: ${kinds.length} kinds, at most 256`);
+  // Features travel as bytes too, with 0 for a bare tile.
+  const features = files['features'] as unknown[];
+  if (features.length > 255) errors.push(`features: ${features.length} kinds, at most 255`);
   for (const kind of kinds)
     if (!Number.isInteger(kind.variants))
       errors.push(`terrain.kinds[${kind.id}].variants: ${kind.variants} is not a whole number`);

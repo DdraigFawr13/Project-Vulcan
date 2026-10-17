@@ -25,6 +25,8 @@ import {
 const fixtureContent: EngineContent = {
   calendar: content.calendar,
   terrain: content.terrain,
+  biomes: content.biomes,
+  features: content.features,
   events: [
     ...content.events,
     { id: 'test.roll', template: 'The dice showed {value}.' },
@@ -89,7 +91,9 @@ describe('engine', () => {
     step(world, createSim(content), 3 * month);
     const text = (id: number) => renderEvent(world.log[id - 1]!, createSim(content).templates);
     expect(text(1)).toBe('A new world began from seed "hollow-oak".');
-    expect(text(2)).toBe("The valley's ground was laid out: 150 by 150 tiles of grass.");
+    expect(text(2)).toMatch(
+      /^The valley took shape: 150 by 150 tiles, mostly [a-z ]+, with a [a-z]+ climate \(-?[0-9.]+ °C on the valley floor, [0-9]+ mm of rain a year\)\.$/,
+    );
     expect(world.log[1]).toMatchObject({ type: 'map.formed', causes: [1] });
     // The world's first month and season get their lines when it begins.
     expect(text(3)).toBe('Thawmonth began.');
@@ -103,10 +107,18 @@ describe('engine', () => {
     expect(text(88)).toBe('Highsun began.');
     expect(world.log[88]).toMatchObject({ type: 'calendar.season', causes: [88] });
     expect(text(89)).toBe('Summer came to the valley.');
-    // The map is the content's flat ground, cut into 10 by 10 chunks with narrower edge chunks.
+    // The map is cut into 10 by 10 chunks with narrower edge chunks; each carries its features.
     expect(world.map.chunkVersions).toHaveLength(100);
-    expect(chunkTiles(world.map, 9, 9)).toMatchObject({ x: 144, y: 144, w: 6, h: 6 });
-    expect(chunkTiles(world.map, 9, 9).tiles.every((t) => t === 0)).toBe(true);
+    const edge = chunkTiles(world.map, 9, 9);
+    expect(edge).toMatchObject({ x: 144, y: 144, w: 6, h: 6 });
+    expect(edge.tiles).toEqual(
+      Uint8Array.from(
+        [0, 1, 2, 3, 4, 5].flatMap((r) =>
+          world.map.tiles.slice((144 + r) * 150 + 144, (144 + r) * 150 + 150),
+        ),
+      ),
+    );
+    expect(edge.features).toHaveLength(36);
     // Changing a tile marks only its chunk for resending.
     const ctx = { world, content } as unknown as Parameters<typeof setTile>[0];
     expect(() => setTile(ctx, 150 - 1, 17, 1, 9999)).toThrow('without a ledger line');

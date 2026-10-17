@@ -44,7 +44,8 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   const panel = page.getByTestId('panel');
   await page.getByTestId('game').locator('canvas').click();
   await expect(panel).toContainText('Tile');
-  await expect(panel).toContainText("The valley's ground was laid out");
+  await expect(panel).toContainText('The valley took shape');
+  await expect(panel).toContainText('fertility');
   await expect(panel.getByRole('button', { name: 'why?' })).toHaveCount(0);
   await page.getByTestId('open-ledger').click();
   const spring = panel.locator('[data-line]', { hasText: 'Spring came to the valley.' });

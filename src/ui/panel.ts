@@ -55,6 +55,10 @@ export class Panel {
     const facts = el('dl', { class: 'kv' });
     for (const [key, value] of [
       ['ground', tile.ground],
+      ['biome', tile.biome],
+      ['height', `${tile.elevation} m`],
+      ['fertility', `${tile.fertility} of 100`],
+      ...(tile.feature ? [['on it', tile.feature]] : []),
       ['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`],
     ])
       facts.append(el('dt', {}, key), el('dd', {}, value));

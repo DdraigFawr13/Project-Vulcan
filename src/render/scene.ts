@@ -1,5 +1,5 @@
-// The valley scene: one tilemap layer drawn from the worker's chunks, the selection corners over
-// the tile under the pointer, and the camera. Holds view state only; game state comes from snapshots.
+// The valley scene: a ground layer and a features layer drawn from the worker's chunks, the
+// selection corners over the tile under the pointer, and the camera. Holds view state only; game state comes from snapshots.
 import Phaser from 'phaser';
 import { content } from '../content/index.ts';
 import type { ChunkView } from '../worker/index.ts';
@@ -7,6 +7,9 @@ import { CameraControls } from './camera.ts';
 
 export const TILE = 32;
 const SHEET = 'tiles-base';
+/** Ground sheets, in tileset order, and the sheet trees, bushes, herbs and boulders come from. */
+const GROUND_SHEETS = [SHEET, 'tiles-world'] as const;
+const NATURE = 'sprites-nature';
 
 /** What the pointer is over, for the page's readout. */
 export interface Hover {
@@ -25,16 +28,21 @@ function variantOf(x: number, y: number, variants: number): number {
 
 export class ValleyScene extends Phaser.Scene {
   private map: Phaser.Tilemaps.Tilemap | undefined;
-  private layer: Phaser.Tilemaps.TilemapLayer | Phaser.Tilemaps.TilemapGPULayer | undefined;
+  private layer: Phaser.Tilemaps.TilemapLayer | undefined;
+  private featureLayer: Phaser.Tilemaps.TilemapLayer | undefined;
   private select?: Phaser.GameObjects.Image;
   /** Marks the tile the inspector is showing. */
   private marked?: Phaser.GameObjects.Image;
   private controls?: CameraControls;
-  /** Tile index in the tileset for each terrain kind's pictures, by kind then variant. */
+  /** Tile index in the tilesets for each terrain kind's pictures, by kind then variant. */
   private frames: number[][] = [];
+  /** Tile index in the nature tileset for each feature, by content index. */
+  private featureFrames: number[] = [];
   /** Kind index of every tile drawn so far, for the readout. */
   private ground: Uint8Array = new Uint8Array(0);
   private size = { width: 0, height: 0 };
+  /** The first tile index of the nature tileset. */
+  private natureGid = 0;
   /** Chunks that arrived before `create` ran, or before the map size was known. */
   private waiting: ChunkView[] = [];
   private pointerIn = false;
@@ -47,11 +55,15 @@ export class ValleyScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.atlas(SHEET, `art/${SHEET}.png`, `art/${SHEET}.json`);
+    for (const sheet of [...GROUND_SHEETS, NATURE])
+      this.load.atlas(sheet, `art/${sheet}.png`, `art/${sheet}.json`);
   }
 
   create(): void {
-    this.frames = this.tileFrames();
+    this.frames = content.terrain.kinds.map((kind) =>
+      Array.from({ length: kind.variants }, (_, v) => this.groundFrame(`${kind.art}.${v + 1}`)),
+    );
+    this.featureFrames = content.features.map((f) => this.frameIndex(NATURE, `${f.art}.1`));
     this.select = this.add
       .image(0, 0, SHEET, 'overlay.select')
       .setOrigin(0)
@@ -122,12 +134,24 @@ export class ValleyScene extends Phaser.Scene {
     // the dirt frame stretched over every first grass picture (Morgan's playtest, 2026-10-17).
     const blank = Array.from({ length: height }, () => new Array<number>(width).fill(-1));
     const map = this.make.tilemap({ data: blank, tileWidth: TILE, tileHeight: TILE });
-    const tileset = map.addTilesetImage(SHEET, SHEET, TILE, TILE, 1, 2);
-    if (!tileset) throw new Error('The tiles-base sheet did not load.');
-    const layer = map.createLayer(0, tileset, 0, 0, false);
-    if (!layer) throw new Error('The map layer could not be made.');
+    // Ground sheets share one layer, each tileset starting where the last one ended.
+    let gid = 0;
+    const ground = GROUND_SHEETS.map((sheet) => {
+      const set = map.addTilesetImage(sheet, sheet, TILE, TILE, 1, 2, gid);
+      if (!set) throw new Error(`The ${sheet} sheet did not load.`);
+      gid += set.total;
+      return set;
+    });
+    const nature = map.addTilesetImage(NATURE, NATURE, TILE, TILE, 1, 2, gid);
+    if (!nature) throw new Error(`The ${NATURE} sheet did not load.`);
+    this.natureGid = gid;
+    const layer = map.createLayer(0, ground, 0, 0, false) as Phaser.Tilemaps.TilemapLayer | null;
+    // The features sit on a second plain layer over the ground, -1 where a tile is bare.
+    const features = map.createBlankLayer('features', nature, 0, 0, width, height);
+    if (!layer || !features) throw new Error('The map layers could not be made.');
     this.map = map;
     this.layer = layer;
+    this.featureLayer = features;
     this.controls?.frameMap(width * TILE, height * TILE);
     const waiting = this.waiting;
     this.waiting = [];
@@ -135,35 +159,49 @@ export class ValleyScene extends Phaser.Scene {
   }
 
   // A changed chunk rewrites only its own tiles.
-  private drawChunk({ x, y, w, h, tiles }: ChunkView): void {
+  private drawChunk({ x, y, w, h, tiles, features }: ChunkView): void {
     const rows: number[][] = [];
+    const things: number[][] = [];
     for (let row = 0; row < h; row += 1) {
       const line: number[] = [];
+      const on: number[] = [];
       for (let col = 0; col < w; col += 1) {
         const kind = tiles[row * w + col]!;
         const pictures = this.frames[kind];
         if (!pictures) throw new Error(`Terrain ${kind} has no art.`);
         line.push(pictures[variantOf(x + col, y + row, pictures.length) - 1]!);
         this.ground[(y + row) * this.size.width + x + col] = kind;
+        const feature = features[row * w + col]!;
+        on.push(feature > 0 ? this.natureGid + this.featureFrames[feature - 1]! : -1);
       }
       rows.push(line);
+      things.push(on);
     }
-    this.map!.putTilesAt(rows, x, y, false);
+    this.map!.putTilesAt(rows, x, y, false, this.layer);
+    this.map!.putTilesAt(things, x, y, false, this.featureLayer);
   }
 
-  // The tileset is the packed sheet's grid (tools/pack-sheet: margin 1, spacing 2), so a frame's
+  // A tileset is its packed sheet's grid (tools/pack-sheet: margin 1, spacing 2), so a frame's
   // tile index follows from where the packer put it.
-  private tileFrames(): number[][] {
-    const texture = this.textures.get(SHEET);
+  private frameIndex(sheet: string, name: string): number {
+    const texture = this.textures.get(sheet);
+    if (!texture.has(name)) throw new Error(`The ${sheet} sheet has no frame "${name}".`);
     const columns = Math.floor((texture.source[0]!.width - 2 + 2) / (TILE + 2));
-    return content.terrain.kinds.map((kind) =>
-      Array.from({ length: kind.variants }, (_, v) => {
-        const name = `${kind.art}.${v + 1}`;
-        if (!texture.has(name)) throw new Error(`The art sheet has no frame "${name}".`);
-        const frame = texture.get(name);
-        return ((frame.cutY - 1) / (TILE + 2)) * columns + (frame.cutX - 1) / (TILE + 2);
-      }),
-    );
+    const frame = texture.get(name);
+    return ((frame.cutY - 1) / (TILE + 2)) * columns + (frame.cutX - 1) / (TILE + 2);
+  }
+
+  /** A ground frame's index across the ground tilesets, from whichever sheet has it. */
+  private groundFrame(name: string): number {
+    let offset = 0;
+    for (const sheet of GROUND_SHEETS) {
+      const texture = this.textures.get(sheet);
+      if (texture.has(name)) return offset + this.frameIndex(sheet, name);
+      const columns = Math.floor(texture.source[0]!.width / (TILE + 2));
+      const rows = Math.floor(texture.source[0]!.height / (TILE + 2));
+      offset += columns * rows;
+    }
+    throw new Error(`No ground sheet has a frame "${name}".`);
   }
 
   private hoverAt(pointer: Phaser.Input.Pointer | undefined): void {

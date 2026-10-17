@@ -19,6 +19,8 @@
     "limits": "node tools/check-limits.mjs",
     "codemap": "node tools/codemap.mjs",
     "reading-cost": "node tools/reading-cost.mjs",
+    "map:stats": "node tools/map-stats.mjs",
+    "map:render": "node tools/map-stats.mjs --render",
     "test": "vitest run",
     "test:related": "vitest related --run",
     "test:browser": "playwright test",

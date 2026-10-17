@@ -1,0 +1,10 @@
+[
+{"id":"oak","name":"oak","kind":"tree","art":"tree.oak","yields":"logs","amount":30,"blocks":true,"density":{"temperate-forest":0.26,"grassland":0.015,"swamp":0.02}},
+{"id":"ash","name":"ash","kind":"tree","art":"tree.ash","yields":"logs","amount":25,"blocks":true,"density":{"temperate-forest":0.16,"grassland":0.01}},
+{"id":"birch","name":"birch","kind":"tree","art":"tree.birch","yields":"logs","amount":15,"blocks":true,"density":{"temperate-forest":0.06,"taiga":0.1,"grassland":0.008,"steppe":0.018}},
+{"id":"pine","name":"pine","kind":"tree","art":"tree.pine","yields":"logs","amount":25,"blocks":true,"density":{"taiga":0.4,"tundra":0.03,"temperate-forest":0.02}},
+{"id":"willow","name":"willow","kind":"tree","art":"tree.willow","yields":"logs","amount":15,"blocks":true,"density":{"swamp":0.14}},
+{"id":"berry-bush","name":"berry bush","kind":"bush","art":"bush.berry","yields":"berries","amount":6,"density":{"grassland":0.015,"temperate-forest":0.03,"taiga":0.02,"steppe":0.005}},
+{"id":"wild-herbs","name":"wild herbs","kind":"herb","art":"herb.wild","yields":"herbs","amount":2,"density":{"grassland":0.008,"temperate-forest":0.012,"swamp":0.02,"taiga":0.006}},
+{"id":"boulder","name":"boulder","kind":"boulder","art":"boulder","yields":"stone","amount":20,"blocks":true,"density":{"grassland":0.003,"steppe":0.006,"tundra":0.02,"taiga":0.004,"temperate-forest":0.002},"nearRock":{"reach":3,"density":0.1}}
+]

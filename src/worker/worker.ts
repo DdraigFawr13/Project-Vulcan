@@ -86,9 +86,11 @@ function snapshot(w: WorldState): void {
     }
   post(
     { type: 'snapshot', tick: w.tick, speed: pace.speed, clock: clockView(w.tick), chunks },
-    chunks.map((chunk) => chunk.tiles.buffer),
+    chunks.flatMap((chunk) => [chunk.tiles.buffer, chunk.features.buffer]),
   );
 }
+
+const itemName = (id: string): string => content.items.find((item) => item.id === id)?.name ?? id;
 
 function tileView(w: WorldState, x: number, y: number): TileView | undefined {
   const { map } = w;
@@ -96,11 +98,17 @@ function tileView(w: WorldState, x: number, y: number): TileView | undefined {
   if (x >= map.width || y >= map.height) return undefined;
   const chunkX = Math.floor(x / CHUNK);
   const chunkY = Math.floor(y / CHUNK);
-  const changedBy = findEvent(w.log, map.tileCauses[y * map.width + x]!);
+  const i = y * map.width + x;
+  const changedBy = findEvent(w.log, map.tileCauses[i]!);
+  const feature = map.features[i]! > 0 ? content.features[map.features[i]! - 1] : undefined;
   return {
     x,
     y,
-    ground: content.terrain.kinds[map.tiles[y * map.width + x]!]!.name,
+    ground: content.terrain.kinds[map.tiles[i]!]!.name,
+    biome: content.biomes.biomes[map.biomes[i]!]!.name,
+    elevation: map.elevation[i]!,
+    fertility: map.fertility[i]!,
+    ...(feature && { feature: `${feature.name} (${feature.amount} ${itemName(feature.yields)})` }),
     chunkX,
     chunkY,
     version: map.chunkVersions[chunkY * chunksAcross(map) + chunkX]!,
