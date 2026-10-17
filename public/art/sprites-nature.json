@@ -60,9 +60,29 @@
         "h": 32
       }
     },
-    "tree.ash.1": {
+    "log.fallen.1": {
       "frame": {
         "x": 1,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "tree.ash.1": {
+      "frame": {
+        "x": 35,
         "y": 35,
         "w": 32,
         "h": 32
@@ -82,7 +102,7 @@
     },
     "tree.birch.1": {
       "frame": {
-        "x": 35,
+        "x": 69,
         "y": 35,
         "w": 32,
         "h": 32
@@ -102,8 +122,8 @@
     },
     "tree.oak.1": {
       "frame": {
-        "x": 69,
-        "y": 35,
+        "x": 1,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -122,7 +142,7 @@
     },
     "tree.pine.1": {
       "frame": {
-        "x": 1,
+        "x": 35,
         "y": 69,
         "w": 32,
         "h": 32
@@ -142,7 +162,7 @@
     },
     "tree.willow.1": {
       "frame": {
-        "x": 35,
+        "x": 69,
         "y": 69,
         "w": 32,
         "h": 32
@@ -170,6 +190,7 @@
       "boulder.1",
       "bush.berry.1",
       "herb.wild.1",
+      "log.fallen.1",
       "tree.ash.1",
       "tree.birch.1",
       "tree.oak.1",

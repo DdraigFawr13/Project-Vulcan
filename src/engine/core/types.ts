@@ -111,8 +111,11 @@ export interface TerrainDef {
     }[];
     elevation: { floor: Range; relief: Range; lapse: number; axisNoise: number };
     noise: { cell: number; octaves: number };
+    moisture: { cell: number; low: number; span: number };
+    ridges: { cell: number; weight: number };
+    rocks: readonly { kind: string; weight: number }[];
+    strataCell: number;
     rock: {
-      kind: string;
       screeKind: string;
       wall: number;
       scree: number;
@@ -124,7 +127,13 @@ export interface TerrainDef {
     swamp: string;
     swampLowland: number;
     lowlandRain: number;
-    groves: { cell: number; low: number; high: number };
+    groves: {
+      cell: number;
+      low: number;
+      high: number;
+      oldGrowth: { cell: number; share: number; factor: number };
+      glades: { share: number; factor: number };
+    };
     start: {
       woodItem: string;
       stoneItem: string;
@@ -162,12 +171,13 @@ export interface BiomesDef {
 export interface FeatureDef {
   id: string;
   name: string;
-  kind: 'tree' | 'bush' | 'herb' | 'boulder';
+  kind: 'tree' | 'bush' | 'herb' | 'log' | 'boulder';
   art: string;
   yields: string;
   amount: number;
   blocks?: boolean;
   clumps?: boolean;
+  glades?: boolean;
   density: Readonly<Record<string, number>>;
   nearRock?: { reach: number; density: number };
 }

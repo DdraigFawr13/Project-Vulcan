@@ -3,18 +3,22 @@
 "generator": {
 "climates": [
 {"id":"temperate","name":"temperate","weight":7,"temperature":[7,13],"rainfall":[520,900]},
-{"id":"pine-valley","name":"cool","weight":1.5,"temperature":[2,6],"rainfall":[500,900]},
-{"id":"steppe","name":"dry","weight":1.5,"temperature":[9,15],"rainfall":[320,520]}
+{"id":"pine-valley","name":"cool","weight":1.5,"temperature":[5.5,8],"rainfall":[500,900]},
+{"id":"steppe","name":"dry","weight":1.5,"temperature":[9,15],"rainfall":[320,560]}
 ],
 "elevation": {"floor":[150,450],"relief":[700,1300],"lapse":6.5,"axisNoise":0.25},
 "noise": {"cell":24,"octaves":4},
-"rock": {"kind":"rock-wall","screeKind":"gravel","wall":0.12,"scree":0.03,"outcrops":0.015,"outcropCell":10},
+"moisture": {"cell":40,"low":0.45,"span":1.1},
+"ridges": {"cell":28,"weight":0.45},
+"rocks": [{"kind":"rock-wall","weight":4},{"kind":"slate","weight":3},{"kind":"limestone","weight":3},{"kind":"sandstone","weight":2}],
+"strataCell": 18,
+"rock": {"screeKind":"gravel","wall":0.12,"scree":0.03,"outcrops":0.015,"outcropCell":10},
 "valleyFloor": 0.02,
 "alpine": "alpine",
 "swamp": "swamp",
 "swampLowland": 0.08,
 "lowlandRain": 150,
-"groves": {"cell":12,"low":0.35,"high":1.65},
+"groves": {"cell":12,"low":0.35,"high":1.65,"oldGrowth":{"cell":22,"share":0.1,"factor":2.6},"glades":{"share":0.12,"factor":4}},
 "start": {"woodItem":"logs","stoneItem":"stone","radius":30,"buildable":400,"wood":40,"stone":20}
 },
 "floors": {"grassland":"grass","temperate-forest":"forest-floor","taiga":"needles","steppe":"dry-grass","savanna":"dry-grass","tundra":"tundra","alpine":"snow","desert":"sand","swamp":"marsh","jungle":"forest-floor"},
@@ -24,7 +28,7 @@
 {"id":"sand","name":"sand","art":"tile.sand","variants":1,"buildable":true},
 {"id":"gravel","name":"scree","art":"tile.gravel","variants":1,"buildable":true},
 {"id":"stone-floor","name":"stone floor","art":"tile.stone-floor","variants":1,"buildable":true},
-{"id":"rock-wall","name":"rock","art":"tile.rock-wall","variants":1,"stone":true},
+{"id":"rock-wall","name":"granite","art":"tile.rock-wall","variants":1,"stone":true},
 {"id":"water-shallow","name":"shallow water","art":"tile.water-shallow","variants":1},
 {"id":"water-deep","name":"deep water","art":"tile.water-deep","variants":1},
 {"id":"forest-floor","name":"leaf litter","art":"tile.forest-floor","variants":2,"buildable":true},
@@ -32,6 +36,9 @@
 {"id":"dry-grass","name":"dry grass","art":"tile.dry-grass","variants":2,"buildable":true},
 {"id":"marsh","name":"marsh","art":"tile.marsh","variants":2},
 {"id":"tundra","name":"moss and lichen","art":"tile.tundra","variants":1,"buildable":true},
-{"id":"snow","name":"snow","art":"tile.snow","variants":1,"buildable":true}
+{"id":"snow","name":"snow","art":"tile.snow","variants":1,"buildable":true},
+{"id":"slate","name":"slate","art":"tile.slate","variants":1,"stone":true},
+{"id":"limestone","name":"limestone","art":"tile.limestone","variants":1,"stone":true},
+{"id":"sandstone","name":"sandstone","art":"tile.sandstone","variants":1,"stone":true}
 ]
 }

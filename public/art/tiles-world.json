@@ -80,9 +80,29 @@
         "h": 32
       }
     },
-    "tile.marsh.1": {
+    "tile.limestone.1": {
       "frame": {
         "x": 1,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "tile.marsh.1": {
+      "frame": {
+        "x": 35,
         "y": 35,
         "w": 32,
         "h": 32
@@ -102,7 +122,7 @@
     },
     "tile.marsh.2": {
       "frame": {
-        "x": 35,
+        "x": 69,
         "y": 35,
         "w": 32,
         "h": 32
@@ -122,7 +142,7 @@
     },
     "tile.needles.1": {
       "frame": {
-        "x": 69,
+        "x": 103,
         "y": 35,
         "w": 32,
         "h": 32
@@ -142,8 +162,48 @@
     },
     "tile.needles.2": {
       "frame": {
-        "x": 103,
-        "y": 35,
+        "x": 1,
+        "y": 69,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "tile.sandstone.1": {
+      "frame": {
+        "x": 35,
+        "y": 69,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "tile.slate.1": {
+      "frame": {
+        "x": 69,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -162,7 +222,7 @@
     },
     "tile.snow.1": {
       "frame": {
-        "x": 1,
+        "x": 103,
         "y": 69,
         "w": 32,
         "h": 32
@@ -182,8 +242,8 @@
     },
     "tile.tundra.1": {
       "frame": {
-        "x": 35,
-        "y": 69,
+        "x": 1,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -211,10 +271,13 @@
       "tile.dry-grass.2",
       "tile.forest-floor.1",
       "tile.forest-floor.2",
+      "tile.limestone.1",
       "tile.marsh.1",
       "tile.marsh.2",
       "tile.needles.1",
       "tile.needles.2",
+      "tile.sandstone.1",
+      "tile.slate.1",
       "tile.snow.1",
       "tile.tundra.1"
     ]
@@ -222,7 +285,7 @@
   "meta": {
     "size": {
       "w": 136,
-      "h": 102
+      "h": 136
     },
     "scale": "1",
     "image": "tiles-world.png"

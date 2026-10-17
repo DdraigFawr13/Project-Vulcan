@@ -70,7 +70,10 @@ function drawMap(seed, m) {
   const S = 3;
   const image = createImage(m.width * S, m.height * S);
   const kindColour = {
-    'rock-wall': [96, 92, 88],
+    'rock-wall': [104, 98, 96],
+    slate: [62, 68, 80],
+    limestone: [176, 170, 152],
+    sandstone: [150, 98, 70],
     gravel: [140, 134, 124],
     snow: [235, 238, 240],
   };
@@ -79,6 +82,7 @@ function drawMap(seed, m) {
     bush: [150, 40, 70],
     herb: [210, 200, 70],
     boulder: [60, 58, 56],
+    log: [90, 60, 30],
   };
   for (let y = 0; y < m.height; y++)
     for (let x = 0; x < m.width; x++) {

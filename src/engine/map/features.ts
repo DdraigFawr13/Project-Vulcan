@@ -1,12 +1,14 @@
 // What grows or lies on the ground: trees in groves, bushes, herbs and boulders, by biome from
 // content (features.json); then the start tile, the nearest to the middle with enough around it.
 import type { EngineContent, RngStream } from '../core/index.ts';
-import { bake, fractalNoise } from './noise.ts';
+import { bake, fractalNoise, quantile } from './noise.ts';
 import type { Ground } from './terrain.ts';
 
 /**
  * One feature roll per tile, row by row: a `clumps` feature's chance is its biome density scaled by a grove
- * field (`groves.low` to `groves.high`), so woods come in clumps and clearings; boulders gain
+ * field (`groves.low` to `groves.high`), times `oldGrowth.factor` in the old-growth share of the
+ * map, so woods come in clumps, clearings and dense old stands; `glades` features are
+ * `glades.factor` times likelier in the clearings' heart; boulders gain
  * `nearRock.density` within `nearRock.reach` tiles of rock. Rock tiles stay bare. Returns
  * 0 for a bare tile, else 1 + the feature's index.
  */
@@ -21,6 +23,9 @@ export function placeFeatures(
   const { biomes } = content.biomes;
   const { groves } = content.terrain.generator;
   const grove = bake(fractalNoise(rng, width, height, groves.cell, 2), width, height);
+  const old = bake(fractalNoise(rng, width, height, groves.oldGrowth.cell, 2), width, height);
+  const oldFrom = quantile(old, 1 - groves.oldGrowth.share);
+  const gladeBelow = quantile(grove, groves.glades.share);
   const isRock = ground.tiles.map((t) => content.terrain.kinds[t]!.stone === true);
   const reach = Math.max(0, ...features.map((f) => f.nearRock?.reach ?? 0));
   const rockDistance = distanceTo(isRock, width, height, reach);
@@ -29,12 +34,17 @@ export function placeFeatures(
     const roll = rng.int(1_000_000) / 1_000_000;
     if (isRock[i]) continue;
     const biome = biomes[ground.biomes[i]!]!.id;
-    const clump = groves.low + (groves.high - groves.low) * grove[i]!;
+    // Old growth: dense woods where its field peaks. Glades: the grove field's lowest ground.
+    const clump =
+      (groves.low + (groves.high - groves.low) * grove[i]!) *
+      (old[i]! >= oldFrom ? groves.oldGrowth.factor : 1);
+    const glade = grove[i]! <= gladeBelow;
     let sum = 0;
     for (let f = 0; f < features.length; f += 1) {
       const def = features[f]!;
       let chance = def.density[biome] ?? 0;
       if (def.clumps) chance *= clump;
+      if (def.glades && glade) chance *= groves.glades.factor;
       if (def.nearRock && rockDistance[i]! <= def.nearRock.reach) chance += def.nearRock.density;
       sum += chance;
       if (roll < sum) {

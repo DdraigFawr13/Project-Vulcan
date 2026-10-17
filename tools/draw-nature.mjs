@@ -5,10 +5,11 @@ import path from 'node:path';
 import { isMain, root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
 import { readPalette } from './draw-tiles-base.mjs';
+import { slate, limestone, sandstone, log } from './draw-nature-rock.mjs';
 
-const S = 32;
+export const S = 32;
 
-function noise(seed, x, y) {
+export function noise(seed, x, y) {
   let h =
     Math.imul(seed ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(x, 0x27d4eb2f) ^ Math.imul(y, 0x165667b1);
   h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
@@ -31,7 +32,7 @@ function blobs(seed, x, y, cell) {
   return top * (1 - fy) + bottom * fy;
 }
 
-function canvas(draw) {
+export function canvas(draw) {
   const image = createImage(S, S);
   const set = (x, y, rgb, alpha = 255) => {
     if (x < 0 || y < 0 || x >= S || y >= S) return;
@@ -41,12 +42,12 @@ function canvas(draw) {
   return image;
 }
 
-const wrap = (v) => ((v % S) + S) % S;
+export const wrap = (v) => ((v % S) + S) % S;
 
 // ---- ground tiles -------------------------------------------------------------------------
 
 // Base shading by wrapped noise: [dark, mid, light] palette names.
-function shade(p, set, seed, [dark, mid, light], cell = 8, lo = 0.38, hi = 0.66) {
+export function shade(p, set, seed, [dark, mid, light], cell = 8, lo = 0.38, hi = 0.66) {
   for (let y = 0; y < S; y++)
     for (let x = 0; x < S; x++) {
       const v = blobs(seed, x, y, cell) + (noise(seed + 7, x, y) - 0.5) * 0.25;
@@ -55,7 +56,7 @@ function shade(p, set, seed, [dark, mid, light], cell = 8, lo = 0.38, hi = 0.66)
 }
 
 // Scatter `count` marks of `len` pixels; dx/dy give the direction; wraps at the edges.
-function marks(p, set, seed, count, colours, len, dx, dy) {
+export function marks(p, set, seed, count, colours, len, dx, dy) {
   for (let k = 0; k < count; k++) {
     const x = Math.floor(noise(seed, k, 1) * S);
     const y = Math.floor(noise(seed, k, 2) * S);
@@ -132,6 +133,9 @@ export function drawTilesWorld(p = readPalette()) {
     'tile.marsh.2': marsh(p, 132),
     'tile.tundra.1': tundra(p, 141),
     'tile.snow.1': snow(p, 151),
+    'tile.slate.1': slate(p, 161),
+    'tile.limestone.1': limestone(p, 171),
+    'tile.sandstone.1': sandstone(p, 181),
   };
 }
 
@@ -139,7 +143,7 @@ export function drawTilesWorld(p = readPalette()) {
 
 // A shape is a mask function over the 32x32 frame. `paint` shades it lit from the top left, adds
 // an ink outline where a neighbour is outside the mask, and a soft shadow under it.
-function sprite(p, seed, parts, { shadow = [16, 27, 9, 3] } = {}) {
+export function sprite(p, seed, parts, { shadow = [16, 27, 9, 3] } = {}) {
   return canvas((set) => {
     const [sx, sy, rx, ry] = shadow;
     for (let y = 0; y < S; y++)
@@ -352,6 +356,7 @@ export function drawSpritesNature(p = readPalette()) {
     'bush.berry.1': bush(p),
     'herb.wild.1': herb(p),
     'boulder.1': boulder(p),
+    'log.fallen.1': log(p),
   };
 }
 
