@@ -4,7 +4,7 @@ Goal: a repo that builds, tests, deploys and runs an empty deterministic world i
 
 ## Status
 
-- [ ] P0.1 Repo setup (this PR)
+- [x] P0.1 Repo setup (PR #2, merged 2026-10-17)
 - [ ] P0.2 Content fork
 - [ ] P0.3 Engine core
 - [ ] P0.4 Worker loop, map and art pipeline
@@ -15,7 +15,7 @@ Goal: a repo that builds, tests, deploys and runs an empty deterministic world i
 
 ### P0.1 Repo setup
 
-Scaffold, checks, CI, docs, toolkit, agents and skills; PR #1 closed with its engine core kept for P0.3. Mock-up: none (the plan was the mock-up). Done when: CI green, `npm run check` under 60 s, the live deploy shows the empty valley at the merge commit.
+Scaffold, checks, CI, docs, toolkit, agents and skills; PR #1 closed with its engine core kept for P0.3. Mock-up: none (the plan was the mock-up). Done when: CI green, `npm run check` under 60 s, the live deploy shows the empty valley at the merge commit (waits on Morgan connecting Vercel).
 
 - Reading list: `docs/ARCHITECTURE.md`, `docs/RULES.md`, `docs/TOOLKIT.md`
 

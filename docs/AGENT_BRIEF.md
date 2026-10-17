@@ -17,9 +17,9 @@ One page. Everything else is read only at the section a reading list names.
 
 1. The coordinator starts one thread per milestone and names its phase spec and milestone.
 2. The thread reads AGENTS "Start here", then the milestone's reading list, and logs its setup time (VR-46).
-3. Mock-up round, Morgan's approval, build on a branch from `main`, `npm run check`, draft PR.
-4. Review (`reviewer`, plus `design-reviewer` for engine or content diffs), fixes, green CI, squash-merge; the branch is deleted.
-5. In the merge PR: tick the milestone in the spec's Status section and add a CHANGELOG line. After merge: update the project plan's phase table and add the thread-times line.
+3. Mock-up round, Morgan's approval, build on a branch from `main`, `npm run check` and the browser smoke locally, draft PR (no CI runs on drafts, VR-54).
+4. Review (`reviewer`, plus `design-reviewer` for engine or content diffs) and fixes while still a draft; tick the milestone in the spec; mark ready, which runs CI once; squash-merge; the branch is deleted.
+5. After merge: update the project plan's phase table and add the thread-times line. The CHANGELOG line goes in the PR.
 6. After a phase's last milestone: the `phase-review` skill, then hand the phase to Morgan.
 
 ## Handoffs
