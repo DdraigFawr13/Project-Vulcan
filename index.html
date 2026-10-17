@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ledger</title>
+  </head>
+  <body>
+    <header class="bar">
+      <h1>Ledger</h1>
+      <span id="clock" data-testid="clock" aria-live="off">Day 1, 00:00</span>
+      <div class="controls" role="group" aria-label="Time controls">
+        <button id="play" type="button" data-testid="play-toggle">Pause</button>
+        <button id="step" type="button" title="Advance one game hour while paused">Step 1 h</button>
+        <span id="speeds" role="group" aria-label="Speed"></span>
+      </div>
+      <form id="seed-form" class="controls">
+        <label for="seed">Seed</label>
+        <input id="seed" name="seed" size="12" autocomplete="off" />
+        <button type="submit">New colony</button>
+      </form>
+      <button id="export" type="button">Export log</button>
+    </header>
+    <main class="layout">
+      <section class="map-wrap" aria-label="Map">
+        <canvas id="map" data-testid="map"></canvas>
+        <p id="colony" class="colony" data-testid="colony"></p>
+      </section>
+      <aside class="side">
+        <section>
+          <h2>Colonists</h2>
+          <ul id="colonists" class="colonists" data-testid="colonists"></ul>
+        </section>
+        <section id="inspector" class="inspector" data-testid="inspector" hidden></section>
+        <section class="log-wrap">
+          <h2>
+            Chronicle <small id="event-count"></small>
+            <label class="toggle"><input id="routine" type="checkbox" checked /> routine</label>
+          </h2>
+          <ol id="log" class="log" data-testid="event-log" reversed></ol>
+        </section>
+      </aside>
+    </main>
+    <script type="module" src="/src/app/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,195 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f4f1ea;
+  --panel: #fffdf8;
+  --ink: #26221c;
+  --muted: #6b6357;
+  --line: #d9d2c4;
+  --accent: #a4471f;
+  font:
+    14px/1.4 system-ui,
+    sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1916;
+    --panel: #24211d;
+    --ink: #ece6da;
+    --muted: #a59d8f;
+    --line: #3a352e;
+    --accent: #e0864f;
+  }
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+h1 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+h2 {
+  font-size: 0.95rem;
+  margin: 0 0 0.4rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+small {
+  color: var(--muted);
+  font-weight: normal;
+}
+button,
+input {
+  font: inherit;
+}
+button {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+}
+button[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.controls {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+#speeds {
+  display: flex;
+  gap: 0.25rem;
+}
+#clock {
+  font-variant-numeric: tabular-nums;
+  min-width: 8.5rem;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(18rem, 1fr);
+  gap: 1rem;
+  padding: 1rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+.map-wrap canvas {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+.colony {
+  margin: 0.4rem 0 0;
+  color: var(--muted);
+}
+.side {
+  display: grid;
+  gap: 1rem;
+}
+.side > section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+}
+.colonists {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+.colonists button {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0.15rem 0.25rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.colonists button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.colonists .activity {
+  color: var(--muted);
+}
+.need {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr 3rem;
+  gap: 0.5rem;
+  align-items: center;
+}
+.need meter {
+  width: 100%;
+}
+.inspector dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.75rem;
+  margin: 0.4rem 0;
+}
+.inspector dt {
+  color: var(--muted);
+}
+.inspector dd {
+  margin: 0;
+}
+.inspector ol,
+.log {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+  max-height: 22rem;
+  overflow-y: auto;
+  font-size: 0.9rem;
+}
+.inspector ol {
+  max-height: 10rem;
+}
+.log li,
+.inspector li {
+  padding: 0.1rem 0;
+  border-bottom: 1px dotted var(--line);
+}
+.log time,
+.inspector time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.4rem;
+}
+.log .why {
+  color: var(--muted);
+}
+.log .notable {
+  font-weight: 600;
+}
+.toggle {
+  margin-left: auto;
+  font-weight: normal;
+  font-size: 0.85rem;
+}

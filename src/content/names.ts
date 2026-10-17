@@ -1,0 +1,23 @@
+// Given names for founders. Picked without repeats.
+export const names: readonly string[] = [
+  'Aled',
+  'Bryn',
+  'Carys',
+  'Dafydd',
+  'Eirlys',
+  'Ffion',
+  'Gareth',
+  'Heledd',
+  'Idris',
+  'Lowri',
+  'Meirion',
+  'Nia',
+  'Owain',
+  'Rhian',
+  'Siôn',
+  'Tegwen',
+  'Wyn',
+  'Angharad',
+  'Cadi',
+  'Elen',
+];
