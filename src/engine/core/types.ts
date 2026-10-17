@@ -100,6 +100,22 @@ export interface MapState {
 
 type Range = readonly number[];
 
+/** How a valley's mountains are placed and shaped (terrain.json `generator.layouts`). */
+export interface MountainLayout {
+  count: Range;
+  radius: Range;
+  height: Range;
+  rimShare: number;
+  rim: Range;
+  inside: number;
+  /** The chance a mountain's long axis follows the valley's, so rim ranges run along the walls. */
+  align: number;
+  rough: Range;
+  stretch: Range;
+  warp: number;
+  warpCell: number;
+}
+
 /** Ground kinds, the surface map's size and the generator's dials (src/content/data/terrain.json). */
 export interface TerrainDef {
   surface: { width: number; height: number; ground: string };
@@ -116,18 +132,10 @@ export interface TerrainDef {
     moisture: { cell: number; low: number; span: number };
     ridges: { cell: number; weight: number };
     rocks: readonly { kind: string; weight: number }[];
-    mountains: {
-      count: Range;
-      radius: Range;
-      height: Range;
-      rimShare: number;
-      rim: Range;
-      inside: number;
-      rough: Range;
-      stretch: Range;
-      warp: number;
-      warpCell: number;
-    };
+    /** Which entry of `layouts` shapes the valley's mountains. */
+    layout: string;
+    /** Mountain layouts: `valley` (ranges along the rims) and `highlands` (massifs inside too). */
+    layouts: Readonly<Record<string, MountainLayout>>;
     rock: {
       screeKind: string;
       /** The picture the renderer lays over snow-capped rock. */

@@ -1,5 +1,6 @@
 // Mountains: a handful of massifs of different sizes, most on the valley's rims and a few standing
-// inside it, each of one rock. Dials in terrain.json `generator.mountains`.
+// inside it, each of one rock. Dials in terrain.json `generator.layouts`, the
+// one named by `generator.layout`: `valley` keeps them on the rims, `highlands` also inside.
 import type { RngStream, TerrainDef } from '../core/index.ts';
 import { AXES, bake, fractalNoise } from './noise.ts';
 
@@ -39,7 +40,8 @@ export function raiseMountains(
   axis: readonly [number, number],
   ridged: readonly number[],
 ): Mountains {
-  const m = gen.mountains;
+  const m = gen.layouts[gen.layout];
+  if (!m) throw new Error(`Mountain layout "${gen.layout}" is not in terrain.json.`);
   const [ax, ay] = axis;
   const cx = (width - 1) / 2;
   const cy = (height - 1) / 2;
@@ -54,7 +56,7 @@ export function raiseMountains(
       ? side * (rng.between(Math.round(m.rim[0]! * 100), Math.round(m.rim[1]! * 100)) / 100)
       : rng.between(-m.inside * 100, m.inside * 100) / 100;
     const radius = rng.between(m.radius[0]!, m.radius[1]!);
-    const [ux, uy] = rng.pick(AXES);
+    const [ux, uy] = m.align > 0 && rng.chance(m.align) ? axis : rng.pick(AXES);
     const stretch = rng.between(m.stretch[0]! * 10, m.stretch[1]! * 10) / 10;
     massifs.push({
       x: cx + (along * ax + across * ay) * half,
