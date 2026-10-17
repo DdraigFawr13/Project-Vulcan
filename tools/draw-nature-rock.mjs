@@ -1,5 +1,5 @@
 // Rock-wall grounds and the fallen log for draw-nature.mjs (docs/ART.md); palette colours only.
-import { S, noise, canvas, shade, marks, sprite, wrap } from './draw-nature.mjs';
+import { S, noise, blobs, canvas, shade, marks, sprite, wrap } from './draw-nature.mjs';
 
 // Solid rock grounds: shaded base, then a structure that wraps at the tile edge.
 export const slate = (p, seed) =>
@@ -13,6 +13,28 @@ export const slate = (p, seed) =>
         if (k === 0 && on) set(x, y, p['slate line']);
         else if (k === 1 && on && noise(seed + 1, x, y) < 0.5) set(x, y, p['slate light']);
       }
+  });
+
+// Granite capped with wind-packed snow: rock shows through in dark patches and along the ridges.
+export const snowcap = (p, seed) =>
+  canvas((set) => {
+    shade(p, set, seed, ['rock dark', 'rock', 'rock light'], 8, 0.4, 0.62);
+    const cover = (x, y) => blobs(seed + 5, x, y, 16) * 0.7 + blobs(seed + 6, x, y, 8) * 0.3;
+    const snowy = (x, y) => cover(x, y) + (noise(seed + 8, x, y) - 0.5) * 0.12 < 0.52;
+    for (let y = 0; y < S; y++)
+      for (let x = 0; x < S; x++) {
+        if (!snowy(x, y)) {
+          // Bare rock: darker where deep inside a patch, lit edge below the snow.
+          if (snowy(x, wrap(y - 1))) set(x, y, p['rock dark']);
+          else if (snowy(wrap(x - 1), y) && noise(seed + 9, x, y) < 0.5) set(x, y, p['rock edge']);
+          continue;
+        }
+        // Snow: drifts shaded on the lee (lower right) side, sparkle on the windward side.
+        const lee = !snowy(wrap(x + 1), y) || !snowy(x, wrap(y + 1));
+        const v = blobs(seed + 7, x, y, 8);
+        set(x, y, p[lee ? 'snow shade' : v > 0.6 ? 'snow light' : 'snow']);
+      }
+    marks(p, set, seed + 1, 8, ['snow shade'], 3, 1, 1); // wind ripples
   });
 
 export const limestone = (p, seed) =>

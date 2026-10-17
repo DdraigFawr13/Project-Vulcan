@@ -5,7 +5,7 @@ import path from 'node:path';
 import { isMain, root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
 import { readPalette } from './draw-tiles-base.mjs';
-import { slate, limestone, sandstone, log } from './draw-nature-rock.mjs';
+import { slate, limestone, sandstone, snowcap, log } from './draw-nature-rock.mjs';
 
 export const S = 32;
 
@@ -18,7 +18,7 @@ export function noise(seed, x, y) {
 }
 
 // Smooth value noise that wraps at the tile edge, so tiles repeat seamlessly.
-function blobs(seed, x, y, cell) {
+export function blobs(seed, x, y, cell) {
   const n = S / cell;
   const gx = x / cell;
   const gy = y / cell;
@@ -136,6 +136,7 @@ export function drawTilesWorld(p = readPalette()) {
     'tile.slate.1': slate(p, 161),
     'tile.limestone.1': limestone(p, 171),
     'tile.sandstone.1': sandstone(p, 181),
+    'tile.snowcap.1': snowcap(p, 191),
   };
 }
 

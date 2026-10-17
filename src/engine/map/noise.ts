@@ -5,6 +5,29 @@ import type { RngStream } from '../core/index.ts';
 /** A field of values in [0, 1] over a width by height map. */
 export type Field = (x: number, y: number) => number;
 
+// cos and sin of k * 22.5 degrees, k = 0 to 15.
+const C1 = 0.9238795325;
+const C2 = 0.7071067812;
+const C3 = 0.3826834324;
+export const AXES: readonly (readonly [number, number])[] = [
+  [1, 0],
+  [C1, C3],
+  [C2, C2],
+  [C3, C1],
+  [0, 1],
+  [-C3, C1],
+  [-C2, C2],
+  [-C1, C3],
+  [-1, 0],
+  [-C1, -C3],
+  [-C2, -C2],
+  [-C3, -C1],
+  [0, -1],
+  [C3, -C1],
+  [C2, -C2],
+  [C1, -C3],
+];
+
 const smooth = (t: number): number => t * t * (3 - 2 * t);
 
 /** One octave: random values on a grid of `cell` tiles, blended smoothly between grid points. */

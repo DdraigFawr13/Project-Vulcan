@@ -240,9 +240,29 @@
         "h": 32
       }
     },
-    "tile.tundra.1": {
+    "tile.snowcap.1": {
       "frame": {
         "x": 1,
+        "y": 103,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "tile.tundra.1": {
+      "frame": {
+        "x": 35,
         "y": 103,
         "w": 32,
         "h": 32
@@ -279,6 +299,7 @@
       "tile.sandstone.1",
       "tile.slate.1",
       "tile.snow.1",
+      "tile.snowcap.1",
       "tile.tundra.1"
     ]
   },

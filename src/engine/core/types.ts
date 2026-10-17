@@ -114,9 +114,22 @@ export interface TerrainDef {
     moisture: { cell: number; low: number; span: number };
     ridges: { cell: number; weight: number };
     rocks: readonly { kind: string; weight: number }[];
-    strataCell: number;
+    mountains: {
+      count: Range;
+      radius: Range;
+      height: Range;
+      rimShare: number;
+      rim: Range;
+      inside: number;
+      rough: Range;
+      stretch: Range;
+      warp: number;
+      warpCell: number;
+    };
     rock: {
       screeKind: string;
+      snowcapKind: string;
+      snowline: number;
       wall: number;
       scree: number;
       outcrops: number;

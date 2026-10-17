@@ -74,6 +74,7 @@ function drawMap(seed, m) {
     slate: [62, 68, 80],
     limestone: [176, 170, 152],
     sandstone: [150, 98, 70],
+    snowcap: [225, 228, 232],
     gravel: [140, 134, 124],
     snow: [235, 238, 240],
   };

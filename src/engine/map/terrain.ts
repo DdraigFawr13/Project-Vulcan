@@ -1,7 +1,8 @@
 // The surface generator's ground: a valley's climate, height, biomes, rock and fertility, all
 // from the `worldgen` stream and the dials in content (terrain.json `generator`, biomes.json).
 import type { EngineContent, RngStream } from '../core/index.ts';
-import { bake, fractalNoise, quantile } from './noise.ts';
+import { raiseMountains } from './mountains.ts';
+import { AXES, bake, fractalNoise, quantile } from './noise.ts';
 
 export interface Ground {
   climate: string;
@@ -12,29 +13,6 @@ export interface Ground {
   fertility: number[];
   tiles: number[];
 }
-
-// cos and sin of k * 22.5 degrees, k = 0 to 15.
-const C1 = 0.9238795325;
-const C2 = 0.7071067812;
-const C3 = 0.3826834324;
-const AXES: readonly (readonly [number, number])[] = [
-  [1, 0],
-  [C1, C3],
-  [C2, C2],
-  [C3, C1],
-  [0, 1],
-  [-C3, C1],
-  [-C2, C2],
-  [-C1, C3],
-  [-1, 0],
-  [-C1, -C3],
-  [-C2, -C2],
-  [-C3, -C1],
-  [0, -1],
-  [C3, -C1],
-  [C2, -C2],
-  [C1, -C3],
-];
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
 
@@ -56,7 +34,9 @@ const draw = (rng: RngStream, [min, max]: readonly number[]): number =>
  * map) are crags of rock on the floor. Temperature falls with height by `lapse` degrees a
  * kilometre; rainfall is the climate's, varied by a broad moisture field and raised on the
  * valley floor. The biome comes from the forked temperature-by-rainfall table. Ridged noise on
- * the slopes gives the walls spurs; the rock is two of `rocks`, drawn by weight, in strata.
+ * the slopes gives the walls spurs. Massifs (mountains.ts) of varied size stand on the rims and
+ * in the valley, each of one rock drawn by weight; the walls outside them share one rock; rock
+ * colder than `rock.snowline` is snow-capped.
  */
 export function layGround(
   rng: RngStream,
@@ -95,7 +75,6 @@ export function layGround(
   const { moisture, ridges } = gen;
   const wet = bake(fractalNoise(rng, width, height, moisture.cell, 3), width, height);
   const ridge = bake(fractalNoise(rng, width, height, ridges.cell, 3), width, height);
-  const strata = bake(fractalNoise(rng, width, height, gen.strataCell, 2), width, height);
   const soil = bake(fractalNoise(rng, width, height, cell / 2, 2), width, height);
   const crags = bake(fractalNoise(rng, width, height, gen.rock.outcropCell, 3), width, height);
 
@@ -112,24 +91,23 @@ export function layGround(
       const trough = clamp(off * off, 0, 1.5);
       // Ridged noise (high along its zero lines) on the slopes: spurs and saddles in the walls.
       const spur = (1 - Math.abs(2 * ridge[i]! - 1)) * clamp(trough, 0, 1);
-      elevation[i] = Math.round(
-        floor + relief * (0.6 * trough + 0.4 * rough[i]! + ridges.weight * spur),
-      );
+      elevation[i] = floor + relief * (0.6 * trough + 0.4 * rough[i]! + ridges.weight * spur);
     }
+  const ridgedField = ridge.map((r) => 1 - Math.abs(2 * r - 1));
+  const peaks = raiseMountains(rng, gen, width, height, [ax, ay], ridgedField);
+  for (let i = 0; i < width * height; i += 1)
+    elevation[i] = Math.round(elevation[i]! + peaks.lift[i]!);
 
   const wallFrom = quantile(elevation, 1 - gen.rock.wall);
   const screeFrom = quantile(elevation, 1 - gen.rock.wall - gen.rock.scree);
   const outcropFrom = quantile(crags, 1 - gen.rock.outcrops);
   const lowland = quantile(elevation, gen.swampLowland);
   const valleyFloor = quantile(elevation, gen.valleyFloor);
-  // Two rocks per valley, by weight, laid in broad strata.
-  const first = rng.weighted(gen.rocks.map((r) => [r, Math.round(r.weight * 10)] as const));
-  const others = gen.rocks.filter((r) => r !== first);
-  const second = others.length
-    ? rng.weighted(others.map((r) => [r, Math.round(r.weight * 10)] as const))
-    : first;
-  const rockA = kindIndex(first.kind);
-  const rockB = kindIndex(second.kind);
+  // The valley's walls are one rock; each massif is its own.
+  const wallRock = kindIndex(
+    rng.weighted(gen.rocks.map((r) => [r.kind, Math.round(r.weight * 10)] as const)),
+  );
+  const snowcap = kindIndex(gen.rock.snowcapKind);
   const scree = kindIndex(gen.rock.screeKind);
   const alpine = biomeIndex(gen.alpine);
   const swamp = biomeIndex(gen.swamp);
@@ -150,7 +128,8 @@ export function layGround(
     biomeOf[i] = b;
     // Rock: the heights, plus a scatter of crags standing out of the valley floor.
     if (e >= wallFrom || crags[i]! >= outcropFrom) {
-      tiles[i] = strata[i]! < 0.5 ? rockA : rockB;
+      const own = peaks.rock[i]!;
+      tiles[i] = t < gen.rock.snowline ? snowcap : own ? kindIndex(own) : wallRock;
       fertility[i] = 0;
       continue;
     }
