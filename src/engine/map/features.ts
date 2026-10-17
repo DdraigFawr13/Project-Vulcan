@@ -5,7 +5,7 @@ import { bake, fractalNoise } from './noise.ts';
 import type { Ground } from './terrain.ts';
 
 /**
- * One feature roll per tile, row by row: a tree's chance is its biome density scaled by a grove
+ * One feature roll per tile, row by row: a `clumps` feature's chance is its biome density scaled by a grove
  * field (`groves.low` to `groves.high`), so woods come in clumps and clearings; boulders gain
  * `nearRock.density` within `nearRock.reach` tiles of rock. Rock tiles stay bare. Returns
  * 0 for a bare tile, else 1 + the feature's index.
@@ -34,7 +34,7 @@ export function placeFeatures(
     for (let f = 0; f < features.length; f += 1) {
       const def = features[f]!;
       let chance = def.density[biome] ?? 0;
-      if (def.kind === 'tree') chance *= clump;
+      if (def.clumps) chance *= clump;
       if (def.nearRock && rockDistance[i]! <= def.nearRock.reach) chance += def.nearRock.density;
       sum += chance;
       if (roll < sum) {
@@ -64,13 +64,15 @@ function distanceTo(mask: readonly boolean[], width: number, height: number, cap
   return out;
 }
 
-/** What the done-when counts per tile: buildable land, a tree (wood) and stone (rock or boulder). */
+/** What the done-when counts per tile: buildable land, wood (a feature yielding `start.woodItem`)
+ * and stone (rock ground, or a feature yielding `start.stoneItem`). */
 export function tileUses(
   content: EngineContent,
   tiles: readonly number[],
   features: ArrayLike<number>,
 ): { buildable: boolean[]; wood: boolean[]; stone: boolean[] } {
   const n = tiles.length;
+  const { start } = content.terrain.generator;
   const buildable = new Array<boolean>(n);
   const wood = new Array<boolean>(n);
   const stone = new Array<boolean>(n);
@@ -78,8 +80,8 @@ export function tileUses(
     const kind = content.terrain.kinds[tiles[i]!]!;
     const feature = features[i]! > 0 ? content.features[features[i]! - 1] : undefined;
     buildable[i] = kind.buildable === true && !feature?.blocks;
-    wood[i] = feature?.kind === 'tree';
-    stone[i] = kind.stone === true || feature?.kind === 'boulder';
+    wood[i] = feature?.yields === start.woodItem;
+    stone[i] = kind.stone === true || feature?.yields === start.stoneItem;
   }
   return { buildable, wood, stone };
 }
@@ -132,7 +134,8 @@ export function countsAround(
 /**
  * The start tile: the buildable tile nearest the middle (ties by row, then column) with at least
  * `start.buildable` buildable tiles, `start.wood` trees and `start.stone` stone within
- * `start.radius`. If no tile has all three, the one with the best worst share of them.
+ * `start.radius`. If no tile has all three, the one with the best worst share of them, with `met`
+ * false (the `map.formed` line records it).
  */
 export function findStart(
   content: EngineContent,
@@ -140,7 +143,7 @@ export function findStart(
   features: ArrayLike<number>,
   width: number,
   height: number,
-): { x: number; y: number } {
+): { x: number; y: number; met: boolean } {
   const need = content.terrain.generator.start;
   const around = countsAround(content, tiles, features, width, height, need.radius);
   const { buildable } = tileUses(content, tiles, features);
@@ -164,11 +167,11 @@ export function findStart(
       c.stone / need.stone,
       1,
     );
-    if (score >= 1) return { x: i % width, y: Math.floor(i / width) };
+    if (score >= 1) return { x: i % width, y: Math.floor(i / width), met: true };
     if (score > bestScore) {
       bestScore = score;
       best = i;
     }
   }
-  return { x: best % width, y: Math.floor(best / width) };
+  return { x: best % width, y: Math.floor(best / width), met: false };
 }

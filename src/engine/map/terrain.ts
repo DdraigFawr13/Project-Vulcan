@@ -65,14 +65,16 @@ export function layGround(
 ): Ground {
   const gen = content.terrain.generator;
   const { biomes, rules } = content.biomes;
+  const kinds = new Map(content.terrain.kinds.map((k, i) => [k.id, i]));
+  const biomeIds = new Map(biomes.map((b, i) => [b.id, i]));
   const kindIndex = (id: string): number => {
-    const i = content.terrain.kinds.findIndex((k) => k.id === id);
-    if (i < 0) throw new Error(`Terrain "${id}" is not a terrain kind.`);
+    const i = kinds.get(id);
+    if (i === undefined) throw new Error(`Terrain "${id}" is not a terrain kind.`);
     return i;
   };
   const biomeIndex = (id: string): number => {
-    const i = biomes.findIndex((b) => b.id === id);
-    if (i < 0) throw new Error(`Biome "${id}" is not a biome.`);
+    const i = biomeIds.get(id);
+    if (i === undefined) throw new Error(`Biome "${id}" is not a biome.`);
     return i;
   };
 
@@ -111,11 +113,11 @@ export function layGround(
   const screeFrom = quantile(elevation, 1 - gen.rock.wall - gen.rock.scree);
   const outcropFrom = quantile(crags, 1 - gen.rock.outcrops);
   const lowland = quantile(elevation, gen.swampLowland);
-  const valleyFloor = quantile(elevation, 0.02);
-  const rock = kindIndex('rock-wall');
-  const scree = kindIndex('gravel');
-  const alpine = biomeIndex('alpine');
-  const swamp = biomeIndex('swamp');
+  const valleyFloor = quantile(elevation, gen.valleyFloor);
+  const rock = kindIndex(gen.rock.kind);
+  const scree = kindIndex(gen.rock.screeKind);
+  const alpine = biomeIndex(gen.alpine);
+  const swamp = biomeIndex(gen.swamp);
 
   const tiles = new Array<number>(width * height);
   const biomeOf = new Array<number>(width * height);

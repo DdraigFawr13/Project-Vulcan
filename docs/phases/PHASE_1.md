@@ -13,7 +13,7 @@ Goal: a valley worth settling. Entry: Phase 0 done and its playtest signed off b
 
 ## Milestones
 
-Every milestone runs the `map-check` skill (`npm run map-stats -- --render`) after its map change. The seed list is `src/engine/map/seeds.ts`; a seed that fails a done-when is fixed in the generator or answered with more seeds, never dropped.
+Every milestone runs the `map-check` skill (`npm run map:stats` and `npm run map:render`) after its map change. The seed list is `src/engine/map/seeds.ts`; a seed that fails a done-when is fixed in the generator or answered with more seeds, never dropped.
 
 ### P1.1 Surface terrain
 
@@ -25,7 +25,7 @@ Elevation, climate, biomes, fertility, trees, bushes, herbs and stone from conte
 
 Rivers, lakes, shallow and deep water, springs, carved from P1.1's elevation; river autotile (47-tile blob). Mock-up: UI. Done when: each seed has drinkable water; no river ends inland without a lake.
 
-- Reading list: `src/engine/map/MODULE.md`; `docs/ART.md` row P1.1 to P1.3; `src/render/MODULE.md`; P1.1's map-stats output
+- Reading list: `src/engine/map/MODULE.md`; `docs/ART.md` row P1.1 to P1.3; `src/render/MODULE.md`; the map stats table (run it, don't read code)
 
 ### P1.3 Underground
 

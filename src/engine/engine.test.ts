@@ -73,12 +73,13 @@ describe('engine', () => {
     expect(rolls(runMonth('stone-weir').log)).not.toEqual(rolls(a.log));
   });
 
-  it('continues a world restored from JSON exactly as an unbroken run', () => {
+  it('continues a restored world exactly as an unbroken run', () => {
     const unbroken = runMonth('hollow-oak');
     const world = createWorld(sim, 'hollow-oak');
     submitCommand(world, { tick: 16380, kind: 'test.mark', data: { place: 'north field' } });
     step(world, sim, 20000);
-    const restored = JSON.parse(JSON.stringify(world)) as typeof world;
+    // A structured clone, as a save is: JSON would turn the map's typed layers into objects.
+    const restored = structuredClone(world);
     submitCommand(restored, { tick: 100, kind: 'test.mark', data: { place: 'old ford' } });
     submitCommand(restored, { tick: restored.tick + 500, kind: 'test.unknown' });
     step(restored, sim, month - 20000);

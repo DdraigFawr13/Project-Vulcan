@@ -8,11 +8,14 @@
 ],
 "elevation": {"floor":[150,450],"relief":[700,1300],"lapse":6.5,"axisNoise":0.25},
 "noise": {"cell":24,"octaves":4},
-"rock": {"wall":0.12,"scree":0.03,"outcrops":0.015,"outcropCell":10},
+"rock": {"kind":"rock-wall","screeKind":"gravel","wall":0.12,"scree":0.03,"outcrops":0.015,"outcropCell":10},
+"valleyFloor": 0.02,
+"alpine": "alpine",
+"swamp": "swamp",
 "swampLowland": 0.08,
 "lowlandRain": 150,
 "groves": {"cell":12,"low":0.35,"high":1.65},
-"start": {"radius":30,"buildable":400,"wood":40,"stone":20}
+"start": {"woodItem":"logs","stoneItem":"stone","radius":30,"buildable":400,"wood":40,"stone":20}
 },
 "floors": {"grassland":"grass","temperate-forest":"forest-floor","taiga":"needles","steppe":"dry-grass","savanna":"dry-grass","tundra":"tundra","alpine":"snow","desert":"sand","swamp":"marsh","jungle":"forest-floor"},
 "kinds": [

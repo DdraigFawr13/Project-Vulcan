@@ -92,6 +92,9 @@ export const mapSystem: System = {
         biome: mainBiome(ctx, ground.biomes),
         temperature: ground.temperature,
         rainfall: ground.rainfall,
+        startX: start.x,
+        startY: start.y,
+        startMet: start.met ? 1 : 0,
       },
     });
     map.tileCauses = new Array<number>(width * height).fill(formed);

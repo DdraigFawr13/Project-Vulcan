@@ -1,4 +1,4 @@
-// `npm run map-stats [-- --render]`: lays out the surface for every seed in the map seed list and
+// `npm run map:stats` (or `map:render`): lays out the surface for every seed in the map seed list and
 // prints one table (climate, biome shares, rock, trees, start counts, generation time) against
 // the P1.1 done-when. With --render, writes one PNG per seed to tmp/maps/ (not committed).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';

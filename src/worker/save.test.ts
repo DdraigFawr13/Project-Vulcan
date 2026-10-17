@@ -37,6 +37,9 @@ describe('saves', () => {
       (s: SaveFile) => s.state.map.chunkVersions.pop(),
       (s: SaveFile) => s.state.log.reverse(),
       (s: SaveFile) => (s.state.nextEventId = 1),
+      (s: SaveFile) => (s.state.map.biomes = new Uint8Array(3)),
+      (s: SaveFile) => (s.state.map.features[0] = 250),
+      (s: SaveFile) => (s.state.map.startX = 1e6),
     ];
     for (const hurt of damage) {
       const bad = save();

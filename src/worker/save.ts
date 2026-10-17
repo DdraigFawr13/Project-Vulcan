@@ -90,6 +90,8 @@ export function checkSave(
     w.height === surface.height &&
     w.chunkVersions.length === chunksAcross(w) * chunksDown(w) &&
     w.tiles.every((t) => Number.isInteger(t) && t >= 0 && t < kinds.length) &&
+    w.startX < w.width &&
+    w.startY < w.height &&
     w.biomes.every((b) => b < content.biomes.biomes.length) &&
     w.features.every((f) => f <= content.features.length) &&
     world.log.every((e) => isObject(e) && isCount(e.id) && e.id > last && ((last = e.id), true)) &&

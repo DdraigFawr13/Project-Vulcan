@@ -111,11 +111,28 @@ export interface TerrainDef {
     }[];
     elevation: { floor: Range; relief: Range; lapse: number; axisNoise: number };
     noise: { cell: number; octaves: number };
-    rock: { wall: number; scree: number; outcrops: number; outcropCell: number };
+    rock: {
+      kind: string;
+      screeKind: string;
+      wall: number;
+      scree: number;
+      outcrops: number;
+      outcropCell: number;
+    };
+    valleyFloor: number;
+    alpine: string;
+    swamp: string;
     swampLowland: number;
     lowlandRain: number;
     groves: { cell: number; low: number; high: number };
-    start: { radius: number; buildable: number; wood: number; stone: number };
+    start: {
+      woodItem: string;
+      stoneItem: string;
+      radius: number;
+      buildable: number;
+      wood: number;
+      stone: number;
+    };
   };
   floors: Readonly<Record<string, string>>;
   kinds: readonly {
@@ -150,6 +167,7 @@ export interface FeatureDef {
   yields: string;
   amount: number;
   blocks?: boolean;
+  clumps?: boolean;
   density: Readonly<Record<string, number>>;
   nearRock?: { reach: number; density: number };
 }
