@@ -1,11 +1,13 @@
 // The save record and its check. The worker builds a save from the running world and checks one
 // before it replaces the running world, so a refused save never touches the game in progress.
-import type { WorldState } from '../engine/index.ts';
+import { chunksAcross, chunksDown, type EngineContent, type WorldState } from '../engine/index.ts';
 
 /** Raised when a save's format version changes; older saves need not load before launch. */
 export const SAVE_VERSION = 1;
 
-/** One saved game (docs/ARCHITECTURE.md "Save"). The command log and ledger live in `state`. */
+/** One saved game (docs/ARCHITECTURE.md "Save"). The command log and ledger live in `state`;
+ * `seed` and `tick` repeat `state`'s as a header readable without walking the world, and
+ * `checkSave` requires the two to agree. */
 export interface SaveFile {
   version: number;
   seed: string;
@@ -16,7 +18,8 @@ export interface SaveFile {
   state: WorldState;
 }
 
-/** The save of `world`. The caller posts it, so the page receives a copy, not the live world. */
+/** The save of `world`. It holds the live world by reference: the caller posts it at once, and
+ * posting copies it, so the page never holds the running world. */
 export const saveOf = (world: WorldState, contentHash: string): SaveFile => ({
   version: SAVE_VERSION,
   seed: world.seed,
@@ -31,7 +34,11 @@ const isObject = (v: unknown): v is Record<string, unknown> =>
 const isCount = (v: unknown): v is number => Number.isSafeInteger(v) && (v as number) >= 0;
 
 /** The world in `save`, or a throw naming why it cannot be loaded with this content. */
-export function checkSave(save: unknown, contentHash: string): WorldState {
+export function checkSave(
+  save: unknown,
+  contentHash: string,
+  content: Pick<EngineContent, 'terrain'>,
+): WorldState {
   if (!isObject(save) || !isObject(save['state'])) throw new Error('The save is damaged.');
   if (save['version'] !== SAVE_VERSION)
     throw new Error(
@@ -65,5 +72,19 @@ export function checkSave(save: unknown, contentHash: string): WorldState {
     map['tileCauses'].length === map['tiles'].length &&
     Array.isArray(map['chunkVersions']);
   if (!ok) throw new Error('The save is damaged.');
-  return state as unknown as WorldState;
+  const world = state as unknown as WorldState;
+  // Deeper checks a matching content hash makes cheap: the map fits the content, and the ledger's
+  // ids rise (findEvent's binary search and the next id depend on it).
+  const { surface, kinds } = content.terrain;
+  const w = world.map;
+  let last = 0;
+  const sound =
+    w.width === surface.width &&
+    w.height === surface.height &&
+    w.chunkVersions.length === chunksAcross(w) * chunksDown(w) &&
+    w.tiles.every((t) => Number.isInteger(t) && t >= 0 && t < kinds.length) &&
+    world.log.every((e) => isObject(e) && isCount(e.id) && e.id > last && ((last = e.id), true)) &&
+    world.nextEventId > last;
+  if (!sound) throw new Error('The save is damaged.');
+  return world;
 }

@@ -50,6 +50,34 @@ const finished = (tx: IDBTransaction, doing: string): Promise<void> =>
     tx.onabort = () => reject(reason(tx.error, doing));
   });
 
+// A request started by `start`; a synchronous throw (a closed database) becomes a readable reason.
+function read<T>(start: () => IDBRequest<T>, doing: string): Promise<T> {
+  try {
+    return done(start(), doing);
+  } catch (error) {
+    return Promise.reject(reason(error as DOMException, doing));
+  }
+}
+
+// Both stores change together or not at all: a throw part-way aborts the transaction.
+async function write(db: IDBDatabase, doing: string, work: (tx: IDBTransaction) => void) {
+  let tx: IDBTransaction;
+  try {
+    tx = db.transaction(['meta', 'saves'], 'readwrite');
+  } catch (error) {
+    throw reason(error as DOMException, doing);
+  }
+  const end = finished(tx, doing);
+  try {
+    work(tx);
+  } catch (error) {
+    tx.abort();
+    end.catch(() => {});
+    throw reason(error as DOMException, doing);
+  }
+  await end;
+}
+
 /** Opens the save database, creating it on first use. */
 export function openSaves(): Promise<SaveStore> {
   return new Promise((resolve, reject) => {
@@ -78,29 +106,30 @@ function storeOf(db: IDBDatabase): SaveStore {
         ...fields,
         id: fields.auto ? AUTOSAVE_ID : `save-${fields.savedAt}-${crypto.randomUUID()}`,
       };
-      const tx = db.transaction(['meta', 'saves'], 'readwrite');
-      tx.objectStore('saves').put(save, meta.id);
-      tx.objectStore('meta').put(meta);
-      await finished(tx, 'saving');
+      await write(db, 'saving', (tx) => {
+        tx.objectStore('saves').put(save, meta.id);
+        tx.objectStore('meta').put(meta);
+      });
       return meta;
     },
     async list() {
-      const all = await done(
-        db.transaction('meta').objectStore('meta').getAll() as IDBRequest<SaveMeta[]>,
+      const all = await read(
+        () => db.transaction('meta').objectStore('meta').getAll() as IDBRequest<SaveMeta[]>,
         'listing',
       );
       return all.sort((a, b) => b.savedAt - a.savedAt);
     },
     get: (id) =>
-      done(
-        db.transaction('saves').objectStore('saves').get(id) as IDBRequest<SaveFile | undefined>,
+      read(
+        () =>
+          db.transaction('saves').objectStore('saves').get(id) as IDBRequest<SaveFile | undefined>,
         'loading',
       ),
     async remove(id) {
-      const tx = db.transaction(['meta', 'saves'], 'readwrite');
-      tx.objectStore('saves').delete(id);
-      tx.objectStore('meta').delete(id);
-      await finished(tx, 'deleting');
+      await write(db, 'deleting', (tx) => {
+        tx.objectStore('saves').delete(id);
+        tx.objectStore('meta').delete(id);
+      });
     },
   };
 }

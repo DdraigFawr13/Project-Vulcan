@@ -78,7 +78,8 @@ export class Panel {
 
   /** Opens the causes of line `id` under each place it is shown. */
   showCauses(id: number, lines: readonly (LedgerLine & { depth: number })[]): void {
-    for (const host of this.root.querySelectorAll<HTMLElement>(`[data-line="${id}"]`)) {
+    // Only the panel's own rows, not rows inside another line's open chain.
+    for (const host of this.body.querySelectorAll<HTMLElement>(`:scope > [data-line="${id}"]`)) {
       host.querySelector(':scope > .chain')?.remove();
       const chain = el('div', { class: 'chain', 'data-testid': 'chain' });
       for (const line of lines) {

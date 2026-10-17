@@ -1,6 +1,7 @@
 // The surface map: laid out once when a world begins, flat ground of the content's starting kind
 // until Phase 1's terrain generator (which will draw from the reserved `worldgen` stream).
 import type { MapState } from '../core/index.ts';
+import { findEvent } from '../log/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 
 /** Tiles per chunk side. The worker sends the map to the screen a chunk at a time. */
@@ -42,6 +43,8 @@ export function setTile(
   if (!ctx.content.terrain.kinds[kind]) throw new Error(`Terrain ${kind} is not a terrain kind.`);
   if (x < 0 || y < 0 || x >= map.width || y >= map.height)
     throw new Error(`Tile ${x}, ${y} is off the map.`);
+  if (!findEvent(ctx.world.log, cause))
+    throw new Error(`Tile ${x}, ${y} was changed without a ledger line (cause ${cause}).`);
   if (map.tiles[y * map.width + x] === kind) return;
   map.tiles[y * map.width + x] = kind;
   map.tileCauses[y * map.width + x] = cause;

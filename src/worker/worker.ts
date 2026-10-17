@@ -138,7 +138,7 @@ function handle(message: ToWorker): void {
       // Checked before anything is replaced: a refused save leaves the running world as it was.
       let loaded: WorldState;
       try {
-        loaded = checkSave(message.save, contentHash);
+        loaded = checkSave(message.save, contentHash, content);
       } catch (error) {
         post({
           type: 'loadRefused',

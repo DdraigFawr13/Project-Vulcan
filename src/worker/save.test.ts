@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { content, contentHash } from '../content/index.ts';
 import { createSim, createWorld, step } from '../engine/index.ts';
-import { checkSave, SAVE_VERSION, saveOf } from './save.ts';
+import { checkSave, SAVE_VERSION, saveOf, type SaveFile } from './save.ts';
 
 const sim = createSim(content);
 const world = createWorld(sim, 'save-test');
@@ -13,18 +13,29 @@ describe('saves', () => {
   it('round-trips a world through a structured clone unchanged', () => {
     const save = structuredClone(saveOf(world, contentHash));
     expect(save).toMatchObject({ version: SAVE_VERSION, seed: 'save-test', tick: world.tick });
-    expect(checkSave(save, contentHash)).toEqual(world);
+    expect(checkSave(save, contentHash, content)).toEqual(world);
   });
 
   it('refuses a save from other content, another format or damaged', () => {
     const save = () => structuredClone(saveOf(world, contentHash));
-    expect(() => checkSave({ ...save(), contentHash: 'other' }, contentHash)).toThrow(
+    const check = (s: unknown) => () => checkSave(s, contentHash, content);
+    expect(check({ ...save(), contentHash: 'other' })).toThrow(
       'different game content (other in the save',
     );
-    expect(() => checkSave({ ...save(), version: 0 }, contentHash)).toThrow('save format 0');
-    const cut = save();
-    cut.state.map.tiles.pop();
-    expect(() => checkSave(cut, contentHash)).toThrow('damaged');
-    expect(() => checkSave('{}', contentHash)).toThrow('damaged');
+    expect(check({ ...save(), version: 0 })).toThrow('save format 0');
+    expect(check('{}')).toThrow('damaged');
+    // A map or ledger broken inside a well-formed record is caught too.
+    const damage = [
+      (s: SaveFile) => s.state.map.tiles.pop(),
+      (s: SaveFile) => (s.state.map.tiles[5] = 99),
+      (s: SaveFile) => s.state.map.chunkVersions.pop(),
+      (s: SaveFile) => s.state.log.reverse(),
+      (s: SaveFile) => (s.state.nextEventId = 1),
+    ];
+    for (const hurt of damage) {
+      const bad = save();
+      hurt(bad);
+      expect(check(bad)).toThrow('damaged');
+    }
   });
 });

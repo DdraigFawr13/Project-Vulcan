@@ -12,6 +12,8 @@ export interface HudActions {
   reload(): void;
   /** Opens a panel, or closes it if it is the one showing. */
   togglePanel(kind: 'ledger' | 'saves'): void;
+  /** The player closed a screen with its "dismiss" button. */
+  dismissed(): void;
 }
 
 export class Hud {
@@ -72,7 +74,10 @@ export class Hud {
     this.screen.addEventListener('click', (e) => {
       const action = (e.target as HTMLElement).dataset['action'];
       if (action === 'reload') actions.reload();
-      else if (action === 'dismiss') this.hideScreen();
+      else if (action === 'dismiss') {
+        this.hideScreen();
+        actions.dismissed();
+      }
     });
     root.append(bar, this.readout, zoom, this.debug, this.screen);
     this.showScreen('Waking the valley', 'Loading the content and laying out the map.');

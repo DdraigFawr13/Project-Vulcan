@@ -22,6 +22,8 @@ let ready = false;
 let waiting = false;
 let stopped = false;
 let frame = 0;
+/** The starting or loading screen is up until the next snapshot; other screens wait for a click. */
+let covering = true;
 
 const setSpeed = (next: Speed): void => {
   if (stopped) return;
@@ -41,6 +43,7 @@ const hud = new Hud(hudRoot, {
   zoom: (direction) => renderer.zoomStep(direction),
   reload: () => location.reload(),
   togglePanel: (kind) => (panel.kind === kind ? closePanel() : openPanel(kind)),
+  dismissed: () => saves.dismissed(),
 });
 const panel = new Panel(hudRoot, {
   why: (id) => send({ type: 'why', id }),
@@ -88,6 +91,9 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       if (message.from === 'save') {
         closePanel();
         saves.loaded();
+        covering = true;
+        // A loaded world starts paused even if the tab was hidden while it loaded.
+        if (hiddenAt !== undefined) hiddenAt = 0;
       }
     } else if (message.type === 'snapshot') {
       waiting = false;
@@ -95,7 +101,10 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       hud.fps = Math.round(renderer.fps());
       hud.showClock(message.clock, message.tick, message.speed);
       saves.tick = message.tick;
-      if (!saves.loading) hud.hideScreen();
+      if (covering && !saves.loading) {
+        hud.hideScreen();
+        covering = false;
+      }
     } else if (message.type === 'events') {
       saves.addLines(message.batch);
     } else if (message.type === 'inspected') {

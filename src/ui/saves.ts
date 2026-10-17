@@ -52,9 +52,11 @@ export class Saves {
   }
 
   addLines(batch: readonly LedgerLine[]): void {
-    this.ledger.push(...batch);
+    // After a load the whole ledger arrives in one batch: keep only what the panel can show.
+    const newest = batch.slice(-LEDGER_LINES);
+    this.ledger.push(...newest);
     if (this.ledger.length > LEDGER_LINES) this.ledger.splice(0, this.ledger.length - LEDGER_LINES);
-    this.deps.panel.addLines(batch);
+    this.deps.panel.addLines(newest);
   }
 
   /** Asks for an autosave unless nothing has run since the last one. */
@@ -75,7 +77,7 @@ export class Saves {
         `${m.reason} Saves don't carry over between versions before launch.`,
         ['Back to the game', 'dismiss'],
       );
-      this.deps.setSpeed(this.resume);
+      // The game stays paused behind the explanation until the player closes it.
     }
   }
 
@@ -105,10 +107,17 @@ export class Saves {
     }
   }
 
+  /** The refusal screen was closed: back to the speed from before the load. A hidden tab stays
+   * paused; showing it resumes the speed it was hidden at. */
+  dismissed(): void {
+    if (!document.hidden && this.deps.running()) this.deps.setSpeed(this.resume);
+  }
+
   /** The worker adopted a loaded world: its ledger is resent from the start. */
   loaded(): void {
     this.loading = false;
     this.ledger = [];
+    this.lastAutoTick = -1;
   }
 
   async remove(meta: SaveMeta): Promise<void> {
@@ -136,7 +145,8 @@ export class Saves {
           tick: save.tick,
           savedAt: Date.now(),
           auto: m.auto,
-          thumbnail: await this.deps.renderer.thumbnail(),
+          // A hidden tab may be closing: write at once, without waiting on a picture.
+          thumbnail: document.hidden ? '' : await this.deps.renderer.thumbnail(),
         },
         save,
       );
