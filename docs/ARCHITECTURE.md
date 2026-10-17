@@ -16,7 +16,7 @@ Read only the section your phase file or reading list names.
 
 ## Worker protocol
 
-Main to worker: `init {seed, params, contentHash}`, `load {save}`, `command {tick, cmd}`, `setSpeed`, `requestSnapshot {regions}`, `export {kind}`. Commands are only indirect levers: designate, build, prioritise, zone, forbid, schedule, law, standing order (guard post, alarm, militia roster). Worker to main: `ready`, `snapshot {tick, dirtyChunks, entities, alerts}` at most once per frame, `events {batch}` in log order, `saved`, `error`. Commands carry the tick they apply on, so seed plus command stream replays a game exactly. Speed and pause are worker settings, never commands. Snapshots are pulled: the page sends `requestSnapshot` once per frame with at most one in flight, and changed chunks travel as transferred typed arrays. As built from P0.4: `src/worker/MODULE.md`.
+Main to worker: `init {seed, params, contentHash}`, `load {save}`, `command {tick, cmd}`, `setSpeed`, `requestSnapshot {regions}`, `save {auto}`, `export {kind}`, and the inspector's `inspect {x, y}` and `why {id}`, which only read the world: they never step it, emit or draw from an RNG stream. Commands are only indirect levers: designate, build, prioritise, zone, forbid, schedule, law, standing order (guard post, alarm, militia roster). Worker to main: `ready`, `snapshot {tick, dirtyChunks, entities, alerts}` at most once per frame, `events {batch}` in log order (rendered to text by the worker), `saved`, `loadRefused`, `exported`, `inspected`, `causes`, `error`. Commands carry the tick they apply on, so seed plus command stream replays a game exactly. Speed and pause are worker settings, never commands. Snapshots are pulled: the page sends `requestSnapshot` once per frame with at most one in flight, and changed chunks travel as transferred typed arrays. As built from P0.5: `src/worker/MODULE.md`.
 
 ## Tick
 
@@ -36,7 +36,7 @@ Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at ful
 
 ## Save
 
-`{version, seed, params, contentHash, tick, state, commandLog, eventLog (truncatable)}` in IndexedDB with name and thumbnail. Rebuilding from `seed + commandLog` is the determinism test. Old saves need not load before launch.
+`{version, seed, params, contentHash, tick, state}` in IndexedDB with name and thumbnail; the command log and the ledger (truncatable) live in `state`, so each has one home. The worker checks version, content hash and shape before a save replaces the running world. As built from P0.5: `src/persist/MODULE.md`. Rebuilding from `seed + commandLog` is the determinism test. Old saves need not load before launch.
 
 ## Imports
 

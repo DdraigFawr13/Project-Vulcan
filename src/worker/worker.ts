@@ -2,18 +2,32 @@
 // the page. The only place the engine is instantiated (MODULE.md).
 import { content, contentHash } from '../content/index.ts';
 import {
+  CHUNK,
   chunksAcross,
   chunksDown,
   chunkTiles,
   clockAt,
   createSim,
   createWorld,
+  findEvent,
+  renderEvent,
   step,
   submitCommand,
+  toNdjson,
+  whyOf,
+  type SimEvent,
   type WorldState,
 } from '../engine/index.ts';
 import { createPace, setSpeed, ticksDue } from './pace.ts';
-import type { ChunkView, FromWorker, ToWorker } from './protocol.ts';
+import type {
+  ChunkView,
+  ClockView,
+  FromWorker,
+  LedgerLine,
+  TileView,
+  ToWorker,
+} from './protocol.ts';
+import { checkSave, saveOf } from './save.ts';
 
 /** How often the worker wakes (ms). Timing comes from the clock, not from this interval. */
 const WAKE_MS = 10;
@@ -34,9 +48,30 @@ function run(ticks: number): void {
   if (world && ticks > 0) step(world, sim, ticks);
 }
 
+function clockView(tick: number): ClockView {
+  const c = clockAt(tick, content.calendar);
+  return {
+    year: c.year,
+    monthName: content.calendar.monthNames[c.month]!,
+    day: c.day,
+    hour: c.hour,
+    minute: c.minute,
+    season: content.calendar.seasons[c.season]!,
+  };
+}
+
+const lineOf = (e: SimEvent): LedgerLine => ({
+  id: e.id,
+  tick: e.tick,
+  type: e.type,
+  text: renderEvent(e, sim.templates),
+  causes: [...e.causes],
+  clock: clockView(e.tick),
+});
+
 function snapshot(w: WorldState): void {
   if (posted < w.log.length) {
-    post({ type: 'events', batch: w.log.slice(posted) });
+    post({ type: 'events', batch: w.log.slice(posted).map(lineOf) });
     posted = w.log.length;
   }
   const chunks: ChunkView[] = [];
@@ -48,34 +83,46 @@ function snapshot(w: WorldState): void {
       sent[i] = w.map.chunkVersions[i]!;
       chunks.push(chunkTiles(w.map, cx, cy));
     }
-  const c = clockAt(w.tick, content.calendar);
   post(
-    {
-      type: 'snapshot',
-      tick: w.tick,
-      speed: pace.speed,
-      clock: {
-        year: c.year,
-        monthName: content.calendar.monthNames[c.month]!,
-        day: c.day,
-        hour: c.hour,
-        minute: c.minute,
-        season: content.calendar.seasons[c.season]!,
-      },
-      chunks,
-    },
+    { type: 'snapshot', tick: w.tick, speed: pace.speed, clock: clockView(w.tick), chunks },
     chunks.map((chunk) => chunk.tiles.buffer),
   );
 }
 
-/** Makes `w` the running world, paused, with everything sent afresh. P0.5's `load` ends here too. */
-function adopt(w: WorldState): void {
+function tileView(w: WorldState, x: number, y: number): TileView | undefined {
+  const { map } = w;
+  if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0) return undefined;
+  if (x >= map.width || y >= map.height) return undefined;
+  const chunkX = Math.floor(x / CHUNK);
+  const chunkY = Math.floor(y / CHUNK);
+  const changedBy = findEvent(w.log, map.tileCauses[y * map.width + x]!);
+  return {
+    x,
+    y,
+    ground: content.terrain.kinds[map.tiles[y * map.width + x]!]!.name,
+    chunkX,
+    chunkY,
+    version: map.chunkVersions[chunkY * chunksAcross(map) + chunkX]!,
+    ...(changedBy && { changedBy: lineOf(changedBy) }),
+  };
+}
+
+/** Makes `w` the running world, paused, with everything sent afresh. `init` and `load` both end
+ * here, so a loaded world and a new one start the same way. */
+function adopt(w: WorldState, from: 'seed' | 'save'): void {
   world = w;
   sent = [];
   posted = 0;
   pace = createPace(performance.now());
   timer ??= setInterval(() => guarded(() => run(ticksDue(pace, performance.now()))), WAKE_MS);
-  post({ type: 'ready', seed: w.seed, contentHash, width: w.map.width, height: w.map.height });
+  post({
+    type: 'ready',
+    from,
+    seed: w.seed,
+    contentHash,
+    width: w.map.width,
+    height: w.map.height,
+  });
 }
 
 function handle(message: ToWorker): void {
@@ -85,8 +132,23 @@ function handle(message: ToWorker): void {
         throw new Error(
           `The page's content (${message.contentHash}) differs from the worker's (${contentHash}).`,
         );
-      adopt(createWorld(sim, message.seed));
+      adopt(createWorld(sim, message.seed), 'seed');
       return;
+    case 'load': {
+      // Checked before anything is replaced: a refused save leaves the running world as it was.
+      let loaded: WorldState;
+      try {
+        loaded = checkSave(message.save, contentHash, content);
+      } catch (error) {
+        post({
+          type: 'loadRefused',
+          reason: error instanceof Error ? error.message : String(error),
+        });
+        return;
+      }
+      adopt(loaded, 'save');
+      return;
+    }
     case 'setSpeed':
       run(setSpeed(pace, message.speed, performance.now()));
       return;
@@ -97,9 +159,39 @@ function handle(message: ToWorker): void {
       if (!world) throw new Error('A command arrived before the world began.');
       submitCommand(world, message);
       return;
-    case 'load':
+    // The rest only read the world, between ticks; with no world (stopped) they go unanswered.
+    case 'save':
+      if (world)
+        post({
+          type: 'saved',
+          auto: message.auto,
+          save: saveOf(world, contentHash),
+          clock: clockView(world.tick),
+        });
+      return;
     case 'export':
-      throw new Error(`"${message.type}" arrives with saves in P0.5.`);
+      if (world)
+        post({
+          type: 'exported',
+          kind: message.kind,
+          name: `${world.seed.replace(/[^\w-]+/g, '-')}-tick-${world.tick}.ndjson`,
+          text: toNdjson(world.log),
+        });
+      return;
+    case 'inspect':
+      if (world) post({ type: 'inspected', tile: tileView(world, message.x, message.y) });
+      return;
+    case 'why':
+      if (world)
+        post({
+          type: 'causes',
+          id: message.id,
+          lines: whyOf(world.log, message.id).map(({ event, depth }) => ({
+            ...lineOf(event),
+            depth,
+          })),
+        });
+      return;
   }
 }
 

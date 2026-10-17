@@ -1,31 +1,26 @@
-// The heads-up display over the map: clock, speed buttons, the Paused label, the tile readout,
-// zoom buttons, a debug line, and the starting and error screens. Shows what it is given; it
+// The heads-up display over the map: clock, speed and panel buttons, the Paused label, the tile
+// readout, zoom buttons, a debug line, and the starting, loading and error screens. Shows what it is given; it
 // computes no game rule (GAME-02).
 import type { ClockView, Speed } from '../worker/index.ts';
+import { el } from './dom.ts';
 
 const SPEED_LABELS: Record<Speed, string> = { 0: '❚❚', 1: '1×', 2: '2×', 3: '3×' };
-
-const el = <K extends keyof HTMLElementTagNameMap>(
-  tag: K,
-  attrs: Record<string, string> = {},
-  text = '',
-): HTMLElementTagNameMap[K] => {
-  const node = document.createElement(tag);
-  for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
-  node.textContent = text;
-  return node;
-};
 
 export interface HudActions {
   setSpeed(speed: Speed): void;
   zoom(direction: 1 | -1): void;
   reload(): void;
+  /** Opens a panel, or closes it if it is the one showing. */
+  togglePanel(kind: 'ledger' | 'saves'): void;
+  /** The player closed a screen with its "dismiss" button. */
+  dismissed(): void;
 }
 
 export class Hud {
   private readonly clock = el('div', { class: 'clock', 'data-testid': 'clock' });
   private readonly paused = el('span', { class: 'pill', hidden: '' }, 'Paused');
   private readonly speeds = new Map<Speed, HTMLButtonElement>();
+  private readonly panels = new Map<'ledger' | 'saves', HTMLButtonElement>();
   private readonly readout = el('div', { class: 'hud readout', hidden: '' });
   private readonly debug = el('div', { class: 'hud debug', 'data-testid': 'debug' });
   private readonly screen = el('div', { class: 'screen' });
@@ -46,8 +41,22 @@ export class Hud {
       this.speeds.set(speed, button);
       group.append(button);
     }
+    const panels = el('div', { class: 'speeds', role: 'group', 'aria-label': 'Panels' });
+    for (const [kind, label] of [
+      ['ledger', 'Ledger'],
+      ['saves', 'Saves'],
+    ] as const) {
+      const button = el(
+        'button',
+        { type: 'button', class: 'word', 'aria-pressed': 'false', 'data-testid': `open-${kind}` },
+        label,
+      );
+      button.addEventListener('click', () => actions.togglePanel(kind));
+      this.panels.set(kind, button);
+      panels.append(button);
+    }
     const status = el('div', { class: 'status' });
-    status.append(this.paused, group);
+    status.append(this.paused, group, panels);
     bar.append(this.clock, status);
     const zoom = el('div', { class: 'hud zoom' });
     for (const [label, direction] of [
@@ -63,7 +72,12 @@ export class Hud {
       zoom.append(button);
     }
     this.screen.addEventListener('click', (e) => {
-      if ((e.target as HTMLElement).dataset['action'] === 'reload') actions.reload();
+      const action = (e.target as HTMLElement).dataset['action'];
+      if (action === 'reload') actions.reload();
+      else if (action === 'dismiss') {
+        this.hideScreen();
+        actions.dismissed();
+      }
     });
     root.append(bar, this.readout, zoom, this.debug, this.screen);
     this.showScreen('Waking the valley', 'Loading the content and laying out the map.');
@@ -90,18 +104,24 @@ export class Hud {
       );
   }
 
+  /** Marks which panel is open on its button. */
+  showPanel(kind: string | undefined): void {
+    for (const [k, button] of this.panels) button.setAttribute('aria-pressed', String(k === kind));
+  }
+
   hideScreen(): void {
     this.screen.hidden = true;
   }
 
   showError(message: string): void {
-    this.showScreen('The simulation stopped', message, 'Reload');
+    this.showScreen('The simulation stopped', message, ['Reload', 'reload']);
   }
 
-  private showScreen(title: string, detail: string, button?: string): void {
+  /** A screen over the game; the optional button reloads the page or just closes the screen. */
+  showScreen(title: string, detail: string, button?: [string, 'reload' | 'dismiss']): void {
     this.screen.replaceChildren(el('b', {}, title), el('span', {}, detail));
     if (button)
-      this.screen.append(el('button', { type: 'button', 'data-action': 'reload' }, button));
+      this.screen.append(el('button', { type: 'button', 'data-action': button[1] }, button[0]));
     this.screen.hidden = false;
   }
 }

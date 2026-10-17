@@ -27,6 +27,8 @@ export class ValleyScene extends Phaser.Scene {
   private map: Phaser.Tilemaps.Tilemap | undefined;
   private layer: Phaser.Tilemaps.TilemapLayer | Phaser.Tilemaps.TilemapGPULayer | undefined;
   private select?: Phaser.GameObjects.Image;
+  /** Marks the tile the inspector is showing. */
+  private marked?: Phaser.GameObjects.Image;
   private controls?: CameraControls;
   /** Tile index in the tileset for each terrain kind's pictures, by kind then variant. */
   private frames: number[][] = [];
@@ -38,6 +40,8 @@ export class ValleyScene extends Phaser.Scene {
   private pointerIn = false;
   onHover: (hover: Hover | undefined) => void = () => {};
   onZoom: (zoom: number) => void = () => {};
+  /** A tap or click on a tile that was not the end of a drag or pinch. */
+  onSelect: (tile: { x: number; y: number }) => void = () => {};
 
   constructor() {
     super('valley');
@@ -54,9 +58,20 @@ export class ValleyScene extends Phaser.Scene {
       .setOrigin(0)
       .setDepth(10)
       .setVisible(false);
+    this.marked = this.add
+      .image(0, 0, SHEET, 'overlay.designate')
+      .setOrigin(0)
+      .setDepth(9)
+      .setVisible(false);
+    // The camera's controls listen first, so a release that ends a drag still reads as one here.
     this.controls = new CameraControls(this, (zoom) => this.onZoom(zoom));
     this.input.on('pointermove', () => (this.pointerIn = true));
-    this.input.on('pointerup', (p: Phaser.Input.Pointer) => this.hoverAt(p));
+    this.input.on('pointerup', (p: Phaser.Input.Pointer) => {
+      this.hoverAt(p);
+      if (this.controls?.dragging || !this.layer) return;
+      const tile = this.tileAt(p);
+      if (tile) this.onSelect(tile);
+    });
     this.input.on('gameout', () => (this.pointerIn = false));
     if (this.size.width) this.buildMap();
   }
@@ -89,6 +104,18 @@ export class ValleyScene extends Phaser.Scene {
 
   zoomStep(direction: 1 | -1): void {
     this.controls?.zoomStep(direction);
+  }
+
+  /** Puts the inspector's mark on a tile, or takes it away. */
+  mark(tile: { x: number; y: number } | undefined): void {
+    this.marked?.setVisible(!!tile).setPosition((tile?.x ?? 0) * TILE, (tile?.y ?? 0) * TILE);
+  }
+
+  private tileAt(pointer: Phaser.Input.Pointer): { x: number; y: number } | undefined {
+    const world = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
+    const x = Math.floor(world.x / TILE);
+    const y = Math.floor(world.y / TILE);
+    return x >= 0 && y >= 0 && x < this.size.width && y < this.size.height ? { x, y } : undefined;
   }
 
   private buildMap(): void {
@@ -149,13 +176,10 @@ export class ValleyScene extends Phaser.Scene {
       this.report(undefined);
       return;
     }
-    const world = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
-    const x = Math.floor(world.x / TILE);
-    const y = Math.floor(world.y / TILE);
-    const inside = x >= 0 && y >= 0 && x < this.size.width && y < this.size.height;
-    this.select?.setVisible(inside).setPosition(x * TILE, y * TILE);
-    const kind = content.terrain.kinds[this.ground[y * this.size.width + x]!];
-    this.report(inside && kind ? { x, y, ground: kind.name } : undefined);
+    const tile = this.tileAt(pointer);
+    this.select?.setVisible(!!tile).setPosition((tile?.x ?? 0) * TILE, (tile?.y ?? 0) * TILE);
+    const kind = tile && content.terrain.kinds[this.ground[tile.y * this.size.width + tile.x]!];
+    this.report(tile && kind ? { ...tile, ground: kind.name } : undefined);
   }
 
   private last = '';
