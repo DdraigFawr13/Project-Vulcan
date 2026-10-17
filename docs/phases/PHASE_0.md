@@ -6,7 +6,7 @@ Goal: a repo that builds, tests, deploys and runs an empty deterministic world i
 
 - [x] P0.1 Repo setup (PR #2, merged 2026-10-17)
 - [x] P0.2 Content fork (merged 2026-10-17)
-- [ ] P0.3 Engine core
+- [x] P0.3 Engine core (merged 2026-10-17)
 - [ ] P0.4 Worker loop, map and art pipeline
 - [ ] P0.5 Saves, export and debug inspector
 - [ ] Phase review, then playtest with Morgan

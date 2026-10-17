@@ -1,0 +1,8 @@
+[
+{"id":"world.begun","importance":3,"template":"A new world began from seed \"{seed}\"."},
+{"id":"command.applied","importance":1,"template":"Order received: {kind}."},
+{"id":"command.refused","importance":2,"template":"Order refused: {kind} ({reason})."},
+{"id":"calendar.day","importance":1,"template":"Day {day} of {month} began."},
+{"id":"calendar.month","importance":2,"template":"{month} began."},
+{"id":"calendar.season","importance":2,"template":"{seasonName} came to the valley."}
+]

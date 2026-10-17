@@ -37,6 +37,7 @@ Not forked: the Story Generator's history simulation (234 event templates, chron
 
 ## Changes since the fork
 
+- 2026-10-17 · P0.3 · `events.json` added, Vulcan's own and not forked: one ledger template per event type (`world.begun`, `command.applied`, `command.refused` and the calendar's day, month and season lines). `tools/fork-content.mjs` writes only the forked files, so it never touches this one.
 - 2026-10-17 · Morgan · Races are plain fantasy races: ids `tylwyth`, `dvergar` and `cewri` became `elf`, `dwarf` and `giant` (names were already Elf, Dwarf, Giant) everywhere they are referenced. The Fomori race is gone; the Fomori culture is now orc sea-reavers (its nearest race in stats). Culture ids and names are unchanged; the Gwyllion summary now says wild elves. Races: human, elf, dwarf, orc, giant, halfling, goblin.
 - 2026-10-17 · Morgan · Eight generic fantasy creatures added beside the Welsh ones: giant spider brood, harpy flock, ogre (beasts); troll, griffin, basilisk, manticore (great); hydra (legendary). Their numbers are first guesses placed between forked creatures of similar danger (beasts 5 to 10, great beasts 45 to 90, the hydra 250) and are untuned; the harpy flock keeps to land biomes because water biomes have no wildness.
 - 2026-10-17 · Morgan · Shared place-name syllables (`names.json` starts, middles, ends) now pool every culture's place syllables, not only the Welsh and Norse set: 299 starts, 73 middles, 199 ends.

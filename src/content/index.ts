@@ -10,6 +10,7 @@ import creatures from './data/creatures.json';
 import cultures from './data/cultures.json';
 import diseases from './data/diseases.json';
 import dragons from './data/dragons.json';
+import events from './data/events.json';
 import faiths from './data/faiths.json';
 import greatWorks from './data/great-works.json';
 import items from './data/items.json';
@@ -45,6 +46,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   cultures,
   diseases,
   dragons,
+  events,
   faiths,
   'great-works': greatWorks,
   items,

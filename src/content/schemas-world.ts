@@ -179,4 +179,7 @@ export const WORLD_SCHEMAS = {
       downsides: opt(texts),
     }),
   ),
+  // Vulcan's own, not forked: the ledger text of every event type the engine may emit.
+  // Slots are {actorN}, {subjectN} and data keys; the engine refuses an event that leaves one empty.
+  events: list(obj({ id, importance: num({ min: 1, max: 3 }), template: text })),
 };
