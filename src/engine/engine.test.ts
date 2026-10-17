@@ -1,0 +1,137 @@
+// The engine's one determinism test (RULES.md VR-21), plus the ledger and lever-queue rules a
+// player would notice: a refused event type, and a lever that arrives late.
+import { describe, expect, it } from 'vitest';
+import { content } from '../content/index';
+import {
+  calendarSystem,
+  createSim,
+  createWorld,
+  hashString,
+  renderEvent,
+  replay,
+  step,
+  submitCommand,
+  ticksPerMonth,
+  toNdjson,
+  type EngineContent,
+  type System,
+} from './index.ts';
+
+// Test-only fixtures: a system that rolls its dice every hour and a lever with no game meaning.
+const fixtureContent: EngineContent = {
+  calendar: content.calendar,
+  events: [
+    ...content.events,
+    { id: 'test.roll', template: 'The dice showed {value}.' },
+    { id: 'test.marked', template: 'Marked {place}.' },
+  ],
+};
+const dice: System = {
+  id: 'test-dice',
+  every: 'hour',
+  stream: 'weather',
+  emits: ['test.roll', 'test.marked'],
+  run: (ctx) => void ctx.emit('test.roll', { data: { value: ctx.rng().between(1, 6) } }),
+  commands: {
+    'test.mark': (ctx, command, cause) =>
+      void ctx.emit('test.marked', { causes: [cause], data: { place: command.data['place']! } }),
+  },
+};
+const sim = createSim(fixtureContent, [calendarSystem, dice]);
+const month = ticksPerMonth(content.calendar);
+
+/** A game month from `seed`, with three levers sent at different points of the run. */
+function runMonth(seed: string) {
+  const world = createWorld(sim, seed);
+  submitCommand(world, { tick: 16380, kind: 'test.mark', data: { place: 'north field' } });
+  step(world, sim, 20000);
+  submitCommand(world, { tick: 100, kind: 'test.mark', data: { place: 'old ford' } });
+  submitCommand(world, { tick: world.tick + 500, kind: 'test.unknown' });
+  step(world, sim, month - 20000);
+  return world;
+}
+
+describe('engine', () => {
+  it('gives identical ledgers for the same seed and levers after a game month', () => {
+    const a = runMonth('hollow-oak');
+    const b = runMonth('hollow-oak');
+    expect(toNdjson(a.log)).toBe(toNdjson(b.log));
+    expect(a.rng).toEqual(b.rng);
+    // Seed plus command log alone rebuild the whole world, not only its ledger.
+    expect(replay(sim, 'hollow-oak', a.commandLog, a.tick)).toEqual(a);
+    // Another seed changes the dice, not just the seed printed in the first line.
+    const rolls = (log: typeof a.log) =>
+      log.filter((e) => e.type === 'test.roll').map((e) => e.data['value']);
+    expect(rolls(runMonth('stone-weir').log)).not.toEqual(rolls(a.log));
+  });
+
+  it('continues a world restored from JSON exactly as an unbroken run', () => {
+    const unbroken = runMonth('hollow-oak');
+    const world = createWorld(sim, 'hollow-oak');
+    submitCommand(world, { tick: 16380, kind: 'test.mark', data: { place: 'north field' } });
+    step(world, sim, 20000);
+    const restored = JSON.parse(JSON.stringify(world)) as typeof world;
+    submitCommand(restored, { tick: 100, kind: 'test.mark', data: { place: 'old ford' } });
+    submitCommand(restored, { tick: restored.tick + 500, kind: 'test.unknown' });
+    step(restored, sim, month - 20000);
+    expect(toNdjson(restored.log)).toBe(toNdjson(unbroken.log));
+    expect(hashString(toNdjson(restored.log))).toBe(hashString(toNdjson(unbroken.log)));
+  });
+
+  it('writes the calendar lines with short "why?" chains', () => {
+    const world = createWorld(createSim(content), 'hollow-oak');
+    step(world, createSim(content), 3 * month);
+    const text = (id: number) => renderEvent(world.log[id - 1]!, createSim(content).templates);
+    expect(text(1)).toBe('A new world began from seed "hollow-oak".');
+    expect(text(2)).toBe('Day 2 of Thawmonth began.');
+    expect(world.log[28]).toMatchObject({ id: 29, type: 'calendar.month', causes: [1] });
+    expect(world.log[29]).toMatchObject({ type: 'calendar.day', causes: [29] });
+    expect(text(85)).toBe('Highsun began.');
+    expect(world.log[85]).toMatchObject({ type: 'calendar.season', causes: [85] });
+    expect(text(86)).toBe('Summer came to the valley.');
+  });
+
+  it('applies a late lever on the next tick and logs an unknown one as refused', () => {
+    const world = runMonth('hollow-oak');
+    const late = world.commandLog[1]!;
+    expect(late).toMatchObject({ asked: 100, tick: 20361 });
+    const lines = world.log.filter(
+      (e) => e.type.startsWith('command.') || e.type === 'test.marked',
+    );
+    expect(lines.map((e) => [e.type, e.tick])).toEqual([
+      ['command.applied', 16380],
+      ['test.marked', 16380],
+      ['command.applied', 20361],
+      ['test.marked', 20361],
+      ['command.refused', 20860],
+    ]);
+    expect(lines[1]!.causes).toEqual([lines[0]!.id]);
+    // An inherited property name is not a handler, and a tick must be a whole minute.
+    submitCommand(world, { tick: world.tick + 1, kind: 'constructor' });
+    expect(step(world, sim)[0]).toMatchObject({
+      type: 'command.refused',
+      data: { kind: 'constructor' },
+    });
+    expect(() => submitCommand(world, { tick: Number.NaN, kind: 'test.mark' })).toThrow(
+      'whole minutes',
+    );
+  });
+
+  it('refuses an event type with no template, or a template slot left empty', () => {
+    const world = createWorld(sim, 'hollow-oak');
+    const emit =
+      (type: string, data = {}) =>
+      () =>
+        step(
+          world,
+          createSim(fixtureContent, [
+            { id: 'x', every: 'minute', run: (c) => void c.emit(type, { data }) },
+          ]),
+        );
+    expect(emit('test.nothing')).toThrow('Event type "test.nothing" has no template');
+    expect(emit('calendar.month')).toThrow('template needs "month"');
+    expect(() =>
+      createSim(fixtureContent, [{ id: 'y', every: 'day', emits: ['test.nothing'] }]),
+    ).toThrow('No template in content events for: test.nothing.');
+  });
+});

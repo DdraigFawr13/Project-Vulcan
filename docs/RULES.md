@@ -12,6 +12,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 ## 2. Review before Morgan sees it
 
 - **VR-05** Each milestone PR gets a review by Claude (the `reviewer` agent for diffs over about 500 lines) before merge; findings are fixed or answered in the PR.
+- **VR-55** Every mock-up, UI or engine, gets the coordinator's review pass before Morgan sees it: the thread posts only a one-line "ready for review pass", waits for the coordinator's note, applies its findings, republishes, and only then posts the approval card (Morgan, 2026-10-17; LESSONS 2026-10-17). PRs don't get this pass: they keep the thread's own review and full local check, so CI runs once (VR-54).
 - **VR-06** When a phase's last milestone merges, Claude runs a phase review on `main`: play the phase's playtest itself on the production build, read the phase's whole diff for bugs and rule breaks, and check every milestone's "done when". Fixes go in one follow-up PR.
 - **VR-07** Only after those fixes merge does the phase go to Morgan, as one message: what to try, a link to the live build, screenshots as an artifact, and what is known to be rough. Morgan's findings come back as the next PR, and each correction Morgan makes is logged in LESSONS.md.
 
