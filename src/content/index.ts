@@ -3,6 +3,7 @@
 import abilities from './data/abilities.json';
 import ailments from './data/ailments.json';
 import awakenings from './data/awakenings.json';
+import band from './data/band.json';
 import biomes from './data/biomes.json';
 import calendar from './data/calendar.json';
 import conditions from './data/conditions.json';
@@ -43,6 +44,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   abilities,
   ailments,
   awakenings,
+  band,
   biomes,
   calendar,
   conditions,

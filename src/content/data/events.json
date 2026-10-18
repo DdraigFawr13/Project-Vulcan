@@ -2,6 +2,7 @@
 {"id":"world.begun","importance":3,"template":"A new world began from seed \"{seed}\"."},
 {"id":"region.named","importance":2,"template":"The region of \"{region}\" was named: {places}, with {sites} settlements around it."},
 {"id":"region.settled","importance":3,"template":"The band chose {valley}{under}, a {climate} valley. The nearest neighbours: {neighbours}."},
+{"id":"people.arrived","importance":3,"template":"{names} arrived in {valley} from {homes}."},
 {"id":"command.applied","importance":1,"template":"Order received: {kind}."},
 {"id":"command.refused","importance":2,"template":"Order refused: {kind} ({reason})."},
 {"id":"calendar.day","importance":1,"template":"Day {day} of {month} began."},

@@ -36,6 +36,9 @@ const fixtureContent: EngineContent = {
   cultures: content.cultures,
   races: content.races,
   names: content.names,
+  band: content.band,
+  traits: content.traits,
+  abilities: content.abilities,
   events: [
     ...content.events,
     { id: 'test.roll', template: 'The dice showed {value}.' },

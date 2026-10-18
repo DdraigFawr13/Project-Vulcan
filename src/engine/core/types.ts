@@ -1,5 +1,6 @@
 // World state and event shapes. The whole world is plain data (numbers, strings, arrays and typed
 // arrays), so the worker can post it, P0.5 can save it and tests can compare it.
+import type { PeopleDefs } from './people.ts';
 import type { AuraDials, AuraSpot, SeasonsDef, WeatherDef } from './climate.ts';
 import type { RngState } from './rng.ts';
 import type { CultureDef, NamesDef, RegionDef } from './region.ts';
@@ -20,6 +21,7 @@ export const STREAMS = [
   'threats',
   'storyteller',
   'trade',
+  'people',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 
@@ -379,7 +381,7 @@ export interface CalendarDef {
 }
 
 /** The content the engine core reads. The worker passes the content layer's `content`. */
-export interface EngineContent {
+export interface EngineContent extends PeopleDefs {
   calendar: CalendarDef;
   events: readonly { id: string; template: string }[];
   terrain: TerrainDef;
@@ -392,6 +394,5 @@ export interface EngineContent {
   /** The region around the valley (P1.5): its dials, and the forked cultures, races and names. */
   region: RegionDef;
   cultures: readonly CultureDef[];
-  races: readonly { id: string; name: string }[];
   names: NamesDef;
 }
