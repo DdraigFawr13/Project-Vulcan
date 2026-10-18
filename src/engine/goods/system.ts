@@ -1,10 +1,12 @@
 // The goods system (P2.2): owns the item table. When a world begins, right after the band
 // arrives, the cart is unloaded beside the camp: the cart itself, its goods in stacks on the
-// open tiles nearest it, and a bedroll laid out for each person. One ledger line says so.
+// open tiles nearest it, and a bedroll laid out for each person. One ledger line says so. Then
+// (P2.4) the band sets up its store beside the cart and the colony's stock levels start.
 import type { EngineContent, WorldState } from '../core/index.ts';
 import { canReach, walkAt } from '../paths/index.ts';
 import type { System } from '../sim/index.ts';
 import { GOODS_TABLES, itemsOf, layItem, stackSize } from './stacks.ts';
+import { setStock, setUpStock, setUpStore, STORE_TABLES } from './store.ts';
 
 /** Open tiles joined to the camp, nearest first in rings, that hold no item yet. */
 function freeTilesNear(world: WorldState, content: EngineContent, count: number): number[][] {
@@ -33,8 +35,9 @@ const nameOf = (content: EngineContent, kind: string): string =>
 export const goodsSystem: System = {
   id: 'goods',
   every: 'day', // a cadence is required; stacks change through the people who move them
-  emits: ['goods.unloaded'],
-  tables: GOODS_TABLES,
+  emits: ['goods.unloaded', 'goods.storeSet', 'goods.storeGrew', 'goods.stockSet'],
+  tables: { ...GOODS_TABLES, ...STORE_TABLES },
+  commands: { setStock: (ctx, command, cause) => setStock(ctx, command.data, cause) },
   init(ctx) {
     const { world, content } = ctx;
     const people = world.entities['person'] ?? [];
@@ -67,5 +70,7 @@ export const goodsSystem: System = {
         { owner: p.id, state: 'laid' },
       ),
     );
+    setUpStore(ctx, made);
+    setUpStock(ctx, made);
   },
 };

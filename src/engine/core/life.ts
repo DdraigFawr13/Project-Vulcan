@@ -39,3 +39,26 @@ export interface ItemDef {
   name: string;
   kind: string;
 }
+
+/** The colony's work (work.json, P2.4): stock levels (the player's lever), felling, carrying,
+ * the store and working hours. */
+export interface WorkDef {
+  stock: readonly {
+    good: string;
+    name: string;
+    levels: readonly { id: string; word: string; count: number }[];
+    start: string;
+  }[];
+  fell: { job: string; minutes: number; skilled: number; camp: number; reach: number };
+  haul: { load: number; kinds: readonly string[] };
+  store: { width: number; height: number; most: number };
+  hours: { from: number; to: number };
+}
+
+/** The forked jobs list (jobs.json): only what work reads. */
+export interface JobDef {
+  id: string;
+  name: string;
+  skill?: string;
+  requirements: Readonly<Record<string, number>>;
+}

@@ -6,6 +6,7 @@ import { addEntity, type Schemas } from '../entity/index.ts';
 import { valleyOf } from '../region/index.ts';
 import type { System } from '../sim/index.ts';
 import { drawBand, type Home } from './band.ts';
+import { JOB_FIELDS } from './jobs.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
 import { stepAlong, WALK_FIELDS } from './walk.ts';
 
@@ -45,6 +46,7 @@ export const PEOPLE_TABLES: Schemas = {
     arrived: 'event',
     ...WALK_FIELDS,
     ...MIND_FIELDS,
+    ...JOB_FIELDS,
   },
   skill: { person: 'entity', skill: 'text', level: 'count', potential: 'count' },
   trait: { person: 'entity', trait: 'text' },
@@ -90,7 +92,7 @@ export const peopleSystem: System = {
   id: 'people',
   every: 'minute',
   stream: 'people',
-  emits: ['people.arrived'],
+  emits: ['people.arrived', 'work.tookUp', 'work.felled'],
   tables: PEOPLE_TABLES,
   init(ctx) {
     const { world, content } = ctx;
@@ -118,6 +120,7 @@ export const peopleSystem: System = {
         ...{ trade: p.trade, hair: p.hair, hairColour: p.hairColour, clothes: p.clothes },
         ...{ x: spots[k]![0], y: spots[k]![1], z: 0, status: 'alive', arrived },
         ...{ path: [], stride: 0, rest: 30 + 15 * k, doing: '', retry: 0 },
+        ...{ job: '', target: -1, work: 0, took: 0, next: 0 },
       });
       for (const skill of content.band.skills)
         addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]! });

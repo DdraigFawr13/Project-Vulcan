@@ -60,6 +60,9 @@ function doingOf(p: EntityRow): string {
   if (p['doing'] === 'sleep') return walking ? 'Going to bed' : 'Sleeping';
   if (p['doing'] === 'eat') return walking ? 'Going to eat' : 'Eating';
   if (p['doing'] === 'relax') return 'Taking it easy';
+  if (p['doing'] === 'work' && p['job'] === 'fell')
+    return walking ? 'Going to fell a tree' : 'Felling';
+  if (p['doing'] === 'work') return walking ? 'Carrying to the store' : 'Hauling';
   return walking ? 'Strolling' : 'Idle';
 }
 

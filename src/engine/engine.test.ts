@@ -40,6 +40,8 @@ const fixtureContent: EngineContent = {
   traits: content.traits,
   abilities: content.abilities,
   life: content.life,
+  work: content.work,
+  jobs: content.jobs,
   items: content.items,
   events: [
     ...content.events,
