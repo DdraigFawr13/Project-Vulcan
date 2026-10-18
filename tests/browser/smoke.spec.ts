@@ -199,6 +199,14 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('speed-0').click();
   await expect(page.getByTestId('test-badge')).toBeVisible();
+  // A plan placed with the test tools (P3.1) shows on the sheet at once while paused, with its
+  // material and builder; taken down before anything was brought, it is dropped.
+  await panel.getByRole('button', { name: 'Plan floor (wood)' }).click();
+  await expect(panel).toContainText('wood floor, planned');
+  await expect(panel).toContainText('0 of 2 here');
+  expect(await phoneRules(page)).toEqual([]);
+  await panel.getByRole('button', { name: 'Take down' }).click();
+  await expect(panel.getByRole('button', { name: 'Plan floor (wood)' })).toBeVisible();
   await panel.getByRole('button', { name: 'Cut stairs down' }).click();
   await panel.getByRole('button', { name: 'Go down to −1' }).click();
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');

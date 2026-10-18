@@ -3,8 +3,8 @@
 // when what lies on the level on screen has changed.
 import Phaser from 'phaser';
 import type { GoodsView } from '../worker/index.ts';
+import { ITEMS } from './sheets.ts';
 
-export const ITEMS = 'items';
 const TILE = 32;
 
 export class GoodsSprites {

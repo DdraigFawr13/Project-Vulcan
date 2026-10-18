@@ -6,8 +6,7 @@ import { content } from '../content/index.ts';
 import type { AuraView, ChunkView } from '../worker/index.ts';
 import { glowTiles } from './aura-art.ts';
 import { CameraControls } from './camera.ts';
-import { ITEMS } from './goods.ts';
-import { PEOPLE } from './people.ts';
+import { BUILDINGS, ITEMS, PEOPLE } from './sheets.ts';
 import { waterPicture } from './water-art.ts';
 
 export const TILE = 32;
@@ -86,7 +85,7 @@ export class ValleyScene extends Phaser.Scene {
   }
 
   preload(): void {
-    for (const sheet of [...GROUND_SHEETS, NATURE, PEOPLE, ITEMS])
+    for (const sheet of [...GROUND_SHEETS, NATURE, PEOPLE, ITEMS, BUILDINGS])
       this.load.atlas(sheet, `art/${sheet}.png`, `art/${sheet}.json`);
   }
 

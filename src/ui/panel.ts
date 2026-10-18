@@ -7,6 +7,7 @@ import { el } from './dom.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 import { fillStock, stockRows } from './stock.ts';
 import { testMode } from './testmode.ts';
+import { planFacts, planLines } from './planrows.ts';
 import { testTools, type TestOrder } from './testtools.ts';
 
 export type PanelKind =
@@ -23,7 +24,7 @@ export interface PanelActions {
   remove(meta: SaveMeta): void;
   newGame(seed: string): void;
   /** A test tool (test mode) on the tile shown: dig, mark a tree, add a store tile. */
-  test(tile: TileView, kind: TestOrder, to?: number): void;
+  test(tile: TileView, kind: TestOrder, arg?: number | string): void;
   /** The Stock lever: how much of `good` the colony keeps. */
   setStock(good: string, level: string): void;
   /** Follows the tile's stairs or shaft to level `z` and inspects the same spot there. */
@@ -92,6 +93,7 @@ export class Panel {
       ...(tile.crossing ? [['crossing', tile.crossing]] : []),
       ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
       ...(tile.store ? [['store', 'part of the colony store']] : []),
+      ...(tile.plan ? planFacts(tile.plan) : []),
       ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
       ...(tile.below ? [['below', tile.below]] : []),
       ...(this.debug
@@ -116,9 +118,13 @@ export class Panel {
       this.body.append(go);
     }
     if (this.debug)
-      this.body.append(...testTools(tile, depth, (kind, to) => this.actions.test(tile, kind, to)));
+      this.body.append(
+        ...testTools(tile, depth, (kind, arg) => this.actions.test(tile, kind, arg)),
+      );
     if (typeof notice === 'string') this.body.append(el('p', { class: 'note' }, notice));
-    else if (notice) this.body.append(this.lineRow(notice, 'Not dug · '));
+    else if (notice) this.body.append(this.lineRow(notice, 'Not done · '));
+    if (tile.plan)
+      for (const [line, label] of planLines(tile.plan)) this.body.append(this.lineRow(line, label));
     for (const g of tile.goods ?? [])
       if (g.made) this.body.append(this.lineRow(g.made, 'Made by · '));
     if (tile.store?.made && !tile.goods)
