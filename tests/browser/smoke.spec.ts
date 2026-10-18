@@ -146,9 +146,14 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.setViewportSize({ width: 1280, height: 720 });
 
   // Closing or reloading keeps the play since the last save: the page holds a standby copy taken
-  // every 5 s of play and writes it as the page goes. Wait for one past the shaft, then reload.
+  // every 5 s of play and writes it as the page goes. Wait for one past the shaft, then pause and
+  // reload. Paused, so `before` is the worker's own tick: read while running, the page's last
+  // snapshot lags the worker, and a standby taken in that gap came back 5 ticks past it in CI.
   await page.waitForTimeout(6000);
-  const before = await tick(page);
+  await page.getByTestId('speed-0').click();
+  await expect(page.getByText('Paused')).toBeVisible();
+  let before = -1;
+  await expect.poll(async () => before === (before = await tick(page))).toBe(true);
   await page.reload();
   await expect.poll(() => tick(page)).toBeGreaterThan(paused);
   expect(await tick(page)).toBeLessThanOrEqual(before);
