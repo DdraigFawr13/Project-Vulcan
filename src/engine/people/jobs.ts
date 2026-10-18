@@ -25,6 +25,8 @@ import {
 } from '../goods/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { practise } from './learn.ts';
+import { able, declineIfUnable, jobsInOrder, outranked, priorityLine } from './priority.ts';
 import { walkTo } from './walk.ts';
 
 export const JOB_FIELDS = {
@@ -64,13 +66,6 @@ const busy = (world: WorldState, p: EntityRow, job: string): Set<number> =>
       .filter((q) => q.id !== p.id && q['job'] === job)
       .map((q) => q['target'] as number),
   );
-
-/** Whether a person meets a job's requirements (attributes) in jobs.json. */
-function able(content: EngineContent, p: EntityRow, job: string): boolean {
-  const def = content.jobs.find((j) => j.id === job);
-  if (!def) return false;
-  return Object.entries(def.requirements).every(([a, n]) => ((p[a] as number) ?? 0) >= n);
-}
 
 const skillOf = (world: WorldState, p: EntityRow, skill: string): number =>
   ((world.entities['skill'] ?? []).find((s) => s['person'] === p.id && s['skill'] === skill)?.[
@@ -283,6 +278,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
     const here = spotOf(p);
     if (here.z === 0 && Math.abs(here.x - tx) + Math.abs(here.y - ty) === 1) {
       p['work'] = (p['work'] as number) - 1;
+      practise(ctx, p, fellSkill(content), p['took'] as number);
       if ((p['work'] as number) <= 0) {
         fell(ctx, p, target);
         p['target'] = -1;
@@ -306,12 +302,11 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   return takeUp(ctx, p);
 }
 
-/** Chooses new work: felling when wood is short and they are able, else carrying. */
+/** Chooses new work: a marked tree first (test mode), then the Work sheet's kinds of work in
+ * their own priority order (priority.ts): felling while wood is short, else carrying. */
 function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
-  const map = world.map;
   const fellDef = content.work.fell;
-  const short = woodShort(ctx, p);
   const marked = able(content, p, fellDef.job)
     ? markedTree(world, content, busy(world, p, 'fell'), spotOf(p), (x, y) =>
         goBeside(ctx, p, x, y),
@@ -325,38 +320,70 @@ function takeUp(ctx: SystemContext, p: EntityRow): boolean {
     });
     return startFelling(ctx, p, marked.tree);
   }
-  if (short && able(content, p, fellDef.job)) {
-    const tree = chooseTree(ctx, p);
-    if (tree !== undefined && goBeside(ctx, p, tree % map.width, Math.floor(tree / map.width))) {
-      if (p['job'] !== 'fell') {
-        const stock = content.work.stock[0];
-        const good = stock?.name ?? 'wood';
-        p['took'] = ctx.emit('work.tookUp', {
-          causes: [stockOf(world, stock?.good ?? 'logs')?.['line'] as number],
-          actors: [p.id],
-          data: { name: p['name'] as string, good, ...short },
-        });
-      }
-      return startFelling(ctx, p, tree);
-    }
-  }
-  const item = chooseLoad(ctx, p);
-  if (item && walkTo(ctx, p, spotOf(item))) {
-    p['job'] = 'haul';
-    p['target'] = item.id;
-    return true;
-  }
+  for (const job of jobsInOrder(world, content, p)) if (TAKE_UP[job]?.(ctx, p)) return true;
   p['job'] = '';
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;
   return false;
 }
 
+/** Felling, while the colony's wood is short of its stock level, unless they are not able (and
+ * say so if the player raised it for them) or someone free puts felling higher. */
+function takeUpFelling(ctx: SystemContext, p: EntityRow): boolean {
+  const { world, content } = ctx;
+  const map = world.map;
+  const job = content.work.fell.job;
+  const short = woodShort(ctx, p);
+  if (!short) return false;
+  if (!able(content, p, job)) {
+    declineIfUnable(ctx, p, job);
+    return false;
+  }
+  if (outranked(ctx, p, job, (q) => chooseTree(ctx, q) !== undefined)) return false;
+  const tree = chooseTree(ctx, p);
+  if (tree === undefined || !goBeside(ctx, p, tree % map.width, Math.floor(tree / map.width)))
+    return false;
+  if (p['job'] !== 'fell') {
+    const stock = content.work.stock[0];
+    const good = stock?.name ?? 'wood';
+    p['took'] = ctx.emit('work.tookUp', {
+      // The stock level that wants wood, and the priority that put them to it if the player set one.
+      causes: [
+        ...[
+          stockOf(world, stock?.good ?? 'logs')?.['line'] as number | undefined,
+          priorityLine(world, p.id, job),
+        ].filter((l): l is number => l !== undefined),
+      ],
+      actors: [p.id],
+      data: { name: p['name'] as string, good, ...short },
+    });
+  }
+  return startFelling(ctx, p, tree);
+}
+
+/** Carrying the nearest load lying outside the store. */
+function takeUpHauling(ctx: SystemContext, p: EntityRow): boolean {
+  const item = chooseLoad(ctx, p);
+  if (!item || !walkTo(ctx, p, spotOf(item))) return false;
+  p['job'] = 'haul';
+  p['target'] = item.id;
+  return true;
+}
+
+/** How each kind of work on the Work sheet is taken up; a kind with no entry is never taken up
+ * (content `work.priority.jobs` may list one before its milestone brings the work). */
+const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boolean>> = {
+  fell: takeUpFelling,
+  haul: takeUpHauling,
+};
+
+const fellSkill = (content: EngineContent): string =>
+  content.jobs.find((j) => j.id === content.work.fell.job)?.skill ?? '';
+
 /** Sets them felling the tree at surface tile `tree` (they are already on their way to it). */
 function startFelling(ctx: SystemContext, p: EntityRow, tree: number): boolean {
   const fellDef = ctx.content.work.fell;
-  const skill = ctx.content.jobs.find((j) => j.id === fellDef.job)?.skill ?? '';
-  const level = skillOf(ctx.world, p, skill);
+  const level = skillOf(ctx.world, p, fellSkill(ctx.content));
   p['job'] = 'fell';
   p['target'] = tree;
   p['work'] = Math.ceil((fellDef.minutes * 2 * fellDef.skilled) / (fellDef.skilled + level));

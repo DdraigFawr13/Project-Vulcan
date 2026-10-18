@@ -2,4 +2,5 @@
 export { createSim, createWorld } from './world.ts';
 export type { Sim } from './world.ts';
 export { replay, step, submitCommand } from './step.ts';
+export type { StopAt } from './step.ts';
 export type { Cadence, System, SystemContext } from './system.ts';

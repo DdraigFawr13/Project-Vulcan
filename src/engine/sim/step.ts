@@ -1,7 +1,7 @@
 // The scheduler and the lever queue: one tick applies that tick's commands, then runs the
 // systems that are due, in list order.
 import { ticksPerMonth, TICKS_PER_DAY, TICKS_PER_HOUR } from '../core/index.ts';
-import type { Command, EventData, WorldState } from '../core/index.ts';
+import type { Command, EventData, SimEvent, WorldState } from '../core/index.ts';
 import { citedByEntities } from '../entity/index.ts';
 import { emit, sealDays } from '../log/index.ts';
 import { contextFor, type Cadence } from './system.ts';
@@ -78,25 +78,23 @@ function cited(world: WorldState, sim: Sim): Set<number> {
   return ids;
 }
 
-// Whether a line from id `from` on has one of the `types`, looking back from the newest.
-function wrote(log: WorldState['log'], from: number, types: ReadonlySet<string>): boolean {
-  for (let k = log.length - 1; k >= 0 && log[k]!.id >= from; k -= 1)
-    if (types.has(log[k]!.type)) return true;
+// Whether a line from id `from` on is one `stop` names, looking back from the newest.
+function wrote(log: WorldState['log'], from: number, stop: StopAt): boolean {
+  const hit = typeof stop === 'function' ? stop : (e: SimEvent) => stop.has(e.type);
+  for (let k = log.length - 1; k >= 0 && log[k]!.id >= from; k -= 1) if (hit(log[k]!)) return true;
   return false;
 }
 
+/** Where `step` stops early: a set of event types, or a test such as `sim.notable`. */
+export type StopAt = ReadonlySet<string> | ((event: SimEvent) => boolean);
+
 /**
  * Advances the world by `ticks` game minutes, sealing old days at each midnight. With `stopAt`,
- * stops after the first tick that writes a line of one of those types (P2.7's skip ahead). Returns
+ * stops after the first tick that writes a line it names (P2.7's skip ahead passes `sim.notable`). Returns
  * the lines written that are still recent, oldest first; they are the ledger's own records, so
  * treat them as read-only.
  */
-export function step(
-  world: WorldState,
-  sim: Sim,
-  ticks = 1,
-  stopAt?: ReadonlySet<string>,
-): WorldState['log'] {
+export function step(world: WorldState, sim: Sim, ticks = 1, stopAt?: StopAt): WorldState['log'] {
   const fromId = world.nextEventId;
   for (let i = 0; i < ticks; i += 1) {
     const before = world.nextEventId;

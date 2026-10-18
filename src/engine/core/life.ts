@@ -53,6 +53,8 @@ export interface WorkDef {
   haul: { load: number; kinds: readonly string[] };
   store: { width: number; height: number; most: number };
   hours: { from: number; to: number };
+  priority: { jobs: readonly string[]; start: number; words: readonly string[] };
+  learn: { start: number; perLevel: number };
 }
 
 /** The forked jobs list (jobs.json): only what work reads. */

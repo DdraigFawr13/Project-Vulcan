@@ -30,8 +30,17 @@ export {
   wantOf,
 } from './goods/index.ts';
 export { moodOf, needOf, needsSystem } from './needs/index.ts';
-export { drawBand, peopleSystem, PEOPLE_TABLES, tradeOf } from './people/index.ts';
-export type { Home, Person } from './people/index.ts';
+export {
+  dayOf,
+  declinedLine,
+  drawBand,
+  levelOf,
+  peopleSystem,
+  PEOPLE_TABLES,
+  progressOf,
+  tradeOf,
+} from './people/index.ts';
+export type { Day, Home, Person } from './people/index.ts';
 export { makeRegion, regionSystem, siteOf, valleyOf } from './region/index.ts';
 export type { Region, RegionNeighbour, RegionSite, RegionValley } from './region/index.ts';
 export { isFrozen, tileTemperature, weatherSystem, weatherWords } from './weather/index.ts';

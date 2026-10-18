@@ -6,8 +6,10 @@ import { addEntity, type Schemas } from '../entity/index.ts';
 import { valleyOf } from '../region/index.ts';
 import type { System } from '../sim/index.ts';
 import { drawBand, type Home } from './band.ts';
+import { setDay } from './day.ts';
 import { JOB_FIELDS } from './jobs.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
+import { PRIORITY_TABLES, setPriority } from './priority.ts';
 import { stepAlong, WALK_FIELDS } from './walk.ts';
 
 const ATTRIBUTES = [
@@ -48,8 +50,10 @@ export const PEOPLE_TABLES: Schemas = {
     ...MIND_FIELDS,
     ...JOB_FIELDS,
   },
-  skill: { person: 'entity', skill: 'text', level: 'count', potential: 'count' },
+  /** `xp`: minutes practised towards the next level (P2.5, learn.ts). */
+  skill: { person: 'entity', skill: 'text', level: 'count', potential: 'count', xp: 'count' },
   trait: { person: 'entity', trait: 'text' },
+  ...PRIORITY_TABLES,
 };
 
 /** Where the band came from: the valley's neighbours, or the home culture for a plain seed. */
@@ -92,8 +96,23 @@ export const peopleSystem: System = {
   id: 'people',
   every: 'minute',
   stream: 'people',
-  emits: ['people.arrived', 'work.tookUp', 'work.tookUpMarked', 'work.felled'],
+  emits: [
+    'people.arrived',
+    'work.tookUp',
+    'work.tookUpMarked',
+    'work.felled',
+    'work.prioritySet',
+    'work.declined',
+    'work.daySet',
+    'skill.rose',
+  ],
   tables: PEOPLE_TABLES,
+  // The colony's day (day.ts) is kept here once the player changes it, with its line.
+  refs: ['dayLine'],
+  commands: {
+    setPriority: (ctx, command, cause) => setPriority(ctx, command.data, cause),
+    setDay: (ctx, command, cause) => setDay(ctx, command.data, cause),
+  },
   init(ctx) {
     const { world, content } = ctx;
     const homes = homesOf(world, content);
@@ -123,7 +142,7 @@ export const peopleSystem: System = {
         ...{ job: '', target: -1, work: 0, took: 0, next: 0 },
       });
       for (const skill of content.band.skills)
-        addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]! });
+        addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0 });
       for (const trait of p.traits) addEntity(world, 'trait', { person: id, trait });
     });
   },

@@ -3,5 +3,7 @@
 "fell":{"job":"fell","minutes":120,"skilled":10,"camp":3,"reach":40},
 "haul":{"load":25,"kinds":["logs","stone"]},
 "store":{"width":2,"height":3,"most":48},
-"hours":{"from":6,"to":18}
+"hours":{"from":6,"to":18},
+"priority":{"jobs":["fell","haul"],"start":3,"words":["first","second","third","last"]},
+"learn":{"start":240,"perLevel":120}
 }

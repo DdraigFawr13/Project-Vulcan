@@ -5,7 +5,7 @@
 // need crosses its warning line, down or back up, or the mood changes word.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
-import { itemsAt } from '../goods/index.ts';
+import { foodGoneLine, itemsAt } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { tileTemperature } from '../weather/index.ts';
 
@@ -119,7 +119,10 @@ function hourOf(ctx: SystemContext, p: EntityRow, id: string, fall: number): num
 /** What explains a need going low: the weather spell for cold, else its last line. */
 function causeOf(ctx: SystemContext, row: EntityRow): number {
   const spell = ctx.world.systems['weather']?.['spell'];
-  return row['need'] === 'warmth' && spell ? spell : (row['line'] as number);
+  if (row['need'] === 'warmth' && spell) return spell;
+  // Hunger after the food ran out cites the line where the last of it was eaten (P2.6).
+  const gone = foodGoneLine(ctx.world);
+  return row['need'] === 'food' && gone > (row['line'] as number) ? gone : (row['line'] as number);
 }
 
 /** The hourly pass: needs move, crossings and mood changes are written. */

@@ -1,13 +1,22 @@
 // The world record and the simulation it runs under: content, templates and the system list.
 import { START_TICK, type EngineContent, type WorldState } from '../core/index.ts';
 import type { Schemas, TableSchema } from '../entity/index.ts';
-import { emit, RECENT_DAYS, templatesOf, type Templates } from '../log/index.ts';
+import {
+  emit,
+  notableOf,
+  RECENT_DAYS,
+  templatesOf,
+  type Notable,
+  type Templates,
+} from '../log/index.ts';
 import { contextFor, type System } from './system.ts';
 
 /** Everything a world runs under that is not saved state: content and code. */
 export interface Sim {
   content: EngineContent;
   templates: Templates;
+  /** Whether a line is notable: an alert, and a stop for skip ahead (content `events`). */
+  notable: Notable;
   /** Run in this order every tick they are due (docs/ARCHITECTURE.md "Tick"). */
   systems: readonly System[];
   /** Every entity kind's fields, from the systems that own them. */
@@ -44,7 +53,7 @@ export function createSim(
     (t) => !templates.has(t),
   );
   if (missing.length) throw new Error(`No template in content events for: ${missing.join(', ')}.`);
-  return { content, templates, systems, tables, recentDays };
+  return { content, templates, notable: notableOf(content.events), systems, tables, recentDays };
 }
 
 /** A new world at 06:00 on day 1, its first ledger line already written. */

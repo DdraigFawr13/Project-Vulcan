@@ -66,7 +66,18 @@ export const LIFE_SCHEMAS = {
     haul: obj({ load: num({ min: 1 }), kinds: list(ref('items')) }),
     // The store the band sets up by the cart: its first size and the most tiles it grows to.
     store: obj({ width: num({ min: 1 }), height: num({ min: 1 }), most: count }),
-    // Working hours: work is taken up from `from` o'clock until `to`.
+    // The colony's day as it starts (P2.5, a lever since): work is taken up from `from` o'clock
+    // until `to`; bedtime is `life.sleep.from`, and they are up for work at `from`.
     hours: obj({ from: count, to: count }),
+    // Work priorities (P2.5): the kinds of work on the Work sheet, the level everyone starts at
+    // (1 first to 4 last) and the word for each level.
+    priority: obj({
+      jobs: list(ref('jobs')),
+      start: num({ min: 1, max: 4 }),
+      words: list(text, 4),
+    }),
+    // Skills by use (P2.5): minutes of practice from one level to the next, `start` plus
+    // `perLevel` times the level now.
+    learn: obj({ start: num({ min: 1 }), perLevel: count }),
   }),
 };

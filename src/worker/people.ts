@@ -1,7 +1,16 @@
 // The people as the page shows them (P2.1): each person's row with its skill and trait rows,
 // put into words from content. A pure read of the world, like views.ts.
 import { content } from '../content/index.ts';
-import { clockAt, moodOf, needOf, type EntityRow, type WorldState } from '../engine/index.ts';
+import {
+  clockAt,
+  declinedLine,
+  levelOf,
+  moodOf,
+  needOf,
+  progressOf,
+  type EntityRow,
+  type WorldState,
+} from '../engine/index.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 
 const nameOf = (list: readonly { id: string; name: string }[], id: string): string =>
@@ -106,4 +115,33 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     z: p['z'] as number,
     ...barsOf(world, p),
     doing: doingOf(p),
+    skills: skillsOf(world, p),
+    work: content.work.priority.jobs.map((job) => {
+      const level = levelOf(world, content, p.id, job);
+      const declined = declinedLine(world, p.id, job);
+      return {
+        job,
+        name: nameOf(content.jobs, job),
+        level,
+        word: content.work.priority.words[level - 1] ?? '',
+        ...(declined !== undefined && { declined }),
+      };
+    }),
   }));
+
+/** A person's skills with practice towards the next level (P2.5). */
+function skillsOf(world: WorldState, p: EntityRow): WalkerView['skills'] {
+  return (world.entities['skill'] ?? [])
+    .filter((s) => s['person'] === p.id)
+    .map((s) => {
+      const [done, needed] = progressOf(content, s);
+      const id = s['skill'] as string;
+      return {
+        id,
+        name: nameOf(content.abilities, id),
+        level: s['level'] as number,
+        potential: s['potential'] as number,
+        practice: Math.min(99, Math.floor((done * 100) / needed)),
+      };
+    });
+}

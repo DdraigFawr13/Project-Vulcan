@@ -7,6 +7,8 @@ import {
   chunkTiles,
   createSim,
   createWorld,
+  dayOf,
+  entityOf,
   layerOf,
   makeRegion,
   renderEvent,
@@ -22,14 +24,14 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
-import { createPace, setSpeed, SKIP_MS, ticksDue } from './pace.ts';
+import { createPace, setSpeed, SKIP_MS, stopSkip, ticksDue } from './pace.ts';
 import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type { ChunkView, FromWorker, LedgerLine, ToWorker } from './protocol.ts';
 import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave, saveOf } from './save.ts';
 import { goodsOf, stockView } from './goods.ts';
 import { peopleOf, walkersOf } from './people.ts';
-import { clockView, tileView, weatherOf } from './views.ts';
+import { clockView, placeWords, tileView, weatherOf } from './views.ts';
 
 /** How often the worker wakes (ms). Timing comes from the clock, not from this interval. */
 const WAKE_MS = 10;
@@ -54,11 +56,17 @@ let offered: WorldState[] = [];
 const post = (message: FromWorker, transfer: Transferable[] = []): void =>
   postMessage(message, { transfer });
 
-/** Runs one tick, timed, and collects its lines: sealing trims the log's front at midnight. */
-function tickOnce(w: WorldState): void {
+/** Runs one tick, timed, and collects its lines (sealing trims the log's front at midnight);
+ * true when one of them is notable. */
+function tickOnce(w: WorldState): boolean {
   const start = performance.now();
-  for (const line of step(w, sim, 1)) unposted.push(line);
+  let notable = false;
+  for (const line of step(w, sim, 1)) {
+    unposted.push(line);
+    notable ||= sim.notable(line);
+  }
   recordTick(timing, performance.now() - start, systemNames);
+  return notable;
 }
 
 /** Runs `ticks` ticks, or, skipping ahead (P2.7), as many as fit in `SKIP_MS`; then hands the
@@ -67,13 +75,22 @@ function run(ticks: number): void {
   const w = world;
   if (!w) return;
   if (pace.skip) {
+    // Tick by tick, exactly as at any speed, so a skip writes the ledger a 3x run would.
     const until = performance.now() + SKIP_MS;
-    while (performance.now() < until) tickOnce(w);
+    while (pace.skip && performance.now() < until) if (tickOnce(w)) stopSkip(pace);
   } else for (let i = 0; i < ticks; i += 1) tickOnce(w);
   if (w.sealed.length) {
     post({ type: 'segments', items: w.sealed.map(({ key, text }) => ({ key, text })) });
     w.sealed = [];
   }
+}
+
+/** Where the person a notable line is about stands as it is sent, in words from the camp. */
+function whereOf(e: SimEvent): Pick<LedgerLine, 'where'> {
+  const p = world && e.actors[0] !== undefined ? entityOf(world, 'person', e.actors[0]) : undefined;
+  if (!world || !p) return {};
+  const [x, y, z] = [p['x'] as number, p['y'] as number, p['z'] as number];
+  return { where: { x, y, z, words: placeWords(world.map, x, y, z) } };
 }
 
 function lineOf(e: SimEvent | Stub): LedgerLine {
@@ -97,6 +114,7 @@ function lineOf(e: SimEvent | Stub): LedgerLine {
     causes: [...e.causes],
     why: e.causes.some((c) => c !== world?.begunEvent),
     clock,
+    ...(sim.notable(e) && { notable: true as const, ...whereOf(e) }),
   };
 }
 
@@ -125,6 +143,8 @@ function snapshot(w: WorldState): void {
       tick: w.tick,
       at: pace.last,
       speed: pace.speed,
+      skipping: pace.skip,
+      day: dayOf(w, content),
       clock: clockView(w.tick),
       chunks,
       reached: w.map.levels.map((level) => level !== null),
@@ -215,6 +235,9 @@ function handle(message: ToWorker): void {
     }
     case 'setSpeed':
       run(setSpeed(pace, message.speed, performance.now()));
+      return;
+    case 'skip':
+      if (world) pace.skip = true;
       return;
     case 'requestSnapshot':
       if (world) snapshot(world);

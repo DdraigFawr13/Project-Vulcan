@@ -21,7 +21,10 @@ export type ToWorker =
    * check is refused (`loadRefused`) and the running world carries on untouched. */
   | { type: 'load'; save: unknown }
   | { type: 'command'; tick: number; kind: string; data?: EventData }
+  /** Any speed, pause included, also ends a skip. */
   | { type: 'setSpeed'; speed: Speed }
+  /** Skip ahead (P2.7): run as fast as the device allows until a notable line, then pause. */
+  | { type: 'skip' }
   /** The page asks once per screen frame, with at most one request waiting. */
   | { type: 'requestSnapshot' }
   /** Asks for the running world as a save; `auto` is echoed back for the page's autosave slot, and
@@ -92,6 +95,11 @@ export interface LedgerLine {
   clock: ClockView;
   /** An older line whose day is sealed: the "why?" chain and the tile's last change end here. */
   older?: true;
+  /** A notable line (content `events`): it goes in the alert feed, and skip ahead stops on it. */
+  notable?: true;
+  /** For a notable line about someone: where they stood as it was sent, and that place in words
+   * ("at the camp", "12 tiles north of the camp"), for the alert feed and its Show button. */
+  where?: { x: number; y: number; z: number; words: string };
 }
 
 /** How long ticks take (ms of worker time): mean and 95th percentile, and the slowest system. */
@@ -262,6 +270,11 @@ export interface WalkerView {
   needs: NeedView[];
   /** "Sleeping", "Eating", "Taking it easy"... */
   doing: string;
+  /** Every skill with its level, potential and practice towards the next level, as a % (P2.5). */
+  skills: { id: string; name: string; level: number; potential: number; practice: number }[];
+  /** The Work sheet (P2.5): each kind of work, its level for them (1 first to 4 last) and word,
+   * and the line where they declined it since it last changed. */
+  work: { job: string; name: string; level: number; word: string; declined?: number }[];
 }
 
 export type FromWorker =
@@ -289,6 +302,10 @@ export type FromWorker =
        * that wake's ticks unrun. */
       at: number;
       speed: Speed;
+      /** Skipping ahead; ends paused, on the tick that wrote a notable line. */
+      skipping: boolean;
+      /** The colony's day (P2.5): work from and until, and bedtime, in whole hours. */
+      day: { workFrom: number; workTo: number; sleepFrom: number };
       clock: ClockView;
       /** Chunks changed since the last snapshot, on every reached level; the first one after
        * `ready`, and the first after a level is reached, carry all of that level's. */

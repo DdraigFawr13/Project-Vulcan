@@ -181,7 +181,11 @@ export const WORLD_SCHEMAS = {
   ),
   // Vulcan's own, not forked: the ledger text of every event type the engine may emit.
   // Slots are {actorN}, {subjectN} and data keys; the engine refuses an event that leaves one empty.
-  events: list(obj({ id, importance: num({ min: 1, max: 3 }), template: text })),
+  // `notable` (P2.6, P2.7) makes a line an alert and a stop for skip ahead: `{}` always, or data
+  // values a line must have, alternatives split by `|` (a mood only when it fell low).
+  events: list(
+    obj({ id, importance: num({ min: 1, max: 3 }), template: text, notable: opt(map(str())) }),
+  ),
   // Vulcan's own: the ground kinds a map tile can be, and the surface map's size and starting
   // ground. `art` names a frame family in the art sheets; `variants` frames end in .1, .2, ...
   terrain: obj({

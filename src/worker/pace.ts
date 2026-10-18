@@ -15,17 +15,26 @@ export interface Pace {
   owed: number;
   /** Real time of the last wake, in ms. */
   last: number;
-  /** Skipping ahead: run for `SKIP_MS` each wake instead of at the speed's rate (P2.7 turns it on). */
+  /** Skipping ahead (P2.7): run for `SKIP_MS` each wake instead of at the speed's rate. */
   skip: boolean;
 }
 
 export const createPace = (now: number): Pace => ({ speed: 0, owed: 0, last: now, skip: false });
 
-/** Changes speed; returns the ticks still owed at the old speed, which the caller runs first. */
+/** Changes speed, ending any skip; returns the ticks still owed at the old speed, which the
+ * caller runs first. */
 export function setSpeed(pace: Pace, speed: Speed, now: number): number {
   const due = ticksDue(pace, now);
   pace.speed = speed;
+  pace.skip = false;
   return due;
+}
+
+/** A skip has reached a notable line: it ends paused, owing nothing. */
+export function stopSkip(pace: Pace): void {
+  pace.skip = false;
+  pace.speed = 0;
+  pace.owed = 0;
 }
 
 /** Whole ticks to run now. Paused owes nothing, and a pause drops any fraction owed. */
