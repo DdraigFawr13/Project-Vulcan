@@ -24,7 +24,7 @@ One tick is one game minute; 10 ticks per second at 1x (a game day in about 2.4 
 
 ## Map
 
-Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at full depth), each underground level generated from seed and level index when a stair or shaft first reaches it (`MapState.levels`, null until then, so an unreached level costs no memory or save space). Tiles in 16 by 16 chunks with dirty flags, per level. Each mountain range's rock runs down beneath it, read from the surface rock as generated (`MapState.rock`, never changed by digging); the rest is bedrock bodies drawn once per seed; tunnels and caverns open deeper down. Level -1: earth, clay, groundwater. Level -2: copper and tin. Level -3: iron and sulphur. Level -4: gold, silver, gems, obsidian; one aura spot (P1.4, a cavern or obsidian seam) and cave creatures (Phase 8) later. The surface has 2 to 4 aura spots of distinct schools over a faint background (P1.4). Veins are features in the rock (`features.json` `vein`), visible once their level is reached (Morgan, 2026-10-17). As built from P1.3: `src/engine/map/MODULE.md`.
+Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at full depth), each underground level generated from seed and level index when a stair or shaft first reaches it (`MapState.levels`, null until then, so an unreached level costs no memory or save space). Tiles in 16 by 16 chunks with dirty flags, per level. Each mountain range's rock runs down beneath it, read from the surface rock as generated (`MapState.rock`, never changed by digging); the rest is bedrock bodies drawn once per seed; tunnels and caverns open deeper down. Level -1: earth, clay, groundwater. Level -2: copper and tin. Level -3: iron and sulphur. Level -4: gold, silver, gems, obsidian; one aura spot (P1.4, a cavern or obsidian seam) and cave creatures (Phase 8) later. The surface has 2 to 4 aura spots of distinct schools over a faint background (P1.4). Veins are features in the rock (`features.json` `vein`), visible once their level is reached (Morgan, 2026-10-17); from P4.1 caves and water stay hidden until mining opens next to them (V-030). As built from P1.3: `src/engine/map/MODULE.md`.
 
 ## RNG
 
@@ -32,7 +32,7 @@ Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at ful
 
 ## Event log
 
-`{id, tick, type, actors[], subjects[], causes[], data}`; `emit` refuses a type without a content template. Append-only in the worker, streamed to the main thread, exported as NDJSON. Legends, storyteller, gossip, memory ledgers and the inspector all read this one log.
+`{id, tick, type, actors[], subjects[], causes[], data}`; `emit` refuses a type without a content template. Append-only in the worker, streamed to the main thread, exported as NDJSON. From P2.0: moves and routine ticks are not events; the log is kept in day segments with a stub for any event still cited, so "why?" ends at "older record" rather than a gap (budget: about 30 colonists over ten years, V-027). Legends, storyteller, gossip, memory ledgers and the inspector all read this one log.
 
 ## Save
 
@@ -40,7 +40,7 @@ Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at ful
 
 ## Imports
 
-`npm run boundaries` enforces: engine and content are pure; each layer imports only the layers its row allows (engine ← content ← worker ← render/persist ← ui); Phaser only in render and ui; a system folder is reached only through its `index.ts`.
+`npm run boundaries` enforces: engine and content are pure; each layer imports only the layers its row allows (engine ← content ← worker ← render/persist ← ui); Phaser only in render and ui; a system folder is reached only through its `index.ts`. The Story Generator engine package (V-031) is imported only by the engine adapter P1.5 adds.
 
 ## Reading in pieces
 
