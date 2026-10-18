@@ -278,7 +278,9 @@ if (!params.has('seed') || site) {
   void saves.latest(site ? `${seed}/${site}` : undefined).then((save) => {
     if (!save) return begin();
     const at = /^(.+)\/([1-9])$/.exec(save.seed);
-    if (at) history.replaceState(null, '', `?seed=${encodeURIComponent(at[1]!)}&site=${at[2]}`);
+    const keep = debug ? '&debug' : '';
+    if (at)
+      history.replaceState(null, '', `?seed=${encodeURIComponent(at[1]!)}&site=${at[2]}${keep}`);
     saves.loading = true;
     hud.showScreen('Continuing', `${save.seed}, where it was last saved.`);
     send({ type: 'load', save });
