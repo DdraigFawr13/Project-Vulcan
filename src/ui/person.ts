@@ -72,6 +72,11 @@ export function fillNeed(row: HTMLElement, n: NeedView): void {
   bar!.setAttribute('aria-label', `${n.name} ${n.share} of 100, warning under ${n.line}`);
   (bar!.children[0] as HTMLElement).style.width = `${n.share}%`;
   (bar!.children[1] as HTMLElement).style.left = `${n.line}%`;
+  // Snapshots keep coming while paused, so the word and its "why?" are rebuilt only when they
+  // change: a button replaced each snapshot slips out from under a finger mid-tap.
+  const shown = n.low ? `${n.word}|${n.why}` : n.word;
+  if (word!.dataset['shown'] === shown) return;
+  word!.dataset['shown'] = shown;
   word!.textContent = `${n.word} `;
   if (n.low)
     word!.append(el('button', { type: 'button', class: 'why', 'data-why': String(n.why) }, 'why?'));
