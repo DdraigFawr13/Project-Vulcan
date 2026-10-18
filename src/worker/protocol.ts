@@ -226,7 +226,9 @@ export type FromWorker =
   | {
       type: 'snapshot';
       tick: number;
-      /** The worker's clock when it sent this (ms), so a rate can be timed without the page's lag. */
+      /** The worker's clock (ms) up to which `tick` is run, so a rate can be timed without the
+       * page's lag; not when it was sent, since a request answered before an overdue wake carries
+       * that wake's ticks unrun. */
       at: number;
       speed: Speed;
       clock: ClockView;

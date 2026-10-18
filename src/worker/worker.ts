@@ -122,7 +122,7 @@ function snapshot(w: WorldState): void {
     {
       type: 'snapshot',
       tick: w.tick,
-      at: performance.now(),
+      at: pace.last,
       speed: pace.speed,
       clock: clockView(w.tick),
       chunks,
