@@ -12,4 +12,5 @@ export {
   STORE_TABLES,
   wantOf,
 } from './store.ts';
+export { eatFrom, foodGoneLine } from './food.ts';
 export { isTree, markedTree, marksOf, unmark } from './marks.ts';

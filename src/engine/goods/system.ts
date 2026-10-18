@@ -42,7 +42,11 @@ export const goodsSystem: System = {
     'goods.storeGrew',
     'goods.stockSet',
     'goods.storeMarked',
+    'goods.foodGone',
   ],
+  // The line where the last food was eaten (food.ts), which hunger cites.
+  initialState: { foodGone: 0 },
+  refs: ['foodGone'],
   tables: { ...GOODS_TABLES, ...STORE_TABLES, ...MARK_TABLES },
   commands: {
     setStock: (ctx, command, cause) => setStock(ctx, command.data, cause),

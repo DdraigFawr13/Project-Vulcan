@@ -1,6 +1,6 @@
 // The speeds a player sees: ticks per real second at each speed, pause, and the catch-up cap.
 import { describe, expect, it } from 'vitest';
-import { createPace, MAX_CATCH_UP_MS, setSpeed, ticksDue } from './pace.ts';
+import { createPace, MAX_CATCH_UP_MS, setSpeed, stopSkip, ticksDue } from './pace.ts';
 
 /** Ticks run over `seconds` of real time with a wake every `wake` ms. */
 function run(speed: 0 | 1 | 2 | 3, seconds: number, wake = 7) {
@@ -26,5 +26,17 @@ describe('pace', () => {
     expect(ticksDue(pace, 5015)).toBe(1);
     expect(setSpeed(pace, 0, 5020)).toBe(1);
     expect(ticksDue(pace, 9000)).toBe(0);
+  });
+
+  it('ends a skip paused on a notable line, or at once when any speed is chosen', () => {
+    const pace = createPace(0);
+    setSpeed(pace, 2, 0);
+    pace.skip = true;
+    stopSkip(pace);
+    expect(pace).toMatchObject({ skip: false, speed: 0 });
+    expect(ticksDue(pace, 100)).toBe(0);
+    pace.skip = true;
+    setSpeed(pace, 1, 200);
+    expect(pace).toMatchObject({ skip: false, speed: 1 });
   });
 });

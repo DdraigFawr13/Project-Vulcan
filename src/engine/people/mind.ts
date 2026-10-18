@@ -4,9 +4,10 @@
 // otherwise stroll near the camp. What they are doing is the `doing` field, which the needs
 // system reads each hour; none of it is a ledger line until a need crosses its warning line.
 import { clockAt, type EntityRow } from '../core/index.ts';
-import { itemsAt, itemsOf, takeFrom } from '../goods/index.ts';
+import { eatFrom, itemsAt, itemsOf } from '../goods/index.ts';
 import { changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { dayOf } from './day.ts';
 import { working } from './jobs.ts';
 import { walkTo, wander } from './walk.ts';
 
@@ -52,7 +53,7 @@ function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
   const row = needOf(ctx.world, p.id, 'food');
   if (!def || !row) return;
   const gives = ctx.content.life.eat[item['kind'] as string] ?? 0;
-  takeFrom(ctx.world, item, 1);
+  eatFrom(ctx, item, p);
   changeNeed(ctx.content, row, gives);
   crossed(ctx, p, row, def);
 }
@@ -85,7 +86,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     }
     p['retry'] = world.tick + RETRY;
   }
-  const night = hour >= life.sleep.from || hour < life.sleep.to;
+  const day = dayOf(world, content);
+  const night = hour >= day.sleepFrom || hour < day.workFrom;
   const rest = valueOf(ctx, p, 'rest');
   if (p['doing'] === 'sleep') {
     if (night || rest < life.sleep.wake) return;
@@ -95,13 +97,12 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     goToBed(ctx, p);
     return;
   }
-  const hours = hour >= content.work.hours.from && hour < content.work.hours.to;
+  const hours = hour >= day.workFrom && hour < day.workTo;
   if (working(ctx, p, hours)) {
     p['doing'] = 'work';
     return;
   }
-  const leisure =
-    hour >= life.relax.from || valueOf(ctx, p, 'recreation') < seekOf(ctx, 'recreation');
+  const leisure = hour >= day.workTo || valueOf(ctx, p, 'recreation') < seekOf(ctx, 'recreation');
   p['doing'] = leisure ? 'relax' : '';
   wander(ctx, p);
 }

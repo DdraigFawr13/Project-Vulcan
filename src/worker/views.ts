@@ -10,6 +10,7 @@ import {
   layerOf,
   recordOf,
   tileTemperature,
+  type MapState,
   type SimEvent,
   type Stub,
   type WorldState,
@@ -157,3 +158,16 @@ function waterOf(map: WorldState['map'], tile: number, code: number): Partial<Ti
     crossing: kind.water === 'deep' ? 'too deep to cross' : 'can be waded',
   };
 }
+
+/** A spot in words from the camp, for the alert feed: "at the camp" within `NEAR` tiles of where
+ * the band arrived, else "12 tiles north-east of the camp", with the level when below ground. */
+export function placeWords(map: MapState, x: number, y: number, z: number): string {
+  const [dx, dy] = [x - map.startX, y - map.startY];
+  const far = Math.max(Math.abs(dx), Math.abs(dy));
+  const below = z > 0 ? `, ${z} ${z === 1 ? 'level' : 'levels'} down` : '';
+  if (far <= NEAR) return `at the camp${below}`;
+  const ns = Math.abs(dy) * 2 >= Math.abs(dx) ? (dy < 0 ? 'north' : 'south') : '';
+  const ew = Math.abs(dx) * 2 >= Math.abs(dy) ? (dx < 0 ? 'west' : 'east') : '';
+  return `${far} tiles ${[ns, ew].filter(Boolean).join('-')} of the camp${below}`;
+}
+const NEAR = 6;

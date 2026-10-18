@@ -367,7 +367,8 @@ export interface CalendarDef {
 /** The content the engine core reads. The worker passes the content layer's `content`. */
 export interface EngineContent extends PeopleDefs {
   calendar: CalendarDef;
-  events: readonly { id: string; template: string }[];
+  /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */
+  events: readonly { id: string; template: string; notable?: Readonly<Record<string, string>> }[];
   terrain: TerrainDef;
   biomes: BiomesDef;
   features: readonly FeatureDef[];
