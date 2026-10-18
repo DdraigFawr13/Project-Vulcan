@@ -21,6 +21,7 @@
     "reading-cost": "node tools/reading-cost.mjs",
     "map:stats": "node tools/map-stats.mjs",
     "map:render": "node tools/map-stats.mjs --render",
+    "budget": "node tools/budget.mjs",
     "test": "vitest run",
     "test:related": "vitest related --run",
     "test:browser": "playwright test",

@@ -5,6 +5,9 @@ import { TICKS_PER_SECOND, type Speed } from './protocol.ts';
 
 /** At most this much real time (ms) is caught up after a stall; the rest is dropped. */
 export const MAX_CATCH_UP_MS = 250;
+/** Skipping ahead (P2.7) runs ticks for this long (ms) on each wake, as fast as the device allows,
+ * leaving the rest of the 10 ms wake for messages. */
+export const SKIP_MS = 8;
 
 export interface Pace {
   speed: Speed;
@@ -12,9 +15,11 @@ export interface Pace {
   owed: number;
   /** Real time of the last wake, in ms. */
   last: number;
+  /** Skipping ahead: run for `SKIP_MS` each wake instead of at the speed's rate (P2.7 turns it on). */
+  skip: boolean;
 }
 
-export const createPace = (now: number): Pace => ({ speed: 0, owed: 0, last: now });
+export const createPace = (now: number): Pace => ({ speed: 0, owed: 0, last: now, skip: false });
 
 /** Changes speed; returns the ticks still owed at the old speed, which the caller runs first. */
 export function setSpeed(pace: Pace, speed: Speed, now: number): number {

@@ -2,7 +2,7 @@
 // Speed and pause are worker settings, not game commands, so they never enter the command log.
 // Saving, exporting and the inspector's questions only read the world: answering them never
 // steps it, writes a ledger line or draws from an RNG stream.
-import type { EventData, RegionSite, RegionValley } from '../engine/index.ts';
+import type { Command, EventData, RegionSite, RegionValley } from '../engine/index.ts';
 import type { SaveFile } from './save.ts';
 
 /** 0 is paused; 1, 2 and 3 run 10, 30 and 100 game minutes a second. */
@@ -92,6 +92,14 @@ export interface LedgerLine {
   clock: ClockView;
   /** An older line whose day is sealed: the "why?" chain and the tile's last change end here. */
   older?: true;
+}
+
+/** How long ticks take (ms of worker time): mean and 95th percentile, and the slowest system. */
+export interface TimingView {
+  mean: number;
+  p95: number;
+  slowest: string;
+  slowestMs: number;
 }
 
 /** One tile as the inspector shows it. */
@@ -197,13 +205,18 @@ export type FromWorker =
       weather: WeatherView;
       /** Every aura spot so far, on any reached level. */
       aura: AuraView[];
+      /** Tick timing over the last 1,000 ticks run (P2.0), for the `?debug` line. */
+      timing: TimingView;
     }
   /** New ledger lines in log order, posted just before the snapshot that follows them. */
   | { type: 'events'; batch: LedgerLine[] }
   | { type: 'saved'; auto: boolean; standby?: boolean; save: SaveFile; clock: ClockView }
   /** The save failed its check before anything was replaced; `reason` is shown to the player. */
   | { type: 'loadRefused'; reason: string }
-  | { type: 'exported'; kind: 'ndjson'; name: string; text: string }
+  /** The ledger download: the archived days by key, oldest first, then the recent days' NDJSON. */
+  | { type: 'exported'; kind: 'ndjson'; name: string; segments: string[]; text: string }
+  /** Days the engine sealed since the last run, for the page to archive (P2.0). */
+  | { type: 'segments'; items: { key: string; text: string }[] }
   | { type: 'inspected'; tile: TileView | undefined }
   /** The causes of line `id`, nearest first, each with its depth (1 is a direct cause). */
   | { type: 'causes'; id: number; lines: (LedgerLine & { depth: number })[] }
@@ -211,4 +224,6 @@ export type FromWorker =
   | { type: 'picker'; seed: string; region: RegionView; valleys: ValleyPreview[] }
   /** The running world's region and which valley it settled; none for a world from a plain seed. */
   | { type: 'region'; region?: RegionView; site: number }
-  | { type: 'error'; message: string };
+  /** The engine stopped. `commands` is the running world's whole command log, so the page can
+   * add the levers given since its last standby copy to the rescue save. */
+  | { type: 'error'; message: string; tick?: number; commands?: Command[] };

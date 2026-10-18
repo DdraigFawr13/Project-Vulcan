@@ -4,7 +4,7 @@ Goal: people who act on their own. Entry: Phase 1 done and signed off by Morgan 
 
 ## Status
 
-- [ ] P2.0 Engine groundwork
+- [x] P2.0 Engine groundwork (merged 2026-10-18 in two PRs: engine #18, archive and worker in the second). `npm run budget`, ten years at 30 people (measured, about 16 s): 1.52 M lines written; 3,189 recent lines and 3,037 stubs held; ledger in memory 0.66 MB (budget 2); save 1.68 MB (4); standby clone 17 ms median (25); archive 16.6 MB gzipped (40); midnight tick 2.7 ms mean (5)
 - [ ] P2.1 Title screen, the band and their arrival
 - [ ] P2.2 Needs and basic mood
 - [ ] P2.3 Pathfinding across levels
@@ -13,7 +13,7 @@ Goal: people who act on their own. Entry: Phase 1 done and signed off by Morgan 
 - [ ] P2.6 Colonist bar, inspector tabs, alert feed
 - [ ] P2.7 Skip ahead
 
-Taste board (VR-56): https://claude.ai/artifact/ (filled in when published); Morgan's picks are recorded here and bind every Phase 2 UI mock-up.
+Taste board (VR-56): https://claude.ai/artifact/4WdMASnMFnvDcBryD132KJ. Morgan took every recommendation (2026-10-18), binding every Phase 2 UI mock-up: colonists are small full figures in three-quarter view with four facings and two walk frames (P2.1); the play screen has a portrait strip with mood rings under the top bar, a one-line alert ticker with a count badge, and a skip button after 1x 2x 3x, with no PAUSED word (P2.6, P2.7); the title screen shows the last valley dimmed behind Continue (valley and date) and New game (P2.1); needs show as bars with a warning line, a word and "why?" (P2.2, P2.6); work priorities on a phone are one colonist at a time with a 1 to 4 stepper per job, the grid on desktop (P2.5); a crash shows a plain sentence, the day kept, and a RESCUE row in Saves. Later rules: why? ends at a plain "older record" line, and players never see raw type ids.
 
 ## Milestones
 

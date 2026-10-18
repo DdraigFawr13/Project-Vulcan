@@ -217,6 +217,7 @@ export class Panel {
       const text = el('div', { class: 'meta' });
       const name = el('b', {}, meta.name);
       if (meta.auto) name.append(el('span', { class: 'tag' }, 'AUTO'));
+      if (meta.rescue) name.append(el('span', { class: 'tag', title: meta.rescue }, 'RESCUE'));
       const saved = new Date(meta.savedAt).toLocaleString([], {
         dateStyle: 'short',
         timeStyle: 'short',

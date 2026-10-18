@@ -95,9 +95,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   const download = page.waitForEvent('download');
   await panel.getByRole('button', { name: 'Export ledger' }).click();
   const file = await download;
-  expect(file.suggestedFilename()).toBe(`smoke-2-tick-${paused}.ndjson`);
+  // Gzipped NDJSON since P2.0: the archived days and the recent ones, joined as gzip members.
+  expect(file.suggestedFilename()).toBe(`smoke-2-tick-${paused}.ndjson.gz`);
   const { readFile } = await import('node:fs/promises');
-  const first = JSON.parse((await readFile(await file.path(), 'utf8')).split('\n')[0]!);
+  const { gunzipSync } = await import('node:zlib');
+  const text = gunzipSync(await readFile(await file.path())).toString('utf8');
+  const first = JSON.parse(text.split('\n')[0]!);
   expect(first).toMatchObject({ id: 1, type: 'world.begun', data: { seed: 'smoke/2' } });
 
   // A reload continues the newest save of this valley rather than beginning a new Day 1.

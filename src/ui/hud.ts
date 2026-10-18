@@ -1,7 +1,7 @@
 // The heads-up display over the map: clock, speed and panel buttons, the Paused label, the tile
 // readout, level and zoom buttons, a debug line, and the starting, loading and error screens. Shows what it is given; it
 // computes no game rule (GAME-02).
-import type { ClockView, Speed, WeatherView } from '../worker/index.ts';
+import type { ClockView, Speed, TimingView, WeatherView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
 const SPEED_LABELS: Record<Speed, string> = { 0: '❚❚', 1: '1×', 2: '2×', 3: '3×' };
@@ -39,6 +39,7 @@ export class Hud {
   });
   /** "surface" or "2 levels down", after the season under the clock. */
   private where = 'surface';
+  private timing = '';
   /** Frames per second the renderer measured, shown on the debug line. */
   fps = 0;
 
@@ -113,7 +114,15 @@ export class Hud {
     for (const [s, button] of this.speeds) button.setAttribute('aria-pressed', String(s === speed));
     this.debug.dataset['tick'] = String(tick);
     this.debug.dataset['at'] = String(Math.round(at));
-    this.debug.textContent = `${this.fps} fps · tick ${tick}`;
+    this.debug.textContent = `${this.fps} fps · tick ${tick}${this.timing}`;
+  }
+
+  /** The worker's tick timing for the debug line (P2.0): mean and p95 ms, and the slowest system. */
+  showTiming(t: TimingView): void {
+    // Ticks take microseconds before colonists arrive; the browser's clock is coarse below 0.1 ms.
+    const ms = (n: number) => n.toFixed(3);
+    const slowest = t.slowestMs > 0 ? ` · slowest ${t.slowest} ${ms(t.slowestMs)}` : '';
+    this.timing = t.slowest ? ` · ${ms(t.mean)} ms/tick, p95 ${ms(t.p95)}${slowest}` : '';
   }
 
   showTile(tile: { x: number; y: number; ground: string } | undefined): void {
@@ -152,8 +161,10 @@ export class Hud {
     this.screen.hidden = true;
   }
 
-  showError(message: string): void {
-    this.showScreen('The simulation stopped', message, ['Reload', 'reload']);
+  /** The engine stopped; `kept` names the day the rescue save holds, once it is written. */
+  showError(message: string, kept?: string): void {
+    const rescue = kept ? ` Your game up to ${kept} is kept as a rescue save in Saves.` : '';
+    this.showScreen('The simulation stopped', `${message}${rescue}`, ['Reload', 'reload']);
   }
 
   /** A screen over the game; the optional button reloads the page or just closes the screen. */

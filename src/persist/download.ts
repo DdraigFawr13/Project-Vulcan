@@ -1,8 +1,12 @@
-// Hands the player a file: the NDJSON ledger export.
+// Hands the player a file: the ledger export, gzipped NDJSON.
 
-/** Downloads `text` as a file called `name`. */
-export function download(name: string, text: string, type = 'application/x-ndjson'): void {
-  const url = URL.createObjectURL(new Blob([text], { type }));
+/** Downloads `parts`, joined as they are (never copied into one string), as a file called `name`. */
+export function download(
+  name: string,
+  parts: readonly (string | ArrayBuffer)[],
+  type = 'application/gzip',
+): void {
+  const url = URL.createObjectURL(new Blob([...parts], { type }));
   const link = document.createElement('a');
   link.href = url;
   link.download = name;
