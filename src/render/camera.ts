@@ -79,6 +79,12 @@ export class CameraControls {
     this.refit();
   }
 
+  /** Centres the view on map point (x, y), in the part of the screen below the bar. */
+  lookAt(x: number, y: number): void {
+    this.target = undefined;
+    this.camera.centerOn(x, y - this.top / 2 / this.zoom);
+  }
+
   /** Glides one step in (1) or out (-1) about the middle of the screen. */
   zoomStep(direction: 1 | -1): void {
     const from = this.target ?? this.zoom;

@@ -38,7 +38,7 @@ export class ValleyScene extends Phaser.Scene {
   private select?: Phaser.GameObjects.Image;
   /** Marks the tile the inspector is showing. */
   private marked?: Phaser.GameObjects.Image;
-  private controls?: CameraControls;
+  controls?: CameraControls;
   /** Height of the page's bar over the top of the view, in screen px. */
   private topInset = 0;
   /** Tile index in the tilesets for each terrain kind's pictures, by kind then variant. */

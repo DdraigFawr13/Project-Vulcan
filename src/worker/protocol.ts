@@ -95,6 +95,8 @@ export interface LedgerLine {
   clock: ClockView;
   /** An older line whose day is sealed: the "why?" chain and the tile's last change end here. */
   older?: true;
+  /** Who the line is about (person ids), for a person's Ledger tab (P2.6). */
+  actors?: number[];
   /** A notable line (content `events`): it goes in the alert feed, and skip ahead stops on it. */
   notable?: true;
   /** For a notable line about someone: where they stood as it was sent, and that place in words
@@ -274,7 +276,15 @@ export interface WalkerView {
   skills: { id: string; name: string; level: number; potential: number; practice: number }[];
   /** The Work sheet (P2.5): each kind of work, its level for them (1 first to 4 last) and word,
    * and the line where they declined it since it last changed. */
-  work: { job: string; name: string; level: number; word: string; declined?: number }[];
+  work: {
+    job: string;
+    name: string;
+    /** The skill the work uses, if any, for the sheet to show beside it. */
+    skill?: string;
+    level: number;
+    word: string;
+    declined?: number;
+  }[];
 }
 
 export type FromWorker =

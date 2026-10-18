@@ -6,12 +6,14 @@ import type { ClockView, Speed, TimingView, WeatherView } from '../worker/index.
 import { el } from './dom.ts';
 
 /** The panels the bar opens. */
-export type PanelButton = 'ledger' | 'stock' | 'saves' | 'region';
+export type PanelButton = 'ledger' | 'work' | 'stock' | 'saves' | 'region';
 
 const SPEED_LABELS: Record<Speed, string> = { 0: '❚❚', 1: '1×', 2: '2×', 3: '3×' };
 
 export interface HudActions {
   setSpeed(speed: Speed): void;
+  /** Skip ahead to the next notable line (P2.7). */
+  skip(): void;
   zoom(direction: 1 | -1): void;
   /** One level down (1) or up (-1). */
   level(direction: 1 | -1): void;
@@ -25,6 +27,17 @@ export interface HudActions {
 export class Hud {
   private readonly clock = el('div', { class: 'clock', 'data-testid': 'clock' });
   private readonly speeds = new Map<Speed, HTMLButtonElement>();
+  /** Skip ahead (P2.7), lit while a skip runs. */
+  private readonly skip = el(
+    'button',
+    {
+      type: 'button',
+      'aria-label': 'Skip ahead',
+      'aria-pressed': 'false',
+      'data-testid': 'speed-skip',
+    },
+    '▸▸',
+  );
   private readonly panels = new Map<PanelButton, HTMLButtonElement>();
   private readonly readout = el('div', { class: 'hud readout', hidden: '' });
   /** fps and tick, for developers only (`?debug` in the URL); the smoke reads its data fields. */
@@ -63,6 +76,8 @@ export class Hud {
       this.speeds.set(speed, button);
       group.append(button);
     }
+    this.skip.addEventListener('click', () => actions.skip());
+    group.append(this.skip);
     // Ledger stays in the bar; the rest fold under ⋯ on a phone (UI_STYLE.md) and sit in the bar on
     // a desktop, where the menu is laid out inline.
     const panels = el('div', { class: 'speeds', role: 'group', 'aria-label': 'Panels' });
@@ -75,6 +90,7 @@ export class Hud {
     more.addEventListener('click', () => this.showMenu(!menu.classList.contains('open')));
     for (const [kind, label] of [
       ['ledger', 'Ledger'],
+      ['work', 'Work'],
       ['stock', 'Stock'],
       ['region', 'Region'],
       ['saves', 'Saves'],
@@ -124,7 +140,14 @@ export class Hud {
     this.showScreen('Waking the valley', 'Making the world and its 250 years of history.');
   }
 
-  showClock(clock: ClockView, tick: number, speed: Speed, at: number, weather?: WeatherView): void {
+  showClock(
+    clock: ClockView,
+    tick: number,
+    speed: Speed,
+    at: number,
+    weather?: WeatherView,
+    skipping = false,
+  ): void {
     const pad = (n: number) => String(n).padStart(2, '0');
     const season = clock.season.charAt(0).toUpperCase() + clock.season.slice(1);
     const sky = weather ? ` · ${weather.words}, ${weather.temperature} °C` : '';
@@ -133,7 +156,9 @@ export class Hud {
       ` · Day ${clock.day} of ${clock.monthName}, Year ${clock.year}`,
     );
     this.clock.append(el('small', {}, `${season}${sky} · ${this.where}`));
-    for (const [s, button] of this.speeds) button.setAttribute('aria-pressed', String(s === speed));
+    for (const [s, button] of this.speeds)
+      button.setAttribute('aria-pressed', String(!skipping && s === speed));
+    this.skip.setAttribute('aria-pressed', String(skipping));
     this.debug.dataset['tick'] = String(tick);
     this.debug.dataset['at'] = String(Math.round(at));
     this.debug.textContent = `${this.fps} fps · tick ${tick}${this.timing}`;
@@ -186,7 +211,7 @@ export class Hud {
     // On a phone a folded panel's button is out of sight, so ⋯ shows it is open.
     this.menu.button.setAttribute(
       'aria-pressed',
-      String(kind === 'stock' || kind === 'region' || kind === 'saves'),
+      String(kind === 'work' || kind === 'stock' || kind === 'region' || kind === 'saves'),
     );
   }
 
