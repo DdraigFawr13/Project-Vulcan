@@ -23,14 +23,18 @@ function loadSheet() {
   return sheet;
 }
 
-/** A canvas showing `p` facing south, `scale` times the frame size; drawn once the sheet loads. */
-export function portrait(p: PersonView, scale = 2): HTMLCanvasElement {
+/** A canvas showing `p` facing south, `scale` times the frame size; drawn once the sheet loads.
+ * `head` crops to the head and shoulders, centred, for the strip's round faces. */
+export function portrait(p: PersonView, scale = 2, head = false): HTMLCanvasElement {
   const canvas = el('canvas', { class: 'portrait', 'aria-hidden': 'true' });
   canvas.width = canvas.height = SIZE;
   canvas.style.width = canvas.style.height = `${SIZE * scale}px`;
   void loadSheet().then((s) => {
-    const g = canvas.getContext('2d');
-    if (!s || !g) return;
+    const out = canvas.getContext('2d');
+    if (!s || !out) return;
+    const whole = head ? document.createElement('canvas') : canvas;
+    whole.width = whole.height = SIZE;
+    const g = head ? whole.getContext('2d')! : out;
     const layer = (name: string, tint?: string) => {
       const f = s.frames[name]?.frame;
       if (!f) return;
@@ -50,6 +54,27 @@ export function portrait(p: PersonView, scale = 2): HTMLCanvasElement {
     layer(`person.${p.race}.s.0`);
     layer(`clothes.${p.race}.s.0`, p.look.clothes);
     if (p.look.hair) layer(`hair.${p.look.hair}.${p.race}.s`, p.look.hairColour);
+    if (head) cropHead(whole, out);
   });
   return canvas;
+}
+
+/** Draws the head and shoulders of the figure on `whole` into `out`: a square a little wider than
+ * the figure, from just above its top, centred across it. */
+function cropHead(whole: HTMLCanvasElement, out: CanvasRenderingContext2D): void {
+  const data = whole.getContext('2d')!.getImageData(0, 0, SIZE, SIZE).data;
+  let [left, right, top] = [SIZE, -1, SIZE];
+  for (let y = 0; y < SIZE; y++)
+    for (let x = 0; x < SIZE; x++)
+      if (data[(y * SIZE + x) * 4 + 3]! > 0) {
+        left = Math.min(left, x);
+        right = Math.max(right, x);
+        top = Math.min(top, y);
+      }
+  if (right < 0) return;
+  const side = Math.min(SIZE, Math.max(14, right - left + 3));
+  const x = Math.max(0, Math.min(SIZE - side, Math.round((left + right + 1 - side) / 2)));
+  const y = Math.max(0, Math.min(SIZE - side, top - 1));
+  out.imageSmoothingEnabled = false;
+  out.drawImage(whole, x, y, side, side, 0, 0, SIZE, SIZE);
 }

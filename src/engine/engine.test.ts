@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { content } from '../content/index';
 import {
   allLines,
+  applyDue,
   calendarSystem,
   chunkTiles,
   createSim,
@@ -208,6 +209,23 @@ describe('engine', () => {
     expect(() => submitCommand(world, { tick: Number.NaN, kind: 'test.mark' })).toThrow(
       'whole minutes',
     );
+  });
+
+  it('applies a lever at once while paused, as its tick would have', () => {
+    const run = (paused: boolean) => {
+      const world = createWorld(sim, 'hollow-oak');
+      step(world, sim, 3000);
+      submitCommand(world, { tick: world.tick + 1, kind: 'test.mark', data: { place: 'ford' } });
+      const now = paused ? applyDue(world, sim) : [];
+      step(world, sim, 600);
+      return { world, now };
+    };
+    const { world, now } = run(true);
+    expect(now.map((e) => [e.type, e.tick])).toEqual([
+      ['command.applied', START_TICK + 3001],
+      ['test.marked', START_TICK + 3001],
+    ]);
+    expect(world).toEqual(run(false).world);
   });
 
   it('refuses an event type with no template, or a template slot left empty', () => {

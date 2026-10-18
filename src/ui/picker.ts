@@ -152,7 +152,13 @@ export class Picker {
       { type: 'button', class: on ? 'settle' : 'ghost' },
       on ? 'Settle here' : 'Look',
     );
-    button.addEventListener('click', () => (on ? this.actions.settle(id) : this.select(id)));
+    button.addEventListener('click', () => {
+      if (!on) return this.select(id);
+      // The valley takes a few seconds to make: say so, and take no second tap.
+      button.textContent = 'Settling…';
+      button.disabled = true;
+      this.actions.settle(id);
+    });
     card.append(
       thumbnail(p),
       head,

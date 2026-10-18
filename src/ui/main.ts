@@ -14,6 +14,7 @@ import {
 import { showArrival } from './arrival.ts';
 import { Hud, type PanelButton } from './hud.ts';
 import { Orders } from './orders.ts';
+import { testModeOn } from './testmode.ts';
 import { Panel } from './panel.ts';
 import { Picker } from './picker.ts';
 import { Saves } from './saves.ts';
@@ -28,8 +29,7 @@ const params = new URLSearchParams(location.search);
 const seed = params.get('seed') ?? 'ledger-1';
 // A seed alone opens the site picker; with `site` it begins that valley (P1.5).
 const site = params.get('site');
-/** `?debug` shows developer readouts: fps, tick, and the inspector's chunk row. */
-const debug = params.has('debug');
+const debug = testModeOn(params); // test tools and developer readouts (testmode.ts)
 const worker = spawnSimWorker();
 const send = (message: ToWorker): void => worker.postMessage(message);
 let speed: Speed = 0;
@@ -212,14 +212,14 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
     } else if (message.type === 'snapshot') {
       waiting = false;
       worldTick = message.tick;
-      orders.snapshot(message.tick, panel.kind === 'tile' ? shown : undefined);
+      orders.snapshot(panel.kind === 'tile' ? shown : undefined);
       reached = message.reached;
       renderer.applyChunks(message.chunks);
       renderer.movePeople(message.walkers);
       // A skip ends paused in the worker; the bar's speed follows it.
       if (skipping && !message.skipping) speed = message.speed;
       skipping = message.skipping;
-      sheets.snapshot(message.walkers, message.day, message.speed === 0 && !skipping);
+      sheets.snapshot(message.walkers, message.day);
       renderer.setGoods(message.goods);
       stock = message.stock;
       panel.setStock(stock);
@@ -258,7 +258,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       // A reply about a level the player has since left is dropped.
       if (message.tile && message.tile.z === level) {
         shown = message.tile;
-        panel.showTile(message.tile, depth, orders.noticeFor(message.tile, speed));
+        panel.showTile(message.tile, depth, orders.noticeFor(message.tile));
         renderer.mark(message.tile);
         hud.showPanel(undefined);
       }

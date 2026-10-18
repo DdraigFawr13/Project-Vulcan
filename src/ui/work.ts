@@ -1,8 +1,8 @@
 // The Work sheet (P2.5): what matters more to each person, and the colony's day. On a phone one
 // person at a time with a 1 to 4 stepper per kind of work; on a desktop the whole band as a grid.
 // Priorities are weighed, not obeyed (V-015): a person may decline, and the sheet shows the line
-// that says why. A change is a lever for the next tick; while paused it says it waits for time to
-// run, so a tap always answers on screen. Everything shown comes from the snapshot (GAME-02).
+// that says why. A change is a lever for the next tick, applied at once while paused, and shown
+// as sent until the snapshot carries it. Everything shown comes from the snapshot (GAME-02).
 import type { PersonView, WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
@@ -31,7 +31,7 @@ const first = (p: PersonView) => p.name.split(' ')[0]!;
 export class WorkSheet {
   /** The person shown on a phone, by index into the band. */
   private index = 0;
-  /** Levers sent and not yet seen in a snapshot, so the sheet can say they wait. */
+  /** Levers sent and not yet seen in a snapshot, shown as sent meanwhile. */
   private readonly pending = new Map<string, number>();
   private pendingDay: Day | undefined;
   private readonly actions: WorkActions;
@@ -48,47 +48,34 @@ export class WorkSheet {
   }
 
   /** A key for what the sheet shows, so it is redrawn only when that changes. */
-  key(walkers: readonly WalkerView[], day: Day, paused: boolean): string {
+  key(walkers: readonly WalkerView[], day: Day): string {
     this.settle(walkers, day);
     const work = walkers.map((w) => [w.work, w.skills.map((s) => s.level)]);
-    return JSON.stringify([
-      this.index,
-      work,
-      day,
-      paused,
-      [...this.pending],
-      this.pendingDay,
-      wide(),
-    ]);
+    return JSON.stringify([this.index, work, day, [...this.pending], this.pendingDay, wide()]);
   }
 
   /** The whole sheet: the band's priorities and the colony's day. */
-  rows(
-    people: readonly PersonView[],
-    walkers: readonly WalkerView[],
-    day: Day,
-    paused: boolean,
-  ): HTMLElement[] {
+  rows(people: readonly PersonView[], walkers: readonly WalkerView[], day: Day): HTMLElement[] {
     return [
-      ...(wide() ? this.grid(people, walkers, paused) : this.one(people, walkers, paused)),
+      ...(wide() ? this.grid(people, walkers) : this.one(people, walkers)),
       el('p', { class: 'aside' }, 'Other kinds of work join this list when the band can do them.'),
-      ...this.dayRows(day, paused),
+      ...this.dayRows(day),
     ];
   }
 
   /** One person's priorities, for the Work tab of their sheet. */
-  personRows(p: PersonView, w: WalkerView | undefined, paused: boolean): HTMLElement[] {
+  personRows(p: PersonView, w: WalkerView | undefined): HTMLElement[] {
     return [
       el(
         'p',
         { class: 'aside' },
         `What matters most to ${first(p)} when there is work to do. ${first(p)} still chooses, and may decline.`,
       ),
-      ...(w?.work ?? []).map((job) => this.jobRow(p, w!, job, paused)),
+      ...(w?.work ?? []).map((job) => this.jobRow(p, w!, job)),
     ];
   }
 
-  private one(people: readonly PersonView[], walkers: readonly WalkerView[], paused: boolean) {
+  private one(people: readonly PersonView[], walkers: readonly WalkerView[]) {
     const p = people[Math.min(this.index, people.length - 1)];
     if (!p) return [el('p', {}, 'No one has arrived yet.')];
     const step = (by: 1 | -1) => {
@@ -118,12 +105,11 @@ export class WorkSheet {
       ...this.personRows(
         p,
         walkers.find((x) => x.id === p.id),
-        paused,
       ),
     ];
   }
 
-  private jobRow(p: PersonView, w: WalkerView, job: Job, paused: boolean): HTMLElement {
+  private jobRow(p: PersonView, w: WalkerView, job: Job): HTMLElement {
     const key = `${p.id}:${job.job}`;
     const want = this.pending.get(key) ?? job.level;
     const skill = w.skills.find((s) => s.id === job.skill);
@@ -139,9 +125,7 @@ export class WorkSheet {
         this.priority(p, job, level),
       ),
     );
-    if (this.pending.has(key) && paused)
-      row.append(el('span', { class: 'note' }, 'Waits for time to run.'));
-    else if (job.declined) this.declined(row, p, job);
+    if (job.declined && !this.pending.has(key)) this.declined(row, p, job);
     return row;
   }
 
@@ -162,7 +146,7 @@ export class WorkSheet {
   }
 
   /** The desktop grid: a person per row, a kind of work per column; a cell cycles 1 to 4. */
-  private grid(people: readonly PersonView[], walkers: readonly WalkerView[], paused: boolean) {
+  private grid(people: readonly PersonView[], walkers: readonly WalkerView[]) {
     const jobs = walkers[0]?.work ?? [];
     const table = el('table', { class: 'grid' });
     const head = el('tr', {}, el('th', {}, ''));
@@ -190,12 +174,10 @@ export class WorkSheet {
       }
       table.append(tr);
     }
-    const waits =
-      paused && this.pending.size ? [el('p', { class: 'note' }, 'Waits for time to run.')] : [];
-    return [table, ...waits, ...notes];
+    return [table, ...notes];
   }
 
-  private dayRows(day: Day, paused: boolean): HTMLElement[] {
+  private dayRows(day: Day): HTMLElement[] {
     const d = this.pendingDay ?? day;
     const label = `Work ${hh(d.workFrom)} to ${hh(d.workTo)}, bed at ${hh(d.sleepFrom)}`;
     const strip = el('div', { class: 'day', role: 'img', 'aria-label': label });
@@ -251,7 +233,6 @@ export class WorkSheet {
       row('Work starts', 'workFrom'),
       row('Work ends', 'workTo'),
       row('Bed at', 'sleepFrom'),
-      ...(this.pendingDay && paused ? [el('p', { class: 'note' }, 'Waits for time to run.')] : []),
     ];
   }
 

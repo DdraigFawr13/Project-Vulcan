@@ -2,6 +2,7 @@
 // the page. The only place the engine is instantiated (MODULE.md).
 import { content, contentHash } from '../content/index.ts';
 import {
+  applyDue,
   chunksAcross,
   chunksDown,
   chunkTiles,
@@ -246,6 +247,12 @@ function handle(message: ToWorker): void {
     case 'command':
       if (!world) throw new Error('A command arrived before the world began.');
       submitCommand(world, message);
+      // Paused, a lever takes effect at once (stamped for the next tick, as it would apply), and
+      // the page sees it now rather than once time runs.
+      if (pace.speed === 0 && !pace.skip) {
+        unposted.push(...applyDue(world, sim));
+        snapshot(world);
+      }
       return;
     // The rest only read the world, between ticks; with no world (stopped) they go unanswered.
     case 'save':

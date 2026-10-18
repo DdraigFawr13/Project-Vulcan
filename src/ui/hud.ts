@@ -61,8 +61,14 @@ export class Hud {
   /** Frames per second the renderer measured, shown on the debug line. */
   fps = 0;
 
+  /** Test mode is on: the bar says so beside the clock. */
+  private readonly testMode: boolean;
+
   constructor(root: HTMLElement, actions: HudActions, debug = false) {
     const bar = this.bar;
+    this.testMode = debug;
+    // iOS Safari applies :active (the pressed plate) only when the page listens for touches.
+    document.addEventListener('touchstart', () => {}, { passive: true });
     this.debug.hidden = !debug;
     const group = el('div', { class: 'speeds', role: 'group', 'aria-label': 'Speed' });
     for (const speed of [0, 1, 2, 3] as const) {
@@ -155,6 +161,10 @@ export class Hud {
       el('span', { class: 'time' }, `${pad(clock.hour)}:${pad(clock.minute)}`),
       ` · Day ${clock.day} of ${clock.monthName}, Year ${clock.year}`,
     );
+    if (this.testMode)
+      this.clock.append(
+        el('span', { class: 'testbadge', 'data-testid': 'test-badge' }, 'TEST MODE'),
+      );
     this.clock.append(el('small', {}, `${season}${sky} · ${this.where}`));
     for (const [s, button] of this.speeds)
       button.setAttribute('aria-pressed', String(!skipping && s === speed));

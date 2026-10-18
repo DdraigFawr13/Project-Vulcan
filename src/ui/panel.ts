@@ -6,6 +6,7 @@ import type { ClockView, LedgerLine, RegionView, StockView, TileView } from '../
 import { el } from './dom.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 import { fillStock, stockRows } from './stock.ts';
+import { testMode } from './testmode.ts';
 import { testTools, type TestOrder } from './testtools.ts';
 
 export type PanelKind =
@@ -21,7 +22,7 @@ export interface PanelActions {
   load(meta: SaveMeta): void;
   remove(meta: SaveMeta): void;
   newGame(seed: string): void;
-  /** A test tool (`?debug`) on the tile shown: dig, mark a tree, add a store tile. */
+  /** A test tool (test mode) on the tile shown: dig, mark a tree, add a store tile. */
   test(tile: TileView, kind: TestOrder, to?: number): void;
   /** The Stock lever: how much of `good` the colony keeps. */
   setStock(good: string, level: string): void;
@@ -39,7 +40,7 @@ export class Panel {
   private readonly title = el('h2');
   private readonly body = el('div', { class: 'panel-body' });
   private readonly actions: PanelActions;
-  /** Shows developer rows (the tile's chunk and version); `?debug` in the URL. */
+  /** Test mode: the test tools and developer rows (the tile's chunk and version). */
   private readonly debug: boolean;
   /** The Stock sheet's last view, so it is redrawn only when it changes. */
   private stock = '';
@@ -234,7 +235,26 @@ export class Panel {
       e.preventDefault();
       if (input.value.trim()) this.actions.newGame(input.value.trim());
     });
-    this.body.replaceChildren(now, form);
+    // Test mode is a switch you can find on a phone (Morgan's playtest), off by default.
+    const test = el('div', { class: 'row' });
+    test.append(
+      el(
+        'button',
+        {
+          type: 'button',
+          'data-act': 'testmode',
+          'data-testid': 'test-switch',
+          'aria-pressed': String(this.debug),
+        },
+        this.debug ? 'Test mode: on' : 'Test mode: off',
+      ),
+    );
+    const about = el(
+      'p',
+      { class: 'aside' },
+      'Direct tools for trying things out: dig down, mark a tree, add a store tile. Your colonists choose their own work in the normal game.',
+    );
+    this.body.replaceChildren(now, form, el('h3', {}, 'Test mode'), about, test);
     if (problem) this.body.append(el('p', { class: 'problem', role: 'alert' }, problem));
     if (!saves.length) this.body.append(el('p', { class: 'muted' }, 'No saves yet.'));
     for (const meta of saves) {
@@ -265,6 +285,9 @@ export class Panel {
   }
 
   private open(kind: PanelKind, title: string): void {
+    // A new sheet starts at its top; one redrawn in place keeps its place.
+    if (this.root.hidden || this.shown !== kind || this.title.textContent !== title)
+      this.root.scrollTop = 0;
     this.shown = kind;
     this.title.textContent = title;
     this.root.hidden = false;
@@ -298,5 +321,6 @@ export class Panel {
       else this.actions.why(Number(why));
     } else if (target.dataset['act'] === 'save') this.actions.save();
     else if (target.dataset['act'] === 'export') this.actions.exportLedger();
+    else if (target.dataset['act'] === 'testmode') testMode(!this.debug);
   }
 }

@@ -13,7 +13,7 @@ import { createSim as createSimWith, type Sim, type System } from './sim/index.t
 export * from './core/index.ts';
 export * from './log/index.ts';
 export * from './entity/index.ts';
-export { createWorld, replay, step, submitCommand } from './sim/index.ts';
+export { applyDue, createWorld, replay, step, submitCommand } from './sim/index.ts';
 export type { Cadence, Sim, System, SystemContext } from './sim/index.ts';
 export { calendarSystem } from './calendar/index.ts';
 export {
