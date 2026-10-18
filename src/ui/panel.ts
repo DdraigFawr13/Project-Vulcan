@@ -19,6 +19,8 @@ export interface PanelActions {
   newGame(seed: string): void;
   /** The test levers: stairs down, or a shaft down to level `to`, from the tile shown. */
   dig(tile: TileView, kind: 'cutStairs' | 'sinkShaft', to?: number): void;
+  /** Follows the tile's stairs or shaft to level `z` and inspects the same spot there. */
+  go(tile: TileView, z: number): void;
   close(): void;
 }
 
@@ -57,7 +59,9 @@ export class Panel {
   }
 
   /** The tile inspector; `depth` levels lie below the surface. */
-  showTile(tile: TileView, depth: number): void {
+  /** The tile's record, its ways up and down, and the test levers. `notice` is what became of the
+   * last dig order here: a line saying it waits for time to run, or the ledger line refusing it. */
+  showTile(tile: TileView, depth: number, notice?: string | LedgerLine): void {
     const where = tile.z === 0 ? '' : ` · ${tile.z} level${tile.z > 1 ? 's' : ''} down`;
     this.open('tile', `Tile ${tile.x}, ${tile.y}${where}`);
     const facts = el('dl', { class: 'kv' });
@@ -80,7 +84,22 @@ export class Panel {
     ])
       facts.append(el('dt', {}, key), el('dd', {}, value));
     this.body.replaceChildren(facts);
-    if (tile.z < depth) {
+    if (tile.ways) {
+      const go = el('div', { class: 'row' });
+      if (tile.ways.down) {
+        const down = el('button', { type: 'button', class: 'solid' }, `Go down to −${tile.z + 1}`);
+        down.addEventListener('click', () => this.actions.go(tile, tile.z + 1));
+        go.append(down);
+      }
+      if (tile.ways.up) {
+        const label = tile.z === 1 ? 'Go up to the surface' : `Go up to −${tile.z - 1}`;
+        const up = el('button', { type: 'button', class: 'solid' }, label);
+        up.addEventListener('click', () => this.actions.go(tile, tile.z - 1));
+        go.append(up);
+      }
+      this.body.append(go);
+    }
+    if (tile.z < depth && !tile.ways?.down) {
       const acts = el('div', { class: 'row' });
       const stairs = el('button', { type: 'button' }, 'Cut stairs down');
       stairs.addEventListener('click', () => this.actions.dig(tile, 'cutStairs'));
@@ -96,6 +115,8 @@ export class Panel {
         ),
       );
     }
+    if (typeof notice === 'string') this.body.append(el('p', { class: 'note' }, notice));
+    else if (notice) this.body.append(this.line(notice, 'Not dug · '));
     if (tile.changedBy) this.body.append(this.line(tile.changedBy, 'Last changed · '));
     else this.body.append(el('p', { class: 'muted' }, 'The line that last changed it is gone.'));
   }
