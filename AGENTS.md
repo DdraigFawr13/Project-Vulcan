@@ -11,7 +11,7 @@ Shared rules come from AI-Master-Instructions through CLAUDE.md (`.claude/master
 3. The current `docs/phases/PHASE_N.md`: its Status section and the reading list of your milestone.
 4. [docs/LESSONS.md](docs/LESSONS.md) entries for your area.
 
-Open [docs/RULES.md](docs/RULES.md), [docs/DECISIONS.md](docs/DECISIONS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/TOOLKIT.md](docs/TOOLKIT.md) and [docs/ART.md](docs/ART.md) only at the section you need.
+Open [docs/RULES.md](docs/RULES.md), [docs/DECISIONS.md](docs/DECISIONS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/TOOLKIT.md](docs/TOOLKIT.md) and [docs/ART.md](docs/ART.md) only at the section you need. Any screen work reads [docs/UI_STYLE.md](docs/UI_STYLE.md) first.
 
 ## Local checks (run before pushing)
 
