@@ -2,6 +2,7 @@
 // handles. A system keeps its saved state in world.systems[id] as plain numbers.
 import { streamFor } from '../core/index.ts';
 import type { Command, EngineContent, RngStream, StreamName, WorldState } from '../core/index.ts';
+import type { Schemas } from '../entity/index.ts';
 import { emit, type EventFields } from '../log/index.ts';
 import type { Sim } from './world.ts';
 
@@ -24,6 +25,10 @@ export interface System {
   /** Every event type it may emit; `createSim` checks each has a template before a tick runs. */
   emits?: readonly string[];
   initialState?: Readonly<Record<string, number>>;
+  /** Keys of its state that hold ledger ids, so the seal keeps those lines as stubs. */
+  refs?: readonly string[];
+  /** The entity tables it owns, by kind, with their fields (`src/engine/entity/MODULE.md`). */
+  tables?: Schemas;
   /** Runs once when a world is created from a seed, after `world.begun`, in list order; never
    * when a world is loaded from a save, which already holds what it laid out. */
   init?(ctx: SystemContext): void;

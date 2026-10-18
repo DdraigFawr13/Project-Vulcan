@@ -1,6 +1,7 @@
 // The world record and the simulation it runs under: content, templates and the system list.
 import { START_TICK, type EngineContent, type WorldState } from '../core/index.ts';
-import { emit, templatesOf, type Templates } from '../log/index.ts';
+import type { Schemas, TableSchema } from '../entity/index.ts';
+import { emit, RECENT_DAYS, templatesOf, type Templates } from '../log/index.ts';
 import { contextFor, type System } from './system.ts';
 
 /** Everything a world runs under that is not saved state: content and code. */
@@ -9,14 +10,28 @@ export interface Sim {
   templates: Templates;
   /** Run in this order every tick they are due (docs/ARCHITECTURE.md "Tick"). */
   systems: readonly System[];
+  /** Every entity kind's fields, from the systems that own them. */
+  tables: Schemas;
+  /** Game days of lines kept in full (`RECENT_DAYS`); tests vary it to show it changes nothing. */
+  recentDays: number;
 }
 
-export function createSim(content: EngineContent, systems: readonly System[]): Sim {
+export function createSim(
+  content: EngineContent,
+  systems: readonly System[],
+  recentDays = RECENT_DAYS,
+): Sim {
   const ids = new Set<string>();
   const kinds = new Set<string>();
+  const tables: Record<string, TableSchema> = {};
   for (const system of systems) {
     if (ids.has(system.id)) throw new Error(`System "${system.id}" is listed twice.`);
     ids.add(system.id);
+    for (const [kind, schema] of Object.entries(system.tables ?? {})) {
+      if (Object.hasOwn(tables, kind)) throw new Error(`Entity kind "${kind}" has two owners.`);
+      if (Object.hasOwn(schema, 'id')) throw new Error(`Entity kind "${kind}" declares an id.`);
+      tables[kind] = schema;
+    }
     for (const kind of Object.keys(system.commands ?? {})) {
       // Object.keys lists own keys only, so an inherited name such as "constructor" never counts.
       if (kinds.has(kind)) throw new Error(`Command "${kind}" has two handlers.`);
@@ -29,7 +44,7 @@ export function createSim(content: EngineContent, systems: readonly System[]): S
     (t) => !templates.has(t),
   );
   if (missing.length) throw new Error(`No template in content events for: ${missing.join(', ')}.`);
-  return { content, templates, systems };
+  return { content, templates, systems, tables, recentDays };
 }
 
 /** A new world at 06:00 on day 1, its first ledger line already written. */
@@ -43,6 +58,11 @@ export function createWorld(sim: Sim, seed: string): WorldState {
     commandLog: [],
     pending: [],
     log: [],
+    stubs: [],
+    segments: [],
+    sealed: [],
+    entities: {},
+    nextEntityId: 1,
     begunEvent: 0,
     systems: {},
     map: {

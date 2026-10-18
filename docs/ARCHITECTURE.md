@@ -32,7 +32,7 @@ Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at ful
 
 ## Event log
 
-`{id, tick, type, actors[], subjects[], causes[], data}`; `emit` refuses a type without a content template. Append-only in the worker, streamed to the main thread, exported as NDJSON. From P2.0: moves and routine ticks are not events; the log is kept in day segments with a stub for any event still cited, so "why?" ends at "older record" rather than a gap (budget: about 30 colonists over ten years, V-027). Legends, storyteller, gossip, memory ledgers and the inspector all read this one log.
+`{id, tick, type, actors[], subjects[], causes[], data}`; `emit` refuses a type without a content template. Append-only in the worker, streamed to the main thread, exported as NDJSON. As built in P2.0 (DECISIONS V-036): moves and routine ticks are not events; the world keeps its last `RECENT_DAYS` (7) game days of lines in `log`; at each midnight older days are sealed into `sealed` (NDJSON, keyed by seed, id range and digest, so no two histories share a key) and listed in `segments`, and older lines still cited by tiles, systems' `refs` or entity `event` fields stay in `stubs`, so "why?" ends at "older record" rather than a gap (budget: about 30 colonists over ten years, V-027). Entities live in `entities[kind]` rows with one `nextEntityId`, their fields declared by the owning system's `tables`. Legends, storyteller, gossip, memory ledgers and the inspector all read this one log.
 
 ## Save
 

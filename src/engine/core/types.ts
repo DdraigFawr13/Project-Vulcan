@@ -36,6 +36,36 @@ export interface SimEvent {
   data: EventData;
 }
 
+/** An older line the world still points at, kept after its day was sealed (ARCHITECTURE "Event
+ * log"): enough for "why?" to end at "older record" with its date. The whole line is in the
+ * day's segment. */
+export interface Stub {
+  id: number;
+  tick: number;
+  type: string;
+}
+
+/** A sealed day of the ledger, handed to the worker to archive. */
+export interface SegmentRef {
+  /** The game day its lines belong to, counted from 0 at tick 0. */
+  day: number;
+  /** Unique to these lines in this world: the seed, the id range and a digest of the lines. */
+  key: string;
+  first: number;
+  last: number;
+}
+
+/** A sealed day with its lines as NDJSON, oldest first: the export format. */
+export interface Segment extends SegmentRef {
+  text: string;
+}
+
+/** One row of an entity table: its id and the fields its table declares (plain values only). */
+export interface EntityRow {
+  id: number;
+  [field: string]: number | string | number[];
+}
+
 /** A player lever, stamped with the tick it applies on. `asked` is the tick it was sent for. */
 export interface Command {
   tick: number;
@@ -56,8 +86,18 @@ export interface WorldState {
   commandLog: Command[];
   /** Commands not yet applied, sorted by tick then seq. */
   pending: Command[];
-  /** The ledger, oldest first. */
+  /** The ledger's recent days in full, oldest first; older days are sealed into segments. */
   log: SimEvent[];
+  /** Older lines still cited by the world, by rising id (sealed days keep no other trace here). */
+  stubs: Stub[];
+  /** The sealed days, oldest first, as archive keys: the save names its archive, never holds it. */
+  segments: SegmentRef[];
+  /** Days sealed since the worker last took them; empty between the worker's runs. */
+  sealed: Segment[];
+  /** Entity tables by kind, each row's id rising (DECISIONS V-027). */
+  entities: Record<string, EntityRow[]>;
+  /** The next entity id, shared by every kind, so an actor or subject id names one thing. */
+  nextEntityId: number;
   /** The `world.begun` event, the root cause of the calendar's lines. */
   begunEvent: number;
   /** State owned by systems, by system id. Plain data only. */

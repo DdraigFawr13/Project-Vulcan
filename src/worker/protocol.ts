@@ -90,6 +90,8 @@ export interface LedgerLine {
   /** Whether "why?" has more to say than "the world began": false for world-generation lines. */
   why: boolean;
   clock: ClockView;
+  /** An older line whose day is sealed: the "why?" chain and the tile's last change end here. */
+  older?: true;
 }
 
 /** One tile as the inspector shows it. */
@@ -126,7 +128,7 @@ export interface TileView {
   chunkY: number;
   /** The chunk's version: how many times a tile in it has been changed, plus one. */
   version: number;
-  /** The line that last changed the tile; absent if it was trimmed from the ledger. */
+  /** The line that last changed the tile, or its older record once its day is sealed. */
   changedBy?: LedgerLine;
 }
 

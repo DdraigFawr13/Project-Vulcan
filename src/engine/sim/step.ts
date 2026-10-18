@@ -2,7 +2,8 @@
 // systems that are due, in list order.
 import { ticksPerMonth, TICKS_PER_DAY, TICKS_PER_HOUR } from '../core/index.ts';
 import type { Command, EventData, WorldState } from '../core/index.ts';
-import { emit } from '../log/index.ts';
+import { citedByEntities } from '../entity/index.ts';
+import { emit, sealDays } from '../log/index.ts';
 import { contextFor, type Cadence } from './system.ts';
 import { createWorld, type Sim } from './world.ts';
 
@@ -56,18 +57,56 @@ function applyCommand(world: WorldState, sim: Sim, command: Command): void {
   system.commands![command.kind]!(contextFor(world, sim, system), command, cause);
 }
 
-/** Advances the world by `ticks` game minutes. Returns the events written, oldest first; they are
- * the ledger's own records, so treat them as read-only. */
-export function step(world: WorldState, sim: Sim, ticks = 1): WorldState['log'] {
-  const from = world.log.length;
+/** Every ledger id the world points at outside the log: tiles' last changes, systems' state refs
+ * and entity fields. What the seal keeps as stubs. */
+function cited(world: WorldState, sim: Sim): Set<number> {
+  const ids = new Set<number>();
+  const { map } = world;
+  for (const layer of [map, ...map.levels])
+    if (layer) for (const id of layer.tileCauses) ids.add(id);
+  for (const system of sim.systems)
+    for (const key of system.refs ?? []) {
+      const id = world.systems[system.id]?.[key];
+      if (id) ids.add(id);
+    }
+  citedByEntities(world, sim.tables, ids);
+  return ids;
+}
+
+// Whether a line from id `from` on has one of the `types`, looking back from the newest.
+function wrote(log: WorldState['log'], from: number, types: ReadonlySet<string>): boolean {
+  for (let k = log.length - 1; k >= 0 && log[k]!.id >= from; k -= 1)
+    if (types.has(log[k]!.type)) return true;
+  return false;
+}
+
+/**
+ * Advances the world by `ticks` game minutes, sealing old days at each midnight. With `stopAt`,
+ * stops after the first tick that writes a line of one of those types (P2.7's skip ahead). Returns
+ * the lines written that are still recent, oldest first; they are the ledger's own records, so
+ * treat them as read-only.
+ */
+export function step(
+  world: WorldState,
+  sim: Sim,
+  ticks = 1,
+  stopAt?: ReadonlySet<string>,
+): WorldState['log'] {
+  const fromId = world.nextEventId;
   for (let i = 0; i < ticks; i += 1) {
+    const before = world.nextEventId;
     world.tick += 1;
     while (world.pending[0] && world.pending[0].tick <= world.tick)
       applyCommand(world, sim, world.pending.shift()!);
     for (const system of sim.systems)
       if (system.run && due(system.every, world.tick, sim))
         system.run(contextFor(world, sim, system));
+    if (world.tick % TICKS_PER_DAY === 0) sealDays(world, cited(world, sim), sim.recentDays);
+    if (stopAt && wrote(world.log, before, stopAt)) break;
   }
+  // Lines written this call that are still recent: a run over a week returns the last week.
+  let from = world.log.length;
+  while (from > 0 && world.log[from - 1]!.id >= fromId) from -= 1;
   return world.log.slice(from);
 }
 
