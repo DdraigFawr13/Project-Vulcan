@@ -1,20 +1,22 @@
-// The page entry: starts the simulation worker and the renderer, asks the worker for a snapshot
-// once per screen frame (at most one request in flight), routes the player's keys, and wires
-// the panels: inspector, ledger, saves and export.
+// The page entry: starts the worker and the renderer, asks for a snapshot once per screen frame
+// (one request in flight), routes keys, and wires the title, arrival screen and panels.
 import { contentHash } from '../content/index.ts';
 import { startRenderer } from '../render/index.ts';
 import {
   spawnSimWorker,
   type FromWorker,
   type LedgerLine,
+  type PersonView,
   type Speed,
   type TileView,
   type ToWorker,
 } from '../worker/index.ts';
+import { showArrival } from './arrival.ts';
 import { Hud } from './hud.ts';
 import { Panel } from './panel.ts';
 import { Picker } from './picker.ts';
 import { Saves } from './saves.ts';
+import { OLD_SAVE, Title } from './title.ts';
 
 const parent = document.getElementById('game');
 const hudRoot = document.getElementById('hud');
@@ -60,6 +62,15 @@ let shown: TileView | undefined;
 const PAUSED_NOTE = 'Paused: this is dug on the next game minute once time runs (1×, 2× or 3×).';
 /** The starting or loading screen is up until the next snapshot; other screens wait for a click. */
 let covering = true;
+/** The running world's valley and people, and whether the band has just arrived (P2.1). */
+let place = '';
+let people: readonly PersonView[] = [];
+let arriving = false;
+/** The title screen while it is up (P2.1), waiting for a loaded save's first snapshot. */
+let title: Title | undefined;
+let titleWaits = false;
+/** The title or the arrival screen covers the game: its bar and keys are hidden until closed. */
+const cover = (on: boolean): void => void hudRoot.classList.toggle('covered', on);
 
 const setSpeed = (next: Speed): void => {
   // Until a world is ready, or while a save loads, the worker resets the speed itself.
@@ -71,7 +82,13 @@ const setSpeed = (next: Speed): void => {
 
 const renderer = startRenderer(parent, {
   onHover: (tile) => hud.showTile(tile),
-  onSelect: (tile) => send({ type: 'inspect', ...tile, z: level }),
+  onSelect: (tile) => {
+    const person = renderer.personAt(tile.x, tile.y);
+    if (!person) return send({ type: 'inspect', ...tile, z: level });
+    panel.showPerson(person);
+    renderer.mark(tile);
+    hud.showPanel(undefined);
+  },
 });
 hudRoot.replaceChildren();
 const hud = new Hud(
@@ -185,6 +202,10 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       level = 0;
       order = undefined;
       hud.showLevel(0, depth, true);
+      place = message.place;
+      people = message.people;
+      arriving = message.from === 'seed' && message.fresh && people.length > 0;
+      renderer.setPeople(people);
       // A loaded world starts paused, like a new one.
       speed = 0;
       if (message.from === 'save') {
@@ -211,6 +232,16 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       if (debug) hud.showTiming(message.timing);
       hud.showClock(message.clock, message.tick, message.speed, message.at, message.weather);
       saves.seen(message.tick);
+      const date = `Day ${message.clock.day} of ${message.clock.monthName}, Year ${message.clock.year}`;
+      if (title && titleWaits) {
+        titleWaits = false;
+        title.ready(place, date);
+      }
+      if (arriving) {
+        arriving = false;
+        cover(true);
+        showArrival(hudRoot, place, date, people, () => cover(false));
+      }
       if (covering && !saves.loading) {
         hud.hideScreen();
         covering = false;
@@ -244,9 +275,12 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
     } else if (message.type === 'causes') {
       panel.showCauses(message.id, message.lines);
     } else if (message.type === 'loadRefused' && !ready) {
-      // The save to continue from no longer loads (another version): begin afresh instead.
+      // The save to continue from no longer loads (another version): the title offers New game
+      // alone and says why; a reloaded valley begins afresh instead.
       saves.loading = false;
-      begin();
+      titleWaits = false;
+      if (title) title.empty(OLD_SAVE);
+      else begin();
     } else if (message.type === 'error') {
       fail(message.message);
       // The last good copy goes to the rescue slot; the screen then says which day it keeps.
@@ -282,6 +316,7 @@ function stop(): void {
 }
 
 function onKey(e: KeyboardEvent): void {
+  if (hudRoot!.classList.contains('covered')) return; // the title or arrival screen is up
   // Leave the browser's own shortcuts (zoom, tab switching) alone.
   if (e.ctrlKey || e.metaKey || e.altKey || (e.repeat && e.key === ' ')) return;
   // Typing a seed in the save panel is not a game key.
@@ -334,17 +369,31 @@ function begin(): void {
   send({ type: 'init', seed: site ? `${seed}/${site}` : seed, contentHash });
 }
 
-// Opening the bare link, or reloading a settled valley, continues the newest save of it; a seed on
-// its own (New game, New seed) opens the picker afresh. The title screen's Continue comes in P2.1.
+// Opening the bare link shows the title (P2.1): the newest save loads behind it, dimmed, and
+// Continue lifts the title; New game opens the region map. Reloading a settled valley continues
+// its newest save at once; a seed on its own (New game, New seed) opens the picker afresh.
+if (!params.has('seed')) {
+  cover(true);
+  title = new Title(hudRoot, {
+    continue: () => {
+      title?.hide();
+      title = undefined;
+      cover(false);
+    },
+    newGame: () => roll(seed),
+  });
+}
 if (!params.has('seed') || site) {
   void saves.latest(site ? `${seed}/${site}` : undefined).then((save) => {
-    if (!save) return begin();
+    if (!save) return title ? title.empty() : begin();
     const at = /^(.+)\/([1-9])$/.exec(save.seed);
     const keep = debug ? '&debug' : '';
     if (at)
       history.replaceState(null, '', `?seed=${encodeURIComponent(at[1]!)}&site=${at[2]}${keep}`);
     saves.loading = true;
-    hud.showScreen('Continuing', `${save.seed}, where it was last saved.`);
+    titleWaits = !!title;
+    if (title) title.loading();
+    else hud.showScreen('Continuing', `${save.seed}, where it was last saved.`);
     send({ type: 'load', save });
   });
 } else begin();

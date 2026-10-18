@@ -5,7 +5,7 @@ Goal: people who act on their own. Entry: Phase 1 done and signed off by Morgan 
 ## Status
 
 - [x] P2.0 Engine groundwork (merged 2026-10-18 in two PRs: engine #18, archive and worker in the second). `npm run budget`, ten years at 30 people (measured, about 16 s): 1.52 M lines written; 3,189 recent lines and 3,037 stubs held; ledger in memory 0.66 MB (budget 2); save 1.68 MB (4); standby clone 17 ms median (25); archive 16.6 MB gzipped (40); midnight tick 2.7 ms mean (5)
-- [ ] P2.1 Title screen, the band and their arrival
+- [x] P2.1 Title screen, the band and their arrival (merged 2026-10-18 in two PRs: engine #21, screens in the second). Ten seeds give ten distinct bands, each able to build and cook (`people.test.ts`)
 - [ ] P2.2 Needs and basic mood (P2.2 to P2.4 run as one bundle in one thread, VR-61)
 - [ ] P2.3 Pathfinding across levels
 - [ ] P2.4 Jobs, hauling, items and stockpiles

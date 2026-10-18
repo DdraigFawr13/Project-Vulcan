@@ -11,6 +11,7 @@ import {
   makeRegion,
   renderEvent,
   siteOf,
+  START_TICK,
   step,
   valleyOf,
   submitCommand,
@@ -26,6 +27,7 @@ import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type { ChunkView, FromWorker, LedgerLine, ToWorker } from './protocol.ts';
 import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave, saveOf } from './save.ts';
+import { peopleOf } from './people.ts';
 import { clockView, tileView, weatherOf } from './views.ts';
 
 /** How often the worker wakes (ms). Timing comes from the clock, not from this interval. */
@@ -120,7 +122,7 @@ function snapshot(w: WorldState): void {
     {
       type: 'snapshot',
       tick: w.tick,
-      at: performance.now(),
+      at: pace.last,
       speed: pace.speed,
       clock: clockView(w.tick),
       chunks,
@@ -150,6 +152,9 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
     width: w.map.width,
     height: w.map.height,
     depth: w.map.levels.length,
+    place: (w.entities['colony']?.[0]?.['name'] as string | undefined) ?? w.seed,
+    fresh: w.tick === START_TICK,
+    people: peopleOf(w),
   });
 }
 

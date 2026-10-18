@@ -1,11 +1,12 @@
 // The side panel (a bottom sheet on narrow screens): the tile inspector, the ledger and the save
 // list. Shows what the worker and the save store hand it; it computes no game rule (GAME-02).
 import type { SaveMeta } from '../persist/index.ts';
-import type { ClockView, LedgerLine, RegionView, TileView } from '../worker/index.ts';
+import type { ClockView, LedgerLine, PersonView, RegionView, TileView } from '../worker/index.ts';
 import { el } from './dom.ts';
+import { skillRows, whoLine } from './person.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 
-export type PanelKind = 'tile' | 'ledger' | 'saves' | 'region';
+export type PanelKind = 'tile' | 'person' | 'ledger' | 'saves' | 'region';
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;
@@ -155,6 +156,29 @@ export class Panel {
   }
 
   /** A panel with a title and one line of text. */
+  /** A person (P2.1): who they are, every skill with its potential, their traits and the line
+   * that brought them, with "why?". Inspector tabs come in P2.6. */
+  showPerson(p: PersonView): void {
+    this.open('person', p.home ? `${p.name} of ${p.home}` : p.name);
+    const arrived = el('div', { class: 'line prow', 'data-line': String(p.arrived) });
+    const text = el('span', {}, 'Came with the band ');
+    text.append(
+      el('button', { type: 'button', class: 'why', 'data-why': String(p.arrived) }, 'why?'),
+    );
+    arrived.append(text);
+    this.body.replaceChildren(
+      el('p', { class: 'pwho' }, whoLine(p, true)),
+      el('p', {}, `Trade: ${p.trade}`),
+      skillRows(p.skills, true),
+      ...p.traits.map((t) => {
+        const row = el('div', { class: 'prow' });
+        row.append(el('b', {}, t.name), el('span', {}, t.description));
+        return row;
+      }),
+      arrived,
+    );
+  }
+
   showNote(title: string, text: string): void {
     this.open('region', title);
     this.body.replaceChildren(el('p', {}, text));
