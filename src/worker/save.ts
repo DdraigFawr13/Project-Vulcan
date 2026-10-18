@@ -125,6 +125,14 @@ export function checkSave(
     w.biomes.every((b) => b < content.biomes.biomes.length) &&
     w.features.every((f) => f <= content.features.length) &&
     w.built.every((b) => b <= content.buildings.parts.length) &&
+    // Each plan is of a known part, on the map and in a known state (P3.1).
+    (world.entities['plan'] ?? []).every(
+      (r) =>
+        content.buildings.parts.some((p) => p.id === r['part']) &&
+        ['plan', 'built', 'down'].includes(r['state'] as string) &&
+        (r['x'] as number) < w.width &&
+        (r['y'] as number) < w.height,
+    ) &&
     w.water.every((b) => b < WATER.length) &&
     w.rock.every((r) => r <= kinds.length) &&
     // Each aura spot names a school and lies on the map, on the surface or a reached level.

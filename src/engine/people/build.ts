@@ -5,9 +5,17 @@
 // building skill). A part to come down is taken down the same way and its material laid back.
 // A plan whose material cannot be reached says so once, as an alert, until some is brought.
 import type { EngineContent, EntityRow } from '../core/index.ts';
-import { finishPlan, planPart, plansOf, stillNeeded, takeDownPlan } from '../build/index.ts';
-import { inStore, itemsAt, itemsOf, layItem, takeFrom } from '../goods/index.ts';
-import { canReach } from '../paths/index.ts';
+import {
+  finishPlan,
+  planPart,
+  plansOf,
+  refundOf,
+  stillNeeded,
+  takeDownPlan,
+} from '../build/index.ts';
+import { inStore, itemsAt, itemsOf, layItem, storeOf, takeFrom } from '../goods/index.ts';
+import { withBuilt } from '../map/index.ts';
+import { canReach, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
 import { able, outranked, priorityLine } from './priority.ts';
@@ -54,7 +62,13 @@ function choosePlan(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const others = taken(ctx, p);
   const from = spotOf(p);
   const open = plansOf(world)
-    .filter((r) => r['state'] !== 'built' && !others.has(r.id) && r['z'] === from.z)
+    .filter(
+      (r) =>
+        r['state'] !== 'built' &&
+        !others.has(r.id) &&
+        r['z'] === from.z &&
+        world.tick >= (r['held'] as number),
+    )
     .map((r) => {
       const d = Math.max(
         Math.abs((r['x'] as number) - from.x),
@@ -86,15 +100,20 @@ function besideReachable(ctx: SystemContext, p: EntityRow, plan: EntityRow): boo
   });
 }
 
-/** Plans that need material none of which can be reached say so: one line per material while
- * plans wait for it (the other waiting plans name the same line), again only once some has been
- * brought and they run short anew. */
+/** Plans that need material none of which can be reached, and none of which is on its way, say
+ * so: one line per material while plans wait for it (the other waiting plans name the same line),
+ * again only once some has been brought and they run short anew. */
 function sayWaiting(ctx: SystemContext, p: EntityRow): void {
-  const { content } = ctx;
-  const plans = plansOf(ctx.world);
+  const { world, content } = ctx;
+  const plans = plansOf(world);
+  // Material someone carries or has gone for is on its way, so nothing waits for it yet.
+  const fetching = new Set([...busy(world, p, 'haul'), ...busy(world, p, 'build')]);
+  const onItsWay = (kind: string) =>
+    itemsOf(world).some((i) => i['kind'] === kind && (i['holder'] || fetching.has(i.id)));
   for (const r of plans) {
     if (r['waited'] || stillNeeded(content, r) <= 0 || materialFor(ctx, p, r)) continue;
     const part = planPart(content, r);
+    if (onItsWay(part.material)) continue;
     const same = plans.find((o) => o['waited'] && planPart(content, o).material === part.material);
     const good = content.items.find((i) => i.id === part.material)?.name ?? part.material;
     r['waited'] =
@@ -220,6 +239,7 @@ function finish(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
   const part = planPart(content, plan);
   const at = { x: plan['x'] as number, y: plan['y'] as number, z: 0 };
   if (people(world).some((q) => q.id !== p.id && same(spotOf(q), at))) return true;
+  if (part.kind === 'wall' && wouldShut(ctx, p, plan)) return shutOut(ctx, p, plan);
   const line = ctx.emit('build.built', {
     causes: [p['took'] as number],
     actors: [p.id],
@@ -239,12 +259,49 @@ function finish(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
   return true;
 }
 
+/** Whether the wall would cut the builder off from someone, or from a store tile, they can reach
+ * now: a wall closing a ring round people or the store without a door. */
+function wouldShut(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
+  const { world, content } = ctx;
+  const map = world.map;
+  const spots = [
+    ...people(world)
+      .filter((q) => q.id !== p.id)
+      .map(spotOf),
+    ...storeOf(world).map(spotOf),
+  ].filter((s) => s.z === 0);
+  const now = reachFrom(content, map, spotOf(p));
+  const reached = spots.filter(now);
+  if (!reached.length) return false;
+  const part = content.buildings.parts.indexOf(planPart(content, plan)) + 1;
+  return withBuilt(map, plan['x'] as number, plan['y'] as number, part, () => {
+    const after = reachFrom(content, map, spotOf(p));
+    return reached.some((s) => !after(s));
+  });
+}
+
+/** The wall waits: said once a plan, and nobody tries it again for an hour. */
+function shutOut(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
+  if (!plan['shut'])
+    plan['shut'] = ctx.emit('build.shutIn', {
+      causes: [plan['line'] as number],
+      data: {
+        part: planPart(ctx.content, plan).name,
+        x: plan['x'] as number,
+        y: plan['y'] as number,
+      },
+    });
+  plan['held'] = ctx.world.tick + 60;
+  stop(p);
+  return true;
+}
+
 /** The part comes down and its material lies around its tile. */
 function takeDown(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
   const { content } = ctx;
   const part = planPart(content, plan);
   const at = { x: plan['x'] as number, y: plan['y'] as number, z: 0 };
-  const back = (plan['done'] as number) > 0 ? part.cost : (plan['have'] as number);
+  const back = refundOf(content, plan);
   const good = content.items.find((i) => i.id === part.material)?.name ?? part.material;
   const line = ctx.emit('build.takenDown', {
     causes: [p['took'] as number, plan['line'] as number],

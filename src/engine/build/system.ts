@@ -42,7 +42,7 @@ function placeBuilding(ctx: SystemContext, data: Readonly<Record<string, unknown
   const line = ctx.emit('build.planned', { causes: [cause], data: { part: part.name, x, y } });
   addEntity(world, 'plan', {
     ...{ part: part.id, x, y, z: 0, have: 0, work: -1, state: 'plan' },
-    ...{ line, done: 0, waited: 0 },
+    ...{ line, done: 0, waited: 0, shut: 0, held: 0 },
   });
   raiseStock(ctx, part.material, part.name, line);
 }

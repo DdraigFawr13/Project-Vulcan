@@ -7,6 +7,7 @@ export {
   planAt,
   planPart,
   plansOf,
+  refundOf,
   stillNeeded,
   takeDownPlan,
 } from './plans.ts';

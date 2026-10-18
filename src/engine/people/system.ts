@@ -106,6 +106,7 @@ export const peopleSystem: System = {
     'work.felled',
     'work.tookUpBuilding',
     'build.waiting',
+    'build.shutIn',
     'build.built',
     'build.takenDown',
     'work.picked',

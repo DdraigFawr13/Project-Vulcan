@@ -10,7 +10,9 @@ export const BUILD_TABLES: Schemas = {
   /** One tile of one part. `state`: `plan` (to build), `built`, or `down` (to come down: a built
    * part, or a plan with material brought). `have`: material brought so far; `work`: minutes
    * left once building has started, -1 before; `line`: the plan's line; `done`: the line it
-   * was built under, 0 before; `waited`: the line saying it waits for material, 0 when not. */
+   * was built under, 0 before; `waited`: the line saying it waits for material, 0 when not;
+   * `shut`: the line saying the wall would shut someone in or the store off, 0 when not;
+   * `held`: the tick before which nobody tries to finish it again. */
   plan: {
     part: 'text',
     x: 'int',
@@ -22,6 +24,8 @@ export const BUILD_TABLES: Schemas = {
     line: 'event',
     done: 'event',
     waited: 'event',
+    shut: 'event',
+    held: 'int',
   },
 };
 
@@ -41,6 +45,11 @@ export const planPart = (content: EngineContent, plan: EntityRow): PartDef =>
 export const stillNeeded = (content: EngineContent, plan: EntityRow): number =>
   plan['state'] === 'plan' ? planPart(content, plan).cost - (plan['have'] as number) : 0;
 
+/** The material taking the plan down gives back: all of it for a built part, what was brought
+ * for a plan. */
+export const refundOf = (content: EngineContent, plan: EntityRow): number =>
+  (plan['done'] as number) > 0 ? planPart(content, plan).cost : (plan['have'] as number);
+
 /** The part is finished under `cause` (the builder's line): a wall, door or floor is set on the
  * map; a stair cuts stairs down, reaching the level below if nobody has. */
 export function finishPlan(ctx: SystemContext, plan: EntityRow, cause: number): void {
@@ -52,15 +61,15 @@ export function finishPlan(ctx: SystemContext, plan: EntityRow, cause: number): 
 }
 
 /** The part (or plan) comes down under `cause`: the map loses it and the row goes. Returns the
- * material to lay back on the ground: all of it for a built part, what was brought for a plan. */
+ * material to lay back on the ground (`refundOf`). */
 export function takeDownPlan(
   ctx: SystemContext,
   plan: EntityRow,
   cause: number,
 ): { kind: string; count: number } {
-  const part = planPart(ctx.content, plan);
-  const built = (plan['done'] as number) > 0;
-  if (built) setBuilt(ctx, plan['x'] as number, plan['y'] as number, 0, cause);
+  const back = { kind: planPart(ctx.content, plan).material, count: refundOf(ctx.content, plan) };
+  if ((plan['done'] as number) > 0)
+    setBuilt(ctx, plan['x'] as number, plan['y'] as number, 0, cause);
   removeEntity(ctx.world, 'plan', plan.id);
-  return { kind: part.material, count: built ? part.cost : (plan['have'] as number) };
+  return back;
 }

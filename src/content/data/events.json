@@ -24,6 +24,7 @@
 {"id":"build.planned","importance":2,"template":"A {part} was planned at {x}, {y} (test mode)."},
 {"id":"goods.stockRaised","importance":2,"template":"The {part} plan needs {good}: the colony now wants {word} {good}."},
 {"id":"build.waiting","importance":2,"template":"The {part} at {x}, {y} waits: no {good} can be reached.","notable":{}},
+{"id":"build.shutIn","importance":2,"template":"The {part} at {x}, {y} waits: it would shut someone in or the store off.","notable":{}},
 {"id":"build.nobody","importance":2,"template":"The {part} at {x}, {y} waits: nobody is able to build.","notable":{}},
 {"id":"build.built","importance":1,"template":"{name} built the {part} at {x}, {y}."},
 {"id":"build.downOrdered","importance":2,"template":"The {part} at {x}, {y} is to come down (test mode)."},

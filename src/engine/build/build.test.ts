@@ -14,14 +14,15 @@ import {
   whyOf,
   type WorldState,
 } from '../index.ts';
-import { walkAt } from '../paths/index.ts';
+import { canReach, walkAt } from '../paths/index.ts';
 import { planAt, plansOf } from './index.ts';
 
 const sim = createSim(content);
 const DAY = 1440;
 
-/** Free open tiles with nothing growing on them, nearest the start first, in a row of `n`. */
-function rowOfFree(world: WorldState, n: number): { x: number; y: number }[] {
+/** Free open tiles with nothing growing on them, nearest the start first, in a block `n` wide
+ * and `rows` deep (row by row). */
+function rowOfFree(world: WorldState, n: number, rows = 1): { x: number; y: number }[] {
   const { width, startX, startY } = world.map;
   const bare = (x: number, y: number) =>
     freeTile(world, content, x, y) &&
@@ -31,7 +32,10 @@ function rowOfFree(world: WorldState, n: number): { x: number; y: number }[] {
     for (let dy = -r; dy <= r; dy += 1)
       for (let dx = -r; dx <= r; dx += 1) {
         const [x, y] = [startX + dx, startY + dy];
-        const tiles = Array.from({ length: n }, (_, k) => ({ x: x + k, y }));
+        const tiles = Array.from({ length: n * rows }, (_, k) => ({
+          x: x + (k % n),
+          y: y + Math.floor(k / n),
+        }));
         if (tiles.every((t) => bare(t.x, t.y))) return tiles;
       }
   throw new Error('no free row near the start');
@@ -96,6 +100,23 @@ describe('building', () => {
       'something is built or planned there',
     ]);
     expect(plansOf(world)).toHaveLength(1);
+  });
+
+  it('leaves the last wall of a ring round the store unbuilt, and says why', () => {
+    const world = createWorld(sim, 'ledger');
+    const block = rowOfFree(world, 3, 3);
+    const [inside] = block.splice(4, 1);
+    submitCommand(world, { tick: world.tick + 1, kind: 'markStore', data: inside! });
+    place(world, 'wall-stone', block);
+    step(world, sim, 5 * DAY);
+    const index = content.buildings.parts.findIndex((p) => p.id === 'wall-stone') + 1;
+    const built = block.filter((t) => world.map.built[t.y * world.map.width + t.x] === index);
+    expect(built).toHaveLength(7);
+    const shut = world.log.filter((e) => e.type === 'build.shutIn');
+    expect(shut).toHaveLength(1);
+    expect(whyOf(world, shut[0]!.id)[0]!.event.type).toBe('build.planned');
+    const start = { x: world.map.startX, y: world.map.startY, z: 0 };
+    expect(canReach(content, world.map, start, { ...inside!, z: 0 })).toBe(true);
   });
 
   it('builds a wooden stair down that reaches level 1', () => {

@@ -113,3 +113,18 @@ export function setBuilt(
   map.tileCauses[i] = cause;
   raiseChunk(map, x, y);
 }
+
+/** What `check` says with `part` built on surface tile (x, y) for its length only; the tile is
+ * then as it was. For asking whether a part would cut a way, never for building it. */
+export function withBuilt<T>(map: MapState, x: number, y: number, part: number, check: () => T): T {
+  const i = y * map.width + x;
+  const was = map.built[i]!;
+  map.built[i] = part;
+  raiseChunk(map, x, y);
+  try {
+    return check();
+  } finally {
+    map.built[i] = was;
+    raiseChunk(map, x, y);
+  }
+}
