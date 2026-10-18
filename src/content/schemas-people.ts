@@ -13,6 +13,31 @@ import {
 } from './schema-fields';
 
 export const PEOPLE_SCHEMAS = {
+  // Vulcan's own band file (P2.1): how the five who arrive are drawn (engine core people.ts).
+  band: obj({
+    size: num({ min: 1, max: 30 }),
+    skills: list(ref('abilities')),
+    able: count,
+    must: list(ref('abilities')),
+    tries: num({ min: 1 }),
+    homeCulture: ref('cultures'),
+    minAdult: count,
+    ageShare: num({ min: 1, max: 100 }),
+    attributeDice: count,
+    potentialOffset: num(),
+    potential: range(),
+    levelBase: num({ min: 0, max: 100 }),
+    levelAdult: num({ min: 0, max: 100 }),
+    levelJitter: range(),
+    tradeBase: num({ min: 0, max: 100 }),
+    tradeAdult: num({ min: 0, max: 100 }),
+    traits: count,
+    spots: list(range()),
+    hairStyles: map(count),
+    hair: map(texts, 'races'),
+    clothes: map(texts, 'cultures'),
+    defaultClothes: texts,
+  }),
   races: list(
     obj({
       id,

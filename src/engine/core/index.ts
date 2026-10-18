@@ -6,3 +6,4 @@ export type { Clock } from './clock.ts';
 export * from './types.ts';
 export * from './climate.ts';
 export * from './region.ts';
+export * from './people.ts';

@@ -73,6 +73,7 @@ export function validateContent(files: Files): string[] {
   // Tier caps read the files as typed, so they run only once every shape is valid.
   if (errors.length === 0)
     errors.push(...checkTierCaps(files), ...checkTerrain(files), ...checkCalendar(files));
+  errors.push(...checkBand(files));
   return errors;
 }
 
@@ -164,5 +165,43 @@ function checkCalendar(files: Files): string[] {
     errors.push(
       `calendar.seasons: ${c.seasons.length} seasons don't split ${c.monthsPerYear} months evenly`,
     );
+  return errors;
+}
+
+// The band (src/engine/people): every must-have is a skill they have, colours are #rrggbb, every
+// race can be given hair, and the spots can hold the whole band.
+function checkBand(files: Files): string[] {
+  const b = files['band'] as {
+    size: number;
+    skills: string[];
+    must: string[];
+    spots: unknown[];
+    hairStyles: Record<string, number>;
+    hair: Record<string, string[]>;
+    clothes: Record<string, string[]>;
+    defaultClothes: string[];
+  };
+  const errors: string[] = [];
+  for (const m of b.must)
+    if (!b.skills.includes(m)) errors.push(`band.must: "${m}" is not one of band.skills`);
+  if (b.spots.length < b.size) errors.push(`band.spots: ${b.spots.length}, fewer than band.size`);
+  if (!Object.values(b.hairStyles).some((w) => w > 0)) errors.push('band.hairStyles: no weight');
+  for (const race of files['races'] as { id: string }[])
+    if (!b.hair[race.id]?.length) errors.push(`band.hair: no colours for "${race.id}"`);
+  // A person's given name comes from the culture's whole names or its syllables (src/engine/people).
+  for (const c of files['cultures'] as { id: string; names: Record<string, unknown> }[]) {
+    const n = c.names as {
+      givenStarts: string[];
+      givenEnds: string[];
+      givenNames?: Record<string, string[]>;
+    };
+    const whole = ['f', 'm'].every((sex) => n.givenNames?.[sex]?.length);
+    if (!whole && (n.givenStarts.length === 0 || n.givenEnds.length === 0))
+      errors.push(`cultures[${c.id}].names: no given names or syllables to make them`);
+  }
+  const colours = [...Object.values(b.hair), ...Object.values(b.clothes), b.defaultClothes].flat();
+  if (b.defaultClothes.length === 0) errors.push('band.defaultClothes: empty');
+  for (const c of colours)
+    if (!/^#[0-9a-f]{6}$/.test(c)) errors.push(`band: colour "${c}" is not #rrggbb`);
   return errors;
 }

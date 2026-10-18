@@ -15,6 +15,10 @@ export interface CultureDef {
   /** river, heights, plains, forest, deposit, aura, coast. */
   sitePreferences: readonly string[];
   names: {
+    givenStarts: readonly string[];
+    givenEnds: readonly string[];
+    /** Whole given names by sex (`f`, `m`), where the tongue has its own. */
+    givenNames?: Readonly<Record<string, readonly string[]>>;
     placeStarts: readonly string[];
     placeMiddles: readonly string[];
     placeEnds: readonly string[];
