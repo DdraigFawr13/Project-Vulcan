@@ -41,6 +41,7 @@ export const goodsSystem: System = {
     'goods.storeSet',
     'goods.storeGrew',
     'goods.stockSet',
+    'goods.stockRaised',
     'goods.storeMarked',
     'goods.foodGone',
   ],

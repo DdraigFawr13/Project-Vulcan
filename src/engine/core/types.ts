@@ -3,7 +3,7 @@
 import type { PeopleDefs } from './people.ts';
 import type { AuraDials, AuraSpot, SeasonsDef, WeatherDef } from './climate.ts';
 import type { FeatureDef, WalkingDef } from './ground.ts';
-import type { ItemDef, JobDef, LifeDef, WorkDef } from './life.ts';
+import type { BuildingsDef, ItemDef, JobDef, LifeDef, WorkDef } from './life.ts';
 import type { RngState } from './rng.ts';
 import type { CultureDef, NamesDef, RegionDef } from './region.ts';
 
@@ -157,6 +157,9 @@ export interface MapState {
   auraSpots: AuraSpot[];
   /** Freezing degree-days on each still-water tile (the weather's ice count); 0 elsewhere. */
   ice: Uint8Array;
+  /** What colonists have built on each surface tile (P3.1): 0 for nothing, else 1 + an index into
+   * `EngineContent.buildings.parts`. A stair is a tile kind instead (it leads down). */
+  built: Uint8Array;
   /** The levels below, index 0 for level 1 down: null until stairs or a shaft first reach one
    * (DECISIONS V-014), so a level nobody has reached costs no memory and no save space. */
   levels: (LevelState | null)[];
@@ -386,4 +389,6 @@ export interface EngineContent extends PeopleDefs {
   /** P2.4: the colony's work (work.json) and the forked jobs. */
   work: WorkDef;
   jobs: readonly JobDef[];
+  /** P3.1 and P3.2: the parts colonists build (buildings.json). */
+  buildings: BuildingsDef;
 }

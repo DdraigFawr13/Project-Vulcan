@@ -43,6 +43,7 @@ const fixtureContent: EngineContent = {
   life: content.life,
   work: content.work,
   jobs: content.jobs,
+  buildings: content.buildings,
   items: content.items,
   events: [
     ...content.events,

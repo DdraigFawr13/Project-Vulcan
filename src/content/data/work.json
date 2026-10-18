@@ -1,12 +1,14 @@
 {
 "stock":[{"good":"logs","name":"wood","levels":[{"id":"none","word":"no","count":0},{"id":"some","word":"some","count":50},{"id":"plenty","word":"plenty of","count":200}],"start":"some"},
+{"good":"stone","name":"stone","levels":[{"id":"none","word":"no","count":0},{"id":"some","word":"some","count":50},{"id":"plenty","word":"plenty of","count":200}],"start":"none"},
 {"good":"food","name":"food","levels":[{"id":"none","word":"no","count":0},{"id":"some","word":"some","count":50},{"id":"plenty","word":"plenty of","count":200}],"start":"plenty"}],
 "fell":{"job":"fell","minutes":120,"skilled":10,"camp":3,"reach":40},
+"quarry":{"job":"quarry","good":"stone","minutes":180,"skilled":10,"camp":3,"reach":40},
 "forage":{"job":"forage","good":"food","minutes":30,"skilled":10,"reach":40,"regrowDays":28,"months":["Thawmonth","Seedmonth","Bloommonth","Highsun","Goldmonth","Harvestmonth","Leaffall"]},
-"doing":{"fell":"Felling a tree: {good} is set to {level}.","forage":"Picking berries: {good} is set to {level}.","haul":"Carrying {what} to the store.","eat":"Eating.","goEat":"Going to eat.","sleep":"Sleeping.","goSleep":"Going to bed.","relax":"Taking it easy.","stroll":"Strolling.","idle":"Idle."},
+"doing":{"fell":"Felling a tree: {good} is set to {level}.","forage":"Picking berries: {good} is set to {level}.","quarry":"Breaking up a boulder: {good} is set to {level}.","build":"Building the {part}.","fetch":"Fetching {what} for the {part}.","takeDown":"Taking down the {part}.","haul":"Carrying {what} to the store.","eat":"Eating.","goEat":"Going to eat.","sleep":"Sleeping.","goSleep":"Going to bed.","relax":"Taking it easy.","stroll":"Strolling.","idle":"Idle."},
 "haul":{"load":25,"kinds":["logs","stone","berries"]},
 "store":{"width":2,"height":3,"most":48},
 "hours":{"from":6,"to":18},
-"priority":{"jobs":["fell","haul","forage"],"start":3,"words":["first","second","third","last"]},
+"priority":{"jobs":["fell","haul","forage","build","quarry"],"start":3,"words":["first","second","third","last"]},
 "learn":{"start":240,"perLevel":120}
 }

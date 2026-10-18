@@ -6,6 +6,7 @@ export {
   growStore,
   haveOf,
   inStore,
+  raiseStock,
   slotFor,
   stockOf,
   storeOf,

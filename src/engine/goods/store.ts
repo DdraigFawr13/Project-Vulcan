@@ -32,6 +32,9 @@ export function freeTile(world: WorldState, content: EngineContent, x: number, y
   if (x < 0 || y < 0 || x >= map.width || y >= map.height) return false;
   if (!dryAt(content, map, y * map.width + x)) return false;
   if (itemsAt(world, x, y, 0).length || inStore(world, x, y, 0)) return false;
+  // Not where a part is planned or built (the build system's `plan` table, P3.1).
+  if ((world.entities['plan'] ?? []).some((p) => p['x'] === x && p['y'] === y && p['z'] === 0))
+    return false;
   return canReach(content, map, { x: map.startX, y: map.startY, z: 0 }, { x, y, z: 0 });
 }
 
@@ -162,5 +165,20 @@ export function setStock(
   row['line'] = ctx.emit('goods.stockSet', {
     causes: [cause],
     data: { word: level.word, good: def.name },
+  });
+}
+
+/** A plan needs a good the colony keeps none of (P3.1): its level goes up to the first that keeps
+ * some, with a line citing the plan. The player can set it back. */
+export function raiseStock(ctx: SystemContext, good: string, part: string, cause: number): void {
+  const def = ctx.content.work.stock.find((s) => s.good === good);
+  const row = stockOf(ctx.world, good);
+  if (!def || !row || wantOf(ctx.world, ctx.content, good) > 0) return;
+  const level = def.levels.find((l) => l.count > 0);
+  if (!level) return;
+  row['level'] = level.id;
+  row['line'] = ctx.emit('goods.stockRaised', {
+    causes: [cause],
+    data: { part, word: level.word, good: def.name },
   });
 }

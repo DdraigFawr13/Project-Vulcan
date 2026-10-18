@@ -52,6 +52,14 @@ export interface WorkDef {
     start: string;
   }[];
   fell: { job: string; minutes: number; skilled: number; camp: number; reach: number };
+  quarry: {
+    job: string;
+    good: string;
+    minutes: number;
+    skilled: number;
+    camp: number;
+    reach: number;
+  };
   forage: {
     job: string;
     good: string;
@@ -67,6 +75,25 @@ export interface WorkDef {
   hours: { from: number; to: number };
   priority: { jobs: readonly string[]; start: number; words: readonly string[] };
   learn: { start: number; perLevel: number };
+}
+
+/** One part colonists build (buildings.json, P3.1 and P3.2): a tile of one material. */
+export interface PartDef {
+  id: string;
+  name: string;
+  kind: 'wall' | 'floor' | 'door' | 'stair';
+  material: string;
+  cost: number;
+  minutes: number;
+  art: string;
+}
+
+/** What colonists build (buildings.json): the job, its skill dial and the parts. */
+export interface BuildingsDef {
+  job: string;
+  skilled: number;
+  downShare: number;
+  parts: readonly PartDef[];
 }
 
 /** The forked jobs list (jobs.json): only what work reads. */

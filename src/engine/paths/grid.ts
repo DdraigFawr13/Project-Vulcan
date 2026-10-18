@@ -66,6 +66,9 @@ export function walkAt(content: EngineContent, map: MapState, z: number, i: numb
   if (!walk) return 0;
   const feature = layer.features[i]!;
   if (z === 0 && feature && content.features[feature - 1]?.blocks) return 0;
+  // A built wall blocks the way (P3.1); a door and a floor do not.
+  const built = z === 0 ? (map.built[i] ?? 0) : 0;
+  if (built && content.buildings.parts[built - 1]?.kind === 'wall') return 0;
   return walk;
 }
 

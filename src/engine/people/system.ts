@@ -104,6 +104,10 @@ export const peopleSystem: System = {
     'work.tookUp',
     'work.tookUpMarked',
     'work.felled',
+    'work.tookUpBuilding',
+    'build.waiting',
+    'build.built',
+    'build.takenDown',
     'work.picked',
     'work.prioritySet',
     'work.declined',
@@ -145,7 +149,7 @@ export const peopleSystem: System = {
         ...{ trade: p.trade, hair: p.hair, hairColour: p.hairColour, clothes: p.clothes },
         ...{ x: spots[k]![0], y: spots[k]![1], z: 0, status: 'alive', arrived },
         ...{ path: [], stride: 0, rest: 30 + 15 * k, doing: '', retry: 0 },
-        ...{ job: '', target: -1, work: 0, took: 0, next: 0 },
+        ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0 },
       });
       for (const skill of content.band.skills)
         addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0 });

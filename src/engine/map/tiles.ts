@@ -33,6 +33,7 @@ export function chunkTiles(
   features: Uint8Array;
   snow: Uint8Array;
   ice: Uint8Array;
+  built: Uint8Array;
 } {
   const layer = layerOf(map, z);
   if (!layer) throw new Error(`Level ${z} has not been reached.`);
@@ -44,6 +45,7 @@ export function chunkTiles(
   const features = new Uint8Array(w * h);
   const snow = new Uint8Array(w * h);
   const ice = new Uint8Array(w * h);
+  const built = new Uint8Array(w * h);
   for (let row = 0; row < h; row += 1)
     for (let col = 0; col < w; col += 1) {
       const from = (y + row) * map.width + x + col;
@@ -51,8 +53,9 @@ export function chunkTiles(
       features[row * w + col] = layer.features[from]!;
       if (z === 0) snow[row * w + col] = map.snow[from]!;
       if (z === 0) ice[row * w + col] = map.ice[from]! >> 7;
+      if (z === 0) built[row * w + col] = map.built[from]!;
     }
-  return { x, y, z, w, h, tiles, features, snow, ice };
+  return { x, y, z, w, h, tiles, features, snow, ice, built };
 }
 
 /**
@@ -92,4 +95,21 @@ export function raiseChunk(map: MapState, x: number, y: number, z = 0): void {
   const layer = layerOf(map, z);
   if (layer)
     layer.chunkVersions[Math.floor(y / CHUNK) * chunksAcross(map) + Math.floor(x / CHUNK)]! += 1;
+}
+
+/** The only writer of what is built on a surface tile (P3.1): 0 for nothing, else 1 + a part
+ * index. Records `cause` for the inspector and raises the chunk's version, so ways are found
+ * again round a new wall. */
+export function setBuilt(
+  ctx: SystemContext,
+  x: number,
+  y: number,
+  part: number,
+  cause: number,
+): void {
+  const map = ctx.world.map;
+  const i = y * map.width + x;
+  map.built[i] = part;
+  map.tileCauses[i] = cause;
+  raiseChunk(map, x, y);
 }

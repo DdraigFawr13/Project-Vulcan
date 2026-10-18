@@ -1,7 +1,7 @@
 // Shape of Vulcan's own life and work files (src/content/data/life.json, P2.2): needs, sleep, warmth,
 // leisure, what each food gives, mood words, and the cart the band arrives with. Need values run
 // from 0 to `scale`; rates are per game hour.
-import { list, map, num, obj, ref, str } from './schema';
+import { list, map, num, obj, oneOf, ref, str } from './schema';
 import { count, id, text } from './schema-fields';
 
 export const LIFE_SCHEMAS = {
@@ -63,6 +63,15 @@ export const LIFE_SCHEMAS = {
     // `skilled` (longer below, shorter above), never within `camp` tiles of the start, trees
     // looked for within `reach` tiles of the store.
     fell: obj({ job: ref('jobs'), minutes: count, skilled: count, camp: count, reach: count }),
+    // Quarrying (P3.1): breaking up boulders for stone, the same shape as felling, for `good`.
+    quarry: obj({
+      job: ref('jobs'),
+      good: ref('items'),
+      minutes: count,
+      skilled: count,
+      camp: count,
+      reach: count,
+    }),
     // Foraging (P2.9): the jobs.json job and the good it serves, minutes a bush takes at skill
     // `skilled`, bushes looked for within `reach` tiles of the store; a bush picked is ripe again
     // after `regrowDays` days, and bushes only grow back in the named `months`.
@@ -95,5 +104,26 @@ export const LIFE_SCHEMAS = {
     // Skills by use (P2.5): minutes of practice from one level to the next, `start` plus
     // `perLevel` times the level now.
     learn: obj({ start: num({ min: 1 }), perLevel: count }),
+  }),
+  // P3.1 and P3.2: the parts colonists build (buildings.json). Each part is one tile of one
+  // material: `cost` of it delivered, then `minutes` of work at building skill `skilled`
+  // (longer below, shorter above), by the jobs.json `job`; taking one down takes `downShare`
+  // per cent of the minutes and gives the material back. A wall blocks the way, a door and a
+  // floor do not, and a stair cuts a way down to the level below.
+  buildings: obj({
+    job: ref('jobs'),
+    skilled: num({ min: 1 }),
+    downShare: num({ min: 1, max: 100 }),
+    parts: list(
+      obj({
+        id,
+        name: text,
+        kind: oneOf('wall', 'floor', 'door', 'stair'),
+        material: ref('items'),
+        cost: num({ min: 1 }),
+        minutes: num({ min: 1 }),
+        art: text,
+      }),
+    ),
   }),
 };
