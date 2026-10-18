@@ -17,6 +17,7 @@ import {
   renderEvent,
   siteOf,
   step,
+  valleyOf,
   submitCommand,
   tileTemperature,
   toNdjson,
@@ -134,12 +135,21 @@ function climateOf(w: WorldState, x: number, y: number, z: number): Partial<Tile
     ...(z === 0 && {
       temperature: tileTemperature(content, map, w.systems['weather']?.['temp'] ?? 0, i),
     }),
-    ...(z === 0 &&
-      WATER[map.water[i]!] === 'lake' && { ice: isFrozen(map, i) ? 'frozen over' : 'open water' }),
+    ...(z === 0 && WATER[map.water[i]!] === 'lake' && { ice: iceOf(w, i) }),
     ...((aura > 0 || spot) && {
       aura: spot ? `${aura}, ${school?.name} (a spot: ${site?.words})` : `${aura} (faint)`,
     }),
   };
+}
+
+/** A lake tile's ice, and since when, from the ice line its freezing cites (tileCauses). */
+function iceOf(w: WorldState, i: number): string {
+  const line = findEvent(w.log, w.map.tileCauses[i]!);
+  const since = line?.type.startsWith('weather.') ? clockView(line.tick) : undefined;
+  const date = since && ` since Day ${since.day} of ${since.monthName}`;
+  return isFrozen(w.map, i)
+    ? `frozen over${date ?? ''}`
+    : `open water${date ? `, thawed${date}` : ''}`;
 }
 
 const itemName = (id: string): string => content.items.find((item) => item.id === id)?.name ?? id;
@@ -237,8 +247,9 @@ function handle(message: ToWorker): void {
         throw new Error(
           `The page's content (${message.contentHash}) differs from the worker's (${contentHash}).`,
         );
-      if (siteOf(message.seed)) adopt(createWorld(sim, message.seed), 'seed');
-      else offer(message.seed);
+      // A valley seed begins at once; one naming a valley the region does not have opens its picker.
+      if (valleyOf(message.seed, content)) adopt(createWorld(sim, message.seed), 'seed');
+      else offer(siteOf(message.seed)?.region ?? message.seed);
       return;
     case 'settle': {
       const chosen = offered[message.site - 1];
@@ -288,6 +299,7 @@ function handle(message: ToWorker): void {
         post({
           type: 'saved',
           auto: message.auto,
+          ...(message.standby && { standby: true }),
           save: saveOf(world, contentHash),
           clock: clockView(world.tick),
         });
@@ -330,6 +342,7 @@ function guarded(work: () => void): void {
     if (timer !== undefined) clearInterval(timer);
     timer = undefined;
     world = undefined;
+    offered = [];
     post({ type: 'error', message: error instanceof Error ? error.message : String(error) });
   }
 }

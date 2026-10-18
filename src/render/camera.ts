@@ -17,6 +17,8 @@ export class CameraControls {
   private steps: number[] = [...ZOOMS];
   private zoomIndex = ZOOMS.indexOf(1);
   private mapSize = { width: 0, height: 0 };
+  /** Screen px along the top covered by the page's bar: the map is fitted and scrolled clear of it. */
+  private top = 0;
   private pinchBase = 0;
   private keys: Record<string, Phaser.Input.Keyboard.Key> = {};
   private readonly scene: Phaser.Scene;
@@ -56,6 +58,13 @@ export class CameraControls {
     this.camera.centerOn(width / 2, height / 2);
   }
 
+  /** The bar over the top of the view is `px` tall; refits so no map row hides under it. */
+  setTopInset(px: number): void {
+    if (px === this.top) return;
+    this.top = px;
+    this.fitSteps();
+  }
+
   zoomStep(direction: 1 | -1): void {
     const next = Math.min(Math.max(this.zoomIndex + direction, 0), this.steps.length - 1);
     if (next === this.zoomIndex) return;
@@ -64,15 +73,17 @@ export class CameraControls {
   }
 
   // A map smaller than the view on a side gets bounds widened evenly on that side, so it sits in
-  // the middle of the screen instead of the top left.
+  // the middle of the screen instead of the top left. The bounds also reach the bar's height above
+  // the map, so the top row can always be scrolled out from under the bar.
   private applyZoom(view: { width: number; height: number } = this.camera): void {
     const zoom = this.steps[this.zoomIndex]!;
     const { width, height } = this.mapSize;
+    const inset = this.top / zoom;
     const w = Math.max(width, view.width / zoom);
-    const h = Math.max(height, view.height / zoom);
+    const h = Math.max(height + inset, view.height / zoom);
     const { midPoint } = this.camera;
     this.camera
-      .setBounds((width - w) / 2, (height - h) / 2, w, h)
+      .setBounds((width - w) / 2, (height - inset - h) / 2, w, h)
       .setZoom(zoom)
       .centerOn(midPoint.x, midPoint.y);
   }
@@ -84,7 +95,7 @@ export class CameraControls {
     if (!width || !height) return;
     const fitted = this.steps.length > ZOOMS.length && this.zoomIndex === 0;
     const current = this.steps[this.zoomIndex]!;
-    const fit = Math.min(view.width / width, view.height / height);
+    const fit = Math.min(view.width / width, (view.height - this.top) / height);
     this.steps = fit < ZOOMS[0] ? [fit, ...ZOOMS] : [...ZOOMS];
     this.zoomIndex = fitted ? 0 : Math.max(this.steps.indexOf(current), 0);
     this.applyZoom(view);

@@ -10,7 +10,7 @@ Goal: a valley worth settling. Entry: Phase 0 done and its playtest signed off b
 - [x] P1.4 Aura, seasons and weather (merged 2026-10-17)
 - [x] P1.5 Lighter world map and site picker (merged 2026-10-18)
 - [ ] P1.6 Story Generator world behind the region map (V-031)
-- [ ] Phase review
+- [x] Phase review (merged 2026-10-18): the audit's five playtest bugs (play kept on close, reload continues, phone sheet, fit zoom under the bar, debug readouts behind `?debug`), lake ice says since when, ore seams wander, small save and worker fixes
 
 Deferred: the `highlands` mountain layout (massifs inside the valley as well as on its rims, Morgan's 2026-10-17 "keep for later") is kept in `terrain.json` `generator.layouts` but unused; `generator.layout` stays `valley`. A later site type or the full worldgen port may use it.
 

@@ -31,9 +31,12 @@ export class Panel {
   private readonly title = el('h2');
   private readonly body = el('div', { class: 'panel-body' });
   private readonly actions: PanelActions;
+  /** Shows developer rows (the tile's chunk and version); `?debug` in the URL. */
+  private readonly debug: boolean;
 
-  constructor(parent: HTMLElement, actions: PanelActions) {
+  constructor(parent: HTMLElement, actions: PanelActions, debug = false) {
     this.actions = actions;
+    this.debug = debug;
     const close = el('button', { type: 'button', 'aria-label': 'Close panel' }, '✕');
     close.addEventListener('click', () => actions.close());
     const head = el('div', { class: 'panel-head' });
@@ -71,7 +74,9 @@ export class Panel {
       ...(tile.crossing ? [['crossing', tile.crossing]] : []),
       ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
       ...(tile.below ? [['below', tile.below]] : []),
-      ['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`],
+      ...(this.debug
+        ? [['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`]]
+        : []),
     ])
       facts.append(el('dt', {}, key), el('dd', {}, value));
     this.body.replaceChildren(facts);

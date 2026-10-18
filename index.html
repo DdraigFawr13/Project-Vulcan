@@ -186,8 +186,8 @@
         position: fixed;
         top: 52px;
         right: 0;
-        /* Leaves the zoom buttons and the debug line (fps, tick) uncovered below it. */
-        max-height: calc(100% - 52px - 96px);
+        /* Leaves the level and zoom buttons (and the debug line) uncovered below it. */
+        max-height: calc(100% - 52px - 200px);
         width: min(360px, 40vw);
         z-index: 1;
         border-bottom: 1px solid var(--line);
@@ -211,15 +211,15 @@
           bottom: 0;
           width: auto;
           max-height: 60vh;
-          /* The debug line stays readable over the sheet's foot. */
-          padding-bottom: calc(max(8px, env(safe-area-inset-bottom)) + 30px);
+          padding-bottom: max(12px, env(safe-area-inset-bottom));
           border-left: 0;
           border-bottom: 0;
           border-top: 1px solid var(--line);
           border-radius: 12px 12px 0 0;
         }
-        /* The sheet covers the zoom buttons' corner; pinch still zooms while it is open. */
-        #hud:has(.panel:not([hidden])) .zoom {
+        /* The sheet covers the zoom buttons' corner; pinch still zooms while it is open. The tile
+           readout and the debug line would sit on the sheet's foot, so they go too. */
+        #hud:has(.panel:not([hidden])) :is(.zoom, .readout, .debug) {
           display: none;
         }
       }

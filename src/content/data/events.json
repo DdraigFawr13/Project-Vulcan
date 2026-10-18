@@ -18,5 +18,7 @@
 {"id":"weather.changed","importance":1,"template":"{words}: {temperature} °C on the valley floor."},
 {"id":"weather.iceFormed","importance":2,"template":"Ice formed on the lakes."},
 {"id":"weather.frozenOver","importance":2,"template":"The lakes froze over."},
-{"id":"weather.thawed","importance":2,"template":"The last of the lake ice melted."}
+{"id":"weather.thawed","importance":2,"template":"The last of the lake ice melted."},
+{"id":"weather.iceSpread","importance":1,"template":"The ice spread further over the lakes."},
+{"id":"weather.iceShrank","importance":1,"template":"The lake ice began to melt."}
 ]

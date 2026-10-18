@@ -43,6 +43,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-20** Look at every UI result before calling it done (VER-06); the artifact is the evidence.
 - **VR-56** Each phase starts with a taste board: three or four reference pictures for the phase's look, which Morgan picks from before the first mock-up, so mock-ups aren't reworked as taste shifts (Morgan, 2026-10-18 audit; P1.1 took four rounds).
 - **VR-57** Phone first: every UI mock-up and screen is designed at phone width (390 px) first, then desktop (V-029).
+- **VR-58** A milestone whose build is estimated over 1,200 lines (code, tests, docs and data, not packed art) is split before the build into an engine PR and a screen PR, each merged on its own green CI (LESSONS 2026-10-18; P1.1 and P1.5 went over 1,500).
 
 ## 7. Lean testing
 

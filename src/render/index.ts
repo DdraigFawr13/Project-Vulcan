@@ -13,6 +13,8 @@ export interface Renderer {
   /** Draws the aura spots' glow (the snapshot's `aura`); a no-op while they are unchanged. */
   setAura(spots: readonly AuraView[]): void;
   zoomStep(direction: 1 | -1): void;
+  /** The page's bar covers the top `px` of the view; fitting and scrolling keep the map clear. */
+  setTopInset(px: number): void;
   /** Shows level `z`: 0 the surface, 1 to 4 below. */
   setLevel(z: number): void;
   /** Marks the inspected tile, or clears the mark. */
@@ -49,6 +51,7 @@ export function startRenderer(
     applyChunks: (chunks) => scene.applyChunks(chunks),
     setAura: (spots) => scene.setAura(spots),
     zoomStep: (direction) => scene.zoomStep(direction),
+    setTopInset: (px) => scene.setTopInset(px),
     setLevel: (z) => scene.setLevel(z),
     mark: (tile) => scene.mark(tile),
     thumbnail: () => thumbnailOf(game),

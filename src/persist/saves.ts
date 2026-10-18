@@ -76,6 +76,8 @@ async function write(db: IDBDatabase, doing: string, work: (tx: IDBTransaction) 
     end.catch(() => {});
     throw reason(error as DOMException, doing);
   }
+  // Commit now rather than when the page next idles: a write made as the page unloads must land.
+  tx.commit();
   await end;
 }
 

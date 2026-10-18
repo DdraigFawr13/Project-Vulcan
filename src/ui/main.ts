@@ -17,6 +17,8 @@ const params = new URLSearchParams(location.search);
 const seed = params.get('seed') ?? 'ledger-1';
 // A seed alone opens the site picker; with `site` it begins that valley (P1.5).
 const site = params.get('site');
+/** `?debug` shows developer readouts: fps, tick, and the inspector's chunk row. */
+const debug = params.has('debug');
 const worker = spawnSimWorker();
 const send = (message: ToWorker): void => worker.postMessage(message);
 let speed: Speed = 0;
@@ -47,30 +49,40 @@ const renderer = startRenderer(parent, {
   onSelect: (tile) => send({ type: 'inspect', ...tile, z: level }),
 });
 hudRoot.replaceChildren();
-const hud = new Hud(hudRoot, {
-  setSpeed,
-  zoom: (direction) => renderer.zoomStep(direction),
-  level: (direction) => setLevel(level + direction),
-  reload: () => location.reload(),
-  togglePanel: (kind) => (panel.kind === kind ? closePanel() : openPanel(kind)),
-  dismissed: () => saves.dismissed(),
-});
-const panel = new Panel(hudRoot, {
-  why: (id) => send({ type: 'why', id }),
-  save: () => send({ type: 'save', auto: false }),
-  exportLedger: () => send({ type: 'export', kind: 'ndjson' }),
-  load: (meta) => void saves.load(meta),
-  remove: (meta) => void saves.remove(meta),
-  dig: (tile, kind, to) =>
-    send({
-      type: 'command',
-      tick: worldTick + 1,
-      kind,
-      data: { x: tile.x, y: tile.y, z: tile.z, ...(to !== undefined && { to }) },
-    }),
-  newGame: (next) => roll(next),
-  close: () => closePanel(),
-});
+const hud = new Hud(
+  hudRoot,
+  {
+    setSpeed,
+    zoom: (direction) => renderer.zoomStep(direction),
+    level: (direction) => setLevel(level + direction),
+    reload: () => location.reload(),
+    togglePanel: (kind) => (panel.kind === kind ? closePanel() : openPanel(kind)),
+    dismissed: () => saves.dismissed(),
+  },
+  debug,
+);
+// The bar wraps to two rows on a phone: keep the camera's fit and bounds clear of it.
+new ResizeObserver(() => renderer.setTopInset(hud.bar.offsetHeight)).observe(hud.bar);
+const panel = new Panel(
+  hudRoot,
+  {
+    why: (id) => send({ type: 'why', id }),
+    save: () => send({ type: 'save', auto: false }),
+    exportLedger: () => send({ type: 'export', kind: 'ndjson' }),
+    load: (meta) => void saves.load(meta),
+    remove: (meta) => void saves.remove(meta),
+    dig: (tile, kind, to) =>
+      send({
+        type: 'command',
+        tick: worldTick + 1,
+        kind,
+        data: { x: tile.x, y: tile.y, z: tile.z, ...(to !== undefined && { to }) },
+      }),
+    newGame: (next) => roll(next),
+    close: () => closePanel(),
+  },
+  debug,
+);
 const picker = new Picker(hudRoot, {
   settle: (chosen) => {
     // A reload comes straight back to this valley; New game or a new seed opens the picker again.
@@ -171,6 +183,10 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
         );
     } else if (message.type === 'causes') {
       panel.showCauses(message.id, message.lines);
+    } else if (message.type === 'loadRefused' && !ready) {
+      // The save to continue from no longer loads (another version): begin afresh instead.
+      saves.loading = false;
+      begin();
     } else if (message.type === 'error') {
       fail(message.message);
     } else {
@@ -223,7 +239,9 @@ function onKey(e: KeyboardEvent): void {
 let hiddenAt: Speed | undefined;
 function onVisibility(): void {
   if (document.hidden && hiddenAt === undefined) {
-    // Hiding is the last sure moment before a tab is closed or discarded: autosave then.
+    // Hiding is the last sure moment before a tab is closed or discarded: write the standby copy
+    // now, and ask for a fresh autosave in case the tab is only switched away.
+    saves.flush();
     saves.autosave();
     hiddenAt = speed;
     if (speed !== 0) send({ type: 'setSpeed', speed: 0 });
@@ -235,6 +253,7 @@ function onVisibility(): void {
 
 // A page kept in the back-forward cache keeps its worker; only a real unload stops it.
 const onPageHide = (e: PageTransitionEvent): void => {
+  saves.flush();
   if (!e.persisted) stop();
 };
 
@@ -249,5 +268,20 @@ import.meta.hot?.dispose(() => {
   renderer.destroy();
 });
 
-send({ type: 'init', seed: site ? `${seed}/${site}` : seed, contentHash });
+function begin(): void {
+  send({ type: 'init', seed: site ? `${seed}/${site}` : seed, contentHash });
+}
+
+// Opening the bare link, or reloading a settled valley, continues the newest save of it; a seed on
+// its own (New game, New seed) opens the picker afresh. The title screen's Continue comes in P2.1.
+if (!params.has('seed') || site) {
+  void saves.latest(site ? `${seed}/${site}` : undefined).then((save) => {
+    if (!save) return begin();
+    const at = /^(.+)\/([1-9])$/.exec(save.seed);
+    if (at) history.replaceState(null, '', `?seed=${encodeURIComponent(at[1]!)}&site=${at[2]}`);
+    saves.loading = true;
+    hud.showScreen('Continuing', `${save.seed}, where it was last saved.`);
+    send({ type: 'load', save });
+  });
+} else begin();
 frame = requestAnimationFrame(tick);
