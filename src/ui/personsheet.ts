@@ -76,7 +76,8 @@ export class PersonSheet {
 
   private key(): string {
     const w = this.walker();
-    if (this.tab === 'skills') return JSON.stringify(w?.skills);
+    // Levels only: practice moves every few minutes of work, and each redraw replaces the tabs.
+    if (this.tab === 'skills') return JSON.stringify(w?.skills.map((s) => s.level));
     if (this.tab === 'work')
       return JSON.stringify(this.sources.work(this.p!, w).map((r) => r.outerHTML));
     if (this.tab === 'ledger') return String(this.mine().at(-1)?.id);
@@ -134,9 +135,12 @@ export class PersonSheet {
       const lines = this.mine().slice(-50).reverse();
       const arrived = el('div', { class: 'line prow', 'data-line': String(p.arrived) });
       const text = el('span', {}, 'Came with the band ');
-      text.append(
-        el('button', { type: 'button', class: 'why', 'data-why': String(p.arrived) }, 'why?'),
-      );
+      // Archived lines are not held here; their "why?" ends at "older record", so it stays.
+      const line = this.sources.lines().find((l) => l.id === p.arrived);
+      if (line?.why !== false)
+        text.append(
+          el('button', { type: 'button', class: 'why', 'data-why': String(p.arrived) }, 'why?'),
+        );
       arrived.append(text);
       return [...lines.map((l) => this.panel.lineRow(l)), arrived];
     }

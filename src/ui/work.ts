@@ -282,7 +282,7 @@ export class WorkSheet {
   }
 
   /** Drops pending levers the snapshot now shows. */
-  private settle(walkers: readonly WalkerView[], day: Day): void {
+  settle(walkers: readonly WalkerView[], day: Day): void {
     for (const [key, level] of this.pending) {
       const [id, job] = key.split(':');
       const now = walkers.find((w) => w.id === Number(id))?.work.find((j) => j.job === job);

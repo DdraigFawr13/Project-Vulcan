@@ -13,6 +13,7 @@ Goal: people who act on their own. Entry: Phase 1 done and signed off by Morgan 
 - [x] P2.6 Colonist bar, inspector tabs, alert feed (merged 2026-10-18). Each low need in the person sheet has a why? to the line that caused it; hunger after the food runs out cites "ate the last of the band's food" (`skip.test.ts`)
 - [x] P2.7 Skip ahead (merged 2026-10-18). On three seeds a skip stops on the first notable line (the cart food running out on Day 1 of Seedmonth), and its ledger equals a run without skipping (`skip.test.ts`). Found for the phase review: the band's food runs out early in the first month on every seed, since nobody forages or farms until Phase 4
 - [x] P2.8 UI reskin: Hearth and Page (run after P2.4, before P2.5)
+- [x] Phase review (2026-10-18): every done-when holds; played on three seeds at 390 px with no tap target under 42 px or text under 12 px; seven screen fixes below; food decision V-038
 
 Taste board (VR-56): https://claude.ai/artifact/4WdMASnMFnvDcBryD132KJ. Morgan took every recommendation (2026-10-18), binding every Phase 2 UI mock-up: colonists are small full figures in three-quarter view with four facings and two walk frames (P2.1); the play screen has a portrait strip with mood rings under the top bar, a one-line alert ticker with a count badge, and a skip button after 1x 2x 3x, with no PAUSED word (P2.6, P2.7); the title screen shows the last valley dimmed behind Continue (valley and date) and New game (P2.1); needs show as bars with a warning line, a word and "why?" (P2.2, P2.6); work priorities on a phone are one colonist at a time with a 1 to 4 stepper per job, the grid on desktop (P2.5); a crash shows a plain sentence, the day kept, and a RESCUE row in Saves. Later rules: why? ends at a plain "older record" line, and players never see raw type ids.
 
@@ -71,6 +72,10 @@ Run as fast as the device allows until a notable event (a content list), then pa
 Apply the chosen look (V-037, `docs/UI_STYLE.md`) to every existing screen: a token file every screen reads, three fonts, and the `ui` art sheet (shown to Morgan before it lands, per `docs/ART.md`). Styling only; no screen gains or loses a lever. Mock-up: UI (the direction board's Hearth and Page mock is the play screen's mock; title, picker, arrival, person panel, saves and rescue get one 390 px mock page). Estimate 500 to 800 lines, one PR (VR-58). Done when: title, region picker, arrival, play HUD, tile sheet, person panel, saves and the rescue screen are all restyled; no tap target is under 40 px and no text under 11 px (checked by the browser smoke at 390 px); a screenshot of each screen at 390 px and desktop is published.
 
 - Reading list: `docs/UI_STYLE.md`; `docs/ART.md` row UI reskin; `src/ui/MODULE.md`; `src/render/MODULE.md`
+
+## Phase review fixes
+
+Found by playing three seeds at 390 px and reviewing the phase's diff (2026-10-18): a need's "why?" in the person sheet was rebuilt on every snapshot, so it could not be tapped; the Stock sheet rebuilt its level buttons whenever a count moved; the Skills tab redrew on each step of practice, replacing the tabs; a lever set from a person's Work tab stayed "pending" forever; the bare link could continue the rescue save and fault again; an autosave wiped a half-typed seed in Saves; "Came with the band" offered "why?" when its only cause was the world's beginning. The cart's food lasts 27.8 days for five (V-038).
 
 ## Phase done (playtest)
 

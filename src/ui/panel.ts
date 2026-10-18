@@ -5,7 +5,7 @@ import type { SaveMeta } from '../persist/index.ts';
 import type { ClockView, LedgerLine, RegionView, StockView, TileView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
-import { stockRows } from './stock.ts';
+import { fillStock, stockRows } from './stock.ts';
 import { testTools, type TestOrder } from './testtools.ts';
 
 export type PanelKind =
@@ -161,10 +161,12 @@ export class Panel {
     this.setStock(stock);
   }
 
-  /** Each snapshot's stock; an open Stock sheet is redrawn only when it has changed. */
+  /** Each snapshot's stock; an open Stock sheet is redrawn only when a level has changed, and
+   * the counts hauling moves are filled in place. */
   setStock(stock: readonly StockView[]): void {
-    const key = JSON.stringify(stock);
-    if (this.shown !== 'stock' || key === this.stock) return;
+    if (this.shown !== 'stock') return;
+    const key = JSON.stringify(stock.map((s) => [s.good, s.level, s.want, s.levels]));
+    if (key === this.stock) return fillStock(this.body, stock);
     this.stock = key;
     this.body.replaceChildren(
       ...stockRows(stock, (good, level) => this.actions.setStock(good, level)),

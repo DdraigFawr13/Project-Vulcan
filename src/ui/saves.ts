@@ -100,7 +100,10 @@ export class Saves {
   async latest(seed?: string): Promise<SaveFile | undefined> {
     try {
       const store = await this.store;
-      const meta = (await store.list()).find((m) => seed === undefined || m.seed === seed);
+      // Never the rescue slot: it holds the lever that faulted, so continuing it would fault again.
+      const meta = (await store.list()).find(
+        (m) => !m.rescue && (seed === undefined || m.seed === seed),
+      );
       return meta && (await store.get(meta.id));
     } catch {
       return undefined;
@@ -283,6 +286,8 @@ export class Saves {
       this.problem = message(error);
       if (m.auto) this.lastAutoTick = -1;
     }
-    if (this.deps.panel.kind === 'saves') await this.showList();
+    // An autosave must not rebuild the list under a half-typed seed (and drop a phone's keyboard).
+    const typing = document.activeElement instanceof HTMLInputElement;
+    if (this.deps.panel.kind === 'saves' && !typing) await this.showList();
   }
 }

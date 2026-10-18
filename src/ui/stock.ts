@@ -36,5 +36,13 @@ export function stockRows(
   ];
 }
 
+/** Each snapshot: the counts change in place, so a level button never slips out from under a tap. */
+export function fillStock(body: HTMLElement, stock: readonly StockView[]): void {
+  for (const s of stock) {
+    const head = body.querySelector(`[data-testid="stock-${s.good}"] > p`);
+    if (head?.lastChild) head.lastChild.textContent = `: ${haveLine(s)}`;
+  }
+}
+
 const haveLine = (s: StockView): string =>
   s.want ? `${s.have} of ${s.want} wanted` : `${s.have} kept, none wanted`;

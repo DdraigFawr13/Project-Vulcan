@@ -110,6 +110,8 @@ export class Sheets {
     this.day = day;
     this.paused = paused;
     this.play.setWalkers(walkers);
+    // Settled here, not only by the Work sheet: a person's Work tab shows the same pending levers.
+    this.work.settle(walkers, day);
     this.person.setWalkers(walkers);
     this.refresh();
   }

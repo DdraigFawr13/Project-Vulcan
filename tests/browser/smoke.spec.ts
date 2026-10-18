@@ -227,6 +227,22 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByTestId('alert').click();
   await expect(panel.locator('[data-line]').first()).toBeVisible();
   expect(await phoneRules(page)).toEqual([]);
+  // Skips on to the band going hungry (the cart's food lasts about four weeks). Paused, the
+  // person sheet's "why?" holds still under a tap (it was rebuilt on every snapshot, so a tap
+  // slipped off it) and names the line that ate the last of the food.
+  await page.locator('.pslot').first().click();
+  await panel.getByRole('button', { name: 'Needs' }).click();
+  const hungry = panel.getByRole('button', { name: 'why?' });
+  for (let skips = 0; skips < 12 && (await hungry.count()) === 0; skips++) {
+    const from = await tick(page);
+    await page.getByTestId('speed-skip').click();
+    await expect.poll(() => tick(page)).toBeGreaterThan(from);
+    await expect(page.getByTestId('speed-skip')).toHaveAttribute('aria-pressed', 'false', {
+      timeout: 30_000,
+    });
+  }
+  await hungry.first().click({ timeout: 5000 });
+  await expect(panel.getByTestId('chain')).toContainText("ate the last of the band's food");
   await page.getByTestId('speed-3').click();
   await page.setViewportSize({ width: 1280, height: 720 });
 
