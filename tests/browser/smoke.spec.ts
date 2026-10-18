@@ -2,7 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 // The one browser smoke (RULES.md VR-23): a seed opens the site picker, a valley is settled, the
 // game draws the map, starts paused, runs at 3x and stops dead when paused; the inspector answers "why?"; a save
-// survives a page reload and carries on; the ledger exports; a shaft opens the level below; a reload
+// survives a page reload and carries on; the ledger exports; stairs cut while paused open the level
+// below once time runs and the inspector leads down them on a phone, then a shaft; a reload
 // continues where the game was, shaft and all.
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
@@ -126,12 +127,23 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
     const text = await panel.innerText();
     if (!/on it|water/.test(text)) break;
   }
-  await panel.getByRole('button', { name: 'Sink a shaft to −4' }).click();
-  await page.keyboard.press('>');
-  await expect(page.getByTestId('unreached')).toBeHidden();
-  await page.getByTestId('game').locator('canvas').click();
+  // Stairs on a phone, ordered while paused: the sheet says the order waits, then once time runs it
+  // shows the stairs with a way down, which the sheet itself follows (it covers the level buttons).
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByTestId('speed-0').click();
+  await panel.getByRole('button', { name: 'Cut stairs down' }).click();
+  await expect(panel).toContainText('Paused: this is dug');
+  await page.getByTestId('speed-3').click();
+  await panel.getByRole('button', { name: 'Go down to −1' }).click();
+  await expect(page.getByTestId('level')).toHaveText('−1');
   await expect(panel).toContainText('1 level down');
+  await expect(panel).toContainText('stairs up');
+  // From the foot of the stairs a shaft to the deepest level, which the sheet then leads down.
+  await panel.getByRole('button', { name: 'Sink a shaft to −4' }).click();
+  await panel.getByRole('button', { name: 'Go down to −2' }).click();
+  await expect(page.getByTestId('level')).toHaveText('−2');
   await expect(panel).toContainText('shaft');
+  await page.setViewportSize({ width: 1280, height: 720 });
 
   // Closing or reloading keeps the play since the last save: the page holds a standby copy taken
   // every 5 s of play and writes it as the page goes. Wait for one past the shaft, then reload.

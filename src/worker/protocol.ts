@@ -122,6 +122,8 @@ export interface TileView {
   /** What grows or lies on the tile, with what it yields, e.g. "ash (25 logs)" or
    * "copper vein (20 copper ore)". */
   feature?: string;
+  /** Where stairs or a shaft on the tile lead to a reached level; absent with no way up or down. */
+  ways?: { up: boolean; down: boolean };
   chunkX: number;
   chunkY: number;
   /** The chunk's version: how many times a tile in it has been changed, plus one. */

@@ -186,11 +186,34 @@ function tileView(w: WorldState, x: number, y: number, z: number): TileView | un
     ...waterOf(map, layer.tiles[i]!, z === 0 ? map.water[i]! : 0),
     ...climateOf(w, x, y, z),
     ...(feature && { feature: `${feature.name} (${feature.amount} ${itemName(feature.yields)})` }),
+    ...waysOf(map, i, z),
     chunkX,
     chunkY,
     version: layer.chunkVersions[chunkY * chunksAcross(map) + chunkX]!,
     ...(changedBy && { changedBy: lineOf(changedBy) }),
   };
+}
+
+/** Whether stairs or a shaft on tile `i` of level `z` lead up or down to a reached level. A shaft
+ * leads on only where the shaft continues on the next level. */
+function waysOf(map: WorldState['map'], i: number, z: number): Partial<TileView> {
+  const dials = content.terrain.generator.underground;
+  const id = (level: number): string | undefined => {
+    const layer = level >= 0 ? layerOf(map, level) : undefined;
+    return layer && content.terrain.kinds[layer.tiles[i]!]!.id;
+  };
+  const here = id(z);
+  const down =
+    id(z + 1) !== undefined &&
+    (here === dials.stairsDown ||
+      here === dials.stairs ||
+      (here === dials.shaft && id(z + 1) === dials.shaft));
+  const up =
+    z > 0 &&
+    (here === dials.stairsUp ||
+      here === dials.stairs ||
+      (here === dials.shaft && id(z - 1) === dials.shaft));
+  return down || up ? { ways: { up, down } } : {};
 }
 
 const BODIES: Record<Exclude<(typeof WATER)[number], ''>, (exit: string) => string> = {

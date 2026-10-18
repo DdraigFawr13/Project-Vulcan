@@ -3,7 +3,14 @@
 // the panels: inspector, ledger, saves and export.
 import { contentHash } from '../content/index.ts';
 import { startRenderer } from '../render/index.ts';
-import { spawnSimWorker, type FromWorker, type Speed, type ToWorker } from '../worker/index.ts';
+import {
+  spawnSimWorker,
+  type FromWorker,
+  type LedgerLine,
+  type Speed,
+  type TileView,
+  type ToWorker,
+} from '../worker/index.ts';
 import { Hud } from './hud.ts';
 import { Panel } from './panel.ts';
 import { Picker } from './picker.ts';
@@ -33,6 +40,24 @@ let worldTick = 0;
 let waiting = false;
 let stopped = false;
 let frame = 0;
+/** The inspector's last dig order: its tile and the tick it is stamped for; then the line that
+ * answered it (a refusal is kept to show) and whether the tile has been asked for again since. */
+let order:
+  | {
+      x: number;
+      y: number;
+      z: number;
+      tick: number;
+      answered?: boolean;
+      refused?: LedgerLine;
+      asked?: boolean;
+    }
+  | undefined;
+/** The ledger lines that answer a dig order. At 3x an order can land a tick or two late. */
+const ANSWERS = ['map.stairsCut', 'map.shaftSunk', 'map.digRefused'];
+/** The tile the inspector last showed. */
+let shown: TileView | undefined;
+const PAUSED_NOTE = 'Paused: this is dug on the next game minute once time runs (1×, 2× or 3×).';
 /** The starting or loading screen is up until the next snapshot; other screens wait for a click. */
 let covering = true;
 
@@ -71,13 +96,23 @@ const panel = new Panel(
     exportLedger: () => send({ type: 'export', kind: 'ndjson' }),
     load: (meta) => void saves.load(meta),
     remove: (meta) => void saves.remove(meta),
-    dig: (tile, kind, to) =>
+    dig: (tile, kind, to) => {
+      const { x, y, z } = tile;
+      order = { x, y, z, tick: worldTick + 1 };
       send({
         type: 'command',
-        tick: worldTick + 1,
+        tick: order.tick,
         kind,
-        data: { x: tile.x, y: tile.y, z: tile.z, ...(to !== undefined && { to }) },
-      }),
+        data: { x, y, z, ...(to !== undefined && { to }) },
+      });
+      // Asked again at once so a paused game says the order waits; the snapshot past the order's
+      // answer asks once more to show the stairs, or why they were not cut.
+      send({ type: 'inspect', x, y, z });
+    },
+    go: (tile, z) => {
+      setLevel(z);
+      if (level === z) send({ type: 'inspect', x: tile.x, y: tile.y, z });
+    },
     newGame: (next) => roll(next),
     close: () => closePanel(),
   },
@@ -115,6 +150,16 @@ function setLevel(z: number): void {
   hud.showLevel(z, depth, z === 0 || reached[z - 1] === true);
 }
 
+/** What became of the last dig order on `tile`, once: it waits while paused, or the line refusing
+ * it once answered. */
+function noticeFor(tile: TileView): string | LedgerLine | undefined {
+  if (!order || order.x !== tile.x || order.y !== tile.y || order.z !== tile.z) return undefined;
+  if (!order.answered) return speed === 0 ? PAUSED_NOTE : undefined;
+  const { refused } = order;
+  order = undefined;
+  return refused;
+}
+
 function openPanel(kind: 'ledger' | 'saves' | 'region'): void {
   renderer.mark(undefined);
   if (kind === 'ledger') panel.showLedger(saves.ledger);
@@ -138,6 +183,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       depth = message.depth;
       reached = [];
       level = 0;
+      order = undefined;
       hud.showLevel(0, depth, true);
       // A loaded world starts paused, like a new one.
       speed = 0;
@@ -151,6 +197,12 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
     } else if (message.type === 'snapshot') {
       waiting = false;
       worldTick = message.tick;
+      if (order?.answered && !order.asked) {
+        order.asked = true;
+        const { x, y, z } = order;
+        if (panel.kind === 'tile' && shown?.x === x && shown.y === y && shown.z === z)
+          send({ type: 'inspect', x, y, z });
+      }
       reached = message.reached;
       renderer.applyChunks(message.chunks);
       renderer.setAura(message.aura);
@@ -164,10 +216,17 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       }
     } else if (message.type === 'events') {
       saves.addLines(message.batch);
+      // The answer's lines come just before the snapshot that asks for the tile again.
+      for (const line of message.batch)
+        if (order && !order.answered && ANSWERS.includes(line.type) && line.tick >= order.tick) {
+          order.answered = true;
+          if (line.type === 'map.digRefused') order.refused = line;
+        }
     } else if (message.type === 'inspected') {
       // A reply about a level the player has since left is dropped.
       if (message.tile && message.tile.z === level) {
-        panel.showTile(message.tile, depth);
+        shown = message.tile;
+        panel.showTile(message.tile, depth, noticeFor(message.tile));
         renderer.mark(message.tile);
         hud.showPanel(undefined);
       }
