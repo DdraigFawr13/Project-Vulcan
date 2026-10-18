@@ -1,4 +1,4 @@
-# Project Vulcan ("Ledger")
+# Project Vulcan
 
 A RimWorld-style colony sim set in the Story Generator's world, where colonists interpret laws rather than obey them. Browser game: TypeScript, Phaser 4, a deterministic simulation in a Web Worker.
 

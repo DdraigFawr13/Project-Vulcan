@@ -26,7 +26,6 @@ export class Sheets {
   private people: readonly PersonView[] = [];
   private walkers: readonly WalkerView[] = [];
   private day: Day = { workFrom: 6, workTo: 18, sleepFrom: 22 };
-  private paused = true;
   private workKey = '';
   /** A world just began or loaded; its first batch of lines is not news. */
   private loaded = false;
@@ -46,7 +45,7 @@ export class Sheets {
       refresh: () => this.refresh(),
     });
     this.person = new PersonSheet(deps.panel, {
-      work: (p, w) => this.work.personRows(p, w, this.paused),
+      work: (p, w) => this.work.personRows(p, w),
       lines: deps.lines,
     });
     this.play = new Play(deps.bar, {
@@ -105,10 +104,9 @@ export class Sheets {
     this.play.select(undefined);
   }
 
-  snapshot(walkers: readonly WalkerView[], day: Day, paused: boolean): void {
+  snapshot(walkers: readonly WalkerView[], day: Day): void {
     this.walkers = walkers;
     this.day = day;
-    this.paused = paused;
     this.play.setWalkers(walkers);
     // Settled here, not only by the Work sheet: a person's Work tab shows the same pending levers.
     this.work.settle(walkers, day);
@@ -131,14 +129,10 @@ export class Sheets {
       if (panel.kind === 'person') this.person.setWalkers(this.walkers);
       return;
     }
-    const key = this.work.key(this.walkers, this.day, this.paused);
+    const key = this.work.key(this.walkers, this.day);
     if (key === this.workKey) return;
     this.workKey = key;
-    panel.showView(
-      'work',
-      'Work',
-      this.work.rows(this.people, this.walkers, this.day, this.paused),
-    );
+    panel.showView('work', 'Work', this.work.rows(this.people, this.walkers, this.day));
     this.play.select(undefined);
   }
 }

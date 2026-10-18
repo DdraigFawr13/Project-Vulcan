@@ -85,6 +85,25 @@ function wrote(log: WorldState['log'], from: number, stop: StopAt): boolean {
   return false;
 }
 
+/**
+ * Applies the levers due on the next tick now, exactly as that tick's first step would, so a
+ * paused game answers a tap (Morgan's playtest). Their lines carry the next tick, and that tick's
+ * `step` finds nothing left to apply, so a run that paused here matches one that never did.
+ */
+export function applyDue(world: WorldState, sim: Sim): WorldState['log'] {
+  const fromId = world.nextEventId;
+  world.tick += 1;
+  try {
+    while (world.pending[0] && world.pending[0].tick <= world.tick)
+      applyCommand(world, sim, world.pending.shift()!);
+  } finally {
+    world.tick -= 1;
+  }
+  let from = world.log.length;
+  while (from > 0 && world.log[from - 1]!.id >= fromId) from -= 1;
+  return world.log.slice(from);
+}
+
 /** Where `step` stops early: a set of event types, or a test such as `sim.notable`. */
 export type StopAt = ReadonlySet<string> | ((event: SimEvent) => boolean);
 

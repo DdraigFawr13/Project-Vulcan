@@ -75,3 +75,6 @@ Drawn at 1 art pixel to 2 CSS pixels and scaled with `image-rendering: pixelated
 5. Keep sheets within 40% of the screen on a phone.
 6. Offer no tool that orders one colonist or marks tiles (V-015): levers are priorities, standing orders and laws.
 7. Show its mock-up at 390 px with a screenshot before it is built (VR-57).
+8. Answer every tap: a pressed plate lights and sinks, and a button that starts something slow (Settle here) says so and takes no second tap.
+9. Keep a sheet's title and ✕ pinned while its page scrolls.
+10. Take levers while paused; they apply at once, so nothing reads "waits for time".

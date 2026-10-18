@@ -54,7 +54,7 @@ export class Play {
           'data-name': p.name,
         });
         const face = el('span', { class: 'face' });
-        face.append(portrait(p, 40 / 32));
+        face.append(portrait(p, 40 / 32, true));
         slot.append(face, el('span', { class: 'pname' }, p.name.split(' ')[0]!));
         this.faces.set(p.id, slot);
         return slot;

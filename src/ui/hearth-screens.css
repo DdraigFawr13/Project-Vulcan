@@ -116,6 +116,13 @@
   min-height: 48px;
   font-size: 14px;
 }
+/* Settling: the plate stays lit while the valley is made. */
+#hud .picker button.settle:disabled {
+  opacity: 1;
+  border-image-source: var(--plate-on);
+  color: var(--oak-dark);
+  text-shadow: none;
+}
 #hud .picker button.ghost {
   width: 100%;
 }

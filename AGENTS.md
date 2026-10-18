@@ -1,6 +1,6 @@
 # Agent instructions
 
-Vulcan (working title "Ledger"): a RimWorld-style colony sim in the Story Generator's world, where colonists interpret laws rather than obey them. TypeScript, Phaser 4, Vite; the simulation runs deterministically in a Web Worker. Vercel deploys from `main`.
+Project Vulcan (working title): a RimWorld-style colony sim in the Story Generator's world, where colonists interpret laws rather than obey them. TypeScript, Phaser 4, Vite; the simulation runs deterministically in a Web Worker. Vercel deploys from `main`.
 
 Shared rules come from AI-Master-Instructions through CLAUDE.md (`.claude/master/RULES.md`, layers `core`, `stacks/node-web`, `project-types/game`). Don't edit synced files; see `.ai-master.json`.
 

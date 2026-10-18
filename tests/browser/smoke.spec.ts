@@ -132,6 +132,8 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await panel.getByRole('button', { name: 'Save now' }).click();
   await expect(panel.getByTestId('save')).toHaveCount(1);
   await expect(panel.getByTestId('save')).toContainText('smoke/2 · Day 1 of Thawmonth, Year 1');
+  // The Saves page carries the test mode switch, shown on since the URL has `?debug`.
+  await expect(panel.getByTestId('test-switch')).toHaveAttribute('aria-pressed', 'true');
   const download = page.waitForEvent('download');
   await panel.getByRole('button', { name: 'Export ledger' }).click();
   const file = await download;
@@ -179,8 +181,9 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
     const text = await panel.innerText();
     if (!/on it|water/.test(text)) break;
   }
-  // Stairs on a phone, ordered while paused: the sheet says the order waits, then once time runs it
-  // shows the stairs with a way down, which the sheet itself follows (it covers the level buttons).
+  // Stairs on a phone, ordered while paused: the order applies at once (Morgan's playtest), so the
+  // sheet shows the stairs with a way down before time runs, and follows it (it covers the level
+  // buttons). The bar says test mode is on.
   await page.setViewportSize({ width: 390, height: 844 });
   // Hearth and Page on a phone (UI_STYLE.md): every tap target 40 px or more, every text 11 px or
   // more, nothing wider than the screen, and Region and Saves folded under ⋯.
@@ -191,10 +194,11 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   expect(await phoneRules(page)).toEqual([]);
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('speed-0').click();
+  await expect(page.getByTestId('test-badge')).toBeVisible();
   await panel.getByRole('button', { name: 'Cut stairs down' }).click();
-  await expect(panel).toContainText('Paused: this is dug');
-  await page.getByTestId('speed-3').click();
   await panel.getByRole('button', { name: 'Go down to −1' }).click();
+  await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('speed-3').click();
   await expect(page.getByTestId('level')).toHaveText('−1');
   await expect(panel).toContainText('1 level down');
   await expect(panel).toContainText('stairs up');
@@ -215,6 +219,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByTestId('open-work').click();
   await expect(panel).toContainText("The colony's day");
   expect(await phoneRules(page)).toEqual([]);
+  // Scrolled to its foot, the sheet keeps its title and ✕ in view.
+  await panel.evaluate((p) => (p.scrollTop = p.scrollHeight));
+  const sheet = (await panel.boundingBox())!;
+  const close = (await panel.getByRole('button', { name: 'Close panel' }).boundingBox())!;
+  expect(close.y).toBeGreaterThanOrEqual(sheet.y);
+  expect(close.y + close.height).toBeLessThanOrEqual(sheet.y + sheet.height);
   await panel.getByRole('button', { name: /^Hauling for .+: raise$/ }).click();
   await page.getByTestId('open-ledger').click();
   await expect(panel).toContainText(/ now puts hauling second\./);

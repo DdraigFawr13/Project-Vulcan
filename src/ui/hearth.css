@@ -43,8 +43,12 @@ body,
   opacity: 0.45;
   cursor: default;
 }
+/* A press shows: the plate lights and sinks while held (Morgan's playtest: taps gave no sign). */
 #hud button:active:not(:disabled) {
-  transform: translateY(1px);
+  border-image-source: var(--plate-on);
+  color: var(--oak-dark);
+  text-shadow: none;
+  transform: translateY(2px);
 }
 
 .hud {
@@ -266,6 +270,13 @@ body,
   }
 }
 .panel-head {
+  /* The title and ✕ stay in view while the page under them scrolls (Morgan's playtest). */
+  position: sticky;
+  top: -6px;
+  z-index: 1;
+  margin-top: -6px;
+  padding-top: 6px;
+  background: var(--paper) 0 0 / 64px repeat;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -421,6 +432,17 @@ body,
   color: var(--ink-soft);
   font-size: 14px;
   font-style: italic;
+}
+/* Test mode's badge beside the clock: plain red so it is never mistaken for the game. */
+.testbadge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 4px;
+  background: var(--mood-bad);
+  color: var(--bone);
+  font: 400 12px/1 var(--label);
+  text-shadow: none;
+  vertical-align: 2px;
 }
 .tag {
   display: inline-block;

@@ -1,4 +1,4 @@
-// The test tools row (`?debug` only, badged TEST MODE): the direct levers kept for trying things
+// The test tools row (test mode only, badged TEST MODE): the direct levers kept for trying things
 // out, never shown in the ordinary game, where colonists choose their own work (V-015). Cut
 // stairs or sink a shaft, mark a tree to fell, add a tile to the store.
 import type { TileView } from '../worker/index.ts';

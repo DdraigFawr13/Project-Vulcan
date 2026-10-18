@@ -23,7 +23,7 @@ export class Title {
     this.go.addEventListener('click', () => actions.continue());
     this.fresh.addEventListener('click', () => actions.newGame());
     this.root.append(
-      el('div', { class: 'logo' }, 'Ledger'),
+      el('div', { class: 'logo' }, 'Project Vulcan'),
       el('div', { class: 'wt' }, 'working title'),
       this.go,
       this.fresh,
