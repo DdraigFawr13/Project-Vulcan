@@ -12,7 +12,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 ## 2. Review before Morgan sees it
 
 - **VR-05** Each milestone PR gets a review by Claude (the `reviewer` agent for diffs over about 500 lines) before merge; findings are fixed or answered in the PR.
-- **VR-55** Every mock-up, UI or engine, gets the coordinator's review pass: the thread posts only a one-line "ready for review pass", waits for the coordinator's note, applies its findings and republishes (Morgan, 2026-10-17; LESSONS 2026-10-17). A UI mock-up then goes to Morgan on an approval card. An engine mock-up goes straight to its build after the pass, and Morgan sees its results at the phase playtest (Morgan, 2026-10-18 audit); a card is still posted for any fork that changes what Morgan sees. PRs don't get this pass: they keep the thread's own review and full local check, so CI runs once (VR-54).
+- **VR-55** Every mock-up, UI or engine, gets the coordinator's review pass: the thread posts only a one-line "ready for review pass", waits for the coordinator's note, applies its findings and republishes (Morgan, 2026-10-17; LESSONS 2026-10-17). A UI mock-up then goes to Morgan on an approval card. An engine mock-up goes straight to its build after the pass, and Morgan sees its results at the phase playtest (Morgan, 2026-10-18 audit); a card is still posted for any fork that changes what Morgan sees. PRs don't get this pass: they keep the thread's own review and full local check, so CI runs once (VR-54). Narrowed by VR-59 (2026-10-18): engine mock-ups no longer get the pass.
 - **VR-06** When a phase's last milestone merges, Claude runs a phase review on `main`: play the phase's playtest itself on the production build, read the phase's whole diff for bugs and rule breaks, and check every milestone's "done when". Fixes go in one follow-up PR.
 - **VR-07** Only after those fixes merge does the phase go to Morgan, as one message: what to try, a link to the live build, screenshots as an artifact, and what is known to be rough. Morgan's findings come back as the next PR, and each correction Morgan makes is logged in LESSONS.md.
 
@@ -44,6 +44,9 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-56** Each phase starts with a taste board: three or four reference pictures for the phase's look, which Morgan picks from before the first mock-up, so mock-ups aren't reworked as taste shifts (Morgan, 2026-10-18 audit; P1.1 took four rounds).
 - **VR-57** Phone first: every UI mock-up and screen is designed at phone width (390 px) first, then desktop (V-029).
 - **VR-58** A milestone whose build is estimated over 1,200 lines (code, tests, docs and data, not packed art) is split before the build into an engine PR and a screen PR, each merged on its own green CI (LESSONS 2026-10-18; P1.1 and P1.5 went over 1,500).
+- **VR-59** The coordinator's review pass covers only screen mock-ups and taste boards, never engine mock-ups, and a screen pass is a spot check against the phase spec and the taste-board picks, not a full audit (Morgan, 2026-10-18; each pass cost about 70 to 105k tokens, four in Phase 2 so far).
+- **VR-60** A mock-up is text plus two or three images and a three-seed table; the ten-seed done-when table is produced only by the phase review (Morgan, 2026-10-18; ten-seed galleries made mock-ups slow to build and large to review).
+- **VR-61** Small milestones that touch the same area run as one bundle in one thread, so repo setup and spec reading are paid once; the coordinator names the bundle when it starts the thread (Morgan, 2026-10-18; each setup is roughly 150 to 250k tokens, estimated).
 
 ## 7. Lean testing
 
