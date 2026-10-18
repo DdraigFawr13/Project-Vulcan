@@ -4,7 +4,7 @@ import Phaser from 'phaser';
 import type { AuraView, ChunkView, GoodsView, PersonView, WalkerView } from '../worker/index.ts';
 import { GoodsSprites } from './goods.ts';
 import { PeopleSprites } from './people.ts';
-import { ValleyScene, type Hover } from './scene.ts';
+import { TILE, ValleyScene, type Hover } from './scene.ts';
 
 export type { Hover } from './scene.ts';
 
@@ -15,6 +15,8 @@ export interface Renderer {
   /** Draws the aura spots' glow (the snapshot's `aura`); a no-op while they are unchanged. */
   setAura(spots: readonly AuraView[]): void;
   zoomStep(direction: 1 | -1): void;
+  /** Centres the view on a tile, below the bar; moves the camera only. */
+  lookAt(x: number, y: number): void;
   /** The page's bar covers the top `px` of the view; fitting and scrolling keep the map clear. */
   setTopInset(px: number): void;
   /** Shows level `z`: 0 the surface, 1 to 4 below. */
@@ -63,6 +65,7 @@ export function startRenderer(
     applyChunks: (chunks) => scene.applyChunks(chunks),
     setAura: (spots) => scene.setAura(spots),
     zoomStep: (direction) => scene.zoomStep(direction),
+    lookAt: (x, y) => scene.controls?.lookAt((x + 0.5) * TILE, (y + 0.5) * TILE),
     setTopInset: (px) => scene.setTopInset(px),
     setLevel: (z) => {
       scene.setLevel(z);

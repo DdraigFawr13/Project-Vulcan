@@ -1,0 +1,300 @@
+// The Work sheet (P2.5): what matters more to each person, and the colony's day. On a phone one
+// person at a time with a 1 to 4 stepper per kind of work; on a desktop the whole band as a grid.
+// Priorities are weighed, not obeyed (V-015): a person may decline, and the sheet shows the line
+// that says why. A change is a lever for the next tick; while paused it says it waits for time to
+// run, so a tap always answers on screen. Everything shown comes from the snapshot (GAME-02).
+import type { PersonView, WalkerView } from '../worker/index.ts';
+import { el } from './dom.ts';
+
+export interface Day {
+  workFrom: number;
+  workTo: number;
+  sleepFrom: number;
+}
+
+export interface WorkActions {
+  setPriority(person: number, job: string, level: number): void;
+  setDay(day: Day): void;
+  /** The sheet changed on its own (another person shown, a lever sent): draw it again. */
+  refresh(): void;
+}
+
+type Job = WalkerView['work'][number];
+
+/** Levels run 1 (first) to 4 (last); the worker sends each level's word. */
+const LEVELS = 4;
+const WORDS = ['first', 'second', 'third', 'last'];
+const hh = (h: number) => `${String(h % 24).padStart(2, '0')}:00`;
+const wide = () => matchMedia('(min-width: 641px)').matches;
+const first = (p: PersonView) => p.name.split(' ')[0]!;
+
+export class WorkSheet {
+  /** The person shown on a phone, by index into the band. */
+  private index = 0;
+  /** Levers sent and not yet seen in a snapshot, so the sheet can say they wait. */
+  private readonly pending = new Map<string, number>();
+  private pendingDay: Day | undefined;
+  private readonly actions: WorkActions;
+  constructor(actions: WorkActions) {
+    this.actions = actions;
+  }
+
+  /** Opens on this person (a face tapped while the sheet is up). */
+  show(id: number, people: readonly PersonView[]): void {
+    this.index = Math.max(
+      0,
+      people.findIndex((p) => p.id === id),
+    );
+  }
+
+  /** A key for what the sheet shows, so it is redrawn only when that changes. */
+  key(walkers: readonly WalkerView[], day: Day, paused: boolean): string {
+    this.settle(walkers, day);
+    const work = walkers.map((w) => [w.work, w.skills.map((s) => s.level)]);
+    return JSON.stringify([
+      this.index,
+      work,
+      day,
+      paused,
+      [...this.pending],
+      this.pendingDay,
+      wide(),
+    ]);
+  }
+
+  /** The whole sheet: the band's priorities and the colony's day. */
+  rows(
+    people: readonly PersonView[],
+    walkers: readonly WalkerView[],
+    day: Day,
+    paused: boolean,
+  ): HTMLElement[] {
+    return [
+      ...(wide() ? this.grid(people, walkers, paused) : this.one(people, walkers, paused)),
+      el('p', { class: 'aside' }, 'Other kinds of work join this list when the band can do them.'),
+      ...this.dayRows(day, paused),
+    ];
+  }
+
+  /** One person's priorities, for the Work tab of their sheet. */
+  personRows(p: PersonView, w: WalkerView | undefined, paused: boolean): HTMLElement[] {
+    return [
+      el(
+        'p',
+        { class: 'aside' },
+        `What matters most to ${first(p)} when there is work to do. ${first(p)} still chooses, and may decline.`,
+      ),
+      ...(w?.work ?? []).map((job) => this.jobRow(p, w!, job, paused)),
+    ];
+  }
+
+  private one(people: readonly PersonView[], walkers: readonly WalkerView[], paused: boolean) {
+    const p = people[Math.min(this.index, people.length - 1)];
+    if (!p) return [el('p', {}, 'No one has arrived yet.')];
+    const step = (by: 1 | -1) => {
+      const b = el(
+        'button',
+        {
+          type: 'button',
+          'aria-label': by < 0 ? 'Previous person' : 'Next person',
+          'data-testid': by < 0 ? 'work-prev' : 'work-next',
+        },
+        by < 0 ? '◀' : '▶',
+      );
+      b.addEventListener('click', () => {
+        this.index = (this.index + by + people.length) % people.length;
+        this.actions.refresh();
+      });
+      return b;
+    };
+    const who = el('div', { class: 'who' }, p.home ? `${p.name} of ${p.home}` : p.name);
+    who.append(
+      el('small', {}, `${this.index + 1} of ${people.length} · trade: ${p.trade.toLowerCase()}`),
+    );
+    const pager = el('div', { class: 'pager' });
+    pager.append(step(-1), who, step(1));
+    return [
+      pager,
+      ...this.personRows(
+        p,
+        walkers.find((x) => x.id === p.id),
+        paused,
+      ),
+    ];
+  }
+
+  private jobRow(p: PersonView, w: WalkerView, job: Job, paused: boolean): HTMLElement {
+    const key = `${p.id}:${job.job}`;
+    const want = this.pending.get(key) ?? job.level;
+    const skill = w.skills.find((s) => s.id === job.skill);
+    const row = el('div', { class: 'prio', 'data-job': job.job });
+    const name = el('span', { class: 'job' }, job.name);
+    const about = skill
+      ? `${skill.name.toLowerCase()} ${skill.level}, can reach ${skill.potential}`
+      : 'no skill needed';
+    name.append(el('small', {}, about));
+    row.append(
+      name,
+      this.stepper(want, WORDS[want - 1] ?? '', `${job.name} for ${p.name}`, (level) =>
+        this.priority(p, job, level),
+      ),
+    );
+    if (this.pending.has(key) && paused)
+      row.append(el('span', { class: 'note' }, 'Waits for time to run.'));
+    else if (job.declined) this.declined(row, p, job);
+    return row;
+  }
+
+  /** "Name declined this. why?"; the row carries the line so its chain opens beneath it. */
+  private declined(row: HTMLElement, p: PersonView, job: Job): void {
+    row.dataset['line'] = String(job.declined);
+    const note = el('span', { class: 'note' }, `${first(p)} declined ${job.name.toLowerCase()}. `);
+    note.append(
+      el('button', { type: 'button', class: 'why', 'data-why': String(job.declined) }, 'why?'),
+    );
+    row.append(note);
+  }
+
+  private priority(p: PersonView, job: Job, level: number): void {
+    this.pending.set(`${p.id}:${job.job}`, level);
+    this.actions.setPriority(p.id, job.job, level);
+    this.actions.refresh();
+  }
+
+  /** The desktop grid: a person per row, a kind of work per column; a cell cycles 1 to 4. */
+  private grid(people: readonly PersonView[], walkers: readonly WalkerView[], paused: boolean) {
+    const jobs = walkers[0]?.work ?? [];
+    const table = el('table', { class: 'grid' });
+    const head = el('tr', {}, el('th', {}, ''));
+    for (const j of jobs) head.append(el('th', {}, j.name));
+    table.append(head);
+    const notes: HTMLElement[] = [];
+    for (const p of people) {
+      const w = walkers.find((x) => x.id === p.id);
+      const tr = el('tr', {}, el('th', {}, first(p)));
+      for (const job of w?.work ?? []) {
+        const level = this.pending.get(`${p.id}:${job.job}`) ?? job.level;
+        const label = `${job.name} for ${p.name}: ${WORDS[level - 1]}`;
+        const cell = el(
+          'button',
+          { type: 'button', class: 'cell', 'aria-label': label },
+          String(level),
+        );
+        cell.addEventListener('click', () => this.priority(p, job, (level % LEVELS) + 1));
+        tr.append(el('td', {}, cell));
+        if (job.declined) {
+          const row = el('div', { class: 'prio' });
+          this.declined(row, p, job);
+          notes.push(row);
+        }
+      }
+      table.append(tr);
+    }
+    const waits =
+      paused && this.pending.size ? [el('p', { class: 'note' }, 'Waits for time to run.')] : [];
+    return [table, ...waits, ...notes];
+  }
+
+  private dayRows(day: Day, paused: boolean): HTMLElement[] {
+    const d = this.pendingDay ?? day;
+    const label = `Work ${hh(d.workFrom)} to ${hh(d.workTo)}, bed at ${hh(d.sleepFrom)}`;
+    const strip = el('div', { class: 'day', role: 'img', 'aria-label': label });
+    for (let h = 0; h < 24; h += 1)
+      strip.append(
+        el('i', { class: h < d.workFrom || h >= d.sleepFrom ? 's' : h < d.workTo ? 'w' : 'f' }),
+      );
+    const hours = el('div', { class: 'dayk' });
+    for (const h of [0, 6, 12, 18, 24]) hours.append(el('span', {}, String(h).padStart(2, '0')));
+    const legend = el('p', { class: 'legend' });
+    for (const [k, word] of [
+      ['s', 'sleep'],
+      ['w', 'work'],
+      ['f', 'free time'],
+    ] as const)
+      legend.append(el('b', { class: k }), word);
+    // Steppers stop at the edges the worker also checks: work begins after 01:00, ends after it
+    // begins, and bed is no earlier than the end of work.
+    const ok = (n: Day) =>
+      n.workFrom >= 1 && n.workFrom < n.workTo && n.workTo <= n.sleepFrom && n.sleepFrom <= 24;
+    const row = (name: string, part: keyof Day) => {
+      const r = el('div', { class: 'prio', 'data-day': part }, el('span', { class: 'job' }, name));
+      r.append(
+        this.stepper(
+          d[part],
+          '',
+          name,
+          (v) => {
+            const next = { ...d, [part]: v };
+            if (!ok(next)) return;
+            this.pendingDay = next;
+            this.actions.setDay(next);
+            this.actions.refresh();
+          },
+          hh,
+          0,
+          24,
+          (v) => ok({ ...d, [part]: v }),
+        ),
+      );
+      return r;
+    };
+    return [
+      el('h3', {}, "The colony's day"),
+      el(
+        'p',
+        { class: 'aside' },
+        'One timetable for everyone. Each person keeps to it as well as their needs allow.',
+      ),
+      strip,
+      hours,
+      legend,
+      row('Work starts', 'workFrom'),
+      row('Work ends', 'workTo'),
+      row('Bed at', 'sleepFrom'),
+      ...(this.pendingDay && paused ? [el('p', { class: 'note' }, 'Waits for time to run.')] : []),
+    ];
+  }
+
+  /** − value +. A priority's + means nearer first (a lower number); an hour's + is later.
+   * `fits` says whether a value may be stepped to. */
+  private stepper(
+    value: number,
+    word: string,
+    label: string,
+    onChange: (v: number) => void,
+    show: (v: number) => string = String,
+    min = 1,
+    max = LEVELS,
+    fits: (v: number) => boolean = (v) => v >= min && v <= max,
+  ): HTMLElement {
+    const box = el('div', { class: 'step', role: 'group', 'aria-label': label });
+    const by = max === LEVELS ? -1 : 1;
+    const down = el('button', { type: 'button', 'aria-label': `${label}: lower` }, '−');
+    const up = el('button', { type: 'button', 'aria-label': `${label}: raise` }, '+');
+    down.disabled = !fits(value - by);
+    up.disabled = !fits(value + by);
+    down.addEventListener('click', () => onChange(value - by));
+    up.addEventListener('click', () => onChange(value + by));
+    const shown = el('span', { class: 'val' }, show(value));
+    if (word) shown.append(el('small', {}, word));
+    box.append(down, shown, up);
+    return box;
+  }
+
+  /** Drops pending levers the snapshot now shows. */
+  private settle(walkers: readonly WalkerView[], day: Day): void {
+    for (const [key, level] of this.pending) {
+      const [id, job] = key.split(':');
+      const now = walkers.find((w) => w.id === Number(id))?.work.find((j) => j.job === job);
+      if (!now || now.level === level) this.pending.delete(key);
+    }
+    const d = this.pendingDay;
+    if (
+      d &&
+      d.workFrom === day.workFrom &&
+      d.workTo === day.workTo &&
+      d.sleepFrom === day.sleepFrom
+    )
+      this.pendingDay = undefined;
+  }
+}

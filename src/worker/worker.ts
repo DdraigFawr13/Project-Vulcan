@@ -114,6 +114,7 @@ function lineOf(e: SimEvent | Stub): LedgerLine {
     causes: [...e.causes],
     why: e.causes.some((c) => c !== world?.begunEvent),
     clock,
+    ...(e.actors.length > 0 && { actors: [...e.actors] }),
     ...(sim.notable(e) && { notable: true as const, ...whereOf(e) }),
   };
 }

@@ -17,6 +17,7 @@ import { Orders } from './orders.ts';
 import { Panel } from './panel.ts';
 import { Picker } from './picker.ts';
 import { Saves } from './saves.ts';
+import { Sheets } from './sheets.ts';
 import { OLD_SAVE, Title } from './title.ts';
 
 const parent = document.getElementById('game');
@@ -34,6 +35,7 @@ const send = (message: ToWorker): void => worker.postMessage(message);
 let speed: Speed = 0;
 /** The speed Space resumes to. */
 let lastRunning: Exclude<Speed, 0> = 1;
+let skipping = false; // skipping ahead (P2.7), as of the last snapshot
 let ready = false;
 /** The level on screen (0 the surface), how many lie below, and which of them are reached. */
 let level = 0;
@@ -72,9 +74,8 @@ const renderer = startRenderer(parent, {
   onSelect: (tile) => {
     const person = renderer.personAt(tile.x, tile.y);
     if (!person) return send({ type: 'inspect', ...tile, z: level });
-    panel.showPerson(person);
+    sheets.showPerson(person);
     renderer.mark(tile);
-    hud.showPanel(undefined);
   },
 });
 hudRoot.replaceChildren();
@@ -82,6 +83,7 @@ const hud = new Hud(
   hudRoot,
   {
     setSpeed,
+    skip: () => void (ready && !stopped && !saves.loading && send({ type: 'skip' })),
     zoom: (direction) => renderer.zoomStep(direction),
     level: (direction) => setLevel(level + direction),
     reload: () => location.reload(),
@@ -90,8 +92,11 @@ const hud = new Hud(
   },
   debug,
 );
-// The bar wraps to two rows on a phone: keep the camera's fit and bounds clear of it.
-new ResizeObserver(() => renderer.setTopInset(hud.bar.offsetHeight)).observe(hud.bar);
+// The bar wraps on a phone and holds the strip: keep the camera and a desktop sheet clear of it.
+new ResizeObserver(() => {
+  renderer.setTopInset(hud.bar.offsetHeight);
+  hudRoot.style.setProperty('--bar-h', `${hud.bar.offsetHeight}px`);
+}).observe(hud.bar);
 const panel = new Panel(
   hudRoot,
   {
@@ -112,6 +117,20 @@ const panel = new Panel(
   },
   debug,
 );
+const sheets = new Sheets({
+  bar: hud.bar,
+  panel,
+  send,
+  tick: () => worldTick,
+  lines: () => saves.ledger,
+  show: (x, y, z) => {
+    closePanel();
+    setLevel(z);
+    renderer.lookAt(x, y);
+    renderer.mark({ x, y });
+  },
+  opened: () => hud.showPanel(undefined),
+});
 const picker = new Picker(hudRoot, {
   settle: (chosen) => {
     // A reload comes straight back to this valley; New game or a new seed opens the picker again.
@@ -153,12 +172,14 @@ function openPanel(kind: PanelButton): void {
   if (kind === 'ledger') panel.showLedger(saves.ledger);
   else if (kind === 'region') send({ type: 'region' });
   else if (kind === 'stock') panel.showStock(stock);
+  else if (kind === 'work') sheets.showWork();
   else void saves.showList();
   hud.showPanel(kind);
 }
 
 function closePanel(): void {
   panel.hide();
+  sheets.closed();
   renderer.mark(undefined);
   hud.showPanel(undefined);
 }
@@ -178,6 +199,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       people = message.people;
       arriving = message.from === 'seed' && message.fresh && people.length > 0;
       renderer.setPeople(people);
+      sheets.setPeople(people);
       // A loaded world starts paused, like a new one.
       speed = 0;
       if (message.from === 'save') {
@@ -194,7 +216,10 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       reached = message.reached;
       renderer.applyChunks(message.chunks);
       renderer.movePeople(message.walkers);
-      panel.setWalkers(message.walkers);
+      // A skip ends paused in the worker; the bar's speed follows it.
+      if (skipping && !message.skipping) speed = message.speed;
+      skipping = message.skipping;
+      sheets.snapshot(message.walkers, message.day, message.speed === 0 && !skipping);
       renderer.setGoods(message.goods);
       stock = message.stock;
       panel.setStock(stock);
@@ -202,7 +227,14 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       hud.showLevel(level, depth, level === 0 || reached[level - 1] === true);
       hud.fps = Math.round(renderer.fps());
       if (debug) hud.showTiming(message.timing);
-      hud.showClock(message.clock, message.tick, message.speed, message.at, message.weather);
+      hud.showClock(
+        message.clock,
+        message.tick,
+        message.speed,
+        message.at,
+        message.weather,
+        message.skipping,
+      );
       saves.seen(message.tick);
       const date = `Day ${message.clock.day} of ${message.clock.monthName}, Year ${message.clock.year}`;
       if (title && titleWaits) {
@@ -221,6 +253,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
     } else if (message.type === 'events') {
       saves.addLines(message.batch);
       orders.lines(message.batch);
+      sheets.lines(message.batch);
     } else if (message.type === 'inspected') {
       // A reply about a level the player has since left is dropped.
       if (message.tile && message.tile.z === level) {
@@ -308,7 +341,7 @@ function onVisibility(): void {
     saves.flush();
     saves.autosave();
     hiddenAt = speed;
-    if (speed !== 0) send({ type: 'setSpeed', speed: 0 });
+    if (speed !== 0 || skipping) send({ type: 'setSpeed', speed: 0 });
   } else if (!document.hidden && hiddenAt !== undefined) {
     if (!stopped && hiddenAt !== 0) send({ type: 'setSpeed', speed: hiddenAt });
     hiddenAt = undefined;

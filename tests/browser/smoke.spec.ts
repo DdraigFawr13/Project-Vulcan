@@ -6,6 +6,7 @@ import { expect, test, type Page } from '@playwright/test';
 // survives a page reload and carries on; the ledger exports; stairs cut while paused open the level
 // below once time runs and the inspector leads down them on a phone, then a shaft; a reload
 // continues where the game was, shaft and all; the title's Continue names the valley and loads it.
+// P2.5 to P2.7: a person's tabs, the Work sheet's stepper, Skip to a notable line and the alerts.
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
 /** The last snapshot's tick and the worker's clock when it was sent (ms). */
@@ -202,6 +203,31 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await panel.getByRole('button', { name: 'Go down to −2' }).click();
   await expect(page.getByTestId('level')).toHaveText('−2');
   await expect(panel).toContainText('shaft');
+
+  // P2.5 to P2.7 on a phone. A face opens that person's sheet in tabs; the Work sheet's stepper
+  // ranks hauling higher, which is a ledger line naming the person, never an order to a tile.
+  await page.locator('.pslot').first().click();
+  await panel.getByRole('button', { name: 'Skills' }).click();
+  await expect(panel).toContainText('Trade:');
+  await panel.getByRole('button', { name: 'Work' }).click();
+  await expect(panel).toContainText('Felling');
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByTestId('open-work').click();
+  await expect(panel).toContainText("The colony's day");
+  expect(await phoneRules(page)).toEqual([]);
+  await panel.getByRole('button', { name: /^Hauling for .+: raise$/ }).click();
+  await page.getByTestId('open-ledger').click();
+  await expect(panel).toContainText(/ now puts hauling second\./);
+  // Skip runs to the next notable line and stops there paused; the alert line opens the feed.
+  await page.getByTestId('speed-skip').click();
+  await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true', {
+    timeout: 30_000,
+  });
+  await expect(page.getByTestId('speed-skip')).toHaveAttribute('aria-pressed', 'false');
+  await page.getByTestId('alert').click();
+  await expect(panel.locator('[data-line]').first()).toBeVisible();
+  expect(await phoneRules(page)).toEqual([]);
+  await page.getByTestId('speed-3').click();
   await page.setViewportSize({ width: 1280, height: 720 });
 
   // Closing or reloading keeps the play since the last save: the page holds a standby copy taken
@@ -222,7 +248,8 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // The bare link now shows the title over the last valley, and Continue carries on there.
   await page.goto('/');
   const resume = page.getByRole('button', { name: /Continue/ });
-  await expect(resume).toContainText(/\w · Day \d+ of Thawmonth, Year 1/, { timeout: 20_000 });
+  // Skip ahead above carried the valley past the first month, so any month of Year 1.
+  await expect(resume).toContainText(/\w · Day \d+ of \w+, Year 1/, { timeout: 20_000 });
   await resume.click();
   await expect.poll(() => tick(page)).toBeGreaterThan(paused);
   expect(errors).toEqual([]);

@@ -119,9 +119,11 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     work: content.work.priority.jobs.map((job) => {
       const level = levelOf(world, content, p.id, job);
       const declined = declinedLine(world, p.id, job);
+      const skill = content.jobs.find((j) => j.id === job)?.skill;
       return {
         job,
         name: nameOf(content.jobs, job),
+        ...(skill && { skill }),
         level,
         word: content.work.priority.words[level - 1] ?? '',
         ...(declined !== undefined && { declined }),

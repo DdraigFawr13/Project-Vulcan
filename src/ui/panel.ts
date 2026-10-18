@@ -1,22 +1,15 @@
-// The side panel (a bottom sheet on narrow screens): the tile inspector, the ledger and the save
-// list. Shows what the worker and the save store hand it; it computes no game rule (GAME-02).
+// The side panel (a bottom sheet on narrow screens): the tile inspector, the ledger, the save
+// list, and the sheets drawn elsewhere (person, Work, Alerts). Shows what the worker and the save store hand
+// it; it computes no game rule (GAME-02).
 import type { SaveMeta } from '../persist/index.ts';
-import type {
-  ClockView,
-  LedgerLine,
-  PersonView,
-  RegionView,
-  StockView,
-  TileView,
-  WalkerView,
-} from '../worker/index.ts';
+import type { ClockView, LedgerLine, RegionView, StockView, TileView } from '../worker/index.ts';
 import { el } from './dom.ts';
-import { fillNeed, needRow, skillRows, whoLine } from './person.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 import { stockRows } from './stock.ts';
 import { testTools, type TestOrder } from './testtools.ts';
 
-export type PanelKind = 'tile' | 'person' | 'ledger' | 'saves' | 'region' | 'stock';
+export type PanelKind =
+  'tile' | 'person' | 'ledger' | 'saves' | 'region' | 'stock' | 'work' | 'alerts';
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;
@@ -48,9 +41,6 @@ export class Panel {
   private readonly actions: PanelActions;
   /** Shows developer rows (the tile's chunk and version); `?debug` in the URL. */
   private readonly debug: boolean;
-  /** Everyone's needs as of the last snapshot, and the open person's rows that show them. */
-  private walkers: readonly WalkerView[] = [];
-  private person = { id: 0, now: el('p'), rows: [] as HTMLElement[] };
   /** The Stock sheet's last view, so it is redrawn only when it changes. */
   private stock = '';
 
@@ -122,10 +112,12 @@ export class Panel {
     if (this.debug)
       this.body.append(...testTools(tile, depth, (kind, to) => this.actions.test(tile, kind, to)));
     if (typeof notice === 'string') this.body.append(el('p', { class: 'note' }, notice));
-    else if (notice) this.body.append(this.line(notice, 'Not dug · '));
-    for (const g of tile.goods ?? []) if (g.made) this.body.append(this.line(g.made, 'Made by · '));
-    if (tile.store?.made && !tile.goods) this.body.append(this.line(tile.store.made, 'Store · '));
-    if (tile.changedBy) this.body.append(this.line(tile.changedBy, 'Last changed · '));
+    else if (notice) this.body.append(this.lineRow(notice, 'Not dug · '));
+    for (const g of tile.goods ?? [])
+      if (g.made) this.body.append(this.lineRow(g.made, 'Made by · '));
+    if (tile.store?.made && !tile.goods)
+      this.body.append(this.lineRow(tile.store.made, 'Store · '));
+    if (tile.changedBy) this.body.append(this.lineRow(tile.changedBy, 'Last changed · '));
     else this.body.append(el('p', { class: 'muted' }, 'The line that last changed it is gone.'));
   }
 
@@ -162,34 +154,6 @@ export class Panel {
     );
   }
 
-  /** A panel with a title and one line of text. */
-  /** A person (P2.1): who they are, every skill with its potential, their traits and the line
-   * that brought them, with "why?". Inspector tabs come in P2.6. */
-  showPerson(p: PersonView): void {
-    this.open('person', p.home ? `${p.name} of ${p.home}` : p.name);
-    const arrived = el('div', { class: 'line prow', 'data-line': String(p.arrived) });
-    const text = el('span', {}, 'Came with the band ');
-    text.append(
-      el('button', { type: 'button', class: 'why', 'data-why': String(p.arrived) }, 'why?'),
-    );
-    arrived.append(text);
-    this.person = { id: p.id, now: el('p'), rows: [needRow(), ...this.needRows()] };
-    this.body.replaceChildren(
-      el('p', { class: 'pwho' }, whoLine(p, true)),
-      this.person.now,
-      ...this.person.rows,
-      el('p', {}, `Trade: ${p.trade}`),
-      skillRows(p.skills, true),
-      ...p.traits.map((t) => {
-        const row = el('div', { class: 'prow' });
-        row.append(el('b', {}, t.name), el('span', {}, t.description));
-        return row;
-      }),
-      arrived,
-    );
-    this.setWalkers(this.walkers);
-  }
-
   /** The Stock sheet (P2.4): how much of each good the colony keeps, a level button for each. */
   showStock(stock: readonly StockView[]): void {
     this.open('stock', 'Stock');
@@ -207,19 +171,13 @@ export class Panel {
     );
   }
 
-  /** The needs as of this snapshot; an open person's bars and "Now:" follow them. */
-  setWalkers(walkers: readonly WalkerView[]): void {
-    this.walkers = walkers;
-    const w = walkers.find((x) => x.id === this.person.id);
-    if (this.shown !== 'person' || !w) return;
-    this.person.now.textContent = `Now: ${w.doing}`;
-    [w.mood, ...w.needs].forEach((n, k) => fillNeed(this.person.rows[k]!, n));
+  /** A sheet drawn elsewhere (the person, Work and Alerts sheets): its title and its rows. */
+  showView(kind: PanelKind, title: string, rows: readonly HTMLElement[]): void {
+    this.open(kind, title);
+    this.body.replaceChildren(...rows);
   }
 
-  private needRows(): HTMLElement[] {
-    return (this.walkers[0]?.needs ?? []).map(() => needRow());
-  }
-
+  /** A panel with a title and one line of text. */
   showNote(title: string, text: string): void {
     this.open('region', title);
     this.body.replaceChildren(el('p', {}, text));
@@ -234,7 +192,7 @@ export class Panel {
   /** New lines at the top of an open ledger, keeping the newest `LEDGER_LINES`. */
   addLines(lines: readonly LedgerLine[]): void {
     if (this.shown !== 'ledger') return;
-    for (const line of lines) this.body.prepend(this.line(line));
+    for (const line of lines) this.body.prepend(this.lineRow(line));
     while (this.body.childElementCount > LEDGER_LINES) this.body.lastElementChild!.remove();
   }
 
@@ -245,7 +203,7 @@ export class Panel {
       host.querySelector(':scope > .chain')?.remove();
       const chain = el('div', { class: 'chain', 'data-testid': 'chain' });
       for (const line of lines) {
-        const row = this.line(line, '', false);
+        const row = this.lineRow(line, '', false);
         row.style.setProperty('--depth', String(line.depth));
         if (!line.causes.length) row.querySelector('.when')!.append(' · the root');
         chain.append(row);
@@ -310,7 +268,8 @@ export class Panel {
     this.root.hidden = false;
   }
 
-  private line(line: LedgerLine, prefix = '', why = true): HTMLElement {
+  /** A ledger line: its number, when, its text and "why?" when it has causes. */
+  lineRow(line: LedgerLine, prefix = '', why = true): HTMLElement {
     const row = el('div', { class: 'line', 'data-line': String(line.id) });
     row.append(
       el('b', { class: 'no' }, `#${line.id}`),
