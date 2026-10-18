@@ -10,6 +10,9 @@ import {
   itemsAt,
   itemsOf,
   marksOf,
+  partOf,
+  planAt,
+  plansOf,
   recordOf,
   stockOf,
   storeOf,
@@ -18,7 +21,7 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
-import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
+import type { GoodsView, LedgerLine, PlanView, StockView, TileView } from './protocol.ts';
 
 const nameOf = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 
@@ -39,6 +42,9 @@ export function goodsOf(world: WorldState): GoodsView {
       .map((i) => ({ ...at(i), frame: frameOf(i['kind'] as string, i['state'] as string) })),
     store: storeOf(world).map(at),
     marks: marksOf(world).map((m) => ({ x: m['x'] as number, y: m['y'] as number, z: 0 })),
+    plans: plansOf(world)
+      .filter((p) => p['state'] !== 'built')
+      .map((p) => ({ ...at(p), part: p['part'] as string, state: p['state'] as string })),
   };
 }
 
@@ -84,5 +90,48 @@ export function tileGoods(
     ...(surface && marksOf(world).some((m) => m['x'] === x && m['y'] === y) && { marked: true }),
     ...(surface && isTree(world, content, i) && { tree: true }),
     ...(surface && !inStore(world, x, y, 0) && freeTile(world, content, x, y) && { open: true }),
+    ...(surface && planOf(world, x, y, line)),
+  };
+}
+
+/** The tile's plan for the inspector (P3.1): the part, its material and its builder. */
+function planOf(
+  world: WorldState,
+  x: number,
+  y: number,
+  line: (id: unknown) => LedgerLine | undefined,
+): { plan: PlanView } | undefined {
+  const row = planAt(world, x, y);
+  const part = row && partOf(content, row['part'] as string);
+  if (!row || !part) return undefined;
+  const builder = (world.entities['person'] ?? []).find(
+    (p) => p['job'] === 'build' && p['plan'] === row.id,
+  );
+  const placed = line(row['line']);
+  const built = row['done'] ? line(row['done']) : undefined;
+  const waiting = row['waited'] ? line(row['waited']) : undefined;
+  const carrying = builder && itemsOf(world).find((i) => i['holder'] === builder.id);
+  const state = row['state'] as string;
+  const doing =
+    state === 'down'
+      ? 'taking it down'
+      : carrying
+        ? `bringing ${carrying['count'] as number} ${nameOf(part.material)}`
+        : (row['have'] as number) < part.cost
+          ? `fetching ${nameOf(part.material)}`
+          : 'building';
+  return {
+    plan: {
+      part: part.id,
+      name: part.name,
+      state,
+      have: state === 'built' ? part.cost : (row['have'] as number),
+      cost: part.cost,
+      good: nameOf(part.material),
+      ...(builder && { builder: builder['name'] as string, doing }),
+      ...(placed && { placed }),
+      ...(built && { built }),
+      ...(waiting && { waiting }),
+    },
   };
 }

@@ -8,7 +8,7 @@ export const ITEMS = 'items';
 const TILE = 32;
 
 export class GoodsSprites {
-  private view: GoodsView = { items: [], store: [], marks: [] };
+  private view: GoodsView = { items: [], store: [], marks: [], plans: [] };
   private shown: Phaser.GameObjects.Image[] = [];
   private key = '';
   private z = 0;

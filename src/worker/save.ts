@@ -45,7 +45,10 @@ const isCount = (v: unknown): v is number => Number.isSafeInteger(v) && (v as nu
 export function checkSave(
   save: unknown,
   contentHash: string,
-  content: Pick<EngineContent, 'terrain' | 'biomes' | 'features' | 'schools' | 'weather'>,
+  content: Pick<
+    EngineContent,
+    'terrain' | 'biomes' | 'features' | 'schools' | 'weather' | 'buildings'
+  >,
   tables: Schemas,
 ): WorldState {
   if (!isObject(save) || !isObject(save['state'])) throw new Error('The save is damaged.');
@@ -93,6 +96,7 @@ export function checkSave(
     layer(map['rock'], Uint8Array, map['tiles'].length) &&
     layer(map['aura'], Uint8Array, map['tiles'].length) &&
     layer(map['ice'], Uint8Array, map['tiles'].length) &&
+    layer(map['built'], Uint8Array, map['tiles'].length) &&
     Number.isSafeInteger(map['floor']) &&
     Array.isArray(map['auraSpots']) &&
     map['auraSpots'].every(isObject) &&
@@ -120,6 +124,15 @@ export function checkSave(
     w.startY < w.height &&
     w.biomes.every((b) => b < content.biomes.biomes.length) &&
     w.features.every((f) => f <= content.features.length) &&
+    w.built.every((b) => b <= content.buildings.parts.length) &&
+    // Each plan is of a known part, on the map and in a known state (P3.1).
+    (world.entities['plan'] ?? []).every(
+      (r) =>
+        content.buildings.parts.some((p) => p.id === r['part']) &&
+        ['plan', 'built', 'down'].includes(r['state'] as string) &&
+        (r['x'] as number) < w.width &&
+        (r['y'] as number) < w.height,
+    ) &&
     w.water.every((b) => b < WATER.length) &&
     w.rock.every((r) => r <= kinds.length) &&
     // Each aura spot names a school and lies on the map, on the surface or a reached level.

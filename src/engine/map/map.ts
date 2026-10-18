@@ -68,6 +68,7 @@ export const mapSystem: System = {
     map.rainfall = ground.rainfall;
     map.floor = Math.round(ground.floor);
     map.ice = new Uint8Array(width * height);
+    map.built = new Uint8Array(width * height);
     map.chunkVersions = new Array<number>(chunksAcross(map) * chunksDown(map)).fill(1);
     // The levels below are made only when first reached (levels.ts).
     map.levels = new Array<null>(ctx.content.terrain.generator.underground.depth).fill(null);

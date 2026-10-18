@@ -3,8 +3,9 @@
 // level asks for, someone able to fell (jobs.json `fell`: its strength and skill) picks a tree
 // (a fallen log first, then the standing tree nearest the store, never close to the camp),
 // works it down and leaves the logs where it stood; anyone free carries what lies outside the
-// store into it, onto a matching stack. Taking up felling and each tree felled are ledger lines;
-// trips are not.
+// store into it, onto a matching stack. Quarrying (P3.1) is felling's twin for stone: boulders
+// broken up while the colony has less stone than it wants. Building is build.ts. Taking up
+// felling or quarrying and each tree felled or boulder broken are ledger lines; trips are not.
 import { raiseChunk } from '../map/index.ts';
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import {
@@ -24,6 +25,7 @@ import {
 } from '../goods/index.ts';
 import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { building, takeUpBuilding } from './build.ts';
 import { foraging, takeUpForaging } from './forage.ts';
 import { practise } from './learn.ts';
 import { busy, goBeside, layAround, people, same, skillOf, SIDES, spotOf } from './spots.ts';
@@ -32,44 +34,77 @@ import { tallyAdd } from './tally.ts';
 import { walkTo } from './walk.ts';
 
 export const JOB_FIELDS = {
-  /** `fell`, `haul` or '' (none). */
+  /** `fell`, `quarry`, `forage`, `build`, `haul` or '' (none). */
   job: 'text',
-  /** The tile being felled, or the item going to be fetched; -1 for none. */
+  /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
-  /** Minutes of felling left on the target. */
+  /** Minutes of felling or quarrying left on the target. */
   work: 'int',
-  /** Their line taking up felling, which each tree they fell cites. */
+  /** Their line taking up the work, which each tree they fell (or part they build) cites. */
   took: 'event',
+  /** The plan they are building (P3.1), or 0. */
+  plan: 'int',
   /** The tick before which they do not look for work again after finding none. */
   next: 'int',
 } as const;
 
 const LOOK_AGAIN = 30;
-/** A tree feature (or fallen log) at surface tile `i` that yields logs. */
-function treeAt(world: WorldState, content: EngineContent, i: number) {
-  const f = world.map.features[i]!;
-  const def = f ? content.features[f - 1] : undefined;
-  return def && (def.kind === 'tree' || def.kind === 'log') ? def : undefined;
+
+/** Work that takes a feature off the map for what it yields: felling (logs) and quarrying (P3.1,
+ * stone). `kinds` are the feature kinds worked, preferred in that order. */
+interface Gather {
+  job: 'fell' | 'quarry';
+  def: { job: string; minutes: number; skilled: number; camp: number; reach: number };
+  good: string;
+  kinds: readonly string[];
+  word: string;
 }
 
-/** The tree to fell next: a fallen log first, then the standing tree nearest the store. */
-function chooseTree(ctx: SystemContext, p: EntityRow): number | undefined {
+function gatherOf(content: EngineContent, job: unknown): Gather | undefined {
+  if (job === 'fell')
+    return {
+      job,
+      def: content.work.fell,
+      good: content.work.stock[0]?.good ?? 'logs',
+      kinds: ['log', 'tree'],
+      word: 'felling',
+    };
+  if (job === 'quarry')
+    return {
+      job,
+      def: content.work.quarry,
+      good: content.work.quarry.good,
+      kinds: ['boulder'],
+      word: 'quarrying',
+    };
+  return undefined;
+}
+
+/** The feature at surface tile `i` that this work takes, if any. */
+function sourceAt(world: WorldState, content: EngineContent, i: number, g: Gather) {
+  const f = world.map.features[i]!;
+  const def = f ? content.features[f - 1] : undefined;
+  return def && g.kinds.includes(def.kind) ? def : undefined;
+}
+
+/** What to work next: a fallen log before a tree, then the one nearest the store. */
+function chooseSource(ctx: SystemContext, p: EntityRow, g: Gather): number | undefined {
   const { world, content } = ctx;
   const map = world.map;
-  const { reach, camp } = content.work.fell;
+  const { reach, camp } = g.def;
   const first = storeOf(world)[0];
   const [ox, oy] = first ? [first['x'] as number, first['y'] as number] : [map.startX, map.startY];
-  const taken = busy(world, p, 'fell');
+  const taken = busy(world, p, g.job);
   const from = spotOf(p);
   let best: number | undefined;
   let score = Infinity;
   for (let y = Math.max(0, oy - reach); y <= Math.min(map.height - 1, oy + reach); y += 1)
     for (let x = Math.max(0, ox - reach); x <= Math.min(map.width - 1, ox + reach); x += 1) {
       const i = y * map.width + x;
-      const def = treeAt(world, content, i);
+      const def = sourceAt(world, content, i, g);
       if (!def || taken.has(i)) continue;
       if (Math.max(Math.abs(x - map.startX), Math.abs(y - map.startY)) <= camp) continue;
-      const s = (def.kind === 'log' ? 0 : 100000) + Math.max(Math.abs(x - ox), Math.abs(y - oy));
+      const s = g.kinds.indexOf(def.kind) * 100000 + Math.max(Math.abs(x - ox), Math.abs(y - oy));
       if (s >= score) continue;
       const reachable = SIDES.some(([dx, dy]) => {
         const [sx, sy] = [x + dx, y + dy];
@@ -82,22 +117,23 @@ function chooseTree(ctx: SystemContext, p: EntityRow): number | undefined {
   return best;
 }
 
-/** The tree comes down: the feature goes, the logs lie there, one line. */
-function fell(ctx: SystemContext, p: EntityRow, i: number): void {
+/** The tree comes down (or the boulder is broken up): the feature goes, what it yields lies
+ * there, one line. */
+function fell(ctx: SystemContext, p: EntityRow, i: number, g: Gather): void {
   const { world, content } = ctx;
   const map = world.map;
-  const def = treeAt(world, content, i);
+  const def = sourceAt(world, content, i, g);
   if (!def) return;
   const [x, y] = [i % map.width, Math.floor(i / map.width)];
   const good = content.items.find((it) => it.id === def.yields)?.name ?? def.yields;
-  const log = def.kind === 'log';
+  const verb = def.kind === 'log' ? 'cut up' : def.kind === 'tree' ? 'felled' : 'broke up';
   const name = def.name.toLowerCase();
   const line = ctx.emit('work.felled', {
     causes: [p['took'] as number],
     actors: [p.id],
     data: {
       name: p['name'] as string,
-      verb: log ? 'cut up' : 'felled',
+      verb,
       what: `${/^[aeiou]/.test(name) ? 'an' : 'a'} ${name}`,
       count: def.amount,
       good,
@@ -107,7 +143,8 @@ function fell(ctx: SystemContext, p: EntityRow, i: number): void {
   unmark(world, x, y);
   map.tileCauses[i] = line;
   raiseChunk(map, x, y);
-  tallyAdd(ctx, 'felled', layAround(ctx, def.yields, def.amount, { x, y, z: 0 }, line));
+  const laid = layAround(ctx, def.yields!, def.amount, { x, y, z: 0 }, line);
+  if (g.job === 'fell') tallyAdd(ctx, 'felled', laid);
 }
 
 /** Carrying: to the store with what they hold; the store grows when the load finds no room. */
@@ -177,17 +214,21 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   return best;
 }
 
-/** Felling is wanted when the colony has less wood than its stock level asks, counting the
- * logs of trees others are already working on, so no more take it up than are needed. */
-function woodShort(ctx: SystemContext, p: EntityRow): { have: number; want: number } | undefined {
+/** Felling (quarrying) is wanted when the colony has less wood (stone) than its stock level
+ * asks, counting what others are already working on, so no more take it up than are needed. */
+function shortOf(
+  ctx: SystemContext,
+  p: EntityRow,
+  g: Gather,
+): { have: number; want: number } | undefined {
   const { world, content } = ctx;
-  const good = content.work.stock[0]?.good ?? 'logs';
-  const want = wantOf(world, content, good);
-  const have = haveOf(world, content, good);
+  const want = wantOf(world, content, g.good);
+  if (want <= 0) return undefined;
+  const have = haveOf(world, content, g.good);
   let coming = 0;
   for (const q of people(world))
-    if (q.id !== p.id && q['job'] === 'fell' && (q['target'] as number) >= 0)
-      coming += treeAt(world, content, q['target'] as number)?.amount ?? 0;
+    if (q.id !== p.id && q['job'] === g.job && (q['target'] as number) >= 0)
+      coming += sourceAt(world, content, q['target'] as number, g)?.amount ?? 0;
   return have + coming < want ? { have, want } : undefined;
 }
 
@@ -197,6 +238,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   const map = world.map;
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
+  if (p['job'] === 'build' && hours && building(ctx, p)) return true;
   const load = itemsOf(world).find((i) => i['holder'] === p.id);
   if (load) {
     p['job'] = 'haul';
@@ -205,14 +247,15 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   }
   if (!hours) return false;
   const target = p['target'] as number;
-  if (p['job'] === 'fell' && target >= 0 && treeAt(world, content, target)) {
+  const g = gatherOf(content, p['job']);
+  if (g && target >= 0 && sourceAt(world, content, target, g)) {
     const [tx, ty] = [target % map.width, Math.floor(target / map.width)];
     const here = spotOf(p);
     if (here.z === 0 && Math.abs(here.x - tx) + Math.abs(here.y - ty) === 1) {
       p['work'] = (p['work'] as number) - 1;
-      practise(ctx, p, fellSkill(content), p['took'] as number);
+      practise(ctx, p, jobSkill(content, g), p['took'] as number);
       if ((p['work'] as number) <= 0) {
-        fell(ctx, p, target);
+        fell(ctx, p, target, g);
         p['target'] = -1;
       }
       return true;
@@ -251,7 +294,7 @@ function takeUp(ctx: SystemContext, p: EntityRow): boolean {
       actors: [p.id],
       data: { name: p['name'] as string },
     });
-    return startFelling(ctx, p, marked.tree);
+    return startGathering(ctx, p, marked.tree, gatherOf(content, 'fell')!);
   }
   for (const job of jobsInOrder(world, content, p)) if (TAKE_UP[job]?.(ctx, p)) return true;
   p['job'] = '';
@@ -260,38 +303,38 @@ function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   return false;
 }
 
-/** Felling, while the colony's wood is short of its stock level, unless they are not able (and
- * say so if the player raised it for them) or someone free puts felling higher. */
-function takeUpFelling(ctx: SystemContext, p: EntityRow): boolean {
+/** Felling (quarrying), while the colony's wood (stone) is short of its stock level, unless
+ * they are not able (and say so if the player raised it for them) or someone free puts it
+ * higher. */
+function takeUpGathering(ctx: SystemContext, p: EntityRow, g: Gather): boolean {
   const { world, content } = ctx;
   const map = world.map;
-  const job = content.work.fell.job;
-  const short = woodShort(ctx, p);
+  const job = g.def.job;
+  const short = shortOf(ctx, p, g);
   if (!short) return false;
   if (!able(content, p, job)) {
     declineIfUnable(ctx, p, job);
     return false;
   }
-  if (outranked(ctx, p, job, (q) => chooseTree(ctx, q) !== undefined)) return false;
-  const tree = chooseTree(ctx, p);
+  if (outranked(ctx, p, job, (q) => chooseSource(ctx, q, g) !== undefined)) return false;
+  const tree = chooseSource(ctx, p, g);
   if (tree === undefined || !goBeside(ctx, p, tree % map.width, Math.floor(tree / map.width)))
     return false;
-  if (p['job'] !== 'fell') {
-    const stock = content.work.stock[0];
-    const good = stock?.name ?? 'wood';
+  if (p['job'] !== g.job) {
+    const good = content.work.stock.find((s) => s.good === g.good)?.name ?? g.good;
     p['took'] = ctx.emit('work.tookUp', {
-      // The stock level that wants wood, and the priority that put them to it if the player set one.
+      // The stock level that wants it, and the priority that put them to it if the player set one.
       causes: [
         ...[
-          stockOf(world, stock?.good ?? 'logs')?.['line'] as number | undefined,
+          stockOf(world, g.good)?.['line'] as number | undefined,
           priorityLine(world, p.id, job),
         ].filter((l): l is number => l !== undefined),
       ],
       actors: [p.id],
-      data: { name: p['name'] as string, work: 'felling', good, ...short },
+      data: { name: p['name'] as string, work: g.word, good, ...short },
     });
   }
-  return startFelling(ctx, p, tree);
+  return startGathering(ctx, p, tree, g);
 }
 
 /** Carrying the nearest load lying outside the store. */
@@ -306,20 +349,21 @@ function takeUpHauling(ctx: SystemContext, p: EntityRow): boolean {
 /** How each kind of work on the Work sheet is taken up; a kind with no entry is never taken up
  * (content `work.priority.jobs` may list one before its milestone brings the work). */
 const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boolean>> = {
-  fell: takeUpFelling,
+  fell: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'fell')!),
   haul: takeUpHauling,
   forage: takeUpForaging,
+  build: takeUpBuilding,
+  quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
 };
 
-const fellSkill = (content: EngineContent): string =>
-  content.jobs.find((j) => j.id === content.work.fell.job)?.skill ?? '';
+const jobSkill = (content: EngineContent, g: Gather): string =>
+  content.jobs.find((j) => j.id === g.def.job)?.skill ?? '';
 
-/** Sets them felling the tree at surface tile `tree` (they are already on their way to it). */
-function startFelling(ctx: SystemContext, p: EntityRow, tree: number): boolean {
-  const fellDef = ctx.content.work.fell;
-  const level = skillOf(ctx.world, p, fellSkill(ctx.content));
-  p['job'] = 'fell';
+/** Sets them working the feature at surface tile `tree` (they are already on their way to it). */
+function startGathering(ctx: SystemContext, p: EntityRow, tree: number, g: Gather): boolean {
+  const level = skillOf(ctx.world, p, jobSkill(ctx.content, g));
+  p['job'] = g.job;
   p['target'] = tree;
-  p['work'] = Math.ceil((fellDef.minutes * 2 * fellDef.skilled) / (fellDef.skilled + level));
+  p['work'] = Math.ceil((g.def.minutes * 2 * g.def.skilled) / (g.def.skilled + level));
   return true;
 }

@@ -1,6 +1,7 @@
 // Shared footing for the work in jobs.ts and forage.ts: where someone stands, who is on what,
 // walking to stand beside a tile, and laying a yield out on the open ground around it.
 import type { EntityRow, WorldState } from '../core/index.ts';
+import { planAt } from '../build/index.ts';
 import { itemsAt, layItem, stackSize } from '../goods/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -58,7 +59,8 @@ export function goBeside(ctx: SystemContext, p: EntityRow, x: number, y: number)
 }
 
 /** Lays `count` of a kind in stacks on the tile and the free open tiles around it; returns how
- * many it laid (fewer when every tile within 4 is taken). */
+ * many it laid (fewer when every tile within 4 is taken). Nothing goes on a tile planned to be
+ * built. */
 export function layAround(
   ctx: SystemContext,
   kind: string,
@@ -77,6 +79,7 @@ export function layAround(
         const [x, y] = [at.x + dx, at.y + dy];
         if (x < 0 || y < 0 || x >= map.width || y >= map.height) continue;
         if (!walkAt(content, map, 0, y * map.width + x) || itemsAt(world, x, y, 0).length) continue;
+        if (planAt(world, x, y)?.['state'] === 'plan') continue;
         if (!canReach(content, map, at, { x, y, z: 0 })) continue;
         const n = Math.min(size, left);
         layItem(world, { kind, count: n, x, y, z: 0, made });

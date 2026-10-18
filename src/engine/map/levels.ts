@@ -58,35 +58,44 @@ function contentsOf(
   return parts.join('; ');
 }
 
+/** Cuts stairs down from (x, y) on level `z`, reaching the level below if nobody has, under a
+ * `map.stairsCut` line citing `cause`: the test order, or since P3.2 the stair a colonist built. */
+export function cutStairsAt(
+  ctx: SystemContext,
+  x: number,
+  y: number,
+  z: number,
+  cause: number,
+): void {
+  const dials = ctx.content.terrain.generator.underground;
+  const kind = (id: string): number => ctx.content.terrain.kinds.findIndex((k) => k.id === id);
+  const cut = ctx.emit('map.stairsCut', {
+    causes: [cause],
+    data: { x, y, from: levelName(z), to: levelName(z + 1) },
+  });
+  reachLevel(ctx, z + 1, cut);
+  const map = ctx.world.map;
+  const i = y * map.width + x;
+  // Stairs that meet stairs already there join them into one flight.
+  const top = layerOf(map, z)!.tiles[i] === kind(dials.stairsUp) ? dials.stairs : dials.stairsDown;
+  const under = ctx.content.terrain.kinds[layerOf(map, z + 1)!.tiles[i]!]!.id;
+  const landing =
+    under === dials.shaft
+      ? dials.shaft
+      : under === dials.stairsDown || under === dials.stairs
+        ? dials.stairs
+        : dials.stairsUp;
+  setTile(ctx, x, y, kind(top), cut, z);
+  setTile(ctx, x, y, kind(landing), cut, z + 1);
+}
+
 /** The test levers' orders, handled by the map system. A refused order leaves a line saying why. */
 export const digCommands: Readonly<
   Record<string, (ctx: SystemContext, command: Command, cause: number) => void>
 > = {
   cutStairs(ctx, command, cause) {
     const at = placeOf(ctx, command, 'stairs', cause);
-    if (!at) return;
-    const { x, y, z } = at;
-    const dials = ctx.content.terrain.generator.underground;
-    const kind = (id: string): number => ctx.content.terrain.kinds.findIndex((k) => k.id === id);
-    const cut = ctx.emit('map.stairsCut', {
-      causes: [cause],
-      data: { x, y, from: levelName(z), to: levelName(z + 1) },
-    });
-    reachLevel(ctx, z + 1, cut);
-    const map = ctx.world.map;
-    const i = y * map.width + x;
-    // Stairs that meet stairs already there join them into one flight.
-    const top =
-      layerOf(map, z)!.tiles[i] === kind(dials.stairsUp) ? dials.stairs : dials.stairsDown;
-    const under = ctx.content.terrain.kinds[layerOf(map, z + 1)!.tiles[i]!]!.id;
-    const landing =
-      under === dials.shaft
-        ? dials.shaft
-        : under === dials.stairsDown || under === dials.stairs
-          ? dials.stairs
-          : dials.stairsUp;
-    setTile(ctx, x, y, kind(top), cut, z);
-    setTile(ctx, x, y, kind(landing), cut, z + 1);
+    if (at) cutStairsAt(ctx, at.x, at.y, at.z, cause);
   },
   sinkShaft(ctx, command, cause) {
     const at = placeOf(ctx, command, 'shaft', cause);

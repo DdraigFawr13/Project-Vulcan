@@ -7,6 +7,9 @@ export {
   chunkTiles,
   layerOf,
   raiseChunk,
+  setBuilt,
   setTile,
+  withBuilt,
 } from './tiles.ts';
 export { auraAt } from './aura.ts';
+export { cutStairsAt } from './levels.ts';

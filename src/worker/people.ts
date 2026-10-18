@@ -8,6 +8,8 @@ import {
   levelOf,
   moodOf,
   needOf,
+  partOf,
+  plansOf,
   progressOf,
   stockOf,
   type EntityRow,
@@ -73,6 +75,9 @@ function doingOf(p: EntityRow): string {
   if (p['doing'] === 'relax') return 'Taking it easy';
   if (p['doing'] === 'work' && p['job'] === 'fell')
     return walking ? 'Going to fell a tree' : 'Felling';
+  if (p['doing'] === 'work' && p['job'] === 'quarry')
+    return walking ? 'Going to a boulder' : 'Quarrying';
+  if (p['doing'] === 'work' && p['job'] === 'build') return walking ? 'Going to build' : 'Building';
   if (p['doing'] === 'work') return walking ? 'Carrying to the store' : 'Hauling';
   return walking ? 'Strolling' : 'Idle';
 }
@@ -90,15 +95,27 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   if (doing === 'relax') return { text: say('relax') };
   if (doing !== 'work') return { text: say(walking ? 'stroll' : 'idle') };
   const job = p['job'] as string;
-  if (job === 'fell' || job === 'forage') {
-    const good = job === 'fell' ? content.work.stock[0]?.good : content.work.forage.good;
+  const took = p['took'] as number;
+  const why = took !== undefined && took > 0 ? { why: took } : {};
+  if (job === 'build') {
+    const plan = plansOf(world).find((r) => r.id === p['plan']);
+    const part = plan && partOf(content, plan['part'] as string);
+    const carrying = itemsOf(world).find((i) => i['holder'] === p.id);
+    const short = plan && part && (plan['have'] as number) < part.cost && plan['state'] === 'plan';
+    const key = plan?.['state'] === 'down' ? 'takeDown' : short && !carrying ? 'fetch' : 'build';
+    const what = nameOf(content.items, part?.material ?? '');
+    return { text: say(key, { part: part?.name ?? '', what }), ...why };
+  }
+  if (job === 'fell' || job === 'forage' || job === 'quarry') {
+    const good =
+      job === 'fell'
+        ? content.work.stock[0]?.good
+        : job === 'quarry'
+          ? content.work.quarry.good
+          : content.work.forage.good;
     const def = content.work.stock.find((s) => s.good === good);
     const level = (good && stockOf(world, good)?.['level']) as string | undefined;
-    const took = p['took'] as number;
-    return {
-      text: say(job, { good: def?.name ?? good ?? '', level: level ?? '' }),
-      ...(took !== undefined && took > 0 && { why: took }),
-    };
+    return { text: say(job, { good: def?.name ?? good ?? '', level: level ?? '' }), ...why };
   }
   const items = itemsOf(world);
   const item =
