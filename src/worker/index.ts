@@ -7,6 +7,7 @@ export type {
   FromWorker,
   LedgerLine,
   PersonView,
+  WalkerView,
   RegionView,
   Speed,
   TileView,

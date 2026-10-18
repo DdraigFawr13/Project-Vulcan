@@ -2,7 +2,7 @@
 // put into words from content. A pure read of the world, like views.ts.
 import { content } from '../content/index.ts';
 import { clockAt, type WorldState } from '../engine/index.ts';
-import type { PersonView } from './protocol.ts';
+import type { PersonView, WalkerView } from './protocol.ts';
 
 const nameOf = (list: readonly { id: string; name: string }[], id: string): string =>
   list.find((x) => x.id === id)?.name ?? id;
@@ -53,3 +53,12 @@ export function peopleOf(world: WorldState): PersonView[] {
     };
   });
 }
+
+/** Where everyone stands this tick (P2.3), for every snapshot. */
+export const walkersOf = (world: WorldState): WalkerView[] =>
+  (world.entities['person'] ?? []).map((p) => ({
+    id: p.id,
+    x: p['x'] as number,
+    y: p['y'] as number,
+    z: p['z'] as number,
+  }));

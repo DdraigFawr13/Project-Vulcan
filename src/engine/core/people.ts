@@ -38,6 +38,8 @@ export interface BandDef {
   hair: Readonly<Record<string, readonly string[]>>;
   clothes: Readonly<Record<string, readonly string[]>>;
   defaultClothes: readonly string[];
+  /** P2.3: an idle person strolls within `radius` tiles of the camp, then stands `rest` minutes. */
+  wander: { radius: number; rest: readonly number[] };
 }
 
 export interface PeopleDefs {
