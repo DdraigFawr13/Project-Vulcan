@@ -4,7 +4,7 @@ Goal: people who act on their own. Entry: Phase 1 done and signed off by Morgan 
 
 ## Status
 
-- [ ] P2.0 Engine groundwork
+- [x] P2.0 Engine groundwork (merged 2026-10-18 in two PRs: engine #18, archive and worker in the second). `npm run budget`, ten years at 30 people (measured, about 16 s): 1.52 M lines written; 3,189 recent lines and 3,037 stubs held; ledger in memory 0.66 MB (budget 2); save 1.68 MB (4); standby clone 17 ms median (25); archive 16.6 MB gzipped (40); midnight tick 2.7 ms mean (5)
 - [ ] P2.1 Title screen, the band and their arrival
 - [ ] P2.2 Needs and basic mood
 - [ ] P2.3 Pathfinding across levels
@@ -13,7 +13,7 @@ Goal: people who act on their own. Entry: Phase 1 done and signed off by Morgan 
 - [ ] P2.6 Colonist bar, inspector tabs, alert feed
 - [ ] P2.7 Skip ahead
 
-Taste board (VR-56): https://claude.ai/artifact/ (filled in when published); Morgan's picks are recorded here and bind every Phase 2 UI mock-up.
+Taste board (VR-56): https://claude.ai/artifact/4WdMASnMFnvDcBryD132KJ; Morgan's picks are recorded here when given and bind every Phase 2 UI mock-up.
 
 ## Milestones
 

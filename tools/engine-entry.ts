@@ -1,10 +1,14 @@
-// What the map tools use from the engine, gathered for tools/engine.mjs.
+// What the map and budget tools use from the engine, gathered for tools/engine.mjs.
 export {
+  addEntity,
   createSim,
   createWorld,
   isFrozen,
   makeRegion,
+  removeEntity,
   step,
+  submitCommand,
+  SYSTEMS,
   TICKS_PER_DAY,
   WATER,
 } from '../src/engine/index.ts';

@@ -2,7 +2,6 @@
 // the page. The only place the engine is instantiated (MODULE.md).
 import { content, contentHash } from '../content/index.ts';
 import {
-  allLines,
   auraAt,
   CHUNK,
   chunksAcross,
@@ -20,7 +19,7 @@ import {
   step,
   valleyOf,
   submitCommand,
-  TICKS_PER_DAY,
+  SYSTEMS,
   tileTemperature,
   toNdjson,
   whyOf,
@@ -30,7 +29,8 @@ import {
   WATER,
   weatherWords,
 } from '../engine/index.ts';
-import { createPace, setSpeed, ticksDue } from './pace.ts';
+import { createPace, setSpeed, SKIP_MS, ticksDue } from './pace.ts';
+import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type {
   ChunkView,
   ClockView,
@@ -45,7 +45,12 @@ import { checkSave, saveOf } from './save.ts';
 /** How often the worker wakes (ms). Timing comes from the clock, not from this interval. */
 const WAKE_MS = 10;
 
-const sim = createSim(content);
+const timing = createTiming(SYSTEMS.length);
+const sim = createSim(
+  content,
+  timedSystems(SYSTEMS, timing, () => performance.now()),
+);
+const systemNames = SYSTEMS.map((s) => s.id);
 let world: WorldState | undefined;
 let pace = createPace(performance.now());
 /** Chunk versions the page has already been sent, per level; empty until the first snapshot. */
@@ -60,10 +65,26 @@ let offered: WorldState[] = [];
 const post = (message: FromWorker, transfer: Transferable[] = []): void =>
   postMessage(message, { transfer });
 
+/** Runs one tick, timed, and collects its lines: sealing trims the log's front at midnight. */
+function tickOnce(w: WorldState): void {
+  const start = performance.now();
+  for (const line of step(w, sim, 1)) unposted.push(line);
+  recordTick(timing, performance.now() - start, systemNames);
+}
+
+/** Runs `ticks` ticks, or, skipping ahead (P2.7), as many as fit in `SKIP_MS`; then hands the
+ * days sealed meanwhile to the page to archive, so a save never carries them. */
 function run(ticks: number): void {
-  // A day at a time, well inside the week the log keeps, so every line written is collected.
-  for (let left = ticks; world && left > 0; left -= TICKS_PER_DAY)
-    for (const line of step(world, sim, Math.min(left, TICKS_PER_DAY))) unposted.push(line);
+  const w = world;
+  if (!w) return;
+  if (pace.skip) {
+    const until = performance.now() + SKIP_MS;
+    while (performance.now() < until) tickOnce(w);
+  } else for (let i = 0; i < ticks; i += 1) tickOnce(w);
+  if (w.sealed.length) {
+    post({ type: 'segments', items: w.sealed.map(({ key, text }) => ({ key, text })) });
+    w.sealed = [];
+  }
 }
 
 function clockView(tick: number): ClockView {
@@ -132,6 +153,7 @@ function snapshot(w: WorldState): void {
       reached: w.map.levels.map((level) => level !== null),
       weather: weatherOf(w),
       aura: w.map.auraSpots.map(({ school, x, y, z, strength }) => ({ school, x, y, z, strength })),
+      timing: timing.view,
     },
     chunks.flatMap((c) => [c.tiles.buffer, c.features.buffer, c.snow.buffer, c.ice.buffer]),
   );
@@ -237,6 +259,7 @@ function waterOf(map: WorldState['map'], tile: number, code: number): Partial<Ti
  * here, so a loaded world and a new one start the same way. */
 function adopt(w: WorldState, from: 'seed' | 'save'): void {
   world = w;
+  run(0); // hands over any sealed days the world arrived with
   sent = [];
   unposted = [...w.log];
   pace = createPace(performance.now());
@@ -330,7 +353,8 @@ function handle(message: ToWorker): void {
           type: 'exported',
           kind: message.kind,
           name: `${world.seed.replace(/[^\w-]+/g, '-')}-tick-${world.tick}.ndjson`,
-          text: toNdjson(allLines(world)),
+          segments: world.segments.map((s) => s.key),
+          text: toNdjson(world.log),
         });
       return;
     case 'inspect':
@@ -361,9 +385,14 @@ function guarded(work: () => void): void {
   } catch (error) {
     if (timer !== undefined) clearInterval(timer);
     timer = undefined;
+    const stopped = world;
     world = undefined;
     offered = [];
-    post({ type: 'error', message: error instanceof Error ? error.message : String(error) });
+    post({
+      type: 'error',
+      message: error instanceof Error ? error.message : String(error),
+      ...(stopped && { tick: stopped.tick, commands: stopped.commandLog }),
+    });
   }
 }
 

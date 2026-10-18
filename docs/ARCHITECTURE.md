@@ -36,7 +36,7 @@ Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at ful
 
 ## Save
 
-`{version, seed, params, contentHash, tick, state}` in IndexedDB with name and thumbnail; the command log and the ledger (truncatable) live in `state`, so each has one home. The worker checks version, content hash and shape before a save replaces the running world. As built from P0.5: `src/persist/MODULE.md`. Rebuilding from `seed + commandLog` is the determinism test. Old saves need not load before launch.
+`{version, seed, params, contentHash, tick, state}` in IndexedDB with name and thumbnail; the command log and the ledger's recent week and stubs live in `state`, so each has one home; the sealed days live in IndexedDB's `segments` store, gzipped, and the save names them by key (P2.0). A rescue slot holds the last standby copy of a game the engine stopped on, with the levers since. The worker checks version, content hash and shape before a save replaces the running world. As built from P0.5: `src/persist/MODULE.md`. Rebuilding from `seed + commandLog` is the determinism test. Old saves need not load before launch.
 
 ## Imports
 

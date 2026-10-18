@@ -156,6 +156,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       renderer.setAura(message.aura);
       hud.showLevel(level, depth, level === 0 || reached[level - 1] === true);
       hud.fps = Math.round(renderer.fps());
+      if (debug) hud.showTiming(message.timing);
       hud.showClock(message.clock, message.tick, message.speed, message.at, message.weather);
       saves.seen(message.tick);
       if (covering && !saves.loading) {
@@ -189,6 +190,8 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       begin();
     } else if (message.type === 'error') {
       fail(message.message);
+      // The last good copy goes to the rescue slot; the screen then says which day it keeps.
+      void saves.rescue(message).then((kept) => kept && hud.showError(message.message, kept));
     } else {
       saves.handle(message);
     }

@@ -1,7 +1,7 @@
 // The page's side of saving: writes what the worker hands over to IndexedDB with a name and a
 // picture, loads a save back through the worker, autosaves, downloads the ledger export and keeps
 // the ledger panel's newest lines.
-import { download, openSaves, type SaveMeta, type SaveStore } from '../persist/index.ts';
+import { download, gzip, openSaves, type SaveMeta, type SaveStore } from '../persist/index.ts';
 import type { Renderer } from '../render/index.ts';
 import type { FromWorker, LedgerLine, SaveFile, Speed, ToWorker } from '../worker/index.ts';
 import type { Hud } from './hud.ts';
@@ -50,6 +50,9 @@ export class Saves {
   private lastAutoTick = -1;
   /** The speed to go back to if a load is refused. */
   private resume: Speed = 0;
+  /** Sealed ledger days being archived, in order; a save waits for them, so it never names a day
+   * the archive lacks. */
+  private archive: Promise<void> = Promise.resolve();
   private readonly timer: ReturnType<typeof setInterval>;
   private readonly standbyTimer: ReturnType<typeof setInterval>;
 
@@ -128,8 +131,13 @@ export class Saves {
   handle(m: FromWorker): void {
     if (m.type === 'saved' && m.standby) this.standby = m;
     else if (m.type === 'saved') void this.write(m);
-    else if (m.type === 'exported') download(m.name, m.text);
-    else if (m.type === 'loadRefused') {
+    else if (m.type === 'exported') void this.export(m);
+    else if (m.type === 'segments') {
+      const { items } = m;
+      this.archive = this.archive
+        .then(async () => (await this.store).putSegments(items))
+        .catch((error: unknown) => void (this.problem = message(error)));
+    } else if (m.type === 'loadRefused') {
       this.loading = false;
       this.deps.hud.showScreen(
         "This save can't be loaded",
@@ -208,8 +216,53 @@ export class Saves {
     };
   }
 
+  /** Downloads the ledger: the archived days as stored (gzipped) and the recent ones, gzipped too,
+   * joined into one gzip file without unpacking (a ten-year ledger would not fit one string). */
+  private async export(m: Extract<FromWorker, { type: 'exported' }>): Promise<void> {
+    try {
+      await this.archive;
+      const store = await this.store;
+      const days = await Promise.all(m.segments.map((key) => store.getSegment(key)));
+      const missing = days.filter((d) => !d).length;
+      download(`${m.name}.gz`, [...days.filter((d) => d !== undefined), await gzip(m.text)]);
+      this.problem = missing ? `${missing} older days of the ledger are not in this browser.` : '';
+    } catch (error) {
+      this.problem = message(error);
+    }
+  }
+
+  /**
+   * The engine stopped: writes the newest standby copy, with the levers given since it was taken,
+   * into the rescue slot (P2.0), so the fault can be replayed. Returns the copy's date for the
+   * error screen, or undefined when there is no copy to keep.
+   */
+  async rescue(m: Extract<FromWorker, { type: 'error' }>): Promise<string | undefined> {
+    const copy = this.standby;
+    if (!copy) return undefined;
+    try {
+      // A copy: the standby itself may still become the autosave as the page closes.
+      const save = structuredClone(copy.save);
+      const { state } = save;
+      const last = state.commandLog.at(-1)?.seq ?? 0;
+      for (const command of m.commands ?? [])
+        if (command.seq > last) {
+          state.commandLog.push(command);
+          state.pending.push(command);
+        }
+      state.pending.sort((a, b) => a.tick - b.tick || a.seq - b.seq);
+      await this.archive;
+      const meta = { ...this.metaOf(copy, ''), auto: false, rescue: m.message };
+      await (await this.store).put({ ...meta, name: `Rescue · ${meta.name}` }, save);
+      const { clock } = copy;
+      return `Day ${clock.day} of ${clock.monthName}, Year ${clock.year}`;
+    } catch {
+      return undefined;
+    }
+  }
+
   private async write(m: Extract<FromWorker, { type: 'saved' }>): Promise<void> {
     try {
+      await this.archive;
       // A hidden tab may be closing: write at once, without waiting on a picture.
       const thumbnail = document.hidden ? '' : await this.deps.renderer.thumbnail();
       await (await this.store).put(this.metaOf(m, thumbnail), m.save);

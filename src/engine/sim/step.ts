@@ -62,8 +62,13 @@ function applyCommand(world: WorldState, sim: Sim, command: Command): void {
 function cited(world: WorldState, sim: Sim): Set<number> {
   const ids = new Set<number>();
   const { map } = world;
-  for (const layer of [map, ...map.levels])
-    if (layer) for (const id of layer.tileCauses) ids.add(id);
+  // Neighbouring tiles mostly share a cause (the line that made the valley or reached a level), so
+  // a repeat is skipped before it reaches the set: a midnight scans up to 112,500 tiles.
+  for (const layer of [map, ...map.levels]) {
+    if (!layer) continue;
+    let last = -1;
+    for (const id of layer.tileCauses) if (id !== last) ids.add((last = id));
+  }
   for (const system of sim.systems)
     for (const key of system.refs ?? []) {
       const id = world.systems[system.id]?.[key];

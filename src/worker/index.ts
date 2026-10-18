@@ -9,6 +9,7 @@ export type {
   RegionView,
   Speed,
   TileView,
+  TimingView,
   ToWorker,
   ValleyPreview,
   WeatherView,
