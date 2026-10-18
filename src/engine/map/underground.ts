@@ -229,7 +229,7 @@ function digCaves(
 }
 
 /** Each vein of this level: `near` clusters within the start radius, the rest anywhere, each
- * grown by a random walk through solid rock from a seed tile its rock preference accepts. */
+ * grown by a wandering walk through solid rock from a seed tile its rock preference accepts. */
 function placeVeins(
   rng: RngStream,
   content: EngineContent,
@@ -260,6 +260,9 @@ function placeVeins(
         const size = least + rng.int(most - least + 1);
         let at = start;
         let placed = 0;
+        // A seam wanders: it keeps its way half the time and otherwise turns to any of the eight
+        // neighbours, diagonals included, so it bends and thickens instead of lying in a line.
+        let way = rng.int(AROUND.length);
         for (let s = 0; s < size * 4 && placed < size; s += 1) {
           if (solid(at)) {
             features[at] = index + 1;
@@ -267,7 +270,8 @@ function placeVeins(
           }
           const ax = at % W;
           const ay = (at - ax) / W;
-          const [dx, dy] = SIDES[rng.int(4)]!;
+          if (!rng.chance(0.5)) way = rng.int(AROUND.length);
+          const [dx, dy] = AROUND[way]!;
           const nx = ax + dx;
           const ny = ay + dy;
           if (nx >= 0 && ny >= 0 && nx < W && ny < H && kinds[tiles[ny * W + nx]!]!.stone)

@@ -8,7 +8,8 @@ import { MAP_SEEDS } from './seeds.ts';
 // P1.1 done-when: every seed's start has buildable land, wood and stone within reach, on
 // ground joined to the start (no range walls it off). P1.2: drinkable water near the start, and
 // no river or stream ends inland (each reaches the map's edge or a lake). P1.4: a year of weather
-// freezes still water on every seed and never a spring (Morgan, 2026-10-17); aura spots keep
+// freezes still water on every seed and never a spring (Morgan, 2026-10-17), each frozen tile citing
+// its ice line; aura spots keep
 // clear of the edge and of each other, each of its own school. One world per seed serves all.
 describe('surface map', () => {
   const sim = createSim(content);
@@ -54,5 +55,12 @@ describe('surface map', () => {
     // Only lake tiles ever count frost, so a spring's count stays 0 all year.
     const spring = WATER.indexOf('spring');
     expect(world.map.ice.some((c, i) => c > 0 && world.map.water[i] === spring)).toBe(false);
+    // A tile that froze or thawed cites the day's ice line, so the inspector can say since when.
+    const ice = new Set(['weather.iceFormed', 'weather.frozenOver', 'weather.iceSpread']);
+    const froze = [...world.map.ice].flatMap((c, i) =>
+      c & 0x80 ? [world.map.tileCauses[i]!] : [],
+    );
+    const lines = new Map(world.log.map((e) => [e.id, e.type]));
+    expect(froze.every((id) => ice.has(lines.get(id) ?? ''))).toBe(true);
   });
 });

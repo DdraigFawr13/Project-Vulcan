@@ -2,7 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 // The one browser smoke (RULES.md VR-23): a seed opens the site picker, a valley is settled, the
 // game draws the map, starts paused, runs at 3x and stops dead when paused; the inspector answers "why?"; a save
-// survives a page reload and carries on; the ledger exports; a shaft opens the level below.
+// survives a page reload and carries on; the ledger exports; a shaft opens the level below; a reload
+// continues where the game was, shaft and all.
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
 /** The last snapshot's tick and the worker's clock when it was sent (ms). */
@@ -21,7 +22,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // runner takes about 1.5 to 2 times as long, past Playwright's default 30 s per test once P1.2's
   // water joined each generation (P1.1's green run already used about 26 s). The steps keep their
   // own waits; this is the round's overall budget.
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
@@ -95,8 +96,10 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   const first = JSON.parse((await readFile(await file.path(), 'utf8')).split('\n')[0]!);
   expect(first).toMatchObject({ id: 1, type: 'world.begun', data: { seed: 'smoke/2' } });
 
+  // A reload continues the newest save of this valley rather than beginning a new Day 1.
   await page.reload();
-  await expect(page.getByTestId('clock')).toContainText('06:00 · Day 1 of Thawmonth, Year 1');
+  await expect.poll(() => tick(page)).toBe(paused);
+  await expect(page.getByText('Paused')).toBeVisible();
   await page.getByTestId('open-saves').click();
   await panel.getByRole('button', { name: 'Load' }).first().click();
   await expect.poll(() => tick(page)).toBe(paused);
@@ -126,5 +129,15 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByTestId('game').locator('canvas').click();
   await expect(panel).toContainText('1 level down');
   await expect(panel).toContainText('shaft');
+
+  // Closing or reloading keeps the play since the last save: the page holds a standby copy taken
+  // every 5 s of play and writes it as the page goes. Wait for one past the shaft, then reload.
+  await page.waitForTimeout(6000);
+  const before = await tick(page);
+  await page.reload();
+  await expect.poll(() => tick(page)).toBeGreaterThan(paused);
+  expect(await tick(page)).toBeLessThanOrEqual(before);
+  await page.keyboard.press('>');
+  await expect(page.getByTestId('unreached')).toBeHidden();
   expect(errors).toEqual([]);
 });

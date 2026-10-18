@@ -3,6 +3,8 @@
 import { list, num, obj, ref } from './schema';
 import { count, share, text } from './schema-fields';
 
+const iceDays = num({ min: 0, max: 127 });
+
 export const CLIMATE_SCHEMAS = {
   seasons: obj({
     // Added to the valley's yearly mean, one per month in calendar order.
@@ -24,6 +26,7 @@ export const CLIMATE_SCHEMAS = {
     ),
     // Freezing degree-days a still-water tile needs to freeze, by depth; warm days thaw at
     // `thaw` times; the count stops at `cap`; `over` is the share of lake water that is "frozen over".
-    ice: obj({ shallow: count, deep: count, thaw: count, cap: count, over: share }),
+    // The count lives in a tile's low 7 bits (weather.ts), so none of them may pass 127.
+    ice: obj({ shallow: iceDays, deep: iceDays, thaw: count, cap: iceDays, over: share }),
   }),
 };

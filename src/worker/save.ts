@@ -43,7 +43,7 @@ const isCount = (v: unknown): v is number => Number.isSafeInteger(v) && (v as nu
 export function checkSave(
   save: unknown,
   contentHash: string,
-  content: Pick<EngineContent, 'terrain' | 'biomes' | 'features' | 'schools'>,
+  content: Pick<EngineContent, 'terrain' | 'biomes' | 'features' | 'schools' | 'weather'>,
 ): WorldState {
   if (!isObject(save) || !isObject(save['state'])) throw new Error('The save is damaged.');
   if (save['version'] !== SAVE_VERSION)
@@ -136,11 +136,19 @@ export function checkSave(
           level.features.every((f) => f <= content.features.length)),
     ) &&
     ['north', 'south', 'east', 'west'].includes(w.riverExit) &&
+    // The weather's spell names a known kind; its counters are whole numbers (P1.4).
+    weatherSound(world.systems['weather'], content.weather.length) &&
     world.log.every((e) => isObject(e) && isCount(e.id) && e.id > last && ((last = e.id), true)) &&
     world.nextEventId > last;
   if (!sound) throw new Error('The save is damaged.');
   return world;
 }
+
+const weatherSound = (state: unknown, kinds: number): boolean =>
+  isObject(state) &&
+  ['kind', 'temp', 'wet', 'spell', 'frozen', 'over'].every((k) => Number.isSafeInteger(state[k])) &&
+  isCount(state['kind']) &&
+  (state['kind'] as number) < kinds;
 
 // A generator layer: a typed array of the map's length (structured clones keep the type).
 const layer = (

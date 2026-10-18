@@ -37,6 +37,8 @@ export class ValleyScene extends Phaser.Scene {
   /** Marks the tile the inspector is showing. */
   private marked?: Phaser.GameObjects.Image;
   private controls?: CameraControls;
+  /** Height of the page's bar over the top of the view, in screen px. */
+  private topInset = 0;
   /** Tile index in the tilesets for each terrain kind's pictures, by kind then variant. */
   private frames: number[][] = [];
   /** Tile index in the nature tileset for each feature, by content index. */
@@ -110,6 +112,7 @@ export class ValleyScene extends Phaser.Scene {
       .setVisible(false);
     // The camera's controls listen first, so a release that ends a drag still reads as one here.
     this.controls = new CameraControls(this);
+    this.controls.setTopInset(this.topInset);
     this.input.on('pointermove', () => (this.pointerIn = true));
     this.input.on('pointerup', (p: Phaser.Input.Pointer) => {
       this.hoverAt(p);
@@ -202,6 +205,11 @@ export class ValleyScene extends Phaser.Scene {
 
   zoomStep(direction: 1 | -1): void {
     this.controls?.zoomStep(direction);
+  }
+
+  setTopInset(px: number): void {
+    this.topInset = px;
+    this.controls?.setTopInset(px);
   }
 
   /** Puts the inspector's mark on a tile, or takes it away. */

@@ -24,8 +24,9 @@ export type ToWorker =
   | { type: 'setSpeed'; speed: Speed }
   /** The page asks once per screen frame, with at most one request waiting. */
   | { type: 'requestSnapshot' }
-  /** Asks for the running world as a save; `auto` is echoed back for the page's autosave slot. */
-  | { type: 'save'; auto: boolean }
+  /** Asks for the running world as a save; `auto` is echoed back for the page's autosave slot, and
+   * `standby` for the copy the page holds to write at once if the tab closes. */
+  | { type: 'save'; auto: boolean; standby?: boolean }
   /** The whole ledger as NDJSON. */
   | { type: 'export'; kind: 'ndjson' }
   /** The inspector: one tile's record on level `z` (0 the surface, 1 to 4 below) and the ledger
@@ -195,7 +196,7 @@ export type FromWorker =
     }
   /** New ledger lines in log order, posted just before the snapshot that follows them. */
   | { type: 'events'; batch: LedgerLine[] }
-  | { type: 'saved'; auto: boolean; save: SaveFile; clock: ClockView }
+  | { type: 'saved'; auto: boolean; standby?: boolean; save: SaveFile; clock: ClockView }
   /** The save failed its check before anything was replaced; `reason` is shown to the player. */
   | { type: 'loadRefused'; reason: string }
   | { type: 'exported'; kind: 'ndjson'; name: string; text: string }

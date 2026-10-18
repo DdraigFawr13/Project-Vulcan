@@ -24,7 +24,10 @@ export class Hud {
   private readonly speeds = new Map<Speed, HTMLButtonElement>();
   private readonly panels = new Map<'ledger' | 'saves' | 'region', HTMLButtonElement>();
   private readonly readout = el('div', { class: 'hud readout', hidden: '' });
-  private readonly debug = el('div', { class: 'hud debug', 'data-testid': 'debug' });
+  /** fps and tick, for developers only (`?debug` in the URL); the smoke reads its data fields. */
+  private readonly debug = el('div', { class: 'hud debug', 'data-testid': 'debug', hidden: '' });
+  /** The bar along the top; the camera keeps the map clear of it. */
+  readonly bar = el('div', { class: 'hud bar' });
   private readonly screen = el('div', { class: 'screen' });
   private readonly levelLabel = el('span', { class: 'level', 'data-testid': 'level' }, 'S');
   private readonly up = el('button', { type: 'button', 'aria-label': 'Level up' }, '▲');
@@ -39,8 +42,9 @@ export class Hud {
   /** Frames per second the renderer measured, shown on the debug line. */
   fps = 0;
 
-  constructor(root: HTMLElement, actions: HudActions) {
-    const bar = el('div', { class: 'hud bar' });
+  constructor(root: HTMLElement, actions: HudActions, debug = false) {
+    const bar = this.bar;
+    this.debug.hidden = !debug;
     const group = el('div', { class: 'speeds', role: 'group', 'aria-label': 'Speed' });
     for (const speed of [0, 1, 2, 3] as const) {
       const label = speed === 0 ? 'Pause' : `Speed ${speed}`;

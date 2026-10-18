@@ -76,14 +76,16 @@ function drawDay(ctx: SystemContext, fresh: boolean): boolean {
   return changed;
 }
 
-/** One day of freezing and thawing on every lake tile; returns how many are frozen and of how many. */
-function freeze(ctx: SystemContext): { frozen: number; lakes: number } {
+/** One day of freezing and thawing on every lake tile; returns how many are frozen, of how many,
+ * and the tiles that froze or thawed today. */
+function freeze(ctx: SystemContext): { frozen: number; lakes: number; flips: number[] } {
   const { content, world } = ctx;
   const map = world.map;
   const dials = content.seasons.ice;
   const { kinds } = content.terrain;
   let frozen = 0;
   let lakes = 0;
+  const flips: number[] = [];
   for (let i = 0; i < map.water.length; i += 1) {
     if (map.water[i] !== LAKE) continue;
     lakes += 1;
@@ -94,16 +96,26 @@ function freeze(ctx: SystemContext): { frozen: number; lakes: number } {
     const now = count | (count >= need ? FROZEN : 0);
     map.ice[i] = now;
     if (now & FROZEN) frozen += 1;
-    if ((now ^ was) & FROZEN) raiseChunk(map, i % map.width, Math.floor(i / map.width));
+    if ((now ^ was) & FROZEN) {
+      flips.push(i);
+      raiseChunk(map, i % map.width, Math.floor(i / map.width));
+    }
   }
-  return { frozen, lakes };
+  return { frozen, lakes, flips };
 }
 
 export const weatherSystem: System = {
   id: 'weather',
   every: 'day',
   stream: 'weather',
-  emits: ['weather.changed', 'weather.iceFormed', 'weather.frozenOver', 'weather.thawed'],
+  emits: [
+    'weather.changed',
+    'weather.iceFormed',
+    'weather.frozenOver',
+    'weather.thawed',
+    'weather.iceSpread',
+    'weather.iceShrank',
+  ],
   initialState: { kind: 0, temp: 0, wet: 0, spell: 0, frozen: 0, over: 0 },
   init(ctx) {
     drawDay(ctx, true);
@@ -113,14 +125,20 @@ export const weatherSystem: System = {
     if (drawDay(ctx, false)) spellLine(ctx);
     const { state } = ctx;
     const before = state['frozen']!;
-    const { frozen, lakes } = freeze(ctx);
+    const { frozen, lakes, flips } = freeze(ctx);
     state['frozen'] = frozen;
     const cause = { causes: [state['spell']!] };
-    if (before === 0 && frozen > 0) ctx.emit('weather.iceFormed', cause);
+    let line: number | undefined;
+    if (before === 0 && frozen > 0) line = ctx.emit('weather.iceFormed', cause);
     const over = lakes > 0 && frozen >= ctx.content.seasons.ice.over * lakes;
-    if (over && !state['over']) ctx.emit('weather.frozenOver', cause);
+    if (over && !state['over']) line = ctx.emit('weather.frozenOver', cause);
     state['over'] = over ? 1 : 0;
-    if (before > 0 && frozen === 0) ctx.emit('weather.thawed', cause);
+    if (before > 0 && frozen === 0) line = ctx.emit('weather.thawed', cause);
+    if (flips.length === 0) return;
+    // Any other day the ice grows or shrinks gets a line too, and every tile that froze or thawed
+    // cites the day's ice line, so the inspector can say since when (V-006).
+    line ??= ctx.emit(frozen > before ? 'weather.iceSpread' : 'weather.iceShrank', cause);
+    for (const i of flips) ctx.world.map.tileCauses[i] = line;
   },
 };
 
