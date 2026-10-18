@@ -2,6 +2,7 @@
 // arrays), so the worker can post it, P0.5 can save it and tests can compare it.
 import type { PeopleDefs } from './people.ts';
 import type { AuraDials, AuraSpot, SeasonsDef, WeatherDef } from './climate.ts';
+import type { FeatureDef, WalkingDef } from './ground.ts';
 import type { RngState } from './rng.ts';
 import type { CultureDef, NamesDef, RegionDef } from './region.ts';
 
@@ -175,7 +176,7 @@ export interface LevelState {
 /** The bodies of water in `MapState.water`, by their code: 0 is dry land. */
 export const WATER = ['', 'stream', 'river', 'lake', 'spring'] as const;
 
-type Range = readonly number[];
+export type Range = readonly number[];
 
 /** How a valley's mountains are placed and shaped (terrain.json `generator.layouts`). */
 export interface MountainLayout {
@@ -332,7 +333,11 @@ export interface TerrainDef {
     drinkable?: boolean;
     marker?: string;
     solid?: boolean;
+    /** P2.3: walking cost per tile, 1 when left out (shallow water, marsh, scree slower). */
+    walk?: number;
   }[];
+  /** P2.3: how people walk (src/engine/paths). */
+  walking: WalkingDef;
 }
 
 /** The forked biome table (src/content/data/biomes.json); only the fields the map reads. */
@@ -347,28 +352,6 @@ export interface BiomesDef {
     swampMinTemp: number;
     /** Biomes that need frost-free winters, and what they become without them. */
     frostFree: { fallback: Readonly<Record<string, string>> };
-  };
-}
-
-/** Trees, bushes, herbs and boulders (src/content/data/features.json). */
-export interface FeatureDef {
-  id: string;
-  name: string;
-  kind: 'tree' | 'bush' | 'herb' | 'log' | 'boulder' | 'vein';
-  art: string;
-  yields: string;
-  amount: number;
-  blocks?: boolean;
-  clumps?: boolean;
-  glades?: boolean;
-  density: Readonly<Record<string, number>>;
-  nearRock?: { reach: number; density: number };
-  vein?: {
-    level: number;
-    per10k: number;
-    size: Range;
-    near: number;
-    rocks: Readonly<Record<string, number>>;
   };
 }
 

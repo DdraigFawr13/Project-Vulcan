@@ -206,6 +206,14 @@ export interface PersonView {
   arrived: number;
 }
 
+/** Where a person stands this tick (P2.3), sent with every snapshot so the screen can walk them. */
+export interface WalkerView {
+  id: number;
+  x: number;
+  y: number;
+  z: number;
+}
+
 export type FromWorker =
   | {
       type: 'ready';
@@ -242,6 +250,8 @@ export type FromWorker =
       aura: AuraView[];
       /** Tick timing over the last 1,000 ticks run (P2.0), for the `?debug` line. */
       timing: TimingView;
+      /** Everyone's place now (P2.3). */
+      walkers: WalkerView[];
     }
   /** New ledger lines in log order, posted just before the snapshot that follows them. */
   | { type: 'events'; batch: LedgerLine[] }

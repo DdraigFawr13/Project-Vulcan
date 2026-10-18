@@ -7,3 +7,4 @@ export * from './types.ts';
 export * from './climate.ts';
 export * from './region.ts';
 export * from './people.ts';
+export * from './ground.ts';

@@ -71,7 +71,6 @@ let title: Title | undefined;
 let titleWaits = false;
 /** The title or the arrival screen covers the game: its bar and keys are hidden until closed. */
 const cover = (on: boolean): void => void hudRoot.classList.toggle('covered', on);
-
 const setSpeed = (next: Speed): void => {
   // Until a world is ready, or while a save loads, the worker resets the speed itself.
   if (stopped || !ready || saves.loading) return;
@@ -226,6 +225,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       }
       reached = message.reached;
       renderer.applyChunks(message.chunks);
+      renderer.movePeople(message.walkers);
       renderer.setAura(message.aura);
       hud.showLevel(level, depth, level === 0 || reached[level - 1] === true);
       hud.fps = Math.round(renderer.fps());

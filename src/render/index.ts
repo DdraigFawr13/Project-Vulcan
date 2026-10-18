@@ -1,7 +1,7 @@
 // Public surface of the render layer: boots Phaser with the valley scene and hands the page a
 // small handle to feed it snapshots and drive the camera.
 import Phaser from 'phaser';
-import type { AuraView, ChunkView, PersonView } from '../worker/index.ts';
+import type { AuraView, ChunkView, PersonView, WalkerView } from '../worker/index.ts';
 import { PeopleSprites } from './people.ts';
 import { ValleyScene, type Hover } from './scene.ts';
 
@@ -22,6 +22,8 @@ export interface Renderer {
   setPeople(people: readonly PersonView[]): void;
   /** The person standing on a tile of the level on screen, if any. */
   personAt(x: number, y: number): PersonView | undefined;
+  /** Moves the people to where the latest snapshot stands them (P2.3); they glide there. */
+  movePeople(walkers: readonly WalkerView[]): void;
   /** Marks the inspected tile, or clears the mark. */
   mark(tile: { x: number; y: number } | undefined): void;
   /** A small picture of the current view as a JPEG data URL, for the save list; '' if none. */
@@ -64,6 +66,7 @@ export function startRenderer(
     },
     setPeople: (list) => people.set(list),
     personAt: (x, y) => people.at(x, y),
+    movePeople: (walkers) => people.move(walkers),
     mark: (tile) => scene.mark(tile),
     thumbnail: () => thumbnailOf(game),
     fps: () => game.loop.actualFps,

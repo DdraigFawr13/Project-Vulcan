@@ -5,9 +5,11 @@ import type { EntityRow, WorldState } from '../core/index.ts';
 
 /**
  * A field's type. `count` is a whole number 0 or more; `entity` an entity id (0 for none); `event`
- * a ledger id (0 for none); `events` a list of ledger ids; `text` a string.
+ * a ledger id (0 for none); `events` a list of ledger ids; `ints` a list of whole numbers (a path);
+ * `text` a string.
  */
-export type FieldType = 'int' | 'count' | 'number' | 'text' | 'entity' | 'event' | 'events';
+export type FieldType =
+  'int' | 'ints' | 'count' | 'number' | 'text' | 'entity' | 'event' | 'events';
 
 /** The fields of one kind's rows, by name (the `id` field is implied). */
 export type TableSchema = Readonly<Record<string, FieldType>>;
@@ -62,6 +64,8 @@ function fieldSound(type: FieldType, value: unknown, world: WorldState): boolean
   switch (type) {
     case 'int':
       return isInt(value);
+    case 'ints':
+      return Array.isArray(value) && value.every(isInt);
     case 'count':
       return isInt(value) && value >= 0;
     case 'number':

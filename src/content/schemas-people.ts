@@ -37,6 +37,9 @@ export const PEOPLE_SCHEMAS = {
     hair: map(texts, 'races'),
     clothes: map(texts, 'cultures'),
     defaultClothes: texts,
+    // P2.3: an idle person strolls to a tile within `radius` of the camp, then stands for a
+    // number of minutes drawn from `rest`.
+    wander: obj({ radius: num({ min: 1 }), rest: range() }),
   }),
   races: list(
     obj({
