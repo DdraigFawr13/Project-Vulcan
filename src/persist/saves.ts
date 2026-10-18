@@ -115,10 +115,15 @@ export function openSaves(): Promise<SaveStore> {
       }
       if (e.oldVersion < 2) open.result.createObjectStore('segments');
     };
-    open.onblocked = () =>
+    // Refused while an older tab holds the database; if the upgrade finishes once that tab
+    // closes, the late connection is let go, so it never blocks the next upgrade.
+    let refused = false;
+    open.onblocked = () => {
+      refused = true;
       reject(new Error('Saves are unavailable: another tab of the game is holding them open.'));
+    };
     open.onerror = () => reject(reason(open.error, 'opening'));
-    open.onsuccess = () => resolve(storeOf(open.result));
+    open.onsuccess = () => (refused ? open.result.close() : resolve(storeOf(open.result)));
   });
 }
 

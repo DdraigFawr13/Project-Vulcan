@@ -47,6 +47,11 @@ export class Saves {
   private lastStandbyTick = -1;
   /** Why saves are unavailable, or why the last save failed; shown in the save panel. */
   private problem = '';
+  /** Why ledger days could not be archived; kept until the page reloads, since those days are
+   * gone from the running world and a later save cannot bring them back. */
+  private archiveProblem = '';
+  /** The newest standby copy, kept after it is written as the page hides: the rescue's source. */
+  private lastCopy: Extract<FromWorker, { type: 'saved' }> | undefined;
   private lastAutoTick = -1;
   /** The speed to go back to if a load is refused. */
   private resume: Speed = 0;
@@ -129,14 +134,17 @@ export class Saves {
 
   /** The worker's answers about saves and exports. */
   handle(m: FromWorker): void {
-    if (m.type === 'saved' && m.standby) this.standby = m;
+    if (m.type === 'saved' && m.standby) this.standby = this.lastCopy = m;
     else if (m.type === 'saved') void this.write(m);
     else if (m.type === 'exported') void this.export(m);
     else if (m.type === 'segments') {
       const { items } = m;
       this.archive = this.archive
         .then(async () => (await this.store).putSegments(items))
-        .catch((error: unknown) => void (this.problem = message(error)));
+        .catch(
+          (error: unknown) =>
+            void (this.archiveProblem = `Older ledger days were not kept: ${message(error)}`),
+        );
     } else if (m.type === 'loadRefused') {
       this.loading = false;
       this.deps.hud.showScreen(
@@ -151,7 +159,8 @@ export class Saves {
   async showList(): Promise<void> {
     const { panel, seed } = this.deps;
     try {
-      panel.showSaves(seed, await (await this.store).list(), this.problem);
+      const problems = [this.archiveProblem, this.problem].filter(Boolean).join(' ');
+      panel.showSaves(seed, await (await this.store).list(), problems);
     } catch (error) {
       panel.showSaves(seed, [], message(error));
     }
@@ -187,6 +196,7 @@ export class Saves {
     this.lastAutoTick = -1;
     this.lastStandbyTick = -1;
     this.standby = undefined;
+    this.lastCopy = undefined;
     this.startTick = undefined;
   }
 
@@ -237,7 +247,7 @@ export class Saves {
    * error screen, or undefined when there is no copy to keep.
    */
   async rescue(m: Extract<FromWorker, { type: 'error' }>): Promise<string | undefined> {
-    const copy = this.standby;
+    const copy = this.lastCopy;
     if (!copy) return undefined;
     try {
       // A copy: the standby itself may still become the autosave as the page closes.

@@ -259,10 +259,10 @@ function waterOf(map: WorldState['map'], tile: number, code: number): Partial<Ti
  * here, so a loaded world and a new one start the same way. */
 function adopt(w: WorldState, from: 'seed' | 'save'): void {
   world = w;
-  run(0); // hands over any sealed days the world arrived with
   sent = [];
   unposted = [...w.log];
   pace = createPace(performance.now());
+  run(0); // hands over any sealed days the world arrived with (never ticks: the pace is fresh)
   timer ??= setInterval(() => guarded(() => run(ticksDue(pace, performance.now()))), WAKE_MS);
   post({
     type: 'ready',
