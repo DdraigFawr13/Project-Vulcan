@@ -12,6 +12,7 @@ Goal: people who act on their own. Entry: Phase 1 done and signed off by Morgan 
 - [ ] P2.5 Schedules, work priorities, skills by use
 - [ ] P2.6 Colonist bar, inspector tabs, alert feed
 - [ ] P2.7 Skip ahead
+- [ ] P2.8 UI reskin: Hearth and Page (slot in the phase set by the coordinator)
 
 Taste board (VR-56): https://claude.ai/artifact/4WdMASnMFnvDcBryD132KJ. Morgan took every recommendation (2026-10-18), binding every Phase 2 UI mock-up: colonists are small full figures in three-quarter view with four facings and two walk frames (P2.1); the play screen has a portrait strip with mood rings under the top bar, a one-line alert ticker with a count badge, and a skip button after 1x 2x 3x, with no PAUSED word (P2.6, P2.7); the title screen shows the last valley dimmed behind Continue (valley and date) and New game (P2.1); needs show as bars with a warning line, a word and "why?" (P2.2, P2.6); work priorities on a phone are one colonist at a time with a 1 to 4 stepper per job, the grid on desktop (P2.5); a crash shows a plain sentence, the day kept, and a RESCUE row in Saves. Later rules: why? ends at a plain "older record" line, and players never see raw type ids.
 
@@ -64,6 +65,12 @@ Colonist bar, selection, inspector tabs (needs, skills, ledger); an alert feed n
 Run as fast as the device allows until a notable event (a content list), then pause on it (V-026). Mock-up: UI. Done when: skipping a quiet season stops on the first notable event, and the ledger matches a run at 3x.
 
 - Reading list: `docs/DECISIONS.md` V-026; `src/worker/MODULE.md`
+
+### P2.8 UI reskin: Hearth and Page
+
+Apply the chosen look (V-037, `docs/UI_STYLE.md`) to every existing screen: a token file every screen reads, three fonts, and the `ui` art sheet (shown to Morgan before it lands, per `docs/ART.md`). Styling only; no screen gains or loses a lever. Mock-up: UI (the direction board's Hearth and Page mock is the play screen's mock; title, picker, arrival, person panel, saves and rescue get one 390 px mock page). Estimate 500 to 800 lines, one PR (VR-58). Done when: title, region picker, arrival, play HUD, tile sheet, person panel, saves and the rescue screen are all restyled; no tap target is under 40 px and no text under 11 px (checked by the browser smoke at 390 px); a screenshot of each screen at 390 px and desktop is published.
+
+- Reading list: `docs/UI_STYLE.md`; `docs/ART.md` row UI reskin; `src/ui/MODULE.md`; `src/render/MODULE.md`
 
 ## Phase done (playtest)
 
