@@ -47,6 +47,10 @@ The valley among named neighbouring sites from content cultures; site picker bef
 
 - Reading list: `docs/DECISIONS.md` V-017; `src/content/MODULE.md`; `src/ui/MODULE.md`
 
+## Phase review fixes
+
+From the game audit's playtest (2026-10-18): progress lost on close or reload; a reload starting a new Day 1 instead of Continue; phone HUD boxes over the inspector sheet; fit zoom hiding the top rows under the bar; developer readouts (chunk, version, fps) shown to players. P1.5 uses the Story Generator world (V-031) under the approved region map screen.
+
 ## Phase done (playtest)
 
 Roll ten seeds, pick a site, walk the camera two levels down to a vein, watch a year of weather.

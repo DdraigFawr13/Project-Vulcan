@@ -12,6 +12,6 @@ Flat-shaded pixel art in the muted palette, readable at 32 px, nothing drawn bef
 | P4.5 | `workshops` | charcoal clamp, smelter, smithy, anvil, bellows, waterwheel (2 frames), power lines |
 | Phase 5 onward | later | animals, crops, sickbed, loom, creatures, dragon, fire, caravan |
 
-Layout: `art/src/<sheet>/<name>.png` packed by `tools/pack-sheet` into `public/art/<sheet>.png` and `<sheet>.json`. Naming: `<category>.<name>[.<variant>][.<facing>][.<frame>]`, for example `tile.grass.2`, `wall.stone.n-e`, `person.dwarf.s.1`, `item.ingot.bronze`. Content refers to art only by name. Morgan's art pass replaces files in `art/src` with the same names and sizes; the packer rebuilds and nothing else changes. Every asset's source and licence go in `art/PROVENANCE.md` (SAFE-05).
+Layout: `art/src/<sheet>/<name>.png` packed by `tools/pack-sheet` into `public/art/<sheet>.png` and `<sheet>.json`. Naming: `<category>.<name>[.<variant>][.<facing>][.<frame>]`, for example `tile.grass.2`, `wall.stone.n-e`, `person.dwarf.s.1`, `item.ingot.bronze`. Content refers to art only by name. The final art (V-034: AI-made images Morgan picks from, cleaned to the palette) replaces files in `art/src` with the same names and sizes; the packer rebuilds and nothing else changes. Every asset's source and licence go in `art/PROVENANCE.md` (SAFE-05).
 
 Each phase file says which rows it needs. Asset sources and licences: `art/PROVENANCE.md`.
