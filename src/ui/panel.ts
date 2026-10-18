@@ -207,7 +207,7 @@ export class Panel {
       for (const line of lines) {
         const row = this.lineRow(line, '', false);
         row.style.setProperty('--depth', String(line.depth));
-        if (!line.causes.length) row.querySelector('.when')!.append(' · the root');
+        if (!line.causes.length && !line.older) row.querySelector('.when')!.append(' · the root');
         chain.append(row);
       }
       host.append(chain);

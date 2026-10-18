@@ -161,7 +161,8 @@
   color: var(--ink-soft);
 }
 .prio .note,
-.prio .chain {
+.prio .chain,
+.need .chain {
   grid-column: 1 / -1;
 }
 .prio .note {
