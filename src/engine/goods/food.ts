@@ -7,10 +7,13 @@ import { itemsOf, takeFrom } from './stacks.ts';
 /** Takes one from food stack `item` for `eater`; the last food in the valley writes a line. */
 export function eatFrom(ctx: SystemContext, item: EntityRow, eater: EntityRow): void {
   const { world, content } = ctx;
+  // The stack's own line (the cart unloaded, or whatever brought it) explains where it went.
+  const made = item['made'] as number;
   takeFrom(world, item, 1);
   if (itemsOf(world).some((i) => content.life.eat[i['kind'] as string] !== undefined)) return;
   const state = (world.systems['goods'] ??= {});
   state['foodGone'] = ctx.emit('goods.foodGone', {
+    causes: made ? [made] : [],
     actors: [eater.id],
     data: { name: eater['name'] as string },
   });

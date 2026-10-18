@@ -320,8 +320,7 @@ function takeUp(ctx: SystemContext, p: EntityRow): boolean {
     });
     return startFelling(ctx, p, marked.tree);
   }
-  for (const job of jobsInOrder(world, content, p))
-    if (job === fellDef.job ? takeUpFelling(ctx, p) : takeUpHauling(ctx, p)) return true;
+  for (const job of jobsInOrder(world, content, p)) if (TAKE_UP[job]?.(ctx, p)) return true;
   p['job'] = '';
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;
@@ -340,7 +339,7 @@ function takeUpFelling(ctx: SystemContext, p: EntityRow): boolean {
     declineIfUnable(ctx, p, job);
     return false;
   }
-  if (outranked(ctx, p, job)) return false;
+  if (outranked(ctx, p, job, (q) => chooseTree(ctx, q) !== undefined)) return false;
   const tree = chooseTree(ctx, p);
   if (tree === undefined || !goBeside(ctx, p, tree % map.width, Math.floor(tree / map.width)))
     return false;
@@ -350,8 +349,10 @@ function takeUpFelling(ctx: SystemContext, p: EntityRow): boolean {
     p['took'] = ctx.emit('work.tookUp', {
       // The stock level that wants wood, and the priority that put them to it if the player set one.
       causes: [
-        stockOf(world, stock?.good ?? 'logs')?.['line'] as number,
-        ...[priorityLine(world, p.id, job)].filter((l): l is number => l !== undefined),
+        ...[
+          stockOf(world, stock?.good ?? 'logs')?.['line'] as number | undefined,
+          priorityLine(world, p.id, job),
+        ].filter((l): l is number => l !== undefined),
       ],
       actors: [p.id],
       data: { name: p['name'] as string, good, ...short },
@@ -368,6 +369,13 @@ function takeUpHauling(ctx: SystemContext, p: EntityRow): boolean {
   p['target'] = item.id;
   return true;
 }
+
+/** How each kind of work on the Work sheet is taken up; a kind with no entry is never taken up
+ * (content `work.priority.jobs` may list one before its milestone brings the work). */
+const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boolean>> = {
+  fell: takeUpFelling,
+  haul: takeUpHauling,
+};
 
 const fellSkill = (content: EngineContent): string =>
   content.jobs.find((j) => j.id === content.work.fell.job)?.skill ?? '';

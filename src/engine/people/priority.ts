@@ -55,8 +55,14 @@ function shortfall(content: EngineContent, p: EntityRow, job: string) {
   return undefined;
 }
 
-/** Whether someone else free to take up `job` now, and able, puts it higher than `p` does. */
-export function outranked(ctx: SystemContext, p: EntityRow, job: string): boolean {
+/** Whether someone else free to take up `job` now, able, and with somewhere to do it (`can`),
+ * puts it higher than `p` does. `can` is asked last: it may search. */
+export function outranked(
+  ctx: SystemContext,
+  p: EntityRow,
+  job: string,
+  can: (q: EntityRow) => boolean,
+): boolean {
   const { world, content } = ctx;
   const mine = levelOf(world, content, p.id, job);
   return (world.entities['person'] ?? []).some(
@@ -68,7 +74,8 @@ export function outranked(ctx: SystemContext, p: EntityRow, job: string): boolea
       q['doing'] !== 'eat' &&
       world.tick >= (q['next'] as number) &&
       levelOf(world, content, q.id, job) < mine &&
-      able(content, q, job),
+      able(content, q, job) &&
+      can(q),
   );
 }
 
@@ -98,7 +105,9 @@ export function setPriority(
   const p = entityOf(world, 'person', data['person'] as number);
   const job = data['job'] as string;
   const level = data['level'] as number;
-  if (!p || !content.work.priority.jobs.includes(job) || ![1, 2, 3, 4].includes(level)) {
+  const levels = content.work.priority.words.length;
+  const fits = Number.isSafeInteger(level) && level >= 1 && level <= levels;
+  if (!p || p['status'] !== 'alive' || !content.work.priority.jobs.includes(job) || !fits) {
     ctx.emit('command.refused', {
       causes: [cause],
       data: { kind: 'setPriority', reason: 'no such person, kind of work or level' },
