@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
-import { createSim, createWorld, step, TICKS_PER_DAY, WATER } from '../index.ts';
+import { createSim, createWorld, recordOf, step, TICKS_PER_DAY, WATER } from '../index.ts';
 import { strandedWater, waterNearStart } from './checks.ts';
 import { reachableAround } from './features.ts';
 import { MAP_SEEDS } from './seeds.ts';
@@ -60,7 +60,8 @@ describe('surface map', () => {
     const froze = [...world.map.ice].flatMap((c, i) =>
       c & 0x80 ? [world.map.tileCauses[i]!] : [],
     );
-    const lines = new Map(world.log.map((e) => [e.id, e.type]));
-    expect(froze.every((id) => ice.has(lines.get(id) ?? ''))).toBe(true);
+    // Those lines are older than the recent week by now, so they are kept as stubs for the tiles.
+    expect(froze.every((id) => ice.has(recordOf(world, id)?.type ?? ''))).toBe(true);
+    expect(world.map.tileCauses.every((id) => recordOf(world, id))).toBe(true);
   });
 });

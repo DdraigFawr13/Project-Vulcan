@@ -28,6 +28,7 @@ export const calendarSystem: System = {
   every: 'day',
   emits: ['calendar.day', 'calendar.month', 'calendar.season'],
   initialState: { monthEvent: 0 },
+  refs: ['monthEvent'],
   init(ctx) {
     openMonth(ctx, true);
   },

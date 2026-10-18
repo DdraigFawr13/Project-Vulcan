@@ -9,6 +9,7 @@ import { createSim as createSimWith, type Sim, type System } from './sim/index.t
 
 export * from './core/index.ts';
 export * from './log/index.ts';
+export * from './entity/index.ts';
 export { createWorld, replay, step, submitCommand } from './sim/index.ts';
 export type { Cadence, Sim, System, SystemContext } from './sim/index.ts';
 export { calendarSystem } from './calendar/index.ts';
@@ -30,5 +31,8 @@ export {
 export const SYSTEMS: readonly System[] = [regionSystem, mapSystem, calendarSystem, weatherSystem];
 
 /** A simulation over `content` with the game's systems, or the given ones (tests add fixtures). */
-export const createSim = (content: EngineContent, systems: readonly System[] = SYSTEMS): Sim =>
-  createSimWith(content, systems);
+export const createSim = (
+  content: EngineContent,
+  systems: readonly System[] = SYSTEMS,
+  recentDays?: number,
+): Sim => createSimWith(content, systems, recentDays);

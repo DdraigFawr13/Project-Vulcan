@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../content/index';
 import {
+  allLines,
   calendarSystem,
   chunkTiles,
   createSim,
@@ -12,6 +13,7 @@ import {
   setTile,
   renderEvent,
   replay,
+  START_TICK,
   step,
   submitCommand,
   ticksPerMonth,
@@ -55,7 +57,8 @@ const sim = createSim(fixtureContent, [mapSystem, calendarSystem, dice]);
 const month = ticksPerMonth(content.calendar);
 
 /** A game month from `seed`, with three levers sent at different points of the run. */
-function runMonth(seed: string) {
+function runMonth(seed: string, on = sim) {
+  const sim = on;
   const world = createWorld(sim, seed);
   submitCommand(world, { tick: 16380, kind: 'test.mark', data: { place: 'north field' } });
   step(world, sim, 20000);
@@ -69,7 +72,9 @@ describe('engine', () => {
   it('gives identical ledgers for the same seed and levers after a game month', () => {
     const a = runMonth('hollow-oak');
     const b = runMonth('hollow-oak');
-    expect(toNdjson(a.log)).toBe(toNdjson(b.log));
+    // The whole ledger: the sealed days and the recent ones (P2.0).
+    expect(a.segments.length).toBeGreaterThan(20);
+    expect(toNdjson(allLines(a))).toBe(toNdjson(allLines(b)));
     expect(a.rng).toEqual(b.rng);
     expect(a.map).toEqual(b.map);
     // Seed plus command log alone rebuild the whole world, not only its ledger.
@@ -77,7 +82,18 @@ describe('engine', () => {
     // Another seed changes the dice, not just the seed printed in the first line.
     const rolls = (log: typeof a.log) =>
       log.filter((e) => e.type === 'test.roll').map((e) => e.data['value']);
-    expect(rolls(runMonth('stone-weir').log)).not.toEqual(rolls(a.log));
+    expect(rolls(allLines(runMonth('stone-weir')))).not.toEqual(rolls(allLines(a)));
+    // How many days the world keeps in full changes no outcome, only where old lines are held.
+    const wide = runMonth('hollow-oak', createSim(sim.content, sim.systems, 400));
+    expect(wide.segments).toEqual([]);
+    expect(toNdjson(wide.log)).toBe(toNdjson(allLines(a)));
+    expect(wide.rng).toEqual(a.rng);
+    // Skip ahead (P2.7) stops on the tick that writes a listed line, mid-batch.
+    const skipping = createWorld(sim, 'hollow-oak');
+    const stopped = step(skipping, sim, 3 * month, new Set(['calendar.season']));
+    const season = stopped.find((e) => e.type === 'calendar.season')!;
+    expect(season.tick).toBe(skipping.tick);
+    expect(skipping.tick).toBeLessThan(START_TICK + 3 * month);
   });
 
   it('continues a restored world exactly as an unbroken run', () => {
@@ -90,8 +106,8 @@ describe('engine', () => {
     submitCommand(restored, { tick: 100, kind: 'test.mark', data: { place: 'old ford' } });
     submitCommand(restored, { tick: restored.tick + 500, kind: 'test.unknown' });
     step(restored, sim, month - 20000);
-    expect(toNdjson(restored.log)).toBe(toNdjson(unbroken.log));
-    expect(hashString(toNdjson(restored.log))).toBe(hashString(toNdjson(unbroken.log)));
+    expect(toNdjson(allLines(restored))).toBe(toNdjson(allLines(unbroken)));
+    expect(hashString(toNdjson(allLines(restored)))).toBe(hashString(toNdjson(allLines(unbroken))));
   });
 
   it('writes the calendar lines with short "why?" chains', () => {
@@ -99,30 +115,31 @@ describe('engine', () => {
     const sim = createSim(content, [mapSystem, calendarSystem]);
     const world = createWorld(sim, 'hollow-oak');
     step(world, sim, 3 * month);
-    const text = (id: number) => renderEvent(world.log[id - 1]!, sim.templates);
+    const log = allLines(world);
+    const text = (id: number) => renderEvent(log[id - 1]!, sim.templates);
     expect(text(1)).toBe('A new world began from seed "hollow-oak".');
     expect(text(2)).toMatch(
       /^The valley took shape: 150 by 150 tiles, mostly [a-z ]+, with a [a-z]+ climate \(-?[0-9.]+ °C on the valley floor, [0-9]+ mm of rain a year\)\.$/,
     );
-    expect(world.log[1]).toMatchObject({ type: 'map.formed', causes: [1] });
+    expect(log[1]).toMatchObject({ type: 'map.formed', causes: [1] });
     expect(text(3)).toMatch(
       /^Its waters gathered: a river leaving by the (north|south|east|west), [0-9]+ lakes and [0-9]+ springs\.$/,
     );
-    expect(world.log[2]).toMatchObject({ type: 'map.watered', causes: [2] });
+    expect(log[2]).toMatchObject({ type: 'map.watered', causes: [2] });
     // The aura spots' line is part of the world as it began, so it cites only that.
     expect(text(4)).toMatch(/^Old power gathers in the valley at .+\.$/);
-    expect(world.log[3]).toMatchObject({ type: 'map.aura', causes: [1] });
+    expect(log[3]).toMatchObject({ type: 'map.aura', causes: [1] });
     // The world's first month and season get their lines when it begins.
     expect(text(5)).toBe('Thawmonth began.');
-    expect(world.log[4]).toMatchObject({ type: 'calendar.month', causes: [1] });
+    expect(log[4]).toMatchObject({ type: 'calendar.month', causes: [1] });
     expect(text(6)).toBe('Spring came to the valley.');
-    expect(world.log[5]).toMatchObject({ type: 'calendar.season', causes: [5] });
+    expect(log[5]).toMatchObject({ type: 'calendar.season', causes: [5] });
     expect(text(7)).toBe('Day 2 of Thawmonth began.');
-    expect(world.log[6]).toMatchObject({ type: 'calendar.day', causes: [5] });
-    expect(world.log[33]).toMatchObject({ id: 34, type: 'calendar.month', causes: [1] });
-    expect(world.log[34]).toMatchObject({ type: 'calendar.day', causes: [34] });
+    expect(log[6]).toMatchObject({ type: 'calendar.day', causes: [5] });
+    expect(log[33]).toMatchObject({ id: 34, type: 'calendar.month', causes: [1] });
+    expect(log[34]).toMatchObject({ type: 'calendar.day', causes: [34] });
     expect(text(90)).toBe('Highsun began.');
-    expect(world.log[90]).toMatchObject({ type: 'calendar.season', causes: [90] });
+    expect(log[90]).toMatchObject({ type: 'calendar.season', causes: [90] });
     expect(text(91)).toBe('Summer came to the valley.');
     // The map is cut into 10 by 10 chunks with narrower edge chunks; each carries its features.
     expect(world.map.chunkVersions).toHaveLength(100);
@@ -144,8 +161,8 @@ describe('engine', () => {
     expect(world.map.chunkVersions[1 * 10 + 9]).toBe(2);
     // Every tile cites the line that laid it out until something changes it (water the
     // waters' line, the rest the valley's); "why?" walks back.
-    const formed = world.log.find((e) => e.type === 'map.formed')!;
-    const watered = world.log.find((e) => e.type === 'map.watered')!;
+    const formed = log.find((e) => e.type === 'map.formed')!;
+    const watered = log.find((e) => e.type === 'map.watered')!;
     expect(world.map.tileCauses[17 * 150 + 149]).toBe(3);
     expect(world.map.tileCauses.filter((c) => c === watered.id).length).toBeGreaterThan(0);
     // Every water tile cites the waters; each other tile one of the two generator lines.
@@ -153,7 +170,7 @@ describe('engine', () => {
       true,
     );
     expect(world.map.tileCauses.every((c) => c === formed.id || c === watered.id)).toBe(true);
-    expect(whyOf(world.log, world.log[86]!.id).map((w) => [w.event.type, w.depth])).toEqual([
+    expect(whyOf({ log, stubs: [] }, log[86]!.id).map((w) => [w.event.type, w.depth])).toEqual([
       ['calendar.month', 1],
       ['world.begun', 2],
     ]);
@@ -164,7 +181,7 @@ describe('engine', () => {
     const world = runMonth('hollow-oak');
     const late = world.commandLog[1]!;
     expect(late).toMatchObject({ asked: 100, tick: 20361 });
-    const lines = world.log.filter(
+    const lines = allLines(world).filter(
       (e) => e.type.startsWith('command.') || e.type === 'test.marked',
     );
     expect(lines.map((e) => [e.type, e.tick])).toEqual([

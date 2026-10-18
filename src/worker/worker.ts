@@ -2,6 +2,7 @@
 // the page. The only place the engine is instantiated (MODULE.md).
 import { content, contentHash } from '../content/index.ts';
 import {
+  allLines,
   auraAt,
   CHUNK,
   chunksAcross,
@@ -10,19 +11,21 @@ import {
   clockAt,
   createSim,
   createWorld,
-  findEvent,
   isFrozen,
   layerOf,
   makeRegion,
+  recordOf,
   renderEvent,
   siteOf,
   step,
   valleyOf,
   submitCommand,
+  TICKS_PER_DAY,
   tileTemperature,
   toNdjson,
   whyOf,
   type SimEvent,
+  type Stub,
   type WorldState,
   WATER,
   weatherWords,
@@ -47,8 +50,9 @@ let world: WorldState | undefined;
 let pace = createPace(performance.now());
 /** Chunk versions the page has already been sent, per level; empty until the first snapshot. */
 let sent: number[][] = [];
-/** Index of the first ledger line not yet posted. */
-let posted = 0;
+/** Ledger lines written since the last snapshot, collected as they are written: sealing trims
+ * the log's front, so a long run could otherwise seal lines before they were posted. */
+let unposted: SimEvent[] = [];
 let timer: ReturnType<typeof setInterval> | undefined;
 /** The valleys on offer in the picker, made from their seeds and not yet run. */
 let offered: WorldState[] = [];
@@ -57,7 +61,9 @@ const post = (message: FromWorker, transfer: Transferable[] = []): void =>
   postMessage(message, { transfer });
 
 function run(ticks: number): void {
-  if (world && ticks > 0) step(world, sim, ticks);
+  // A day at a time, well inside the week the log keeps, so every line written is collected.
+  for (let left = ticks; world && left > 0; left -= TICKS_PER_DAY)
+    for (const line of step(world, sim, Math.min(left, TICKS_PER_DAY))) unposted.push(line);
 }
 
 function clockView(tick: number): ClockView {
@@ -72,20 +78,34 @@ function clockView(tick: number): ClockView {
   };
 }
 
-const lineOf = (e: SimEvent): LedgerLine => ({
-  id: e.id,
-  tick: e.tick,
-  type: e.type,
-  text: renderEvent(e, sim.templates),
-  causes: [...e.causes],
-  why: e.causes.some((c) => c !== world?.begunEvent),
-  clock: clockView(e.tick),
-});
+function lineOf(e: SimEvent | Stub): LedgerLine {
+  const clock = clockView(e.tick);
+  if (!('causes' in e))
+    return {
+      id: e.id,
+      tick: e.tick,
+      type: e.type,
+      text: `An older record, from Day ${clock.day} of ${clock.monthName}, year ${clock.year}.`,
+      causes: [],
+      why: false,
+      clock,
+      older: true,
+    };
+  return {
+    id: e.id,
+    tick: e.tick,
+    type: e.type,
+    text: renderEvent(e, sim.templates),
+    causes: [...e.causes],
+    why: e.causes.some((c) => c !== world?.begunEvent),
+    clock,
+  };
+}
 
 function snapshot(w: WorldState): void {
-  if (posted < w.log.length) {
-    post({ type: 'events', batch: w.log.slice(posted).map(lineOf) });
-    posted = w.log.length;
+  if (unposted.length) {
+    post({ type: 'events', batch: unposted.map(lineOf) });
+    unposted = [];
   }
   const chunks: ChunkView[] = [];
   const across = chunksAcross(w.map);
@@ -144,7 +164,7 @@ function climateOf(w: WorldState, x: number, y: number, z: number): Partial<Tile
 
 /** A lake tile's ice, and since when, from the ice line its freezing cites (tileCauses). */
 function iceOf(w: WorldState, i: number): string {
-  const line = findEvent(w.log, w.map.tileCauses[i]!);
+  const line = recordOf(w, w.map.tileCauses[i]!);
   const since = line?.type.startsWith('weather.') ? clockView(line.tick) : undefined;
   const date = since && ` since Day ${since.day} of ${since.monthName}`;
   return isFrozen(w.map, i)
@@ -164,7 +184,7 @@ function tileView(w: WorldState, x: number, y: number, z: number): TileView | un
   const chunkX = Math.floor(x / CHUNK);
   const chunkY = Math.floor(y / CHUNK);
   const i = y * map.width + x;
-  const changedBy = findEvent(w.log, layer.tileCauses[i]!);
+  const changedBy = recordOf(w, layer.tileCauses[i]!);
   const feature = layer.features[i]! > 0 ? content.features[layer.features[i]! - 1] : undefined;
   const snowy = z === 0 && map.snow[i] === 1;
   const under = z < map.levels.length ? layerOf(map, z + 1) : undefined;
@@ -218,7 +238,7 @@ function waterOf(map: WorldState['map'], tile: number, code: number): Partial<Ti
 function adopt(w: WorldState, from: 'seed' | 'save'): void {
   world = w;
   sent = [];
-  posted = 0;
+  unposted = [...w.log];
   pace = createPace(performance.now());
   timer ??= setInterval(() => guarded(() => run(ticksDue(pace, performance.now()))), WAKE_MS);
   post({
@@ -272,7 +292,7 @@ function handle(message: ToWorker): void {
       // Checked before anything is replaced: a refused save leaves the running world as it was.
       let loaded: WorldState;
       try {
-        loaded = checkSave(message.save, contentHash, content);
+        loaded = checkSave(message.save, contentHash, content, sim.tables);
       } catch (error) {
         post({
           type: 'loadRefused',
@@ -310,7 +330,7 @@ function handle(message: ToWorker): void {
           type: 'exported',
           kind: message.kind,
           name: `${world.seed.replace(/[^\w-]+/g, '-')}-tick-${world.tick}.ndjson`,
-          text: toNdjson(world.log),
+          text: toNdjson(allLines(world)),
         });
       return;
     case 'inspect':
@@ -325,7 +345,7 @@ function handle(message: ToWorker): void {
         post({
           type: 'causes',
           id: message.id,
-          lines: whyOf(world.log, message.id).map(({ event, depth }) => ({
+          lines: whyOf(world, message.id).map(({ event, depth }) => ({
             ...lineOf(event),
             depth,
           })),

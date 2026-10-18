@@ -1,7 +1,7 @@
 // Tiles on any level: the chunks the worker sends and `setTile`, the only writer of a tile after
 // its level is made. Level `z` is 0 for the surface and 1 to `underground.depth` below it.
 import type { LevelState, MapState } from '../core/index.ts';
-import { findEvent } from '../log/index.ts';
+import { recordOf } from '../log/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
 /** Tiles per chunk side. The worker sends the map to the screen a chunk at a time. */
@@ -76,7 +76,7 @@ export function setTile(
     throw new Error(`Tile ${x}, ${y} is off the map.`);
   const layer = layerOf(map, z);
   if (!layer) throw new Error(`Tile ${x}, ${y} is on level ${z}, which has not been reached.`);
-  if (!findEvent(ctx.world.log, cause))
+  if (!recordOf(ctx.world, cause))
     throw new Error(`Tile ${x}, ${y} was changed without a ledger line (cause ${cause}).`);
   const i = y * map.width + x;
   if (layer.tiles[i] === kind) return;

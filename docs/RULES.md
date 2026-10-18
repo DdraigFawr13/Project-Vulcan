@@ -58,7 +58,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 ## 8. Design rules for this game
 
 - **VR-28** Indirect control only. The player acts through designations, priorities, zones, buildings, laws and standing orders. No command moves, drafts or targets one colonist, including in combat (V-015).
-- **VR-29** Every consequence is visible and traceable. Each state change is an event with its causes; the inspector can walk any number, mood or item back to them (GAME-04).
+- **VR-29** Every consequence is visible and traceable. Each state change a player would read or trace is an event with its causes (DECISIONS V-036: moves, need decay and work progress are not); the inspector can walk any number, mood or item back to them (GAME-04).
 - **VR-30** Content over code. A new item, crop, law, creature or spell is a data entry; an engine special case for one entry is a design smell to raise, not to ship (GAME-04).
 - **VR-31** One mechanism per idea. Warmth, mood, quality and legitimacy each have one system that every feature feeds, never a parallel one bolted on (WS-05).
 - **VR-32** No gamey shortcuts: no teleporting items, no free resources, no events without a cause in the world. If it would not happen in the valley, it does not happen in the game.

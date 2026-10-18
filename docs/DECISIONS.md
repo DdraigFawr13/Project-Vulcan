@@ -39,3 +39,4 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-033 | Sound: ambient valley sound and a few effects in Phase 10 (P10.7), each licensed. |
 | V-034 | Final art: AI-made images Morgan picks from, each batch's credit cost approved first (SAFE-04), cleaned to the palette and art names (P10.5). |
 | V-035 | No mod loader at launch (P9.6 now holds ambitions). |
+| V-036 | Ledger policy (P2.0, 2026-10-18; narrows V-006's "every state change emits an event"): a ledger line is a change a player would read or trace (something made, found or decided, a threshold crossed, someone hurt, a law weighed); steps walked, needs falling each tick and work progress change state without a line. The running world keeps a game week of lines in full; older days are sealed into an archive, and lines the world still cites stay as stubs. |

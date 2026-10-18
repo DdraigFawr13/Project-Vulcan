@@ -4,12 +4,14 @@ import {
   chunksAcross,
   chunksDown,
   type EngineContent,
+  type Schemas,
+  tablesProblem,
   WATER,
   type WorldState,
 } from '../engine/index.ts';
 
 /** Raised when a save's format version changes; older saves need not load before launch. */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 /** One saved game (docs/ARCHITECTURE.md "Save"). The command log and ledger live in `state`;
  * `seed` and `tick` repeat `state`'s as a header readable without walking the world, and
@@ -44,6 +46,7 @@ export function checkSave(
   save: unknown,
   contentHash: string,
   content: Pick<EngineContent, 'terrain' | 'biomes' | 'features' | 'schools' | 'weather'>,
+  tables: Schemas,
 ): WorldState {
   if (!isObject(save) || !isObject(save['state'])) throw new Error('The save is damaged.');
   if (save['version'] !== SAVE_VERSION)
@@ -69,6 +72,10 @@ export function checkSave(
     Array.isArray(state['commandLog']) &&
     Array.isArray(state['pending']) &&
     Array.isArray(state['log']) &&
+    Array.isArray(state['stubs']) &&
+    Array.isArray(state['segments']) &&
+    Array.isArray(state['sealed']) &&
+    isObject(state['entities']) &&
     isObject(map) &&
     isCount(map['width']) &&
     isCount(map['height']) &&
@@ -138,9 +145,29 @@ export function checkSave(
     ['north', 'south', 'east', 'west'].includes(w.riverExit) &&
     // The weather's spell names a known kind; its counters are whole numbers (P1.4).
     weatherSound(world.systems['weather'], content.weather.length) &&
+    // Stubs then recent lines, ids rising throughout (findEvent's binary search depends on it).
+    world.stubs.every(
+      (e) =>
+        isObject(e) &&
+        isCount(e.id) &&
+        isCount(e.tick) &&
+        typeof e.type === 'string' &&
+        e.id > last &&
+        ((last = e.id), true),
+    ) &&
     world.log.every((e) => isObject(e) && isCount(e.id) && e.id > last && ((last = e.id), true)) &&
-    world.nextEventId > last;
+    world.nextEventId > last &&
+    world.segments.every(
+      (s) =>
+        isObject(s) &&
+        typeof s.key === 'string' &&
+        [s.day, s.first, s.last].every(isCount) &&
+        s.first <= s.last,
+    ) &&
+    world.sealed.every((s) => isObject(s) && typeof s.text === 'string');
   if (!sound) throw new Error('The save is damaged.');
+  const tablesWrong = tablesProblem(world, tables);
+  if (tablesWrong) throw new Error(`The save is damaged: ${tablesWrong}.`);
   return world;
 }
 

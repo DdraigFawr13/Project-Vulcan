@@ -117,6 +117,7 @@ export const weatherSystem: System = {
     'weather.iceShrank',
   ],
   initialState: { kind: 0, temp: 0, wet: 0, spell: 0, frozen: 0, over: 0 },
+  refs: ['spell'],
   init(ctx) {
     drawDay(ctx, true);
     spellLine(ctx);
