@@ -1,6 +1,6 @@
 # Phase 3: Construction and carpentry
 
-Goal: a roof and a room. Entry: Phase 2 done and live (2026-10-18). Plan source: the project file `vulcan/plan/phases/PHASE_3.md`. Control stays indirect (V-041, V-049): the player says what the colony needs; colonists choose the site, the size, who builds and when. Placing a building on a tile, and deconstructing one, are test-mode tools only.
+Goal: a roof and a room. Entry: Phase 2 done and live (2026-10-18). Spec approved by Morgan 2026-10-18. Plan source: the project file `vulcan/plan/phases/PHASE_3.md`. Control stays indirect (V-041, V-049): the player says what the colony needs; colonists choose the site, the size, who builds and when. Placing a building on a tile, and deconstructing one, are test-mode tools only.
 
 ## Status
 
@@ -19,7 +19,7 @@ Taste board (VR-56): https://claude.ai/artifact/K4ebFPoLf9a8T8SAppoNyn. Morgan's
 - **Rooms (P3.3).** Owns nothing: a room is worked out from walls, doors and floors when asked, like warmth (V-043). Role, size, beauty and impressiveness come from its tiles and furniture by content weights. Test: sample rooms give the expected role and scores.
 - **Growth (P3.8).** Owns nothing new: a stage is a content entry turned into a plan by the build job. Reads a house's beds and sleepers. Fails: no materials means no stage, and the plan waits. Test: a house with more sleepers than beds adds a room, citing the cause.
 - **Furniture and ownership (P3.4, P3.5).** Furniture is an item with quality from the maker's skill (content curve); a bed's owner lives on the bed. Beauty and privacy are needs fed by the rooms worked out above. Colonists claim beds themselves; there is no assign lever. Test: an owned private room gives better mood than a barracks.
-- **Fire (P3.6).** As V-042: owns lit, fuel left, fuel kind. Heat reaches tiles through `tileTemperature`, worked out when asked: a fire in a closed, roofed room shares its heat over the room's tiles, falling with distance; outdoors it warms only its radius. No stored heat field and no warmth lag in Phase 3 (assumption, to check at the playtest). Tending is the Tend row (V-044); firewood its own Stock plate (V-048). Fails: no firewood puts the fire out with a line citing the empty plate; a banked fire burns low until dawn. Test: a heated room in winter keeps warmth above its warning line.
+- **Fire (P3.6).** As V-042: owns lit, fuel left, fuel kind. Heat reaches tiles through `tileTemperature`, worked out when asked: a fire in a closed, roofed room shares its heat over the room's tiles, falling with distance; outdoors it warms only its radius. No stored heat field; a room cools as soon as its fire is out, and slow cooling is a later addition (Morgan, 2026-10-18). Tending is the Tend row (V-044); firewood its own Stock plate (V-048). Fails: no firewood puts the fire out with a line citing the empty plate; a banked fire burns low until dawn. Test: a heated room in winter keeps warmth above its warning line.
 
 Lever list (V-041), checked by a test from P3.1: normal levers `setStock`, `setPriority`, `setBuild` (a kind's priority) and `sendBack` (a plan, once); test-mode tools `placeBuilding`, `deconstruct` and the existing dig, mark and store tools.
 
