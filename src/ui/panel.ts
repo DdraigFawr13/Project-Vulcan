@@ -245,7 +245,8 @@ export class Panel {
       host.querySelector(':scope > .chain')?.remove();
       const chain = el('div', { class: 'chain', 'data-testid': 'chain' });
       for (const line of lines) {
-        const row = this.line(line, line.depth > 1 ? `${'· '.repeat(line.depth - 1)}` : '', false);
+        const row = this.line(line, '', false);
+        row.style.setProperty('--depth', String(line.depth));
         if (!line.causes.length) row.querySelector('.when')!.append(' · the root');
         chain.append(row);
       }
@@ -311,7 +312,10 @@ export class Panel {
 
   private line(line: LedgerLine, prefix = '', why = true): HTMLElement {
     const row = el('div', { class: 'line', 'data-line': String(line.id) });
-    row.append(el('span', { class: 'when' }, `${prefix}${when(line.clock)} · #${line.id}`));
+    row.append(
+      el('b', { class: 'no' }, `#${line.id}`),
+      el('span', { class: 'when' }, `${prefix}${when(line.clock)}`),
+    );
     const text = el('span', {}, line.text);
     if (why && line.why) {
       text.append(' ');

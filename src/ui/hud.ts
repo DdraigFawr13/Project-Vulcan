@@ -1,6 +1,7 @@
-// The heads-up display over the map: clock, speed and panel buttons, the Paused label, the tile
-// readout, level and zoom buttons, a debug line, and the starting, loading and error screens. Shows what it is given; it
-// computes no game rule (GAME-02).
+// The heads-up display over the map: clock, speed and panel buttons (the lit pause plate says the
+// game is paused, with no word, per the taste board), the tile readout, level and zoom buttons, a
+// debug line, and the starting, loading and error screens. Shows what it is given; it computes no
+// game rule (GAME-02).
 import type { ClockView, Speed, TimingView, WeatherView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
@@ -23,7 +24,6 @@ export interface HudActions {
 
 export class Hud {
   private readonly clock = el('div', { class: 'clock', 'data-testid': 'clock' });
-  private readonly paused = el('span', { class: 'pill', hidden: '' }, 'Paused');
   private readonly speeds = new Map<Speed, HTMLButtonElement>();
   private readonly panels = new Map<PanelButton, HTMLButtonElement>();
   private readonly readout = el('div', { class: 'hud readout', hidden: '' });
@@ -40,6 +40,8 @@ export class Hud {
     'data-testid': 'unreached',
     hidden: '',
   });
+  /** The ⋯ menu and its button (folded on a phone only). */
+  private menu!: { root: HTMLElement; button: HTMLButtonElement };
   /** "surface" or "2 levels down", after the season under the clock. */
   private where = 'surface';
   private timing = '';
@@ -61,7 +63,16 @@ export class Hud {
       this.speeds.set(speed, button);
       group.append(button);
     }
+    // Ledger stays in the bar; the rest fold under ⋯ on a phone (UI_STYLE.md) and sit in the bar on
+    // a desktop, where the menu is laid out inline.
     const panels = el('div', { class: 'speeds', role: 'group', 'aria-label': 'Panels' });
+    const menu = el('div', { class: 'menu', 'data-testid': 'menu' });
+    const more = el(
+      'button',
+      { type: 'button', class: 'more', 'aria-label': 'More', 'aria-expanded': 'false' },
+      '⋯',
+    );
+    more.addEventListener('click', () => this.showMenu(!menu.classList.contains('open')));
     for (const [kind, label] of [
       ['ledger', 'Ledger'],
       ['stock', 'Stock'],
@@ -73,12 +84,17 @@ export class Hud {
         { type: 'button', class: 'word', 'aria-pressed': 'false', 'data-testid': `open-${kind}` },
         label,
       );
-      button.addEventListener('click', () => actions.togglePanel(kind));
+      button.addEventListener('click', () => {
+        this.showMenu(false);
+        actions.togglePanel(kind);
+      });
       this.panels.set(kind, button);
-      panels.append(button);
+      (kind === 'ledger' ? panels : menu).append(button);
     }
+    panels.append(more, menu);
+    this.menu = { root: menu, button: more };
     const status = el('div', { class: 'status' });
-    status.append(this.paused, group, panels);
+    status.append(group, panels);
     bar.append(this.clock, status);
     const zoom = el('div', { class: 'hud zoom' });
     this.up.addEventListener('click', () => actions.level(-1));
@@ -112,9 +128,11 @@ export class Hud {
     const pad = (n: number) => String(n).padStart(2, '0');
     const season = clock.season.charAt(0).toUpperCase() + clock.season.slice(1);
     const sky = weather ? ` · ${weather.words}, ${weather.temperature} °C` : '';
-    this.clock.textContent = `${pad(clock.hour)}:${pad(clock.minute)} · Day ${clock.day} of ${clock.monthName}, Year ${clock.year}`;
+    this.clock.replaceChildren(
+      el('span', { class: 'time' }, `${pad(clock.hour)}:${pad(clock.minute)}`),
+      ` · Day ${clock.day} of ${clock.monthName}, Year ${clock.year}`,
+    );
     this.clock.append(el('small', {}, `${season}${sky} · ${this.where}`));
-    this.paused.hidden = speed !== 0;
     for (const [s, button] of this.speeds) button.setAttribute('aria-pressed', String(s === speed));
     this.debug.dataset['tick'] = String(tick);
     this.debug.dataset['at'] = String(Math.round(at));
@@ -156,9 +174,20 @@ export class Hud {
     );
   }
 
+  /** Opens or folds the ⋯ menu. */
+  showMenu(open: boolean): void {
+    this.menu.root.classList.toggle('open', open);
+    this.menu.button.setAttribute('aria-expanded', String(open));
+  }
+
   /** Marks which panel is open on its button. */
   showPanel(kind: string | undefined): void {
     for (const [k, button] of this.panels) button.setAttribute('aria-pressed', String(k === kind));
+    // On a phone a folded panel's button is out of sight, so ⋯ shows it is open.
+    this.menu.button.setAttribute(
+      'aria-pressed',
+      String(kind === 'stock' || kind === 'region' || kind === 'saves'),
+    );
   }
 
   hideScreen(): void {
