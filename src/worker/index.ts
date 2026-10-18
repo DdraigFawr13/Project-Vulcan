@@ -6,9 +6,11 @@ export type {
   ClockView,
   FromWorker,
   LedgerLine,
+  RegionView,
   Speed,
   TileView,
   ToWorker,
+  ValleyPreview,
   WeatherView,
 } from './protocol.ts';
 export { SAVE_VERSION } from './save.ts';

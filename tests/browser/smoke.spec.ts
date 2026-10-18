@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
-// The one browser smoke (RULES.md VR-23): the game boots with no page errors, draws the map,
-// starts paused, runs at 3x and stops dead when paused; the inspector answers "why?"; a save
+// The one browser smoke (RULES.md VR-23): a seed opens the site picker, a valley is settled, the
+// game draws the map, starts paused, runs at 3x and stops dead when paused; the inspector answers "why?"; a save
 // survives a page reload and carries on; the ledger exports; a shaft opens the level below.
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
@@ -27,7 +27,14 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
+  // The picker: the region's map and three valleys; tapping a number chooses, then settle there.
   await page.goto('/?seed=smoke');
+  const picker = page.getByTestId('picker');
+  await expect(picker.locator('[data-card]')).toHaveCount(3);
+  await page.getByTestId('valley-2').click();
+  await picker.getByRole('button', { name: 'Settle here' }).click();
+  await expect(picker).toBeHidden();
+  await expect(page).toHaveURL(/seed=smoke&site=2/);
   await expect(page.getByTestId('game').locator('canvas')).toBeVisible();
   await expect(page.getByTestId('clock')).toContainText('06:00 · Day 1 of Thawmonth, Year 1');
   await expect(page.getByText('Paused')).toBeVisible();
@@ -68,20 +75,25 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   const spring = panel.locator('[data-line]', { hasText: 'Spring came to the valley.' });
   await spring.getByRole('button', { name: 'why?' }).click();
   await expect(spring.getByTestId('chain')).toContainText('Thawmonth began.');
-  await expect(spring.getByTestId('chain')).toContainText('A new world began from seed "smoke".');
+  await expect(spring.getByTestId('chain')).toContainText('A new world began from seed "smoke/2".');
+  await expect(panel).toContainText('The band chose');
+  // The Region panel shows the region again with the settled valley only.
+  await page.getByTestId('open-region').click();
+  await expect(panel.getByTestId('valley-2')).toBeVisible();
+  await expect(panel.getByTestId('valley-1')).toHaveCount(0);
 
   // Save, export, reload the page, load: the clock picks up at the saved tick and keeps going.
   await page.getByTestId('open-saves').click();
   await panel.getByRole('button', { name: 'Save now' }).click();
   await expect(panel.getByTestId('save')).toHaveCount(1);
-  await expect(panel.getByTestId('save')).toContainText('smoke · Day 1 of Thawmonth, Year 1');
+  await expect(panel.getByTestId('save')).toContainText('smoke/2 · Day 1 of Thawmonth, Year 1');
   const download = page.waitForEvent('download');
   await panel.getByRole('button', { name: 'Export ledger' }).click();
   const file = await download;
-  expect(file.suggestedFilename()).toBe(`smoke-tick-${paused}.ndjson`);
+  expect(file.suggestedFilename()).toBe(`smoke-2-tick-${paused}.ndjson`);
   const { readFile } = await import('node:fs/promises');
   const first = JSON.parse((await readFile(await file.path(), 'utf8')).split('\n')[0]!);
-  expect(first).toMatchObject({ id: 1, type: 'world.begun', data: { seed: 'smoke' } });
+  expect(first).toMatchObject({ id: 1, type: 'world.begun', data: { seed: 'smoke/2' } });
 
   await page.reload();
   await expect(page.getByTestId('clock')).toContainText('06:00 · Day 1 of Thawmonth, Year 1');
