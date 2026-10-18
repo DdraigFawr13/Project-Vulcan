@@ -58,10 +58,10 @@ AI-Master layers synced: `core`, `stacks/node-web`, `project-types/game`. The `s
 | --- | --- | --- |
 | GitHub | PRs, CI status, reviews, branch cleanup | Always on |
 | Vercel | Check the live deploy matches the merge commit | Production from `main` only |
-| OpenArt | Optional placeholder art when scripted art isn't enough | Paid credits: ask Morgan with an estimate first (SAFE-04) |
+| OpenArt | Optional placeholder art; the likely tool for the final art (V-034) | Paid credits: ask Morgan with an estimate first (SAFE-04) |
 | tldraw, Figma | Optional diagrams or layout sketches | HTML mock-up artifacts are the default because they read on a phone |
 | Mobbin | Reference screens for panels and inspectors | Reference only; nothing copied |
-| Supabase | Candidate for cloud saves in P10.2 | Needs Morgan's approval (SAFE-03) |
+| Supabase | Not used | Cloud saves dropped for save files (V-032) |
 | Claude Docs, Google Drive, Canva | Not used | The plan stays as files plus one artifact page |
 | Stripe | Not used | Its sign-in has expired; nothing needs it |
 
