@@ -9,6 +9,7 @@ Goal: a valley worth settling. Entry: Phase 0 done and its playtest signed off b
 - [x] P1.3 Underground (merged 2026-10-17)
 - [x] P1.4 Aura, seasons and weather (merged 2026-10-17)
 - [x] P1.5 Lighter world map and site picker (merged 2026-10-18)
+- [ ] P1.6 Story Generator world behind the region map (V-031)
 - [ ] Phase review
 
 Deferred: the `highlands` mountain layout (massifs inside the valley as well as on its rims, Morgan's 2026-10-17 "keep for later") is kept in `terrain.json` `generator.layouts` but unused; `generator.layout` stays `valley`. A later site type or the full worldgen port may use it.
@@ -47,9 +48,15 @@ The valley among named neighbouring sites from content cultures; site picker bef
 
 - Reading list: `docs/DECISIONS.md` V-017; `src/content/MODULE.md`; `src/ui/MODULE.md`
 
+### P1.6 Story Generator world
+
+The Story Generator's world and history engine, used as a package with an adapter from Vulcan's content (V-031), replaces P1.5's lighter generator behind the merged region map, site picker and Region button, which stay as they are. Mock-up: engine (ten seeds' regions: names, cultures, distances, a history line per neighbour). Done when: ten seeds give ten distinct, named neighbourhoods drawn from their Story Generator worlds, and the same seed gives the same world.
+
+- Reading list: `docs/DECISIONS.md` V-031; `src/content/MODULE.md`; `src/worker/MODULE.md`; `src/ui/MODULE.md`
+
 ## Phase review fixes
 
-From the game audit's playtest (2026-10-18): progress lost on close or reload; a reload starting a new Day 1 instead of Continue; phone HUD boxes over the inspector sheet; fit zoom hiding the top rows under the bar; developer readouts (chunk, version, fps) shown to players. P1.5 uses the Story Generator world (V-031) under the approved region map screen.
+From the game audit's playtest (2026-10-18): progress lost on close or reload; a reload starting a new Day 1 instead of Continue; phone HUD boxes over the inspector sheet; fit zoom hiding the top rows under the bar; developer readouts (chunk, version, fps) shown to players.
 
 ## Phase done (playtest)
 

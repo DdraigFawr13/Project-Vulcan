@@ -20,7 +20,7 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-014 | Four underground levels below the surface (five z-levels in all), each generated lazily when first reached. Depth is a parameter for later growth. |
 | V-015 | Combat is real time with pause and fully indirect: colonists decide to fight, flee or hide from traits, skills, morale, laws and standing orders. There is no drafting and no unit command. |
 | V-016 | Five starting colonists. |
-| V-017 | SUPERSEDED by V-031 (2026-10-18): the lighter world map is replaced by the Story Generator's own world in P1.5. |
+| V-017 | SUPERSEDED by V-031 (2026-10-18): the lighter generator from P1.5 is replaced by the Story Generator's own world in P1.6. |
 | V-018 | Hosting: Vercel, production from `main` only, branch previews off, as the Story Generator (default picked 2026-10-17). |
 | V-019 | In a fight the player may still pull standing levers (alarm bell, guard posts, militia law, safe zone) but never moves, drafts or targets anyone (P8.2). |
 | V-020 | Each phase end goes live on the site from `main` as a playable build; the game is called launched only once every phase is in. |
@@ -34,7 +34,7 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-028 | Wanderers and refugees join from the world's sites, each with a reason from its record (P5.9). |
 | V-029 | Phone first: every UI mock-up is designed at phone width (390 px), then desktop (RULES VR-57). |
 | V-030 | Underground fog: caves and water stay hidden until mining opens next to them; veins stay visible once a level is reached (P4.1). |
-| V-031 | The Story Generator's world and history engine is used as a package (approved as a dependency, SAFE-03), with an adapter from Vulcan's content. It replaces the lighter map in P1.5; the approved P1.5 region map screen (six to eight neighbours, three valleys to pick, game palette, Region button) stays, and later phases build on it. P9.3 keeps the world's history running during play. |
+| V-031 | The Story Generator's world and history engine is used as a package (approved as a dependency, SAFE-03), with an adapter from Vulcan's content. It replaces P1.5's lighter generator in P1.6, behind the region map screen merged in P1.5 (six to eight neighbours, three valleys to pick, game palette, Region button), which Morgan likes; later phases build on that screen. P9.3 keeps the world's history running during play. |
 | V-032 | Saves move between devices as downloaded save files (P10.2); no cloud saves, so no backend (V-011). |
 | V-033 | Sound: ambient valley sound and a few effects in Phase 10 (P10.7), each licensed. |
 | V-034 | Final art: AI-made images Morgan picks from, each batch's credit cost approved first (SAFE-04), cleaned to the palette and art names (P10.5). |
