@@ -35,6 +35,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-16** The plan lives in the project files at `vulcan/plan/PLAN.md` and is updated there whenever a milestone merges or the plan changes. Decisions, architecture, rules, lessons, toolkit and art plan live in this repo's `docs/`; the plan links to them rather than copying them (SRC-01).
 - **VR-17** Milestone status lives in the repo's `docs/phases/PHASE_N.md` Status section; phase status lives in PLAN.md's phase table. Both are updated in the same turn as the merge.
 - **VR-18** No code for a phase before its spec is approved, and none at all before the plan is approved (LESSONS 2026-10-17).
+- **VR-62** Every new system in a phase spec answers five design questions before its mock-up: what it owns, reads and gives; which existing lever it reuses before adding one; where each fact lives once; how it fails (supply, starvation, night, waste); which rule a test can check (Morgan, design workshop 2026-10-18).
 
 ## 6. Images, mock-ups and documents
 
@@ -60,7 +61,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 
 ## 8. Design rules for this game
 
-- **VR-28** Indirect control only. The player acts through priorities, standing orders (such as how much of a good to keep), laws, buildings and nudges; colonists choose where to cut, build and stack. No lever moves, drafts or targets one colonist, or marks a tile to work, including in combat (V-015). Direct tools exist only in a TEST MODE row behind `?debug` (Morgan, 2026-10-18).
+- **VR-28** Indirect control only. The player acts through priorities, standing orders (such as how much of a good to keep), laws, buildings and nudges; colonists choose where to cut, build and stack. Levers nudge, never command (V-041, Morgan's wording). No lever moves, drafts or targets one colonist, or marks a tile to work, including in combat (V-015). Direct tools exist only in a TEST MODE row behind `?debug` (Morgan, 2026-10-18).
 - **VR-29** Every consequence is visible and traceable. Each state change a player would read or trace is an event with its causes (DECISIONS V-036: moves, need decay and work progress are not); the inspector can walk any number, mood or item back to them (GAME-04).
 - **VR-30** Content over code. A new item, crop, law, creature or spell is a data entry; an engine special case for one entry is a design smell to raise, not to ship (GAME-04).
 - **VR-31** One mechanism per idea. Warmth, mood, quality and legitimacy each have one system that every feature feeds, never a parallel one bolted on (WS-05).
