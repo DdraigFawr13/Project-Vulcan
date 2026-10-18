@@ -105,7 +105,7 @@ const panel = new Panel(
     exportLedger: () => send({ type: 'export', kind: 'ndjson' }),
     load: (meta) => void saves.load(meta),
     remove: (meta) => void saves.remove(meta),
-    test: (tile, kind, to) => orders.give(tile, kind, worldTick + 1, to),
+    test: (tile, kind, arg) => orders.give(tile, kind, worldTick + 1, arg),
     setStock: (good, level) =>
       send({ type: 'command', tick: worldTick + 1, kind: 'setStock', data: { good, level } }),
     go: (tile, z) => {

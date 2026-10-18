@@ -4,7 +4,7 @@ Goal: a roof and a room. Entry: Phase 2 done and live (2026-10-18). Spec approve
 
 ## Status
 
-- [ ] P3.1 and P3.2 Build job and building parts (one bundle, VR-61)
+- [x] P3.1 and P3.2 Build job and building parts (one bundle, VR-61): engine PR #38, screens PR #39, 2026-10-18
 - [ ] P3.7, P3.3 and P3.8 Build sheet, rooms and the first growth stage (one bundle)
 - [ ] P3.4 and P3.5 Carpentry, furniture, beauty, privacy and ownership (one bundle)
 - [ ] P3.6 Hearth and firewood

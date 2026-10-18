@@ -1,4 +1,5 @@
-// The test tools' orders (dig, mark a tree, add a store tile): each is stamped for the next tick
+// The test tools' orders (dig, mark a tree, add a store tile, plan a part or take one down): each
+// is stamped for the next tick
 // and the tile is asked for again once it is answered, so the sheet shows the result. A dig order
 // is followed until its answer (at once while paused), and a refusal is kept to show once.
 import type { LedgerLine, TileView, ToWorker } from '../worker/index.ts';
@@ -31,11 +32,13 @@ export class Orders {
 
   /** Sends order `kind` on `tile` for tick `tick`, and asks for the tile now and again once it
    * is answered. */
-  give(tile: TileView, kind: string, tick: number, to?: number): void {
+  give(tile: TileView, kind: string, tick: number, arg?: number | string): void {
     const { x, y, z } = tile;
     const dig = kind === 'cutStairs' || kind === 'sinkShaft';
     this.order = { x, y, z, tick, dig };
-    const data = dig ? { x, y, z, ...(to !== undefined && { to }) } : { x, y };
+    const data = dig
+      ? { x, y, z, ...(arg !== undefined && { to: arg }) }
+      : { x, y, ...(kind === 'placeBuilding' && arg !== undefined && { part: arg }) };
     this.send({ type: 'command', tick, kind, data });
     this.send({ type: 'inspect', x, y, z });
   }
@@ -53,7 +56,14 @@ export class Orders {
       ) {
         order.answered = true;
         if (line.type === 'map.digRefused') order.refused = line;
-      }
+      } else if (
+        order?.answered &&
+        !order.dig &&
+        line.type === 'command.refused' &&
+        line.tick >= order.tick
+      )
+        // Any other order's refusal comes just after it is applied.
+        order.refused = line;
   }
 
   /** The snapshot after an order's answer asks once for the tile again, if it is shown. */
@@ -65,7 +75,7 @@ export class Orders {
     if (shown?.x === x && shown.y === y && shown.z === z) this.send({ type: 'inspect', x, y, z });
   }
 
-  /** What became of the last dig order on `tile`, once: the line refusing it, once answered. */
+  /** What became of the last order on `tile`, once: the line refusing it, once answered. */
   noticeFor(tile: TileView): LedgerLine | undefined {
     const order = this.order;
     if (!order || order.x !== tile.x || order.y !== tile.y || order.z !== tile.z) return undefined;

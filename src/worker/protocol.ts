@@ -182,7 +182,7 @@ export interface PlanView {
   /** The plan's line (placed, or ordered down), and the line it was built under. */
   placed?: LedgerLine;
   built?: LedgerLine;
-  /** The alert saying it waits for material, while it does. */
+  /** The alert saying it waits: for material, or because the wall would shut someone in. */
   waiting?: LedgerLine;
 }
 

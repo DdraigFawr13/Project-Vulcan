@@ -4,8 +4,8 @@
 // with their two walk frames, then stand. The glide is a picture choice, never game state.
 import Phaser from 'phaser';
 import type { PersonView, WalkerView } from '../worker/index.ts';
+import { PEOPLE } from './sheets.ts';
 
-export const PEOPLE = 'sprites-people';
 const TILE = 32;
 /** Gliding: at least this many screen pixels a second (a tile a game minute at 1x), and never
  * more than about a tenth of a second behind, so at 3x nobody trails their tile. */
