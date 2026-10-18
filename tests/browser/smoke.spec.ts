@@ -17,6 +17,30 @@ const reading = async (page: Page) => {
   };
 };
 
+/** What breaks the phone rules on the screen as shown: small tap targets or text, or overflow. */
+const phoneRules = (page: Page) =>
+  page.evaluate(() => {
+    const shown = (e: Element) => {
+      const r = e.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight;
+    };
+    const bad: string[] = [];
+    for (const b of document.querySelectorAll('#hud button')) {
+      const r = b.getBoundingClientRect();
+      if (shown(b) && !b.closest('svg') && Math.min(r.width, r.height) < 40)
+        bad.push(`tap ${Math.round(Math.min(r.width, r.height))} px: ${b.textContent}`);
+    }
+    const text = document.createTreeWalker(document.getElementById('hud')!, NodeFilter.SHOW_TEXT);
+    while (text.nextNode()) {
+      const parent = text.currentNode.parentElement;
+      if (!parent || !text.currentNode.textContent!.trim() || parent.closest('svg')) continue;
+      const size = parseFloat(getComputedStyle(parent).fontSize);
+      if (shown(parent) && size < 11) bad.push(`text ${size} px: ${text.currentNode.textContent}`);
+    }
+    if (document.documentElement.scrollWidth > innerWidth) bad.push('wider than the screen');
+    return bad;
+  });
+
 test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports', async ({
   page,
 }) => {
@@ -55,7 +79,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(arrival).toHaveCount(0);
   await expect(page.getByTestId('game').locator('canvas')).toBeVisible();
   await expect(page.getByTestId('clock')).toContainText('06:00 · Day 1 of Thawmonth, Year 1');
-  await expect(page.getByText('Paused')).toBeVisible();
+  await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
 
   // Paused at the start: the tick does not move.
   const start = await tick(page);
@@ -75,7 +99,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
 
   // Pause stops the tick: one snapshot may still be on its way, then nothing moves.
   await page.keyboard.press('Space');
-  await expect(page.getByText('Paused')).toBeVisible();
+  await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
   await page.waitForTimeout(100);
   const paused = await tick(page);
   await page.waitForTimeout(1000);
@@ -121,11 +145,11 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // A reload continues the newest save of this valley rather than beginning a new Day 1.
   await page.reload();
   await expect.poll(() => tick(page)).toBe(paused);
-  await expect(page.getByText('Paused')).toBeVisible();
+  await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
   await page.getByTestId('open-saves').click();
   await panel.getByRole('button', { name: 'Load' }).first().click();
   await expect.poll(() => tick(page)).toBe(paused);
-  await expect(page.getByText('Paused')).toBeVisible();
+  await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
   await page.getByTestId('speed-3').click();
   await expect.poll(() => tick(page)).toBeGreaterThan(paused);
 
@@ -157,6 +181,14 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // Stairs on a phone, ordered while paused: the sheet says the order waits, then once time runs it
   // shows the stairs with a way down, which the sheet itself follows (it covers the level buttons).
   await page.setViewportSize({ width: 390, height: 844 });
+  // Hearth and Page on a phone (UI_STYLE.md): every tap target 40 px or more, every text 11 px or
+  // more, nothing wider than the screen, and Region and Saves folded under ⋯.
+  expect(await phoneRules(page)).toEqual([]);
+  await expect(page.getByTestId('open-saves')).toBeHidden();
+  await page.getByRole('button', { name: 'More' }).click();
+  await expect(page.getByTestId('open-saves')).toBeVisible();
+  expect(await phoneRules(page)).toEqual([]);
+  await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('speed-0').click();
   await panel.getByRole('button', { name: 'Cut stairs down' }).click();
   await expect(panel).toContainText('Paused: this is dug');
@@ -178,7 +210,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // snapshot lags the worker, and a standby taken in that gap came back 5 ticks past it in CI.
   await page.waitForTimeout(6000);
   await page.getByTestId('speed-0').click();
-  await expect(page.getByText('Paused')).toBeVisible();
+  await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
   let before = -1;
   await expect.poll(async () => before === (before = await tick(page))).toBe(true);
   await page.reload();

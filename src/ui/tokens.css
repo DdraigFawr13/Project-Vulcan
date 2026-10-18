@@ -1,0 +1,34 @@
+/* Hearth and Page tokens (docs/UI_STYLE.md, V-037): every colour, face and art piece the screens
+   use. No other stylesheet writes a hex value or a font name. */
+:root {
+  --oak: #4a3322;
+  --oak-dark: #1a110b;
+  --iron: #5c5e5e;
+  --ember: #c8743a;
+  --page: #ded0b0;
+  --ink: #2b2016;
+  --ink-soft: #5a4630;
+  --rubric: #8e2f22;
+  --bone: #efe2c2;
+  --bone-soft: #cbbd9c;
+  --rule: #b08d55;
+  --track: #c5b48c;
+  --mood-ok: #6f8a3a;
+  --mood-low: #d29a2e;
+  --mood-bad: #c0412c;
+  --dusk: rgba(26, 17, 11, 0.72);
+
+  --read: 'Alegreya', Georgia, serif;
+  --name: 'Alegreya SC', Georgia, serif;
+  --label: 'Silkscreen', ui-monospace, monospace;
+
+  --plank: url('/art/ui/plank.png');
+  --plate: url('/art/ui/iron.png');
+  --plate-on: url('/art/ui/iron.on.png');
+  --frame: url('/art/ui/oak-frame.png');
+  --paper: url('/art/ui/paper.png');
+
+  /* Phone rules: tap targets and the bottom sheet's share of the screen. */
+  --tap: 42px;
+  --sheet: 39vh;
+}

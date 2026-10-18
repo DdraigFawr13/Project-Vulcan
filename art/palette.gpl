@@ -115,3 +115,17 @@ Columns: 4
 240 240 240	tint light
 208 208 208	tint mid
 168 168 168	tint dark
+# Hearth and Page controls (P2.8, docs/UI_STYLE.md): oak, iron, ember and paper.
+ 74  51  34	ui oak
+107  74  48	ui oak light
+ 58  40  26	ui oak grain
+ 26  17  11	ui oak dark
+ 92  94  94	ui iron
+133 135 132	ui iron light
+ 62  64  63	ui iron dark
+200 116  58	ui ember
+224 154  94	ui ember light
+143  79  36	ui ember dark
+222 208 176	ui page
+230 219 192	ui page light
+208 192 156	ui page dark
