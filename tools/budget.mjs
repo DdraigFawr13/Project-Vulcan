@@ -5,11 +5,8 @@
 // day change, each citing a line. Sealed days are taken each midnight as the worker takes them.
 // Prints one row per year and fails on a miss. Takes a few minutes (measured below); it is not
 // part of `npm run check` or CI (RULES VR-25).
-import { readFileSync } from 'node:fs';
 import { serialize } from 'node:v8';
 import { gzipSync } from 'node:zlib';
-import path from 'node:path';
-import { root } from './lib.mjs';
 import { engine } from './engine.mjs';
 
 const { addEntity, createSim, createWorld, removeEntity, step, submitCommand, SYSTEMS } = engine;
@@ -23,10 +20,8 @@ const TILES_PER_DAY = 6;
 const YEARS = 10;
 const BUDGET = { ledgerMB: 2, saveMB: 4, cloneMs: 25, archiveMB: 40, sealMs: 5 };
 
-const json = (name) => JSON.parse(readFileSync(path.join(root, 'src/content/data', name), 'utf8'));
-const names = ['calendar', 'events', 'terrain', 'biomes', 'features', 'weather', 'seasons'];
-const content = Object.fromEntries(names.map((n) => [n, json(`${n}.json`)]));
-for (const n of ['schools', 'region', 'cultures', 'races', 'names']) content[n] = json(`${n}.json`);
+// The game's own content, with the stand-in colony's two line types added.
+const content = { ...engine.content };
 content.events = [
   ...content.events,
   { id: 'budget.did', template: '{actor0} did task {n}.' },
@@ -42,20 +37,20 @@ const colony = {
   every: 'hour',
   emits: ['budget.did', 'budget.made'],
   tables: {
-    person: { name: 'text', last: 'event', memory: 'events' },
-    item: { kind: 'count', holder: 'entity', made: 'event' },
+    budgetPerson: { name: 'text', last: 'event', memory: 'events' },
+    budgetItem: { kind: 'count', holder: 'entity', made: 'event' },
   },
   initialState: { turn: 0 },
   init(ctx) {
     const people = [];
     for (let p = 0; p < PEOPLE; p += 1)
-      people.push(addEntity(ctx.world, 'person', { name: `P${p}`, last: 0, memory: [] }));
+      people.push(addEntity(ctx.world, 'budgetPerson', { name: `P${p}`, last: 0, memory: [] }));
     for (let i = 0; i < ITEMS; i += 1)
-      addEntity(ctx.world, 'item', { kind: i % 40, holder: people[i % PEOPLE], made: 1 });
+      addEntity(ctx.world, 'budgetItem', { kind: i % 40, holder: people[i % PEOPLE], made: 1 });
   },
   run(ctx) {
     const { world, state } = ctx;
-    const people = world.entities.person;
+    const people = world.entities.budgetPerson;
     const hour = (world.tick / 60) % 24;
     for (let k = 0; k < perHour(hour); k += 1) {
       const who = people[state.turn % PEOPLE];
@@ -71,11 +66,11 @@ const colony = {
     }
     if (hour !== 12) return;
     // Midday: one item is used up and another made; six tiles change.
-    const items = world.entities.item;
-    removeEntity(world, 'item', items[0].id);
+    const items = world.entities.budgetItem;
+    removeEntity(world, 'budgetItem', items[0].id);
     const maker = people[state.turn % PEOPLE];
     const made = ctx.emit('budget.made', { actors: [maker.id], data: { n: state.turn } });
-    addEntity(world, 'item', { kind: state.turn % 40, holder: maker.id, made });
+    addEntity(world, 'budgetItem', { kind: state.turn % 40, holder: maker.id, made });
     const tiles = world.map.tileCauses;
     for (let t = 0; t < TILES_PER_DAY; t += 1)
       tiles[(state.turn * 7919 + t * 104729) % tiles.length] = made;

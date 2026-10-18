@@ -70,7 +70,7 @@ describe('saves', () => {
       (s: SaveFile) => (s.state.stubs[0]!.type = 7 as unknown as string),
       // Entity tables are checked against their declared fields, whatever the kind.
       (s: SaveFile) => (s.state.entities['keeper']![0]!['age'] = -1),
-      (s: SaveFile) => (s.state.entities['keeper']![1]!['holder'] = 99),
+      (s: SaveFile) => (s.state.entities['keeper']![1]!['holder'] = s.state.nextEntityId + 5),
       (s: SaveFile) => (s.state.entities['keeper']![0]!['memory'] = [s.state.nextEventId]),
       (s: SaveFile) => (s.state.entities['keeper']![1]!['id'] = 1),
       (s: SaveFile) => (s.state.entities['stranger'] = []),

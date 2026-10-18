@@ -206,12 +206,29 @@ export interface PersonView {
   arrived: number;
 }
 
-/** Where a person stands this tick (P2.3), sent with every snapshot so the screen can walk them. */
+/** One need or the mood as a bar (P2.2): filled to `share` %, the warning line at `line` %. */
+export interface NeedView {
+  name: string;
+  share: number;
+  line: number;
+  /** The word for it now (Hungry, Fed, Content...); `low` while under its warning line. */
+  word: string;
+  low: boolean;
+  /** The line that explains it, for "why?". */
+  why: number;
+}
+
+/** Where a person stands this tick (P2.3), sent with every snapshot so the screen can walk them,
+ * with their mood, needs and what they are doing (P2.2) for the person panel. */
 export interface WalkerView {
   id: number;
   x: number;
   y: number;
   z: number;
+  mood: NeedView;
+  needs: NeedView[];
+  /** "Sleeping", "Eating", "Taking it easy"... */
+  doing: string;
 }
 
 export type FromWorker =

@@ -6,6 +6,7 @@ export type {
   ClockView,
   FromWorker,
   LedgerLine,
+  NeedView,
   PersonView,
   WalkerView,
   RegionView,

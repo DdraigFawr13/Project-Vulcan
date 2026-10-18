@@ -1,9 +1,16 @@
 // The side panel (a bottom sheet on narrow screens): the tile inspector, the ledger and the save
 // list. Shows what the worker and the save store hand it; it computes no game rule (GAME-02).
 import type { SaveMeta } from '../persist/index.ts';
-import type { ClockView, LedgerLine, PersonView, RegionView, TileView } from '../worker/index.ts';
+import type {
+  ClockView,
+  LedgerLine,
+  PersonView,
+  RegionView,
+  TileView,
+  WalkerView,
+} from '../worker/index.ts';
 import { el } from './dom.ts';
-import { skillRows, whoLine } from './person.ts';
+import { fillNeed, needRow, skillRows, whoLine } from './person.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 
 export type PanelKind = 'tile' | 'person' | 'ledger' | 'saves' | 'region';
@@ -36,6 +43,9 @@ export class Panel {
   private readonly actions: PanelActions;
   /** Shows developer rows (the tile's chunk and version); `?debug` in the URL. */
   private readonly debug: boolean;
+  /** Everyone's needs as of the last snapshot, and the open person's rows that show them. */
+  private walkers: readonly WalkerView[] = [];
+  private person = { id: 0, now: el('p'), rows: [] as HTMLElement[] };
 
   constructor(parent: HTMLElement, actions: PanelActions, debug = false) {
     this.actions = actions;
@@ -166,8 +176,11 @@ export class Panel {
       el('button', { type: 'button', class: 'why', 'data-why': String(p.arrived) }, 'why?'),
     );
     arrived.append(text);
+    this.person = { id: p.id, now: el('p'), rows: [needRow(), ...this.needRows()] };
     this.body.replaceChildren(
       el('p', { class: 'pwho' }, whoLine(p, true)),
+      this.person.now,
+      ...this.person.rows,
       el('p', {}, `Trade: ${p.trade}`),
       skillRows(p.skills, true),
       ...p.traits.map((t) => {
@@ -177,6 +190,20 @@ export class Panel {
       }),
       arrived,
     );
+    this.setWalkers(this.walkers);
+  }
+
+  /** The needs as of this snapshot; an open person's bars and "Now:" follow them. */
+  setWalkers(walkers: readonly WalkerView[]): void {
+    this.walkers = walkers;
+    const w = walkers.find((x) => x.id === this.person.id);
+    if (this.shown !== 'person' || !w) return;
+    this.person.now.textContent = `Now: ${w.doing}`;
+    [w.mood, ...w.needs].forEach((n, k) => fillNeed(this.person.rows[k]!, n));
+  }
+
+  private needRows(): HTMLElement[] {
+    return (this.walkers[0]?.needs ?? []).map(() => needRow());
   }
 
   showNote(title: string, text: string): void {

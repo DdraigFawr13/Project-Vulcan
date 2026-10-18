@@ -121,8 +121,7 @@ const panel = new Panel(
         kind,
         data: { x, y, z, ...(to !== undefined && { to }) },
       });
-      // Asked again at once so a paused game says the order waits; the snapshot past the order's
-      // answer asks once more to show the stairs, or why they were not cut.
+      // Asked now (a paused game says the order waits) and again once it is answered.
       send({ type: 'inspect', x, y, z });
     },
     go: (tile, z) => {
@@ -226,6 +225,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       reached = message.reached;
       renderer.applyChunks(message.chunks);
       renderer.movePeople(message.walkers);
+      panel.setWalkers(message.walkers);
       renderer.setAura(message.aura);
       hud.showLevel(level, depth, level === 0 || reached[level - 1] === true);
       hud.fps = Math.round(renderer.fps());

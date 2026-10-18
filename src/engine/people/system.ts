@@ -1,12 +1,13 @@
 // The people system (P2.1): when a world begins, the band arrives. Each person is a row of the
 // `person` table with a row per skill and per trait, standing near the start tile, and one ledger
-// line names them all. Each minute they walk (P2.3); later milestones give them needs and work.
+// line names them all. Each minute they walk (P2.3) and choose what to do from their needs (P2.2, mind.ts).
 import { clockAt, type EngineContent, type MapState, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { valleyOf } from '../region/index.ts';
 import type { System } from '../sim/index.ts';
 import { drawBand, type Home } from './band.ts';
-import { stepAlong, WALK_FIELDS, wander } from './walk.ts';
+import { hourNow, MIND_FIELDS, think } from './mind.ts';
+import { stepAlong, WALK_FIELDS } from './walk.ts';
 
 const ATTRIBUTES = [
   'strength',
@@ -43,6 +44,7 @@ export const PEOPLE_TABLES: Schemas = {
     status: 'text',
     arrived: 'event',
     ...WALK_FIELDS,
+    ...MIND_FIELDS,
   },
   skill: { person: 'entity', skill: 'text', level: 'count', potential: 'count' },
   trait: { person: 'entity', trait: 'text' },
@@ -115,7 +117,7 @@ export const peopleSystem: System = {
         ...Object.fromEntries(ATTRIBUTES.map((a) => [a, p.attributes[a] ?? 0])),
         ...{ trade: p.trade, hair: p.hair, hairColour: p.hairColour, clothes: p.clothes },
         ...{ x: spots[k]![0], y: spots[k]![1], z: 0, status: 'alive', arrived },
-        ...{ path: [], stride: 0, rest: 30 + 15 * k },
+        ...{ path: [], stride: 0, rest: 30 + 15 * k, doing: '', retry: 0 },
       });
       for (const skill of content.band.skills)
         addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]! });
@@ -123,10 +125,11 @@ export const peopleSystem: System = {
     });
   },
   run(ctx) {
+    const hour = hourNow(ctx);
     for (const p of ctx.world.entities['person'] ?? []) {
       if (p['status'] !== 'alive') continue;
       stepAlong(ctx, p);
-      wander(ctx, p);
+      think(ctx, p, hour);
     }
   },
 };
