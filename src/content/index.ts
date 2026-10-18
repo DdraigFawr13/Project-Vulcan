@@ -17,6 +17,7 @@ import features from './data/features.json';
 import greatWorks from './data/great-works.json';
 import items from './data/items.json';
 import jobs from './data/jobs.json';
+import life from './data/life.json';
 import lore from './data/lore.json';
 import memories from './data/memories.json';
 import names from './data/names.json';
@@ -58,6 +59,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   'great-works': greatWorks,
   items,
   jobs,
+  life,
   lore,
   memories,
   names,

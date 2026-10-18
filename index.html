@@ -13,6 +13,7 @@
         --muted: #a39d8f;
         --on: #d79b62;
         --line: #3d3a33;
+        --warn: #c4573a;
       }
       html,
       body,
@@ -737,6 +738,18 @@
         align-items: center;
         font-size: 12px;
         margin: 4px 0;
+      }
+      .skills.numbers.need {
+        grid-template-columns: 6.5em 1fr 7.5em;
+      }
+      .need .n {
+        text-align: right;
+      }
+      .need.low .sbar i {
+        background: var(--warn);
+      }
+      .need.low .n {
+        color: var(--warn);
       }
       .skills.numbers {
         grid-template-columns: auto 1fr auto;

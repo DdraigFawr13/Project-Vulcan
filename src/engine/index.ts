@@ -1,7 +1,9 @@
 // The engine's one public surface. The engine is pure: same seed, content and commands, same
 // ledger, tick for tick (DECISIONS V-002, V-006). The worker is the only place it is run.
 import { calendarSystem } from './calendar/index.ts';
+import { goodsSystem } from './goods/index.ts';
 import { mapSystem } from './map/index.ts';
+import { needsSystem } from './needs/index.ts';
 import { peopleSystem } from './people/index.ts';
 import { regionSystem } from './region/index.ts';
 import { weatherSystem } from './weather/index.ts';
@@ -14,6 +16,8 @@ export * from './entity/index.ts';
 export { createWorld, replay, step, submitCommand } from './sim/index.ts';
 export type { Cadence, Sim, System, SystemContext } from './sim/index.ts';
 export { calendarSystem } from './calendar/index.ts';
+export { goodsSystem, itemsAt, itemsOf } from './goods/index.ts';
+export { moodOf, needOf, needsSystem } from './needs/index.ts';
 export { drawBand, peopleSystem, PEOPLE_TABLES, tradeOf } from './people/index.ts';
 export type { Home, Person } from './people/index.ts';
 export { makeRegion, regionSystem, siteOf, valleyOf } from './region/index.ts';
@@ -35,6 +39,8 @@ export const SYSTEMS: readonly System[] = [
   regionSystem,
   mapSystem,
   peopleSystem,
+  goodsSystem,
+  needsSystem,
   calendarSystem,
   weatherSystem,
 ];

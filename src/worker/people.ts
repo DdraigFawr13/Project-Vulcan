@@ -1,8 +1,8 @@
 // The people as the page shows them (P2.1): each person's row with its skill and trait rows,
 // put into words from content. A pure read of the world, like views.ts.
 import { content } from '../content/index.ts';
-import { clockAt, type WorldState } from '../engine/index.ts';
-import type { PersonView, WalkerView } from './protocol.ts';
+import { clockAt, moodOf, needOf, type EntityRow, type WorldState } from '../engine/index.ts';
+import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 
 const nameOf = (list: readonly { id: string; name: string }[], id: string): string =>
   list.find((x) => x.id === id)?.name ?? id;
@@ -54,11 +54,53 @@ export function peopleOf(world: WorldState): PersonView[] {
   });
 }
 
-/** Where everyone stands this tick (P2.3), for every snapshot. */
+/** What a person is doing, in words (P2.2). */
+function doingOf(p: EntityRow): string {
+  const walking = (p['path'] as number[]).length > 0;
+  if (p['doing'] === 'sleep') return walking ? 'Going to bed' : 'Sleeping';
+  if (p['doing'] === 'eat') return walking ? 'Going to eat' : 'Eating';
+  if (p['doing'] === 'relax') return 'Taking it easy';
+  return walking ? 'Strolling' : 'Idle';
+}
+
+/** A person's mood and needs as bars. */
+function barsOf(world: WorldState, p: EntityRow): { mood: NeedView; needs: NeedView[] } {
+  const { life } = content;
+  const share = (v: number) => Math.round((v * 100) / life.scale);
+  const needs = life.needs.map((def) => {
+    const row = needOf(world, p.id, def.id);
+    const value = (row?.['value'] as number) ?? 0;
+    const low = row?.['low'] === 1;
+    return {
+      name: def.name,
+      share: share(value),
+      line: share(def.low),
+      word: low ? def.lowWord : def.okWord,
+      low,
+      why: (row?.['line'] as number) ?? 0,
+    };
+  });
+  const row = moodOf(world, p.id);
+  // Under the second word (Steady) the mood reads as a warning.
+  const lowAt = life.mood[1]?.at ?? 0;
+  const mood = {
+    name: 'Mood',
+    share: share((row?.['value'] as number) ?? 0),
+    line: share(lowAt),
+    word: (row?.['word'] as string) ?? '',
+    low: ((row?.['value'] as number) ?? 0) < lowAt,
+    why: (row?.['line'] as number) ?? 0,
+  };
+  return { mood, needs };
+}
+
+/** Where everyone stands this tick (P2.3), with their needs (P2.2), for every snapshot. */
 export const walkersOf = (world: WorldState): WalkerView[] =>
   (world.entities['person'] ?? []).map((p) => ({
     id: p.id,
     x: p['x'] as number,
     y: p['y'] as number,
     z: p['z'] as number,
+    ...barsOf(world, p),
+    doing: doingOf(p),
   }));

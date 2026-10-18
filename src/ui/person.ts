@@ -1,6 +1,6 @@
 // A person in words (P2.1): the arrival screen's cards and the person panel share these pieces.
 // Everything shown comes from the worker's `PersonView`; nothing here decides a rule.
-import type { PersonView } from '../worker/index.ts';
+import type { NeedView, PersonView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
 /** What being able in a must-have skill is called on a card; other skills say "good at". */
@@ -50,4 +50,29 @@ export function personCard(p: PersonView, sprite: HTMLCanvasElement): HTMLElemen
   );
   card.append(sprite, text);
   return card;
+}
+
+/** A need or the mood as a bar row (P2.2): the name, the bar with its warning line, the word,
+ * and "why?" while it is under the line. Built once, then filled in place by `fillNeed`, so a
+ * chain of causes opened under it stays open as the numbers move. */
+export function needRow(): HTMLElement {
+  const row = el('div', { class: 'skills numbers need', 'data-line': '0' });
+  const bar = el('span', { class: 'sbar', role: 'img' });
+  bar.append(el('i'), el('b'));
+  const word = el('span', { class: 'n' });
+  row.append(el('span'), bar, word);
+  return row;
+}
+
+export function fillNeed(row: HTMLElement, n: NeedView): void {
+  const [name, bar, word] = [...row.children] as HTMLElement[];
+  row.dataset['line'] = String(n.why);
+  row.classList.toggle('low', n.low);
+  name!.textContent = n.name;
+  bar!.setAttribute('aria-label', `${n.name} ${n.share} of 100, warning under ${n.line}`);
+  (bar!.children[0] as HTMLElement).style.width = `${n.share}%`;
+  (bar!.children[1] as HTMLElement).style.left = `${n.line}%`;
+  word!.textContent = `${n.word} `;
+  if (n.low)
+    word!.append(el('button', { type: 'button', class: 'why', 'data-why': String(n.why) }, 'why?'));
 }

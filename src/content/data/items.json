@@ -28,5 +28,7 @@
   {"id":"cup","name":"cup","good":"luxury","per":1,"kind":"artifact","forms":["cup"],"effects":[{"kind":"attribute","attribute":"willpower","bonus":1}],"downsides":["curse"]},
   {"id":"harp","name":"harp","good":"luxury","per":1,"kind":"artifact","forms":["harp"],"effects":[{"kind":"attribute","attribute":"charisma","bonus":1}]},
   {"id":"banner","name":"banner","good":"luxury","per":1,"kind":"artifact","forms":["banner"],"effects":[{"kind":"attribute","attribute":"charisma","bonus":1},{"kind":"attribute","attribute":"willpower","bonus":1}],"downsides":["envy"]},
-  {"id":"book","name":"book","good":"luxury","per":1,"kind":"book","forms":["book of flame","treatise on fire","smith-lore","book of tides","treatise on water","sailing-lore","book of stone","treatise on earth","delving-lore","book of winds","treatise on air","weather-lore","book of growth","treatise on life","healing-lore","book of thought","treatise on mind","memory-lore","chronicle","herbal","law-book","psalter","ledger"],"effects":[{"kind":"attribute","attribute":"intellect","bonus":1}]}
+  {"id":"book","name":"book","good":"luxury","per":1,"kind":"book","forms":["book of flame","treatise on fire","smith-lore","book of tides","treatise on water","sailing-lore","book of stone","treatise on earth","delving-lore","book of winds","treatise on air","weather-lore","book of growth","treatise on life","healing-lore","book of thought","treatise on mind","memory-lore","chronicle","herbal","law-book","psalter","ledger"],"effects":[{"kind":"attribute","attribute":"intellect","bonus":1}]},
+  {"id":"bedroll","name":"bedroll","good":"goods","per":1,"kind":"gear"},
+  {"id":"cart","name":"handcart","good":"goods","per":1,"kind":"gear"}
 ]
