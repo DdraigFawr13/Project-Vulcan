@@ -96,3 +96,22 @@ Columns: 4
 210 120 255	aura mind
 230 170  60	aura earth
 255  90  40	aura fire
+210 168 130	skin human light
+186 136 100	skin human
+156 110  80	skin human dark
+140  94  66	skin human deep
+226 212 190	skin elf
+186 168 146	skin elf dark
+196 140 108	skin dwarf
+160 106  80	skin dwarf dark
+106 128  80	skin orc
+ 82 102  60	skin orc dark
+176 134 112	skin giant
+142 100  82	skin giant dark
+204 154 114	skin halfling
+168 118  84	skin halfling dark
+122 146  70	skin goblin
+ 94 116  52	skin goblin dark
+240 240 240	tint light
+208 208 208	tint mid
+168 168 168	tint dark

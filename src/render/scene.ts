@@ -6,6 +6,7 @@ import { content } from '../content/index.ts';
 import type { AuraView, ChunkView } from '../worker/index.ts';
 import { glowTiles } from './aura-art.ts';
 import { CameraControls } from './camera.ts';
+import { PEOPLE } from './people.ts';
 import { waterPicture } from './water-art.ts';
 
 export const TILE = 32;
@@ -84,7 +85,7 @@ export class ValleyScene extends Phaser.Scene {
   }
 
   preload(): void {
-    for (const sheet of [...GROUND_SHEETS, NATURE])
+    for (const sheet of [...GROUND_SHEETS, NATURE, PEOPLE])
       this.load.atlas(sheet, `art/${sheet}.png`, `art/${sheet}.json`);
   }
 

@@ -1,6 +1,7 @@
 // The region in the ledger: when a world begins from a valley seed (`<seed>/<n>`), two lines name
 // the region and the valley chosen and its neighbours. A plain seed has no region (tests, tools).
 import type { EngineContent } from '../core/index.ts';
+import { addEntity } from '../entity/index.ts';
 import type { System } from '../sim/index.ts';
 import { makeRegion, type Region, type RegionValley } from './region.ts';
 
@@ -29,6 +30,8 @@ export const regionSystem: System = {
   id: 'region',
   every: 'month', // a cadence is required; the region has no work after the world begins
   emits: ['region.named', 'region.settled'],
+  // The settlement the band makes, named for its valley, so screens need not roll the region again.
+  tables: { colony: { name: 'text', settled: 'event' } },
   init(ctx) {
     const found = valleyOf(ctx.world.seed, ctx.content);
     if (!found) return;
@@ -43,7 +46,7 @@ export const regionSystem: System = {
       },
     });
     const climate = ctx.content.terrain.generator.climates.find((c) => c.id === valley.climate);
-    ctx.emit('region.settled', {
+    const settled = ctx.emit('region.settled', {
       // World-generation lines cite the world's beginning alone, so they offer no "why?".
       causes: [ctx.world.begunEvent],
       data: {
@@ -55,5 +58,6 @@ export const regionSystem: System = {
         ),
       },
     });
+    addEntity(ctx.world, 'colony', { name: valley.name, settled });
   },
 };

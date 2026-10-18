@@ -584,6 +584,241 @@
           grid-row: 1 / span 8;
         }
       }
+      /* P2.1: the title and arrival screens cover the game; its bar and buttons hide under them. */
+      #hud.covered > :not(.title):not(.arrival) {
+        display: none !important;
+      }
+      .title,
+      .arrival {
+        position: fixed;
+        inset: 0;
+        z-index: 4;
+        color: var(--fg);
+        font-family: system-ui, sans-serif;
+      }
+      .title {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 24px;
+        text-align: center;
+        background: rgba(20, 19, 17, 0.55);
+      }
+      .title.plain {
+        background: var(--ink);
+      }
+      .title .logo {
+        font:
+          700 46px/1 Georgia,
+          serif;
+      }
+      .title .wt {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 22px;
+      }
+      .title .tnote {
+        max-width: 300px;
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0;
+      }
+      #hud button.big {
+        width: 100%;
+        max-width: 300px;
+        min-height: 48px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font:
+          600 17px/1.2 system-ui,
+          sans-serif;
+        color: var(--fg);
+        background: rgba(35, 33, 29, 0.94);
+      }
+      #hud button.big small {
+        display: block;
+        font-weight: 400;
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      #hud button.big.primary {
+        background: var(--on);
+        border-color: var(--on);
+        color: var(--ink);
+      }
+      #hud button.big.primary small {
+        color: #3b2a18;
+      }
+      #hud button.big:disabled {
+        opacity: 0.7;
+        cursor: wait;
+      }
+      .arrival {
+        display: flex;
+        flex-direction: column;
+        background: rgba(20, 19, 17, 0.92);
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      .ahead {
+        padding: max(18px, env(safe-area-inset-top)) 16px 8px;
+        display: grid;
+        gap: 4px;
+      }
+      .ahead .k {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--on);
+        font-weight: 700;
+      }
+      .ahead h2 {
+        margin: 0;
+        font:
+          700 26px/1.15 Georgia,
+          serif;
+      }
+      .ahead p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .arrival .cards {
+        flex: 1;
+        overflow-y: auto;
+        padding: 4px 12px 12px;
+        display: grid;
+        gap: 8px;
+        align-content: start;
+      }
+      .pcard {
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        gap: 10px;
+        background: #26231f;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px;
+      }
+      .portrait {
+        image-rendering: pixelated;
+        background: #3f4a2a;
+        border-radius: 6px;
+      }
+      .pname {
+        font-weight: 700;
+        font-size: 15px;
+      }
+      .badge {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 0 5px;
+        border-radius: 4px;
+        font-size: 11px;
+        background: var(--on);
+        color: var(--ink);
+        vertical-align: 1px;
+      }
+      .pwho,
+      .ptraits {
+        font-size: 12.5px;
+        color: var(--muted);
+        margin: 2px 0;
+      }
+      .skills {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 3px 8px;
+        align-items: center;
+        font-size: 12px;
+        margin: 4px 0;
+      }
+      .skills.numbers {
+        grid-template-columns: auto 1fr auto;
+      }
+      .sbar {
+        position: relative;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--line);
+      }
+      .sbar i {
+        position: absolute;
+        inset: 0 auto 0 0;
+        border-radius: 3px;
+        background: var(--on);
+      }
+      .sbar b {
+        position: absolute;
+        top: -2px;
+        bottom: -2px;
+        width: 2px;
+        background: var(--fg);
+        opacity: 0.7;
+      }
+      .arrival .more {
+        position: relative;
+        height: 0;
+        text-align: center;
+        font-size: 12px;
+      }
+      .arrival .more::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 48px;
+        background: linear-gradient(transparent, rgba(20, 19, 17, 0.95));
+        pointer-events: none;
+      }
+      .arrival .more:not([hidden]) {
+        display: block;
+        transform: translateY(-22px);
+      }
+      .arrival .more span {
+        position: relative;
+        padding: 3px 10px;
+        border-radius: 10px;
+        background: #23211d;
+        border: 1px solid var(--line);
+      }
+      .afoot {
+        display: grid;
+        gap: 8px;
+        padding: 10px 16px max(16px, env(safe-area-inset-bottom));
+        border-top: 1px solid var(--line);
+        background: #23211d;
+      }
+      .afoot .ok {
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      #hud .afoot button.big {
+        max-width: none;
+      }
+      .prow {
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-top: 1px solid var(--line);
+        font-size: 13px;
+      }
+      #hud .panel-head button {
+        min-width: 44px;
+        min-height: 44px;
+      }
+      @media (min-width: 720px) {
+        .arrival .cards {
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+      }
     </style>
   </head>
   <body>

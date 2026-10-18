@@ -6,6 +6,7 @@ export type {
   ClockView,
   FromWorker,
   LedgerLine,
+  PersonView,
   RegionView,
   Speed,
   TileView,

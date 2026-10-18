@@ -1,7 +1,8 @@
 // Public surface of the render layer: boots Phaser with the valley scene and hands the page a
 // small handle to feed it snapshots and drive the camera.
 import Phaser from 'phaser';
-import type { AuraView, ChunkView } from '../worker/index.ts';
+import type { AuraView, ChunkView, PersonView } from '../worker/index.ts';
+import { PeopleSprites } from './people.ts';
 import { ValleyScene, type Hover } from './scene.ts';
 
 export type { Hover } from './scene.ts';
@@ -17,6 +18,10 @@ export interface Renderer {
   setTopInset(px: number): void;
   /** Shows level `z`: 0 the surface, 1 to 4 below. */
   setLevel(z: number): void;
+  /** Draws the people on the level on screen (P2.1). */
+  setPeople(people: readonly PersonView[]): void;
+  /** The person standing on a tile of the level on screen, if any. */
+  personAt(x: number, y: number): PersonView | undefined;
   /** Marks the inspected tile, or clears the mark. */
   mark(tile: { x: number; y: number } | undefined): void;
   /** A small picture of the current view as a JPEG data URL, for the save list; '' if none. */
@@ -46,13 +51,19 @@ export function startRenderer(
     input: { keyboard: { capture: [] } },
     scene: [scene],
   });
+  const people = new PeopleSprites(game, scene);
   return {
     setMapSize: (width, height) => scene.setMapSize(width, height),
     applyChunks: (chunks) => scene.applyChunks(chunks),
     setAura: (spots) => scene.setAura(spots),
     zoomStep: (direction) => scene.zoomStep(direction),
     setTopInset: (px) => scene.setTopInset(px),
-    setLevel: (z) => scene.setLevel(z),
+    setLevel: (z) => {
+      scene.setLevel(z);
+      people.setLevel(z);
+    },
+    setPeople: (list) => people.set(list),
+    personAt: (x, y) => people.at(x, y),
     mark: (tile) => scene.mark(tile),
     thumbnail: () => thumbnailOf(game),
     fps: () => game.loop.actualFps,

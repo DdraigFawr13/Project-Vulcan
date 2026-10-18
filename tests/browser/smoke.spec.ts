@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 
-// The one browser smoke (RULES.md VR-23): a seed opens the site picker, a valley is settled, the
+// The one browser smoke (RULES.md VR-23): the bare link shows the title, a seed opens the site
+// picker, a valley is settled, the band's arrival screen names who can build and cook, the
 // game draws the map, starts paused, runs at 3x and stops dead when paused; the inspector answers "why?"; a save
 // survives a page reload and carries on; the ledger exports; stairs cut while paused open the level
 // below once time runs and the inspector leads down them on a phone, then a shaft; a reload
-// continues where the game was, shaft and all.
+// continues where the game was, shaft and all; the title's Continue names the valley and loads it.
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
 /** The last snapshot's tick and the worker's clock when it was sent (ms). */
@@ -31,6 +32,10 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
+  // The bare link with no save: the title offers a new game only.
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'New game' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Continue/ })).toHaveCount(0);
   // The picker: the region's map and three valleys; tapping a number chooses, then settle there.
   await page.goto('/?seed=smoke');
   const picker = page.getByTestId('picker');
@@ -40,6 +45,13 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await picker.getByRole('button', { name: 'Settle here' }).click();
   await expect(picker).toBeHidden();
   await expect(page).toHaveURL(/seed=smoke&site=2/);
+  // The band: five cards, who can build and who can cook, then Arrive opens the paused valley.
+  const arrival = page.getByTestId('arrival');
+  await expect(arrival.locator('.pcard')).toHaveCount(5);
+  await expect(arrival).toContainText('Can build:');
+  await expect(arrival).toContainText('Can cook:');
+  await page.getByTestId('arrive').click();
+  await expect(arrival).toHaveCount(0);
   await expect(page.getByTestId('game').locator('canvas')).toBeVisible();
   await expect(page.getByTestId('clock')).toContainText('06:00 · Day 1 of Thawmonth, Year 1');
   await expect(page.getByText('Paused')).toBeVisible();
@@ -162,5 +174,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   expect(await tick(page)).toBeLessThanOrEqual(before);
   await page.keyboard.press('>');
   await expect(page.getByTestId('unreached')).toBeHidden();
+
+  // The bare link now shows the title over the last valley, and Continue carries on there.
+  await page.goto('/');
+  const resume = page.getByRole('button', { name: /Continue/ });
+  await expect(resume).toContainText(/\w · Day \d+ of Thawmonth, Year 1/, { timeout: 20_000 });
+  await resume.click();
+  await expect.poll(() => tick(page)).toBeGreaterThan(paused);
   expect(errors).toEqual([]);
 });

@@ -178,6 +178,34 @@ export interface ValleyPreview {
   };
 }
 
+/** A person as the page shows them (P2.1): words from content, numbers from their rows. */
+export interface PersonView {
+  id: number;
+  name: string;
+  race: string;
+  raceName: string;
+  cultureName: string;
+  age: number;
+  /** The settlement they came from ('' for a plain seed), how far and which way. */
+  home: string;
+  homeDays: number;
+  homeDir: string;
+  /** The trade's skill name. */
+  trade: string;
+  skills: { id: string; name: string; level: number; potential: number }[];
+  /** Their three best skills, best first. */
+  best: { id: string; name: string; level: number; potential: number }[];
+  /** The band's must-have skills (building, cooking) they are able in. */
+  able: string[];
+  traits: { name: string; description: string }[];
+  look: { hair: string; hairColour: string; clothes: string };
+  x: number;
+  y: number;
+  z: number;
+  /** The `people.arrived` line. */
+  arrived: number;
+}
+
 export type FromWorker =
   | {
       type: 'ready';
@@ -189,6 +217,11 @@ export type FromWorker =
       height: number;
       /** How many levels lie below the surface. */
       depth: number;
+      /** The valley's name, or the seed for a world without a region. */
+      place: string;
+      /** Whether the world has not yet run a tick: the band has just arrived. */
+      fresh: boolean;
+      people: PersonView[];
     }
   | {
       type: 'snapshot';
