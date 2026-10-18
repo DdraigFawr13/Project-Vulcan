@@ -37,7 +37,8 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(page.getByRole('button', { name: 'New game' })).toBeVisible();
   await expect(page.getByRole('button', { name: /Continue/ })).toHaveCount(0);
   // The picker: the region's map and three valleys; tapping a number chooses, then settle there.
-  await page.goto('/?seed=smoke');
+  // `?debug` keeps the test tools (TEST MODE) that the dig steps below use.
+  await page.goto('/?seed=smoke&debug');
   const picker = page.getByTestId('picker');
   // The picker waits on the seed's Story Generator world and its history (P1.6): about 5 s here.
   await expect(picker.locator('[data-card]')).toHaveCount(3, { timeout: 20_000 });
@@ -87,7 +88,9 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(panel).toContainText('Tile');
   await expect(panel).toContainText('The valley took shape');
   await expect(panel).toContainText('fertility');
-  await expect(panel.getByRole('button', { name: 'why?' })).toHaveCount(0);
+  // The centre is the camp, so the tile may also list goods with their own "why?".
+  const changed = panel.locator('[data-line]', { hasText: 'Last changed' });
+  await expect(changed.getByRole('button', { name: 'why?' })).toHaveCount(0);
   await page.getByTestId('open-ledger').click();
   const spring = panel.locator('[data-line]', { hasText: 'Spring came to the valley.' });
   await spring.getByRole('button', { name: 'why?' }).click();
@@ -126,6 +129,14 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByTestId('speed-3').click();
   await expect.poll(() => tick(page)).toBeGreaterThan(paused);
 
+  // The Stock lever (P2.4): asking for plenty of wood is a ledger line, with no order to anyone.
+  await page.getByTestId('open-stock').click();
+  await expect(panel.getByTestId('stock-logs')).toContainText('of 50 wanted');
+  await panel.getByRole('button', { name: 'Plenty (200)' }).click();
+  await expect(panel.getByTestId('stock-logs')).toContainText('of 200 wanted');
+  await page.getByTestId('open-ledger').click();
+  await expect(panel).toContainText('The colony now wants plenty of wood.');
+
   // The levels below: level 1 is blank until a shaft reaches it, then it opens and inspects.
   await page.keyboard.press('>');
   await expect(page.getByTestId('level')).toHaveText('−1');
@@ -139,6 +150,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   )) {
     await canvas.click({ position: { x: box.width / 2 + dx!, y: box.height / 2 + dy! } });
     await expect(panel).toContainText('ground');
+    await expect(panel.getByTestId('test-mode')).toBeVisible();
     const text = await panel.innerText();
     if (!/on it|water/.test(text)) break;
   }

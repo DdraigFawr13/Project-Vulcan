@@ -6,14 +6,17 @@ import type {
   LedgerLine,
   PersonView,
   RegionView,
+  StockView,
   TileView,
   WalkerView,
 } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { fillNeed, needRow, skillRows, whoLine } from './person.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
+import { stockRows } from './stock.ts';
+import { testTools, type TestOrder } from './testtools.ts';
 
-export type PanelKind = 'tile' | 'person' | 'ledger' | 'saves' | 'region';
+export type PanelKind = 'tile' | 'person' | 'ledger' | 'saves' | 'region' | 'stock';
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;
@@ -25,8 +28,10 @@ export interface PanelActions {
   load(meta: SaveMeta): void;
   remove(meta: SaveMeta): void;
   newGame(seed: string): void;
-  /** The test levers: stairs down, or a shaft down to level `to`, from the tile shown. */
-  dig(tile: TileView, kind: 'cutStairs' | 'sinkShaft', to?: number): void;
+  /** A test tool (`?debug`) on the tile shown: dig, mark a tree, add a store tile. */
+  test(tile: TileView, kind: TestOrder, to?: number): void;
+  /** The Stock lever: how much of `good` the colony keeps. */
+  setStock(good: string, level: string): void;
   /** Follows the tile's stairs or shaft to level `z` and inspects the same spot there. */
   go(tile: TileView, z: number): void;
   close(): void;
@@ -46,6 +51,8 @@ export class Panel {
   /** Everyone's needs as of the last snapshot, and the open person's rows that show them. */
   private walkers: readonly WalkerView[] = [];
   private person = { id: 0, now: el('p'), rows: [] as HTMLElement[] };
+  /** The Stock sheet's last view, so it is redrawn only when it changes. */
+  private stock = '';
 
   constructor(parent: HTMLElement, actions: PanelActions, debug = false) {
     this.actions = actions;
@@ -88,6 +95,8 @@ export class Panel {
       ...(tile.drinkable !== undefined ? [['drinkable', tile.drinkable ? 'yes' : 'no']] : []),
       ...(tile.crossing ? [['crossing', tile.crossing]] : []),
       ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
+      ...(tile.store ? [['store', 'part of the colony store']] : []),
+      ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
       ...(tile.below ? [['below', tile.below]] : []),
       ...(this.debug
         ? [['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`]]
@@ -110,24 +119,12 @@ export class Panel {
       }
       this.body.append(go);
     }
-    if (tile.z < depth && !tile.ways?.down) {
-      const acts = el('div', { class: 'row' });
-      const stairs = el('button', { type: 'button' }, 'Cut stairs down');
-      stairs.addEventListener('click', () => this.actions.dig(tile, 'cutStairs'));
-      const shaft = el('button', { type: 'button' }, `Sink a shaft to −${depth}`);
-      shaft.addEventListener('click', () => this.actions.dig(tile, 'sinkShaft', depth));
-      acts.append(stairs, shaft);
-      this.body.append(
-        acts,
-        el(
-          'p',
-          { class: 'muted' },
-          'Test tools until colonists can dig (stairs in Phase 3, mining in Phase 4). They finish on the next game minute.',
-        ),
-      );
-    }
+    if (this.debug)
+      this.body.append(...testTools(tile, depth, (kind, to) => this.actions.test(tile, kind, to)));
     if (typeof notice === 'string') this.body.append(el('p', { class: 'note' }, notice));
     else if (notice) this.body.append(this.line(notice, 'Not dug · '));
+    for (const g of tile.goods ?? []) if (g.made) this.body.append(this.line(g.made, 'Made by · '));
+    if (tile.store?.made && !tile.goods) this.body.append(this.line(tile.store.made, 'Store · '));
     if (tile.changedBy) this.body.append(this.line(tile.changedBy, 'Last changed · '));
     else this.body.append(el('p', { class: 'muted' }, 'The line that last changed it is gone.'));
   }
@@ -191,6 +188,23 @@ export class Panel {
       arrived,
     );
     this.setWalkers(this.walkers);
+  }
+
+  /** The Stock sheet (P2.4): how much of each good the colony keeps, a level button for each. */
+  showStock(stock: readonly StockView[]): void {
+    this.open('stock', 'Stock');
+    this.stock = '';
+    this.setStock(stock);
+  }
+
+  /** Each snapshot's stock; an open Stock sheet is redrawn only when it has changed. */
+  setStock(stock: readonly StockView[]): void {
+    const key = JSON.stringify(stock);
+    if (this.shown !== 'stock' || key === this.stock) return;
+    this.stock = key;
+    this.body.replaceChildren(
+      ...stockRows(stock, (good, level) => this.actions.setStock(good, level)),
+    );
   }
 
   /** The needs as of this snapshot; an open person's bars and "Now:" follow them. */

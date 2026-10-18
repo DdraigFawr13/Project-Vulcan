@@ -13,10 +13,16 @@ const inStoreCount = (world: ReturnType<typeof createWorld>): number =>
     .reduce((n, i) => n + (i['count'] as number), 0);
 
 describe('work', () => {
-  for (const seed of ['ledger', 'anvil', 'tallow']) {
+  for (const seed of ['ledger', 'anvil', 'tallow', 'smoke/2']) {
     it(`fells what the colony wants and stores it, unordered, on ${seed}`, () => {
       const world = createWorld(sim, seed);
       expect(storeOf(world)).toHaveLength(content.work.store.width * content.work.store.height);
+      // The camp and the store are on dry ground, never in the river (seen on smoke/2).
+      const wet = (r: { [k: string]: unknown }) =>
+        content.terrain.kinds[
+          world.map.tiles[(r['y'] as number) * world.map.width + (r['x'] as number)]!
+        ]!.water;
+      expect([...itemsOf(world), ...storeOf(world)].filter(wet)).toEqual([]);
       step(world, sim, 3 * 1440);
       expect(world.commandLog).toHaveLength(0);
       const want = content.work.stock[0]!.levels.find(

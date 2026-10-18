@@ -22,11 +22,15 @@ export const storeOf = (world: WorldState): EntityRow[] => rows(world, 'store');
 export const inStore = (world: WorldState, x: number, y: number, z: number): boolean =>
   storeOf(world).some((s) => s['x'] === x && s['y'] === y && s['z'] === z);
 
+/** Dry ground a person can stand on: no rock, no blocking feature and no water, deep or shallow. */
+export const dryAt = (content: EngineContent, map: WorldState['map'], i: number): boolean =>
+  walkAt(content, map, 0, i) > 0 && !content.terrain.kinds[map.tiles[i]!]!.water;
+
 /** Open ground joined to the camp with nothing lying on it and no store on it. */
-function freeTile(world: WorldState, content: EngineContent, x: number, y: number): boolean {
+export function freeTile(world: WorldState, content: EngineContent, x: number, y: number): boolean {
   const map = world.map;
   if (x < 0 || y < 0 || x >= map.width || y >= map.height) return false;
-  if (!walkAt(content, map, 0, y * map.width + x)) return false;
+  if (!dryAt(content, map, y * map.width + x)) return false;
   if (itemsAt(world, x, y, 0).length || inStore(world, x, y, 0)) return false;
   return canReach(content, map, { x: map.startX, y: map.startY, z: 0 }, { x, y, z: 0 });
 }

@@ -16,7 +16,19 @@ export * from './entity/index.ts';
 export { createWorld, replay, step, submitCommand } from './sim/index.ts';
 export type { Cadence, Sim, System, SystemContext } from './sim/index.ts';
 export { calendarSystem } from './calendar/index.ts';
-export { goodsSystem, itemsAt, itemsOf } from './goods/index.ts';
+export {
+  freeTile,
+  goodsSystem,
+  haveOf,
+  inStore,
+  isTree,
+  itemsAt,
+  itemsOf,
+  marksOf,
+  stockOf,
+  storeOf,
+  wantOf,
+} from './goods/index.ts';
 export { moodOf, needOf, needsSystem } from './needs/index.ts';
 export { drawBand, peopleSystem, PEOPLE_TABLES, tradeOf } from './people/index.ts';
 export type { Home, Person } from './people/index.ts';

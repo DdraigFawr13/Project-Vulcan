@@ -14,11 +14,13 @@ import {
   itemsAt,
   itemsOf,
   layItem,
+  markedTree,
   slotFor,
   stackSize,
   stockOf,
   storeOf,
   takeFrom,
+  unmark,
   wantOf,
 } from '../goods/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
@@ -55,6 +57,13 @@ const spotOf = (r: EntityRow): Spot => ({
 });
 const same = (a: Spot, b: Spot): boolean => a.x === b.x && a.y === b.y && a.z === b.z;
 const people = (world: WorldState): EntityRow[] => world.entities['person'] ?? [];
+/** The targets others are already on in a job, so no two take the same tree or load. */
+const busy = (world: WorldState, p: EntityRow, job: string): Set<number> =>
+  new Set(
+    people(world)
+      .filter((q) => q.id !== p.id && q['job'] === job)
+      .map((q) => q['target'] as number),
+  );
 
 /** Whether a person meets a job's requirements (attributes) in jobs.json. */
 function able(content: EngineContent, p: EntityRow, job: string): boolean {
@@ -104,11 +113,7 @@ function chooseTree(ctx: SystemContext, p: EntityRow): number | undefined {
   const { reach, camp } = content.work.fell;
   const first = storeOf(world)[0];
   const [ox, oy] = first ? [first['x'] as number, first['y'] as number] : [map.startX, map.startY];
-  const taken = new Set(
-    people(world)
-      .filter((q) => q.id !== p.id && q['job'] === 'fell')
-      .map((q) => q['target']),
-  );
+  const taken = busy(world, p, 'fell');
   const from = spotOf(p);
   let best: number | undefined;
   let score = Infinity;
@@ -173,6 +178,7 @@ function fell(ctx: SystemContext, p: EntityRow, i: number): void {
     },
   });
   map.features[i] = 0;
+  unmark(world, x, y);
   map.tileCauses[i] = line;
   raiseChunk(map, x, y);
   layAround(ctx, def.yields, def.amount, { x, y, z: 0 }, line);
@@ -230,11 +236,7 @@ function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
 function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const { world, content } = ctx;
   const kinds = content.work.haul.kinds;
-  const taken = new Set(
-    people(world)
-      .filter((q) => q.id !== p.id && q['job'] === 'haul')
-      .map((q) => q['target']),
-  );
+  const taken = busy(world, p, 'haul');
   const from = spotOf(p);
   let best: EntityRow | undefined;
   let far = Infinity;
@@ -310,6 +312,19 @@ function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   const map = world.map;
   const fellDef = content.work.fell;
   const short = woodShort(ctx, p);
+  const marked = able(content, p, fellDef.job)
+    ? markedTree(world, content, busy(world, p, 'fell'), spotOf(p), (x, y) =>
+        goBeside(ctx, p, x, y),
+      )
+    : undefined;
+  if (marked) {
+    p['took'] = ctx.emit('work.tookUpMarked', {
+      causes: [marked.line],
+      actors: [p.id],
+      data: { name: p['name'] as string },
+    });
+    return startFelling(ctx, p, marked.tree);
+  }
   if (short && able(content, p, fellDef.job)) {
     const tree = chooseTree(ctx, p);
     if (tree !== undefined && goBeside(ctx, p, tree % map.width, Math.floor(tree / map.width))) {
@@ -322,12 +337,7 @@ function takeUp(ctx: SystemContext, p: EntityRow): boolean {
           data: { name: p['name'] as string, good, ...short },
         });
       }
-      const skill = content.jobs.find((j) => j.id === fellDef.job)?.skill ?? '';
-      const level = skillOf(world, p, skill);
-      p['job'] = 'fell';
-      p['target'] = tree;
-      p['work'] = Math.ceil((fellDef.minutes * 2 * fellDef.skilled) / (fellDef.skilled + level));
-      return true;
+      return startFelling(ctx, p, tree);
     }
   }
   const item = chooseLoad(ctx, p);
@@ -340,4 +350,15 @@ function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;
   return false;
+}
+
+/** Sets them felling the tree at surface tile `tree` (they are already on their way to it). */
+function startFelling(ctx: SystemContext, p: EntityRow, tree: number): boolean {
+  const fellDef = ctx.content.work.fell;
+  const skill = ctx.content.jobs.find((j) => j.id === fellDef.job)?.skill ?? '';
+  const level = skillOf(ctx.world, p, skill);
+  p['job'] = 'fell';
+  p['target'] = tree;
+  p['work'] = Math.ceil((fellDef.minutes * 2 * fellDef.skilled) / (fellDef.skilled + level));
+  return true;
 }
