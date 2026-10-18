@@ -224,3 +224,18 @@ export function canReach(content: EngineContent, map: MapState, from: Spot, to: 
   const b = regionAt(r, map, to);
   return a >= 0 && b >= 0 && r.regions.get(a)!.component === r.regions.get(b)!.component;
 }
+
+/** canReach from one spot to many: the regions are looked at once, not once a target. */
+export function reachFrom(
+  content: EngineContent,
+  map: MapState,
+  from: Spot,
+): (to: Spot) => boolean {
+  const r = regionsOf(content, map);
+  const a = regionAt(r, map, from);
+  const home = a >= 0 ? r.regions.get(a)!.component : -1;
+  return (to) => {
+    const b = regionAt(r, map, to);
+    return home >= 0 && b >= 0 && r.regions.get(b)!.component === home;
+  };
+}

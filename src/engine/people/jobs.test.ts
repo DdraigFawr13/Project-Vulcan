@@ -28,8 +28,8 @@ describe('work', () => {
       const want = content.work.stock[0]!.levels.find(
         (l) => l.id === content.work.stock[0]!.start,
       )!;
-      expect(haveOf(world, 'logs')).toBeGreaterThanOrEqual(want.count);
-      expect(inStoreCount(world)).toBe(haveOf(world, 'logs'));
+      expect(haveOf(world, content, 'logs')).toBeGreaterThanOrEqual(want.count);
+      expect(inStoreCount(world)).toBe(haveOf(world, content, 'logs'));
       // Felling lines lead back through taking it up to the colony's stock level.
       const felled = world.log.find((e) => e.type === 'work.felled')!;
       const chain = whyOf(world, felled.id).map((c) => c.event.type);
@@ -40,7 +40,7 @@ describe('work', () => {
   it('fells more when the lever asks for plenty, and refuses an unknown level', () => {
     const world = createWorld(sim, 'ledger');
     step(world, sim, 2 * 1440);
-    const before = haveOf(world, 'logs');
+    const before = haveOf(world, content, 'logs');
     submitCommand(world, {
       tick: world.tick + 1,
       kind: 'setStock',
@@ -55,6 +55,6 @@ describe('work', () => {
     const set = world.log.filter((e) => e.type === 'goods.stockSet');
     expect(set.at(-1)!.data['word']).toBe('plenty of');
     expect(world.log.some((e) => e.type === 'command.refused')).toBe(true);
-    expect(haveOf(world, 'logs')).toBeGreaterThan(before + 50);
+    expect(haveOf(world, content, 'logs')).toBeGreaterThan(before + 50);
   });
 });

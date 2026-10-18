@@ -25,7 +25,8 @@ export class PersonSheet {
   private p: PersonView | undefined;
   private tab: PersonTab = 'needs';
   private walkers: readonly WalkerView[] = [];
-  private now = el('p');
+  /** What they are doing and why (P2.9), above the tabs; filled in place each snapshot. */
+  private now = el('div', { class: 'doingnow', 'data-testid': 'doing-now' });
   private rows: HTMLElement[] = [];
   /** What the open tab last showed, so it is redrawn only when that changes. */
   private drawn = '';
@@ -54,6 +55,7 @@ export class PersonSheet {
   setWalkers(walkers: readonly WalkerView[]): void {
     this.walkers = walkers;
     if (this.id === undefined) return;
+    this.fillNow();
     if (this.tab === 'needs') this.fillNeeds();
     else if (this.key() !== this.drawn) this.draw();
   }
@@ -61,8 +63,26 @@ export class PersonSheet {
   private fillNeeds(): void {
     const w = this.walker();
     if (!w) return;
-    this.now.textContent = `Now: ${w.doing}`;
     [w.mood, ...w.needs].forEach((n, k) => this.rows[k] && fillNeed(this.rows[k], n));
+  }
+
+  /** "Doing now" and its why?, rebuilt only when the sentence or its line changes, so a chain
+   * opened under it stays open and a tap never slips. */
+  private fillNow(): void {
+    const now = this.walker()?.now;
+    const shown = now ? `${now.text}|${now.why ?? ''}` : '';
+    if (this.now.dataset['shown'] === shown) return;
+    this.now.dataset['shown'] = shown;
+    this.now.replaceChildren();
+    if (!now) return;
+    if (now.why !== undefined) this.now.dataset['line'] = String(now.why);
+    else delete this.now.dataset['line'];
+    const text = el('p', {}, `${now.text} `);
+    if (now.why !== undefined)
+      text.append(
+        el('button', { type: 'button', class: 'why', 'data-why': String(now.why) }, 'why?'),
+      );
+    this.now.append(el('small', {}, 'Doing now'), text);
   }
 
   /** New ledger lines: an open Ledger tab shows them. */
@@ -98,10 +118,13 @@ export class PersonSheet {
       tabs.append(b);
     }
     this.drawn = this.key();
+    this.now.dataset['shown'] = '-';
     this.panel.showView('person', p.home ? `${p.name} of ${p.home}` : p.name, [
+      this.now,
       tabs,
       ...this.body(p, w),
     ]);
+    this.fillNow();
     if (this.tab === 'needs') this.fillNeeds();
   }
 
@@ -144,8 +167,7 @@ export class PersonSheet {
       arrived.append(text);
       return [...lines.map((l) => this.panel.lineRow(l)), arrived];
     }
-    this.now = el('p');
     this.rows = [needRow(), ...(w?.needs ?? []).map(() => needRow())];
-    return [el('p', { class: 'pwho' }, whoLine(p, true)), this.now, ...this.rows];
+    return [el('p', { class: 'pwho' }, whoLine(p, true)), ...this.rows];
   }
 }

@@ -47,7 +47,7 @@ export const stockView = (world: WorldState): StockView[] =>
   content.work.stock.map((def) => ({
     good: def.good,
     name: def.name,
-    have: haveOf(world, def.good),
+    have: haveOf(world, content, def.good),
     want: wantOf(world, content, def.good),
     level: (stockOf(world, def.good)?.['level'] as string) ?? def.start,
     levels: def.levels.map((l) => ({ id: l.id, word: l.word, count: l.count })),

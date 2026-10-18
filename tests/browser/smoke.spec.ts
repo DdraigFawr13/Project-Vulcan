@@ -159,8 +159,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // The Stock lever (P2.4): asking for plenty of wood is a ledger line, with no order to anyone.
   await page.getByTestId('open-stock').click();
   await expect(panel.getByTestId('stock-logs')).toContainText('of 50 wanted');
-  await panel.getByRole('button', { name: 'Plenty (200)' }).click();
+  await panel.getByTestId('stock-logs').getByRole('button', { name: 'Plenty (200)' }).click();
   await expect(panel.getByTestId('stock-logs')).toContainText('of 200 wanted');
+  // Food is a stock level too (P2.9). Wanting none means nobody forages, so the band goes hungry
+  // when the cart runs out, which the "why?" step below needs.
+  await panel.getByTestId('stock-food').getByRole('button', { name: /^None/ }).click();
+  await expect(panel.getByTestId('stock-food')).toContainText('none wanted');
   await page.getByTestId('open-ledger').click();
   await expect(panel).toContainText('The colony now wants plenty of wood.');
 
@@ -253,6 +257,15 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   }
   await hungry.first().click({ timeout: 5000 });
   await expect(panel.getByTestId('chain')).toContainText("ate the last of the band's food");
+  // P2.9: the sheet says what they are doing; ⋯ → Yesterday opens the dawn page with the
+  // day's figures.
+  await expect(panel.getByTestId('doing-now')).toContainText('Doing now');
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByTestId('open-dawn').click();
+  await expect(panel.getByTestId('dawn-tally')).toContainText('Logs felled');
+  expect(await phoneRules(page)).toEqual([]);
+  await panel.getByRole('button', { name: 'Carry on' }).click();
+  await expect(panel).toBeHidden();
   await page.getByTestId('speed-3').click();
   await page.setViewportSize({ width: 1280, height: 720 });
 

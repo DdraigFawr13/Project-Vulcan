@@ -256,3 +256,49 @@ table.grid td {
   font-size: 12px;
   vertical-align: middle;
 }
+
+/* Doing now (P2.9): a sentence on paper above the tabs, with its why?. */
+.doingnow {
+  border-left: 3px solid var(--rule);
+  padding-left: 8px;
+}
+.doingnow small {
+  display: block;
+  font: 400 12px/1.2 var(--label);
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+.doingnow p {
+  margin: 0;
+}
+
+/* The dawn page (P2.9): yesterday's figures in a column, Carry on, and the dawn switch. */
+.tally {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+}
+.tally div {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--rule);
+}
+.tally dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.dawnfoot {
+  justify-content: space-between;
+  align-items: center;
+}
+#hud .dawnfoot button.link {
+  border: 0;
+  border-image: none;
+  color: var(--ink);
+  font: 400 15px/1 var(--read);
+  text-decoration: underline;
+  text-shadow: none;
+}
+.panel .empty {
+  font-style: italic;
+}

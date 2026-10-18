@@ -110,10 +110,13 @@ export function slotFor(
   return best;
 }
 
-/** How much of a good the colony has: in the store, lying about or being carried. */
-export const haveOf = (world: WorldState, good: string): number =>
+/** How much of a good the colony has: in the store, lying about or being carried. A good is an
+ * item kind (logs) or the `good` an item belongs to in items.json (food: preserved, berries...). */
+export const haveOf = (world: WorldState, content: EngineContent, good: string): number =>
   itemsOf(world)
-    .filter((i) => i['kind'] === good)
+    .filter(
+      (i) => i['kind'] === good || content.items.find((d) => d.id === i['kind'])?.good === good,
+    )
     .reduce((n, i) => n + (i['count'] as number), 0);
 
 export const stockOf = (world: WorldState, good: string): EntityRow | undefined =>

@@ -38,6 +38,8 @@ export interface ItemDef {
   id: string;
   name: string;
   kind: string;
+  /** The group it counts under for stock levels (food, timber...). */
+  good: string;
 }
 
 /** The colony's work (work.json, P2.4): stock levels (the player's lever), felling, carrying,
@@ -50,6 +52,16 @@ export interface WorkDef {
     start: string;
   }[];
   fell: { job: string; minutes: number; skilled: number; camp: number; reach: number };
+  forage: {
+    job: string;
+    good: string;
+    minutes: number;
+    skilled: number;
+    reach: number;
+    regrowDays: number;
+    months: readonly string[];
+  };
+  doing: Readonly<Record<string, string>>;
   haul: { load: number; kinds: readonly string[] };
   store: { width: number; height: number; most: number };
   hours: { from: number; to: number };

@@ -15,7 +15,7 @@ Goal: people who act on their own. Entry: Phase 1 done and signed off by Morgan 
 - [x] P2.8 UI reskin: Hearth and Page (run after P2.4, before P2.5)
 - [x] Phase review (2026-10-18): every done-when holds; played on three seeds at 390 px with no tap target under 42 px or text under 12 px; nine screen fixes below; food decision V-038
 - [x] Playtest fixes (Morgan, 2026-10-18; V-039, CHANGELOG). A band over six shows the five worst moods and a "+N" plate opening a People page (built with Phase 5 newcomers)
-- [ ] P2.9 Foraging, a "doing now" line and a dawn page (Morgan picked all three, 2026-10-18): screen mock-up first
+- [x] P2.9 Foraging, a "doing now" line and a dawn page (Morgan, 2026-10-18; seasonal berries V-040). Mock-up https://claude.ai/artifact/6wx4zChtHp2wCyo2ZVftMi. With the full cart, foraging starts on day 5 and food at day 35 is 147 to 188 on three seeds
 
 Taste board (VR-56): https://claude.ai/artifact/4WdMASnMFnvDcBryD132KJ. Morgan took every recommendation (2026-10-18), binding every Phase 2 UI mock-up: colonists are small full figures in three-quarter view with four facings and two walk frames (P2.1); the play screen has a portrait strip with mood rings under the top bar, a one-line alert ticker with a count badge, and a skip button after 1x 2x 3x, with no PAUSED word (P2.6, P2.7); the title screen shows the last valley dimmed behind Continue (valley and date) and New game (P2.1); needs show as bars with a warning line, a word and "why?" (P2.2, P2.6); work priorities on a phone are one colonist at a time with a 1 to 4 stepper per job, the grid on desktop (P2.5); a crash shows a plain sentence, the day kept, and a RESCUE row in Saves. Later rules: why? ends at a plain "older record" line, and players never see raw type ids.
 

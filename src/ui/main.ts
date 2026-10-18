@@ -172,7 +172,7 @@ function openPanel(kind: PanelButton): void {
   if (kind === 'ledger') panel.showLedger(saves.ledger);
   else if (kind === 'region') send({ type: 'region' });
   else if (kind === 'stock') panel.showStock(stock);
-  else if (kind === 'work') sheets.showWork();
+  else if (kind === 'work' || kind === 'dawn') sheets.open(kind);
   else void saves.showList();
   hud.showPanel(kind);
 }
@@ -219,7 +219,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       // A skip ends paused in the worker; the bar's speed follows it.
       if (skipping && !message.skipping) speed = message.speed;
       skipping = message.skipping;
-      sheets.snapshot(message.walkers, message.day);
+      sheets.snapshot(message);
       renderer.setGoods(message.goods);
       stock = message.stock;
       panel.setStock(stock);

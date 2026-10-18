@@ -4,10 +4,12 @@ import { content } from '../content/index.ts';
 import {
   clockAt,
   declinedLine,
+  itemsOf,
   levelOf,
   moodOf,
   needOf,
   progressOf,
+  stockOf,
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
@@ -75,6 +77,35 @@ function doingOf(p: EntityRow): string {
   return walking ? 'Strolling' : 'Idle';
 }
 
+/** What a person is doing and why, in the words of content `work.doing` (P2.9): the sentence,
+ * and the line where they took the work up when it has one. */
+function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
+  const words = content.work.doing;
+  const walking = (p['path'] as number[]).length > 0;
+  const say = (key: string, vars: Record<string, string> = {}): string =>
+    (words[key] ?? '').replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? '');
+  const doing = p['doing'] as string;
+  if (doing === 'sleep') return { text: say(walking ? 'goSleep' : 'sleep') };
+  if (doing === 'eat') return { text: say(walking ? 'goEat' : 'eat') };
+  if (doing === 'relax') return { text: say('relax') };
+  if (doing !== 'work') return { text: say(walking ? 'stroll' : 'idle') };
+  const job = p['job'] as string;
+  if (job === 'fell' || job === 'forage') {
+    const good = job === 'fell' ? content.work.stock[0]?.good : content.work.forage.good;
+    const def = content.work.stock.find((s) => s.good === good);
+    const level = (good && stockOf(world, good)?.['level']) as string | undefined;
+    const took = p['took'] as number;
+    return {
+      text: say(job, { good: def?.name ?? good ?? '', level: level ?? '' }),
+      ...(took !== undefined && took > 0 && { why: took }),
+    };
+  }
+  const items = itemsOf(world);
+  const item =
+    items.find((i) => i['holder'] === p.id) ?? items.find((i) => i.id === (p['target'] as number));
+  return { text: say('haul', { what: item ? nameOf(content.items, item['kind'] as string) : '' }) };
+}
+
 /** A person's mood and needs as bars. */
 function barsOf(world: WorldState, p: EntityRow): { mood: NeedView; needs: NeedView[] } {
   const { life } = content;
@@ -115,6 +146,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     z: p['z'] as number,
     ...barsOf(world, p),
     doing: doingOf(p),
+    now: nowOf(world, p),
     skills: skillsOf(world, p),
     work: content.work.priority.jobs.map((job) => {
       const level = levelOf(world, content, p.id, job);

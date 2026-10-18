@@ -13,6 +13,7 @@ export type {
   RegionView,
   Speed,
   StockView,
+  YesterdayView,
   TileView,
   TimingView,
   ToWorker,

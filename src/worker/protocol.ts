@@ -185,6 +185,17 @@ export interface StockView {
   levels: { id: string; word: string; count: number }[];
 }
 
+/** Yesterday's tally (P2.9): the date, logs felled, items carried into the store, berries
+ * picked and food eaten. */
+export interface YesterdayView {
+  day: number;
+  month: string;
+  felled: number;
+  hauled: number;
+  picked: number;
+  eaten: number;
+}
+
 /** The region map as the page draws it (engine `Region` less its cells). */
 export interface RegionView {
   seed: string;
@@ -272,6 +283,8 @@ export interface WalkerView {
   needs: NeedView[];
   /** "Sleeping", "Eating", "Taking it easy"... */
   doing: string;
+  /** The same in words from content (P2.9), with the line where they took the work up, if any. */
+  now: { text: string; why?: number };
   /** Every skill with its level, potential and practice towards the next level, as a % (P2.5). */
   skills: { id: string; name: string; level: number; potential: number; practice: number }[];
   /** The Work sheet (P2.5): each kind of work, its level for them (1 first to 4 last) and word,
@@ -332,6 +345,8 @@ export type FromWorker =
       /** Items, the store and marks (P2.4). */
       goods: GoodsView;
       stock: StockView[];
+      /** The day before's tally for the dawn page (P2.9); none on the first day. */
+      yesterday?: YesterdayView;
     }
   /** New ledger lines in log order, posted just before the snapshot that follows them. */
   | { type: 'events'; batch: LedgerLine[] }
