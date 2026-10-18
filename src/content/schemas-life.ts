@@ -1,7 +1,7 @@
-// Shape of Vulcan's own life file (src/content/data/life.json, P2.2): needs, sleep, warmth,
+// Shape of Vulcan's own life and work files (src/content/data/life.json, P2.2): needs, sleep, warmth,
 // leisure, what each food gives, mood words, and the cart the band arrives with. Need values run
 // from 0 to `scale`; rates are per game hour.
-import { list, map, num, obj, ref } from './schema';
+import { list, map, num, obj, ref, str } from './schema';
 import { count, id, text } from './schema-fields';
 
 export const LIFE_SCHEMAS = {
@@ -46,5 +46,27 @@ export const LIFE_SCHEMAS = {
     }),
     // Most of one kind a tile's stack holds (`default` for the rest).
     stacks: map(count),
+  }),
+  // P2.4: the colony's work (work.json). Stock levels are the player's lever (V-015): how much
+  // of a good the colony wants kept; nobody is ever told what to do.
+  work: obj({
+    stock: list(
+      obj({
+        good: ref('items'),
+        name: text,
+        levels: list(obj({ id, word: text, count })),
+        start: str(),
+      }),
+    ),
+    // Felling: the jobs.json job (its skill and strength), minutes a tree takes at skill
+    // `skilled` (longer below, shorter above), never within `camp` tiles of the start, trees
+    // looked for within `reach` tiles of the store.
+    fell: obj({ job: ref('jobs'), minutes: count, skilled: count, camp: count, reach: count }),
+    // Carrying to the store: most a person carries at once, and which kinds are carried in.
+    haul: obj({ load: num({ min: 1 }), kinds: list(ref('items')) }),
+    // The store the band sets up by the cart: its first size and the most tiles it grows to.
+    store: obj({ width: num({ min: 1 }), height: num({ min: 1 }), most: count }),
+    // Working hours: work is taken up from `from` o'clock until `to`.
+    hours: obj({ from: count, to: count }),
   }),
 };

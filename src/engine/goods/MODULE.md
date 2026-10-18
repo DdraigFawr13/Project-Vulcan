@@ -1,10 +1,12 @@
 # goods
 
-Items as stacks on tiles, and the band's handcart.
+Items as stacks on tiles, the band's handcart, the store and the colony's stock levels (P2.4).
 
 - **Public API:** `index.ts`: `goodsSystem`, `GOODS_TABLES`, `itemsOf(world)`, `itemsAt(world, x, y, z)` (stacks lying on a tile, not carried), `layItem(world, fields, {owner, state})` (a new stack), `takeFrom(world, item, count)` (the stack goes when emptied), `stackSize(content, kind)` (life.json `stacks`, else `default`).
 - **Arrival:** in `init`, after the people, the cart is unloaded on the open tiles joined to the camp nearest the start, ring by ring: the cart itself, its goods (life.json `cart.goods`) in stacks of at most the stack size, and one bedroll a person, laid out (`state: 'laid'`) and owned by them. Nothing is drawn from a stream.
-- **Events:** emits `goods.unloaded` (goods, beds), citing the `people.arrived` line. Every item cites it as `made`.
-- **State owned:** table `item` (kind, count, quality (`plain` for now), x, y, z, holder (who carries it, or 0), owner (whose it is, or 0), state, made). No system state; `every: day` with no `run`, since stacks change through the people who use them.
+- **Store (P2.4):** `store.ts`: after unloading, the band sets up the store: the first free block of `work.store` width by height open tiles joined to the camp, in rings around the cart. One stack a tile. `slotFor(world, content, kind, count, from)` is a matching stack with room for the load, else an empty store tile, nearest `from`; `growStore(ctx, cause)` adds the free open tile beside the store nearest its first tile, up to `work.store.most` tiles.
+- **Stock levels (P2.4, the player's lever, V-015):** a `stock` row per `work.stock` good holding a level id (`none`, `some`, `plenty` for wood: 0, 50 or 200 logs; `some` on arrival). The `setStock` command `{ good, level }` changes it (refused with a reason for an unknown good or level). `wantOf` is the level's count; `haveOf` counts the good wherever it is (stored, lying, carried). Nobody is given an order: people/jobs.ts reads these.
+- **Events:** emits `goods.unloaded` (goods, beds), citing the `people.arrived` line (every item from the cart cites it as `made`); `goods.storeSet` (width, height) and the first `goods.stockSet` (word, good), citing the unloading; `goods.stockSet` for each change of level, citing the order; `goods.storeGrew` (tiles), citing the line that made the load with no room.
+- **State owned:** tables `item` (kind, count, quality (`plain` for now), x, y, z, holder (who carries it, or 0), owner (whose it is, or 0), state, made), `store` (x, y, z, made) and `stock` (good, level, line). No system state; `every: day` with no `run`, since stacks change through the people who use them.
 - **Invariants:** one stack of a kind a tile from the unloading; counts never above the stack size; a used-up item is removed (entity MODULE.md).
-- **Tests:** `src/engine/needs/needs.test.ts` (the cart unloads once, a bedroll each, the rations go down as the band eats).
+- **Tests:** `src/engine/needs/needs.test.ts` (the cart unloads once, a bedroll each, the rations go down as the band eats); `src/engine/people/jobs.test.ts` (the store is set up; the stock level's logs reach it with no order; the lever and its refusal).

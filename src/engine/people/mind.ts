@@ -7,10 +7,11 @@ import { clockAt, type EntityRow } from '../core/index.ts';
 import { itemsAt, itemsOf, takeFrom } from '../goods/index.ts';
 import { changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { working } from './jobs.ts';
 import { walkTo, wander } from './walk.ts';
 
 export const MIND_FIELDS = {
-  /** `eat`, `sleep`, `relax` or '' (idle). */
+  /** `eat`, `sleep`, `work` (jobs.ts), `relax` or '' (idle). */
   doing: 'text',
   /** The tick before which they do not look for food again after finding none they can reach. */
   retry: 'int',
@@ -92,6 +93,11 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   }
   if (night || rest < seekOf(ctx, 'rest')) {
     goToBed(ctx, p);
+    return;
+  }
+  const hours = hour >= content.work.hours.from && hour < content.work.hours.to;
+  if (working(ctx, p, hours)) {
+    p['doing'] = 'work';
     return;
   }
   const leisure =

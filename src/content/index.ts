@@ -31,6 +31,7 @@ import terrain from './data/terrain.json';
 import tiers from './data/tiers.json';
 import traits from './data/traits.json';
 import weather from './data/weather.json';
+import work from './data/work.json';
 import type { Infer } from './schema';
 import { SCHEMAS, type ContentFile } from './schemas';
 import { contentHash as hashOf } from './hash';
@@ -73,6 +74,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   tiers,
   traits,
   weather,
+  work,
 };
 
 const errors = validateContent(rawContent);
