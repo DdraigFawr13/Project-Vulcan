@@ -14,7 +14,13 @@ const allowed = {
   ui: new Set(['ui', 'render', 'worker', 'persist', 'content']),
 };
 // Runtime dependencies each layer may import (SAFE-03: a new one needs Morgan's approval).
-const externals = { render: new Set(['phaser']), ui: new Set(['phaser']) };
+// The engine reads the Story Generator package's world and content entries only (V-031); that
+// source keeps the same purity rules under its own boundaries check.
+const externals = {
+  engine: new Set(['story-generator/src/engine/index.ts', 'story-generator/src/content/index.ts']),
+  render: new Set(['phaser']),
+  ui: new Set(['phaser']),
+};
 const pureLayers = new Set(['engine', 'content']);
 const forbiddenCoreNames = new Set([
   'Date',

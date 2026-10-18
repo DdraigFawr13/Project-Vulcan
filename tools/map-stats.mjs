@@ -2,18 +2,25 @@
 // prints one table (climate, biome shares, rock, trees, water, start counts, generation time) against
 // the P1.1 and P1.2 done-whens, then makes the four levels below and prints a second table against
 // P1.3's, then runs a year of weather on each (P1.4, tools/map-weather.mjs), then rolls each seed's
-// region (P1.5) and prints its neighbours and valleys. With --render,
+// region (P1.5, from its Story Generator world since P1.6) and prints its neighbours and valleys. With --render,
 // writes one PNG per seed and level to tmp/maps/ (not committed).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
-import { createSim, createWorld, makeRegion } from '../src/engine/index.ts';
-import { strandedWater, waterNearStart } from '../src/engine/map/checks.ts';
-import { reachableAround } from '../src/engine/map/features.ts';
-import { MAP_SEEDS } from '../src/engine/map/seeds.ts';
-import { makeLevel } from '../src/engine/map/underground.ts';
+import { engine } from './engine.mjs';
 import { WEATHER_HEAD, weatherRow } from './map-weather.mjs';
+
+const {
+  createSim,
+  createWorld,
+  makeRegion,
+  strandedWater,
+  waterNearStart,
+  reachableAround,
+  MAP_SEEDS,
+  makeLevel,
+} = engine;
 
 const json = (name) => JSON.parse(readFileSync(path.join(root, 'src/content/data', name), 'utf8'));
 const content = {
@@ -131,11 +138,11 @@ process.stdout.write(
 const regions = MAP_SEEDS.map((seed) => makeRegion(seed, content));
 const regionRows = regions.map(
   (r) =>
-    `| ${r.seed} | ${r.sites.map((s) => `${s.name} (${s.culture} ${s.kind})`).join(', ')} | ${new Set(r.sites.map((s) => s.culture)).size} | ${r.valleys.map((v) => `${v.name}, ${v.climate}`).join('; ')} |`,
+    `| ${r.seed} | ${r.sites.map((s) => `${s.name} (${s.culture} ${s.size}, ${s.realm || 'no realm'})`).join(', ')} | ${new Set(r.sites.map((s) => s.culture)).size} | ${r.valleys.map((v) => `${v.name}, ${v.climate}, ${v.near.map((n) => n.days).join('/')} days`).join('; ')} |`,
 );
 const neighbourhoods = new Set(regions.map((r) => r.sites.map((s) => s.name).join())).size;
 process.stdout.write(
-  `\n| seed | neighbours | cultures | valleys |\n|---|---|---|---|\n${regionRows.join('\n')}\n${neighbourhoods} distinct neighbourhoods in ${MAP_SEEDS.length} seeds (P1.5's done-when: one per seed).\n`,
+  `\n| seed | neighbours (Story Generator world) | cultures | valleys, nearest three |\n|---|---|---|---|\n${regionRows.join('\n')}\n${neighbourhoods} distinct neighbourhoods in ${MAP_SEEDS.length} seeds (P1.5 and P1.6's done-when: one per seed).\n`,
 );
 if (neighbourhoods < MAP_SEEDS.length) failures += 1;
 if (failures + levelFailures + weatherFailures > 0) process.exitCode = 1;

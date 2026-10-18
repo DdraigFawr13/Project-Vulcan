@@ -1,9 +1,12 @@
-// The lighter world map (P1.5, DECISIONS V-017): a small region rolled from the seed on its own
-// `region` stream, with named ranges and rivers, six to eight neighbouring sites of the content
-// cultures and three valleys to settle. Pure: same seed and content, same region (V-006).
+// The region around the valley (P1.5's screen, P1.6's source, DECISIONS V-031): a window of the
+// seed's Story Generator world, with its named ranges and rivers, six to eight of its live sites and
+// three valleys to settle. Pure: same seed and content, same world and region (V-006).
 import { streamFor, type EngineContent } from '../core/index.ts';
-import { band, clamp, layRivers, nameRanges, noise, RAYS } from './land.ts';
-import { compass, dayDistance, placeName, valeName } from './names.ts';
+import { ground, windows, type Window } from './ground.ts';
+import { clamp, RAYS } from './land.ts';
+import { compass, dayDistance, valeName } from './names.ts';
+import { rangesIn, riversIn, sitesIn } from './places.ts';
+import { storyWorld, type WorldState } from './story.ts';
 
 /** One grid cell's height (0 to 1), warmth (degrees C), rain (mm) and biome id. */
 export interface RegionCell {
@@ -29,10 +32,21 @@ export interface RegionSite {
   y: number;
   culture: string;
   race: string;
+  /** The world's word for it: hamlet, village, town, city, fortress, hold, mine, temple or port. */
   kind: string;
+  /** Its map glyph, by its people's race (region.json `kinds`: village, hold, warren). */
+  glyph: string;
+  /** Its realm's way of rule (the realm's people's government), or its own people's with none. */
   government: string;
   faith: string;
   biome: string;
+  people: number;
+  /** The history year it was founded, 0 for the first settlements. */
+  founded: number;
+  /** The realm it belongs to, or '' for none. */
+  realm: string;
+  /** Its most telling event, in the Story Generator's words, or '' when nothing of note happened. */
+  history: string;
 }
 
 export interface RegionNeighbour {
@@ -83,43 +97,73 @@ function unique(taken: ReadonlySet<string>, draw: () => string): string {
 }
 
 export function makeRegion(seed: string, content: EngineContent, withRaster = false): Region {
+  const world = storyWorld(seed, content);
+  let made = chosen.get(world);
+  if (!made) {
+    made = bestRegion(seed, world, content);
+    chosen.set(world, made);
+  }
+  // A copy, so a caller adding the raster or changing a field never changes the kept region.
+  const region: Region = { ...made.region };
+  if (withRaster) region.raster = raster(made.field, region.width, region.height);
+  return region;
+}
+
+// The region chosen for each world made (its window search takes about as long as the world).
+const chosen = new WeakMap<WorldState, { region: Region; field: Field }>();
+
+function bestRegion(
+  seed: string,
+  world: WorldState,
+  content: EngineContent,
+): { region: Region; field: Field } {
+  // The best window with two or more peoples whose valleys get a climate each; failing that, the
+  // most peoples-then-climates, best window first.
+  const want = content.region.valleys.count;
+  const spread = (r: Region): number =>
+    (new Set(r.sites.map((s) => s.culture)).size > 1 ? 10 : 0) +
+    new Set(r.valleys.map((v) => v.climate)).size;
+  let best: { region: Region; field: Field } | undefined;
+  for (const win of windows(world, content)) {
+    const made = regionIn(seed, world, win, content);
+    if (!best || spread(made.region) > spread(best.region)) best = made;
+    if (spread(best.region) === 10 + want) break;
+  }
+  return best!;
+}
+
+type Field = ReturnType<typeof ground>['field'];
+
+/** The region a window of the world makes: its ground, places and three valleys. */
+function regionIn(
+  seed: string,
+  world: WorldState,
+  win: Window,
+  content: EngineContent,
+): { region: Region; field: Field } {
   const dials = content.region;
   const { width: W, height: H } = dials.grid;
-  const rules = content.biomes.rules;
-  const forest = new Set(content.biomes.biomes.filter((b) => b.forest).map((b) => b.id));
   const rng = streamFor({ seed, rng: {} }, 'region');
-  const n1 = noise(rng, W, H, dials.noise.height);
-  const n2 = noise(rng, W, H, dials.noise.detail);
-  const n3 = noise(rng, W, H, dials.noise.rain);
-  const north = rng.between(dials.warmth.north[0]! * 10, dials.warmth.north[1]! * 10) / 10;
-
-  const biomeOf = (t: number, r: number, e: number): string => {
-    if (e < dials.lake) return 'lake';
-    if (e > dials.alpine) return 'alpine';
-    const b = rules.table[band(t, rules.temperatureBands)]![band(r, rules.rainfallBands)]!;
-    if (r > rules.swampRainfall && t > rules.swampMinTemp && e < 0.25) return 'swamp';
-    return rules.frostFree.fallback[b] ?? b;
-  };
-  const field = (x: number, y: number): RegionCell => {
-    const { detailWeight: dw, floor, stretch } = dials.noise;
-    const e = clamp(((1 - dw) * n1(x, y) + dw * n2(x, y) - floor) * stretch, 0, 1);
-    const t =
-      north +
-      dials.warmth.span * (y / (H - 1)) -
-      dials.warmth.lapse * Math.max(0, e - dials.warmth.from);
-    const r = dials.rain.base + dials.rain.span * n3(x, y) + dials.rain.west * (1 - x / W);
-    return { e, t, r, biome: biomeOf(t, r, e) };
-  };
+  const { field, shift } = ground(world, win, content, rng);
   const cells: RegionCell[] = [];
-  for (let y = 0; y < H; y += 1) for (let x = 0; x < W; x += 1) cells.push(field(x, y));
+  for (let y = 0; y < H; y += 1)
+    for (let x = 0; x < W; x += 1) {
+      const { e, t, r, biome } = field(x, y);
+      cells.push({ e, t, r, biome });
+    }
   const at = (x: number, y: number): RegionCell => cells[y * W + x]!;
   const inside = (x: number, y: number, inset = 0): boolean =>
     x >= inset && y >= inset && x < W - inset && y < H - inset;
   const mountain = (c: RegionCell): boolean => c.e > dials.mountain;
 
-  const rivers = layRivers(rng, content, cells, W, H);
-  const riverAt = new Set(rivers.flatMap((r) => r.path.map(([x, y]) => y * W + x)));
-  const ranges = nameRanges(rng, content, cells, W, H);
+  const rivers = riversIn(world, win, content, shift);
+  const ranges = rangesIn(world, win, content);
+  const sites = sitesIn(
+    world,
+    win,
+    content,
+    (x, y) => at(clamp(x, 0, W - 1), clamp(y, 0, H - 1)).biome,
+  );
 
   // Valleys: low inland cells walled by heights on several sides, away from lakes, one per climate
   // where the region has ground for it.
@@ -170,6 +214,7 @@ export function makeRegion(seed: string, content: EngineContent, withRaster = fa
       const x = i % W;
       const y = (i - x) / W;
       if (!chosen.every((v) => far(v, x, y, dials.valleys.spacing))) continue;
+      if (!sites.every((v) => far(v, x, y, dials.valleys.clear))) continue;
       const score = misfit(cells[i]!, cl) - 0.15 * walls(x, y) + rng.int(200) / 1000;
       if (score < bestScore) [best, bestScore] = [i, score];
     }
@@ -180,59 +225,15 @@ export function makeRegion(seed: string, content: EngineContent, withRaster = fa
   for (const minWalls of [2, 0]) {
     const spare = pool(minWalls);
     while (chosen.length < dials.valleys.count) {
-      const left = spare.filter((i) =>
-        chosen.every((v) => far(v, i % W, Math.floor(i / W), dials.valleys.spacing * 0.7)),
+      const left = spare.filter(
+        (i) =>
+          chosen.every((v) => far(v, i % W, Math.floor(i / W), dials.valleys.spacing * 0.7)) &&
+          sites.every((v) => far(v, i % W, Math.floor(i / W), dials.valleys.clear)),
       );
       if (!left.length) break;
       const i = rng.pick(left);
       chosen.push({ x: i % W, y: Math.floor(i / W), climate: bestClimate(cells[i]!) });
     }
-  }
-
-  // Neighbouring sites: each picks a culture by how well the spot suits it, repeats discouraged.
-  const S = dials.sites;
-  const count = rng.between(S.count[0]!, S.count[1]!);
-  const used = new Map<string, number>();
-  const sites: RegionSite[] = [];
-  const suits = (cu: (typeof content.cultures)[number], c: RegionCell, i: number): number =>
-    (cu.preferredBiomes.includes(c.biome) ? 3 : 0.15) +
-    cu.sitePreferences.reduce(
-      (s, p) =>
-        s +
-        (p === 'river' && riverAt.has(i) ? 2 : 0) +
-        (p === 'heights' && c.e > 0.5 ? 2 : 0) +
-        (p === 'plains' && c.e < 0.3 && !forest.has(c.biome) ? 1.5 : 0) +
-        (p === 'forest' && forest.has(c.biome) ? 1.5 : 0) +
-        (p === 'deposit' && c.e > 0.55 ? 1 : 0),
-      0,
-    );
-  for (let tries = 0; sites.length < count && tries < 600; tries += 1) {
-    const i = rng.int(cells.length);
-    const x = i % W;
-    const y = (i - x) / W;
-    const c = cells[i]!;
-    if (c.biome === 'lake' || c.biome === 'alpine' || !inside(x, y, S.inset)) continue;
-    if (![...chosen, ...sites].every((v) => far(v, x, y, S.spacing))) continue;
-    const culture = rng.weighted(
-      content.cultures.map(
-        (cu) =>
-          [cu, Math.round((100 * suits(cu, c, i)) / (1 + 2 * (used.get(cu.id) ?? 0)))] as const,
-      ),
-    );
-    used.set(culture.id, (used.get(culture.id) ?? 0) + 1);
-    const taken = new Set(sites.map((s) => s.name));
-    const name = unique(taken, () => placeName(rng, culture));
-    sites.push({
-      name,
-      x,
-      y,
-      culture: culture.name,
-      race: content.races.find((r) => r.id === culture.raceId)?.name ?? culture.raceId,
-      kind: dials.kinds[culture.raceId] ?? 'village',
-      government: culture.government,
-      faith: culture.religion.name,
-      biome: c.biome,
-    });
   }
 
   // Labels: the biggest ranges first, kept clear of the sites and of each other.
@@ -255,10 +256,10 @@ export function makeRegion(seed: string, content: EngineContent, withRaster = fa
     const near = sites
       .map((s) => ({ s, d: dayDistance(s.x - v.x, s.y - v.y) }))
       .sort((a, b) => a.d - b.d || a.s.name.length - b.s.name.length)
-      .slice(0, S.near);
+      .slice(0, dials.sites.near);
     const home =
       content.cultures.find((cu) => cu.name === near[0]?.s.culture) ?? content.cultures[0]!;
-    const name = unique(names, () => valeName(rng, home, dials.vales));
+    const name = unique(names, () => valeName(rng, home, dials.valesBy[home.id] ?? dials.vales));
     names.add(name);
     const range = ranges
       .filter((g) => g.label)
@@ -285,20 +286,16 @@ export function makeRegion(seed: string, content: EngineContent, withRaster = fa
     };
   });
 
-  const region: Region = { seed, width: W, height: H, cells, ranges, rivers, sites, valleys };
-  if (withRaster) region.raster = raster(content, field, W, H);
-  return region;
+  return { region: { seed, width: W, height: H, cells, ranges, rivers, sites, valleys }, field };
 }
 
 /** The fields sampled `SCALE` times per cell, for the picker's drawing. */
 const SCALE = 4;
 function raster(
-  content: EngineContent,
-  field: (x: number, y: number) => RegionCell,
+  field: (x: number, y: number) => RegionCell & { index: number },
   W: number,
   H: number,
 ): NonNullable<Region['raster']> {
-  const ids = new Map(content.biomes.biomes.map((b, i) => [b.id, i]));
   const width = W * SCALE;
   const height = H * SCALE;
   const biome = new Uint8Array(width * height);
@@ -306,7 +303,7 @@ function raster(
   for (let py = 0; py < height; py += 1)
     for (let px = 0; px < width; px += 1) {
       const f = field((px + 0.5) / SCALE - 0.5, (py + 0.5) / SCALE - 0.5);
-      biome[py * width + px] = ids.get(f.biome) ?? 0;
+      biome[py * width + px] = f.index;
       height8[py * width + px] = Math.round(f.e * 255);
     }
   return { scale: SCALE, width, height, biome, height8 };

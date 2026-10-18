@@ -37,6 +37,7 @@
     "vitest": "5.0.3"
   },
   "dependencies": {
-    "phaser": "4.2.1"
+    "phaser": "4.2.1",
+    "story-generator": "https://codeload.github.com/DdraigFawr13/Story-Generator/tar.gz/6430856302a3b70c4f45da424251b323b08e6615"
   }
 }

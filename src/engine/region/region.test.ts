@@ -4,9 +4,11 @@ import { createSim, createWorld, renderEvent } from '../index.ts';
 import { MAP_SEEDS } from '../map/seeds.ts';
 import { makeRegion, siteOf } from './index.ts';
 
-// P1.5 done-when: ten seeds give ten distinct, named neighbourhoods. Each region has six to eight
-// sites with names unique in it, three valleys with distinct names and content climates, and a
-// valley seed (`<seed>/<n>`) settles that valley with its climate and two ledger lines.
+// P1.5 and P1.6 done-when: ten seeds give ten distinct, named neighbourhoods drawn from their Story
+// Generator worlds, and the same seed gives the same world. Each region has six to eight sites with
+// names unique in it, three valleys with distinct names and content climates whose nearest three
+// neighbours are 2 to 12 days away, and a valley seed (`<seed>/<n>`) settles that valley with its
+// climate and two ledger lines.
 describe('region', () => {
   const regions = MAP_SEEDS.map((seed) => makeRegion(seed, content));
 
@@ -18,15 +20,27 @@ describe('region', () => {
       expect(names.length, r.seed).toBeGreaterThanOrEqual(lo);
       expect(names.length, r.seed).toBeLessThanOrEqual(hi);
       expect(new Set(names).size, r.seed).toBe(names.length);
+      // Border country: at least two peoples meet in every region.
+      expect(new Set(r.sites.map((s) => s.culture)).size, r.seed).toBeGreaterThanOrEqual(2);
       expect(r.valleys.map((v) => v.id)).toEqual([1, 2, 3]);
       expect(new Set(r.valleys.map((v) => v.name)).size, r.seed).toBe(3);
       for (const v of r.valleys) {
         expect(climates.has(v.climate), `${r.seed} ${v.climate}`).toBe(true);
         expect(v.near.length).toBe(content.region.sites.near);
+        for (const n of v.near) expect(n.days, `${r.seed} ${v.name}`).toBeGreaterThanOrEqual(2);
+        for (const n of v.near) expect(n.days, `${r.seed} ${v.name}`).toBeLessThanOrEqual(12);
       }
     }
     const neighbourhoods = new Set(regions.map((r) => r.sites.map((s) => s.name).join(',')));
     expect(neighbourhoods.size).toBe(MAP_SEEDS.length);
+    // The sites are the world's: each has a people, a realm or none, and a line of its history.
+    expect(regions.every((r) => r.sites.some((s) => s.realm && s.history))).toBe(true);
+  });
+
+  it('makes the same world from the same seed', () => {
+    // A copy of the content is a fresh cache key, so the world is made again from scratch.
+    const again = makeRegion(MAP_SEEDS[1], { ...content });
+    expect(again).toEqual(regions[1]);
   });
 
   it('settles the valley a seed names, with its climate and ledger lines', () => {

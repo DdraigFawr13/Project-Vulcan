@@ -36,7 +36,7 @@ export const RACE_COLOUR: Readonly<Record<string, string>> = {
   Goblin: '#a8a04a',
 };
 
-/** A 7 by 7 glyph per site kind (region.json `kinds`). */
+/** A 7 by 7 glyph per site's race (region.json `kinds`). */
 export const GLYPH: Readonly<Record<string, string>> = {
   village: 'M1 3h5v4H1z M0 3l3.5-3L7 3z',
   'glade-hall': 'M3 5h1v2H3z M3.5 0L7 5H0z',
@@ -178,17 +178,6 @@ export function regionMap(view: RegionView, options: RegionMapOptions = {}): HTM
     boxes.push([x - w / 2, y - 7, x + w / 2, y + 2]);
     text(x, y, g.name, 'geo');
   }
-  for (const river of view.rivers) {
-    const [px, py] = river.path[Math.floor(river.path.length / 2)]!;
-    const w = river.name.length * 4.4;
-    const x = Math.min(Math.max(px * s, w / 2 + 2), W - 2 - w / 2);
-    const y = Math.min(Math.max(py * s - 3, 9), H - 4);
-    const box: Box = [x - w / 2, y - 7, x + w / 2, y + 2];
-    if (clear(box, boxes, W)) {
-      boxes.push(box);
-      text(x, y, river.name, 'geo river');
-    }
-  }
   for (const site of view.sites) {
     const [x, y] = at(site.x, site.y);
     const g = svg('g', {
@@ -200,7 +189,7 @@ export function regionMap(view: RegionView, options: RegionMapOptions = {}): HTM
     g.append(svg('circle', { cx: x, cy: y, r: 14, fill: 'transparent' }));
     g.append(
       svg('path', {
-        d: GLYPH[site.kind] ?? GLYPH['village']!,
+        d: GLYPH[site.glyph] ?? GLYPH['village']!,
         transform: `translate(${x - 3.5},${y - 3.5})`,
         fill: RACE_COLOUR[site.race] ?? '#ccc',
         class: 'glyph',
@@ -208,15 +197,39 @@ export function regionMap(view: RegionView, options: RegionMapOptions = {}): HTM
     );
     g.addEventListener('click', () => options.onSite?.(site));
     layer.append(g);
-    // The name goes on the side with room, or is left off (the glyph still answers a tap).
+    // The name goes on the side with room, else above or below; every neighbour is named, so the
+    // sites are placed before the rivers' names, which give way.
     const w = site.name.length * 4.6 + 2;
-    for (const anchor of x > W * 0.75 ? ['end', 'start'] : ['start', 'end']) {
-      const x0 = anchor === 'start' ? x + 5 : x - 5 - w;
-      const box: Box = [x0, y - 5, x0 + w, y + 5];
-      if (!clear(box, boxes, W)) continue;
+    const sides = x > W * 0.75 ? ['end', 'start'] : ['start', 'end'];
+    const mid = Math.min(Math.max(x, w / 2 + 2), W - 2 - w / 2);
+    const spots = [
+      ...sides.map((a) => ({ a, x: a === 'start' ? x + 5 : x - 5, y: y + 3 })),
+      ...[y - 7, y + 13].flatMap((ty) => [
+        { a: 'middle', x: mid, y: ty },
+        ...sides.map((a) => ({ a, x: a === 'start' ? x - 2 : x + 2, y: ty })),
+      ]),
+    ];
+    const boxOf = (spot: (typeof spots)[number]): Box => {
+      const x0 = spot.a === 'start' ? spot.x : spot.a === 'end' ? spot.x - w : spot.x - w / 2;
+      return [x0, spot.y - 8, x0 + w, spot.y + 2];
+    };
+    const fits = (b: Box): boolean => b[1] >= 1 && b[3] <= H - 1 && b[0] >= 1 && b[2] <= W - 1;
+    // With no clear spot left, the first one inside the map is used anyway.
+    const spot =
+      spots.find((p) => fits(boxOf(p)) && clear(boxOf(p), boxes, W)) ??
+      spots.find((p) => fits(boxOf(p)))!;
+    boxes.push(boxOf(spot));
+    text(spot.x, spot.y, site.name, 'lab', spot.a);
+  }
+  for (const river of view.rivers) {
+    const [px, py] = river.path[Math.floor(river.path.length / 2)]!;
+    const w = river.name.length * 4.4;
+    const x = Math.min(Math.max(px * s, w / 2 + 2), W - 2 - w / 2);
+    const y = Math.min(Math.max(py * s - 3, 9), H - 4);
+    const box: Box = [x - w / 2, y - 7, x + w / 2, y + 2];
+    if (clear(box, boxes, W)) {
       boxes.push(box);
-      text(anchor === 'start' ? x + 5 : x - 5, y + 3, site.name, 'lab', anchor);
-      break;
+      text(x, y, river.name, 'geo river');
     }
   }
   for (const v of view.valleys) {
@@ -242,11 +255,13 @@ export function regionMap(view: RegionView, options: RegionMapOptions = {}): HTM
   return root;
 }
 
-/** The race legend under a map. */
-export function raceLegend(): HTMLElement {
+/** The race legend under a map: only the races that live in the region. */
+export function raceLegend(view: RegionView): HTMLElement {
   const row = document.createElement('div');
   row.className = 'legend';
+  const here = new Set(view.sites.map((s) => s.race));
   for (const [race, colour] of Object.entries(RACE_COLOUR)) {
+    if (!here.has(race)) continue;
     const item = document.createElement('span');
     const dot = document.createElement('i');
     dot.style.background = colour;
@@ -257,6 +272,8 @@ export function raceLegend(): HTMLElement {
 }
 
 const PLURAL: Readonly<Record<string, string>> = { Elf: 'Elves', Dwarf: 'Dwarves' };
-/** "Eriana, a Lissari village · Humans · rule: queendom · faith: The Hearth". */
+/** "Eriana, a Lissari town of 571 · Humans · rule: republic · faith: The Scales", then on a second
+ * line who holds it and when it was founded, and its most telling event from the world's history. */
 export const siteWords = (site: RegionSite): string =>
-  `${site.name}, a ${site.culture} ${site.kind} · ${PLURAL[site.race] ?? `${site.race}s`} · rule: ${site.government} · faith: ${site.faith}`;
+  `${site.name}, a ${site.culture} ${site.kind} of ${site.people} · ${PLURAL[site.race] ?? `${site.race}s`} · rule: ${site.government} · faith: ${site.faith}\n` +
+  `${site.realm ? `${site.realm}. ` : ''}${site.founded ? `Founded in Year ${site.founded}` : 'One of the first settlements'}. ${site.history}`.trimEnd();
