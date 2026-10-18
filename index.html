@@ -80,6 +80,12 @@
         align-items: center;
         gap: 4px;
       }
+      /* On a phone the panel buttons wrap under the speeds until P2.8's ⋯ menu takes Region and
+         Saves (UI_STYLE.md); the camera keeps the map clear of the taller bar. */
+      .status {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
       .pill {
         font-size: 11px;
         font-weight: 600;

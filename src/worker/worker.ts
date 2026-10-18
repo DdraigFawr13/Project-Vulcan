@@ -27,6 +27,7 @@ import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type { ChunkView, FromWorker, LedgerLine, ToWorker } from './protocol.ts';
 import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave, saveOf } from './save.ts';
+import { goodsOf, stockView } from './goods.ts';
 import { peopleOf, walkersOf } from './people.ts';
 import { clockView, tileView, weatherOf } from './views.ts';
 
@@ -131,6 +132,8 @@ function snapshot(w: WorldState): void {
       aura: w.map.auraSpots.map(({ school, x, y, z, strength }) => ({ school, x, y, z, strength })),
       timing: timing.view,
       walkers: walkersOf(w),
+      goods: goodsOf(w),
+      stock: stockView(w),
     },
     chunks.flatMap((c) => [c.tiles.buffer, c.features.buffer, c.snow.buffer, c.ice.buffer]),
   );

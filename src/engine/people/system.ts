@@ -92,7 +92,7 @@ export const peopleSystem: System = {
   id: 'people',
   every: 'minute',
   stream: 'people',
-  emits: ['people.arrived', 'work.tookUp', 'work.felled'],
+  emits: ['people.arrived', 'work.tookUp', 'work.tookUpMarked', 'work.felled'],
   tables: PEOPLE_TABLES,
   init(ctx) {
     const { world, content } = ctx;

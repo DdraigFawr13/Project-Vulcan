@@ -1,7 +1,8 @@
 // Public surface of the render layer: boots Phaser with the valley scene and hands the page a
 // small handle to feed it snapshots and drive the camera.
 import Phaser from 'phaser';
-import type { AuraView, ChunkView, PersonView, WalkerView } from '../worker/index.ts';
+import type { AuraView, ChunkView, GoodsView, PersonView, WalkerView } from '../worker/index.ts';
+import { GoodsSprites } from './goods.ts';
 import { PeopleSprites } from './people.ts';
 import { ValleyScene, type Hover } from './scene.ts';
 
@@ -24,6 +25,8 @@ export interface Renderer {
   personAt(x: number, y: number): PersonView | undefined;
   /** Moves the people to where the latest snapshot stands them (P2.3); they glide there. */
   movePeople(walkers: readonly WalkerView[]): void;
+  /** Draws the store, the items lying about and test marks (P2.4). */
+  setGoods(goods: GoodsView): void;
   /** Marks the inspected tile, or clears the mark. */
   mark(tile: { x: number; y: number } | undefined): void;
   /** A small picture of the current view as a JPEG data URL, for the save list; '' if none. */
@@ -54,6 +57,7 @@ export function startRenderer(
     scene: [scene],
   });
   const people = new PeopleSprites(game, scene);
+  const goods = new GoodsSprites(game, scene);
   return {
     setMapSize: (width, height) => scene.setMapSize(width, height),
     applyChunks: (chunks) => scene.applyChunks(chunks),
@@ -63,10 +67,12 @@ export function startRenderer(
     setLevel: (z) => {
       scene.setLevel(z);
       people.setLevel(z);
+      goods.setLevel(z);
     },
     setPeople: (list) => people.set(list),
     personAt: (x, y) => people.at(x, y),
     movePeople: (walkers) => people.move(walkers),
+    setGoods: (view) => goods.set(view),
     mark: (tile) => scene.mark(tile),
     thumbnail: () => thumbnailOf(game),
     fps: () => game.loop.actualFps,

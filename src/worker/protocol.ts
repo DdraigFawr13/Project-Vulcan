@@ -140,6 +140,39 @@ export interface TileView {
   version: number;
   /** The line that last changed the tile, or its older record once its day is sealed. */
   changedBy?: LedgerLine;
+  /** What lies on the tile (P2.4), e.g. "logs × 25", each with the line that made or brought it. */
+  goods?: { text: string; made?: LedgerLine }[];
+  /** Part of the store, with the line that set the tile up. */
+  store?: { made?: LedgerLine };
+  /** Test mode (`?debug`): a tree is marked here, a tree could be, or the store could take it. */
+  marked?: true;
+  tree?: true;
+  open?: true;
+}
+
+/** A tile spot, for the map's goods layer. */
+export interface Spot3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
+/** What the map draws for goods (P2.4): items on the ground by art frame, the store's tiles and
+ * test-mode marks. */
+export interface GoodsView {
+  items: (Spot3 & { frame: string })[];
+  store: Spot3[];
+  marks: Spot3[];
+}
+
+/** One good's stock lever (P2.4): how much the colony has and wants, and the levels to pick. */
+export interface StockView {
+  good: string;
+  name: string;
+  have: number;
+  want: number;
+  level: string;
+  levels: { id: string; word: string; count: number }[];
 }
 
 /** The region map as the page draws it (engine `Region` less its cells). */
@@ -269,6 +302,9 @@ export type FromWorker =
       timing: TimingView;
       /** Everyone's place now (P2.3). */
       walkers: WalkerView[];
+      /** Items, the store and marks (P2.4). */
+      goods: GoodsView;
+      stock: StockView[];
     }
   /** New ledger lines in log order, posted just before the snapshot that follows them. */
   | { type: 'events'; batch: LedgerLine[] }

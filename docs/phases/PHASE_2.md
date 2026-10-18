@@ -8,7 +8,7 @@ Goal: people who act on their own. Entry: Phase 1 done and signed off by Morgan 
 - [x] P2.1 Title screen, the band and their arrival (merged 2026-10-18 in two PRs: engine #21, screens in the second). Ten seeds give ten distinct bands, each able to build and cook (`people.test.ts`)
 - [x] P2.2 Needs and basic mood (merged 2026-10-18; P2.2 to P2.4 run as one bundle in one thread, VR-61). A week on three seeds keeps every need above its warning line with no warning lines written (`needs.test.ts`)
 - [x] P2.3 Pathfinding across levels (merged 2026-10-18). `npm run paths`: 200 searches on each of three map seeds with all five levels open, 0.15 to 0.52 ms mean, at most 4.1 ms, under the 5 ms tick budget
-- [ ] P2.4 Jobs, hauling, items and stockpiles
+- [x] P2.4 Work, hauling, items and the store (merged 2026-10-18 in two PRs: engine #27, screens in the second). On three seeds with no command, felled logs reach the store and every felling line traces back to the stock level (`jobs.test.ts`)
 - [ ] P2.5 Schedules, work priorities, skills by use
 - [ ] P2.6 Colonist bar, inspector tabs, alert feed
 - [ ] P2.7 Skip ahead
@@ -42,9 +42,9 @@ Chunked A* over the surface and the levels below, through stairs and shafts. Moc
 
 - Reading list: `docs/ARCHITECTURE.md#map`; `src/engine/map/MODULE.md`
 
-### P2.4 Jobs, hauling, items and stockpiles
+### P2.4 Work, hauling, items and the store
 
-Jobs from designations, hauling; items with stacks and quality; stockpile zones with filters; the `items` sheet. Mock-up: UI. Done when: felled logs reach the matching stockpile without an order to any individual.
+Colonists take up work themselves from what the colony needs: a stock level per good (the player's lever, a standing order such as wood None, Some or Plenty) decides how much is wanted, and whoever is free and able fells, chooses the tree and carries the logs; items with stacks and quality; a store the band sets up and grows itself; the `items` sheet. Direct tools (mark a tree, add a store tile, dig) exist only in a TEST MODE row behind `?debug` (V-015). Mock-up: UI. Done when: felled logs reach the store without an order to any individual.
 
 - Reading list: `docs/DECISIONS.md` V-015; `docs/ART.md` row P2.4; `src/engine/map/MODULE.md`; `src/ui/MODULE.md`
 

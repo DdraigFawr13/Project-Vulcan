@@ -2,6 +2,7 @@
 export { goodsSystem } from './system.ts';
 export { GOODS_TABLES, itemsAt, itemsOf, layItem, stackSize, takeFrom } from './stacks.ts';
 export {
+  freeTile,
   growStore,
   haveOf,
   inStore,
@@ -11,3 +12,4 @@ export {
   STORE_TABLES,
   wantOf,
 } from './store.ts';
+export { isTree, markedTree, marksOf, unmark } from './marks.ts';

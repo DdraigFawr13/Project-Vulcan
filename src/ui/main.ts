@@ -5,14 +5,15 @@ import { startRenderer } from '../render/index.ts';
 import {
   spawnSimWorker,
   type FromWorker,
-  type LedgerLine,
   type PersonView,
   type Speed,
+  type StockView,
   type TileView,
   type ToWorker,
 } from '../worker/index.ts';
 import { showArrival } from './arrival.ts';
-import { Hud } from './hud.ts';
+import { Hud, type PanelButton } from './hud.ts';
+import { Orders } from './orders.ts';
 import { Panel } from './panel.ts';
 import { Picker } from './picker.ts';
 import { Saves } from './saves.ts';
@@ -42,24 +43,11 @@ let worldTick = 0;
 let waiting = false;
 let stopped = false;
 let frame = 0;
-/** The inspector's last dig order: its tile and the tick it is stamped for; then the line that
- * answered it (a refusal is kept to show) and whether the tile has been asked for again since. */
-let order:
-  | {
-      x: number;
-      y: number;
-      z: number;
-      tick: number;
-      answered?: boolean;
-      refused?: LedgerLine;
-      asked?: boolean;
-    }
-  | undefined;
-/** The ledger lines that answer a dig order. At 3x an order can land a tick or two late. */
-const ANSWERS = ['map.stairsCut', 'map.shaftSunk', 'map.digRefused'];
 /** The tile the inspector last showed. */
 let shown: TileView | undefined;
-const PAUSED_NOTE = 'Paused: this is dug on the next game minute once time runs (1×, 2× or 3×).';
+const orders = new Orders((message) => send(message));
+/** The colony's stock levels as of the last snapshot, for the Stock sheet (P2.4). */
+let stock: readonly StockView[] = [];
 /** The starting or loading screen is up until the next snapshot; other screens wait for a click. */
 let covering = true;
 /** The running world's valley and people, and whether the band has just arrived (P2.1). */
@@ -112,18 +100,9 @@ const panel = new Panel(
     exportLedger: () => send({ type: 'export', kind: 'ndjson' }),
     load: (meta) => void saves.load(meta),
     remove: (meta) => void saves.remove(meta),
-    dig: (tile, kind, to) => {
-      const { x, y, z } = tile;
-      order = { x, y, z, tick: worldTick + 1 };
-      send({
-        type: 'command',
-        tick: order.tick,
-        kind,
-        data: { x, y, z, ...(to !== undefined && { to }) },
-      });
-      // Asked now (a paused game says the order waits) and again once it is answered.
-      send({ type: 'inspect', x, y, z });
-    },
+    test: (tile, kind, to) => orders.give(tile, kind, worldTick + 1, to),
+    setStock: (good, level) =>
+      send({ type: 'command', tick: worldTick + 1, kind: 'setStock', data: { good, level } }),
     go: (tile, z) => {
       setLevel(z);
       if (level === z) send({ type: 'inspect', x: tile.x, y: tile.y, z });
@@ -136,7 +115,11 @@ const panel = new Panel(
 const picker = new Picker(hudRoot, {
   settle: (chosen) => {
     // A reload comes straight back to this valley; New game or a new seed opens the picker again.
-    history.replaceState(null, '', `?seed=${encodeURIComponent(seed)}&site=${chosen}`);
+    history.replaceState(
+      null,
+      '',
+      `?seed=${encodeURIComponent(seed)}&site=${chosen}${debug ? '&debug' : ''}`,
+    );
     picker.hide();
     hud.showScreen('Waking the valley', 'Settling the band in the valley.');
     send({ type: 'settle', site: chosen });
@@ -165,20 +148,11 @@ function setLevel(z: number): void {
   hud.showLevel(z, depth, z === 0 || reached[z - 1] === true);
 }
 
-/** What became of the last dig order on `tile`, once: it waits while paused, or the line refusing
- * it once answered. */
-function noticeFor(tile: TileView): string | LedgerLine | undefined {
-  if (!order || order.x !== tile.x || order.y !== tile.y || order.z !== tile.z) return undefined;
-  if (!order.answered) return speed === 0 ? PAUSED_NOTE : undefined;
-  const { refused } = order;
-  order = undefined;
-  return refused;
-}
-
-function openPanel(kind: 'ledger' | 'saves' | 'region'): void {
+function openPanel(kind: PanelButton): void {
   renderer.mark(undefined);
   if (kind === 'ledger') panel.showLedger(saves.ledger);
   else if (kind === 'region') send({ type: 'region' });
+  else if (kind === 'stock') panel.showStock(stock);
   else void saves.showList();
   hud.showPanel(kind);
 }
@@ -198,7 +172,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       depth = message.depth;
       reached = [];
       level = 0;
-      order = undefined;
+      orders.clear();
       hud.showLevel(0, depth, true);
       place = message.place;
       people = message.people;
@@ -216,16 +190,14 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
     } else if (message.type === 'snapshot') {
       waiting = false;
       worldTick = message.tick;
-      if (order?.answered && !order.asked) {
-        order.asked = true;
-        const { x, y, z } = order;
-        if (panel.kind === 'tile' && shown?.x === x && shown.y === y && shown.z === z)
-          send({ type: 'inspect', x, y, z });
-      }
+      orders.snapshot(message.tick, panel.kind === 'tile' ? shown : undefined);
       reached = message.reached;
       renderer.applyChunks(message.chunks);
       renderer.movePeople(message.walkers);
       panel.setWalkers(message.walkers);
+      renderer.setGoods(message.goods);
+      stock = message.stock;
+      panel.setStock(stock);
       renderer.setAura(message.aura);
       hud.showLevel(level, depth, level === 0 || reached[level - 1] === true);
       hud.fps = Math.round(renderer.fps());
@@ -248,17 +220,12 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       }
     } else if (message.type === 'events') {
       saves.addLines(message.batch);
-      // The answer's lines come just before the snapshot that asks for the tile again.
-      for (const line of message.batch)
-        if (order && !order.answered && ANSWERS.includes(line.type) && line.tick >= order.tick) {
-          order.answered = true;
-          if (line.type === 'map.digRefused') order.refused = line;
-        }
+      orders.lines(message.batch);
     } else if (message.type === 'inspected') {
       // A reply about a level the player has since left is dropped.
       if (message.tile && message.tile.z === level) {
         shown = message.tile;
-        panel.showTile(message.tile, depth, noticeFor(message.tile));
+        panel.showTile(message.tile, depth, orders.noticeFor(message.tile, speed));
         renderer.mark(message.tile);
         hud.showPanel(undefined);
       }

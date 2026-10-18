@@ -4,6 +4,9 @@
 import type { ClockView, Speed, TimingView, WeatherView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
+/** The panels the bar opens. */
+export type PanelButton = 'ledger' | 'stock' | 'saves' | 'region';
+
 const SPEED_LABELS: Record<Speed, string> = { 0: '❚❚', 1: '1×', 2: '2×', 3: '3×' };
 
 export interface HudActions {
@@ -13,7 +16,7 @@ export interface HudActions {
   level(direction: 1 | -1): void;
   reload(): void;
   /** Opens a panel, or closes it if it is the one showing. */
-  togglePanel(kind: 'ledger' | 'saves' | 'region'): void;
+  togglePanel(kind: PanelButton): void;
   /** The player closed a screen with its "dismiss" button. */
   dismissed(): void;
 }
@@ -22,7 +25,7 @@ export class Hud {
   private readonly clock = el('div', { class: 'clock', 'data-testid': 'clock' });
   private readonly paused = el('span', { class: 'pill', hidden: '' }, 'Paused');
   private readonly speeds = new Map<Speed, HTMLButtonElement>();
-  private readonly panels = new Map<'ledger' | 'saves' | 'region', HTMLButtonElement>();
+  private readonly panels = new Map<PanelButton, HTMLButtonElement>();
   private readonly readout = el('div', { class: 'hud readout', hidden: '' });
   /** fps and tick, for developers only (`?debug` in the URL); the smoke reads its data fields. */
   private readonly debug = el('div', { class: 'hud debug', 'data-testid': 'debug', hidden: '' });
@@ -61,6 +64,7 @@ export class Hud {
     const panels = el('div', { class: 'speeds', role: 'group', 'aria-label': 'Panels' });
     for (const [kind, label] of [
       ['ledger', 'Ledger'],
+      ['stock', 'Stock'],
       ['region', 'Region'],
       ['saves', 'Saves'],
     ] as const) {

@@ -3,10 +3,11 @@
 // open tiles nearest it, and a bedroll laid out for each person. One ledger line says so. Then
 // (P2.4) the band sets up its store beside the cart and the colony's stock levels start.
 import type { EngineContent, WorldState } from '../core/index.ts';
-import { canReach, walkAt } from '../paths/index.ts';
+import { canReach } from '../paths/index.ts';
 import type { System } from '../sim/index.ts';
 import { GOODS_TABLES, itemsOf, layItem, stackSize } from './stacks.ts';
-import { setStock, setUpStock, setUpStore, STORE_TABLES } from './store.ts';
+import { markCommands, MARK_TABLES } from './marks.ts';
+import { dryAt, setStock, setUpStock, setUpStore, STORE_TABLES } from './store.ts';
 
 /** Open tiles joined to the camp, nearest first in rings, that hold no item yet. */
 function freeTilesNear(world: WorldState, content: EngineContent, count: number): number[][] {
@@ -21,7 +22,7 @@ function freeTilesNear(world: WorldState, content: EngineContent, count: number)
         const x = start.x + dx;
         const y = start.y + dy;
         if (x < 0 || y < 0 || x >= map.width || y >= map.height) continue;
-        if (taken.has(`${x},${y}`) || !walkAt(content, map, 0, y * map.width + x)) continue;
+        if (taken.has(`${x},${y}`) || !dryAt(content, map, y * map.width + x)) continue;
         if (!canReach(content, map, start, { x, y, z: 0 })) continue;
         taken.add(`${x},${y}`);
         out.push([x, y]);
@@ -35,9 +36,19 @@ const nameOf = (content: EngineContent, kind: string): string =>
 export const goodsSystem: System = {
   id: 'goods',
   every: 'day', // a cadence is required; stacks change through the people who move them
-  emits: ['goods.unloaded', 'goods.storeSet', 'goods.storeGrew', 'goods.stockSet'],
-  tables: { ...GOODS_TABLES, ...STORE_TABLES },
-  commands: { setStock: (ctx, command, cause) => setStock(ctx, command.data, cause) },
+  emits: [
+    'goods.unloaded',
+    'goods.storeSet',
+    'goods.storeGrew',
+    'goods.stockSet',
+    'goods.storeMarked',
+  ],
+  tables: { ...GOODS_TABLES, ...STORE_TABLES, ...MARK_TABLES },
+  commands: {
+    setStock: (ctx, command, cause) => setStock(ctx, command.data, cause),
+    markFell: (ctx, command, cause) => markCommands.markFell(ctx, command.data, cause),
+    markStore: (ctx, command, cause) => markCommands.markStore(ctx, command.data, cause),
+  },
   init(ctx) {
     const { world, content } = ctx;
     const people = world.entities['person'] ?? [];
