@@ -2,6 +2,7 @@
 // arrays), so the worker can post it, P0.5 can save it and tests can compare it.
 import type { AuraDials, AuraSpot, SeasonsDef, WeatherDef } from './climate.ts';
 import type { RngState } from './rng.ts';
+import type { CultureDef, NamesDef, RegionDef } from './region.ts';
 
 /** The named RNG streams (docs/ARCHITECTURE.md "RNG"). A system draws only from its own. */
 export const STREAMS = [
@@ -302,6 +303,8 @@ export interface BiomesDef {
     alpineElevation: number;
     swampRainfall: number;
     swampMinTemp: number;
+    /** Biomes that need frost-free winters, and what they become without them. */
+    frostFree: { fallback: Readonly<Record<string, string>> };
   };
 }
 
@@ -346,4 +349,9 @@ export interface EngineContent {
   seasons: SeasonsDef;
   /** The six schools of magic (forked schools.json): aura spots name theirs. */
   schools: readonly { id: string; name: string }[];
+  /** The region around the valley (P1.5): its dials, and the forked cultures, races and names. */
+  region: RegionDef;
+  cultures: readonly CultureDef[];
+  races: readonly { id: string; name: string }[];
+  names: NamesDef;
 }

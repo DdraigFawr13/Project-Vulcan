@@ -8,7 +8,7 @@ Goal: a valley worth settling. Entry: Phase 0 done and its playtest signed off b
 - [x] P1.2 Water (merged 2026-10-17)
 - [x] P1.3 Underground (merged 2026-10-17)
 - [x] P1.4 Aura, seasons and weather (merged 2026-10-17)
-- [ ] P1.5 Lighter world map and site picker
+- [x] P1.5 Lighter world map and site picker (merged 2026-10-18)
 - [ ] Phase review
 
 Deferred: the `highlands` mountain layout (massifs inside the valley as well as on its rims, Morgan's 2026-10-17 "keep for later") is kept in `terrain.json` `generator.layouts` but unused; `generator.layout` stays `valley`. A later site type or the full worldgen port may use it.
@@ -43,7 +43,7 @@ Aura spots; seasons and daily weather from the forked `weather.json` with per-ti
 
 ### P1.5 Lighter world map
 
-The valley among named neighbouring sites from content cultures; site picker before the world begins. Mock-up: UI. Done when: ten seeds give ten distinct, named neighbourhoods.
+The valley among named neighbouring sites from content cultures; site picker before the world begins. Mock-up: UI. Done when: ten seeds give ten distinct, named neighbourhoods. Morgan's calls (2026-10-18): three valleys per seed, the region map in the game's palette, six to eight neighbours, a Region button in play.
 
 - Reading list: `docs/DECISIONS.md` V-017; `src/content/MODULE.md`; `src/ui/MODULE.md`
 

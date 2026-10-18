@@ -52,6 +52,8 @@ export function layGround(
   content: EngineContent,
   width: number,
   height: number,
+  /** A climate id the region chose for this valley; otherwise one is drawn by weight. */
+  climateId?: string,
 ): Ground {
   const gen = content.terrain.generator;
   const { biomes, rules } = content.biomes;
@@ -68,7 +70,9 @@ export function layGround(
     return i;
   };
 
-  const climate = rng.weighted(gen.climates.map((c) => [c, Math.round(c.weight * 10)] as const));
+  const climate =
+    gen.climates.find((c) => c.id === climateId) ??
+    rng.weighted(gen.climates.map((c) => [c, Math.round(c.weight * 10)] as const));
   const temperature = draw(rng, climate.temperature);
   const rainfall = Math.round(draw(rng, climate.rainfall));
   const floor = Math.round(draw(rng, gen.elevation.floor));

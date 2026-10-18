@@ -1,10 +1,11 @@
 // The side panel (a bottom sheet on narrow screens): the tile inspector, the ledger and the save
 // list. Shows what the worker and the save store hand it; it computes no game rule (GAME-02).
 import type { SaveMeta } from '../persist/index.ts';
-import type { ClockView, LedgerLine, TileView } from '../worker/index.ts';
+import type { ClockView, LedgerLine, RegionView, TileView } from '../worker/index.ts';
 import { el } from './dom.ts';
+import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 
-export type PanelKind = 'tile' | 'ledger' | 'saves';
+export type PanelKind = 'tile' | 'ledger' | 'saves' | 'region';
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;
@@ -92,6 +93,45 @@ export class Panel {
     }
     if (tile.changedBy) this.body.append(this.line(tile.changedBy, 'Last changed · '));
     else this.body.append(el('p', { class: 'muted' }, 'The line that last changed it is gone.'));
+  }
+
+  /** The region map, read-only, with the settled valley marked; a tapped site shows who lives there. */
+  showRegion(region: RegionView, site: number): void {
+    const valley = region.valleys[site - 1];
+    this.open('region', 'Region');
+    const note = el('p', { class: 'note' }, 'Tap a settlement to see who lives there.');
+    const map = regionMap(region, {
+      selected: site,
+      onlySelected: true,
+      onSite: (s) => (note.textContent = siteWords(s)),
+    });
+    const near = el('ul');
+    for (const n of valley?.near ?? [])
+      near.append(el('li', {}, `${n.name}, ${n.culture} ${n.kind}, ${n.days} days ${n.dir}`));
+    this.body.replaceChildren(
+      el(
+        'p',
+        {},
+        valley
+          ? `Your valley: ${valley.name}${valley.range ? `, under ${valley.range}` : ''}.`
+          : '',
+      ),
+      map,
+      raceLegend(),
+      note,
+      near,
+      el(
+        'p',
+        { class: 'muted' },
+        'No dealings with the neighbours yet: raids come in Phase 8, trade and travel in Phase 9.',
+      ),
+    );
+  }
+
+  /** A panel with a title and one line of text. */
+  showNote(title: string, text: string): void {
+    this.open('region', title);
+    this.body.replaceChildren(el('p', {}, text));
   }
 
   showLedger(lines: readonly LedgerLine[]): void {

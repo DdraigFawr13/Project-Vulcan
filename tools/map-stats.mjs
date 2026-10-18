@@ -1,13 +1,14 @@
 // `npm run map:stats` (or `map:render`): lays out the surface for every seed in the map seed list and
 // prints one table (climate, biome shares, rock, trees, water, start counts, generation time) against
 // the P1.1 and P1.2 done-whens, then makes the four levels below and prints a second table against
-// P1.3's, then runs a year of weather on each (P1.4, tools/map-weather.mjs). With --render,
+// P1.3's, then runs a year of weather on each (P1.4, tools/map-weather.mjs), then rolls each seed's
+// region (P1.5) and prints its neighbours and valleys. With --render,
 // writes one PNG per seed and level to tmp/maps/ (not committed).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
-import { createSim, createWorld } from '../src/engine/index.ts';
+import { createSim, createWorld, makeRegion } from '../src/engine/index.ts';
 import { strandedWater, waterNearStart } from '../src/engine/map/checks.ts';
 import { reachableAround } from '../src/engine/map/features.ts';
 import { MAP_SEEDS } from '../src/engine/map/seeds.ts';
@@ -24,6 +25,10 @@ const content = {
   weather: json('weather.json'),
   seasons: json('seasons.json'),
   schools: json('schools.json'),
+  region: json('region.json'),
+  cultures: json('cultures.json'),
+  races: json('races.json'),
+  names: json('names.json'),
 };
 const render = process.argv.includes('--render');
 const sim = createSim(content);
@@ -123,6 +128,16 @@ process.stdout.write(`\n${WEATHER_HEAD}\n${years.join('\n')}\n`);
 process.stdout.write(
   `${MAP_SEEDS.length - weatherFailures} of ${MAP_SEEDS.length} seeds meet P1.4's done-when (a year of weather freezes still water).\n`,
 );
+const regions = MAP_SEEDS.map((seed) => makeRegion(seed, content));
+const regionRows = regions.map(
+  (r) =>
+    `| ${r.seed} | ${r.sites.map((s) => `${s.name} (${s.culture} ${s.kind})`).join(', ')} | ${new Set(r.sites.map((s) => s.culture)).size} | ${r.valleys.map((v) => `${v.name}, ${v.climate}`).join('; ')} |`,
+);
+const neighbourhoods = new Set(regions.map((r) => r.sites.map((s) => s.name).join())).size;
+process.stdout.write(
+  `\n| seed | neighbours | cultures | valleys |\n|---|---|---|---|\n${regionRows.join('\n')}\n${neighbourhoods} distinct neighbourhoods in ${MAP_SEEDS.length} seeds (P1.5's done-when: one per seed).\n`,
+);
+if (neighbourhoods < MAP_SEEDS.length) failures += 1;
 if (failures + levelFailures + weatherFailures > 0) process.exitCode = 1;
 
 function drawMap(seed, m) {

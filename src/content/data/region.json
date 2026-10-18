@@ -1,0 +1,16 @@
+{
+"grid": {"width":80,"height":56},
+"noise": {"height":18,"detail":7,"rain":22,"detailWeight":0.3,"floor":0.22,"stretch":1.6},
+"warmth": {"north":[1,5],"span":15,"lapse":9,"from":0.45},
+"rain": {"base":280,"span":900,"west":260},
+"lake": 0.035,
+"mountain": 0.62,
+"alpine": 0.9,
+"rivers": {"count":2,"sources":40,"minLength":14,"apart":8,"twist":1.8},
+"ranges": {"min":25,"label":80},
+"valleys": {"count":3,"inset":9,"spacing":18,"walls":4,"reach":9,"low":[0.12,0.45],"dry":3},
+"sites": {"count":[6,8],"inset":3,"spacing":11,"near":3},
+"daysPerCell": 0.25,
+"kinds": {"human":"village","elf":"glade-hall","dwarf":"hold","orc":"war-camp","giant":"steading","halfling":"shire","goblin":"warren"},
+"vales": ["{n} Vale","Cwm {n}","{n}dale","Glen {n}","the Vale of {n}"]
+}

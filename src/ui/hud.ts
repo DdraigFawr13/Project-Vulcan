@@ -13,7 +13,7 @@ export interface HudActions {
   level(direction: 1 | -1): void;
   reload(): void;
   /** Opens a panel, or closes it if it is the one showing. */
-  togglePanel(kind: 'ledger' | 'saves'): void;
+  togglePanel(kind: 'ledger' | 'saves' | 'region'): void;
   /** The player closed a screen with its "dismiss" button. */
   dismissed(): void;
 }
@@ -22,7 +22,7 @@ export class Hud {
   private readonly clock = el('div', { class: 'clock', 'data-testid': 'clock' });
   private readonly paused = el('span', { class: 'pill', hidden: '' }, 'Paused');
   private readonly speeds = new Map<Speed, HTMLButtonElement>();
-  private readonly panels = new Map<'ledger' | 'saves', HTMLButtonElement>();
+  private readonly panels = new Map<'ledger' | 'saves' | 'region', HTMLButtonElement>();
   private readonly readout = el('div', { class: 'hud readout', hidden: '' });
   private readonly debug = el('div', { class: 'hud debug', 'data-testid': 'debug' });
   private readonly screen = el('div', { class: 'screen' });
@@ -56,6 +56,7 @@ export class Hud {
     const panels = el('div', { class: 'speeds', role: 'group', 'aria-label': 'Panels' });
     for (const [kind, label] of [
       ['ledger', 'Ledger'],
+      ['region', 'Region'],
       ['saves', 'Saves'],
     ] as const) {
       const button = el(

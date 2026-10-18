@@ -356,6 +356,231 @@
       [hidden] {
         display: none !important;
       }
+      /* The site picker and the region map (P1.5). */
+      .picker {
+        position: fixed;
+        inset: 0;
+        z-index: 4;
+        overflow-y: auto;
+        background: var(--ink);
+        color: var(--fg);
+        font-size: 13px;
+        padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+          max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+        box-sizing: border-box;
+      }
+      .picker .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 8px;
+      }
+      .picker .top b,
+      .vhead b {
+        font:
+          700 18px/1.2 Georgia,
+          serif;
+        display: block;
+      }
+      .picker .top small,
+      .picker .mut,
+      .picker .note,
+      .legend {
+        color: var(--muted);
+      }
+      #hud .picker button {
+        font-family: system-ui, sans-serif;
+        color: var(--on);
+        border-color: var(--on);
+        padding: 0 10px;
+        min-height: 32px;
+      }
+      #hud .picker button.settle {
+        background: var(--on);
+        color: var(--ink);
+        width: 100%;
+        min-height: 40px;
+        font-weight: 600;
+      }
+      #hud .picker button.ghost {
+        color: var(--muted);
+        border-color: var(--line);
+        width: 100%;
+      }
+      .picker .body {
+        display: grid;
+        gap: 10px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .picker .main,
+      .picker .side {
+        min-width: 0;
+      }
+      .rmap svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 6px;
+        background: #2a2a24;
+      }
+      .rmap .lab {
+        font:
+          600 8.5px system-ui,
+          sans-serif;
+        fill: #f3ecdc;
+        stroke: #1c1a17;
+        stroke-width: 2px;
+        paint-order: stroke;
+      }
+      .rmap .geo {
+        font:
+          italic 8.5px Georgia,
+          serif;
+        fill: #efe3c8;
+        stroke: #2a261f;
+        stroke-width: 2px;
+        paint-order: stroke;
+      }
+      .rmap .river {
+        fill: #cfe2f2;
+      }
+      .rmap .glyph {
+        stroke: #1c1a17;
+        stroke-width: 0.8;
+        paint-order: stroke;
+      }
+      .rmap .site,
+      .rmap .valley {
+        cursor: pointer;
+        outline: none;
+      }
+      .rmap .ring {
+        fill: #1c1a17;
+        stroke: var(--on);
+        stroke-width: 1.6;
+      }
+      .rmap .valley.on .ring {
+        fill: var(--on);
+      }
+      .rmap .num {
+        font:
+          700 10px system-ui,
+          sans-serif;
+        fill: var(--on);
+      }
+      .rmap .valley.on .num {
+        fill: #1c1a17;
+      }
+      .rmap .site:focus-visible circle,
+      .rmap .valley:focus-visible circle:first-child {
+        stroke: var(--on);
+        stroke-width: 1;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 12px;
+        font-size: 12px;
+        padding: 6px 0;
+      }
+      .legend i {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 2px;
+        margin-right: 4px;
+      }
+      .picker .cards {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 6px;
+      }
+      .vcard {
+        flex: 0 0 82%;
+        scroll-snap-align: start;
+        display: grid;
+        gap: 3px;
+        align-content: start;
+        background: #26231e;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 10px 10px;
+      }
+      .vcard.on {
+        border-color: var(--on);
+      }
+      .vcard ul {
+        margin: 4px 0;
+        padding-left: 16px;
+      }
+      .vthumb {
+        width: 100%;
+        max-height: 200px;
+        aspect-ratio: 1;
+        object-fit: contain;
+        image-rendering: pixelated;
+        background: #151412;
+        border-radius: 4px;
+      }
+      .vhead {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .badge {
+        display: inline-grid;
+        place-items: center;
+        flex: 0 0 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--on);
+        color: var(--ink);
+        font-weight: 700;
+        font-size: 12px;
+      }
+      .picker .foot {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .picker .foot input {
+        flex: 1;
+        min-width: 0;
+        background: transparent;
+        color: var(--fg);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 4px 8px;
+        font:
+          13px ui-monospace,
+          monospace;
+      }
+      @media (min-width: 900px) {
+        .picker .body {
+          grid-template-columns: 3fr 2fr;
+        }
+        .picker .cards {
+          flex-direction: column;
+          overflow: visible;
+        }
+        .vcard {
+          flex: none;
+          grid-template-columns: 120px 1fr;
+          column-gap: 10px;
+        }
+        .vcard > :not(.vthumb) {
+          grid-column: 2;
+        }
+        .vthumb {
+          grid-row: 1 / span 8;
+        }
+      }
     </style>
   </head>
   <body>

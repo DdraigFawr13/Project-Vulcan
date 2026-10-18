@@ -2,7 +2,7 @@
 // Speed and pause are worker settings, not game commands, so they never enter the command log.
 // Saving, exporting and the inspector's questions only read the world: answering them never
 // steps it, writes a ledger line or draws from an RNG stream.
-import type { EventData } from '../engine/index.ts';
+import type { EventData, RegionSite, RegionValley } from '../engine/index.ts';
 import type { SaveFile } from './save.ts';
 
 /** 0 is paused; 1, 2 and 3 run 10, 30 and 100 game minutes a second. */
@@ -10,7 +10,13 @@ export type Speed = 0 | 1 | 2 | 3;
 export const TICKS_PER_SECOND: Readonly<Record<Speed, number>> = { 0: 0, 1: 10, 2: 30, 3: 100 };
 
 export type ToWorker =
+  /** A plain seed rolls its region and offers its valleys (`picker`); a valley seed
+   * (`<seed>/<n>`) begins that valley at once. */
   | { type: 'init'; seed: string; contentHash: string }
+  /** Begins valley `site` (1 to 3) of the region on offer. */
+  | { type: 'settle'; site: number }
+  /** Asks for the running world's region map (the Region panel); a plain-seed world has none. */
+  | { type: 'region' }
   /** Starts from a save instead of a seed and ends in the same state; a save that fails its
    * check is refused (`loadRefused`) and the running world carries on untouched. */
   | { type: 'load'; save: unknown }
@@ -123,6 +129,42 @@ export interface TileView {
   changedBy?: LedgerLine;
 }
 
+/** The region map as the page draws it (engine `Region` less its cells). */
+export interface RegionView {
+  seed: string;
+  width: number;
+  height: number;
+  /** Only the ranges written on the map, at their label cell. */
+  ranges: { name: string; x: number; y: number }[];
+  rivers: { name: string; path: (readonly [number, number])[] }[];
+  sites: RegionSite[];
+  valleys: RegionValley[];
+  /** The fields `scale` times per cell: biome index into content biomes, height 0 to 255. */
+  raster: { scale: number; width: number; height: number; biome: Uint8Array; height8: Uint8Array };
+}
+
+/** A valley on offer in the picker: the map its seed makes, in brief, with a thumbnail. */
+export interface ValleyPreview {
+  id: number;
+  temperature: number;
+  rainfall: number;
+  /** The two commonest biomes with their shares, e.g. "grassland 44%". */
+  biomes: string[];
+  lakes: number;
+  springs: number;
+  /** The schools of its surface aura spots, by name. */
+  aura: string[];
+  /** Surface ground as terrain indices, biome indices, 1 where a tree stands, 1 under snow. */
+  thumb: {
+    width: number;
+    height: number;
+    tiles: Uint8Array;
+    biomes: Uint8Array;
+    trees: Uint8Array;
+    snow: Uint8Array;
+  };
+}
+
 export type FromWorker =
   | {
       type: 'ready';
@@ -160,4 +202,8 @@ export type FromWorker =
   | { type: 'inspected'; tile: TileView | undefined }
   /** The causes of line `id`, nearest first, each with its depth (1 is a direct cause). */
   | { type: 'causes'; id: number; lines: (LedgerLine & { depth: number })[] }
+  /** The region of a plain seed and its valleys on offer, before any world begins. */
+  | { type: 'picker'; seed: string; region: RegionView; valleys: ValleyPreview[] }
+  /** The running world's region and which valley it settled; none for a world from a plain seed. */
+  | { type: 'region'; region?: RegionView; site: number }
   | { type: 'error'; message: string };

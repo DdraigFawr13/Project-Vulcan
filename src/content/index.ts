@@ -21,6 +21,7 @@ import memories from './data/memories.json';
 import names from './data/names.json';
 import needs from './data/needs.json';
 import races from './data/races.json';
+import region from './data/region.json';
 import resources from './data/resources.json';
 import schools from './data/schools.json';
 import seasons from './data/seasons.json';
@@ -60,6 +61,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   names,
   needs,
   races,
+  region,
   resources,
   schools,
   seasons,
