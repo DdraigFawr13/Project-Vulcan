@@ -20,6 +20,7 @@ import {
   step,
   valleyOf,
   submitCommand,
+  TICKS_PER_DAY,
   tileTemperature,
   toNdjson,
   whyOf,
@@ -49,8 +50,9 @@ let world: WorldState | undefined;
 let pace = createPace(performance.now());
 /** Chunk versions the page has already been sent, per level; empty until the first snapshot. */
 let sent: number[][] = [];
-/** The id of the last ledger line posted: an id, not an index, since sealing trims the log's front. */
-let posted = 0;
+/** Ledger lines written since the last snapshot, collected as they are written: sealing trims
+ * the log's front, so a long run could otherwise seal lines before they were posted. */
+let unposted: SimEvent[] = [];
 let timer: ReturnType<typeof setInterval> | undefined;
 /** The valleys on offer in the picker, made from their seeds and not yet run. */
 let offered: WorldState[] = [];
@@ -59,7 +61,9 @@ const post = (message: FromWorker, transfer: Transferable[] = []): void =>
   postMessage(message, { transfer });
 
 function run(ticks: number): void {
-  if (world && ticks > 0) step(world, sim, ticks);
+  // A day at a time, well inside the week the log keeps, so every line written is collected.
+  for (let left = ticks; world && left > 0; left -= TICKS_PER_DAY)
+    for (const line of step(world, sim, Math.min(left, TICKS_PER_DAY))) unposted.push(line);
 }
 
 function clockView(tick: number): ClockView {
@@ -99,11 +103,9 @@ function lineOf(e: SimEvent | Stub): LedgerLine {
 }
 
 function snapshot(w: WorldState): void {
-  let from = w.log.length;
-  while (from > 0 && w.log[from - 1]!.id > posted) from -= 1;
-  if (from < w.log.length) {
-    post({ type: 'events', batch: w.log.slice(from).map(lineOf) });
-    posted = w.log.at(-1)!.id;
+  if (unposted.length) {
+    post({ type: 'events', batch: unposted.map(lineOf) });
+    unposted = [];
   }
   const chunks: ChunkView[] = [];
   const across = chunksAcross(w.map);
@@ -236,7 +238,7 @@ function waterOf(map: WorldState['map'], tile: number, code: number): Partial<Ti
 function adopt(w: WorldState, from: 'seed' | 'save'): void {
   world = w;
   sent = [];
-  posted = 0;
+  unposted = [...w.log];
   pace = createPace(performance.now());
   timer ??= setInterval(() => guarded(() => run(ticksDue(pace, performance.now()))), WAKE_MS);
   post({

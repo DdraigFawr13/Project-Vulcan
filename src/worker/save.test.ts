@@ -67,6 +67,7 @@ describe('saves', () => {
       (s: SaveFile) => s.state.map.chunkVersions.pop(),
       (s: SaveFile) => s.state.log.reverse(),
       (s: SaveFile) => s.state.stubs.push({ id: 1, tick: 0, type: 'world.begun' }),
+      (s: SaveFile) => (s.state.stubs[0]!.type = 7 as unknown as string),
       // Entity tables are checked against their declared fields, whatever the kind.
       (s: SaveFile) => (s.state.entities['keeper']![0]!['age'] = -1),
       (s: SaveFile) => (s.state.entities['keeper']![1]!['holder'] = 99),

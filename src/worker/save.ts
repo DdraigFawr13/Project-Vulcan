@@ -147,12 +147,23 @@ export function checkSave(
     weatherSound(world.systems['weather'], content.weather.length) &&
     // Stubs then recent lines, ids rising throughout (findEvent's binary search depends on it).
     world.stubs.every(
-      (e) => isObject(e) && isCount(e.id) && e.id > last && ((last = e.id), true),
+      (e) =>
+        isObject(e) &&
+        isCount(e.id) &&
+        isCount(e.tick) &&
+        typeof e.type === 'string' &&
+        e.id > last &&
+        ((last = e.id), true),
     ) &&
-    ((last = 0), true) &&
     world.log.every((e) => isObject(e) && isCount(e.id) && e.id > last && ((last = e.id), true)) &&
     world.nextEventId > last &&
-    world.segments.every((s) => isObject(s) && typeof s.key === 'string' && isCount(s.last)) &&
+    world.segments.every(
+      (s) =>
+        isObject(s) &&
+        typeof s.key === 'string' &&
+        [s.day, s.first, s.last].every(isCount) &&
+        s.first <= s.last,
+    ) &&
     world.sealed.every((s) => isObject(s) && typeof s.text === 'string');
   if (!sound) throw new Error('The save is damaged.');
   const tablesWrong = tablesProblem(world, tables);
