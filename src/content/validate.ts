@@ -188,6 +188,17 @@ function checkBand(files: Files): string[] {
   if (!Object.values(b.hairStyles).some((w) => w > 0)) errors.push('band.hairStyles: no weight');
   for (const race of files['races'] as { id: string }[])
     if (!b.hair[race.id]?.length) errors.push(`band.hair: no colours for "${race.id}"`);
+  // A person's given name comes from the culture's whole names or its syllables (src/engine/people).
+  for (const c of files['cultures'] as { id: string; names: Record<string, unknown> }[]) {
+    const n = c.names as {
+      givenStarts: string[];
+      givenEnds: string[];
+      givenNames?: Record<string, string[]>;
+    };
+    const whole = ['f', 'm'].every((sex) => n.givenNames?.[sex]?.length);
+    if (!whole && (n.givenStarts.length === 0 || n.givenEnds.length === 0))
+      errors.push(`cultures[${c.id}].names: no given names or syllables to make them`);
+  }
   const colours = [...Object.values(b.hair), ...Object.values(b.clothes), b.defaultClothes].flat();
   if (b.defaultClothes.length === 0) errors.push('band.defaultClothes: empty');
   for (const c of colours)

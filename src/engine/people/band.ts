@@ -33,7 +33,9 @@ const VOWELS = /[aeiouy]/i;
 
 /** Joins name parts so a doubled letter at the seam stays doubled, not tripled ("Gunn" + "nar"). */
 function join(start: string, end: string): string {
-  return end && start.at(-1)!.toLowerCase() === end[0] ? start + end.slice(1) : start + end;
+  return start && end && start.at(-1)!.toLowerCase() === end[0]!.toLowerCase()
+    ? start + end.slice(1)
+    : start + end;
 }
 
 /** Three consonants in a row read badly ("Strl"); a name with them is drawn again. */
@@ -56,7 +58,7 @@ function givenName(rng: RngStream, content: EngineContent, culture: string, sex:
     const end = rng.pick(names.givenEnds);
     name = join(start, end);
     // A lone consonant after a consonant ("Modk") reads as badly as three in a row.
-    const stray = end.length === 1 && !VOWELS.test(end) && !VOWELS.test(start.at(-1)!);
+    const stray = end.length === 1 && !VOWELS.test(end) && !VOWELS.test(start.at(-1) ?? 'a');
     if (!awkward(name) && !stray) break;
   }
   return name;
@@ -94,7 +96,7 @@ function drawPerson(rng: RngStream, content: EngineContent, homes: readonly Home
     1,
     Math.floor((race.lifespanYears * band.ageShare) / 100) - race.maturityYears,
   );
-  const lived = band.minAdult + rng.int(span);
+  const lived = band.minAdult + rng.int(Math.max(1, span - band.minAdult));
   const adult = Math.min(100, Math.floor((lived * 100) / span)); // percent of adult life lived
   const [lo, hi] = race.attributeRange as [number, number];
   const attributes: Record<string, number> = {};
