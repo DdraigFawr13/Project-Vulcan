@@ -128,7 +128,7 @@ export class Picker {
     const side = el('div', { class: 'side' });
     side.append(cards, foot);
     const main = el('div', { class: 'main' });
-    main.append(map, raceLegend(), this.note);
+    main.append(map, raceLegend(offer.region), this.note);
     const body = el('div', { class: 'body' });
     body.append(main, side);
     this.root.replaceChildren(head, body);

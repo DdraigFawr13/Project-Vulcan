@@ -1,5 +1,6 @@
 // The content the region around the valley reads (src/content/schemas-region.ts and the forked
-// cultures, races and names files), for the lighter world map (P1.5, src/engine/region).
+// cultures, races and names files), for the region map (P1.5, src/engine/region) over the Story
+// Generator's world (P1.6).
 
 type Range = readonly number[];
 
@@ -32,32 +33,34 @@ export interface NamesDef {
 /** Vulcan's region dials (region.json). */
 export interface RegionDef {
   grid: { width: number; height: number };
-  noise: {
-    height: number;
-    detail: number;
-    rain: number;
-    detailWeight: number;
-    floor: number;
-    stretch: number;
+  world: {
+    size: number;
+    years: number;
+    frame: Range;
+    land: number;
+    metres: number;
+    warp: number;
+    tries: number;
+    apart: number;
+    races: Readonly<Record<string, string>>;
   };
-  warmth: { north: Range; span: number; lapse: number; from: number };
-  rain: { base: number; span: number; west: number };
-  lake: number;
   mountain: number;
-  alpine: number;
-  rivers: { count: number; sources: number; minLength: number; apart: number; twist: number };
-  ranges: { min: number; label: number };
+  rivers: { count: number; minLength: number };
+  ranges: { label: number };
   valleys: {
     count: number;
     inset: number;
     spacing: number;
+    clear: number;
     walls: number;
     reach: number;
     low: Range;
     dry: number;
   };
-  sites: { count: Range; inset: number; spacing: number; near: number };
+  sites: { count: Range; inset: number; near: number };
+  history: { importance: number; length: number };
   daysPerCell: number;
   kinds: Readonly<Record<string, string>>;
   vales: readonly string[];
+  valesBy: Readonly<Record<string, readonly string[]>>;
 }

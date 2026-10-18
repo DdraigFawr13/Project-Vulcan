@@ -1,46 +1,55 @@
 // Vulcan's own region file (src/content/data/region.json): the lighter world map around the valley
-// (src/engine/region, P1.5). Shares are of the region's 0 to 1 height scale; days are walking days.
-import { map, num, obj, range, str } from './schema';
+// (src/engine/region, P1.5) over the Story Generator's world (P1.6). Shares are of the region's 0 to
+// 1 height scale; days are walking days.
+import { map, num, obj, range, ref, str } from './schema';
 import { count, share, texts } from './schema-fields';
 
 export const REGION_SCHEMAS = {
   region: obj({
     grid: obj({ width: count, height: count }),
-    // Value-noise cell sizes (grid cells) for height, its detail and rain; height is
-    // (mix - floor) * stretch, clamped to 0..1.
-    noise: obj({
-      height: count,
-      detail: count,
-      rain: count,
-      detailWeight: share,
-      floor: share,
-      stretch: num({ min: 0 }),
+    // The Story Generator world behind the region (P1.6, V-031): its size in cells, years of
+    // history, the frame of it the region shows (cells across and down), the least share of land
+    // in that window, the height in metres drawn as the top of the region's 0 to 1 scale, how far
+    // (cells) biome edges are warped so its coarse cells don't show, how many of the best windows are
+    // tried for three climates and how far apart (cells) they must be, and the package's old race
+    // ids with the Vulcan race each became.
+    world: obj({
+      size: count,
+      years: count,
+      frame: range(),
+      land: share,
+      metres: count,
+      warp: num({ min: 0 }),
+      tries: count,
+      apart: count,
+      races: map(ref('races')),
     }),
-    // Degrees C: the north edge's warmth (drawn), the rise to the south edge, and the fall with
-    // height above `from`.
-    warmth: obj({ north: range(), span: num(), lapse: num(), from: share }),
-    // Yearly rain (mm): base, plus up to `span` from noise, plus up to `west` towards the west edge.
-    rain: obj({ base: count, span: count, west: count }),
-    lake: share,
+    // The height share above which ground is mountain (valley walls, the map's peaks).
     mountain: share,
-    alpine: share,
-    rivers: obj({ count, sources: count, minLength: count, apart: count, twist: num({ min: 1 }) }),
-    // Joined mountain cells: at least `min` make a named range; `label` or more are drawn by name.
-    ranges: obj({ min: count, label: count }),
+    // At most `count` rivers are drawn, each with at least `minLength` world cells in the window.
+    rivers: obj({ count, minLength: count }),
+    // A named range is written on the map when it has `label` or more world cells in the window.
+    ranges: obj({ label: count }),
     valleys: obj({
       count,
       inset: count,
       spacing: count,
+      clear: count,
       walls: count,
       reach: count,
       low: range(),
       dry: count,
     }),
-    sites: obj({ count: range(), inset: count, spacing: count, near: count }),
+    sites: obj({ count: range(), inset: count, near: count }),
+    // A neighbour's history line is its most telling event of at least this importance (1 to 3),
+    // passing over lines longer than `length` characters while a shorter one is left.
+    history: obj({ importance: count, length: count }),
     daysPerCell: num({ min: 0 }),
     // What a race's settlement is called (village, hold, warren).
     kinds: map(str(), 'races'),
     // Valley name patterns; {n} is a name from the nearest site's culture.
     vales: texts,
+    // Patterns for a culture whose tongue has its own word for a valley (Cwm, Glen).
+    valesBy: map(texts, 'cultures'),
   }),
 };

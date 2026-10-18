@@ -6,5 +6,7 @@ export default defineConfig({
     include: ['src/**/*.test.ts', 'tools/tests/**/*.test.ts'],
     environment: 'node',
     slowTestThreshold: 2000,
+    // The Story Generator package ships TypeScript source (V-031), so Vite transforms it.
+    server: { deps: { inline: ['story-generator'] } },
   },
 });

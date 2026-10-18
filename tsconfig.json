@@ -17,7 +17,11 @@
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "noEmit": true,
-    "types": ["node", "vite/client"]
+    "types": ["node", "vite/client"],
+    "paths": {
+      "story-generator/src/engine/index.ts": ["./src/engine/region/story-generator.d.ts"],
+      "story-generator/src/content/index.ts": ["./src/engine/region/story-generator.d.ts"]
+    }
   },
   "include": ["src", "tests", "tools", "vite.config.ts", "vitest.config.ts", "playwright.config.ts"]
 }

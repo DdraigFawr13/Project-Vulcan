@@ -100,7 +100,7 @@ export class Hud {
       }
     });
     root.append(this.unreached, bar, this.readout, zoom, this.debug, this.screen);
-    this.showScreen('Waking the valley', 'Loading the content and laying out the map.');
+    this.showScreen('Waking the valley', 'Making the world and its 250 years of history.');
   }
 
   showClock(clock: ClockView, tick: number, speed: Speed, at: number, weather?: WeatherView): void {

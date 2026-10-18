@@ -5,7 +5,9 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { root } from './lib.mjs';
 import { decodePng, encodePng } from './png.mjs';
-import { isFrozen, step, TICKS_PER_DAY, WATER } from '../src/engine/index.ts';
+import { engine } from './engine.mjs';
+
+const { isFrozen, step, TICKS_PER_DAY, WATER } = engine;
 
 const LAKE = WATER.indexOf('lake');
 /** A tarn: a lake this many metres above the valley floor, where it is about 2 °C colder or more. */

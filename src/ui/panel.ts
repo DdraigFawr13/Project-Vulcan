@@ -122,7 +122,7 @@ export class Panel {
           : '',
       ),
       map,
-      raceLegend(),
+      raceLegend(region),
       note,
       near,
       el(

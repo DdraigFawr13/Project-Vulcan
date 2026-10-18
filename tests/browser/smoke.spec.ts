@@ -21,8 +21,10 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // The whole round makes the world three times (boot, reload, load) and takes about 17 s here; CI's
   // runner takes about 1.5 to 2 times as long, past Playwright's default 30 s per test once P1.2's
   // water joined each generation (P1.1's green run already used about 26 s). The steps keep their
-  // own waits; this is the round's overall budget.
-  test.setTimeout(90_000);
+  // own waits; this is the round's overall budget. Since P1.6 each fresh worker that needs the
+  // region (the picker, the reload) first makes the seed's Story Generator world: the round went
+  // from about 26 s to 42 s here, so up to about 85 s on CI's runner.
+  test.setTimeout(150_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
@@ -31,7 +33,8 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // The picker: the region's map and three valleys; tapping a number chooses, then settle there.
   await page.goto('/?seed=smoke');
   const picker = page.getByTestId('picker');
-  await expect(picker.locator('[data-card]')).toHaveCount(3);
+  // The picker waits on the seed's Story Generator world and its history (P1.6): about 5 s here.
+  await expect(picker.locator('[data-card]')).toHaveCount(3, { timeout: 20_000 });
   await page.getByTestId('valley-2').click();
   await picker.getByRole('button', { name: 'Settle here' }).click();
   await expect(picker).toBeHidden();

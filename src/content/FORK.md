@@ -33,7 +33,7 @@ Source: DdraigFawr13/Story-Generator at `7866aea6e529ea486cef39083c30726f72d2c5c
 | diseases.json | src/content/diseases.ts | 3 |
 <!-- fork:end -->
 
-Not forked: the Story Generator's history simulation (234 event templates, chronicle and play-by-play text, history pacing, settlement, site, politics, society, family, threat and steward tuning, notables, biographies, battles, annals, map layers). It drives a 250-year history engine Vulcan doesn't have; the Phase 9 worldgen and history port (V-017) can fork it then. Code comments in the source files don't carry into JSON; read them in the source file at the commit above.
+Not forked: the Story Generator's history simulation (234 event templates, chronicle and play-by-play text, history pacing, settlement, site, politics, society, family, threat and steward tuning, notables, biographies, battles, annals, map layers). Since P1.6 (V-031) Vulcan runs that engine as the `story-generator` package, pinned by commit in package.json, with its own tables for all of these; `src/engine/region/story.ts` lays Vulcan's races and cultures over the package's, so edits to those two files here reach the world's history too. Code comments in the source files don't carry into JSON; read them in the source file at the commit above.
 
 ## Changes since the fork
 
