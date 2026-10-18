@@ -6,13 +6,17 @@ import { startRenderer } from '../render/index.ts';
 import { spawnSimWorker, type FromWorker, type Speed, type ToWorker } from '../worker/index.ts';
 import { Hud } from './hud.ts';
 import { Panel } from './panel.ts';
+import { Picker } from './picker.ts';
 import { Saves } from './saves.ts';
 
 const parent = document.getElementById('game');
 const hudRoot = document.getElementById('hud');
 if (!parent || !hudRoot) throw new Error('index.html is missing #game or #hud');
 
-const seed = new URLSearchParams(location.search).get('seed') ?? 'ledger-1';
+const params = new URLSearchParams(location.search);
+const seed = params.get('seed') ?? 'ledger-1';
+// A seed alone opens the site picker; with `site` it begins that valley (P1.5).
+const site = params.get('site');
 const worker = spawnSimWorker();
 const send = (message: ToWorker): void => worker.postMessage(message);
 let speed: Speed = 0;
@@ -64,11 +68,22 @@ const panel = new Panel(hudRoot, {
       kind,
       data: { x: tile.x, y: tile.y, z: tile.z, ...(to !== undefined && { to }) },
     }),
-  newGame: (next) => {
-    location.search = `?seed=${encodeURIComponent(next)}`;
-  },
+  newGame: (next) => roll(next),
   close: () => closePanel(),
 });
+const picker = new Picker(hudRoot, {
+  settle: (chosen) => {
+    // A reload comes straight back to this valley; New game or a new seed opens the picker again.
+    history.replaceState(null, '', `?seed=${encodeURIComponent(seed)}&site=${chosen}`);
+    picker.hide();
+    hud.showScreen('Waking the valley', 'Settling the band in the valley.');
+    send({ type: 'settle', site: chosen });
+  },
+  roll: (next) => roll(next),
+});
+function roll(next: string): void {
+  location.search = `?seed=${encodeURIComponent(next)}`;
+}
 const saves = new Saves({
   seed,
   renderer,
@@ -88,9 +103,10 @@ function setLevel(z: number): void {
   hud.showLevel(z, depth, z === 0 || reached[z - 1] === true);
 }
 
-function openPanel(kind: 'ledger' | 'saves'): void {
+function openPanel(kind: 'ledger' | 'saves' | 'region'): void {
   renderer.mark(undefined);
   if (kind === 'ledger') panel.showLedger(saves.ledger);
+  else if (kind === 'region') send({ type: 'region' });
   else void saves.showList();
   hud.showPanel(kind);
 }
@@ -143,6 +159,16 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
         renderer.mark(message.tile);
         hud.showPanel(undefined);
       }
+    } else if (message.type === 'picker') {
+      hud.hideScreen();
+      picker.show(message);
+    } else if (message.type === 'region') {
+      if (message.region) panel.showRegion(message.region, message.site);
+      else
+        panel.showNote(
+          'Region',
+          'This world began from a plain seed, before regions, so it has no region map.',
+        );
     } else if (message.type === 'causes') {
       panel.showCauses(message.id, message.lines);
     } else if (message.type === 'error') {
@@ -223,5 +249,5 @@ import.meta.hot?.dispose(() => {
   renderer.destroy();
 });
 
-send({ type: 'init', seed, contentHash });
+send({ type: 'init', seed: site ? `${seed}/${site}` : seed, contentHash });
 frame = requestAnimationFrame(tick);

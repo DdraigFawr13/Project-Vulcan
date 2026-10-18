@@ -1,5 +1,6 @@
 // The surface map: laid out once when a world begins by the terrain generator, from the reserved
 // `worldgen` stream; afterwards only `setTile` changes a tile. The levels below wait in levels.ts.
+import { valleyOf } from '../region/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { layAura, placesOf } from './aura.ts';
 import { findStart, placeFeatures } from './features.ts';
@@ -27,7 +28,9 @@ export const mapSystem: System = {
   init(ctx) {
     const { width, height } = ctx.content.terrain.surface;
     const rng = ctx.rng();
-    const ground = layGround(rng, ctx.content, width, height);
+    // A valley seed (`<seed>/<n>`) takes the climate the region gave that valley.
+    const climate = valleyOf(ctx.world.seed, ctx.content)?.valley.climate;
+    const ground = layGround(rng, ctx.content, width, height, climate);
     const water = carveWater(rng, ctx.content, ground, width, height);
     const dials = ctx.content.terrain.generator.water;
     const kind = (id: string): number => ctx.content.terrain.kinds.findIndex((k) => k.id === id);

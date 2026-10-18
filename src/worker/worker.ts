@@ -13,7 +13,9 @@ import {
   findEvent,
   isFrozen,
   layerOf,
+  makeRegion,
   renderEvent,
+  siteOf,
   step,
   submitCommand,
   tileTemperature,
@@ -33,6 +35,7 @@ import type {
   TileView,
   ToWorker,
 } from './protocol.ts';
+import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave, saveOf } from './save.ts';
 
 /** How often the worker wakes (ms). Timing comes from the clock, not from this interval. */
@@ -46,6 +49,8 @@ let sent: number[][] = [];
 /** Index of the first ledger line not yet posted. */
 let posted = 0;
 let timer: ReturnType<typeof setInterval> | undefined;
+/** The valleys on offer in the picker, made from their seeds and not yet run. */
+let offered: WorldState[] = [];
 
 const post = (message: FromWorker, transfer: Transferable[] = []): void =>
   postMessage(message, { transfer });
@@ -217,6 +222,14 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
   });
 }
 
+/** Rolls the region of a plain seed and makes each valley's world, to offer them in the picker. */
+function offer(seed: string): void {
+  const region = regionView(makeRegion(seed, content, true));
+  offered = region.valleys.map((v) => createWorld(sim, `${seed}/${v.id}`));
+  const valleys = offered.map((w, i) => previewOf(w, i + 1, content));
+  post({ type: 'picker', seed, region, valleys }, pickerBuffers(region, valleys));
+}
+
 function handle(message: ToWorker): void {
   switch (message.type) {
     case 'init':
@@ -224,8 +237,26 @@ function handle(message: ToWorker): void {
         throw new Error(
           `The page's content (${message.contentHash}) differs from the worker's (${contentHash}).`,
         );
-      adopt(createWorld(sim, message.seed), 'seed');
+      if (siteOf(message.seed)) adopt(createWorld(sim, message.seed), 'seed');
+      else offer(message.seed);
       return;
+    case 'settle': {
+      const chosen = offered[message.site - 1];
+      if (!chosen) throw new Error(`No valley ${message.site} is on offer.`);
+      offered = [];
+      adopt(chosen, 'seed');
+      return;
+    }
+    case 'region': {
+      if (!world) return;
+      const at = siteOf(world.seed);
+      post({
+        type: 'region',
+        ...(at && { region: regionView(makeRegion(at.region, content, true)) }),
+        site: at?.site ?? 0,
+      });
+      return;
+    }
     case 'load': {
       // Checked before anything is replaced: a refused save leaves the running world as it was.
       let loaded: WorldState;

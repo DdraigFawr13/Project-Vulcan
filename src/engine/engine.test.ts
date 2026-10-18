@@ -30,6 +30,10 @@ const fixtureContent: EngineContent = {
   weather: content.weather,
   seasons: content.seasons,
   schools: content.schools,
+  region: content.region,
+  cultures: content.cultures,
+  races: content.races,
+  names: content.names,
   events: [
     ...content.events,
     { id: 'test.roll', template: 'The dice showed {value}.' },
