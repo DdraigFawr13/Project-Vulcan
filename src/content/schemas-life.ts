@@ -52,7 +52,8 @@ export const LIFE_SCHEMAS = {
   work: obj({
     stock: list(
       obj({
-        good: ref('items'),
+        // An item id (logs) or the `good` items.json groups items under (food).
+        good: str(),
         name: text,
         levels: list(obj({ id, word: text, count })),
         start: str(),
@@ -62,6 +63,21 @@ export const LIFE_SCHEMAS = {
     // `skilled` (longer below, shorter above), never within `camp` tiles of the start, trees
     // looked for within `reach` tiles of the store.
     fell: obj({ job: ref('jobs'), minutes: count, skilled: count, camp: count, reach: count }),
+    // Foraging (P2.9): the jobs.json job and the good it serves, minutes a bush takes at skill
+    // `skilled`, bushes looked for within `reach` tiles of the store; a bush picked is ripe again
+    // after `regrowDays` days, and bushes only grow back in the named `months`.
+    forage: obj({
+      job: ref('jobs'),
+      good: str(),
+      minutes: count,
+      skilled: count,
+      reach: count,
+      regrowDays: count,
+      months: list(text),
+    }),
+    // What a person is doing, in words (P2.9): `{good}` and `{level}` are the stock lever the
+    // work answers, `{what}` the load carried.
+    doing: map(text),
     // Carrying to the store: most a person carries at once, and which kinds are carried in.
     haul: obj({ load: num({ min: 1 }), kinds: list(ref('items')) }),
     // The store the band sets up by the cart: its first size and the most tiles it grows to.

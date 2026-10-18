@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { removeEntity } from '../entity/index.ts';
 import { itemsOf } from '../goods/index.ts';
-import { createSim, createWorld, step } from '../index.ts';
+import { createSim, createWorld, step, submitCommand } from '../index.ts';
 import { moodOf, needOf } from './index.ts';
 
 const sim = createSim(content);
@@ -47,6 +47,12 @@ describe('needs', () => {
     const world = createWorld(sim, 'ledger');
     for (const i of itemsOf(world).filter((x) => x['kind'] === 'preserved'))
       removeEntity(world, 'item', i.id);
+    // The colony wants no food, so no one forages and the hunger is the cart's running out.
+    submitCommand(world, {
+      tick: world.tick + 1,
+      kind: 'setStock',
+      data: { good: 'food', level: 'none' },
+    });
     const p = world.entities['person']![0]!;
     step(world, sim, 24 * 60);
     const hungry = world.log.find((e) => e.type === 'need.low' && e.actors?.includes(p.id))!;

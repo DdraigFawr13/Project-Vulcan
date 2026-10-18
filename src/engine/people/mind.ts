@@ -9,6 +9,7 @@ import { changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { dayOf } from './day.ts';
 import { working } from './jobs.ts';
+import { tallyAdd } from './tally.ts';
 import { walkTo, wander } from './walk.ts';
 
 export const MIND_FIELDS = {
@@ -54,6 +55,7 @@ function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
   if (!def || !row) return;
   const gives = ctx.content.life.eat[item['kind'] as string] ?? 0;
   eatFrom(ctx, item, p);
+  tallyAdd(ctx, 'eaten', 1);
   changeNeed(ctx.content, row, gives);
   crossed(ctx, p, row, def);
 }

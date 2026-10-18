@@ -7,9 +7,11 @@ import { valleyOf } from '../region/index.ts';
 import type { System } from '../sim/index.ts';
 import { drawBand, type Home } from './band.ts';
 import { setDay } from './day.ts';
+import { FORAGE_TABLES } from './forage.ts';
 import { JOB_FIELDS } from './jobs.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
 import { PRIORITY_TABLES, setPriority } from './priority.ts';
+import { rollTally, TALLY_START } from './tally.ts';
 import { stepAlong, WALK_FIELDS } from './walk.ts';
 
 const ATTRIBUTES = [
@@ -54,6 +56,7 @@ export const PEOPLE_TABLES: Schemas = {
   skill: { person: 'entity', skill: 'text', level: 'count', potential: 'count', xp: 'count' },
   trait: { person: 'entity', trait: 'text' },
   ...PRIORITY_TABLES,
+  ...FORAGE_TABLES,
 };
 
 /** Where the band came from: the valley's neighbours, or the home culture for a plain seed. */
@@ -101,6 +104,7 @@ export const peopleSystem: System = {
     'work.tookUp',
     'work.tookUpMarked',
     'work.felled',
+    'work.picked',
     'work.prioritySet',
     'work.declined',
     'work.daySet',
@@ -109,6 +113,8 @@ export const peopleSystem: System = {
   tables: PEOPLE_TABLES,
   // The colony's day (day.ts) is kept here once the player changes it, with its line.
   refs: ['dayLine'],
+  // Yesterday's tally (tally.ts) lives in the state too.
+  initialState: TALLY_START,
   commands: {
     setPriority: (ctx, command, cause) => setPriority(ctx, command.data, cause),
     setDay: (ctx, command, cause) => setDay(ctx, command.data, cause),
@@ -147,6 +153,7 @@ export const peopleSystem: System = {
     });
   },
   run(ctx) {
+    rollTally(ctx);
     const hour = hourNow(ctx);
     for (const p of ctx.world.entities['person'] ?? []) {
       if (p['status'] !== 'alive') continue;

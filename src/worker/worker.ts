@@ -21,6 +21,7 @@ import {
   SYSTEMS,
   toNdjson,
   whyOf,
+  yesterdayOf,
   type SimEvent,
   type Stub,
   type WorldState,
@@ -121,6 +122,7 @@ function lineOf(e: SimEvent | Stub): LedgerLine {
 }
 
 function snapshot(w: WorldState): void {
+  const yesterday = yesterdayOf(w, content);
   if (unposted.length) {
     post({ type: 'events', batch: unposted.map(lineOf) });
     unposted = [];
@@ -156,6 +158,7 @@ function snapshot(w: WorldState): void {
       walkers: walkersOf(w),
       goods: goodsOf(w),
       stock: stockView(w),
+      ...(yesterday && { yesterday }),
     },
     chunks.flatMap((c) => [c.tiles.buffer, c.features.buffer, c.snow.buffer, c.ice.buffer]),
   );

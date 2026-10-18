@@ -39,8 +39,9 @@ export {
   PEOPLE_TABLES,
   progressOf,
   tradeOf,
+  yesterdayOf,
 } from './people/index.ts';
-export type { Day, Home, Person } from './people/index.ts';
+export type { Day, Tally, Home, Person } from './people/index.ts';
 export { makeRegion, regionSystem, siteOf, valleyOf } from './region/index.ts';
 export type { Region, RegionNeighbour, RegionSite, RegionValley } from './region/index.ts';
 export { isFrozen, tileTemperature, weatherSystem, weatherWords } from './weather/index.ts';

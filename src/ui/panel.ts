@@ -10,7 +10,7 @@ import { testMode } from './testmode.ts';
 import { testTools, type TestOrder } from './testtools.ts';
 
 export type PanelKind =
-  'tile' | 'person' | 'ledger' | 'saves' | 'region' | 'stock' | 'work' | 'alerts';
+  'tile' | 'person' | 'ledger' | 'saves' | 'region' | 'stock' | 'work' | 'alerts' | 'dawn';
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;
@@ -60,6 +60,11 @@ export class Panel {
   /** Which view is open, if any. */
   get kind(): PanelKind | undefined {
     return this.shown;
+  }
+
+  /** Closes the sheet as its ✕ does. */
+  close(): void {
+    this.actions.close();
   }
 
   hide(): void {

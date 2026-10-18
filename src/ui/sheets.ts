@@ -1,7 +1,9 @@
 // The P2.5 to P2.7 screens wired together: the portrait strip and alert line under the bar, the
-// person sheet, the Work sheet and the Alerts sheet. Levers go out as commands for the next tick;
+// person sheet, the Work sheet, the Alerts sheet and the dawn page (P2.9). Levers go out as commands for the next tick;
 // Show on an alert moves the camera to the place, never a person (V-015).
-import type { LedgerLine, PersonView, ToWorker, WalkerView } from '../worker/index.ts';
+import type { FromWorker, LedgerLine, PersonView, ToWorker, WalkerView } from '../worker/index.ts';
+import { content } from '../content/index.ts';
+import { Dawn } from './dawn.ts';
 import { el } from './dom.ts';
 import type { Panel } from './panel.ts';
 import { PersonSheet } from './personsheet.ts';
@@ -32,6 +34,7 @@ export class Sheets {
   private readonly play: Play;
   private readonly work: WorkSheet;
   private readonly person: PersonSheet;
+  private readonly dawn: Dawn;
 
   private readonly deps: SheetDeps;
 
@@ -48,6 +51,7 @@ export class Sheets {
       work: (p, w) => this.work.personRows(p, w),
       lines: deps.lines,
     });
+    this.dawn = new Dawn(deps.panel, deps.lines);
     this.play = new Play(deps.bar, {
       person: (p) => this.showPerson(p),
       alerts: () => this.showAlerts(),
@@ -58,6 +62,7 @@ export class Sheets {
   setPeople(people: readonly PersonView[]): void {
     this.people = people;
     this.loaded = true;
+    this.dawn.reset();
     this.play.setPeople(people);
   }
 
@@ -70,6 +75,13 @@ export class Sheets {
   showWork(): void {
     this.workKey = '';
     this.refresh(true);
+  }
+
+  /** ⋯ → Work, or ⋯ → Yesterday: the dawn page at any time. */
+  open(kind: 'work' | 'dawn'): void {
+    if (kind === 'work') return this.showWork();
+    this.dawn.show();
+    this.play.select(undefined);
   }
 
   showAlerts(): void {
@@ -104,9 +116,12 @@ export class Sheets {
     this.play.select(undefined);
   }
 
-  snapshot(walkers: readonly WalkerView[], day: Day): void {
+  snapshot(message: Extract<FromWorker, { type: 'snapshot' }>): void {
+    const { walkers, day } = message;
     this.walkers = walkers;
     this.day = day;
+    const food = message.stock.find((s) => s.good === content.work.forage.good)?.have;
+    this.dawn.snapshot(message.yesterday, food, message.speed === 1 && !message.skipping);
     this.play.setWalkers(walkers);
     // Settled here, not only by the Work sheet: a person's Work tab shows the same pending levers.
     this.work.settle(walkers, day);

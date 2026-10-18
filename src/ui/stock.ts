@@ -1,6 +1,7 @@
 // The Stock sheet (P2.4): the colony's standing order for how much of each good to keep. The
 // player picks a level; who fells and hauls is the colonists' own choice (V-015). Shows what the
 // worker hands it; it computes no game rule (GAME-02).
+import { content } from '../content/index.ts';
 import type { StockView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
@@ -27,6 +28,16 @@ export function stockRows(
     const head = el('p');
     head.append(el('b', {}, cap(s.name)), `: ${haveLine(s)}`);
     block.append(head, levels);
+    // Foraging's good says when the bushes bear (P2.9, V-040), from content.
+    const { good, months } = content.work.forage;
+    if (s.good === good && months.length)
+      block.append(
+        el(
+          'p',
+          { class: 'aside' },
+          `Berries grow back from ${months[0]} to ${months.at(-1)}, and not in the cold months.`,
+        ),
+      );
     return block;
   });
   return [
