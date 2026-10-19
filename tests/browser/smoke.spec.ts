@@ -254,8 +254,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // slipped off it) and names the line that ate the last of the food.
   await page.locator('.pslot').first().click();
   await panel.getByRole('button', { name: 'Needs' }).click();
-  // Only the need rows' "why?": the "Doing now" line (P2.9) has its own, which matched first.
-  const hungry = panel.locator('.need').getByRole('button', { name: 'why?' });
+  // Only the Food row's "why?": the "Doing now" line (P2.9) has its own, and mood or rest can
+  // run low first, citing the band's arrival.
+  const hungry = panel
+    .locator('.need')
+    .filter({ hasText: 'Food' })
+    .getByRole('button', { name: 'why?' });
   for (let skips = 0; skips < 12 && (await hungry.count()) === 0; skips++) {
     const from = await tick(page);
     await page.getByTestId('speed-skip').click();
