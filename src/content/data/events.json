@@ -67,7 +67,7 @@
 {"id":"map.watered","importance":1,"template":"Its waters gathered: a river leaving by the {exit}, {lakes} lakes and {springs} springs."},
 {"id":"map.levelReached","importance":2,"template":"Level {level} below ground was reached for the first time: {contents}.","notable":{}},
 {"id":"map.stairsCut","importance":2,"template":"Stairs were cut from {from} down to {to} at {x}, {y}."},
-{"id":"mine.shaftPlanned","importance":2,"template":"The colony plans a shaft for {metal}, down to level {level}: {why}","notable":{}},
+{"id":"mine.shaftPlanned","importance":2,"template":"The miners planned a shaft by the {stain} stain.","notable":{}},
 {"id":"mine.shaftSentBack","importance":2,"template":"The shaft plan for {metal} was sent back: the colony looks for another stain."},
 {"id":"mine.noStain","importance":3,"template":"No {metal} stain lies within reach; {metal} cannot be mined.","notable":{}},
 {"id":"mine.noVein","importance":3,"template":"The shaft for {metal} finds no way to a vein; the colony looks for another stain.","notable":{}},

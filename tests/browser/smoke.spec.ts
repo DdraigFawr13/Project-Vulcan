@@ -256,14 +256,24 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('open-work').click();
   await expect(panel).toContainText("The colony's day");
+  // Bundle 2 (V-071): trades sit under headings; the first begins open and the rest folded. A
+  // folded heading's stepper sets every row under it, one priority each, and unfolding shows them.
+  const land = panel.locator('.prio.head[data-heading="Land"]');
+  await expect(panel.locator('.prio[data-job="farm"]')).toBeHidden();
+  await land.getByRole('button', { name: /^Land, every row, for .+: raise$/ }).click();
+  await land.locator('.fold').click();
+  for (const job of ['farm', 'forage'])
+    await expect(panel.locator(`.prio[data-job="${job}"] .val`)).toContainText('2');
+  await panel.locator('.prio.head[data-heading="Wood"] .fold').click();
   // P3.4: Carpentry comes from content like the other rows, with its skill line and 44 px steppers.
-  const carpentry = panel.locator('.prio').filter({ hasText: 'Carpentry' });
+  const carpentry = panel.locator('.prio[data-job="carpentry"]');
   await expect(carpentry).toContainText(/crafting \d+, can reach \d+/);
   for (const b of await carpentry.getByRole('button').all()) {
     const box = (await b.boundingBox())!;
     expect([box.width, box.height].every((n) => n >= 44)).toBe(true);
   }
   // P4.7: Farming and Cooking come from content with the same steppers.
+  await panel.locator('.prio.head[data-heading="Food"] .fold').click();
   for (const [job, name] of [
     ['farm', 'Farming'],
     ['cook', 'Cooking'],
@@ -322,7 +332,9 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   for (let skips = 0; skips < 30 && !foodGone.test(await alertText(page)); skips++)
     await skipOnce();
   expect(await alertText(page)).toMatch(foodGone);
-  for (let skips = 0; skips < 6 && (await hungry.count()) === 0; skips++) await skipOnce();
+  // Seed grain is eaten under the warning line first (Bundle 1), and Bundle 3's notable lines
+  // (a stone tool breaking) stop the skip too: 7 skips on this seed after the merge.
+  for (let skips = 0; skips < 10 && (await hungry.count()) === 0; skips++) await skipOnce();
   await hungry.first().click({ timeout: 5000 });
   await expect(panel.getByTestId('chain')).toContainText("ate the last of the band's food");
   // P2.9: the sheet says what they are doing; ⋯ → Yesterday opens the dawn page with the
@@ -356,6 +368,44 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   expect(await phoneRules(page)).toEqual([]);
   await page.getByTestId('open-ledger').click();
   await expect(panel).toContainText(/ now puts Houses second\./);
+
+  // Bundle 2 mining: wanting some iron ingots (the Stock sheet shows the three ingot plates and
+  // their asides) gets the miners to plan a shaft by a stain, an alert whose Show leads to the
+  // plan's tile page: its rows, Send back (once) and the aside. Last, so the wanted iron does not alter the world the hunger wait above runs in.
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByTestId('open-stock').click();
+  for (const plate of ['Iron ingots', 'Copper ingots', 'Tin ingots'])
+    await expect(panel).toContainText(plate);
+  await expect(panel.getByTestId('stock-iron-ingot')).toContainText(/ iron ore in the store\./);
+  await expect(panel.getByTestId('stock-stone')).toContainText('comes up as stone.');
+  await expect(panel).not.toContainText('join this sheet when quarrying');
+  await panel.getByTestId('stock-iron-ingot').getByRole('button', { name: 'Some (10)' }).click();
+  await page.getByTestId('speed-3').click();
+  // The miners look every hour; later alerts (hunger) may sit above the plan, so find its line.
+  await page.waitForTimeout(3000);
+  await page.getByTestId('speed-0').click();
+  await page.getByTestId('alert').click();
+  await panel
+    .locator('[data-line]')
+    .filter({ hasText: 'planned a shaft by the' })
+    .first()
+    .getByTestId('alert-show')
+    .click();
+  // Show centres the tile in the part of the screen below the bar.
+  const canvas2 = page.getByTestId('game').locator('canvas');
+  const mid = (await canvas2.boundingBox())!;
+  const bar = await page
+    .locator('#hud')
+    .evaluate((e) => parseFloat(e.style.getPropertyValue('--bar-h')));
+  await canvas2.click({ position: { x: mid.width / 2, y: mid.height / 2 + bar / 2 } });
+  await expect(panel).toContainText('Shaft, planned');
+  await expect(panel).toContainText('a shaft with a ladder, down to level');
+  await expect(panel).toContainText('2 logs for the ladder');
+  await expect(panel).toContainText('A plan can be sent back once');
+  await panel.getByTestId('send-back-shaft').click();
+  await expect(panel.getByTestId('send-back-shaft')).toBeHidden();
+  await page.getByTestId('open-ledger').click();
+  await expect(panel).toContainText('The shaft plan for iron was sent back');
   await page.getByTestId('speed-3').click();
   await page.setViewportSize({ width: 1280, height: 720 });
 

@@ -41,11 +41,14 @@ function planShaft(
   });
   const planned = ctx.emit('mine.shaftPlanned', {
     causes: [...causes, ...(line ? [line] : [])],
-    data: { metal, level: name.vein?.level ?? 0, tiles: site.far, dir: site.dir, why },
+    data: {
+      ...{ metal, level: name.vein?.level ?? 0, tiles: site.far, dir: site.dir, why },
+      ...{ stain: word, x: site.x, y: site.y },
+    },
   });
   addEntity(world, 'shaft', {
     ...{ x: site.x, y: site.y, metal, to: name.vein?.level ?? 0, state: 'planned' },
-    ...{ depth: 0, sentBack, line: planned },
+    ...{ depth: 0, sentBack, line: planned, why },
   });
   return true;
 }

@@ -105,7 +105,7 @@ const panel = new Panel(
     load: (meta) => void saves.load(meta),
     remove: (meta) => void saves.remove(meta),
     test: (tile, kind, arg) => orders.give(tile, kind, worldTick + 1, arg),
-    sendBack: (tile, house) => orders.give(tile, 'sendBack', worldTick + 1, house),
+    sendBack: (tile, id, kind) => orders.give(tile, kind, worldTick + 1, id),
     setStock: (good, level) =>
       send({ type: 'command', tick: worldTick + 1, kind: 'setStock', data: { good, level } }),
     go: (tile, z) => {
@@ -165,7 +165,7 @@ function setLevel(z: number): void {
   level = z;
   closePanel();
   renderer.setLevel(z);
-  hud.showLevel(z, depth, z === 0 || reached[z - 1] === true);
+  hud.showLevel(z, depth, reached);
 }
 
 function openPanel(kind: PanelButton): void {
@@ -195,7 +195,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       reached = [];
       level = 0;
       orders.clear();
-      hud.showLevel(0, depth, true);
+      hud.showLevel(0, depth, []);
       place = message.place;
       people = message.people;
       green = message.green;
@@ -227,7 +227,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       stock = message.stock;
       panel.setStock(stock);
       renderer.setAura(message.aura);
-      hud.showLevel(level, depth, level === 0 || reached[level - 1] === true);
+      hud.showLevel(level, depth, reached);
       hud.fps = Math.round(renderer.fps());
       if (debug) hud.showTiming(message.timing);
       hud.showClock(

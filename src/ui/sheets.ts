@@ -145,6 +145,7 @@ export class Sheets {
     this.play.setWalkers(walkers);
     // Settled here, not only by the Work sheet: a person's Work tab shows the same pending levers.
     this.work.settle(walkers, day);
+    this.work.setShaft(message.mining);
     this.person.setWalkers(walkers);
     this.refresh();
     if (message.build) this.buildView = message.build;

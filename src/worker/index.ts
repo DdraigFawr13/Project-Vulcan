@@ -8,6 +8,7 @@ export type {
   PieceView,
   PlanView,
   RoomView,
+  ShaftView,
 } from './protocol-build.ts';
 export type {
   AuraView,

@@ -77,7 +77,8 @@ describe('metal', () => {
     const smelted = lines(w, 'metal.smelted').map((e) => e.data['what']);
     expect(smelted).toEqual(expect.arrayContaining(['copper ingots', 'tin ingots']));
     const mixed = lines(w, 'metal.mixed');
-    expect(mixed).toHaveLength(1);
+    // At least one mix; miners may dig more ore for the rest of the plate meanwhile.
+    expect(mixed.length).toBeGreaterThan(0);
     // The bronze remembers its ore, its smelting and its mixing.
     const bronze = itemsOf(w).find((i) => i['kind'] === 'bronze-ingot')!;
     const steps = trailOf(bronze);

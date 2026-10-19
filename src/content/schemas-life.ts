@@ -195,6 +195,9 @@ export const LIFE_SCHEMAS = {
       jobs: list(ref('jobs')),
       start: num({ min: 1, max: 4 }),
       words: list(text, 4),
+      // Trades folded under a heading on the Work sheet (V-071): a heading's stepper sets every
+      // row under it. Jobs under no heading (haul, build, tend) are plain rows on top.
+      headings: list(obj({ name: text, jobs: list(ref('jobs')) })),
     }),
     // Cooking (V-090): the jobs.json `job`, the `meal` item laid, the `fuel` item burnt (one a
     // batch), raw foods in order of preference (`from`), enough of one for `batch` meals at `gain` times

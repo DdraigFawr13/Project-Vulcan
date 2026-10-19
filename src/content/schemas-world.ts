@@ -296,10 +296,6 @@ export const WORLD_SCHEMAS = {
           apart: count,
         }),
       }),
-      // The four levels below (src/engine/map/underground.ts), each made when first reached:
-      // each range's rock runs down beneath it within `roots` tiles (more per level down), the
-      // rest is bedrock bodies; level 1 is earth under the valley floor; caves are tunnels and
-      // caverns, as shares of each level by depth (index 0 is level 1). Veins are in features.
       // Aura spots (src/engine/map/aura.ts): a faint background up to `base`, and strong spots
       // fading by `falloff` a ring out to `radius`; each site kind (code) gives its school here.
       aura: obj({
@@ -325,6 +321,7 @@ export const WORLD_SCHEMAS = {
           }),
         ),
       }),
+      // The levels below (src/engine/map/underground.ts), made when first reached; veins: features.
       underground: obj({
         depth: num({ min: 1, max: 8 }),
         roots: obj({ reach: count, perLevel: count, warp: count, fine: count }),
@@ -359,6 +356,9 @@ export const WORLD_SCHEMAS = {
         }),
         // The most tiles one opening shows at once (V-030 fog).
         reveal: num({ min: 1 }),
+        // Unknown ground draws as this art; a vein glints through it at `fogVein` brightness.
+        fogArt: str(),
+        fogVein: share,
         stairsDown: ref('terrain'),
         stairsUp: ref('terrain'),
         stairs: ref('terrain'),
