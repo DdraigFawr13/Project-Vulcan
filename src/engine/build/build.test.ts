@@ -3,7 +3,7 @@
 // level 1; and every lever is either an indirect lever or a test-mode tool (V-041).
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
-import { freeTile, haveOf } from '../goods/index.ts';
+import { freeTile, itemsOf } from '../goods/index.ts';
 import {
   createSim,
   createWorld,
@@ -75,13 +75,18 @@ describe('building', () => {
       true,
     );
 
-    const stone = haveOf(world, content, 'stone');
+    // The stone comes back where the wall stood, citing the take-down line (the colony's stock
+    // also moves in the meantime, e.g. a hearth being built, so the stock is not compared).
     submitCommand(world, { tick: world.tick + 1, kind: 'deconstruct', data: wall[0]! });
-    step(world, sim, DAY);
+    for (let m = 0; m < DAY && !world.log.some((e) => e.type === 'build.takenDown'); m += 1)
+      step(world, sim, 1);
+    const down = world.log.find((e) => e.type === 'build.takenDown')!;
     expect(planAt(world, wall[0]!.x, wall[0]!.y)).toBeUndefined();
     expect(world.map.built[wall[0]!.y * world.map.width + wall[0]!.x]).toBe(0);
-    expect(world.log.some((e) => e.type === 'build.takenDown')).toBe(true);
-    expect(haveOf(world, content, 'stone')).toBeGreaterThanOrEqual(stone + 5);
+    const back = itemsOf(world)
+      .filter((i) => i['kind'] === 'stone' && i['made'] === down.id)
+      .reduce((n, i) => n + (i['count'] as number), 0);
+    expect(back).toBeGreaterThanOrEqual(5);
   });
 
   it('refuses a plan on water, on a tree or twice on one tile', () => {

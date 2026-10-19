@@ -9,6 +9,7 @@ import {
   isTree,
   itemsAt,
   itemsOf,
+  loadOf,
   marksOf,
   partOf,
   planAt,
@@ -123,7 +124,7 @@ function planOf(
   const built = row['done'] ? line(row['done']) : undefined;
   const waits = row['state'] === 'plan' && row['shut'] ? row['shut'] : row['waited'];
   const waiting = waits ? line(waits) : undefined;
-  const carrying = builder && itemsOf(world).find((i) => i['holder'] === builder.id);
+  const carrying = builder && loadOf(world, builder.id);
   const state = row['state'] as string;
   const doing =
     state === 'down'

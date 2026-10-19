@@ -3,7 +3,7 @@
 import type { PeopleDefs } from './people.ts';
 import type { AuraDials, AuraSpot, SeasonsDef, WeatherDef } from './climate.ts';
 import type { FeatureDef, WalkingDef } from './ground.ts';
-import type { BuildingsDef, ItemDef, JobDef, LifeDef, WorkDef } from './life.ts';
+import type { BuildingsDef, ItemDef, JobDef, LifeDef, MemoryDef, WorkDef } from './life.ts';
 import type { RngState } from './rng.ts';
 import type { CultureDef, NamesDef, RegionDef } from './region.ts';
 
@@ -388,6 +388,8 @@ export interface EngineContent extends PeopleDefs {
   names: NamesDef;
   /** P2.2: needs, the daily round and the cart (life.json), and the forked items. */
   life: LifeDef;
+  /** P4 (V-091): the memories a person can hold (memories.json). */
+  memories: readonly MemoryDef[];
   items: readonly ItemDef[];
   /** P2.4: the colony's work (work.json) and the forked jobs. */
   work: WorkDef;

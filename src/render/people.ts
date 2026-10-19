@@ -7,6 +7,11 @@ import type { PersonView, WalkerView } from '../worker/index.ts';
 import { PEOPLE } from './sheets.ts';
 
 const TILE = 32;
+// People are drawn a quarter larger than a tile (V-095): centred across it, feet on its lower
+// edge, so a head may overlap the tile above.
+const SIZE = 1.25;
+const LIFT_X = -(TILE * (SIZE - 1)) / 2;
+const LIFT_Y = -TILE * (SIZE - 1);
 /** Gliding: at least this many screen pixels a second (a tile a game minute at 1x), and never
  * more than about a tenth of a second behind, so at 3x nobody trails their tile. */
 const GLIDE = 320;
@@ -96,7 +101,12 @@ export class PeopleSprites {
         : undefined;
       // Over the features and the aura glow, under the selection marks.
       const box = this.scene.add
-        .container(p.x * TILE, p.y * TILE, hair ? [body, clothes, hair] : [body, clothes])
+        .container(
+          p.x * TILE + LIFT_X,
+          p.y * TILE + LIFT_Y,
+          hair ? [body, clothes, hair] : [body, clothes],
+        )
+        .setScale(SIZE)
         .setDepth(8);
       this.shown.set(p.id, { view: p, box, body, clothes, hair, facing: 's', walked: 0 });
     }
@@ -105,8 +115,8 @@ export class PeopleSprites {
   /** Each frame: slide everyone towards their tile, face the way they go, step their frames. */
   private glide(delta: number): void {
     for (const s of this.shown.values()) {
-      const tx = s.view.x * TILE;
-      const ty = s.view.y * TILE;
+      const tx = s.view.x * TILE + LIFT_X;
+      const ty = s.view.y * TILE + LIFT_Y;
       const dx = tx - s.box.x;
       const dy = ty - s.box.y;
       const far = Math.hypot(dx, dy);

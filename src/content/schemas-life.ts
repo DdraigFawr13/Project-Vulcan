@@ -1,7 +1,7 @@
 // Shape of Vulcan's own life and work files (src/content/data/life.json, P2.2): needs, sleep, warmth,
 // leisure, what each food gives, mood words, and the cart the band arrives with. Need values run
 // from 0 to `scale`; rates are per game hour.
-import { list, map, num, obj, oneOf, opt, ref, str } from './schema';
+import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, id, text } from './schema-fields';
 
 // A house size or stage: a footprint of walls round a floor, and how many it sleeps.
@@ -30,6 +30,8 @@ export const LIFE_SCHEMAS = {
         lowWord: text,
         okWord: text,
         weight: num({ min: 1 }),
+        // A cold-style need whose warning line is notable only once a person a day (V-092).
+        quiet: opt(bool()),
       }),
     ),
     // Each need's value when the band arrives, in the order of `needs`.
@@ -59,6 +61,9 @@ export const LIFE_SCHEMAS = {
     relax: obj({ from: count, gain: count, company: count, reach: count }),
     // Food each item gives when one is eaten.
     eat: map(count, 'items'),
+    // Foods eaten only when a person is under the food warning line and no other can be reached
+    // (P4.7: seed grain).
+    lastResort: list(ref('items')),
     // Mood words, highest first: the first whose `at` the mood reaches.
     mood: list(obj({ word: text, at: count })),
     // The band's handcart and what it carries; each person also brings a `bedroll`.
@@ -66,7 +71,14 @@ export const LIFE_SCHEMAS = {
       kind: ref('items'),
       goods: list(obj({ kind: ref('items'), count: num({ min: 1 }) })),
       bedroll: ref('items'),
+      // Each person also arrives wearing one of these (V-092).
+      cloak: ref('items'),
     }),
+    // Memories (V-091): each live memory's mood, in points, counts `weight` times in the mood.
+    memory: obj({ weight: count }),
+    // The wool cloak (V-092): outdoors it adds `warmth` degrees to the felt temperature; each hour
+    // outdoors below comfort it wears `wear`, from `last`; at 0 it is gone.
+    cloak: obj({ warmth: num(), wear: num({ min: 1 }), last: num({ min: 1 }) }),
     // Most of one kind a tile's stack holds (`default` for the rest).
     stacks: map(count),
   }),
@@ -107,6 +119,9 @@ export const LIFE_SCHEMAS = {
       regrowDays: count,
       months: list(text),
     }),
+    // Farming (P4.7): the jobs.json job, minutes to sow or reap one tile at skill `skilled`
+    // (longer below, shorter above).
+    farm: obj({ job: ref('jobs'), sow: count, reap: count, skilled: count }),
     // Fire (P3.6, V-042 to V-048): a fire gives `heat` degrees at its own tile and `fall` fewer
     // for each tile away, over its closed room or, in the open, out to `radius` tiles. Each fuel
     // is an item: one piece burns `minutes` lit; banked, a fire gives `banked.heat` and burns
@@ -157,6 +172,23 @@ export const LIFE_SCHEMAS = {
       start: num({ min: 1, max: 4 }),
       words: list(text, 4),
     }),
+    // Cooking (V-090): the jobs.json `job`, the `meal` item laid, the `fuel` item burnt (one a
+    // batch), raw foods in order of preference (`from`), enough of one for `batch` meals at `gain` times
+    // its food value (rawFor in people/cook.ts) used for them in
+    // `minutes` at skill `skilled`; meals under `perPerson` for each person make a cook take it up,
+    // and a meal at most `prefer` tiles further than the nearest food is preferred to eat.
+    cook: obj({
+      job: ref('jobs'),
+      meal: ref('items'),
+      fuel: ref('items'),
+      from: list(ref('items')),
+      gain: num({ min: 1 }),
+      batch: num({ min: 1 }),
+      minutes: num({ min: 1 }),
+      skilled: num({ min: 1 }),
+      perPerson: num({ min: 1 }),
+      prefer: count,
+    }),
     // Skills by use (P2.5): minutes of practice from one level to the next, `start` plus
     // `perLevel` times the level now.
     learn: obj({ start: num({ min: 1 }), perLevel: count }),
@@ -197,6 +229,39 @@ export const LIFE_SCHEMAS = {
       sizes: list(size),
       stage: size,
       private: num({ min: 1, max: 8 }),
+    }),
+    // P4.7 (V-049, V-051, V-089): the town ring is the ground houses are sited in, `ring` tiles
+    // (Chebyshev) from the green at first; when no house fits, it widens by `step`, up to `most`.
+    // Fields lie outside it. A field is sized to `perMouth` tiles for each living person, its
+    // seed tile chosen from open ground outside the ring and within `reach` of the green with
+    // fertility at least `good` and water within `water` tiles, then grown over connected
+    // tiles of fertility `good` or better, at least `least` of them. A crop is sown in its `sow`
+    // months (calendar month names), is ripe `days` days later, yields `yield` of `item` per tile
+    // and is lost to a frost under `frost` degrees C before it is ripe. `seed` is the item sown
+    // (one a tile); a seed tile scores fertility x `weigh.fertility` less tiles to water x
+    // `weigh.water` less tiles to the green, and the best `weigh.tries` are grown.
+    town: obj({ ring: num({ min: 1 }), step: num({ min: 1 }), most: num({ min: 1 }) }),
+    field: obj({
+      name: text,
+      seed: ref('items'),
+      weigh: obj({ fertility: count, water: count, tries: num({ min: 1 }) }),
+      start: num({ min: 1, max: 4 }),
+      perMouth: num({ min: 1 }),
+      reach: num({ min: 1 }),
+      water: count,
+      good: count,
+      least: num({ min: 1 }),
+      crops: list(
+        obj({
+          id,
+          name: text,
+          item: ref('items'),
+          sow: list(text),
+          days: num({ min: 1 }),
+          yield: num({ min: 1 }),
+          frost: num(),
+        }),
+      ),
     }),
     // P3.3: rooms are worked out when asked. Impressiveness is the room's tiles over `perSize`
     // plus its beauty, out of `top`; beauty is the floors' average (`bare` where none is

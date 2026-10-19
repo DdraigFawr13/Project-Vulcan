@@ -1,6 +1,6 @@
 // Shared footing for the work in jobs.ts and forage.ts: where someone stands, who is on what,
 // walking to stand beside a tile, and laying a yield out on the open ground around it.
-import type { EntityRow, WorldState } from '../core/index.ts';
+import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { planAt } from '../build/index.ts';
 import { itemsAt, layItem, stackSize } from '../goods/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
@@ -86,4 +86,21 @@ export function layAround(
         left -= n;
       }
   return count - left;
+}
+
+/** Whether someone who can reach what `reach` says can stand on a side of tile `i`. */
+export function besideReachable(
+  world: WorldState,
+  content: EngineContent,
+  reach: (to: { x: number; y: number; z: number }) => boolean,
+  i: number,
+): boolean {
+  const map = world.map;
+  const [x, y] = [i % map.width, Math.floor(i / map.width)];
+  return SIDES.some(([dx, dy]) => {
+    const [sx, sy] = [x + dx, y + dy];
+    if (sx < 0 || sy < 0 || sx >= map.width || sy >= map.height) return false;
+    if (!walkAt(content, map, 0, sy * map.width + sx)) return false;
+    return reach({ x: sx, y: sy, z: 0 });
+  });
 }

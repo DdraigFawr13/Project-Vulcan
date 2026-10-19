@@ -10,6 +10,7 @@ import { inRect, isTreeAt, wayFrom, wayTo, type Rect, type Site, type Way } from
 export { inRect, type Rect, type Site } from './way.ts';
 import { furnitureOf } from './furniture.ts';
 import { partOf, plansOf } from './plans.ts';
+import { ringOf } from './ring.ts';
 
 /** Whether (x, y) is on the rectangle's edge, where its walls and door stand. */
 export const onEdge = (r: Rect, x: number, y: number): boolean =>
@@ -46,6 +47,10 @@ export function groundOf(world: WorldState): Ground {
       .filter((s) => s['z'] === 0)
       .map(at),
     ...plansOf(world).map(at),
+    // Fields planned or standing (P4.7), whose tiles the field table lists.
+    ...(world.entities['field'] ?? [])
+      .filter((f) => f['state'] !== 'sent')
+      .flatMap((f) => f['tiles'] as number[]),
     // A piece standing outside every house, the campfire (P3.6); those in a room are its own.
     ...furnitureOf(world)
       .filter(
@@ -166,7 +171,7 @@ export function siteFor(
   way: Way = wayFrom(world, content, green),
   ground: Ground = groundOf(world),
 ): Site | undefined {
-  const near = content.buildings.house.near;
+  const near = Math.max(content.buildings.house.near, ringOf(world, content));
   const width = world.map.width;
   const found: { site: Site; score: number }[] = [];
   for (let y = green.y - near - size.h + 1; y <= green.y + near; y += 1)
@@ -273,18 +278,20 @@ export function wallFor(
   return wall ? { wall, fits: true } : { wall: walls.at(-1)!, fits: false };
 }
 
-/** The house to build for `sleepers` people, and where. Walls are of the first material (content
- * order) to be had for some size: stone when there is stone for at least a lean-to, else wood.
- * In it, the largest size the colony has or could get the material for that sleeps no more
- * than them (start small and grow: a house adds rooms as its sleepers outgrow it, grow.ts),
- * else the smallest it can; with material for none, the smallest with ground for it (its
- * plans wait for material). Undefined when no ground near the green fits any size. */
+/** The house to build for `sleepers` people, and where. The size is the largest the colony has
+ * or could get the material for in some wall material that sleeps no more than them (start
+ * small and grow: a house adds rooms as its sleepers outgrow it, grow.ts), else the smallest
+ * that can be finished. The walls are of the MOST PLENTIFUL material (stock plus what lies
+ * within `reach`) among those that can finish a house of that size; ties keep content order
+ * (Morgan, 2026-10-19, amending V-096). With material for none, the smallest with ground for it
+ * and the last wall in content order (its plans wait for material). `why` says which. Undefined
+ * when no ground near the green fits any size. */
 export function chooseHouse(
   world: WorldState,
   content: EngineContent,
   green: Spot,
   sleepers: number,
-): { size: SizeDef; site: Site; wall: PartDef } | undefined {
+): { size: SizeDef; site: Site; wall: PartDef; why: string } | undefined {
   const way = wayFrom(world, content, green);
   const ground = groundOf(world);
   const sited = content.buildings.house.sizes.flatMap((size) => {
@@ -293,12 +300,30 @@ export function chooseHouse(
   });
   if (!sited.length) return undefined;
   const walls = content.buildings.house.walls.map((id) => partOf(content, id)!);
-  for (const wall of walls) {
-    const fit = sited.filter((o) =>
-      affords(world, content, partsOf(content, o.site, o.site.door, wall), true),
-    );
-    const pick = fit.findLast((o) => o.size.sleeps <= sleepers) ?? fit[0];
-    if (pick) return { ...pick, wall };
+  const word = (w: PartDef) => w.name.replace(/ wall$/, '');
+  const fits = (o: (typeof sited)[number], w: PartDef) =>
+    affords(world, content, partsOf(content, o.site, o.site.door, w), true);
+  const able = sited.filter((o) => walls.some((w) => fits(o, w)));
+  const pick = able.findLast((o) => o.size.sleeps <= sleepers) ?? able[0];
+  if (!pick) {
+    const wall = walls.at(-1)!;
+    return {
+      ...sited[0]!,
+      wall,
+      why: `${word(wall)} walls, with too little material yet for all of it`,
+    };
   }
-  return { ...sited[0]!, wall: walls.at(-1)! };
+  let wall = walls[0]!;
+  let most = -1;
+  for (const w of walls) {
+    if (!fits(pick, w)) continue;
+    const have = withinReach(world, content, w.material, true);
+    if (have > most) [wall, most] = [w, have];
+  }
+  const good = content.work.stock.find((s) => s.good === wall.material)?.name ?? wall.material;
+  return {
+    ...pick,
+    wall,
+    why: `${word(wall)} walls, as ${good} is most plentiful and enough to finish it`,
+  };
 }
