@@ -4,7 +4,7 @@
 // the four sides it joins a neighbour on (`.<mask>`: north 1, east 2, south 4, west 8); the rest
 // of the tile shows what lies under it, and the renderer lays a half floor (`.half.<side>`) on
 // the side of a wall that meets a floor (a quarter, `.q.<corner>`, in an inner corner), so a wall
-// works over every floor and ground. Doors come
+// works over every floor and ground. Doors are a narrow leaf drawn over the wall they stand in,
 // in a run east-west (`.h`) or north-south (`.v`); stairs are the plan's ghost only (a cut stair
 // is a tile kind). Seeded and deterministic.
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -183,8 +183,12 @@ function quarter(full, corner) {
   return img;
 }
 
-// A door in a run east-west (`h`) or north-south (`v`): jambs of the material at both ends, and
-// between them a wooden leaf, or an open stone threshold.
+// A door in a run east-west (`h`) or north-south (`v`): a narrow leaf about a third of a tile
+// wide in the middle of the band, between dark jambs; the rest of the tile is clear, and the
+// renderer lays the wall it stands in under it, so the door reads as one block in the wall
+// (Morgan's pick, 2026-10-19). Wood is an oak leaf with a latch; stone an open sill of flags.
+const LEAF0 = 10;
+const LEAF1 = 21;
 function door(p, material, run) {
   const h = run === 'h';
   const rects = bandRects(h ? 10 : 5);
@@ -193,30 +197,39 @@ function door(p, material, run) {
       for (let x = 0; x < S; x++) {
         if (!inBand(rects, x, y)) continue;
         const along = h ? x : y;
-        const jamb = along < 6 || along > S - 7;
-        if (jamb) put(x, y, material === 'stone' ? stoneAt(p, x, y) : p.trunk);
-        else if (material === 'stone')
-          put(x, y, (h ? y : x) % 5 === 0 ? p['floor dark'] : p['floor light']);
-        else {
-          const board = (along - 6) % 5 === 4;
-          put(
-            x,
-            y,
-            board
-              ? p['dirt dark']
-              : noise(31, along, 0) < 0.5
-                ? p['leaf litter light']
-                : p['straw dark'],
-          );
+        const across = (h ? y : x) - B0;
+        if (along < LEAF0 || along > LEAF1) continue;
+        if (along === LEAF0 || along === LEAF1) {
+          put(x, y, p['ui oak dark']);
+          continue;
         }
+        if (material === 'stone') {
+          put(x, y, noise(32, along, across) < 0.5 ? p.floor : p['floor light']);
+          continue;
+        }
+        put(x, y, noise(33, along, across) > 0.88 ? p['ui oak'] : p['ui oak light']);
       }
     if (material === 'wood') {
-      // An iron latch on the leaf.
-      const [lx, ly] = h ? [20, 16] : [16, 20];
+      // The latch, beside the middle of the leaf.
+      const [lx, ly] = h ? [LEAF1 - 2, B0 + 5] : [B0 + 5, LEAF1 - 2];
       put(lx, ly, p['ui iron light']);
-      put(h ? lx + 1 : lx, h ? ly : ly + 1, p['ui iron']);
     }
   });
+  // Lit along the top, shaded along the bottom, like a wall.
+  for (let y = 0; y < S; y++)
+    for (let x = 0; x < S; x++) {
+      if (!has(img, x, y)) continue;
+      if (!has(img, x, y - 1) && y > 0)
+        img.data.set(
+          [...p[material === 'stone' ? 'limestone light' : 'dirt light'], 255],
+          (y * S + x) * 4,
+        );
+      else if (!has(img, x, y + 1) && y < S - 1)
+        img.data.set(
+          [...p[material === 'stone' ? 'rock dark' : 'ui oak dark'], 255],
+          (y * S + x) * 4,
+        );
+    }
   return outline(img, p.ink);
 }
 
