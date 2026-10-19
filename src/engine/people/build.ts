@@ -15,11 +15,11 @@ import {
 } from '../build/index.ts';
 import { inStore, itemsAt, itemsOf, layItem, storeOf, takeFrom } from '../goods/index.ts';
 import { withBuilt } from '../map/index.ts';
-import { canReach, reachFrom } from '../paths/index.ts';
+import { canReach, reachFrom, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
 import { able, outranked, priorityLine } from './priority.ts';
-import { busy, goBeside, layAround, people, same, skillOf, spotOf } from './spots.ts';
+import { busy, layAround, people, same, skillOf, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
 
 const skillName = (content: EngineContent): string =>
@@ -55,8 +55,17 @@ function materialFor(ctx: SystemContext, p: EntityRow, plan: EntityRow): EntityR
   return best;
 }
 
+/** Whether a tree or log still stands on the plan's tile, to be felled first (a house's site,
+ * P3.7). */
+function standing(ctx: SystemContext, plan: EntityRow): boolean {
+  const map = ctx.world.map;
+  const f = map.features[(plan['y'] as number) * map.width + (plan['x'] as number)]!;
+  const kind = f ? ctx.content.features[f - 1]!.kind : '';
+  return kind === 'tree' || kind === 'log';
+}
+
 /** The plan `p` would take up: the nearest free one (ties by plan) that has its material, or
- * whose material they can reach, and that they can get beside. */
+ * whose material they can reach, with no tree left on it, and that they can get beside. */
 function choosePlan(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const { world, content } = ctx;
   const others = taken(ctx, p);
@@ -67,7 +76,8 @@ function choosePlan(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
         r['state'] !== 'built' &&
         !others.has(r.id) &&
         r['z'] === from.z &&
-        world.tick >= (r['held'] as number),
+        world.tick >= (r['held'] as number) &&
+        !standing(ctx, r),
     )
     .map((r) => {
       const d = Math.max(
@@ -84,20 +94,43 @@ function choosePlan(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   return undefined;
 }
 
-/** Whether `p` can stand on a side of the plan's tile. */
-function besideReachable(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
+/** The eight tiles round a plan's tile: a builder works from any of them, so the corner of a
+ * house is built from inside, across the corner, when its outside is shut in by trees. */
+const AROUND = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+  [1, 1],
+  [1, -1],
+  [-1, 1],
+  [-1, -1],
+] as const;
+
+/** The tiles round a plan `p` could stand on and reach, nearest them first. */
+function standsFor(ctx: SystemContext, p: EntityRow, x: number, y: number) {
   const map = ctx.world.map;
-  const [x, y] = [plan['x'] as number, plan['y'] as number];
-  return [
-    [1, 0],
-    [-1, 0],
-    [0, 1],
-    [0, -1],
-  ].some(([dx, dy]) => {
-    const s = { x: x + dx!, y: y + dy!, z: 0 };
-    if (s.x < 0 || s.y < 0 || s.x >= map.width || s.y >= map.height) return false;
-    return canReach(ctx.content, map, spotOf(p), s);
-  });
+  const here = spotOf(p);
+  return AROUND.map(([dx, dy]) => ({ x: x + dx, y: y + dy, z: 0 }))
+    .filter((s) => s.x >= 0 && s.y >= 0 && s.x < map.width && s.y < map.height)
+    .filter((s) => walkAt(ctx.content, map, 0, s.y * map.width + s.x) > 0)
+    .sort(
+      (a, b) =>
+        Math.max(Math.abs(a.x - here.x), Math.abs(a.y - here.y)) -
+        Math.max(Math.abs(b.x - here.x), Math.abs(b.y - here.y)),
+    )
+    .filter((s) => same(s, here) || canReach(ctx.content, map, here, s));
+}
+
+/** Whether `p` can stand next to the plan's tile. */
+function besideReachable(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
+  return standsFor(ctx, p, plan['x'] as number, plan['y'] as number).length > 0;
+}
+
+/** Sets off to stand next to the plan's tile; false when nowhere next to it can be reached. */
+function goBeside(ctx: SystemContext, p: EntityRow, x: number, y: number): boolean {
+  for (const s of standsFor(ctx, p, x, y)) if (same(s, spotOf(p)) || walkTo(ctx, p, s)) return true;
+  return false;
 }
 
 /** Plans that need material none of which can be reached, and none of which is on its way, say
@@ -182,7 +215,7 @@ export function building(ctx: SystemContext, p: EntityRow): boolean {
   const part = planPart(content, plan);
   const [x, y] = [plan['x'] as number, plan['y'] as number];
   const here = spotOf(p);
-  const beside = here.z === 0 && Math.abs(here.x - x) + Math.abs(here.y - y) === 1;
+  const beside = here.z === 0 && Math.max(Math.abs(here.x - x), Math.abs(here.y - y)) === 1;
   const need = stillNeeded(content, plan);
   const load = itemsOf(world).find((i) => i['holder'] === p.id);
   if (load && (need <= 0 || load['kind'] !== part.material)) return stop(p);

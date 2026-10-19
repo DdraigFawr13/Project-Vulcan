@@ -8,15 +8,18 @@ import { eatFrom, itemsAt, itemsOf } from '../goods/index.ts';
 import { changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { dayOf } from './day.ts';
+import { carryBed, movesIn } from './home.ts';
 import { working } from './jobs.ts';
 import { tallyAdd } from './tally.ts';
 import { walkTo, wander } from './walk.ts';
 
 export const MIND_FIELDS = {
-  /** `eat`, `sleep`, `work` (jobs.ts), `relax` or '' (idle). */
+  /** `eat`, `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `relax` or '' (idle). */
   doing: 'text',
   /** The tick before which they do not look for food again after finding none they can reach. */
   retry: 'int',
+  /** While moving in: the surface tile (index + 1) they carry their bedroll to, else 0. */
+  bedTo: 'int',
 } as const;
 
 const RETRY = 60;
@@ -60,8 +63,10 @@ function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
   crossed(ctx, p, row, def);
 }
 
-/** Lies down: on their own laid-out bedroll when there is a way to it, else where they stand. */
+/** Lies down: on their own laid-out bedroll when there is a way to it, else where they stand;
+ * first carrying it into a house that has room (home.ts). */
 function goToBed(ctx: SystemContext, p: EntityRow): void {
+  if (movesIn(ctx, p)) return;
   p['doing'] = 'sleep';
   const bed = itemsOf(ctx.world).find((i) => i['owner'] === p.id && i['state'] === 'laid');
   const there = bed && bed['x'] === p['x'] && bed['y'] === p['y'] && bed['z'] === p['z'];
@@ -75,6 +80,10 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   const { world, content } = ctx;
   const life = content.life;
   const walking = (p['path'] as number[]).length > 0;
+  if (p['doing'] === 'moveBed') {
+    if (!walking) carryBed(ctx, p);
+    return;
+  }
   if (p['doing'] === 'eat') {
     if (walking) return;
     const item = foodHere(ctx, p);

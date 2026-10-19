@@ -1,5 +1,20 @@
 // Public surface of the build system.
-export { buildSystem } from './system.ts';
+export { buildSystem, greenOf } from './system.ts';
+export {
+  bedsOf,
+  bedSpot,
+  homeless,
+  homeOf,
+  houseAt,
+  houseName,
+  HOUSE_TABLES,
+  mainOf,
+  rowsOf,
+  sizeOf,
+  wantOf as buildWantOf,
+} from './houses.ts';
+export { roomAt, type Room } from './rooms.ts';
+export { housesOf, rectOf, type Rect } from './site.ts';
 export {
   BUILD_TABLES,
   finishPlan,

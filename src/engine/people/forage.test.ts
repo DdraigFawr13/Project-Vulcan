@@ -95,9 +95,11 @@ describe('foraging', () => {
       step(world, sim, 3 * DAY);
       const y = yesterdayOf(world, content)!;
       expect([y.day, y.month]).toEqual([3, 'Thawmonth']);
+      // The tally counts logs: stone broken up for the house is not felled.
       const onDay = (type: string) =>
         allLines(world)
           .filter((e) => e.type === type && e.tick >= 2 * DAY && e.tick < 3 * DAY)
+          .filter((e) => e.data['verb'] !== 'broke up')
           .reduce((n, e) => n + (e.data['count'] as number), 0);
       expect(y.felled).toBe(onDay('work.felled'));
       expect(y.picked).toBe(onDay('work.picked'));

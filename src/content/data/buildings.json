@@ -11,5 +11,16 @@
 {"id":"door-stone","name":"stone doorway","kind":"door","material":"stone","cost":5,"minutes":60,"art":"build.door-stone"},
 {"id":"stair-stone","name":"stone stair down","kind":"stair","material":"stone","cost":10,"minutes":120,"art":"build.stair-stone"},
 {"id":"stair-wood","name":"wooden stair down","kind":"stair","material":"logs","cost":6,"minutes":90,"art":"build.stair-wood"}
-]
+],
+"house":{"name":"Houses","start":1,"near":14,"reach":40,"walls":["wall-stone","wall-wood"],"door":"door-wood","floor":"floor-wood",
+"sizes":[
+{"id":"lean-to","name":"lean-to","w":4,"h":4,"sleeps":2},
+{"id":"cottage","name":"cottage","w":6,"h":4,"sleeps":4},
+{"id":"longhouse","name":"longhouse","w":8,"h":6,"sleeps":8}
+],
+"stage":{"id":"room","name":"room","w":5,"h":4,"sleeps":2}},
+"rooms":{"most":120,"roof":"thatch","perSize":3,"top":100,"crowd":{"tiles":2,"beauty":-2},"bare":-1,
+"floors":{"floor-wood":0,"floor-stone":1},
+"roles":[{"id":"barracks","name":"barracks","beds":3},{"id":"bedroom","name":"bedroom","beds":1}],
+"looks":[{"at":1,"word":"pleasant"},{"at":0,"word":"plain"},{"at":-99,"word":"dreary"}]}
 }

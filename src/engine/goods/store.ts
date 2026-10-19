@@ -59,9 +59,9 @@ export function setUpStore(ctx: SystemContext, cause: number): void {
       }
 }
 
-/** Grows the store by one free tile beside it, nearest its first tile; the tile, if any. */
-export function growStore(ctx: SystemContext, cause: number): Spot | undefined {
-  const { world, content } = ctx;
+/** The free open tile beside the store, nearest its first tile, that it would grow onto next;
+ * undefined when it cannot grow. */
+export function growSpot(world: WorldState, content: EngineContent): Spot | undefined {
   const tiles = storeOf(world);
   if (!tiles.length || tiles.length >= content.work.store.most) return undefined;
   const [ox, oy] = [tiles[0]!['x'] as number, tiles[0]!['y'] as number];
@@ -78,10 +78,20 @@ export function growStore(ctx: SystemContext, cause: number): Spot | undefined {
       const d = Math.max(Math.abs(x - ox), Math.abs(y - oy)) * 1000 + y * 150 + x;
       if (d < far && freeTile(world, content, x, y)) [best, far] = [[x, y], d];
     }
+  return best && { x: best[0], y: best[1], z: 0 };
+}
+
+/** Grows the store by that tile; the tile, if any. */
+export function growStore(ctx: SystemContext, cause: number): Spot | undefined {
+  const { world, content } = ctx;
+  const best = growSpot(world, content);
   if (!best) return undefined;
-  const made = ctx.emit('goods.storeGrew', { causes: [cause], data: { tiles: tiles.length + 1 } });
-  addEntity(world, 'store', { x: best[0], y: best[1], z: 0, made });
-  return { x: best[0], y: best[1], z: 0 };
+  const made = ctx.emit('goods.storeGrew', {
+    causes: [cause],
+    data: { tiles: storeOf(world).length + 1 },
+  });
+  addEntity(world, 'store', { ...best, made });
+  return best;
 }
 
 /** Where `count` of `kind` can go in the store: a matching stack with room, else an empty tile,

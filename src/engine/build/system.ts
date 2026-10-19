@@ -1,12 +1,16 @@
-// The build system (P3.1, P3.2): owns the plans. Until the Build sheet (P3.7) lets colonists
-// site buildings themselves, a plan is placed only with the test-mode `placeBuilding` tool, and
-// `deconstruct` (also test mode) asks for a part to come down (V-041, V-049). Builders take the
-// work up themselves (people/build.ts). Each hour it checks that someone is able to build while
-// plans wait, and says so once when nobody is.
-import type { EngineContent, EntityRow } from '../core/index.ts';
+// The build system (P3.1, P3.2, P3.7, P3.8): owns the plans, houses and the green. Colonists site
+// houses themselves from the Build sheet's `setBuild` level (houses.ts), and a plan can be sent
+// back once (`sendBack`); placing a part on a chosen tile (`placeBuilding`) and `deconstruct`
+// stay test-mode tools (V-041, V-049). Builders take the work up themselves (people/build.ts).
+// Each hour it finishes houses whose parts stand, sites a house while people sleep in the open,
+// grows a house that has outgrown its beds, and says once when nobody is able to build.
+import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity, removeEntity } from '../entity/index.ts';
-import { inStore, itemsAt, raiseStock } from '../goods/index.ts';
+import { inStore, itemsAt, itemsOf, raiseStock } from '../goods/index.ts';
+import type { Spot } from '../paths/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
+import { finishHouses, growHouses } from './grow.ts';
+import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
 
 function refuse(ctx: SystemContext, kind: string, reason: string, cause: number): void {
@@ -42,7 +46,7 @@ function placeBuilding(ctx: SystemContext, data: Readonly<Record<string, unknown
   const line = ctx.emit('build.planned', { causes: [cause], data: { part: part.name, x, y } });
   addEntity(world, 'plan', {
     ...{ part: part.id, x, y, z: 0, have: 0, work: -1, state: 'plan' },
-    ...{ line, done: 0, waited: 0, shut: 0, held: 0 },
+    ...{ line, done: 0, waited: 0, shut: 0, held: 0, house: 0 },
   });
   raiseStock(ctx, part.material, part.name, line);
 }
@@ -76,34 +80,86 @@ function ableToBuild(content: EngineContent, p: EntityRow): boolean {
   );
 }
 
+/** The green (V-050): the tile where the cart first stopped, fixed when the world begins. */
+export function greenOf(world: WorldState): Spot {
+  const at = (world.systems['build']?.['green'] ?? 0) - 1;
+  const map = world.map;
+  return at < 0
+    ? { x: map.startX, y: map.startY, z: 0 }
+    : { x: at % map.width, y: Math.floor(at / map.width), z: 0 };
+}
+
+/** The colony sites again at once after a plan is sent back: a house for the homeless, or the
+ * room a house needs. */
+function chooseAgain(ctx: SystemContext, h: EntityRow, line: number): void {
+  const green = greenOf(ctx.world);
+  if (h['of']) growHouses(ctx, green, 1, h['of'] as number);
+  else planHouse(ctx, green, [line], 1);
+}
+
 export const buildSystem: System = {
   id: 'build',
   every: 'hour',
-  emits: ['build.planned', 'build.dropped', 'build.downOrdered', 'build.nobody'],
-  // The line saying nobody is able to build, while that holds; 0 otherwise.
-  initialState: { nobody: 0 },
-  refs: ['nobody'],
-  tables: BUILD_TABLES,
+  emits: [
+    'build.planned',
+    'build.dropped',
+    'build.downOrdered',
+    'build.nobody',
+    'build.wantSet',
+    'build.needed',
+    'build.noGround',
+    'build.sited',
+    'build.sentBack',
+    'build.houseBuilt',
+    'build.roomAdded',
+    'build.grows',
+  ],
+  // `nobody`: the line saying nobody is able to build, while that holds; `green`: the green's
+  // tile index plus one; `need`: the line saying people sleep in the open, while they do;
+  // `noGround`: the alert that no ground near the green fits a house, while none does, and
+  // `tried` the tick it last looked.
+  initialState: { nobody: 0, green: 0, need: 0, noGround: 0, tried: 0 },
+  refs: ['nobody', 'need', 'noGround'],
+  tables: { ...BUILD_TABLES, ...HOUSE_TABLES },
   commands: {
     placeBuilding: (ctx, command, cause) => placeBuilding(ctx, command.data, cause),
     deconstruct: (ctx, command, cause) => deconstruct(ctx, command.data, cause),
+    setBuild: (ctx, command, cause) => setBuild(ctx, command.data, cause),
+    sendBack: (ctx, command, cause) =>
+      sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
+  },
+  init(ctx) {
+    const { world, content, state } = ctx;
+    const cart = itemsOf(world).find((i) => i['kind'] === content.life.cart.kind);
+    const map = world.map;
+    if (cart) state['green'] = (cart['y'] as number) * map.width + (cart['x'] as number) + 1;
   },
   run(ctx) {
-    const { world, content, state } = ctx;
-    const waiting = plansOf(world).find((p) => p['state'] !== 'built');
-    const someone = (world.entities['person'] ?? []).some((p) => ableToBuild(content, p));
-    if (!waiting || someone) {
-      state['nobody'] = 0;
-      return;
-    }
-    if (state['nobody']) return;
-    state['nobody'] = ctx.emit('build.nobody', {
-      causes: [waiting['line'] as number],
-      data: {
-        part: planPart(content, waiting).name,
-        x: waiting['x'] as number,
-        y: waiting['y'] as number,
-      },
-    });
+    const { world } = ctx;
+    const green = greenOf(world);
+    finishHouses(ctx);
+    // A house adds a room for the homeless before another house is sited ("cottage, then grow").
+    if (!growHouses(ctx, green)) planHouse(ctx, green, []);
+    checkBuilders(ctx);
   },
 };
+
+/** While a plan waits and nobody living is able to build, one alert. */
+function checkBuilders(ctx: SystemContext): void {
+  const { world, content, state } = ctx;
+  const waiting = plansOf(world).find((p) => p['state'] !== 'built');
+  const someone = (world.entities['person'] ?? []).some((p) => ableToBuild(content, p));
+  if (!waiting || someone) {
+    state['nobody'] = 0;
+    return;
+  }
+  if (state['nobody']) return;
+  state['nobody'] = ctx.emit('build.nobody', {
+    causes: [waiting['line'] as number],
+    data: {
+      part: planPart(content, waiting).name,
+      x: waiting['x'] as number,
+      y: waiting['y'] as number,
+    },
+  });
+}
