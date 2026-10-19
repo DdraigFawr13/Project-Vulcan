@@ -20,6 +20,8 @@ export interface FeatureDef {
     size: Range;
     near: number;
     rocks: Readonly<Record<string, number>>;
+    /** Marks the surface above the vein with a stain (V-087). */
+    stain?: boolean;
   };
 }
 
@@ -35,4 +37,39 @@ export interface WalkingDef {
   shaft: number;
   /** The `walk` of frozen lake water, which can be crossed while it holds. */
   ice: number;
+}
+
+/** The levels below (src/content/schemas-world.ts has the meaning of each dial). */
+export interface UndergroundDials {
+  depth: number;
+  roots: { reach: number; perLevel: number; warp: number; fine: number };
+  warpCell: number;
+  bodies: { count: Range; bend: number; bendCell: number; fine: number; fineCell: number };
+  earth: {
+    soil: string;
+    clay: string;
+    groundwater: string;
+    foot: number;
+    footNoise: number;
+    soilCell: number;
+    clayReach: number;
+    clayShare: number;
+    wetShare: number;
+  };
+  caves: {
+    kind: string;
+    tunnels: Range;
+    caverns: Range;
+    length: Range;
+    turn: number;
+    swing: number;
+    wide: number;
+    cavernCell: number;
+  };
+  /** The most tiles one opening shows at once (V-030). */
+  reveal: number;
+  stairsDown: string;
+  stairsUp: string;
+  stairs: string;
+  shaft: string;
 }

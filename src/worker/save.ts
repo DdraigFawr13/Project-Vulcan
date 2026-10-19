@@ -11,7 +11,7 @@ import {
 } from '../engine/index.ts';
 
 /** Raised when a save's format version changes; older saves need not load before launch. */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 /** One saved game (docs/ARCHITECTURE.md "Save"). The command log and ledger live in `state`;
  * `seed` and `tick` repeat `state`'s as a header readable without walking the world, and
@@ -97,6 +97,7 @@ export function checkSave(
     layer(map['aura'], Uint8Array, map['tiles'].length) &&
     layer(map['ice'], Uint8Array, map['tiles'].length) &&
     layer(map['built'], Uint8Array, map['tiles'].length) &&
+    layer(map['stains'], Uint8Array, map['tiles'].length) &&
     Number.isSafeInteger(map['floor']) &&
     Array.isArray(map['auraSpots']) &&
     map['auraSpots'].every(isObject) &&
@@ -203,4 +204,5 @@ const levelShaped = (value: unknown, length: number): boolean =>
   layer(value['tiles'], Uint8Array, length) &&
   layer(value['tileCauses'], Int32Array, length) &&
   layer(value['features'], Uint8Array, length) &&
+  layer(value['known'], Uint8Array, length) &&
   Array.isArray(value['chunkVersions']);

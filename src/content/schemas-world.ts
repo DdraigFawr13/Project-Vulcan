@@ -356,6 +356,8 @@ export const WORLD_SCHEMAS = {
           wide: share,
           cavernCell: num({ min: 2 }),
         }),
+        // The most tiles one opening shows at once (V-030 fog).
+        reveal: num({ min: 1 }),
         stairsDown: ref('terrain'),
         stairsUp: ref('terrain'),
         stairs: ref('terrain'),

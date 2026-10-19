@@ -4,7 +4,7 @@
 // milestones keep these orders and give the digging to colonists.
 import type { Command, EngineContent, LevelState } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { chunksAcross, chunksDown, layerOf, setTile } from './tiles.ts';
+import { CHUNK, chunksAcross, chunksDown, layerOf, raiseChunk, setTile } from './tiles.ts';
 import { placesOf } from './aura.ts';
 import { makeLevel } from './underground.ts';
 
@@ -22,6 +22,7 @@ export function reachLevel(ctx: SystemContext, z: number, cause: number): void {
   const level: LevelState = {
     tiles: made.tiles,
     features: made.features,
+    known: new Uint8Array(map.width * map.height),
     tileCauses: new Int32Array(map.width * map.height).fill(reached),
     chunkVersions: new Array<number>(chunksAcross(map) * chunksDown(map)).fill(1),
   };
@@ -87,6 +88,7 @@ export function cutStairsAt(
         : dials.stairsUp;
   setTile(ctx, x, y, kind(top), cut, z);
   setTile(ctx, x, y, kind(landing), cut, z + 1);
+  openAround(ctx, x, y, z + 1, cut);
 }
 
 /** The test levers' orders, handled by the map system. A refused order leaves a line saying why. */
@@ -107,17 +109,131 @@ export const digCommands: Readonly<
       refuse(ctx, cause, 'shaft', x, y, `it can reach levels ${z + 1} to ${depth}`);
       return;
     }
-    const shaft = ctx.content.terrain.kinds.findIndex(
-      (k) => k.id === ctx.content.terrain.generator.underground.shaft,
-    );
-    const sunk = ctx.emit('map.shaftSunk', {
-      causes: [cause],
-      data: { x, y, from: levelName(z), to: levelName(to) },
-    });
-    for (let level = z + 1; level <= to; level += 1) reachLevel(ctx, level, sunk);
-    for (let level = z; level <= to; level += 1) setTile(ctx, x, y, shaft, sunk, level);
+    sinkShaftAt(ctx, x, y, z, to, cause);
   },
 };
+
+/** Sinks a shaft at (x, y) from level `z` down to level `to`, reaching the levels on the way,
+ * under a `map.shaftSunk` line citing `cause`, which it returns. The foot on each level opens
+ * the ground around it (`openAround`). */
+export function sinkShaftAt(
+  ctx: SystemContext,
+  x: number,
+  y: number,
+  z: number,
+  to: number,
+  cause: number,
+): number {
+  const shaft = ctx.content.terrain.kinds.findIndex(
+    (k) => k.id === ctx.content.terrain.generator.underground.shaft,
+  );
+  const sunk = ctx.emit('map.shaftSunk', {
+    causes: [cause],
+    data: { x, y, from: levelName(z), to: levelName(to) },
+  });
+  for (let level = z + 1; level <= to; level += 1) reachLevel(ctx, level, sunk);
+  for (let level = z; level <= to; level += 1) setTile(ctx, x, y, shaft, sunk, level);
+  for (let level = z + 1; level <= to; level += 1) openAround(ctx, x, y, level, sunk);
+  return sunk;
+}
+
+const SIDES = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+] as const;
+
+const NEIGHBOURS = [
+  [-1, -1],
+  [0, -1],
+  [1, -1],
+  [-1, 0],
+  [1, 0],
+  [-1, 1],
+  [0, 1],
+  [1, 1],
+] as const;
+
+/** Digging at (x, y) on level `z` shows what lies next to it (V-030): the tile and its 8
+ * neighbours become known, and each newly known open tile (cave floor, groundwater) floods its
+ * 4-connected open region, up to `underground.reveal` tiles, known with the rim around it. A
+ * region holding cave floor or water writes one `map.opened` line citing `cause`, whose id is
+ * returned. The surface (z = 0) is always known. */
+export function openAround(
+  ctx: SystemContext,
+  x: number,
+  y: number,
+  z: number,
+  cause: number,
+): number | undefined {
+  const map = ctx.world.map;
+  const layer = z === 0 ? undefined : map.levels[z - 1];
+  if (!layer) return undefined;
+  const { kinds, generator } = ctx.content.terrain;
+  const { width: W, height: H } = map;
+  const open = (i: number): boolean =>
+    !kinds[layer.tiles[i]!]!.solid && !kinds[layer.tiles[i]!]!.stone;
+  const changed = new Set<number>();
+  const mark = (i: number): boolean => {
+    if (layer.known[i]) return false;
+    layer.known[i] = 1;
+    changed.add(Math.floor(i / W / CHUNK) * chunksAcross(map) + Math.floor((i % W) / CHUNK));
+    return true;
+  };
+  const fresh: number[] = [];
+  for (const [dx, dy] of [[0, 0], ...NEIGHBOURS] as const) {
+    const nx = x + dx;
+    const ny = y + dy;
+    if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+    const i = ny * W + nx;
+    if (mark(i) && open(i)) fresh.push(i);
+  }
+  const seen = new Set<number>();
+  let cave = false;
+  let water = false;
+  let tiles = 0;
+  for (const start of fresh) {
+    if (seen.has(start)) continue;
+    const region = [start];
+    seen.add(start);
+    for (let r = 0; r < region.length; r += 1) {
+      const ix = region[r]! % W;
+      const iy = (region[r]! - ix) / W;
+      for (const [dx, dy] of SIDES) {
+        const nx = ix + dx;
+        const ny = iy + dy;
+        const j = ny * W + nx;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H || seen.has(j) || !open(j)) continue;
+        if (region.length >= generator.underground.reveal) break;
+        seen.add(j);
+        region.push(j);
+      }
+    }
+    let here = false;
+    for (const i of region) {
+      const kind = kinds[layer.tiles[i]!]!;
+      if (kind.id === generator.underground.caves.kind) cave = here = true;
+      else if (kind.water) water = here = true;
+      const ix = i % W;
+      const iy = (i - ix) / W;
+      mark(i);
+      for (const [dx, dy] of NEIGHBOURS) {
+        const nx = ix + dx;
+        const ny = iy + dy;
+        if (nx >= 0 && ny >= 0 && nx < W && ny < H) mark(ny * W + nx);
+      }
+    }
+    if (here) tiles += region.length;
+  }
+  for (const c of changed) {
+    const across = chunksAcross(map);
+    raiseChunk(map, (c % across) * CHUNK, Math.floor(c / across) * CHUNK, z);
+  }
+  if (!cave && !water) return undefined;
+  const what = cave && water ? 'a cave and groundwater' : cave ? 'a cave' : 'groundwater';
+  return ctx.emit('map.opened', { causes: [cause], data: { level: z, what, tiles } });
+}
 
 /** The tile an order names, or undefined after a refusal line when it cannot be dug there. */
 function placeOf(

@@ -1,5 +1,6 @@
 // The surface map: laid out once when a world begins by the terrain generator, from the reserved
 // `worldgen` stream; afterwards only `setTile` changes a tile. The levels below wait in levels.ts.
+import type { MapState } from '../core/index.ts';
 import { valleyOf } from '../region/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { layAura, placesOf } from './aura.ts';
@@ -7,6 +8,7 @@ import { placeFeatures } from './features.ts';
 import { findGreens, greenWords } from './green.ts';
 import { digCommands } from './levels.ts';
 import { chunksAcross, chunksDown } from './tiles.ts';
+import { makeLevel } from './underground.ts';
 import { layGround } from './terrain.ts';
 import { BEACH, carveWater, MARSH, SCREE, SPRING } from './water.ts';
 
@@ -25,6 +27,7 @@ export const mapSystem: System = {
     'map.levelReached',
     'map.stairsCut',
     'map.shaftSunk',
+    'map.opened',
     'map.digRefused',
   ],
   commands: digCommands,
@@ -81,6 +84,7 @@ export const mapSystem: System = {
     map.chunkVersions = new Array<number>(chunksAcross(map) * chunksDown(map)).fill(1);
     // The levels below are made only when first reached (levels.ts).
     map.levels = new Array<null>(ctx.content.terrain.generator.underground.depth).fill(null);
+    map.stains = stainsOf(ctx, map);
     const formed = ctx.emit('map.formed', {
       causes: [ctx.world.begunEvent],
       data: {
@@ -126,4 +130,21 @@ function mainBiome(ctx: SystemContext, biomes: readonly number[]): string {
   let best = 0;
   for (let b = 1; b < counts.length; b += 1) if (counts[b]! > counts[best]!) best = b;
   return ctx.content.biomes.biomes[best]!.name.toLowerCase();
+}
+
+/** The surface stain over each ore vein that has one (V-087): 0, or 1 + the vein's features
+ * index; the shallowest stained level wins. The levels are laid out only to read their veins
+ * (their own `veins` sub-streams, so nothing here touches `worldgen`). */
+function stainsOf(ctx: SystemContext, map: MapState): Uint8Array {
+  const stains = new Uint8Array(map.width * map.height);
+  const levels = new Set<number>();
+  ctx.content.features.forEach((f) => f.vein?.stain && levels.add(f.vein.level));
+  for (const level of [...levels].sort((a, b) => a - b)) {
+    const { features } = makeLevel(ctx.world.seed, ctx.content, map, level);
+    for (let i = 0; i < features.length; i += 1) {
+      const f = features[i]!;
+      if (f && !stains[i] && ctx.content.features[f - 1]!.vein?.stain) stains[i] = f;
+    }
+  }
+  return stains;
 }

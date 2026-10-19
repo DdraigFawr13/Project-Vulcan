@@ -34,6 +34,8 @@ export function chunkTiles(
   snow: Uint8Array;
   ice: Uint8Array;
   built: Uint8Array;
+  known: Uint8Array;
+  stains: Uint8Array;
 } {
   const layer = layerOf(map, z);
   if (!layer) throw new Error(`Level ${z} has not been reached.`);
@@ -46,6 +48,8 @@ export function chunkTiles(
   const snow = new Uint8Array(w * h);
   const ice = new Uint8Array(w * h);
   const built = new Uint8Array(w * h);
+  const known = new Uint8Array(w * h);
+  const stains = new Uint8Array(w * h);
   for (let row = 0; row < h; row += 1)
     for (let col = 0; col < w; col += 1) {
       const from = (y + row) * map.width + x + col;
@@ -54,8 +58,10 @@ export function chunkTiles(
       if (z === 0) snow[row * w + col] = map.snow[from]!;
       if (z === 0) ice[row * w + col] = map.ice[from]! >> 7;
       if (z === 0) built[row * w + col] = map.built[from]!;
+      if (z === 0) stains[row * w + col] = map.stains[from]!;
+      known[row * w + col] = z === 0 ? 1 : (layer as LevelState).known[from]!;
     }
-  return { x, y, z, w, h, tiles, features, snow, ice, built };
+  return { x, y, z, w, h, tiles, features, snow, ice, built, known, stains };
 }
 
 /**

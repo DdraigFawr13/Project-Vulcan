@@ -68,6 +68,7 @@
 {"id":"map.levelReached","importance":2,"template":"Level {level} below ground was reached for the first time: {contents}.","notable":{}},
 {"id":"map.stairsCut","importance":2,"template":"Stairs were cut from {from} down to {to} at {x}, {y}."},
 {"id":"map.shaftSunk","importance":2,"template":"A shaft was sunk at {x}, {y} from {from} down to {to}."},
+{"id":"map.opened","importance":2,"template":"Digging on level {level} opened onto {what}: {tiles} tiles."},
 {"id":"map.digRefused","importance":2,"template":"Nothing was dug at {x}, {y} for the {work}: {reason}."},
 {"id":"calendar.season","importance":2,"template":"{seasonName} came to the valley.","notable":{}},
 {"id":"map.aura","importance":2,"template":"Old power gathers in the valley at {places}."},

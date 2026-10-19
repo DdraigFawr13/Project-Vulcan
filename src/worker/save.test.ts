@@ -90,6 +90,7 @@ describe('saves', () => {
           tiles: new Uint8Array(s.state.map.tiles.length),
           tileCauses: new Int32Array(s.state.map.tiles.length),
           features: new Uint8Array(s.state.map.tiles.length),
+          known: new Uint8Array(s.state.map.tiles.length),
           chunkVersions: [...s.state.map.chunkVersions],
         }),
     ];
@@ -112,7 +113,11 @@ describe('saves', () => {
     step(fresh, sim, 1);
     const after = bytes();
     const level = fresh.map.levels[0]!;
-    const own = level.tiles.byteLength + level.tileCauses.byteLength + level.features.byteLength;
+    const own =
+      level.tiles.byteLength +
+      level.tileCauses.byteLength +
+      level.features.byteLength +
+      level.known.byteLength;
     // The reached level adds its own arrays and little else (chunk versions, two ledger lines).
     expect(after - before).toBeGreaterThanOrEqual(own);
     expect(after - before).toBeLessThan(own + 4000);

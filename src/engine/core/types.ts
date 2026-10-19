@@ -2,7 +2,7 @@
 // arrays), so the worker can post it, P0.5 can save it and tests can compare it.
 import type { PeopleDefs } from './people.ts';
 import type { AuraDials, AuraSpot, SeasonsDef, WeatherDef } from './climate.ts';
-import type { FeatureDef, WalkingDef } from './ground.ts';
+import type { FeatureDef, UndergroundDials, WalkingDef } from './ground.ts';
 import type { BuildingsDef, ItemDef, JobDef, LifeDef, MemoryDef, WorkDef } from './life.ts';
 import type { RngState } from './rng.ts';
 import type { CultureDef, NamesDef, RegionDef } from './region.ts';
@@ -161,6 +161,9 @@ export interface MapState {
   /** What colonists have built on each surface tile (P3.1): 0 for nothing, else 1 + an index into
    * `EngineContent.buildings.parts`. A stair is a tile kind instead (it leads down). */
   built: Uint8Array;
+  /** Surface only: 0, or 1 + the features index of the stained vein below the tile (the
+   * shallowest stained level wins), V-087. */
+  stains: Uint8Array;
   /** The levels below, index 0 for level 1 down: null until stairs or a shaft first reach one
    * (DECISIONS V-014), so a level nobody has reached costs no memory and no save space. */
   levels: (LevelState | null)[];
@@ -174,6 +177,8 @@ export interface LevelState {
   tileCauses: Int32Array;
   /** 0, or 1 + an index into `EngineContent.features` (a vein in the rock). */
   features: Uint8Array;
+  /** 1 where the tile is known: dug next to, or opened with a cave or water (V-030). */
+  known: Uint8Array;
   /** One counter per chunk, as on the surface. */
   chunkVersions: number[];
 }
@@ -286,37 +291,7 @@ export interface TerrainDef {
     };
     aura: AuraDials;
     /** The levels below (src/content/schemas-world.ts has the meaning of each dial). */
-    underground: {
-      depth: number;
-      roots: { reach: number; perLevel: number; warp: number; fine: number };
-      warpCell: number;
-      bodies: { count: Range; bend: number; bendCell: number; fine: number; fineCell: number };
-      earth: {
-        soil: string;
-        clay: string;
-        groundwater: string;
-        foot: number;
-        footNoise: number;
-        soilCell: number;
-        clayReach: number;
-        clayShare: number;
-        wetShare: number;
-      };
-      caves: {
-        kind: string;
-        tunnels: Range;
-        caverns: Range;
-        length: Range;
-        turn: number;
-        swing: number;
-        wide: number;
-        cavernCell: number;
-      };
-      stairsDown: string;
-      stairsUp: string;
-      stairs: string;
-      shaft: string;
-    };
+    underground: UndergroundDials;
     start: {
       woodItem: string;
       stoneItem: string;

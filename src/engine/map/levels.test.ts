@@ -86,4 +86,60 @@ describe('levels below', () => {
     expect([...a.tiles].filter(keep)).toEqual([...b.tiles].filter(keep));
     expect([...a.features].filter(keep)).toEqual([...b.features].filter(keep));
   });
+
+  it.each(MAP_SEEDS)('seed %s stains the surface over copper, tin and iron veins', (seed) => {
+    const { map } = createWorld(sim, seed);
+    for (const ore of ['copper', 'tin', 'iron']) {
+      const f = veinOf(ore);
+      const at = map.stains.findIndex((s) => s === f);
+      expect(at, ore).toBeGreaterThanOrEqual(0);
+      const level = content.features[f - 1]!.vein!.level;
+      expect(makeLevel(seed, content, map, level).features[at]).toBe(f);
+    }
+  });
+
+  it('a shaft makes its foot and the ground around it known on each level, and no more', () => {
+    const world = createWorld(sim, 'ledger');
+    const { startX: x, startY: y } = world.map;
+    const W = world.map.width;
+    submitCommand(world, { tick: 1, kind: 'sinkShaft', data: { x, y, z: 0, to: 3 } });
+    step(world, sim, 1);
+    for (const z of [1, 2, 3]) {
+      const { known } = world.map.levels[z - 1]!;
+      for (let dy = -1; dy <= 1; dy += 1)
+        for (let dx = -1; dx <= 1; dx += 1) expect(known[(y + dy) * W + x + dx]).toBe(1);
+      expect(known[y * W + x + 10]).toBe(0);
+    }
+  });
+
+  it('a shaft footed next to cave floor writes one line saying what it opened', () => {
+    const world = createWorld(sim, 'ledger');
+    const { map } = world;
+    const { kinds } = content.terrain;
+    const cave = kinds.findIndex((k) => k.id === content.terrain.generator.underground.caves.kind);
+    const deep = makeLevel('ledger', content, map, 2).tiles;
+    const W = map.width;
+    const open = (i: number) => !kinds[map.tiles[i]!]!.water && map.features[i] === 0;
+    const at = deep.findIndex(
+      (t, i) =>
+        i % W > 0 &&
+        i % W < W - 1 &&
+        i >= W &&
+        i < deep.length - W &&
+        (kinds[t]!.solid === true || kinds[t]!.stone === true) &&
+        deep[i + 1] === cave &&
+        open(i),
+    );
+    expect(at).toBeGreaterThanOrEqual(0);
+    submitCommand(world, {
+      tick: 1,
+      kind: 'sinkShaft',
+      data: { x: at % W, y: Math.floor(at / W), z: 0, to: 2 },
+    });
+    step(world, sim, 1);
+    const opened = world.log.filter((e) => e.type === 'map.opened' && e.data['level'] === 2);
+    expect(opened).toHaveLength(1);
+    expect(String(opened[0]!.data['what'])).toContain('a cave');
+    expect(opened[0]!.data['tiles']).toBeGreaterThan(0);
+  });
 });
