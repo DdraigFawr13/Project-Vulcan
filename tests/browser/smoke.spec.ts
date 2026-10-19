@@ -167,6 +167,11 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   const firewood = panel.getByTestId('stock-firewood');
   await expect(firewood).toContainText(/^Firewood: \d+ of 20 wanted/);
   await expect(firewood.getByRole('button', { name: 'Plenty (60)' })).toBeVisible();
+  // P4.7: the Seed plate sits above Food with its own three levels (none, some 100, plenty 200).
+  await expect(panel.getByTestId('stock-seed')).toContainText(/^Seed: \d+ of 100 wanted/);
+  await expect(
+    panel.getByTestId('stock-seed').getByRole('button', { name: 'Plenty (200)' }),
+  ).toBeVisible();
   // Food is a stock level too (P2.9). Wanting none means nobody forages, so the band goes hungry
   // when the cart runs out, which the "why?" step below needs.
   await panel.getByTestId('stock-food').getByRole('button', { name: /^None/ }).click();
@@ -258,6 +263,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
     const box = (await b.boundingBox())!;
     expect([box.width, box.height].every((n) => n >= 44)).toBe(true);
   }
+  // P4.7: Farming and Cooking come from content with the same steppers.
+  for (const [job, name] of [
+    ['farm', 'Farming'],
+    ['cook', 'Cooking'],
+  ] as const)
+    await expect(panel.locator(`.prio[data-job="${job}"]`)).toContainText(name);
   // P3.6: Tending is its own row beside Felling and Hauling, with the same four-step priority.
   const tend = panel.locator('.prio[data-job="tend"]');
   await expect(tend).toContainText('Tending');
@@ -328,6 +339,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // changed priority does not alter the world the hunger wait above runs in.
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('open-build').click();
+  // P4.7: Fields is a row like Houses, with its need in tiles of crops.
+  const fields = page.getByTestId('build-fields');
+  await expect(fields).toContainText('Fields');
+  await expect(page.getByTestId('build-field-need')).toContainText('tiles of crops');
+  for (const b of await fields.getByRole('button').all())
+    expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   const houses = page.getByTestId('build-houses');
   await expect(houses).toContainText('Houses');
   await expect(page.getByTestId('build-need')).toContainText('Need:');

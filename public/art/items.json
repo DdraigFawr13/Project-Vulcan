@@ -80,9 +80,29 @@
         "h": 32
       }
     },
-    "item.cloth": {
+    "item.cloak": {
       "frame": {
         "x": 137,
+        "y": 1,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.cloth": {
+      "frame": {
+        "x": 171,
         "y": 1,
         "w": 32,
         "h": 32
@@ -102,8 +122,8 @@
     },
     "item.copper-ore": {
       "frame": {
-        "x": 171,
-        "y": 1,
+        "x": 1,
+        "y": 35,
         "w": 32,
         "h": 32
       },
@@ -122,7 +142,7 @@
     },
     "item.fish": {
       "frame": {
-        "x": 1,
+        "x": 35,
         "y": 35,
         "w": 32,
         "h": 32
@@ -142,7 +162,7 @@
     },
     "item.game": {
       "frame": {
-        "x": 35,
+        "x": 69,
         "y": 35,
         "w": 32,
         "h": 32
@@ -162,7 +182,7 @@
     },
     "item.gems": {
       "frame": {
-        "x": 69,
+        "x": 103,
         "y": 35,
         "w": 32,
         "h": 32
@@ -182,7 +202,7 @@
     },
     "item.gold-ore": {
       "frame": {
-        "x": 103,
+        "x": 137,
         "y": 35,
         "w": 32,
         "h": 32
@@ -202,7 +222,7 @@
     },
     "item.grain": {
       "frame": {
-        "x": 137,
+        "x": 171,
         "y": 35,
         "w": 32,
         "h": 32
@@ -222,8 +242,8 @@
     },
     "item.herbs": {
       "frame": {
-        "x": 171,
-        "y": 35,
+        "x": 1,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -242,7 +262,7 @@
     },
     "item.ingot": {
       "frame": {
-        "x": 1,
+        "x": 35,
         "y": 69,
         "w": 32,
         "h": 32
@@ -262,7 +282,7 @@
     },
     "item.iron-ore": {
       "frame": {
-        "x": 35,
+        "x": 69,
         "y": 69,
         "w": 32,
         "h": 32
@@ -282,7 +302,7 @@
     },
     "item.leather": {
       "frame": {
-        "x": 69,
+        "x": 103,
         "y": 69,
         "w": 32,
         "h": 32
@@ -302,7 +322,7 @@
     },
     "item.logs": {
       "frame": {
-        "x": 103,
+        "x": 137,
         "y": 69,
         "w": 32,
         "h": 32
@@ -322,7 +342,7 @@
     },
     "item.meal": {
       "frame": {
-        "x": 137,
+        "x": 171,
         "y": 69,
         "w": 32,
         "h": 32
@@ -342,8 +362,8 @@
     },
     "item.obsidian": {
       "frame": {
-        "x": 171,
-        "y": 69,
+        "x": 1,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -362,7 +382,7 @@
     },
     "item.ore": {
       "frame": {
-        "x": 1,
+        "x": 35,
         "y": 103,
         "w": 32,
         "h": 32
@@ -382,7 +402,7 @@
     },
     "item.preserved": {
       "frame": {
-        "x": 35,
+        "x": 69,
         "y": 103,
         "w": 32,
         "h": 32
@@ -402,7 +422,27 @@
     },
     "item.salt": {
       "frame": {
-        "x": 69,
+        "x": 103,
+        "y": 103,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.seed": {
+      "frame": {
+        "x": 137,
         "y": 103,
         "w": 32,
         "h": 32
@@ -422,7 +462,7 @@
     },
     "item.silver-ore": {
       "frame": {
-        "x": 103,
+        "x": 171,
         "y": 103,
         "w": 32,
         "h": 32
@@ -442,46 +482,6 @@
     },
     "item.stone": {
       "frame": {
-        "x": 137,
-        "y": 103,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "item.sulphur": {
-      "frame": {
-        "x": 171,
-        "y": 103,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "item.tin-ore": {
-      "frame": {
         "x": 1,
         "y": 137,
         "w": 32,
@@ -500,7 +500,7 @@
         "h": 32
       }
     },
-    "item.tools": {
+    "item.sulphur": {
       "frame": {
         "x": 35,
         "y": 137,
@@ -520,7 +520,7 @@
         "h": 32
       }
     },
-    "item.wares": {
+    "item.tin-ore": {
       "frame": {
         "x": 69,
         "y": 137,
@@ -540,7 +540,7 @@
         "h": 32
       }
     },
-    "item.weapon": {
+    "item.tools": {
       "frame": {
         "x": 103,
         "y": 137,
@@ -560,7 +560,7 @@
         "h": 32
       }
     },
-    "mark.fell": {
+    "item.turnips": {
       "frame": {
         "x": 137,
         "y": 137,
@@ -580,10 +580,70 @@
         "h": 32
       }
     },
-    "zone.stockpile": {
+    "item.wares": {
       "frame": {
         "x": 171,
         "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.weapon": {
+      "frame": {
+        "x": 1,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "mark.fell": {
+      "frame": {
+        "x": 35,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "zone.stockpile": {
+      "frame": {
+        "x": 69,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -611,6 +671,7 @@
       "item.bedroll",
       "item.bedroll.laid",
       "item.berries",
+      "item.cloak",
       "item.cloth",
       "item.copper-ore",
       "item.fish",
@@ -628,11 +689,13 @@
       "item.ore",
       "item.preserved",
       "item.salt",
+      "item.seed",
       "item.silver-ore",
       "item.stone",
       "item.sulphur",
       "item.tin-ore",
       "item.tools",
+      "item.turnips",
       "item.wares",
       "item.weapon",
       "mark.fell",
@@ -642,7 +705,7 @@
   "meta": {
     "size": {
       "w": 204,
-      "h": 170
+      "h": 204
     },
     "scale": "1",
     "image": "items.png"

@@ -28,6 +28,7 @@ export function stockRows(
     const head = el('p');
     head.append(el('b', {}, cap(s.name)), `: ${haveLine(s)}`);
     block.append(head, levels);
+    if (s.note) block.append(el('p', { class: 'aside' }, s.note));
     // Foraging's good says when the bushes bear (P2.9, V-040), from content.
     const { good, months } = content.work.forage;
     if (s.good === good && months.length)
