@@ -13,6 +13,7 @@ import { FURNITURE_TABLES } from './furniture.ts';
 import { finishHouses, growHouses } from './grow.ts';
 import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
+import { planCampfire, planRoomHearths } from './hearths.ts';
 import { planBench } from './wants.ts';
 
 function refuse(ctx: SystemContext, kind: string, reason: string, cause: number): void {
@@ -116,6 +117,8 @@ export const buildSystem: System = {
     'build.roomAdded',
     'build.grows',
     'furniture.benchPlaced',
+    'fire.planned',
+    'fire.plannedCold',
   ],
   // `nobody`: the line saying nobody is able to build, while that holds; `green`: the green's
   // tile index plus one; `need`: the line saying people sleep in the open, while they do;
@@ -140,10 +143,13 @@ export const buildSystem: System = {
   run(ctx) {
     const { world } = ctx;
     const green = greenOf(world);
+    // The first fire is the campfire on the green, before the houses are sited round it.
+    planCampfire(ctx, green);
     finishHouses(ctx);
     // A house adds a room for the homeless before another house is sited ("cottage, then grow").
     if (!growHouses(ctx, green)) planHouse(ctx, green, []);
     planBench(ctx);
+    planRoomHearths(ctx);
     checkBuilders(ctx);
   },
 };

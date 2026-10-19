@@ -4,7 +4,7 @@
 // wood, bring it to the bench (the bench's own plan, for the bench), work there for the piece's
 // minutes (shorter with crafting skill, which they practise), and the piece is set at the spot
 // chosen when it was taken up. Its quality is their crafting level plus a seeded roll.
-import { streamFor, type EntityRow } from '../core/index.ts';
+import { streamFor, type EntityRow, type FurnitureKind } from '../core/index.ts';
 import {
   anyBench,
   benchOf,
@@ -18,6 +18,7 @@ import {
   type Want,
 } from '../build/index.ts';
 import { addEntity } from '../entity/index.ts';
+import { layHearth } from '../fire/index.ts';
 import { itemsOf, layItem, raiseStock, takeFrom } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
@@ -26,8 +27,10 @@ import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
 import { goBeside, people, same, skillOf, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
 
-const trade = (ctx: SystemContext): string =>
-  ctx.content.jobs.find((j) => j.id === ctx.content.buildings.furniture.job)?.skill ?? '';
+/** The skill a kind is made with: carpentry's, or its own job's (a hearth, by builders). */
+const trade = (ctx: SystemContext, kind: FurnitureKind): string =>
+  ctx.content.jobs.find((j) => j.id === (kind.job ?? ctx.content.buildings.furniture.job))?.skill ??
+  '';
 
 const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`;
 
@@ -49,8 +52,13 @@ function openPieces(ctx: SystemContext, p: EntityRow): EntityRow[] {
       .map((q) => q['plan']),
   );
   const built = !!benchOf(world);
+  // A hearth is the builders' (hearth.ts).
   return furnitureOf(world).filter(
-    (f) => f['state'] === 'plan' && !on.has(f.id) && (f['kind'] === 'bench' || built),
+    (f) =>
+      f['state'] === 'plan' &&
+      !on.has(f.id) &&
+      !furnitureKind(ctx.content, f).job &&
+      (f['kind'] === 'bench' || built),
   );
 }
 
@@ -151,12 +159,12 @@ export function takeUpCarpentry(ctx: SystemContext, p: EntityRow): boolean {
   return furnishing(ctx, p);
 }
 
-/** Goes for the wood, or picks it up when standing on it. */
-function fetchWood(ctx: SystemContext, p: EntityRow, need: number): boolean {
+/** Goes for the wood (or the hearth's stone), or picks it up when standing on it. */
+function fetchWood(ctx: SystemContext, p: EntityRow, need: number, material: string): boolean {
   const { world, content } = ctx;
   let item = itemsOf(world).find((i) => i.id === p['target'] && !i['holder']);
   if (!item) {
-    item = stackOf(ctx, p, content.buildings.furniture.material);
+    item = stackOf(ctx, p, material);
     if (!item) return stop(p);
     p['target'] = item.id;
   }
@@ -181,15 +189,16 @@ export function furnishing(ctx: SystemContext, p: EntityRow): boolean {
   const piece = furnitureOf(world).find((f) => f.id === p['plan']);
   if (!piece || piece['state'] === 'built') return stop(p);
   const kind = furnitureKind(content, piece);
-  // The bench is made where it stands; everything else is made at the bench.
-  const at = piece['kind'] === 'bench' ? piece : benchOf(world);
+  const material = kind.material ?? def.material;
+  // The bench and a hearth are made where they stand; everything else is made at the bench.
+  const at = piece['kind'] === 'bench' || kind.job ? piece : benchOf(world);
   if (!at) return stop(p);
   const [x, y] = [at['x'] as number, at['y'] as number];
   const here = spotOf(p);
   const beside = here.z === 0 && Math.abs(here.x - x) + Math.abs(here.y - y) === 1;
   const need = kind.cost - (piece['have'] as number);
   const load = itemsOf(world).find((i) => i['holder'] === p.id);
-  if (load && (need <= 0 || load['kind'] !== def.material)) return stop(p);
+  if (load && (need <= 0 || load['kind'] !== material)) return stop(p);
   if (load) {
     if (!beside) return goBeside(ctx, p, x, y) || stop(p);
     const used = Math.min(need, load['count'] as number);
@@ -197,20 +206,24 @@ export function furnishing(ctx: SystemContext, p: EntityRow): boolean {
     takeFrom(world, load, used);
     return true;
   }
-  if (need > 0) return fetchWood(ctx, p, need);
+  if (need > 0) return fetchWood(ctx, p, need, material);
   if (!beside) return goBeside(ctx, p, x, y) || stop(p);
-  const level = skillOf(world, p, trade(ctx));
+  const level = skillOf(world, p, trade(ctx, kind));
+  const skilled = kind.job ? content.buildings.skilled : def.skilled;
   if ((piece['work'] as number) < 0)
-    piece['work'] = Math.max(1, Math.ceil((kind.minutes * def.skilled) / (def.skilled + level)));
+    piece['work'] = Math.max(1, Math.ceil((kind.minutes * skilled) / (skilled + level)));
   piece['work'] = (piece['work'] as number) - 1;
-  practise(ctx, p, trade(ctx), p['took'] as number);
+  practise(ctx, p, trade(ctx, kind), p['took'] as number);
   if ((piece['work'] as number) > 0) return true;
-  return finish(ctx, p, piece, level);
+  if (kind.job) layHearth(ctx, p, piece);
+  else finish(ctx, p, piece, level);
+  stop(p);
+  return true;
 }
 
 /** The piece is made: its quality is the maker's crafting level plus a roll of up to `roll` either
  * way. It stands at the spot chosen when it was taken up. */
-function finish(ctx: SystemContext, p: EntityRow, piece: EntityRow, level: number): boolean {
+function finish(ctx: SystemContext, p: EntityRow, piece: EntityRow, level: number): void {
   const { world, content } = ctx;
   const def = content.buildings.furniture;
   const score = level + streamFor(world, def.stream).between(-def.roll, def.roll);
@@ -233,6 +246,4 @@ function finish(ctx: SystemContext, p: EntityRow, piece: EntityRow, level: numbe
     },
   });
   Object.assign(piece, { state: 'built', quality: score, maker: p.id, made, work: 0, waited: 0 });
-  stop(p);
-  return true;
 }

@@ -1,7 +1,7 @@
 // Shape of Vulcan's own life and work files (src/content/data/life.json, P2.2): needs, sleep, warmth,
 // leisure, what each food gives, mood words, and the cart the band arrives with. Need values run
 // from 0 to `scale`; rates are per game hour.
-import { list, map, num, obj, oneOf, ref, str } from './schema';
+import { list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, id, text } from './schema-fields';
 
 // A house size or stage: a footprint of walls round a floor, and how many it sleeps.
@@ -99,6 +99,39 @@ export const LIFE_SCHEMAS = {
       regrowDays: count,
       months: list(text),
     }),
+    // Fire (P3.6, V-042 to V-048): a fire gives `heat` degrees at its own tile and `fall` fewer
+    // for each tile away, over its closed room or, in the open, out to `radius` tiles. Each fuel
+    // is an item: one piece burns `minutes` lit; banked, a fire gives `banked.heat` and burns
+    // `banked.rate` times slower. `split` turns one `from` item into `per` pieces of a fuel in
+    // `minutes`. `tend`: a fire under `low` minutes of fuel is refuelled first, one under
+    // `topBelow` is topped up to at most `top`, a fire nobody used for `idle` minutes is left to
+    // burn down, and the cold light a fire within `near` tiles.
+    fire: obj({
+      fall: count,
+      radius: count,
+      fuels: list(
+        obj({
+          id,
+          item: ref('items'),
+          minutes: num({ min: 1 }),
+          heat: count,
+          banked: obj({ heat: count, rate: num({ min: 1 }) }),
+        }),
+      ),
+      split: obj({
+        from: ref('items'),
+        fuel: str(),
+        per: num({ min: 1 }),
+        minutes: num({ min: 1 }),
+      }),
+      tend: obj({
+        low: count,
+        top: count,
+        topBelow: count,
+        idle: count,
+        near: count,
+      }),
+    }),
     // What a person is doing, in words (P2.9): `{good}` and `{level}` are the stock lever the
     // work answers, `{what}` the load carried.
     doing: map(text),
@@ -160,6 +193,9 @@ export const LIFE_SCHEMAS = {
     // built), less `crowd.beauty` when there is a bed for fewer than `crowd.tiles` tiles. The
     // first role whose `beds` the room has is its role.
     rooms: obj({
+      // P3.6: a used room with no hearth gets one planned when its unheated temperature is
+      // under `hearthBelow` degrees (a later workroom role may differ).
+      hearthBelow: num(),
       most: num({ min: 1 }),
       roof: text,
       perSize: num({ min: 1 }),
@@ -198,7 +234,10 @@ export const LIFE_SCHEMAS = {
           art: text,
           beds: count,
           seats: count,
-          place: oneOf('wall', 'middle', 'beside table', 'bed foot'),
+          place: oneOf('wall', 'middle', 'beside table', 'bed foot', 'centre'),
+          // P3.6: a kind made by another job, of another material, where it stands (a hearth).
+          job: opt(ref('jobs')),
+          material: opt(ref('items')),
         }),
       ),
       quality: list(obj({ id, word: text, at: num(), beauty: num() })),

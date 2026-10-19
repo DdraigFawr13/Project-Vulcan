@@ -1,0 +1,77 @@
+// Making a hearth (P3.6, V-041, V-049): the colony plans hearths (build/hearths.ts); builders make
+// them, so a hearth is a row of the Work sheet's Building kind. A free person able to build takes
+// up the nearest planned hearth they can fetch stone for and works it where it stands, through the
+// same making flow as furniture (carpentry.ts `furnishing`), with the job word `hearth` on them.
+import type { EntityRow } from '../core/index.ts';
+import { furnitureKind, furnitureOf } from '../build/index.ts';
+import { placeOf } from '../fire/index.ts';
+import type { SystemContext } from '../sim/index.ts';
+import { stackOf } from './build.ts';
+import { furnishing } from './carpentry.ts';
+import { able, outranked, priorityLine } from './priority.ts';
+import { people, spotOf } from './spots.ts';
+
+/** The planned hearths nobody is making, nearest `p` first, that have their stone or can get it. */
+function openHearths(ctx: SystemContext, p: EntityRow): EntityRow[] {
+  const { world, content } = ctx;
+  const on = new Set(
+    people(world)
+      .filter((q) => q.id !== p.id && q['job'] === 'hearth')
+      .map((q) => q['plan']),
+  );
+  const from = spotOf(p);
+  const far = (f: EntityRow) =>
+    Math.max(Math.abs((f['x'] as number) - from.x), Math.abs((f['y'] as number) - from.y));
+  return furnitureOf(world)
+    .filter((f) => {
+      if (f['state'] !== 'plan' || on.has(f.id)) return false;
+      const kind = furnitureKind(content, f);
+      return kind.job === content.buildings.job;
+    })
+    .sort((a, b) => far(a) - far(b) || a.id - b.id);
+}
+
+/** The hearth `p` would make: the nearest whose stone is in hand or can be reached. */
+function choose(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
+  return openHearths(ctx, p).find((f) => {
+    const kind = furnitureKind(ctx.content, f);
+    return (f['have'] as number) >= kind.cost || !!stackOf(ctx, p, kind.material!);
+  });
+}
+
+/** Takes up making a hearth if one is planned and nobody free who puts Building higher could. */
+export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
+  const { world, content } = ctx;
+  const job = content.buildings.job;
+  if (!able(content, p, job) || outranked(ctx, p, job, (q) => choose(ctx, q) !== undefined))
+    return false;
+  const piece = choose(ctx, p);
+  if (!piece) {
+    // A planned hearth whose stone cannot be reached is said once, until some is brought.
+    const stuck = openHearths(ctx, p)[0];
+    if (stuck && !stuck['waited'])
+      stuck['waited'] = ctx.emit('build.waiting', {
+        causes: [stuck['line'] as number],
+        data: { part: 'hearth', x: stuck['x'] as number, y: stuck['y'] as number, good: 'stone' },
+      });
+    return false;
+  }
+  const kind = furnitureKind(content, piece);
+  const here = placeOf(world, content, piece);
+  p['took'] = ctx.emit('work.tookUpHearth', {
+    causes: [piece['line'] as number, priorityLine(world, p.id, job)].filter(
+      (l): l is number => !!l,
+    ),
+    actors: [p.id],
+    data: {
+      name: p['name'] as string,
+      kind: here.indoors ? kind.name : 'campfire',
+      room: here.room,
+      why: here.indoors ? 'it has no hearth' : 'the band has no fire',
+    },
+  });
+  p['job'] = 'hearth';
+  p['plan'] = piece.id;
+  p['target'] = -1;
+  return furnishing(ctx, p);
+}
