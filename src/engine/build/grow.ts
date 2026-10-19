@@ -1,23 +1,21 @@
 // A house finished and a house that grows (P3.7, P3.8, V-052). Each hour a planned house or
 // room whose every part stands is built, with one line. A built house whose sleepers outnumber
-// the beds it has room for adds a room (content `house.stage`) on its flattest side, once the
-// room's material is in stock: it never waits on material still in the ground.
+// the beds it has room for adds a room (content `house.stage`) on its flattest side, walled in
+// the house's own material (V-097); its plans wait if that cannot be had.
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bedsOf, crowdedIn, mainOf, nthOf, placeHouse, rowsOf, sizeOf } from './houses.ts';
-import { plansOf } from './plans.ts';
+import { partOf, plansOf } from './plans.ts';
 import { roomAt } from './rooms.ts';
 import { isTreeAt, wayFrom, wayTo } from './way.ts';
 import {
   housesOf,
   inRect,
   outsideOf,
-  partsOf,
   groundOf,
   rectOf,
   scoreRect,
-  wallFor,
   type Rect,
   type Site,
 } from './site.ts';
@@ -129,7 +127,7 @@ function emptyRoom(ctx: SystemContext, h: EntityRow): boolean {
 }
 
 /** Each built house with more sleepers than room, or with a crowded sleeper (above), and no room planned, adds one: walls of
- * material in stock, else of material within reach (the plans wait for it). True when a built
+ * the house's own wall material (the plans wait for it). True when a built
  * house has a room planned or ground to add one, so homeless sleepers wait for it rather than
  * for another house. */
 export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: number): boolean {
@@ -161,10 +159,9 @@ export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: num
     if (!site) continue;
     growing = true;
     const inHouse = (x: number, y: number) => rows.some((h) => inRect(rectOf(h), x, y));
-    const plan = (w: Parameters<typeof partsOf>[3]) =>
-      partsOf(content, site, site.door, w, inHouse);
-    const inStock = wallFor(world, content, plan, false);
-    const { wall } = inStock.fits ? inStock : wallFor(world, content, plan, true);
+    // One house, one material (V-097): the room is walled as the house is, and its plans wait
+    // for that material if it cannot be had.
+    const wall = partOf(content, main['wall'] as string)!;
     const stage = content.buildings.house.stage;
     const size = sizeOf(content, main).name;
     const line = crowded

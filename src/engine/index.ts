@@ -5,6 +5,7 @@ import { calendarSystem } from './calendar/index.ts';
 import { fireSystem } from './fire/index.ts';
 import { goodsSystem } from './goods/index.ts';
 import { mapSystem } from './map/index.ts';
+import { mineSystem } from './mine/index.ts';
 import { needsSystem } from './needs/index.ts';
 import { peopleSystem } from './people/index.ts';
 import { regionSystem } from './region/index.ts';
@@ -43,6 +44,7 @@ export {
   pieceAt,
   piecesOf,
   planAt,
+  nextNeed,
   planPart,
   plansOf,
   qualityOf,
@@ -56,6 +58,7 @@ export {
   type Room,
 } from './build/index.ts';
 export { calendarSystem } from './calendar/index.ts';
+export { SHAFT_STATES } from './mine/index.ts';
 export { fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
 export {
   cloakOf,
@@ -125,6 +128,7 @@ export const SYSTEMS: readonly System[] = [
   peopleSystem,
   goodsSystem,
   buildSystem,
+  mineSystem,
   fireSystem,
   needsSystem,
   calendarSystem,

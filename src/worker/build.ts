@@ -55,6 +55,12 @@ function matsOf(world: WorldState, h: EntityRow): BuildRow['mats'] {
     m.cost += part.cost;
     m.have += p['state'] === 'built' ? part.cost : (p['have'] as number);
     mats.set(part.material, m);
+    if (part.also) {
+      const a = mats.get(part.also.material) ?? { have: 0, cost: 0 };
+      a.cost += part.also.cost;
+      a.have += p['state'] === 'built' ? part.also.cost : (p['also'] as number);
+      mats.set(part.also.material, a);
+    }
   }
   return [...mats].map(([good, m]) => ({ good: itemName(good), ...m }));
 }

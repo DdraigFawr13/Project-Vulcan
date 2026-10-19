@@ -3,7 +3,16 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { haveOf, itemsOf, storeOf } from '../goods/index.ts';
-import { createSim, createWorld, furnitureOf, step, submitCommand, whyOf } from '../index.ts';
+import {
+  createSim,
+  createWorld,
+  furnitureOf,
+  planPart,
+  plansOf,
+  step,
+  submitCommand,
+  whyOf,
+} from '../index.ts';
 
 const sim = createSim(content);
 const inStoreCount = (world: ReturnType<typeof createWorld>): number =>
@@ -37,11 +46,16 @@ describe('work', () => {
             : (f['have'] as number)),
         0,
       );
-      expect(haveOf(world, content, 'logs') + wood).toBeGreaterThanOrEqual(want.count);
+      // Logs builders have brought to a plan not yet built are taken too (a room is walled in its
+      // house's wood, V-097).
+      const brought = plansOf(world)
+        .filter((p) => p['state'] === 'plan' && planPart(content, p).material === 'logs')
+        .reduce((n, p) => n + (p['have'] as number), 0);
+      expect(haveOf(world, content, 'logs') + wood + brought).toBeGreaterThanOrEqual(want.count);
       // What is stored, with what carpenters took, meets the level: a felled log left lying
       // where it fell does not count (the phase review found this check had become one that
       // could not fail).
-      expect(inStoreCount(world) + wood).toBeGreaterThanOrEqual(want.count);
+      expect(inStoreCount(world) + wood + brought).toBeGreaterThanOrEqual(want.count);
       // Felling lines lead back through taking it up to the colony's stock level.
       const felled = world.log.find((e) => e.type === 'work.felled')!;
       const chain = whyOf(world, felled.id).map((c) => c.event.type);

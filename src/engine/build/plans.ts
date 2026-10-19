@@ -8,7 +8,8 @@ import type { SystemContext } from '../sim/index.ts';
 
 export const BUILD_TABLES: Schemas = {
   /** One tile of one part. `state`: `plan` (to build), `built`, or `down` (to come down: a built
-   * part, or a plan with material brought). `have`: material brought so far; `work`: minutes
+   * part, or a plan with material brought). `have`: material brought so far; `also`: the
+   * part's second material brought so far (0 for a part with one material); `work`: minutes
    * left once building has started, -1 before; `line`: the plan's line; `done`: the line it
    * was built under, 0 before; `waited`: the line saying it waits for material, 0 when not;
    * `shut`: the line saying the wall would shut someone in or the store off, 0 when not;
@@ -20,6 +21,7 @@ export const BUILD_TABLES: Schemas = {
     y: 'int',
     z: 'int',
     have: 'count',
+    also: 'count',
     work: 'int',
     state: 'text',
     line: 'event',
@@ -43,14 +45,44 @@ export const partOf = (content: EngineContent, id: string): PartDef | undefined 
 export const planPart = (content: EngineContent, plan: EntityRow): PartDef =>
   partOf(content, plan['part'] as string)!;
 
-/** How much material a plan still needs brought before work can start. */
-export const stillNeeded = (content: EngineContent, plan: EntityRow): number =>
-  plan['state'] === 'plan' ? planPart(content, plan).cost - (plan['have'] as number) : 0;
+/** The material a plan needs brought next and how much: the part's own first, then its second
+ * (`also`), once the first is in; undefined once all is in or for a part to come down. */
+export function nextNeed(
+  content: EngineContent,
+  plan: EntityRow,
+): { material: string; count: number } | undefined {
+  if (plan['state'] !== 'plan') return undefined;
+  const part = planPart(content, plan);
+  const main = part.cost - (plan['have'] as number);
+  if (main > 0) return { material: part.material, count: main };
+  const more = part.also ? part.also.cost - (plan['also'] as number) : 0;
+  return part.also && more > 0 ? { material: part.also.material, count: more } : undefined;
+}
 
-/** The material taking the plan down gives back: all of it for a built part, what was brought
- * for a plan. */
-export const refundOf = (content: EngineContent, plan: EntityRow): number =>
-  (plan['done'] as number) > 0 ? planPart(content, plan).cost : (plan['have'] as number);
+/** How much material a plan still needs brought before work can start, of both its materials. */
+export function stillNeeded(content: EngineContent, plan: EntityRow): number {
+  if (plan['state'] !== 'plan') return 0;
+  const part = planPart(content, plan);
+  const main = part.cost - (plan['have'] as number);
+  return main + (part.also ? part.also.cost - (plan['also'] as number) : 0);
+}
+
+/** The material taking the plan down gives back, by item: all of it for a built part, what was
+ * brought for a plan. */
+export function refundOf(
+  content: EngineContent,
+  plan: EntityRow,
+): { kind: string; count: number }[] {
+  const part = planPart(content, plan);
+  const built = (plan['done'] as number) > 0;
+  const out = [{ kind: part.material, count: built ? part.cost : (plan['have'] as number) }];
+  if (part.also)
+    out.push({
+      kind: part.also.material,
+      count: built ? part.also.cost : (plan['also'] as number),
+    });
+  return out;
+}
 
 /** The part is finished under `cause` (the builder's line): a wall, door or floor is set on the
  * map (anything growing there is cleared); a stair cuts stairs down, reaching the level below if nobody has. */
@@ -70,8 +102,8 @@ export function takeDownPlan(
   ctx: SystemContext,
   plan: EntityRow,
   cause: number,
-): { kind: string; count: number } {
-  const back = { kind: planPart(ctx.content, plan).material, count: refundOf(ctx.content, plan) };
+): { kind: string; count: number }[] {
+  const back = refundOf(ctx.content, plan);
   if ((plan['done'] as number) > 0)
     setBuilt(ctx, plan['x'] as number, plan['y'] as number, 0, cause);
   removeEntity(ctx.world, 'plan', plan.id);

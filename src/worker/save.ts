@@ -5,13 +5,14 @@ import {
   chunksDown,
   type EngineContent,
   type Schemas,
+  SHAFT_STATES,
   tablesProblem,
   WATER,
   type WorldState,
 } from '../engine/index.ts';
 
 /** Raised when a save's format version changes; older saves need not load before launch. */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 /** One saved game (docs/ARCHITECTURE.md "Save"). The command log and ledger live in `state`;
  * `seed` and `tick` repeat `state`'s as a header readable without walking the world, and
@@ -97,6 +98,7 @@ export function checkSave(
     layer(map['aura'], Uint8Array, map['tiles'].length) &&
     layer(map['ice'], Uint8Array, map['tiles'].length) &&
     layer(map['built'], Uint8Array, map['tiles'].length) &&
+    layer(map['stains'], Uint8Array, map['tiles'].length) &&
     Number.isSafeInteger(map['floor']) &&
     Array.isArray(map['auraSpots']) &&
     map['auraSpots'].every(isObject) &&
@@ -125,6 +127,8 @@ export function checkSave(
     w.biomes.every((b) => b < content.biomes.biomes.length) &&
     w.features.every((f) => f <= content.features.length) &&
     w.built.every((b) => b <= content.buildings.parts.length) &&
+    // Ore stains name a feature (V-087).
+    w.stains.every((f) => f <= content.features.length) &&
     // Each plan is of a known part, on the map and in a known state (P3.1).
     (world.entities['plan'] ?? []).every(
       (r) =>
@@ -153,7 +157,16 @@ export function checkSave(
           level.chunkVersions.length === w.chunkVersions.length &&
           level.chunkVersions.every((v) => Number.isSafeInteger(v) && v >= 1) &&
           level.tiles.every((t) => t < kinds.length) &&
-          level.features.every((f) => f <= content.features.length)),
+          level.features.every((f) => f <= content.features.length) &&
+          level.known.every((k) => k <= 1)),
+    ) &&
+    // Each shaft is in a known state, sunk no deeper than its vein's level, which is a level there is
+    // (P4.1).
+    (world.entities['shaft'] ?? []).every(
+      (r) =>
+        SHAFT_STATES.includes(r['state'] as (typeof SHAFT_STATES)[number]) &&
+        (r['depth'] as number) <= (r['to'] as number) &&
+        (r['to'] as number) <= w.levels.length,
     ) &&
     ['north', 'south', 'east', 'west'].includes(w.riverExit) &&
     // The weather's spell names a known kind; its counters are whole numbers (P1.4).
@@ -203,4 +216,5 @@ const levelShaped = (value: unknown, length: number): boolean =>
   layer(value['tiles'], Uint8Array, length) &&
   layer(value['tileCauses'], Int32Array, length) &&
   layer(value['features'], Uint8Array, length) &&
+  layer(value['known'], Uint8Array, length) &&
   Array.isArray(value['chunkVersions']);

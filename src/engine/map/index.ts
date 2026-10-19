@@ -5,6 +5,7 @@ export {
   chunksAcross,
   chunksDown,
   chunkTiles,
+  diggable,
   layerOf,
   raiseChunk,
   setBuilt,
@@ -12,4 +13,4 @@ export {
   withBuilt,
 } from './tiles.ts';
 export { auraAt } from './aura.ts';
-export { cutStairsAt } from './levels.ts';
+export { cutStairsAt, openAround, sinkShaftAt } from './levels.ts';

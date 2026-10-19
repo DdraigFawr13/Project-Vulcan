@@ -78,6 +78,7 @@ export function validateContent(files: Files): string[] {
       ...checkCalendar(files),
       ...checkHouse(files),
       ...checkCrops(files),
+      ...checkHaul(files),
     );
   errors.push(...checkBand(files));
   return errors;
@@ -242,4 +243,16 @@ function checkCrops(files: Files): string[] {
       if (!months.includes(m)) errors.push(`buildings.field.crops[${crop.id}]: "${m}" is no month`);
   }
   return errors;
+}
+
+// Whatever a vein yields can lie on the ground for haulers to carry up (P4.1), so it is a haul kind.
+function checkHaul(files: Files): string[] {
+  const kinds = (files['work'] as { haul: { kinds: string[] } }).haul.kinds;
+  return (files['features'] as { id: string; kind: string; yields?: string }[]).flatMap((f) =>
+    f.kind === 'vein' && f.yields && !kinds.includes(f.yields)
+      ? [
+          `features[${f.id}].yields: "${f.yields}" is not in work.haul.kinds, so nobody would carry it`,
+        ]
+      : [],
+  );
 }

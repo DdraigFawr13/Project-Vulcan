@@ -24,4 +24,5 @@ export {
   wantOf,
 } from './store.ts';
 export { eatFrom, foodGoneLine } from './food.ts';
+export { ingotWant } from './metal.ts';
 export { isTree, markedTree, marksOf, unmark } from './marks.ts';

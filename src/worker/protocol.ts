@@ -80,6 +80,10 @@ export interface ChunkView {
   /** What is built on each tile (P3.1): 0 for nothing, else 1 + an index into content
    * `buildings.parts`; always 0 below the surface. */
   built: Uint8Array;
+  /** 1 where the tile is known (V-030); all 1 on the surface. */
+  known: Uint8Array;
+  /** Surface only: 0, or 1 + the features index of the ore vein stained below (V-087). */
+  stains: Uint8Array;
 }
 
 /** Today's weather in the valley, for the top bar. */

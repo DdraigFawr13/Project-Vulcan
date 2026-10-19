@@ -13,6 +13,7 @@ import {
   memoriesOf,
   moodOf,
   needOf,
+  nextNeed,
   partOf,
   plansOf,
   progressOf,
@@ -118,9 +119,9 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
     const plan = plansOf(world).find((r) => r.id === p['plan']);
     const part = plan && partOf(content, plan['part'] as string);
     const carrying = loadOf(world, p.id);
-    const short = plan && part && (plan['have'] as number) < part.cost && plan['state'] === 'plan';
-    const key = plan?.['state'] === 'down' ? 'takeDown' : short && !carrying ? 'fetch' : 'build';
-    const what = nameOf(content.items, part?.material ?? '');
+    const next = plan && nextNeed(content, plan);
+    const key = plan?.['state'] === 'down' ? 'takeDown' : next && !carrying ? 'fetch' : 'build';
+    const what = nameOf(content.items, next ? next.material : (part?.material ?? ''));
     return { text: say(key, { part: part?.name ?? '', what }), ...why };
   }
   if (job === 'carpentry') {
@@ -142,6 +143,15 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
     return { text: say(key, { crop: crop?.name ?? '' }), ...why };
   }
   if (job === 'hearth') return { text: say('hearth', hearthDoing(world, p)), ...why };
+  if (job === 'mine') {
+    // Sinking, tunnelling or mining for a metal's ingot plate, or digging clay for a wall.
+    const task = p['task'] as string;
+    const what = p['what'] as string;
+    const plate = content.work.stock.find((s) => s.good === `${what}-ingot`);
+    const level = plate && (stockOf(world, plate.good)?.['level'] as string | undefined);
+    const vars = { metal: what, part: what, good: plate?.name ?? '', level: level ?? '' };
+    return { text: say(task === 'sink' ? 'shaft' : task, vars), ...why };
+  }
   if (job === 'fell' || job === 'forage' || job === 'quarry') {
     const good =
       job === 'fell'
