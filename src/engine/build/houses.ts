@@ -77,7 +77,8 @@ export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>
 export function houseName(world: WorldState, content: EngineContent, id: number): string {
   const h = housesOf(world).find((r) => r.id === id);
   if (h) return sizeOf(content, mainOf(world, h)).name;
-  // Trees on a field's site are cleared the same way (P4.7).
+  // Trees on a field's site are cleared the same way (P4.7), and on a smithy's (P4.9).
+  if ((world.entities['smithy'] ?? []).some((f) => f.id === id)) return 'smithy';
   return (world.entities['field'] ?? []).some((f) => f.id === id) ? 'field' : '';
 }
 

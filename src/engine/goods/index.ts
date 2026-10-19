@@ -23,7 +23,18 @@ export {
   STORE_TABLES,
   wantOf,
 } from './store.ts';
-export { freeTools, heldBy, HELD, layTool, lifeFor, restOf, speedOf, toolOf } from './tools.ts';
+export {
+  freeTools,
+  heldBy,
+  HELD,
+  layTool,
+  lifeFor,
+  restOf,
+  speedOf,
+  toolOf,
+  wornAsk,
+  wornTools,
+} from './tools.ts';
 export { eatFrom, foodGoneLine } from './food.ts';
 export { isTree, markedTree, marksOf, unmark } from './marks.ts';
 export {

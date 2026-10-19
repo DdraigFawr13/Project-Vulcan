@@ -28,6 +28,8 @@ export const GOODS_TABLES: Schemas = {
     /** A tool in use (Bundle 3, V-088): `owner` has it, `state` `held`, it lies on no tile (x, y
      * -1); `wear` is the work minutes left in it and `worked` the minutes it has been used. */
     worked: 'count',
+    /** The `tool.worn` line once a held tool is worn and asks for a better one (P4.9), else 0. */
+    worn: 'event',
   },
 };
 
@@ -64,6 +66,7 @@ export function layItem(
     wear: extra.wear ?? 0,
     trail: extra.trail ?? '',
     worked: 0,
+    worn: 0,
   });
 }
 

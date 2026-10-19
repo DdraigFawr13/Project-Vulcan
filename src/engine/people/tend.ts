@@ -1,12 +1,11 @@
 // Tending (P3.6, V-044, V-048): the Tend row of the Work sheet. Nobody is told to feed a fire. A
 // free person looking for work tends, in this order: (a) a lit fire with under `tend.low` minutes
 // of fuel whose room was used within `tend.idle` minutes, (b) an unlit hearth whose room is in use
-// or with someone cold near it, (c) splitting logs at the store into firewood while the colony
+// or with someone cold near it, (c) splitting logs (the store's first) into firewood while the colony
 // has less than its Firewood plate asks, (d) topping up a lit, used fire that is under
 // `tend.topBelow` to at most `tend.top`. A fire nobody has used for `tend.idle` minutes is left to
 // burn down (fire/system.ts says so when it goes out). Tending a fire: fetch the fuel from where it
-// lies, go beside the hearth, add pieces, and light it if it is out. Splitting: work at the store's
-// log stack, then carry the firewood onto its stack (haul.ts). The cold do the same for
+// lies, go beside the hearth, add pieces, and light it if it is out. Splitting: work at a log stack, then carry the firewood onto its stack (haul.ts). The cold do the same for
 // themselves when no warm place is to be had (warm.ts, V-046).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { furnitureOf } from '../build/index.ts';
@@ -62,7 +61,8 @@ function stop(p: EntityRow): false {
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }): number =>
   Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
-/** The log stack in the store nearest `p` that they can reach. */
+/** The log stack nearest `p` that they can reach: one in the store first, else one lying outside
+ * it (a full store leaves felled logs where they lie, and the fires must still be fed; P4.9). */
 function logsOf(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const { world, content } = ctx;
   const from = spotOf(p);
@@ -71,8 +71,9 @@ function logsOf(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   for (const i of itemsOf(world)) {
     if (i['kind'] !== content.work.fire.split.from || i['holder']) continue;
     const at = spotOf(i);
-    if (!inStore(world, at.x, at.y, at.z) || cheb(at, from) >= far) continue;
-    if (canReach(content, world.map, from, at)) [best, far] = [i, cheb(at, from)];
+    const d = cheb(at, from) + (inStore(world, at.x, at.y, at.z) ? 0 : 1000);
+    if (d >= far) continue;
+    if (canReach(content, world.map, from, at)) [best, far] = [i, d];
   }
   return best;
 }
@@ -295,7 +296,7 @@ export function tending(ctx: SystemContext, p: EntityRow): boolean {
   return true;
 }
 
-/** Splitting: work at the store's log stack, then the firewood is theirs to carry onto its stack. */
+/** Splitting: work at a log stack, then the firewood is theirs to carry onto its stack. */
 function splitting(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
   const split = content.work.fire.split;

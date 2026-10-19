@@ -6,13 +6,14 @@
 // floors and pieces stand it is built and smiths work at the forge.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
-import { inStore, itemsOf, layItem, raiseStock } from '../goods/index.ts';
+import { inStore, itemsOf, layItem, marksOf, raiseStock } from '../goods/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bedOwnedBy, furnitureOf } from './furniture.ts';
 import { homeOf, mainOf, rowsOf, wantOf } from './houses.ts';
 import { partOf, planPart, plansOf } from './plans.ts';
 import { groundOf, housesOf, inRect, rectOf, type Rect } from './site.ts';
+import { isTreeAt } from './way.ts';
 
 export const SMITHY = 'smithy';
 
@@ -90,24 +91,41 @@ function waterDist(world: WorldState, content: EngineContent, f: Rect, near: num
 
 /** Whether a smithy can stand on these tiles: dry buildable ground, nothing built, planned,
  * stored or lying there, no tree, off every house and reachable from the green. */
-function free(ctx: SystemContext, tiles: [number, number][], green: { x: number; y: number }) {
+/** The trees to fell first if the tiles are free for a smithy (none when `trees` is false), or
+ * undefined when they are not. A tree tile is cleared as a house's site is (P4.9: in forest every
+ * side of a house can stand in trees); the other tiles must be open and reachable from the green. */
+function free(
+  ctx: SystemContext,
+  tiles: [number, number][],
+  green: { x: number; y: number },
+  trees: boolean,
+): number[] | undefined {
   const { world, content } = ctx;
   const map = world.map;
   const ground = groundOf(world);
-  return tiles.every(([x, y]) => {
-    if (x < 1 || y < 1 || x >= map.width - 1 || y >= map.height - 1) return false;
+  const fell: number[] = [];
+  let open = false;
+  for (const [x, y] of tiles) {
+    if (x < 1 || y < 1 || x >= map.width - 1 || y >= map.height - 1) return undefined;
     const i = y * map.width + x;
     const kind = content.terrain.kinds[map.tiles[i]!]!;
-    if (!kind.buildable || kind.water || kind.solid) return false;
-    if (ground.taken.has(i) || ground.items.has(i) || inStore(world, x, y, 0)) return false;
-    const f = map.features[i]! ? content.features[map.features[i]! - 1]! : undefined;
-    if (f && f.kind !== 'bush' && f.kind !== 'herb') return false;
-    if (housesOf(world).some((h) => inRect(rectOf(h), x, y))) return false;
+    if (!kind.buildable || kind.water || kind.solid) return undefined;
+    if (ground.taken.has(i) || ground.items.has(i) || inStore(world, x, y, 0)) return undefined;
+    if (housesOf(world).some((h) => inRect(rectOf(h), x, y))) return undefined;
     // A smithy sent back is never chosen again.
     if (smithiesOf(world).some((s) => s['state'] === 'sent' && inRect(rectOf(s), x, y)))
-      return false;
-    return canReach(content, map, { ...green, z: 0 }, { x, y, z: 0 });
-  });
+      return undefined;
+    if (isTreeAt(world, content, i)) {
+      if (!trees) return undefined;
+      fell.push(i);
+      continue;
+    }
+    const f = map.features[i]! ? content.features[map.features[i]! - 1]! : undefined;
+    if (f && f.kind !== 'bush' && f.kind !== 'herb') return undefined;
+    if (!canReach(content, map, { ...green, z: 0 }, { x, y, z: 0 })) return undefined;
+    open = true;
+  }
+  return open ? fell : undefined;
 }
 
 /** Whether an ingot lies in the store: the smithy is wanted from then (tools.json materials, and
@@ -126,6 +144,37 @@ export function ingotInStore(world: WorldState, content: EngineContent): EntityR
 }
 
 /** Hourly: finishes a smithy whose parts stand, or sites one for the best smith's house. */
+/** The side of `house` (or of a room added to it) with free ground for a smithy, nearest water,
+ * ties north, east, south, west. Every outer side shares a wall with the house. */
+function sideBeside(ctx: SystemContext, house: EntityRow, green: { x: number; y: number }) {
+  const { world, content } = ctx;
+  const def = content.buildings.smithy;
+  // Open ground first; only when no side has it, ground with trees to fell (fewest first).
+  for (const trees of [false, true]) {
+    let best: Beside | undefined;
+    for (const row of rowsOf(world, house).filter((h) => h['state'] === 'built')) {
+      const r = rectOf(row);
+      SIDES.forEach((side, k) => {
+        const vertical = side === 'east' || side === 'west';
+        const span = (vertical ? r.h : r.w) - def.length;
+        for (let off = 0; off <= Math.max(0, span); off += 1) {
+          const f = footprint(r, side, off, def.depth, def.length);
+          const fell = free(ctx, outside(f, r, side), green, trees);
+          if (!fell) continue;
+          const w = waterDist(world, content, f, def.near);
+          const d = w + fell.length * 100;
+          if (!best || d < best.d || (d === best.d && k < best.k))
+            best = { f, side, d, w, k, r, fell };
+        }
+      });
+    }
+    if (best) return best;
+  }
+  return undefined;
+}
+
+type Beside = { f: Rect; side: Side; d: number; w: number; k: number; r: Rect; fell: number[] };
+
 export function planSmithy(ctx: SystemContext, green: { x: number; y: number }, sent = 0): void {
   const { world, content, state } = ctx;
   const def = content.buildings.smithy;
@@ -133,45 +182,51 @@ export function planSmithy(ctx: SystemContext, green: { x: number; y: number }, 
   if (live) return finishSmithy(ctx, live);
   const ingot = ingotInStore(world, content);
   if (!ingot) return;
-  // The best smith: highest smithing level, ties by id, with a built house of their own.
+  // The best smith: highest smithing level, ties by id, with a built house of their own. When no
+  // side of their house has free ground, the next best smith's house is tried (P4.9: on anvil the
+  // best smith's cottage stands in trees on every side).
   const smiths = (world.entities['person'] ?? [])
     .filter((p) => p['status'] === 'alive')
     .sort((a, b) => levelOf(world, content, b.id) - levelOf(world, content, a.id) || a.id - b.id);
-  const smith = smiths[0];
-  const house = smith && houseOfPerson(world, content, smith.id);
-  if (!smith || !house) return;
+  const first = smiths[0];
+  if (!first || !houseOfPerson(world, content, first.id)) return;
   // With no ground found, look again once a day, not every hour.
   if (state['smithyNoGround'] && !sent && world.tick < (state['smithyTried'] ?? 0) + 1440) return;
   state['smithyTried'] = world.tick;
-  // Every outer side of the house, and of the rooms added to it, shares a wall with it.
-  let best: { f: Rect; side: Side; d: number; k: number; r: Rect } | undefined;
-  for (const row of rowsOf(world, house).filter((h) => h['state'] === 'built')) {
-    const r = rectOf(row);
-    SIDES.forEach((side, k) => {
-      const vertical = side === 'east' || side === 'west';
-      const span = (vertical ? r.h : r.w) - def.length;
-      for (let off = 0; off <= Math.max(0, span); off += 1) {
-        const f = footprint(r, side, off, def.depth, def.length);
-        if (!free(ctx, outside(f, r, side), green)) continue;
-        const d = waterDist(world, content, f, def.near);
-        if (!best || d < best.d || (d === best.d && k < best.k)) best = { f, side, d, k, r };
-      }
-    });
+  let smith = first;
+  let house = houseOfPerson(world, content, first.id)!;
+  let best: Beside | undefined;
+  const tried = new Set<number>();
+  for (const p of smiths) {
+    const home = houseOfPerson(world, content, p.id);
+    if (!home || tried.has(home.id)) continue;
+    tried.add(home.id);
+    best = sideBeside(ctx, home, green);
+    if (best) {
+      [smith, house] = [p, home];
+      break;
+    }
   }
   if (!best) {
     state['smithyNoGround'] ||= ctx.emit('smithy.noGround', {
       causes: [ingot['made'] as number].filter((l) => l > 0),
-      actors: [smith.id],
-      data: { name: smith['name'] as string },
+      actors: [first.id],
+      data: { name: first['name'] as string },
     });
     return;
   }
   state['smithyNoGround'] = 0;
   const water =
-    best.d > def.near
+    best.w > def.near
       ? `no water lies within ${def.near} tiles`
-      : `the water is ${best.d} tile${best.d > 1 ? 's' : ''} off`;
-  const why = `${smith['name'] as string} is the best smith (smithing ${levelOf(world, content, smith.id)}), and ${water}`;
+      : `the water is ${best.w} tile${best.w > 1 ? 's' : ''} off`;
+  const n = best.fell.length;
+  const trees = n ? `; ${n} tree${n > 1 ? 's' : ''} to fell first` : '';
+  const who =
+    smith === first
+      ? 'is the best smith'
+      : `is the next best smith with free ground by their house`;
+  const why = `${smith['name'] as string} ${who} (smithing ${levelOf(world, content, smith.id)}), and ${water}${trees}`;
   const want = wantOf(world, content, SMITHY);
   const line = ctx.emit('smithy.sited', {
     causes: [ingot['made'] as number, want.line ?? 0, house['built'] as number].filter(
@@ -190,7 +245,7 @@ export function planSmithy(ctx: SystemContext, green: { x: number; y: number }, 
 /** Lays the smithy out as plans: a floor under each piece, and the pieces (forge first). */
 function place(
   ctx: SystemContext,
-  { f, side, r }: { f: Rect; side: Side; r: Rect },
+  { f, side, r, fell }: Beside,
   house: EntityRow,
   line: number,
   why: string,
@@ -202,13 +257,21 @@ function place(
     ...{ x: f.x, y: f.y, w: f.w, h: f.h, house: house.id, side, state: 'plan' },
     ...{ line, why, sent, built: 0 },
   });
+  // Trees on the site are felled first, as on a house's site.
+  for (const i of fell)
+    addEntity(world, 'mark', {
+      x: i % world.map.width,
+      y: Math.floor(i / world.map.width),
+      line,
+      house: id,
+    });
   const floor = partOf(content, def.floor)!;
   // The far side of the footprint, from the house, holds the pieces.
   const spots = outside(f, r, side).slice(-def.length);
   def.pieces.forEach((kind, k) => {
     const [x, y] = spots[k]!;
     addEntity(world, 'plan', {
-      ...{ part: floor.id, x, y, z: 0, have: 0, work: -1, state: 'plan', house: id },
+      ...{ part: floor.id, x, y, z: 0, have: 0, also: 0, work: -1, state: 'plan', house: id },
       ...{ line, done: 0, waited: 0, shut: 0, held: 0 },
     });
     const piece = content.buildings.furniture.kinds.find((q) => q.id === kind)!;
@@ -292,6 +355,8 @@ export function sendBackSmithy(
       });
     removeEntity(world, 'plan', p.id);
   }
+  for (const m of marksOf(world).filter((m) => m['house'] === s!.id))
+    removeEntity(world, 'mark', m.id);
   for (const f of pieces) {
     const kind = content.buildings.furniture.kinds.find((q) => q.id === f['kind'])!;
     if ((f['have'] as number) > 0)

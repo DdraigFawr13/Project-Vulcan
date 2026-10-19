@@ -121,6 +121,7 @@
 {"id":"smith.made","importance":2,"template":"{name} smithed {what} for {who}."},
 {"id":"smith.noIngots","importance":2,"template":"{who} has no {tool}, and the store has no {lack}: {fix}.","notable":{}},
 {"id":"tool.taken","importance":1,"template":"{name} took {what}: {why}.{back}"},
+{"id":"tool.worn","importance":2,"template":"{name}'s {what} is worn: a {better} {kind} would need {ingots} {ingot}, and the smith wants them."},
 {"id":"tool.broke","importance":2,"template":"{name}'s {what} broke after {hours} hours of work.","notable":{}},
 {"id":"craft.firstFine","importance":2,"template":"{name} made a {word} piece for the first time: {what}.","notable":{}},
 {"id":"smithy.sited","importance":2,"template":"The colony plans a smithy on the {dir} side of the {house}: {why}.","notable":{}},

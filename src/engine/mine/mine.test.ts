@@ -3,7 +3,7 @@
 // lever beside the plate is sending a shaft plan back, once. Shafts are sited on the done-when's three
 // seeds; the ore test adds ledger, and keeps anvil, whose store once filled with a cleared site's logs.
 import { describe, expect, it } from 'vitest';
-import { content as base, type Content } from '../../content/index.ts';
+import { content as game, type Content } from '../../content/index.ts';
 import {
   allLines,
   createSim,
@@ -20,6 +20,9 @@ import { nextDig, shaftsOf } from './index.ts';
 import { openVein } from './site.ts';
 
 const DAY = 1440;
+// The plate is the only want here: a tool counts as worn (and asks for metal, P4.9) only at its
+// last 1 per cent, far past these runs' days.
+const base: Content = { ...game, tools: { ...game.tools, worn: 1 } };
 const SEEDS = ['anvil', 'smoke', 'tallow'];
 const ORE_SEEDS = ['anvil', 'smoke', 'tallow', 'ledger'];
 

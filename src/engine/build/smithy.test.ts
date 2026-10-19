@@ -15,7 +15,9 @@ import {
 import { layItem } from '../goods/index.ts';
 import { houseAt, housesOf, mainOf, piecesOf, smithiesOf } from './index.ts';
 
-const sim = createSim(content);
+// An ingot laid in the store is the only want here: worn tools (P4.9) ask for metal only at their
+// last 1 per cent, far past these runs' days.
+const sim = createSim({ ...content, tools: { ...content.tools, worn: 1 } });
 const DAY = 1440;
 const SEEDS = ['ledger', 'tallow', 'anvil', 'ledger/1', 'tallow/2', 'smoke/1'];
 type World = ReturnType<typeof createWorld>;
