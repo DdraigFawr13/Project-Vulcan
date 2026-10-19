@@ -188,7 +188,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
   const message = e.data;
   try {
     if (message.type === 'ready') {
-      renderer.setMapSize(message.width, message.height);
+      renderer.setMapSize(message.width, message.height, message.green);
       ready = true;
       depth = message.depth;
       reached = [];

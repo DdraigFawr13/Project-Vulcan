@@ -10,6 +10,7 @@ import {
   createWorld,
   lawHours,
   entityOf,
+  greenOf as greenTile,
   layerOf,
   makeRegion,
   renderEvent,
@@ -215,12 +216,15 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
 }
 
 /** The line saying where the band stopped the cart, and whether it may still be sent back. */
-function greenOf(w: WorldState): { green?: { text: string; again: boolean } } {
+function greenOf(w: WorldState): {
+  green?: { text: string; again: boolean; x: number; y: number };
+} {
   const line = w.log.find((e) => e.type === 'map.green' || e.type === 'map.greenAgain');
   if (!line) return {};
   const map = w.systems['map'] ?? {};
   const again = w.tick === START_TICK && !map['look'] && !!map['next'];
-  return { green: { text: renderEvent(line, sim.templates), again } };
+  const { x, y } = greenTile(w);
+  return { green: { text: renderEvent(line, sim.templates), again, x, y } };
 }
 
 /** Rolls the region of a plain seed and makes each valley's world, to offer them in the picker. */

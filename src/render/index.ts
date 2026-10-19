@@ -25,7 +25,8 @@ import { TILE, ValleyScene, type Hover } from './scene.ts';
 export type { Hover } from './scene.ts';
 
 export interface Renderer {
-  setMapSize(width: number, height: number): void;
+  /** Sizes the map and opens the view on tile `on` (the band's green), or the middle without it. */
+  setMapSize(width: number, height: number, on?: { x: number; y: number }): void;
   /** Draws changed chunks; ones that arrive before the scene is ready are held until it is. */
   applyChunks(chunks: readonly ChunkView[]): void;
   /** Draws the aura spots' glow (the snapshot's `aura`); a no-op while they are unchanged. */
@@ -88,8 +89,8 @@ export function startRenderer(
   const light = new Firelight(game, scene);
   const bars = new WorkBars(game, scene);
   return {
-    setMapSize: (width, height) => {
-      scene.setMapSize(width, height);
+    setMapSize: (width, height, on) => {
+      scene.setMapSize(width, height, on);
       build.setMapSize(width, height);
       fields.setMapSize(width);
       light.setMapSize(width, height);
