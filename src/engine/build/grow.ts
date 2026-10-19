@@ -14,6 +14,7 @@ import {
   inRect,
   outsideOf,
   partsOf,
+  groundOf,
   rectOf,
   scoreRect,
   wallFor,
@@ -101,13 +102,14 @@ export function stageSite(
   const door = main['door'] as number;
   const [dx, dy] = [door % map.width, Math.floor(door / map.width)];
   let best: (Site & { side: string }) | undefined;
+  const ground = groundOf(world);
   for (const side of SIDES) {
     const { r, door: d } = stageRect(home, side, stage.w, stage.h);
     const holdsDoor =
       inRect(r, dx, dy) ||
       rows.some((o) => o.id !== main.id && rectOf(o).x === r.x && rectOf(o).y === r.y);
     if (holdsDoor) continue;
-    const s = scoreRect(world, content, r, own);
+    const s = scoreRect(world, content, r, own, ground);
     if (!s || (best && s.rise >= best.rise)) continue;
     // Its way in from the green goes round the room itself, felling trees if need be.
     const way = wayFrom(world, content, green, r);
