@@ -3,7 +3,8 @@
 import { valleyOf } from '../region/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { layAura, placesOf } from './aura.ts';
-import { findStart, placeFeatures } from './features.ts';
+import { placeFeatures } from './features.ts';
+import { findGreens, greenWords } from './green.ts';
 import { digCommands } from './levels.ts';
 import { chunksAcross, chunksDown } from './tiles.ts';
 import { layGround } from './terrain.ts';
@@ -16,6 +17,8 @@ export const mapSystem: System = {
   stream: 'worldgen',
   emits: [
     'map.formed',
+    'map.green',
+    'map.greenAgain',
     'map.watered',
     'map.aura',
     'map.auraDeep',
@@ -25,6 +28,9 @@ export const mapSystem: System = {
     'map.digRefused',
   ],
   commands: digCommands,
+  // `look` is 1 when the player sent the band's first green back on arrival (the world is then
+  // made again with it set); `next` is 1 when there is a second choice to send it back for.
+  initialState: { look: 0, next: 0 },
   init(ctx) {
     const { width, height } = ctx.content.terrain.surface;
     const rng = ctx.rng();
@@ -46,7 +52,10 @@ export const mapSystem: System = {
       else if (water.shore[i]) ground.tiles[i] = shores[water.shore[i]!]!;
     }
     const features = placeFeatures(rng, ctx.content, ground, width, height);
-    const start = findStart(ctx.content, ground.tiles, features, width, height);
+    const greens = findGreens(ctx.content, ground.tiles, features, ground.elevation, width, height);
+    const look = Math.min(ctx.state['look'] ?? 0, greens.length - 1);
+    const start = greens[look]!;
+    ctx.state['next'] = greens.length > 1 ? 1 : 0;
     const map = ctx.world.map;
     map.width = width;
     map.height = height;
@@ -85,6 +94,11 @@ export const mapSystem: System = {
         startY: start.y,
         startMet: start.met ? 1 : 0,
       },
+    });
+    // Why the band stopped here, in words; a second look says how far it moved from the first.
+    ctx.emit(look ? 'map.greenAgain' : 'map.green', {
+      causes: [formed],
+      data: greenWords(ctx.content, start, greens[0]!),
     });
     const watered = ctx.emit('map.watered', {
       causes: [formed],

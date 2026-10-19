@@ -282,6 +282,18 @@ export const WORLD_SCHEMAS = {
         buildable: num({ min: 1 }),
         wood: num({ min: 1 }),
         stone: num({ min: 1 }),
+        // The green (src/engine/map/green.ts): its own ground is `near` tiles round it; `rise`
+        // metres a step and water `water` tiles off each cost a whole dry share; `spare` weighs
+        // wood and stone past the need; `edge` keeps it off the map's rim; `apart` tiles
+        // separate the band's second choice from its first.
+        green: obj({
+          near: count,
+          rise: num({ min: 0.01 }),
+          water: num({ min: 1 }),
+          spare: num({ min: 0 }),
+          edge: count,
+          apart: count,
+        }),
       }),
       // The four levels below (src/engine/map/underground.ts), each made when first reached:
       // each range's rock runs down beneath it within `roots` tiles (more per level down), the

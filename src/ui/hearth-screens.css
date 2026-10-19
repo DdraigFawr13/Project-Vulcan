@@ -470,6 +470,17 @@
 #hud .afoot button.big {
   max-width: none;
 }
+/* Where the cart stopped, and Look elsewhere beside Arrive while it may still be sent back. */
+.afoot .where {
+  margin: 0;
+  font: italic 400 14px/1.3 var(--read);
+  color: var(--bone-soft);
+  text-shadow: 1px 1px 0 var(--oak-dark);
+}
+.ago {
+  display: flex;
+  gap: 8px;
+}
 .prow {
   min-height: var(--tap);
   display: flex;

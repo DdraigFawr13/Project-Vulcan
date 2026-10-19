@@ -134,7 +134,13 @@ function hourOf(
   if (id === 'warmth') {
     const bed = asleep(p) && (onBedroll(world, p) || inBed(world, p)) ? life.warmth.bedroll : 0;
     const short = life.warmth.comfort - (feels(ctx, p) + bed);
-    return short <= 0 ? life.warmth.rise : -short * life.warmth.perDegree;
+    if (short > 0) return -short * life.warmth.perDegree;
+    // Somewhere warm, the colder they came in the faster they thaw: `catchUp` of the way back
+    // to the warning line each hour, on top of the steady rise (so a long cold walk home is
+    // made good within two hours by a fire, not kept for the evening).
+    const value = (needOf(world, p.id, 'warmth')?.['value'] as number | undefined) ?? 0;
+    const low = life.needs.find((n) => n.id === 'warmth')?.low ?? 0;
+    return life.warmth.rise + Math.round(Math.max(0, low - value) * life.warmth.catchUp);
   }
   if (id === 'recreation' && p['doing'] === 'relax')
     return life.relax.gain + (company(world, content, p) ? life.relax.company : 0);

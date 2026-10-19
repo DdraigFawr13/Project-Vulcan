@@ -47,6 +47,8 @@
 {"id":"calendar.day","importance":1,"template":"Day {day} of {month} began."},
 {"id":"calendar.month","importance":2,"template":"{month} began."},
 {"id":"map.formed","importance":1,"template":"The valley took shape: {width} by {height} tiles, mostly {biome}, with a {climate} climate ({temperature} °C on the valley floor, {rainfall} mm of rain a year)."},
+{"id":"map.green","importance":1,"template":"The band stopped the cart on {ground} ground {water}, with {wood} trees and {stone} stone to quarry within a short walk. Here would be the green."},
+{"id":"map.greenAgain","importance":1,"template":"The band looked again and took the cart {tiles} tiles {dir}, to {ground} ground {water}, with {wood} trees and {stone} stone to quarry within a short walk. Here would be the green."},
 {"id":"map.watered","importance":1,"template":"Its waters gathered: a river leaving by the {exit}, {lakes} lakes and {springs} springs."},
 {"id":"map.levelReached","importance":2,"template":"Level {level} below ground was reached for the first time: {contents}.","notable":{}},
 {"id":"map.stairsCut","importance":2,"template":"Stairs were cut from {from} down to {to} at {x}, {y}."},

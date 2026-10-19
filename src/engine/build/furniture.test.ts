@@ -89,16 +89,31 @@ describe('carpentry and furniture', () => {
       expect([...slept].sort()).toEqual(people(w).map((p) => p.id));
       for (const p of people(w)) {
         const bed = bedOwnedBy(w, p.id)!;
-        const claim = allLines(w).find(
-          (e) => e.type === 'people.claimedBed' && e.actors[0] === p.id,
-        )!;
-        expect(claim.causes).toEqual([bed['made']]);
+        // Their latest bed line: the claim, or a move to a room of their own (V-078), which
+        // cites the bed and the low privacy behind it.
+        const claim = allLines(w)
+          .filter(
+            (e) =>
+              (e.type === 'people.claimedBed' || e.type === 'people.movedRoom') &&
+              e.actors[0] === p.id,
+          )
+          .at(-1)!;
+        if (claim.type === 'people.claimedBed') expect(claim.causes).toEqual([bed['made']]);
+        else expect(claim.causes[0]).toBe(bed['made']);
       }
-      // Rooms count the pieces: beds, and the quality words' beauty.
-      const at = beds[0]!;
-      const room = roomAt(w, content, at['x'] as number, at['y'] as number)!;
-      expect(room.bedPieces).toBeGreaterThan(0);
-      expect(room.sleepers).toBe(room.bedPieces);
+      // Rooms count the pieces: beds, and the quality words' beauty. A room left with a spare bed
+      // when its sleeper moved for privacy (V-078) has more beds than sleepers, so take the room
+      // of the first bed whose every bed is owned.
+      const full = owned
+        .map((b) => roomAt(w, content, b['x'] as number, b['y'] as number)!)
+        .find((r) =>
+          beds
+            .filter((b) => r.tiles.includes((b['y'] as number) * w.map.width + (b['x'] as number)))
+            .every((b) => b['owner']),
+        )!;
+      expect(full).toBeDefined();
+      expect(full.bedPieces).toBeGreaterThan(0);
+      expect(full.sleepers).toBe(full.bedPieces);
       // Every piece stands on a floor tile of a room, never on its way in.
       for (const f of furnitureOf(w)) {
         const r = roomAt(w, content, f['x'] as number, f['y'] as number);
@@ -117,7 +132,8 @@ describe('carpentry and furniture', () => {
     });
   }
 
-  for (const seed of SEEDS) {
+  // Seeds where a barracks lasts the week: on tallow privacy rooms (V-078) empty it, as they should.
+  for (const seed of ['ledger', 'anvil', 'gwerin']) {
     it(`lets a colonist alone in an owned bedroom end a week in a better mood than the barracks on ${seed}`, () => {
       const w = createWorld(sim, seed);
       step(w, sim, 10 * DAY);
@@ -127,14 +143,23 @@ describe('carpentry and furniture', () => {
       };
       const alone = people(w).filter((p) => roomOf(p).sleepers === 1);
       const shared = people(w).filter((p) => roomOf(p).sleepers >= 3);
-      expect([alone.length, shared.length], seed).toEqual([1, 4]);
+      // Each sleeps alone or in a barracks of three or more; how many of each is the seed's
+      // layout (one alone on ledger and anvil, two on tallow).
+      expect(alone.length, seed).toBeGreaterThanOrEqual(1);
+      expect(shared.length, seed).toBeGreaterThanOrEqual(3);
+      expect(alone.length + shared.length, seed).toBe(people(w).length);
       step(w, sim, 7 * DAY);
+      // A barracks sleeper may move to a room of their own during the week (V-078): compare
+      // those still sharing with those alone all week.
+      const still = shared.filter((p) => roomOf(p).sleepers >= 3);
+      expect(still.length, seed).toBeGreaterThanOrEqual(1);
       const mood = (p: (typeof alone)[number]) => moodOf(w, p.id)!['value'] as number;
-      const mean = shared.reduce((n, p) => n + mood(p), 0) / shared.length;
-      expect(mood(alone[0]!), seed).toBeGreaterThan(mean);
-      expect(needOf(w, alone[0]!.id, 'privacy')!['value'], seed).toBeGreaterThan(
-        Math.max(...shared.map((p) => needOf(w, p.id, 'privacy')!['value'] as number)),
-      );
+      const mean = still.reduce((n, p) => n + mood(p), 0) / still.length;
+      const most = Math.max(...still.map((p) => needOf(w, p.id, 'privacy')!['value'] as number));
+      for (const p of alone) {
+        expect(mood(p), seed).toBeGreaterThan(mean);
+        expect(needOf(w, p.id, 'privacy')!['value'], seed).toBeGreaterThan(most);
+      }
     });
   }
 

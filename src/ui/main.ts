@@ -12,6 +12,7 @@ import {
   type ToWorker,
 } from '../worker/index.ts';
 import { showArrival } from './arrival.ts';
+import { gameKey } from './keys.ts';
 import { Hud, type PanelButton } from './hud.ts';
 import { Orders } from './orders.ts';
 import { testModeOn } from './testmode.ts';
@@ -53,6 +54,7 @@ let covering = true;
 /** The running world's valley and people, and whether the band has just arrived (P2.1). */
 let place = '';
 let people: readonly PersonView[] = [];
+let green: { text: string; again: boolean } | undefined; // where the cart stopped (arrival)
 let arriving = false;
 /** The title screen while it is up (P2.1), waiting for a loaded save's first snapshot. */
 let title: Title | undefined;
@@ -196,6 +198,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       hud.showLevel(0, depth, true);
       place = message.place;
       people = message.people;
+      green = message.green;
       arriving = message.from === 'seed' && message.fresh && people.length > 0;
       renderer.setPeople(people);
       sheets.setPeople(people);
@@ -244,7 +247,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       if (arriving) {
         arriving = false;
         cover(true);
-        showArrival(hudRoot, place, date, people, () => cover(false));
+        showArrival(hudRoot, { place, date, people, green }, () => cover(false), lookAgain);
       }
       if (covering && !saves.loading) {
         hud.hideScreen();
@@ -315,22 +318,19 @@ function stop(): void {
   worker.terminate();
 }
 
-function onKey(e: KeyboardEvent): void {
-  if (hudRoot!.classList.contains('covered')) return; // the title or arrival screen is up
-  // Leave the browser's own shortcuts (zoom, tab switching) alone.
-  if (e.ctrlKey || e.metaKey || e.altKey || (e.repeat && e.key === ' ')) return;
-  // Typing a seed in the save panel is not a game key.
-  if ((e.target as HTMLElement).closest?.('input')) return;
-  if (e.key === 'Escape') closePanel();
-  else if (e.key === ' ') setSpeed(speed === 0 ? lastRunning : 0);
-  else if (e.key === '1' || e.key === '2' || e.key === '3') setSpeed(Number(e.key) as Speed);
-  else if (e.key === '+' || e.key === '=') renderer.zoomStep(1);
-  else if (e.key === '-' || e.key === '_') renderer.zoomStep(-1);
-  else if (e.key === '>' || e.key === 'PageDown') setLevel(level + 1);
-  else if (e.key === '<' || e.key === 'PageUp') setLevel(level - 1);
-  else return;
-  e.preventDefault();
+/** The arrival's Look elsewhere: the world is made again, so its ledger comes afresh. */
+function lookAgain(): void {
+  saves.loaded();
+  send({ type: 'lookAgain' });
 }
+const onKey = (e: KeyboardEvent): void =>
+  gameKey(e, hudRoot!, {
+    close: closePanel,
+    pause: () => setSpeed(speed === 0 ? lastRunning : 0),
+    speed: setSpeed,
+    zoom: (direction) => renderer.zoomStep(direction),
+    level: (direction) => setLevel(level + direction),
+  });
 
 // A hidden tab pauses, so no game time passes unseen, and resumes at its speed when shown again.
 let hiddenAt: Speed | undefined;

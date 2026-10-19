@@ -131,25 +131,30 @@ describe('engine', () => {
       /^The valley took shape: 150 by 150 tiles, mostly [a-z ]+, with a [a-z]+ climate \(-?[0-9.]+ °C on the valley floor, [0-9]+ mm of rain a year\)\.$/,
     );
     expect(log[1]).toMatchObject({ type: 'map.formed', causes: [1] });
+    // Where the band stops the cart, and why (the green, V-083).
     expect(text(3)).toMatch(
+      /^The band stopped the cart on [a-z ,]+ ground .+\. Here would be the green\.$/,
+    );
+    expect(log[2]).toMatchObject({ type: 'map.green', causes: [2] });
+    expect(text(4)).toMatch(
       /^Its waters gathered: a river leaving by the (north|south|east|west), [0-9]+ lakes and [0-9]+ springs\.$/,
     );
-    expect(log[2]).toMatchObject({ type: 'map.watered', causes: [2] });
+    expect(log[3]).toMatchObject({ type: 'map.watered', causes: [2] });
     // The aura spots' line is part of the world as it began, so it cites only that.
-    expect(text(4)).toMatch(/^Old power gathers in the valley at .+\.$/);
-    expect(log[3]).toMatchObject({ type: 'map.aura', causes: [1] });
+    expect(text(5)).toMatch(/^Old power gathers in the valley at .+\.$/);
+    expect(log[4]).toMatchObject({ type: 'map.aura', causes: [1] });
     // The world's first month and season get their lines when it begins.
-    expect(text(5)).toBe('Thawmonth began.');
-    expect(log[4]).toMatchObject({ type: 'calendar.month', causes: [1] });
-    expect(text(6)).toBe('Spring came to the valley.');
-    expect(log[5]).toMatchObject({ type: 'calendar.season', causes: [5] });
-    expect(text(7)).toBe('Day 2 of Thawmonth began.');
-    expect(log[6]).toMatchObject({ type: 'calendar.day', causes: [5] });
-    expect(log[33]).toMatchObject({ id: 34, type: 'calendar.month', causes: [1] });
-    expect(log[34]).toMatchObject({ type: 'calendar.day', causes: [34] });
-    expect(text(90)).toBe('Highsun began.');
-    expect(log[90]).toMatchObject({ type: 'calendar.season', causes: [90] });
-    expect(text(91)).toBe('Summer came to the valley.');
+    expect(text(6)).toBe('Thawmonth began.');
+    expect(log[5]).toMatchObject({ type: 'calendar.month', causes: [1] });
+    expect(text(7)).toBe('Spring came to the valley.');
+    expect(log[6]).toMatchObject({ type: 'calendar.season', causes: [6] });
+    expect(text(8)).toBe('Day 2 of Thawmonth began.');
+    expect(log[7]).toMatchObject({ type: 'calendar.day', causes: [6] });
+    expect(log[34]).toMatchObject({ id: 35, type: 'calendar.month', causes: [1] });
+    expect(log[35]).toMatchObject({ type: 'calendar.day', causes: [35] });
+    expect(text(91)).toBe('Highsun began.');
+    expect(log[91]).toMatchObject({ type: 'calendar.season', causes: [91] });
+    expect(text(92)).toBe('Summer came to the valley.');
     // The map is cut into 10 by 10 chunks with narrower edge chunks; each carries its features.
     expect(world.map.chunkVersions).toHaveLength(100);
     const edge = chunkTiles(world.map, 9, 9);
@@ -166,13 +171,14 @@ describe('engine', () => {
     // Changing a tile marks only its chunk for resending.
     const ctx = { world, content } as unknown as Parameters<typeof setTile>[0];
     expect(() => setTile(ctx, 150 - 1, 17, 1, 9999)).toThrow('without a ledger line');
-    setTile(ctx, 150 - 1, 17, 1, 3);
+    const waters = log.find((e) => e.type === 'map.watered')!.id;
+    setTile(ctx, 150 - 1, 17, 1, waters);
     expect(world.map.chunkVersions[1 * 10 + 9]).toBe(2);
     // Every tile cites the line that laid it out until something changes it (water the
     // waters' line, the rest the valley's); "why?" walks back.
     const formed = log.find((e) => e.type === 'map.formed')!;
     const watered = log.find((e) => e.type === 'map.watered')!;
-    expect(world.map.tileCauses[17 * 150 + 149]).toBe(3);
+    expect(world.map.tileCauses[17 * 150 + 149]).toBe(waters);
     expect(world.map.tileCauses.filter((c) => c === watered.id).length).toBeGreaterThan(0);
     // Every water tile cites the waters; each other tile one of the two generator lines.
     expect(world.map.tileCauses.every((c, i) => !world.map.water[i] || c === watered.id)).toBe(

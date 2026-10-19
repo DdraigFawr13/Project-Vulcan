@@ -15,15 +15,21 @@ const set = (w: ReturnType<typeof createWorld>, kind: string, data: Record<strin
 
 describe('work priorities', () => {
   it('changes who takes up felling within an hour when a priority is raised', () => {
-    const before = createWorld(sim, 'ledger');
+    // A world where someone able to fell has not taken it up in the first hour.
+    const strongIdle = (w: ReturnType<typeof createWorld>) =>
+      people(w).find((p) => !tookUp(w).has(p.id) && (p['strength'] as number) >= 8);
+    const seed = ['ledger', 'wren', 'ledger/1', 'tallow'].find((s) => {
+      const w = createWorld(sim, s);
+      step(w, sim, HOUR);
+      return strongIdle(w);
+    })!;
+    const before = createWorld(sim, seed);
     step(before, sim, HOUR);
     const fellers = tookUp(before);
-    const raised = people(before).find(
-      (p) => !fellers.has(p.id) && (p['strength'] as number) >= 8,
-    )!;
+    const raised = strongIdle(before)!;
     expect(raised).toBeDefined();
 
-    const after = createWorld(sim, 'ledger');
+    const after = createWorld(sim, seed);
     set(after, 'setPriority', { person: raised.id, job: 'fell', level: 1 });
     step(after, sim, HOUR);
     expect(tookUp(after).has(raised.id)).toBe(true);

@@ -24,7 +24,14 @@ export interface LifeDef {
   sleep: { bed: number; bedroll: number; ground: number; from: number; to: number; wake: number };
   beauty: { neutral: number; perPoint: number; rate: number; outdoors: number };
   privacy: { gain: number; perOther: number };
-  warmth: { comfort: number; bedroll: number; rise: number; perDegree: number; below: number };
+  warmth: {
+    comfort: number;
+    bedroll: number;
+    rise: number;
+    catchUp: number;
+    perDegree: number;
+    below: number;
+  };
   relax: { from: number; gain: number; company: number; reach: number };
   /** Food each item kind gives when one is eaten. */
   eat: Readonly<Record<string, number>>;

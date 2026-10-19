@@ -201,7 +201,17 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
     place: (w.entities['colony']?.[0]?.['name'] as string | undefined) ?? w.seed,
     fresh: w.tick === START_TICK,
     people: peopleOf(w),
+    ...greenOf(w),
   });
+}
+
+/** The line saying where the band stopped the cart, and whether it may still be sent back. */
+function greenOf(w: WorldState): { green?: { text: string; again: boolean } } {
+  const line = w.log.find((e) => e.type === 'map.green' || e.type === 'map.greenAgain');
+  if (!line) return {};
+  const map = w.systems['map'] ?? {};
+  const again = w.tick === START_TICK && !map['look'] && !!map['next'];
+  return { green: { text: renderEvent(line, sim.templates), again } };
 }
 
 /** Rolls the region of a plain seed and makes each valley's world, to offer them in the picker. */
@@ -260,6 +270,10 @@ function handle(message: ToWorker): void {
       return;
     case 'skip':
       if (world) pace.skip = true;
+      return;
+    case 'lookAgain':
+      // Only on arrival and only once: the same seed made again with the band's second choice.
+      if (world && greenOf(world).green?.again) adopt(createWorld(sim, world.seed, 1), 'seed');
       return;
     case 'jump': {
       // A time jump is a test tool: a page not in test mode gets nothing (V-041).
