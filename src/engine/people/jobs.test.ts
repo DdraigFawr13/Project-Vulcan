@@ -51,11 +51,27 @@ describe('work', () => {
       const brought = plansOf(world)
         .filter((p) => p['state'] === 'plan' && planPart(content, p).material === 'logs')
         .reduce((n, p) => n + (p['have'] as number), 0);
-      expect(haveOf(world, content, 'logs') + wood + brought).toBeGreaterThanOrEqual(want.count);
+      // A tree being felled counts, as it does when felling is taken up (jobs.ts `shortOf`): a
+      // day can end with the level met only once that tree is down.
+      const coming = (world.entities['person'] ?? [])
+        .filter((p) => p['job'] === 'fell' && (p['target'] as number) >= 0)
+        .reduce((n, p) => {
+          const f = world.map.features[p['target'] as number]!;
+          return n + (f ? (content.features[f - 1]!.amount ?? 0) : 0);
+        }, 0);
+      expect(haveOf(world, content, 'logs') + wood + brought + coming).toBeGreaterThanOrEqual(
+        want.count,
+      );
       // What is stored, with what carpenters took, meets the level: a felled log left lying
       // where it fell does not count (the phase review found this check had become one that
       // could not fail).
-      expect(inStoreCount(world) + wood + brought).toBeGreaterThanOrEqual(want.count);
+      expect(inStoreCount(world) + wood + brought + coming).toBeGreaterThanOrEqual(want.count);
+      // And no more than the level, give or take the loads on their way in: the logs of a cleared
+      // house site stay where they fell, so they cannot fill the store (anvil had 450 by day 3).
+      const people = world.entities['person']?.length ?? 0;
+      expect(inStoreCount(world)).toBeLessThanOrEqual(
+        Math.max(want.count, content.life.stacks['logs'] ?? 0) + people * content.work.haul.load,
+      );
       // Felling lines lead back through taking it up to the colony's stock level.
       const felled = world.log.find((e) => e.type === 'work.felled')!;
       const chain = whyOf(world, felled.id).map((c) => c.event.type);

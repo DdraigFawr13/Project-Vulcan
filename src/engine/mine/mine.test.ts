@@ -1,8 +1,7 @@
 // P4.1 mining (V-086, V-087, V-041): raising an ingot plate gets a shaft sited by the metal's stain
 // outside the town ring, dug by colonists nobody orders, and the ore reaches the store. The one
 // lever beside the plate is sending a shaft plan back, once. Shafts are sited on the done-when's three
-// seeds; the ore test leaves out anvil, whose store is boxed in and full of logs by day 16 before any
-// mining (a store problem, not a mining one, with its own fix).
+// seeds; the ore test adds ledger, and keeps anvil, whose store once filled with a cleared site's logs.
 import { describe, expect, it } from 'vitest';
 import { content as base, type Content } from '../../content/index.ts';
 import {
@@ -22,7 +21,7 @@ import { openVein } from './site.ts';
 
 const DAY = 1440;
 const SEEDS = ['anvil', 'smoke', 'tallow'];
-const ORE_SEEDS = ['smoke', 'tallow', 'ledger'];
+const ORE_SEEDS = ['anvil', 'smoke', 'tallow', 'ledger'];
 
 const send = (world: WorldState, kind: string, data: Record<string, string | number>) =>
   submitCommand(world, { tick: world.tick + 1, kind, data });
@@ -180,8 +179,9 @@ describe('mining', () => {
     const sim = createSim(base);
     const world = createWorld(sim, 'tallow');
     send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
-    for (let d = 0; d < 12 && shaftsOf(world)[0]?.['state'] !== 'done'; d += 1)
-      step(world, sim, DAY);
+    // Hour by hour, so the vein is gone before anyone has mined it and iron is still short.
+    for (let h = 0; h < 12 * 24 && shaftsOf(world)[0]?.['state'] !== 'done'; h += 1)
+      step(world, sim, DAY / 24);
     const first = shaftsOf(world)[0]!;
     expect(first['state']).toBe('done');
     // The vein is worked out: none of it is left on its level.

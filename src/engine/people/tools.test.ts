@@ -188,7 +188,9 @@ describe('tools in use', () => {
       lines(w, 'smith.made').filter((e) => String(e.data['what']).includes('axe')),
     ).toHaveLength(1);
     expect(lines(w, 'work.tookUpSmithing').filter((e) => e.id > made.id)).toEqual([]);
-    expect(made.data['who']).toBe(a!['name']);
+    // Made for the feller, whoever smithed it ("for themself" when they did).
+    const forWhom = made.data['who'] === 'themself' ? made.data['name'] : made.data['who'];
+    expect(forWhom).toBe(a!['name']);
     const mine = heldBy(w, content, a!.id).filter((t) => kindOf(t) === 'axe');
     expect(mine.map((t) => t['kind'])).toContain('iron-axe');
     // It traces to the smith taking it up, which traces to the forge; nobody ordered it.

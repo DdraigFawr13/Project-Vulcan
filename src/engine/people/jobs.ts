@@ -204,7 +204,9 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
   if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
   const load = loadOf(world, p.id);
-  // Out of hours the metal and station work keeps what it fetched and resumes next morning.
+  // Out of hours the metal and station work keeps what it fetched and resumes next morning, and
+  // so does a sinker the shaft's ladder (else they carried it back and lost the job).
+  if (load && !hours && p['job'] === 'mine' && p['task'] === 'sink') return false;
   if (load && !HOLDS.includes(p['job'] as string)) {
     p['job'] = 'haul';
     deliver(ctx, p, load);
