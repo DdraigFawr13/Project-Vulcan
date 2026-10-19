@@ -3,6 +3,8 @@
 // be. Slim walls are a band through the middle of their tile (the taste board's pick): a wall
 // joins the walls and doors beside it, and on a side (or inner corner) that meets a floor the
 // floor's half (or quarter) shows under it, so a wall reads over every floor and ground. A part to come down shows tinted.
+// Plans are drawn whole into one picture that is then made faint, so the pieces of a planned
+// wall and the floor halves under it never stack into darker patches.
 // Pictures only: what is built comes from the chunks' `built` and the snapshot's plans.
 import Phaser from 'phaser';
 import { content } from '../content/index.ts';
@@ -12,6 +14,8 @@ import { BUILDINGS } from './sheets.ts';
 const TILE = 32;
 const PLAN_ALPHA = 0.5;
 const DOWN_TINT = 0xd08060;
+// The widest run of tiles drawn as one faint picture of plans.
+const MOST_TILES = 64;
 const SIDES = [
   ['n', 0, -1, 1],
   ['e', 1, 0, 2],
@@ -36,7 +40,8 @@ export class BuildSprites {
   private built = new Uint8Array(0);
   private width = 0;
   private plans: GoodsView['plans'] = [];
-  private shown: Phaser.GameObjects.Image[] = [];
+  private shown: (Phaser.GameObjects.Image | Phaser.GameObjects.RenderTexture)[] = [];
+  private ghosts: { x: number; y: number; frame: string; s: Shown; depth: number }[] = [];
   private key = '';
   private z = 0;
   private live = false;
@@ -113,6 +118,7 @@ export class BuildSprites {
     this.key = key;
     for (const s of this.shown) s.destroy();
     this.shown = [];
+    this.ghosts = [];
     if (this.z !== 0) return;
     const tiles = this.tiles();
     const at = (x: number, y: number) =>
@@ -144,16 +150,48 @@ export class BuildSprites {
           : `${s.part.art}.${mask & 5 && !(mask & 10) ? 'v' : 'h'}`;
       this.put(x, y, frame, s, 7);
     }
+    this.drawGhosts();
+  }
+
+  /** The plans, stamped at full strength into one texture over their tiles, which is then shown
+   * faint: floors first, then walls and doors. */
+  private drawGhosts(): void {
+    if (!this.ghosts.length) return;
+    const xs = this.ghosts.map((g) => g.x);
+    const ys = this.ghosts.map((g) => g.y);
+    const [x0, y0] = [Math.min(...xs), Math.min(...ys)];
+    const [w, h] = [Math.max(...xs) - x0 + 1, Math.max(...ys) - y0 + 1];
+    // A texture the size of the whole map would be too big for some phones: far-apart plans
+    // (test mode) are drawn one piece at a time instead.
+    if (w > MOST_TILES || h > MOST_TILES) {
+      for (const g of this.ghosts) this.image(g.x, g.y, g.frame, g.s, g.depth).setAlpha(PLAN_ALPHA);
+      return;
+    }
+    const rt = this.scene.add.renderTexture(x0 * TILE, y0 * TILE, w * TILE, h * TILE);
+    rt.setOrigin(0).setDepth(4).setAlpha(PLAN_ALPHA);
+    for (const g of [...this.ghosts].sort((a, b) => a.depth - b.depth))
+      rt.stamp(BUILDINGS, g.frame, (g.x - x0) * TILE, (g.y - y0) * TILE, {
+        originX: 0,
+        originY: 0,
+        ...(g.s.down && { tint: DOWN_TINT }),
+      });
+    rt.render();
+    this.shown.push(rt);
   }
 
   private put(x: number, y: number, frame: string, s: Shown, depth: number): void {
     if (!this.scene.textures.get(BUILDINGS).has(frame)) return;
+    if (s.plan) this.ghosts.push({ x, y, frame, s, depth });
+    else this.image(x, y, frame, s, depth);
+  }
+
+  private image(x: number, y: number, frame: string, s: Shown, depth: number) {
     const image = this.scene.add
       .image(x * TILE, y * TILE, BUILDINGS, frame)
       .setOrigin(0)
       .setDepth(depth);
-    if (s.plan) image.setAlpha(PLAN_ALPHA);
     if (s.down) image.setTint(DOWN_TINT);
     this.shown.push(image);
+    return image;
   }
 }
