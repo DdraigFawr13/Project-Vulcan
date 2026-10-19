@@ -38,7 +38,10 @@ describe('work', () => {
         0,
       );
       expect(haveOf(world, content, 'logs') + wood).toBeGreaterThanOrEqual(want.count);
-      expect(inStoreCount(world)).toBeLessThanOrEqual(haveOf(world, content, 'logs'));
+      // What is stored, with what carpenters took, meets the level: a felled log left lying
+      // where it fell does not count (the phase review found this check had become one that
+      // could not fail).
+      expect(inStoreCount(world) + wood).toBeGreaterThanOrEqual(want.count);
       // Felling lines lead back through taking it up to the colony's stock level.
       const felled = world.log.find((e) => e.type === 'work.felled')!;
       const chain = whyOf(world, felled.id).map((c) => c.event.type);

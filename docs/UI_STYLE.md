@@ -53,7 +53,7 @@ Drawn at 1 art pixel to 2 CSS pixels and scaled with `image-rendering: pixelated
 
 ## Sizes and layout on a phone (390 px)
 
-- **Tap targets are at least 44 px** in both directions, including a sheet's ✕ and the speed buttons (V-077). Screens built before 2026-10-19 use 40 px and move to 44 px in the Phase 3 phase-review fix PR, which also raises the browser smoke's check from 40 to 44.
+- **Tap targets are at least 44 px** in both directions, including a sheet's ✕ and the speed buttons (V-077). The browser smoke checks it at 390 px.
 - The top bar holds the clock line, the speed buttons (pause, 1×, 2×, 3×, Skip) and Ledger. Region, Saves and anything later go in the ⋯ menu, so the bar never overflows at 390 px.
 - Under the bar: the portrait strip (iron frame, mood ring, name) and the one-line alert plate with its count badge.
 - A sheet opens to at most 40% of the screen and scrolls inside itself. Chrome above the map takes at most about 27%, so at least a third of the map stays visible. Measured in the mock: chrome 27%, map 34%, sheet 39%.

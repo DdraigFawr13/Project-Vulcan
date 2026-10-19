@@ -54,9 +54,12 @@ export function reachOf(world: WorldState, content: EngineContent, piece: Entity
   if (room) return room.tiles;
   const r = content.work.fire.radius;
   const out: number[] = [];
+  // In the open it warms open ground only: not through a wall, nor a house's floor beyond it.
   for (let ty = Math.max(0, y - r); ty <= Math.min(map.height - 1, y + r); ty += 1)
-    for (let tx = Math.max(0, x - r); tx <= Math.min(map.width - 1, x + r); tx += 1)
-      out.push(ty * map.width + tx);
+    for (let tx = Math.max(0, x - r); tx <= Math.min(map.width - 1, x + r); tx += 1) {
+      const i = ty * map.width + tx;
+      if (!map.built[i] || (tx === x && ty === y)) out.push(i);
+    }
   return out;
 }
 

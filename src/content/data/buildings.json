@@ -18,7 +18,7 @@
 {"id":"cottage","name":"cottage","w":6,"h":4,"sleeps":4},
 {"id":"longhouse","name":"longhouse","w":8,"h":6,"sleeps":8}
 ],
-"stage":{"id":"room","name":"room","w":5,"h":4,"sleeps":2}},
+"stage":{"id":"room","name":"room","w":5,"h":4,"sleeps":2},"private":4},
 "rooms":{"hearthBelow":0,"most":120,"roof":"thatch","perSize":3,"top":100,"crowd":{"tiles":2,"beauty":-2},"bare":-1,
 "floors":{"floor-wood":0,"floor-stone":1},
 "roles":[{"id":"barracks","name":"barracks","beds":3},{"id":"bedroom","name":"bedroom","beds":1}],

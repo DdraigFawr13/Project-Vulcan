@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import {
+  addEntity,
   allLines,
   createSim,
   createWorld,
@@ -167,5 +168,36 @@ describe('hearth and firewood', () => {
     expect(mine.length).toBeGreaterThan(0);
     for (const line of mine)
       expect(whyOf(w, line.id).map((c) => c.event.type)).toContain('work.prioritySet');
+  });
+});
+
+describe('a cold room with no floor for a hearth', () => {
+  it('says so once, on the alert line, citing the cold', () => {
+    const w = createWorld(sim, 'ledger');
+    for (let h = 0; h < 5 * 24 && !roomsOf(w, winter).length; h += 1) step(w, sim, 60);
+    // Fill the floor of each room with chests before any hearth is planned.
+    for (const rr of roomsOf(w, winter)) {
+      const taken = new Set(
+        furnitureOf(w).map((f) => (f['y'] as number) * w.map.width + (f['x'] as number)),
+      );
+      // Not the tile just inside the door: it stays clear as the way in, and someone can stand there.
+      const wayIn = rr.room.doorTiles.flatMap((d) => [
+        d - 1,
+        d + 1,
+        d - w.map.width,
+        d + w.map.width,
+      ]);
+      for (const i of rr.room.tiles.filter((t) => !taken.has(t) && !wayIn.includes(t)))
+        addEntity(w, 'furniture', {
+          ...{ kind: 'chest', x: i % w.map.width, y: Math.floor(i / w.map.width), z: 0 },
+          ...{ facing: 's', quality: 0, maker: 0, owner: 0, made: 0, line: 0, state: 'built' },
+          ...{ have: 0, work: -1, waited: 0 },
+        });
+    }
+    step(w, sim, 2 * DAY);
+    const said = allLines(w).filter((e) => e.type === 'fire.noFloor');
+    expect(said.length).toBeGreaterThan(0);
+    expect(new Set(said.map((e) => e.data['room'])).size).toBe(said.length);
+    expect(said[0]!.causes.length).toBeGreaterThan(0);
   });
 });

@@ -29,6 +29,6 @@
   --paper: url('/art/ui/paper.png');
 
   /* Phone rules: tap targets and the bottom sheet's share of the screen. */
-  --tap: 42px;
+  --tap: 44px;
   --sheet: 39vh;
 }

@@ -116,9 +116,11 @@ export const buildSystem: System = {
     'build.houseBuilt',
     'build.roomAdded',
     'build.grows',
+    'build.growsPrivate',
     'furniture.benchPlaced',
     'fire.planned',
     'fire.plannedCold',
+    'fire.noFloor',
   ],
   // `nobody`: the line saying nobody is able to build, while that holds; `green`: the green's
   // tile index plus one; `need`: the line saying people sleep in the open, while they do;

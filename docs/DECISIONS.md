@@ -81,3 +81,6 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-075 | Indoor trades work after dark only with light; candles get a stock plate; the work-hours law sets how late (Morgan, 2026-10-19). |
 | V-076 | New trades land beside the systems they need: P5.11 to P5.13, P6.11 to P6.13, P7.7, P9.7 and rows in P5.4, P7.1, P7.3, P8.1, P9.1; Phases 3 and 4 gain none (Morgan, 2026-10-19). |
 | V-077 | Tap targets are at least 44 px, up from V-037's 40 px, to match the touch-target guideline the mock-up accessibility check uses (VR-65) (Morgan, skills review 2026-10-19). |
+| V-078 | Privacy rooms: a crowded sleeper's low privacy makes a house add a room (up to `house.private` rows, 4) and a spare bed for it, and a crowded sleeper moves to a free bed in an empty room no colder than their own (Morgan, Phase 3 review 2026-10-19). |
+| V-079 | Cold-room alert: a room cold in use with no free floor for a hearth writes one notable line naming the room, once per room (Morgan, Phase 3 review 2026-10-19). |
+| V-080 | Warmth also beats sleep below the warning line (V-046 read at the Phase 3 review: a sleeper in an unheated room froze through the night); a room keeps its hearth's tile free of furniture; the worker refuses test-mode tools unless test mode is on (Phase 3 review defaults, 2026-10-19). |

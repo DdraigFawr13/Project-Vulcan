@@ -105,7 +105,6 @@ export function planRoomHearths(ctx: SystemContext): void {
     if (!here.length || temp >= below) continue;
     const rr = { h, room };
     const site = siteFor(world, content, rr, HEARTH);
-    if (!site) continue;
     const who = here[0]!;
     const cold = (world.entities['need'] ?? []).find(
       (n) => n['person'] === who.id && n['need'] === 'warmth',
@@ -113,6 +112,15 @@ export function planRoomHearths(ctx: SystemContext): void {
     const cause = cold?.['low']
       ? (cold['line'] as number)
       : (world.systems['weather']?.['spell'] as number) || world.begunEvent;
+    if (!site) {
+      // Said once for the room, so the cold has a reason on the alert line.
+      h['cold'] ||= ctx.emit('fire.noFloor', {
+        causes: [cause].filter((c) => c > 0),
+        actors: [who.id],
+        data: { name: who['name'] as string, room: roomName(world, content, h) },
+      });
+      continue;
+    }
     const line = ctx.emit('fire.plannedCold', {
       causes: [cause].filter((c) => c > 0),
       actors: [who.id],

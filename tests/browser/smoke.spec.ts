@@ -9,6 +9,9 @@ import { expect, test, type Page } from '@playwright/test';
 // P2.5 to P2.7: a person's tabs, the Work sheet's stepper, Skip to a notable line and the alerts.
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
+/** The alert line's newest notable line. */
+const alertText = async (page: Page) =>
+  (await page.getByTestId('alert').getAttribute('aria-label')) ?? '';
 /** The last snapshot's tick and the worker's clock when it was sent (ms). */
 // Both read in one step: read one at a time, a busy page can update `at` from a newer snapshot
 // between the two, which made a correct 100 a second read as 148 in CI.
@@ -27,7 +30,7 @@ const phoneRules = (page: Page) =>
     const bad: string[] = [];
     for (const b of document.querySelectorAll('#hud button')) {
       const r = b.getBoundingClientRect();
-      if (shown(b) && !b.closest('svg') && Math.min(r.width, r.height) < 40)
+      if (shown(b) && !b.closest('svg') && Math.min(r.width, r.height) < 44)
         bad.push(`tap ${Math.round(Math.min(r.width, r.height))} px: ${b.textContent}`);
     }
     const text = document.createTreeWalker(document.getElementById('hud')!, NodeFilter.SHOW_TEXT);
@@ -233,12 +236,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('open-work').click();
   await expect(panel).toContainText("The colony's day");
-  // P3.4: Carpentry comes from content like the other rows, with its skill line and 42 px steppers.
+  // P3.4: Carpentry comes from content like the other rows, with its skill line and 44 px steppers.
   const carpentry = panel.locator('.prio').filter({ hasText: 'Carpentry' });
   await expect(carpentry).toContainText(/crafting \d+, can reach \d+/);
   for (const b of await carpentry.getByRole('button').all()) {
     const box = (await b.boundingBox())!;
-    expect([box.width, box.height].every((n) => n >= 42)).toBe(true);
+    expect([box.width, box.height].every((n) => n >= 44)).toBe(true);
   }
   // P3.6: Tending is its own row beside Felling and Hauling, with the same four-step priority.
   const tend = panel.locator('.prio[data-job="tend"]');
@@ -246,7 +249,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(tend).toContainText('no skill needed');
   for (const b of await tend.getByRole('button').all()) {
     const box = (await b.boundingBox())!;
-    expect([box.width, box.height].every((n) => n >= 42)).toBe(true);
+    expect([box.width, box.height].every((n) => n >= 44)).toBe(true);
   }
   expect(await phoneRules(page)).toEqual([]);
   // Scrolled to its foot, the sheet keeps its title and ✕ in view.
@@ -278,14 +281,22 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
     .locator('.need')
     .filter({ hasText: 'Food' })
     .getByRole('button', { name: 'why?' });
-  for (let skips = 0; skips < 12 && (await hungry.count()) === 0; skips++) {
+  // Skip stops on every notable line, and Phase 3 added many before the food runs out (privacy,
+  // boredom, a second room: 14 skips on this seed), so the loop first waits for the line that
+  // ate the last of the food on the alert line, then for the hunger it causes.
+  const skipOnce = async () => {
     const from = await tick(page);
     await page.getByTestId('speed-skip').click();
     await expect.poll(() => tick(page)).toBeGreaterThan(from);
     await expect(page.getByTestId('speed-skip')).toHaveAttribute('aria-pressed', 'false', {
       timeout: 30_000,
     });
-  }
+  };
+  const foodGone = /ate the last of the band's food/;
+  for (let skips = 0; skips < 30 && !foodGone.test(await alertText(page)); skips++)
+    await skipOnce();
+  expect(await alertText(page)).toMatch(foodGone);
+  for (let skips = 0; skips < 6 && (await hungry.count()) === 0; skips++) await skipOnce();
   await hungry.first().click({ timeout: 5000 });
   await expect(panel.getByTestId('chain')).toContainText("ate the last of the band's food");
   // P2.9: the sheet says what they are doing; ⋯ → Yesterday opens the dawn page with the
@@ -306,7 +317,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(houses).toContainText('Houses');
   await expect(page.getByTestId('build-need')).toContainText('Need:');
   for (const b of await houses.getByRole('button').all())
-    expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(42);
+    expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   await expect(houses).toContainText('first');
   await houses.getByRole('button', { name: 'Houses: lower' }).click();
   await expect(houses).toContainText('second');

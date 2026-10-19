@@ -379,10 +379,10 @@ body,
 #hud .why {
   all: unset;
   cursor: pointer;
-  /* Taller than it looks, so a thumb finds it (UI_STYLE: tap targets of 42 px). */
+  /* Taller than it looks, so a thumb finds it (UI_STYLE: tap targets of 44 px, V-077). */
   display: inline-block;
-  padding: 12px 8px;
-  margin: -12px -6px -12px -2px;
+  padding: 13px 8px;
+  margin: -13px -6px -13px -2px;
   font: 700 15px/18px var(--name);
   color: var(--rubric);
   text-decoration: underline;

@@ -57,13 +57,24 @@ export const raceOf = (id: string, content: EngineContent): string =>
 
 // The last few worlds made, per content: the picker, its three valleys and the Region panel all ask
 // for the same seed's world, which takes about a second and a half to make. Same seed, same world.
+// Keyed by the content the world is made from (region, races, cultures), so a copy of the content
+// with other seasons or rates, as tests make, shares the same seed's world.
 const KEEP = 4;
-const made = new WeakMap<EngineContent, Map<string, WorldState>>();
+interface Made {
+  races: EngineContent['races'];
+  cultures: EngineContent['cultures'];
+  worlds: Map<string, WorldState>;
+}
+const made = new WeakMap<EngineContent['region'], Made>();
 
 /** The Story Generator world for a region seed: its land and 250 years of history. */
 export function storyWorld(seed: string, content: EngineContent): WorldState {
-  const cache = made.get(content) ?? new Map<string, WorldState>();
-  made.set(content, cache);
+  let entry = made.get(content.region);
+  if (!entry || entry.races !== content.races || entry.cultures !== content.cultures) {
+    entry = { races: content.races, cultures: content.cultures, worlds: new Map() };
+    made.set(content.region, entry);
+  }
+  const cache = entry.worlds;
   const known = cache.get(seed);
   if (known) return known;
   const { size, years } = content.region.world;

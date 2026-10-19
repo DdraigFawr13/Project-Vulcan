@@ -4,7 +4,7 @@
 // out from its walls; the Build sheet's levers are a level and one send-back.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
-import { allLines, createSim, createWorld, step, submitCommand, whyOf } from '../index.ts';
+import { allLines, createSim, createWorld, needOf, step, submitCommand, whyOf } from '../index.ts';
 import { homeless, housesOf, roomAt } from './index.ts';
 
 const sim = createSim(content);
@@ -35,8 +35,15 @@ describe('houses', () => {
       // Five people, a cottage for four: a room is added on, citing the house built.
       const grows = lines(world, 'build.grows')[0]!;
       expect(grows.causes).toContain(house['built']);
-      expect(lines(world, 'build.roomAdded')).toHaveLength(1);
+      expect(lines(world, 'build.grows')).toHaveLength(1);
       expect(lines(world, 'build.sited')).toHaveLength(1);
+      // Four to the cottage's one room: one of them, crowded, has a room of their own added
+      // (phase review), moves to its bed, and sleeps alone until they no longer feel crowded.
+      const own = lines(world, 'build.growsPrivate')[0]!;
+      expect(whyOf(world, own.id).map((c) => c.event.type)).toContain('need.low');
+      const moved = lines(world, 'people.movedRoom').find((e) => e.actors[0] === own.actors[0])!;
+      expect(moved).toBeDefined();
+      expect(needOf(world, own.actors[0]!, 'privacy')!['low']).toBe(0);
       // Each moves in once and stays: nobody carries their bedroll back and forth.
       expect(homeless(world, content)).toEqual([]);
       expect(lines(world, 'people.movedIn')).toHaveLength(5);
