@@ -62,17 +62,4 @@ describe('work priorities', () => {
     for (const s of world.entities['skill'] ?? [])
       expect(s['level'] as number).toBeLessThanOrEqual(s['potential'] as number);
   });
-
-  it('sets the colony day with a line and refuses one that makes no sense', () => {
-    const world = createWorld(sim, 'ledger');
-    set(world, 'setDay', { workFrom: 7, workTo: 5, sleepFrom: 22 });
-    set(world, 'setDay', { workFrom: 6, workTo: 7, sleepFrom: 22 });
-    step(world, sim, 3 * HOUR);
-    const types = world.log.map((e) => e.type);
-    expect(types).toContain('command.refused');
-    expect(world.log.find((e) => e.type === 'work.daySet')?.data['to']).toBe('07:00');
-    // After 07:00 no one takes up new work.
-    const late = world.log.filter((e) => e.type === 'work.tookUp' && e.tick % 1440 >= 7 * HOUR);
-    expect(late).toEqual([]);
-  });
 });

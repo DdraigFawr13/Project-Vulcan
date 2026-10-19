@@ -37,6 +37,15 @@ describe('houses', () => {
     expect(needOf(world!, own.actors[0]!, 'privacy')!['low']).toBe(0);
   });
 
+  it('says once why a crowded house gets no room when no side has clear ground (anvil)', () => {
+    const w = createWorld(sim, 'anvil');
+    step(w, sim, 12 * DAY);
+    const blocked = lines(w, 'build.growBlocked');
+    expect(blocked.length).toBeGreaterThan(0);
+    expect(blocked.length).toBeLessThanOrEqual(2);
+    expect(blocked[0]!.causes.length).toBeGreaterThan(0);
+  });
+
   for (const seed of SEEDS) {
     it(`sites a cottage with a reason, unordered, and adds a room as it fills on ${seed}`, () => {
       const world = createWorld(sim, seed);

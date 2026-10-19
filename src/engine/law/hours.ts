@@ -1,6 +1,6 @@
 // Whose hours are whose (P4.8, V-091, V-092): the work-hours law sets the colony's hours, in
-// winter its own; Customary is the colony's own day (the `setDay` lever's hours once given, else
-// content's `work.hours`), short in winter. Someone who refuses the law keeps the customary hours.
+// winter its own; Customary is the colony's own day (content's `work.hours`), short in
+// winter. Someone who refuses the law keeps the customary hours.
 import {
   clockAt,
   type EngineContent,
@@ -43,10 +43,7 @@ export function isWinter(world: WorldState, content: EngineContent): boolean {
 
 /** The customary hours this season. */
 export function customaryHours(world: WorldState, content: EngineContent): Hours {
-  const state = world.systems['people'] ?? {};
-  const sleepFrom = state['sleepFrom'] ?? content.life.sleep.from;
-  if (state['workFrom'] !== undefined && state['workTo'] !== undefined)
-    return { workFrom: state['workFrom'], workTo: state['workTo'], sleepFrom };
+  const sleepFrom = content.life.sleep.from;
   const custom = customOf(lawDef(content, WORK_HOURS)!);
   const h = custom && isWinter(world, content) ? custom.winter : content.work.hours;
   return { workFrom: h.from, workTo: h.to, sleepFrom };

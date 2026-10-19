@@ -133,6 +133,7 @@ export const buildSystem: System = {
     'build.roomAdded',
     'build.grows',
     'build.growsPrivate',
+    'build.growBlocked',
     'furniture.benchPlaced',
     'fire.planned',
     'fire.plannedCold',

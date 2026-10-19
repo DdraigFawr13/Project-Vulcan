@@ -155,8 +155,21 @@ export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: num
     const crowded = short ? undefined : crowdedIn(world, main)[0];
     if (!short && (!crowded || rows.some((h) => emptyRoom(ctx, h)))) continue;
     const site = stageSite(ctx, main, green);
-    main['full'] = site ? 0 : 1;
-    if (!site) continue;
+    if (!site) {
+      // Say once why no room is coming: the player sees the crowding stay (V-078).
+      if (!main['full'])
+        ctx.emit('build.growBlocked', {
+          causes: [main['built'] as number, crowded?.line ?? 0].filter((l) => l > 0),
+          actors: crowded ? [crowded.p.id] : [],
+          data: {
+            size: sizeOf(content, main).name,
+            for: crowded ? `${crowded.p['name']} wants a room of their own` : 'someone needs a bed',
+          },
+        });
+      main['full'] = 1;
+      continue;
+    }
+    main['full'] = 0;
     growing = true;
     const inHouse = (x: number, y: number) => rows.some((h) => inRect(rectOf(h), x, y));
     // One house, one material (V-097): the room is walled as the house is, and its plans wait

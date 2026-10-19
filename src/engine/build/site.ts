@@ -289,8 +289,7 @@ function affords(
  * that can be finished. The walls are of the MOST PLENTIFUL material (stock plus what lies
  * within `reach`) among those that can finish a house of that size; ties keep content order
  * (Morgan, 2026-10-19, amending V-096). With material for none, the smallest with ground for it
- * and the most plentiful wall material, ties to the last in content order (its plans wait for
- * material). `why` says which. Undefined when no ground near the green fits any size. */
+ * and the most plentiful wall material, ties to the first (its plans wait for material). `why` says which. Undefined when no ground near the green fits any size. */
 export function chooseHouse(
   world: WorldState,
   content: EngineContent,
@@ -310,24 +309,24 @@ export function chooseHouse(
     affords(world, content, partsOf(content, o.site, o.site.door, w), true);
   const able = sited.filter((o) => walls.some((w) => fits(o, w)));
   const pick = able.findLast((o) => o.size.sleeps <= sleepers) ?? able[0];
+  // The most plentiful wall material: what a part has is the least of its material and its
+  // `also` goods (wattle and daub takes clay and logs). Ties keep content order.
+  const have = (w: PartDef) =>
+    Math.min(
+      withinReach(world, content, w.material, true),
+      ...(w.also ? [withinReach(world, content, w.also.material, true)] : []),
+    );
+  const mostOf = (from: readonly PartDef[]) =>
+    from.reduce((best, w) => (have(w) > have(best) ? w : best));
   if (!pick) {
-    // The most plentiful material, ties to the last in content order (not clay, which only miners
-    // will dig, while wood stands about).
-    const have = (w: PartDef) => withinReach(world, content, w.material, true);
-    const wall = walls.reduce((best, w) => (have(w) >= have(best) ? w : best));
+    const wall = mostOf(walls);
     return {
       ...sited[0]!,
       wall,
-      why: `${word(wall)} walls, with too little material yet for all of it`,
+      why: `${word(wall)} walls, with too little material yet for all of it, so it waits for more`,
     };
   }
-  let wall = walls[0]!;
-  let most = -1;
-  for (const w of walls) {
-    if (!fits(pick, w)) continue;
-    const have = withinReach(world, content, w.material, true);
-    if (have > most) [wall, most] = [w, have];
-  }
+  const wall = mostOf(walls.filter((w) => fits(pick, w)));
   const good = content.work.stock.find((s) => s.good === wall.material)?.name ?? wall.material;
   return {
     ...pick,

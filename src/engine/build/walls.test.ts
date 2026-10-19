@@ -56,6 +56,27 @@ describe('house walls', () => {
     }
   });
 
+  it('wait for more of the most plentiful material when none can finish, ties to the first', () => {
+    const content: Content = {
+      ...base,
+      buildings: {
+        ...base.buildings,
+        parts: base.buildings.parts.map((p) => (p.kind === 'wall' ? { ...p, cost: 100000 } : p)),
+      },
+    };
+    const world = createWorld(createSim(content), SEEDS[0]!);
+    const pick = chooseHouse(world, content, greenOf(world), 5)!;
+    const walls = content.buildings.house.walls.map((id) => partOf(content, id)!);
+    const have = (w: (typeof walls)[number]) =>
+      Math.min(
+        withinReach(world, content, w.material, true),
+        ...(w.also ? [withinReach(world, content, w.also.material, true)] : []),
+      );
+    const most = Math.max(...walls.map(have));
+    expect(pick.wall).toBe(walls.find((w) => have(w) === most));
+    expect(pick.why).toContain('waits for more');
+  });
+
   it('are timber where stone falls short, stone where wood does, and the siting line says why', () => {
     for (const [wall, material, word] of [
       ['wall-stone', 'wall-wood', 'wood'],

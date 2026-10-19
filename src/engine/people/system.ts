@@ -13,7 +13,6 @@ import { valleyOf } from '../region/index.ts';
 import type { System } from '../sim/index.ts';
 import { drawBand, type Home } from './band.ts';
 import { drawSmithing, SMITHING } from './smithing.ts';
-import { setDay } from './day.ts';
 import { FORAGE_TABLES } from './forage.ts';
 import { JOB_FIELDS } from './jobs.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
@@ -136,7 +135,6 @@ export const peopleSystem: System = {
     'work.picked',
     'work.prioritySet',
     'work.declined',
-    'work.daySet',
     'skill.rose',
     ...['work.tookUpSowing', 'work.tookUpReaping', 'field.harvested', 'farm.harvestHome'],
     'goods.ateSeed',
@@ -160,14 +158,12 @@ export const peopleSystem: System = {
     ...['mine.sank', 'mine.dug', 'mine.veinMined', 'mine.clayDug', 'mine.noLadder'],
   ],
   tables: PEOPLE_TABLES,
-  // The colony's day (day.ts) is kept here once the player changes it, with its line.
-  refs: ['dayLine', 'noIngots', 'noCharcoal'],
+  refs: ['noIngots', 'noCharcoal'],
   // Yesterday's tally (tally.ts) lives in the state too, and `idle`: the signature of the rooms
   // when carpentry last found nothing to make (carpentry.ts).
   initialState: { ...TALLY_START, idle: 0, noIngots: 0, noCharcoal: 0 },
   commands: {
     setPriority: (ctx, command, cause) => setPriority(ctx, command.data, cause),
-    setDay: (ctx, command, cause) => setDay(ctx, command.data, cause),
   },
   init(ctx) {
     const { world, content } = ctx;
