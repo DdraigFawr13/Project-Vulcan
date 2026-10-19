@@ -108,6 +108,22 @@ function wall(p, material, mask) {
   return outline(img, p.ink);
 }
 
+// Wattle and daub (V-096): the timber wall's band washed in pale clay with its dark frame lines
+// kept, as the Bundle 2 mock-up drew it. Ink stays ink, the darker grain and seams become
+// `clay frame`, and the rest `clay wash`.
+function daub(p, mask) {
+  const timber = wall(p, 'wood', mask);
+  const img = createImage(S, S);
+  for (let i = 0; i < S * S; i++) {
+    const [r, g, b, a] = timber.data.subarray(i * 4, i * 4 + 4);
+    if (!a) continue;
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+    const pick = lum < 40 ? p.ink : lum <= 72 ? p['clay frame'] : p['clay wash'];
+    img.data.set([...pick, 255], i * 4);
+  }
+  return img;
+}
+
 function floor(p, material) {
   return image(({ put }) => {
     for (let y = 0; y < S; y++)
@@ -262,6 +278,7 @@ export function drawBuildings(p = readPalette()) {
     for (const run of ['h', 'v']) frames[`build.door-${m}.${run}`] = door(p, m, run);
     frames[`build.stair-${m}`] = stair(p, m);
   }
+  for (let mask = 0; mask < 16; mask++) frames[`build.wall-daub.${mask}`] = daub(p, mask);
   return frames;
 }
 

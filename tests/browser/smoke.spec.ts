@@ -256,14 +256,24 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('open-work').click();
   await expect(panel).toContainText("The colony's day");
+  // Bundle 2 (V-071): trades sit under headings; the first begins open and the rest folded. A
+  // folded heading's stepper sets every row under it, one priority each, and unfolding shows them.
+  const land = panel.locator('.prio.head[data-heading="Land"]');
+  await expect(panel.locator('.prio[data-job="farm"]')).toBeHidden();
+  await land.getByRole('button', { name: /^Land, every row, for .+: raise$/ }).click();
+  await land.locator('.fold').click();
+  for (const job of ['farm', 'forage'])
+    await expect(panel.locator(`.prio[data-job="${job}"] .val`)).toContainText('2');
+  await panel.locator('.prio.head[data-heading="Wood"] .fold').click();
   // P3.4: Carpentry comes from content like the other rows, with its skill line and 44 px steppers.
-  const carpentry = panel.locator('.prio').filter({ hasText: 'Carpentry' });
+  const carpentry = panel.locator('.prio[data-job="carpentry"]');
   await expect(carpentry).toContainText(/crafting \d+, can reach \d+/);
   for (const b of await carpentry.getByRole('button').all()) {
     const box = (await b.boundingBox())!;
     expect([box.width, box.height].every((n) => n >= 44)).toBe(true);
   }
   // P4.7: Farming and Cooking come from content with the same steppers.
+  await panel.locator('.prio.head[data-heading="Food"] .fold').click();
   for (const [job, name] of [
     ['farm', 'Farming'],
     ['cook', 'Cooking'],

@@ -162,6 +162,9 @@ export interface TileView {
   /** What grows or lies on the tile, with what it yields, e.g. "ash (25 logs)" or
    * "copper vein (20 copper ore)". */
   feature?: string;
+  /** Surface only: the ore stain on the ground and where its vein lies, e.g. "iron lies below, on
+   * level 3"; the ground line names the stain's colour. */
+  stain?: string;
   /** Where stairs or a shaft on the tile lead to a reached level; absent with no way up or down. */
   ways?: { up: boolean; down: boolean };
   chunkX: number;

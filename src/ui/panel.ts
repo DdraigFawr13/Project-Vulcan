@@ -47,6 +47,10 @@ export interface PanelActions {
   close(): void;
 }
 
+/** What a stain on the ground means (taste board pick, V-087); the colours are content. */
+const STAIN_NOTE =
+  'Stains show where ore lies below: green for copper, grey for tin, rust for iron. Miners dig where a wanted metal’s stain is; you set what is wanted on the Stock sheet.';
+
 const pad = (n: number) => String(n).padStart(2, '0');
 const when = (c: ClockView) => `${pad(c.hour)}:${pad(c.minute)}, Day ${c.day} of ${c.monthName}`;
 
@@ -98,6 +102,7 @@ export class Panel {
     // Under a piece of furniture the land says nothing: the page opens on the piece (P3.4).
     const land: string[][] = [
       ['ground', tile.ground],
+      ...(tile.stain ? [['stain', tile.stain]] : []),
       ...(tile.biome ? [['biome', tile.biome]] : []),
       ...(tile.elevation !== undefined ? [['height', `${tile.elevation} m`]] : []),
       ...(tile.fertility !== undefined ? [['fertility', `${tile.fertility} of 100`]] : []),
@@ -124,6 +129,8 @@ export class Panel {
     ])
       facts.append(el('dt', {}, key), el('dd', {}, value));
     this.body.replaceChildren(facts);
+    if (tile.stain && !tile.piece && !tile.field)
+      this.body.append(el('p', { class: 'aside' }, STAIN_NOTE));
     if (tile.ways) {
       const go = el('div', { class: 'row' });
       if (tile.ways.down) {

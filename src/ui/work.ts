@@ -7,6 +7,7 @@ import { content } from '../content/index.ts';
 import type { PersonView, WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { LEVELS, stepper, WORDS } from './stepper.ts';
+import { commonLevel, grouped, visibleJobs, type Group } from './workheads.ts';
 
 export interface Day {
   workFrom: number;
@@ -44,6 +45,12 @@ export class WorkSheet {
   /** Levers sent and not yet seen in a snapshot, shown as sent meanwhile. */
   private readonly pending = new Map<string, number>();
   private pendingDay: Day | undefined;
+  /** Headings folded open (V-071): the first begins open, the rest folded. */
+  private readonly unfolded = new Set<string>(
+    content.work.priority.headings.slice(0, 1).map((h) => h.name),
+  );
+  /** A shaft exists or is planned, so the mining row shows. */
+  private shaft = false;
   private readonly actions: WorkActions;
   constructor(actions: WorkActions) {
     this.actions = actions;
@@ -57,11 +64,26 @@ export class WorkSheet {
     );
   }
 
+  /** Whether a shaft exists (a level below is reached): the mining row shows from then on. */
+  setShaft(exists: boolean): void {
+    this.shaft = exists;
+  }
+
   /** A key for what the sheet shows, so it is redrawn only when that changes. */
   key(walkers: readonly WalkerView[], day: Day): string {
     this.settle(walkers, day);
     const work = walkers.map((w) => [w.work, w.skills.map((s) => s.level)]);
-    return JSON.stringify([this.index, work, day, [...this.pending], this.pendingDay, wide()]);
+    const open = [...this.unfolded];
+    return JSON.stringify([
+      this.index,
+      work,
+      day,
+      [...this.pending],
+      this.pendingDay,
+      wide(),
+      open,
+      this.shaft,
+    ]);
   }
 
   /** The whole sheet: the band's priorities and the colony's day. */
@@ -84,8 +106,54 @@ export class WorkSheet {
         { class: 'aside' },
         `What matters most to ${first(p)} when there is work to do. ${first(p)} still chooses, and may decline.`,
       ),
-      ...(w?.work ?? []).map((job) => this.jobRow(p, w!, job)),
+      ...this.tradeRows(p, w),
     ];
+  }
+
+  /** The rows on top, then each trade heading with its rows when it is unfolded. */
+  private tradeRows(p: PersonView, w: WalkerView | undefined): HTMLElement[] {
+    if (!w) return [];
+    const { plain, groups } = grouped(visibleJobs(w.work, this.shaft));
+    return [
+      ...plain.map((job) => this.jobRow(p, w, job)),
+      ...groups.flatMap((g) => [
+        this.headingRow(p, g),
+        ...(this.unfolded.has(g.name)
+          ? g.jobs.map((job) => {
+              const row = this.jobRow(p, w, job);
+              row.classList.add('under');
+              return row;
+            })
+          : []),
+      ]),
+    ];
+  }
+
+  /** A heading: a fold button (▾ open, ▸ folded), its rows' names beneath, and a stepper that
+   * sets every row under it with the per-person priority command, one for each job. */
+  private headingRow(p: PersonView, g: Group): HTMLElement {
+    const open = this.unfolded.has(g.name);
+    const fold = el(
+      'button',
+      { type: 'button', class: 'fold', 'aria-expanded': String(open), 'data-heading': g.name },
+      `${open ? '▾' : '▸'} ${g.name}`,
+    );
+    fold.addEventListener('click', () => {
+      if (!this.unfolded.delete(g.name)) this.unfolded.add(g.name);
+      this.actions.refresh();
+    });
+    const name = el('span', { class: 'job' }, fold);
+    name.append(el('small', {}, g.jobs.map((j) => j.name).join(', ')));
+    const value = commonLevel(g.jobs.map((j) => this.pending.get(`${p.id}:${j.job}`) ?? j.level));
+    const row = el('div', { class: 'prio head', 'data-heading': g.name });
+    row.append(
+      name,
+      stepper(value, WORDS[value - 1] ?? '', `${g.name}, every row, for ${p.name}`, (level) => {
+        for (const job of g.jobs) this.send(p, job, level);
+        this.actions.refresh();
+      }),
+    );
+    return row;
   }
 
   private one(people: readonly PersonView[], walkers: readonly WalkerView[]) {
@@ -153,14 +221,19 @@ export class WorkSheet {
   }
 
   private priority(p: PersonView, job: Job, level: number): void {
+    this.send(p, job, level);
+    this.actions.refresh();
+  }
+
+  /** One `setPriority` lever, shown as sent until the snapshot carries it. */
+  private send(p: PersonView, job: Job, level: number): void {
     this.pending.set(`${p.id}:${job.job}`, level);
     this.actions.setPriority(p.id, job.job, level);
-    this.actions.refresh();
   }
 
   /** The desktop grid: a person per row, a kind of work per column; a cell cycles 1 to 4. */
   private grid(people: readonly PersonView[], walkers: readonly WalkerView[]) {
-    const jobs = walkers[0]?.work ?? [];
+    const jobs = visibleJobs(walkers[0]?.work ?? [], this.shaft);
     const table = el('table', { class: 'grid' });
     const head = el('tr', {}, el('th', {}, ''));
     for (const j of jobs) head.append(el('th', {}, j.name));
@@ -169,7 +242,7 @@ export class WorkSheet {
     for (const p of people) {
       const w = walkers.find((x) => x.id === p.id);
       const tr = el('tr', {}, el('th', {}, first(p)));
-      for (const job of w?.work ?? []) {
+      for (const job of visibleJobs(w?.work ?? [], this.shaft)) {
         const level = this.pending.get(`${p.id}:${job.job}`) ?? job.level;
         const label = `${job.name} for ${p.name}: ${WORDS[level - 1]}`;
         const cell = el(

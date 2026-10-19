@@ -92,11 +92,14 @@ export function tileView(
   const feature = layer.features[i]! > 0 ? content.features[layer.features[i]! - 1] : undefined;
   const snowy = z === 0 && map.snow[i] === 1;
   const under = z < map.levels.length ? layerOf(map, z + 1) : undefined;
-  return {
+  const dark = 'known' in layer && !layer.known[i];
+  const stained = z === 0 && map.stains[i]! > 0 ? content.features[map.stains[i]! - 1] : undefined;
+  const rows = {
     x,
     y,
     z,
-    ground: `${content.terrain.kinds[layer.tiles[i]!]!.name}${snowy ? ', snow-capped' : ''}`,
+    ground: `${content.terrain.kinds[layer.tiles[i]!]!.name}${snowy ? ', snow-capped' : ''}${stained?.vein?.stainWord ? ` with a ${stained.vein.stainWord} stain` : ''}`,
+    ...(stained && { stain: `${metalOf(stained)} lies below, on level ${stained.vein!.level}` }),
     ...(z === 0 && {
       biome: content.biomes.biomes[map.biomes[i]!]!.name,
       elevation: map.elevation[i]!,
@@ -109,7 +112,7 @@ export function tileView(
     }),
     ...waterOf(map, layer.tiles[i]!, z === 0 ? map.water[i]! : 0),
     ...climateOf(w, x, y, z),
-    ...(feature && { feature: `${feature.name} (${feature.amount} ${itemName(feature.yields)})` }),
+    ...(feature && { feature: featureWords(feature) }),
     ...waysOf(map, i, z),
     chunkX,
     chunkY,
@@ -119,6 +122,24 @@ export function tileView(
     ...(z === 0 && tileHouse(w, x, y, lineOf)),
     ...(z === 0 && tileField(w, x, y, lineOf)),
   };
+  // Unknown ground below is named only as unknown, with a vein glinting through (V-030).
+  if (!dark) return rows;
+  const { below, water, drinkable, crossing, aura, ways, feature: seen, ...safe } = rows;
+  return {
+    ...safe,
+    ground: 'unknown: nobody has dug next to it',
+    ...(feature?.vein && { feature: `${metalOf(feature)} glints through the dark` }),
+  };
+}
+
+/** A vein's metal: its ore's name without "ore" ("iron"). */
+const metalOf = (f: { yields: string }): string => itemName(f.yields).replace(/ ore$/, '');
+
+/** What grows or lies on a tile for the page: a vein says how much ore is in this tile. */
+function featureWords(f: (typeof content.features)[number]): string {
+  if (!f.vein) return `${f.name} (${f.amount} ${itemName(f.yields)})`;
+  const item = itemName(f.yields);
+  return `${metalOf(f)}, ${f.amount} ${item.endsWith(' ore') ? 'ore' : item} in this tile`;
 }
 
 /** Whether stairs or a shaft on tile `i` of level `z` lead up or down to a reached level. A shaft

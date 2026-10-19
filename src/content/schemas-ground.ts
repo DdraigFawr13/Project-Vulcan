@@ -31,6 +31,7 @@ export const GROUND_SCHEMAS = {
           rocks: map(count, 'terrain'),
           // A coloured stain on the surface above the vein (V-087).
           stain: opt(bool()),
+          stainColour: opt(str()),
           stainWord: opt(str()),
         }),
       ),
