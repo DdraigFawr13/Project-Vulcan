@@ -19,6 +19,7 @@ import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
 import { planCampfire, planRoomHearths } from './hearths.ts';
 import { planBench } from './wants.ts';
+import { planSmithy, SMITHY_TABLES, sendBackSmithy } from './smithy.ts';
 
 function refuse(ctx: SystemContext, kind: string, reason: string, cause: number): void {
   ctx.emit('command.refused', { causes: [cause], data: { kind, reason } });
@@ -135,6 +136,7 @@ export const buildSystem: System = {
     'fire.noFloor',
     ...['town.ringWidened', 'field.needed', 'field.noGround', 'field.sited', 'field.sentBack'],
     ...['field.ripe', 'field.frostKilled', 'field.noSeed', 'field.sown', 'field.leftToGrass'],
+    ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
   ],
   // `nobody`: the line saying nobody is able to build, while that holds; `green`: the green's
   // tile index plus one; `need`: the line saying people sleep in the open, while they do;
@@ -145,18 +147,26 @@ export const buildSystem: System = {
   // for fields.
   initialState: {
     ...{ nobody: 0, green: 0, need: 0, noGround: 0, tried: 0, ring: 0, ringLine: 0 },
-    ...{ fieldNeed: 0, fieldNoGround: 0, fieldTried: 0 },
+    ...{ fieldNeed: 0, fieldNoGround: 0, fieldTried: 0, smithyNoGround: 0, smithyTried: 0 },
   },
-  refs: ['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround'],
-  tables: { ...BUILD_TABLES, ...HOUSE_TABLES, ...FURNITURE_TABLES, ...FIELD_TABLES },
+  refs: ['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround', 'smithyNoGround'],
+  tables: {
+    ...BUILD_TABLES,
+    ...HOUSE_TABLES,
+    ...FURNITURE_TABLES,
+    ...FIELD_TABLES,
+    ...SMITHY_TABLES,
+  },
   commands: {
     placeBuilding: (ctx, command, cause) => placeBuilding(ctx, command.data, cause),
     deconstruct: (ctx, command, cause) => deconstruct(ctx, command.data, cause),
     setBuild: (ctx, command, cause) => setBuild(ctx, command.data, cause),
     sendBack: (ctx, command, cause) =>
-      command.data['field'] !== undefined
-        ? sendBackField(ctx, command.data, cause, greenOf(ctx.world))
-        : sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
+      command.data['smithy'] !== undefined
+        ? sendBackSmithy(ctx, command.data, cause, greenOf(ctx.world))
+        : command.data['field'] !== undefined
+          ? sendBackField(ctx, command.data, cause, greenOf(ctx.world))
+          : sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
   },
   init(ctx) {
     const { world, content, state } = ctx;
@@ -175,6 +185,7 @@ export const buildSystem: System = {
     tickFields(ctx);
     planFields(ctx, green, []);
     planBench(ctx);
+    planSmithy(ctx, green);
     planRoomHearths(ctx);
     checkBuilders(ctx);
   },

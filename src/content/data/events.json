@@ -95,5 +95,15 @@
 {"id":"weather.frozenOver","importance":2,"template":"The lakes froze over.","notable":{}},
 {"id":"weather.thawed","importance":2,"template":"The last of the lake ice melted.","notable":{}},
 {"id":"weather.iceSpread","importance":1,"template":"The ice spread further over the lakes."},
-{"id":"weather.iceShrank","importance":1,"template":"The lake ice began to melt."}
+{"id":"weather.iceShrank","importance":1,"template":"The lake ice began to melt."},
+{"id":"work.tookUpSmithing","importance":1,"template":"{name} took up smithing {what} for {who}: {why}."},
+{"id":"smith.made","importance":2,"template":"{name} smithed {what} for {who}."},
+{"id":"smith.noIngots","importance":2,"template":"{who} has no {tool}, and the store has no bronze or iron ingots: raise the {plates} plate to have one made.","notable":{}},
+{"id":"tool.taken","importance":1,"template":"{name} took {what}: {why}."},
+{"id":"tool.broke","importance":2,"template":"{name}'s {what} broke after {hours} hours of work.","notable":{}},
+{"id":"craft.firstFine","importance":2,"template":"{name} made a {word} piece for the first time: {what}.","notable":{}},
+{"id":"smithy.sited","importance":2,"template":"The colony plans a smithy on the {dir} side of the {house}: {why}.","notable":{}},
+{"id":"smithy.noGround","importance":2,"template":"No free ground beside {name}'s house fits a smithy.","notable":{}},
+{"id":"smithy.built","importance":2,"template":"The smithy is built: forge, anvil block and quench tub.","notable":{}},
+{"id":"smithy.sentBack","importance":2,"template":"The smithy plan was sent back: the colony chooses again."}
 ]

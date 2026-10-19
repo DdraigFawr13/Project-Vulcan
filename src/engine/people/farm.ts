@@ -20,6 +20,7 @@ import { reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
 import { practise } from './learn.ts';
+import { scaled, worked } from './tools.ts';
 import { able, outranked, priorityLine } from './priority.ts';
 import { besideReachable, busy, goBeside, layAround, same, skillOf, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
@@ -153,13 +154,15 @@ export function farming(ctx: SystemContext, p: EntityRow): boolean {
     if (next === undefined) return stop(p);
     const level = skillOf(world, p, skillName(content));
     p['target'] = tile = next;
-    p['work'] = minutesFor(content, content.work.farm[mode === 'sow' ? 'sow' : 'reap'], level);
+    const minutes = minutesFor(content, content.work.farm[mode === 'sow' ? 'sow' : 'reap'], level);
+    p['work'] = scaled(ctx, p, 'farm', minutes);
   }
   const [x, y] = [tile % map.width, Math.floor(tile / map.width)];
   const here = spotOf(p);
   if (here.z !== 0 || Math.abs(here.x - x) + Math.abs(here.y - y) !== 1)
     return goBeside(ctx, p, x, y) || stop(p);
   p['work'] = (p['work'] as number) - 1;
+  worked(ctx, p, 'farm');
   practise(ctx, p, skillName(content), p['took'] as number);
   if ((p['work'] as number) > 0) return true;
   p['target'] = -1;
