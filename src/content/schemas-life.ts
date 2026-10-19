@@ -34,9 +34,15 @@ export const LIFE_SCHEMAS = {
     ),
     // Each need's value when the band arrives, in the order of `needs`.
     start: list(count),
-    // Rest an hour asleep on a bedroll or the bare ground; bedtime and rising hours; awake when
-    // rest reaches `wake`.
-    sleep: obj({ bedroll: count, ground: count, from: count, to: count, wake: count }),
+    // Rest an hour asleep in a bed (P3.5), on a bedroll or on the bare ground; bedtime and rising
+    // hours; awake when rest reaches `wake`.
+    sleep: obj({ bed: count, bedroll: count, ground: count, from: count, to: count, wake: count }),
+    // Beauty (P3.5): awake indoors it moves `rate` an hour towards `neutral` plus `perPoint` for
+    // each point of the room's beauty, outdoors `outdoors` an hour towards `neutral`.
+    beauty: obj({ neutral: count, perPoint: count, rate: count, outdoors: count }),
+    // Privacy (P3.5): each hour asleep in a room whose every bed is theirs alone it rises `gain`;
+    // asleep with others in the room it falls `perOther` for each of them.
+    privacy: obj({ gain: count, perOther: count }),
     // Comfortable at `comfort` °C or warmer (`bedroll` degrees warmer asleep in one): warmth
     // rises `rise` an hour, else falls `perDegree` for each degree short. Underground is `below`.
     warmth: obj({ comfort: num(), bedroll: count, rise: count, perDegree: count, below: num() }),
@@ -163,6 +169,39 @@ export const LIFE_SCHEMAS = {
       floors: map(num()),
       roles: list(obj({ id, name: text, beds: num({ min: 1 }) })),
       looks: list(obj({ at: num(), word: text })),
+      // P3.4: what a room of a role lacks, in the order colonists make it: a piece for each
+      // sleeper (`per: sleeper`) or one for the room.
+      wants: list(
+        obj({
+          role: text,
+          kinds: list(obj({ kind: text, per: oneOf('sleeper', 'room') })),
+        }),
+      ),
+    }),
+    // P3.4: furniture is made at a bench by the `job`, of `material`, one piece for `cost`. A
+    // piece takes `minutes` at crafting 0, shorter at `skilled` over (`skilled` + level); its
+    // quality score is the maker's crafting level plus a roll of up to `roll` either way from the
+    // `stream`, worded by the first `quality` (highest first) whose `at` it reaches, with that
+    // beauty. `place` says where a maker sets it: wall, middle, beside table or bed foot.
+    furniture: obj({
+      job: ref('jobs'),
+      skilled: num({ min: 1 }),
+      material: ref('items'),
+      stream: text,
+      roll: count,
+      kinds: list(
+        obj({
+          id,
+          name: text,
+          cost: num({ min: 1 }),
+          minutes: num({ min: 1 }),
+          art: text,
+          beds: count,
+          seats: count,
+          place: oneOf('wall', 'middle', 'beside table', 'bed foot'),
+        }),
+      ),
+      quality: list(obj({ id, word: text, at: num(), beauty: num() })),
     }),
   }),
 };

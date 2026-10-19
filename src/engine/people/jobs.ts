@@ -28,6 +28,7 @@ import {
 import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
+import { furnishing, takeUpCarpentry } from './carpentry.ts';
 import { foraging, takeUpForaging } from './forage.ts';
 import { practise } from './learn.ts';
 import { busy, goBeside, layAround, people, same, skillOf, SIDES, spotOf } from './spots.ts';
@@ -36,7 +37,7 @@ import { tallyAdd } from './tally.ts';
 import { walkTo } from './walk.ts';
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `build`, `haul` or '' (none). */
+  /** `fell`, `quarry`, `forage`, `build`, `carpentry`, `haul` or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -254,6 +255,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
   if (p['job'] === 'build' && hours && building(ctx, p)) return true;
+  if (p['job'] === 'carpentry' && hours && furnishing(ctx, p)) return true;
   const load = itemsOf(world).find((i) => i['holder'] === p.id);
   if (load) {
     p['job'] = 'haul';
@@ -379,6 +381,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   haul: takeUpHauling,
   forage: takeUpForaging,
   build: (ctx, p) => takeUpMarked(ctx, p, true) || takeUpBuilding(ctx, p),
+  carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
 };
 

@@ -9,9 +9,11 @@ import { addEntity, removeEntity } from '../entity/index.ts';
 import { inStore, itemsAt, itemsOf, raiseStock } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
+import { FURNITURE_TABLES } from './furniture.ts';
 import { finishHouses, growHouses } from './grow.ts';
 import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
+import { planBench } from './wants.ts';
 
 function refuse(ctx: SystemContext, kind: string, reason: string, cause: number): void {
   ctx.emit('command.refused', { causes: [cause], data: { kind, reason } });
@@ -113,6 +115,7 @@ export const buildSystem: System = {
     'build.houseBuilt',
     'build.roomAdded',
     'build.grows',
+    'furniture.benchPlaced',
   ],
   // `nobody`: the line saying nobody is able to build, while that holds; `green`: the green's
   // tile index plus one; `need`: the line saying people sleep in the open, while they do;
@@ -120,7 +123,7 @@ export const buildSystem: System = {
   // `tried` the tick it last looked.
   initialState: { nobody: 0, green: 0, need: 0, noGround: 0, tried: 0 },
   refs: ['nobody', 'need', 'noGround'],
-  tables: { ...BUILD_TABLES, ...HOUSE_TABLES },
+  tables: { ...BUILD_TABLES, ...HOUSE_TABLES, ...FURNITURE_TABLES },
   commands: {
     placeBuilding: (ctx, command, cause) => placeBuilding(ctx, command.data, cause),
     deconstruct: (ctx, command, cause) => deconstruct(ctx, command.data, cause),
@@ -140,6 +143,7 @@ export const buildSystem: System = {
     finishHouses(ctx);
     // A house adds a room for the homeless before another house is sited ("cottage, then grow").
     if (!growHouses(ctx, green)) planHouse(ctx, green, []);
+    planBench(ctx);
     checkBuilders(ctx);
   },
 };

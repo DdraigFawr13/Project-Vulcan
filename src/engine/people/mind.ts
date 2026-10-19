@@ -1,6 +1,6 @@
 // A person's round (P2.2): each minute they choose what to do from their needs and the hour. In
 // order: eat when food is under its `seek` line (waking for it), sleep at night or when tired, on
-// their own bedroll if they can get to it, take their leisure in the evening or when bored, and
+// their own bed or bedroll if they can get to it, take their leisure in the evening or when bored, and
 // otherwise stroll near the camp. What they are doing is the `doing` field, which the needs
 // system reads each hour; none of it is a ledger line until a need crosses its warning line.
 import { clockAt, type EntityRow } from '../core/index.ts';
@@ -8,6 +8,8 @@ import { eatFrom, itemsAt, itemsOf } from '../goods/index.ts';
 import { changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { dayOf } from './day.ts';
+import { bedOwnedBy } from '../build/index.ts';
+import { claimBed } from './claim.ts';
 import { carryBed, movesIn } from './home.ts';
 import { working } from './jobs.ts';
 import { tallyAdd } from './tally.ts';
@@ -66,9 +68,13 @@ function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
 /** Lies down: on their own laid-out bedroll when there is a way to it, else where they stand;
  * first carrying it into a house that has room (home.ts). */
 function goToBed(ctx: SystemContext, p: EntityRow): void {
+  claimBed(ctx, p);
   if (movesIn(ctx, p)) return;
   p['doing'] = 'sleep';
-  const bed = itemsOf(ctx.world).find((i) => i['owner'] === p.id && i['state'] === 'laid');
+  // Their own bed (P3.5), else their laid bedroll.
+  const bed =
+    bedOwnedBy(ctx.world, p.id) ??
+    itemsOf(ctx.world).find((i) => i['owner'] === p.id && i['state'] === 'laid');
   const there = bed && bed['x'] === p['x'] && bed['y'] === p['y'] && bed['z'] === p['z'];
   if (bed && !there)
     walkTo(ctx, p, { x: bed['x'] as number, y: bed['y'] as number, z: bed['z'] as number });

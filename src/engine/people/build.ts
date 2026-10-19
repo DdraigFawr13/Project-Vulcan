@@ -36,12 +36,15 @@ const taken = (ctx: SystemContext, p: EntityRow): Set<number> =>
       .map((q) => q['plan'] as number),
   );
 
-/** The nearest stack of a plan's material `p` can reach that no one else is fetching: one in the
- * store before one lying out at the same distance. */
-function materialFor(ctx: SystemContext, p: EntityRow, plan: EntityRow): EntityRow | undefined {
+/** The nearest stack of `kind` `p` can reach that no one else is fetching: one in the store
+ * before one lying out at the same distance (also used for furniture wood, carpentry.ts). */
+export function stackOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow | undefined {
   const { world, content } = ctx;
-  const kind = planPart(content, plan).material;
-  const others = new Set([...busy(world, p, 'haul'), ...busy(world, p, 'build')]);
+  const others = new Set([
+    ...busy(world, p, 'haul'),
+    ...busy(world, p, 'build'),
+    ...busy(world, p, 'carpentry'),
+  ]);
   const from = spotOf(p);
   let best: EntityRow | undefined;
   let far = Infinity;
@@ -54,6 +57,9 @@ function materialFor(ctx: SystemContext, p: EntityRow, plan: EntityRow): EntityR
   }
   return best;
 }
+
+const materialFor = (ctx: SystemContext, p: EntityRow, plan: EntityRow) =>
+  stackOf(ctx, p, planPart(ctx.content, plan).material);
 
 /** Whether a tree or log still stands on the plan's tile, to be felled first (a house's site,
  * P3.7). */
@@ -140,7 +146,11 @@ function sayWaiting(ctx: SystemContext, p: EntityRow): void {
   const { world, content } = ctx;
   const plans = plansOf(world);
   // Material someone carries or has gone for is on its way, so nothing waits for it yet.
-  const fetching = new Set([...busy(world, p, 'haul'), ...busy(world, p, 'build')]);
+  const fetching = new Set([
+    ...busy(world, p, 'haul'),
+    ...busy(world, p, 'build'),
+    ...busy(world, p, 'carpentry'),
+  ]);
   const onItsWay = (kind: string) =>
     itemsOf(world).some((i) => i['kind'] === kind && (i['holder'] || fetching.has(i.id)));
   for (const r of plans) {

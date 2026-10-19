@@ -24,6 +24,7 @@ export const STREAMS = [
   'storyteller',
   'trade',
   'people',
+  'craft',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 

@@ -17,10 +17,13 @@ export * from './entity/index.ts';
 export { applyDue, createWorld, replay, step, submitCommand } from './sim/index.ts';
 export type { Cadence, Sim, System, SystemContext } from './sim/index.ts';
 export {
+  bedOwnedBy,
   bedsOf,
+  benchOf,
   buildSystem,
   buildWantOf,
   dirFrom,
+  furnitureOf,
   greenOf,
   homeless,
   houseAt,
@@ -28,11 +31,15 @@ export {
   mainOf,
   nthOf,
   partOf,
+  pieceAt,
+  piecesOf,
   planAt,
   planPart,
   plansOf,
+  qualityOf,
   rectOf,
   roomAt,
+  roomName,
   rowsOf,
   sizeOf,
 } from './build/index.ts';
