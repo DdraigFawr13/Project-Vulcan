@@ -21,6 +21,9 @@ export const TOOLS_SCHEMAS = {
     roll: count,
     skilled: num({ min: 1 }),
     charcoal: ref('items'),
+    // A held tool with under this per cent of its life left is worn: its holder wants one of the
+    // next material up, so the smith wants its ingots (Morgan's card, P4.9).
+    worn: num({ min: 1, max: 100 }),
     // `serves` lists the work (a jobs.json id, or `split`) a kind of tool is used for.
     kinds: list(
       obj({

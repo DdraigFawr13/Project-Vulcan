@@ -91,6 +91,9 @@ function smelterSite(
   return found.find((f) => canReach(content, map, green, f.at))?.at;
 }
 
+/** How far from the smelter a clamp spot may be. */
+const CLAMP_REACH = 10;
+
 /** The free 2 by 2 block nearest the smelter, in tile order at a tie, reachable from it. */
 function clampSite(
   world: WorldState,
@@ -99,8 +102,10 @@ function clampSite(
   size: number,
 ): Spot | undefined {
   const found: { at: Spot; score: number }[] = [];
-  for (let y = smelter.y - size - 2; y <= smelter.y + 3; y += 1)
-    for (let x = smelter.x - size - 2; x <= smelter.x + 3; x += 1) {
+  // Out to CLAMP_REACH tiles: in forest the ground right by the smelter can all be trees (anvil
+  // never had a clamp, so never smelted; P4.9).
+  for (let y = smelter.y - size - CLAMP_REACH; y <= smelter.y + CLAMP_REACH + 1; y += 1)
+    for (let x = smelter.x - size - CLAMP_REACH; x <= smelter.x + CLAMP_REACH + 1; x += 1) {
       if (x < 1 || y < 1 || !freeBlock(world, content, x, y, size)) continue;
       const near = Math.max(
         Math.abs(x + (size - 1) / 2 - smelter.x),
@@ -157,7 +162,7 @@ export function planStations(ctx: SystemContext, green: Spot): void {
   const line = ctx.emit('metal.clampPlanned', {
     causes: [smelter['line'] as number],
     data: {
-      where: 'beside the smelter',
+      where: 'near the smelter',
       why: `the smelter needs ${nameOf(content, fuel)} and the colony has none`,
     },
   });

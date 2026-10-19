@@ -228,6 +228,19 @@ describe('tools in use', () => {
     expect(taken.causes).toContain(unloaded);
   });
 
+  it('has a worn stone tool ask for bronze, so miners sink a shaft with no plate raised', () => {
+    // Morgan's card (P4.9): a tool under its worn line wants the next material's ingots.
+    const w = createWorld(sim, 'tallow');
+    step(w, sim, 4 * DAY);
+    expect(w.commandLog).toHaveLength(0);
+    const worn = lines(w, 'tool.worn')[0]!;
+    expect(worn.data['better']).toBe('bronze');
+    expect(String(worn.data['ingot'])).toBe('bronze ingots');
+    const shaft = lines(w, 'mine.shaftPlanned')[0]!;
+    expect(shaft.causes).toContain(worn.id);
+    expect(whyOf(w, shaft.id).map((c) => c.event.type)).toContain('tool.worn');
+  });
+
   it('says once, naming the plates to raise, that a tool waits for ingots', () => {
     const w = createWorld(sim, 'ledger');
     const [a] = people(w);

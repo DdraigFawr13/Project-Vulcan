@@ -4,7 +4,7 @@
 // is sited. Digging is the people's (src/engine/people/mine.ts).
 import type { EntityRow } from '../core/index.ts';
 import { addEntity, entityOf } from '../entity/index.ts';
-import { haveOf, stockOf, wantOf } from '../goods/index.ts';
+import { haveOf, ingotWant, stockOf, wornTools } from '../goods/index.ts';
 import { TICKS_PER_DAY } from '../core/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { fill, MINE_TABLES, metalsOf, oreShort, shaftFor, shaftsOf } from './shafts.ts';
@@ -35,12 +35,15 @@ function planShaft(
   }
   const word = name.vein?.stainWord ?? '';
   const ingot = `${metal}-ingot`;
+  const have = haveOf(world, content, ingot);
   const why = fill(content.work.mine.why, {
-    ...{ Metal: capital(metal), metal, have: haveOf(world, content, ingot) },
-    ...{ want: wantOf(world, content, ingot), word, far: site.far, dir: site.dir },
+    ...{ Metal: capital(metal), metal, have },
+    ...{ want: have + ingotWant(world, content, metal), word, far: site.far, dir: site.dir },
   });
+  // The plate's line and the worn tools' lines that ask for metal (P4.9).
+  const worn = wornTools(world, content).map((w) => w.item['worn'] as number);
   const planned = ctx.emit('mine.shaftPlanned', {
-    causes: [...causes, ...(line ? [line] : [])],
+    causes: [...causes, ...(line ? [line] : []), ...worn.filter((l) => l > 0)],
     data: {
       ...{ metal, level: name.vein?.level ?? 0, tiles: site.far, dir: site.dir, why },
       ...{ stain: word, x: site.x, y: site.y },

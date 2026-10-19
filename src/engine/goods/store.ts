@@ -4,7 +4,7 @@
 // it is a row per good, and every change is a ledger line that later work cites.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
-import { canReach, walkAt, type Spot } from '../paths/index.ts';
+import { canReach, reachFrom, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { itemsAt, itemsOf, stackSize } from './stacks.ts';
 
@@ -138,14 +138,26 @@ export function slotFor(
   return best;
 }
 
-/** How much of a good the colony has: in the store, lying about or being carried. A good is an
- * item kind (logs) or the `good` an item belongs to in items.json (food: preserved, berries...). */
-export const haveOf = (world: WorldState, content: EngineContent, good: string): number =>
-  itemsOf(world)
-    .filter(
-      (i) => i['kind'] === good || content.items.find((d) => d.id === i['kind'])?.good === good,
-    )
-    .reduce((n, i) => n + (i['count'] as number), 0);
+/** How much of a good the colony has: in the store, lying about where someone can get to it, or
+ * being carried. A good is an item kind (logs) or the `good` an item belongs to in items.json
+ * (food: preserved, berries...). Logs shut in by trees and a new wall are not had (P4.9: on anvil
+ * 94 of them stopped all felling for a year, and the fires went out in Lastsnow). */
+export function haveOf(world: WorldState, content: EngineContent, good: string): number {
+  const map = world.map;
+  let reach: ((to: Spot) => boolean) | undefined;
+  let n = 0;
+  for (const i of itemsOf(world)) {
+    if (i['kind'] !== good && content.items.find((d) => d.id === i['kind'])?.good !== good)
+      continue;
+    // Off the map (x -1) is an owned tool between uses, kept as carried.
+    if (!i['holder'] && (i['x'] as number) >= 0) {
+      reach ??= reachFrom(content, map, { x: map.startX, y: map.startY, z: 0 });
+      if (!reach({ x: i['x'] as number, y: i['y'] as number, z: i['z'] as number })) continue;
+    }
+    n += i['count'] as number;
+  }
+  return n;
+}
 
 export const stockOf = (world: WorldState, good: string): EntityRow | undefined =>
   rows(world, 'stock').find((s) => s['good'] === good);

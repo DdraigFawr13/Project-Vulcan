@@ -90,6 +90,8 @@ export interface ToolsDef {
   roll: number;
   skilled: number;
   charcoal: string;
+  /** Per cent of life left under which a held tool is worn and asks for a better one (P4.9). */
+  worn: number;
   kinds: readonly {
     id: string;
     name: string;

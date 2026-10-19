@@ -5,6 +5,7 @@
 // saying where it came from after the ledger's days are sealed (P4.6).
 import type { EngineContent, EntityRow, RecipeDef, WorldState } from '../core/index.ts';
 import { haveOf, stockOf, wantOf } from './store.ts';
+import { wornIngots, wornTools } from './tools.ts';
 
 /** One step of an item's trail. `k` is the item the step was for (the ore mined), `n` how many. */
 export interface Step {
@@ -79,7 +80,8 @@ const recipeOf = (content: EngineContent, metal: string): RecipeDef | undefined 
 export function ingotWant(world: WorldState, content: EngineContent, metal: string): number {
   const r = recipeOf(content, metal);
   if (!r) return 0;
-  let want = wantOf(world, content, r.makes);
+  // The plate's level, and the ingots worn tools ask for (P4.9).
+  let want = wantOf(world, content, r.makes) + wornIngots(world, content, r.makes);
   for (const alloy of content.metal.recipes) {
     const use = alloy.alloy && alloy.inputs.find((i) => i.kind === r.makes);
     if (use) want += Math.ceil(ingotWant(world, content, alloy.id) / alloy.out) * use.count;
@@ -130,6 +132,13 @@ export function wantedBy(
     return {
       line: row['line'] as number,
       name: content.work.stock.find((s) => s.good === r.makes)?.name ?? r.makes,
+    };
+  // A worn tool that asks for these ingots (P4.9) wants them too: its line is the cause.
+  const worn = wornTools(world, content).find((w) => w.ingot === r.makes && w.item['worn']);
+  if (worn)
+    return {
+      line: worn.item['worn'] as number,
+      name: content.items.find((i) => i.id === r.makes)?.name ?? r.makes,
     };
   for (const alloy of content.metal.recipes)
     if (alloy.alloy && alloy.inputs.some((i) => i.kind === r.makes)) {

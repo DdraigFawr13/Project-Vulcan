@@ -50,6 +50,49 @@ export function speedOf(content: EngineContent, item: EntityRow): number {
   return base + (content.tools.quality[item['quality'] as string] ?? 0);
 }
 
+/** The material a worn tool of `material` asks to be replaced by: the next one up that is smithed
+ * from an ingot (stone asks for bronze, bronze for iron, iron for none). */
+export function nextMaterial(content: EngineContent, material: string) {
+  const all = content.tools.materials;
+  return all.slice(all.findIndex((m) => m.id === material) + 1).find((m) => m.ingot);
+}
+
+/** Whether a tool has under `tools.worn` per cent of its life left. */
+export function isWorn(content: EngineContent, item: EntityRow): boolean {
+  const t = toolOf(content, item);
+  if (!t) return false;
+  const life = lifeFor(content, t.material, item['quality'] as string);
+  return (item['wear'] as number) * 100 < life * content.tools.worn;
+}
+
+const rank = (content: EngineContent, material: string): number =>
+  content.tools.materials.findIndex((m) => m.id === material);
+
+/** Held worn tools that ask for a better one (Morgan's card, P4.9): each with the material and
+ * ingot it asks for, while no free tool of its kind that good or better lies at the cart. */
+export function wornTools(world: WorldState, content: EngineContent) {
+  const out: { item: EntityRow; kind: string; material: string; ingot: string; ingots: number }[] =
+    [];
+  for (const item of itemsOf(world)) {
+    const t = isHeld(item) ? toolOf(content, item) : undefined;
+    if (!t || !isWorn(content, item)) continue;
+    const next = nextMaterial(content, t.material);
+    if (!next?.ingot) continue;
+    const free = freeTools(world, content, t.kind);
+    if (free.some((f) => rank(content, toolOf(content, f)!.material) >= rank(content, next.id)))
+      continue;
+    const ingots = content.tools.kinds.find((k) => k.id === t.kind)?.ingots ?? 0;
+    out.push({ item, kind: t.kind, material: next.id, ingot: next.ingot, ingots });
+  }
+  return out;
+}
+
+/** Ingots of `ingot` the worn tools ask for. */
+export const wornIngots = (world: WorldState, content: EngineContent, ingot: string): number =>
+  wornTools(world, content)
+    .filter((w) => w.ingot === ingot)
+    .reduce((n, w) => n + w.ingots, 0);
+
 /** The tools of a kind lying free (not held), best first, ties by id. */
 export function freeTools(world: WorldState, content: EngineContent, kind: string): EntityRow[] {
   return itemsOf(world)

@@ -120,9 +120,10 @@ describe('carpentry and furniture', () => {
       // Every piece stands on a floor tile of a room, never on its way in.
       for (const f of furnitureOf(w)) {
         const r = roomAt(w, content, f['x'] as number, f['y'] as number);
-        // The campfire on the green is the one piece outside a room.
+        // The campfire on the green and the smithy's pieces (P4.9: worn tools bring the smithy
+        // within these days) are the pieces outside a room.
         if (!r) {
-          expect(f['kind']).toBe('hearth');
+          expect(['hearth', ...content.buildings.smithy.pieces]).toContain(f['kind']);
           continue;
         }
         expect(
