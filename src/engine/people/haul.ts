@@ -59,12 +59,16 @@ export function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void 
     return;
   }
   takeFrom(ctx.world, item, load);
-  const id = layItem(ctx.world, {
-    kind: item['kind'] as string,
-    count: load,
-    ...spotOf(p),
-    made: item['made'] as number,
-  });
+  const id = layItem(
+    ctx.world,
+    {
+      kind: item['kind'] as string,
+      count: load,
+      ...spotOf(p),
+      made: item['made'] as number,
+    },
+    { trail: item['trail'] as string },
+  );
   const carried = itemsOf(ctx.world).find((i) => i.id === id)!;
   carried['holder'] = p.id;
 }

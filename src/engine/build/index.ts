@@ -64,3 +64,4 @@ export {
 } from './fields.ts';
 export { finishReaping, finishSowing } from './fieldlife.ts';
 export { ringOf } from './ring.ts';
+export { sizeOfStation, stationAt, stationOf, stationsOf, STATION_TABLES } from './station.ts';

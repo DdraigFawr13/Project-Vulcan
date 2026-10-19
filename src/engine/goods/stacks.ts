@@ -23,6 +23,8 @@ export const GOODS_TABLES: Schemas = {
     wear: 'count',
     /** The line that made or brought it, for "why?". */
     made: 'event',
+    /** Where it came from (metal.ts): a compact JSON list of steps, '' for none. */
+    trail: 'text',
   },
 };
 
@@ -39,7 +41,7 @@ export const itemsAt = (world: WorldState, x: number, y: number, z: number): Ent
 export function layItem(
   world: WorldState,
   fields: { kind: string; count: number; x: number; y: number; z: number; made: number },
-  extra: { owner?: number; state?: string; wear?: number } = {},
+  extra: { owner?: number; state?: string; wear?: number; trail?: string } = {},
 ): number {
   return addEntity(world, 'item', {
     ...fields,
@@ -48,6 +50,7 @@ export function layItem(
     owner: extra.owner ?? 0,
     state: extra.state ?? '',
     wear: extra.wear ?? 0,
+    trail: extra.trail ?? '',
   });
 }
 

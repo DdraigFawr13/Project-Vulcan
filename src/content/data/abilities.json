@@ -11,6 +11,7 @@
   {"id":"crafting","name":"Crafting","family":"craft","requirements":{},"learnAttributes":["agility","intellect"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"tools"}},
   {"id":"herbalism","name":"Herbalism","family":"labour","requirements":{},"learnAttributes":["intellect","perception"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"herbs"}},
   {"id":"fighting","name":"Fighting","family":"combat","requirements":{},"learnAttributes":["strength","agility"],"learnFrom":["practice","teacher"],"effect":{"kind":"damage","damage":1}},
+  {"id":"smithing","name":"Smithing","family":"craft","requirements":{},"learnAttributes":["strength","perception"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"metalwork"}},
   {"id":"master_smithing","name":"Master smithing","family":"craft","requirements":{"strength":12,"perception":12},"learnAttributes":["strength","perception"],"learnFrom":["teacher","practice"],"effect":{"kind":"craft","tag":"fine_metalwork"}},
   {"id":"generalship","name":"Generalship","family":"social","requirements":{"charisma":13,"intellect":12},"learnAttributes":["charisma","intellect"],"learnFrom":["teacher","book","practice"],"effect":{"kind":"utility","tag":"command_army"}},
   {"id":"kindle","name":"Kindle","family":"magic","school":"fire","requirements":{"power":1,"affinity.fire":1},"learnAttributes":["willpower"],"learnFrom":["teacher","book"],"effect":{"kind":"utility","tag":"warmth","usesPerDay":3}},

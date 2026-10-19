@@ -160,7 +160,12 @@ export function takeUpCarpentry(ctx: SystemContext, p: EntityRow): boolean {
 }
 
 /** Goes for the wood (or the hearth's stone), or picks it up when standing on it. */
-function fetchWood(ctx: SystemContext, p: EntityRow, need: number, material: string): boolean {
+export function fetchWood(
+  ctx: SystemContext,
+  p: EntityRow,
+  need: number,
+  material: string,
+): boolean {
   const { world, content } = ctx;
   let item = itemsOf(world).find((i) => i.id === p['target'] && !i['holder']);
   if (!item) {

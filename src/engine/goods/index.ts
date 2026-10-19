@@ -25,3 +25,15 @@ export {
 } from './store.ts';
 export { eatFrom, foodGoneLine } from './food.ts';
 export { isTree, markedTree, marksOf, unmark } from './marks.ts';
+export {
+  charcoalNeeded,
+  ingotWant,
+  mergeTrails,
+  oreTrail,
+  plannedRuns,
+  trailOf,
+  trailText,
+  wantedBy,
+  withStep,
+  type Step,
+} from './metal.ts';

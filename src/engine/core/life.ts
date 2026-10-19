@@ -65,6 +65,8 @@ export interface ItemDef {
   good: string;
   /** A cooked dish (items.json): eaten in preference to raw food (work.cook). */
   cooked?: boolean;
+  /** An ingot's ore item (metal.json): what is smelted into it. */
+  ore?: string;
 }
 
 /** The colony's work (work.json, P2.4): stock levels (the player's lever), felling, carrying,

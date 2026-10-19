@@ -1,7 +1,7 @@
 // Shared footing for the work in jobs.ts and forage.ts: where someone stands, who is on what,
 // walking to stand beside a tile, and laying a yield out on the open ground around it.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { planAt } from '../build/index.ts';
+import { planAt, stationAt } from '../build/index.ts';
 import { itemsAt, layItem, stackSize } from '../goods/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -67,6 +67,7 @@ export function layAround(
   count: number,
   at: Spot,
   made: number,
+  trail = '',
 ): number {
   const { world, content } = ctx;
   const map = world.map;
@@ -79,10 +80,10 @@ export function layAround(
         const [x, y] = [at.x + dx, at.y + dy];
         if (x < 0 || y < 0 || x >= map.width || y >= map.height) continue;
         if (!walkAt(content, map, 0, y * map.width + x) || itemsAt(world, x, y, 0).length) continue;
-        if (planAt(world, x, y)?.['state'] === 'plan') continue;
+        if (planAt(world, x, y)?.['state'] === 'plan' || stationAt(world, x, y)) continue;
         if (!canReach(content, map, at, { x, y, z: 0 })) continue;
         const n = Math.min(size, left);
-        layItem(world, { kind, count: n, x, y, z: 0, made });
+        layItem(world, { kind, count: n, x, y, z: 0, made }, { trail });
         left -= n;
       }
   return count - left;

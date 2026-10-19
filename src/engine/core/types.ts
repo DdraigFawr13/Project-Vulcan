@@ -1,5 +1,6 @@
 // World state and event shapes. The whole world is plain data (numbers, strings, arrays and typed
 // arrays), so the worker can post it, P0.5 can save it and tests can compare it.
+import type { MetalDefs } from './metal.ts';
 import type { PeopleDefs } from './people.ts';
 import type { AuraDials, AuraSpot, SeasonsDef, WeatherDef } from './climate.ts';
 import type { FeatureDef, WalkingDef } from './ground.ts';
@@ -371,7 +372,7 @@ export interface CalendarDef {
 }
 
 /** The content the engine core reads. The worker passes the content layer's `content`. */
-export interface EngineContent extends PeopleDefs {
+export interface EngineContent extends PeopleDefs, MetalDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */
   events: readonly { id: string; template: string; notable?: Readonly<Record<string, string>> }[];

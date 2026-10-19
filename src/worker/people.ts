@@ -131,7 +131,8 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
     const { key, vars } = tendDoing(world, p);
     return { text: say(key, vars), ...why };
   }
-  if (job === 'cook') return { text: say('cook'), ...why };
+  if (job === 'cook' || job === 'charcoal' || job === 'smelt' || job === 'station')
+    return { text: say(job), ...why };
   if (job === 'farm') {
     const f = fieldsOf(world).find((r) => r.id === p['plan']);
     const crop =

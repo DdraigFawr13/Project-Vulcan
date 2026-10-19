@@ -10,6 +10,7 @@ import { inRect, isTreeAt, wayFrom, wayTo, type Rect, type Site, type Way } from
 export { inRect, type Rect, type Site } from './way.ts';
 import { furnitureOf } from './furniture.ts';
 import { partOf, plansOf } from './plans.ts';
+import { stationTiles } from './station.ts';
 import { ringOf } from './ring.ts';
 
 /** Whether (x, y) is on the rectangle's edge, where its walls and door stand. */
@@ -47,6 +48,7 @@ export function groundOf(world: WorldState): Ground {
       .filter((s) => s['z'] === 0)
       .map(at),
     ...plansOf(world).map(at),
+    ...stationTiles(world),
     // Fields planned or standing (P4.7), whose tiles the field table lists.
     ...(world.entities['field'] ?? [])
       .filter((f) => f['state'] !== 'sent')

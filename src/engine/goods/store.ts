@@ -35,6 +35,18 @@ export function freeTile(world: WorldState, content: EngineContent, x: number, y
   // Not where a part is planned or built (the build system's `plan` table, P3.1).
   if ((world.entities['plan'] ?? []).some((p) => p['x'] === x && p['y'] === y && p['z'] === 0))
     return false;
+  // Nor on a station (the smelter or the charcoal clamp's spot, Bundle 3).
+  if (
+    (world.entities['station'] ?? []).some(
+      (s) =>
+        s['z'] === 0 &&
+        x >= (s['x'] as number) &&
+        x < (s['x'] as number) + (s['w'] as number) &&
+        y >= (s['y'] as number) &&
+        y < (s['y'] as number) + (s['h'] as number),
+    )
+  )
+    return false;
   // Nor where a hearth or other furniture piece stands (P3.6).
   if ((world.entities['furniture'] ?? []).some((f) => f['x'] === x && f['y'] === y && f['z'] === 0))
     return false;

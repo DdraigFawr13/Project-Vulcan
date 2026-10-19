@@ -23,6 +23,7 @@ import {
 import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
+import { burning, takeUpCharcoal } from './charcoal.ts';
 import { cooking, takeUpCooking } from './cook.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
 import { takeUpHearth } from './hearth.ts';
@@ -31,14 +32,16 @@ import { furnishing, takeUpCarpentry } from './carpentry.ts';
 import { farming, takeUpFarming } from './farm.ts';
 import { foraging, takeUpForaging } from './forage.ts';
 import { practise } from './learn.ts';
+import { smelting, takeUpSmelting } from './smelt.ts';
+import { stationing, takeUpStation } from './station.ts';
 import { busy, goBeside, layAround, people, same, skillOf, SIDES, spotOf } from './spots.ts';
 import { able, declineIfUnable, jobsInOrder, outranked, priorityLine } from './priority.ts';
 import { tallyAdd } from './tally.ts';
 import { walkTo } from './walk.ts';
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `hearth` (a hearth being made), `tend`, `haul`
-   * or '' (none). */
+  /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `hearth` (a hearth being made), `tend`, `haul`,
+   * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -50,6 +53,8 @@ export const JOB_FIELDS = {
   plan: 'int',
   /** The tick before which they do not look for work again after finding none. */
   next: 'int',
+  /** The recipe being smelted (metal.json) or the clamp's task, `stack` or `open`; '' for none. */
+  make: 'text',
 } as const;
 
 /** Work that takes a feature off the map for what it yields: felling (logs) and quarrying (P3.1,
@@ -179,6 +184,9 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'hearth' && hours && furnishing(ctx, p)) return true;
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
   if (p['job'] === 'cook' && hours && cooking(ctx, p)) return true;
+  if (p['job'] === 'station' && hours && stationing(ctx, p)) return true;
+  if (p['job'] === 'charcoal' && hours && burning(ctx, p)) return true;
+  if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
   const load = loadOf(world, p.id);
   if (load) {
     p['job'] = 'haul';
@@ -299,11 +307,17 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   haul: takeUpHauling,
   forage: takeUpForaging,
   farm: takeUpFarming,
-  build: (ctx, p) => takeUpMarked(ctx, p, true) || takeUpHearth(ctx, p) || takeUpBuilding(ctx, p),
+  build: (ctx, p) =>
+    takeUpMarked(ctx, p, true) ||
+    takeUpHearth(ctx, p) ||
+    takeUpStation(ctx, p) ||
+    takeUpBuilding(ctx, p),
   tend: takeUpTending,
   cook: takeUpCooking,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
+  charcoal: takeUpCharcoal,
+  smelt: takeUpSmelting,
 };
 
 const jobSkill = (content: EngineContent, g: Gather): string =>

@@ -46,6 +46,7 @@ export function stackOf(ctx: SystemContext, p: EntityRow, kind: string): EntityR
     ...busy(world, p, 'carpentry'),
     ...busy(world, p, 'hearth'),
     ...busy(world, p, 'tend'),
+    ...busy(world, p, 'station'),
   ]);
   const from = spotOf(p);
   let best: EntityRow | undefined;

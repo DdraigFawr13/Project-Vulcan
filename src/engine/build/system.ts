@@ -18,6 +18,8 @@ import { finishHouses, growHouses } from './grow.ts';
 import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
 import { planCampfire, planRoomHearths } from './hearths.ts';
+import { planStations } from './metalsite.ts';
+import { STATION_TABLES } from './station.ts';
 import { planBench } from './wants.ts';
 
 function refuse(ctx: SystemContext, kind: string, reason: string, cause: number): void {
@@ -133,6 +135,8 @@ export const buildSystem: System = {
     'fire.planned',
     'fire.plannedCold',
     'fire.noFloor',
+    'metal.smelterPlanned',
+    'metal.clampPlanned',
     ...['town.ringWidened', 'field.needed', 'field.noGround', 'field.sited', 'field.sentBack'],
     ...['field.ripe', 'field.frostKilled', 'field.noSeed', 'field.sown', 'field.leftToGrass'],
   ],
@@ -148,7 +152,13 @@ export const buildSystem: System = {
     ...{ fieldNeed: 0, fieldNoGround: 0, fieldTried: 0 },
   },
   refs: ['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround'],
-  tables: { ...BUILD_TABLES, ...HOUSE_TABLES, ...FURNITURE_TABLES, ...FIELD_TABLES },
+  tables: {
+    ...BUILD_TABLES,
+    ...HOUSE_TABLES,
+    ...FURNITURE_TABLES,
+    ...FIELD_TABLES,
+    ...STATION_TABLES,
+  },
   commands: {
     placeBuilding: (ctx, command, cause) => placeBuilding(ctx, command.data, cause),
     deconstruct: (ctx, command, cause) => deconstruct(ctx, command.data, cause),
@@ -176,6 +186,7 @@ export const buildSystem: System = {
     planFields(ctx, green, []);
     planBench(ctx);
     planRoomHearths(ctx);
+    planStations(ctx, green);
     checkBuilders(ctx);
   },
 };
