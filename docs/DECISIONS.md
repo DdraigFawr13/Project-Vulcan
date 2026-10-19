@@ -72,3 +72,11 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-066 | Colonists claim beds themselves at bedtime: the free bed nearest where they sleep now, their own house first; the owner lives on the bed and there is no assign lever (accepted with the P3.4 mock-up, Morgan's Approve, 2026-10-19). |
 | V-067 | Beauty and privacy are needs with small mood weights. Awake indoors, beauty moves towards the room's beauty (outdoors it drifts to neutral). Privacy rises each night in a bedroom whose every bed is theirs alone and falls for each other sleeper in the room (accepted with the P3.4 mock-up, Morgan's Approve, 2026-10-19). |
 | V-068 | Not every room gets a hearth: the colony plans one only in a room someone is using while it is below a comfortable temperature without a fire (content `rooms.hearthBelow`), with a line naming who was cold; the first hearth is still the campfire on the green (V-050). Tenders feed a fire only where its room is under that line (Morgan, 2026-10-19). |
+| V-069 | One job per trade, a trade may own two or three stations; each trade is content (Morgan, trades workshop, 2026-10-19, https://claude.ai/artifact/EpJMik8X5Yf2zig1GFYvgX). |
+| V-070 | Small stations appear from need, as the bench does (V-061); workshop buildings are Build sheet rows colonists site (V-049); both grow into a lean-to (V-052) (Morgan, 2026-10-19). |
+| V-071 | Work sheet rows appear once their station exists, under folding trade headings whose stepper sets every row; from P4.1 (Morgan, 2026-10-19). |
+| V-072 | Leftovers are content that another trade uses; unused ones go to a midden at the edge; from P5.4 (Morgan, 2026-10-19). |
+| V-073 | Magic joins ordinary trades through Gifted workers; the only magic stations are enchanting, the still, the ward-carver and a stone circle (Morgan, 2026-10-19). |
+| V-074 | Trades are learned much faster beside a master; practice alone still teaches, more slowly; children often take a parent's trade (Morgan, 2026-10-19). |
+| V-075 | Indoor trades work after dark only with light; candles get a stock plate; the work-hours law sets how late (Morgan, 2026-10-19). |
+| V-076 | New trades land beside the systems they need: P5.11 to P5.13, P6.11 to P6.13, P7.7, P9.7 and rows in P5.4, P7.1, P7.3, P8.1, P9.1; Phases 3 and 4 gain none (Morgan, 2026-10-19). |
