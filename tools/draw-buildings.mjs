@@ -183,8 +183,9 @@ function quarter(full, corner) {
   return img;
 }
 
-// A door in a run east-west (`h`) or north-south (`v`): jambs of the material at both ends, and
-// between them a wooden leaf, or an open stone threshold.
+// A door in a run east-west (`h`) or north-south (`v`): a slim post of the material at each
+// end, and between them an oak leaf of boards laid across the run, with iron hinge straps and
+// a latch, or for stone an open threshold of flags. The band is lit and shaded like a wall's.
 function door(p, material, run) {
   const h = run === 'h';
   const rects = bandRects(h ? 10 : 5);
@@ -193,30 +194,56 @@ function door(p, material, run) {
       for (let x = 0; x < S; x++) {
         if (!inBand(rects, x, y)) continue;
         const along = h ? x : y;
-        const jamb = along < 6 || along > S - 7;
-        if (jamb) put(x, y, material === 'stone' ? stoneAt(p, x, y) : p.trunk);
-        else if (material === 'stone')
-          put(x, y, (h ? y : x) % 5 === 0 ? p['floor dark'] : p['floor light']);
-        else {
-          const board = (along - 6) % 5 === 4;
+        const across = (h ? y : x) - B0;
+        if (along < 3 || along > S - 4) {
           put(
             x,
             y,
-            board
-              ? p['dirt dark']
-              : noise(31, along, 0) < 0.5
-                ? p['leaf litter light']
-                : p['straw dark'],
+            material === 'stone' ? stoneAt(p, x, y) : along % 31 === 0 ? p['ui oak dark'] : p.trunk,
           );
+          continue;
         }
+        if (material === 'stone') {
+          const joint = (along - 3) % 13 === 12 || across === 5;
+          put(
+            x,
+            y,
+            joint ? p['floor dark'] : noise(32, along, across) < 0.5 ? p.floor : p['floor light'],
+          );
+          continue;
+        }
+        // Boards 5 px wide across the run, with flecks of grain; short iron hinge straps.
+        const seam = (along - 3) % 5 === 4;
+        const strap = (across === 2 || across === 8) && along < 10;
+        const grain = noise(33, along, across) > 0.9;
+        put(
+          x,
+          y,
+          strap ? p['ui iron'] : seam ? p['ui oak grain'] : grain ? p['ui oak'] : p['ui oak light'],
+        );
       }
     if (material === 'wood') {
-      // An iron latch on the leaf.
-      const [lx, ly] = h ? [20, 16] : [16, 20];
+      // The latch, beside the middle of the leaf.
+      const [lx, ly] = h ? [24, B0 + 5] : [B0 + 5, 24];
       put(lx, ly, p['ui iron light']);
-      put(h ? lx + 1 : lx, h ? ly : ly + 1, p['ui iron']);
+      put(h ? lx + 1 : lx, h ? ly : ly + 1, p['ui iron dark']);
     }
   });
+  // Lit along the top, shaded along the bottom, like a wall.
+  for (let y = 0; y < S; y++)
+    for (let x = 0; x < S; x++) {
+      if (!has(img, x, y)) continue;
+      if (!has(img, x, y - 1) && y > 0)
+        img.data.set(
+          [...p[material === 'stone' ? 'limestone light' : 'dirt light'], 255],
+          (y * S + x) * 4,
+        );
+      else if (!has(img, x, y + 1) && y < S - 1)
+        img.data.set(
+          [...p[material === 'stone' ? 'rock dark' : 'ui oak dark'], 255],
+          (y * S + x) * 4,
+        );
+    }
   return outline(img, p.ink);
 }
 
