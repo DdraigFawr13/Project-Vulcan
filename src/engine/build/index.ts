@@ -3,6 +3,7 @@ export { buildSystem, greenOf } from './system.ts';
 export {
   bedsOf,
   bedSpot,
+  crowdedIn,
   dirFrom,
   homeless,
   homeOf,
@@ -49,3 +50,4 @@ export {
   type RoomRow,
   type Want,
 } from './wants.ts';
+export { HEARTH } from './hearths.ts';

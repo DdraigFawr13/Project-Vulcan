@@ -51,8 +51,13 @@ The four new agents are on trial: each is measured on first use against doing th
 | `harvest-lessons` | built in | Monthly, to push general lessons back to AI-Master |
 | `design:ux-copy` | plugin | Wording in screen mock-ups (VR-64) |
 | `design:accessibility-review` | plugin | Source of the mock-up accessibility check (VR-65); the check itself is a script |
-| `shepherd`, `shepherd:reviewer` | plugin, on trial | Coding, and the Phase 3 phase review beside `reviewer` (VR-66) |
+| `shepherd:reviewer` | plugin, adopted (trial below) | Phase reviews, in place of `reviewer`, beside `design-reviewer` |
+| `shepherd` | plugin, on trial | Coding (VR-66) |
 | `setup-audit` | plugin, on trial | Once, for the cloud-session setup (VR-66) |
+
+Trial results (VR-66):
+
+- 2026-10-19 · `shepherd:reviewer` at the Phase 3 review, branch mode on the Phase 3 `src` diff · 221k tokens, 29 tool calls, 4.5 min, 7 findings: 4 fixed (a felling test that could not fail, the carpentry idle key colliding, tending begun with full hands, need causes below ground), 3 deferred (save rows unchecked against content, a test-mode gap, `roomAt` cost). It ran its lenses itself, as the thread had no agent tool to spawn them. Beside it: `reviewer` 254k tokens, 77 calls, 8 min, 9 findings, none fixed (content-over-code ids, small caches); `design-reviewer` 71k tokens, 25 calls, 1 min, 6 findings. Only shepherd caught the weakened test (VER-01). Verdict: cheaper than `reviewer` at a higher yield, so it replaces `reviewer` at phase reviews; `design-reviewer` stays beside it.
 
 Plugin skills reviewed and not used (2026-10-19, page https://claude.ai/artifact/4pN1XAYnHiL3SX6KppCxby): the engineering code review, testing strategy (its pyramid clashes with VR-21 to VR-27), architecture, system design, debug, deploy checklist, standup, incident response and documentation; the design critique, design system, handoff and research skills (later candidates: critique on a taste board, research synthesis once others playtest); Figma.
 

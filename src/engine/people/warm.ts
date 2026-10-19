@@ -5,8 +5,9 @@
 // that is out or low themselves (tend.ts), if firewood can be reached. One line when they go. A
 // later phase lets temperament and memories shift the line (P4.8).
 import type { EntityRow } from '../core/index.ts';
-import { furnitureOf } from '../build/index.ts';
+import { furnitureOf, HEARTH } from '../build/index.ts';
 import { heatMap } from '../fire/index.ts';
+import { itemsOf } from '../goods/index.ts';
 import { feltAt, needOf } from '../needs/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -32,7 +33,7 @@ function nearestWarm(ctx: SystemContext, p: EntityRow): Spot | undefined {
   const here = spotOf(p);
   const hearths = new Set(
     furnitureOf(world)
-      .filter((f) => f['z'] === 0)
+      .filter((f) => f['kind'] === HEARTH && f['z'] === 0)
       .map((f) => (f['y'] as number) * width + (f['x'] as number)),
   );
   const far = (i: number) =>
@@ -95,7 +96,11 @@ export function warming(ctx: SystemContext, p: EntityRow): boolean {
   // Out of a warm place to go, they light or feed a fire themselves, leaving any work for good:
   // with no fire lit anywhere it would only keep them cold (V-046).
   if (!target && p['job'] && coldPick(ctx, p)) Object.assign(p, { job: '', plan: 0, target: -1 });
-  const got = target || p['job'] ? undefined : coldPick(ctx, p);
+  // Hands full of something that is not fuel (stone from a building job), tending would stop at
+  // once after its line said it began (phase review), so they carry it home first.
+  const load = itemsOf(world).find((i) => i['holder'] === p.id);
+  const full = load && !ctx.content.work.fire.fuels.some((f) => f.item === load['kind']);
+  const got = target || p['job'] || full ? undefined : coldPick(ctx, p);
   if (got) {
     go();
     p['doing'] = '';

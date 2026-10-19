@@ -22,6 +22,8 @@ export type ToWorker =
    * check is refused (`loadRefused`) and the running world carries on untouched. */
   | { type: 'load'; save: unknown }
   | { type: 'command'; tick: number; kind: string; data?: EventData }
+  /** Whether the page opened in test mode; until it says so, test tools are refused (V-041). */
+  | { type: 'testMode'; on: boolean }
   /** Any speed, pause included, also ends a skip. */
   | { type: 'setSpeed'; speed: Speed }
   /** Skip ahead (P2.7): run as fast as the device allows until a notable line, then pause. */

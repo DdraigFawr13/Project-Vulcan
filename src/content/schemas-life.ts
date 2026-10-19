@@ -176,7 +176,8 @@ export const LIFE_SCHEMAS = {
     // P3.7 (V-049, V-051): what a house is made of and the sizes colonists choose from, smallest
     // first; `near` is how many tiles from the green it may stand. `walls` are part ids, the
     // first whose material lies within
-    // `reach` tiles of the store taken. `stage` is the room a house adds (P3.8).
+    // `reach` tiles of the store taken. `stage` is the room a house adds (P3.8);
+    // a crowded sleeper has one added for privacy while the house has fewer than `private` rooms.
     house: obj({
       name: text,
       start: num({ min: 1, max: 4 }),
@@ -187,6 +188,7 @@ export const LIFE_SCHEMAS = {
       floor: text,
       sizes: list(size),
       stage: size,
+      private: num({ min: 1, max: 8 }),
     }),
     // P3.3: rooms are worked out when asked. Impressiveness is the room's tiles over `perSize`
     // plus its beauty, out of `top`; beauty is the floors' average (`bare` where none is

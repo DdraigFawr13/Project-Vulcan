@@ -145,7 +145,8 @@ function hourOf(
  * and privacy (P3.5), else its last line. */
 function causeOf(ctx: SystemContext, p: EntityRow, row: EntityRow): number {
   const spell = ctx.world.systems['weather']?.['spell'];
-  if (row['need'] === 'beauty' || row['need'] === 'privacy') {
+  // Houses stand on the surface: someone below one is not in it (phase review).
+  if ((row['need'] === 'beauty' || row['need'] === 'privacy') && p['z'] === 0) {
     const built = houseAt(ctx.world, p['x'] as number, p['y'] as number)?.['built'] as number;
     if (built > 0) return built;
   }

@@ -8,7 +8,8 @@ import { addEntity } from '../entity/index.ts';
 import { itemsOf, raiseStock } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { anyBench, furnitureOf } from './furniture.ts';
-import { mainOf, nthOf, rowsOf, sizeOf } from './houses.ts';
+import { HEARTH } from './hearths.ts';
+import { crowdedIn, mainOf, nthOf, rowsOf, sizeOf } from './houses.ts';
 import { roomAt, type Room } from './rooms.ts';
 import { housesOf, rectOf } from './site.ts';
 
@@ -60,9 +61,10 @@ const dirOf = (dx: number, dy: number): string =>
 export function siteFor(
   world: WorldState,
   content: EngineContent,
-  { room }: RoomRow,
+  rr: RoomRow,
   kind: string,
 ): { x: number; y: number; facing: string } | undefined {
+  const { room } = rr;
   const width = world.map.width;
   const place = content.buildings.furniture.kinds.find((k) => k.id === kind)!.place;
   const xy = (i: number) => ({ x: i % width, y: Math.floor(i / width) });
@@ -85,7 +87,17 @@ export function siteFor(
   // A bed may stand where a sleeper's bedroll lies: the roll goes when they claim it.
   const blocking = lying.filter((i) => kind !== 'bed' || i['kind'] !== content.life.cart.bedroll);
   const taken = new Set([...blocking.map(idx), ...pieces.map(idx)]);
-  const free = room.tiles.filter((i) => !wayIn.has(i) && !taken.has(i)).sort((a, b) => a - b);
+  // A room keeps its hearth's tile free until it has one (P3.6, V-068): nothing else takes the
+  // floor the hearth would stand on, or a room furnished in summer has no tile left for one when
+  // the cold comes. Every house size leaves room for its beds beside it (buildings.json).
+  const keep =
+    kind !== HEARTH && !pieces.some((f) => f['kind'] === HEARTH)
+      ? siteFor(world, content, rr, HEARTH)
+      : undefined;
+  const hearthTile = keep ? keep.y * width + keep.x : -1;
+  const free = room.tiles
+    .filter((i) => !wayIn.has(i) && !taken.has(i) && i !== hearthTile)
+    .sort((a, b) => a - b);
   if (!free.length) return undefined;
   const wallSide = (i: number) => DIRS.find(([, dx, dy]) => isWall(i + dx + dy * width));
   const apart = (i: number, from: number[]) => Math.min(99, ...from.map((j) => cheb(i, j)));
@@ -159,13 +171,33 @@ export function lacks(world: WorldState, content: EngineContent, rr: RoomRow) {
   });
 }
 
+/** A room added for privacy (grow.ts) has no sleeper yet, so no role and no wants: it lacks one
+ * bed while someone in its house is crowded, for them to move to (claim.ts). */
+function spareBed(world: WorldState, rr: RoomRow): Omit<Want, 'rr' | 'at'> | undefined {
+  const { room, h } = rr;
+  if (!h['of'] || room.sleepers) return undefined;
+  // One bed, counting one still planned.
+  const inside = new Set(room.tiles);
+  const width = world.map.width;
+  const planned = furnitureOf(world).some(
+    (f) =>
+      f['kind'] === 'bed' &&
+      f['z'] === 0 &&
+      inside.has((f['y'] as number) * width + (f['x'] as number)),
+  );
+  if (planned) return undefined;
+  return crowdedIn(world, mainOf(world, h)).length ? { kind: 'bed', have: 0, need: 1 } : undefined;
+}
+
 /** The next piece to make: a bed in the room with the most sleepers lacking one, else the first
  * thing the room with the most sleepers lacks. Only what has a free tile to go on. */
 export function nextWant(world: WorldState, content: EngineContent): Want | undefined {
   const rooms = roomsOf(world, content);
   let bed: Want | undefined;
   for (const rr of rooms) {
-    const l = lacks(world, content, rr).find((w) => w.kind === 'bed' && w.have < w.need);
+    const l =
+      lacks(world, content, rr).find((w) => w.kind === 'bed' && w.have < w.need) ??
+      spareBed(world, rr);
     if (!l || (bed && l.need - l.have <= bed.need - bed.have)) continue;
     const at = siteFor(world, content, rr, 'bed');
     if (at) bed = { ...l, rr, at };
@@ -223,7 +255,7 @@ export function planBench(ctx: SystemContext): void {
 }
 
 /** A number that changes whenever what a room lacks could: houses built, pieces made or planned,
- * beds owned, bedrolls laid. A want searched for in vain need not be searched for again until it
+ * beds owned, people crowded, bedrolls laid. A want searched for in vain need not be searched for again until it
  * changes. Always 1 or more. */
 export function wantSignature(world: WorldState, content: EngineContent): number {
   const rolls = itemsOf(world).filter(
@@ -235,5 +267,17 @@ export function wantSignature(world: WorldState, content: EngineContent): number
   sig = sig * 31 + pieces.filter((f) => f['state'] === 'built').length;
   sig = sig * 31 + pieces.filter((f) => f['owner']).length;
   sig = sig * 31 + housesOf(world).filter((h) => h['state'] === 'built').length;
-  return sig + rolls.reduce((n, i) => n + (i['x'] as number) + 7 * (i['y'] as number), 0) * 1009;
+  // A spare bed is wanted for whoever is crowded (phase review), so their count is in it too.
+  const crowded = (world.entities['need'] ?? []).filter(
+    (n) => n['need'] === 'privacy' && n['low'],
+  ).length;
+  sig = sig * 31 + crowded;
+  // Each bedroll's tile, scrambled so a move changes the sum (a plain x + 7y missed a move of
+  // 7 east and 1 north, found in the phase review).
+  const { width } = world.map;
+  const tiles = rolls.reduce(
+    (n, i) => (n + Math.imul((i['y'] as number) * width + (i['x'] as number) + 1, 0x9e3779b1)) | 0,
+    0,
+  );
+  return (sig * 1009 + tiles) >>> 0 || 1;
 }

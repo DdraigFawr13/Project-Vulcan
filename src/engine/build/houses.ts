@@ -35,7 +35,8 @@ export const HOUSE_TABLES: Schemas = {
    * `line` the line that planned it and `why` the reason it gives; `sent` is 1 for a plan that
    * replaced one sent back (it cannot be sent back); `built` the line it was finished under;
    * `moved` the last line of someone carrying their bedroll in; `tried` the tick a built house
-   * last looked for where to add a room, and `full` 1 when no side of it had ground for one. */
+   * last looked for where to add a room, and `full` 1 when no side of it had ground for one;
+   * `cold` the line saying a cold room of it had no floor free for a hearth (phase review). */
   house: {
     size: 'text',
     x: 'int',
@@ -52,6 +53,7 @@ export const HOUSE_TABLES: Schemas = {
     moved: 'event',
     tried: 'int',
     full: 'count',
+    cold: 'event',
   },
   /** The Build sheet's level for a kind of building (1 first to 4 last) and its order. */
   want: { kind: 'text', level: 'count', line: 'event' },
@@ -137,6 +139,21 @@ export function homeOf(world: WorldState, content: EngineContent, bed: EntityRow
 function bedHome(world: WorldState, bed: EntityRow): EntityRow | undefined {
   const h = houseAt(world, bed['x'] as number, bed['y'] as number);
   return h && h['state'] === 'built' ? mainOf(world, h) : undefined;
+}
+
+/** The people of house `main` who sleep in a bed of theirs there and feel crowded: their
+ * privacy need is under its line (P3.5), with the line that said so. */
+export function crowdedIn(world: WorldState, main: EntityRow): { p: EntityRow; line: number }[] {
+  const out: { p: EntityRow; line: number }[] = [];
+  for (const b of piecesOf(world, 'bed')) {
+    if (!b['owner'] || bedHome(world, b)?.id !== main.id) continue;
+    const row = (world.entities['need'] ?? []).find(
+      (n) => n['person'] === b['owner'] && n['need'] === 'privacy',
+    );
+    const p = (world.entities['person'] ?? []).find((q) => q.id === b['owner']);
+    if (row?.['low'] && p?.['status'] === 'alive') out.push({ p, line: row['line'] as number });
+  }
+  return out.sort((a, b) => a.p.id - b.p.id);
 }
 
 /** The people asleep under the open sky: alive, and neither their bedroll nor their bed (P3.5)
@@ -228,6 +245,7 @@ export function placeHouse(
       moved: 0,
       tried: -TICKS_PER_DAY,
       full: 0,
+      cold: 0,
     },
   });
   const parts = partsOf(content, site, site.door, wall, extra.skip);

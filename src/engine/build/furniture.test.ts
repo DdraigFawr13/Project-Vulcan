@@ -15,11 +15,13 @@ import {
   piecesOf,
   qualityOf,
   roomAt,
+  roomsOf,
   step,
   submitCommand,
   SYSTEMS,
   whyOf,
 } from '../index.ts';
+import { HEARTH, siteFor } from './index.ts';
 
 const sim = createSim(content);
 const DAY = 1440;
@@ -109,6 +111,9 @@ describe('carpentry and furniture', () => {
           r.doorTiles.flatMap((d) => [d - 1, d + 1, d - w.map.width, d + w.map.width]),
         ).not.toContain((f['y'] as number) * w.map.width + (f['x'] as number));
       }
+      // Furnished in summer, every room still has a tile for a hearth when the cold comes (the
+      // phase review found rooms full by day 3 and nobody warm indoors all winter).
+      for (const rr of roomsOf(w, content)) expect(siteFor(w, content, rr, HEARTH)).toBeDefined();
     });
   }
 

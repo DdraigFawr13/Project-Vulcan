@@ -14,9 +14,12 @@ const NONE: ReadonlyMap<number, number> = new Map();
 export function heatMap(world: WorldState, content: EngineContent): ReadonlyMap<number, number> {
   const lit = firesOf(world).filter((f) => f['lit']);
   if (!lit.length) return NONE;
-  // Any change to the world's rows (a wall built, a fire lit or out) writes a line, so the next
-  // line id and which fires are lit and banked are the whole key.
-  const key = `${world.nextEventId}:${lit.map((f) => `${f.id}${f['banked']}`).join()}`;
+  // What a fire reaches changes only with the surface tiles (a wall or door built raises its
+  // chunk's version, and versions only rise), so their sum and which fires are lit, banked and
+  // burning what are the whole key. (Keyed on the next line id, it was rebuilt after every line.)
+  let tiles = 0;
+  for (const v of world.map.chunkVersions) tiles += v;
+  const key = `${tiles}:${lit.map((f) => `${f.id}.${f['banked']}.${f['kind']}`).join()}`;
   const hit = cache.get(world);
   if (hit?.key === key) return hit.heat;
   const width = world.map.width;

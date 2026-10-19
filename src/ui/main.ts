@@ -29,7 +29,7 @@ const params = new URLSearchParams(location.search);
 const seed = params.get('seed') ?? 'ledger-1';
 const site = params.get('site');
 const debug = testModeOn(params); // test tools and developer readouts (testmode.ts)
-const worker = spawnSimWorker();
+const worker = spawnSimWorker(debug);
 const send = (message: ToWorker): void => worker.postMessage(message);
 let speed: Speed = 0;
 /** The speed Space resumes to. */

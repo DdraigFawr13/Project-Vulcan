@@ -5,7 +5,7 @@
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { bedsOf, mainOf, nthOf, placeHouse, rowsOf, sizeOf } from './houses.ts';
+import { bedsOf, crowdedIn, mainOf, nthOf, placeHouse, rowsOf, sizeOf } from './houses.ts';
 import { plansOf } from './plans.ts';
 import { roomAt } from './rooms.ts';
 import { isTreeAt, wayFrom, wayTo } from './way.ts';
@@ -121,7 +121,14 @@ export function stageSite(
   return best;
 }
 
-/** Each built house with more sleepers than room, and no room planned, adds one: walls of
+/** Whether built house row `h` is a room nobody sleeps in yet. */
+function emptyRoom(ctx: SystemContext, h: EntityRow): boolean {
+  if (h['state'] !== 'built') return false;
+  const r = rectOf(h);
+  return roomAt(ctx.world, ctx.content, r.x + 1, r.y + 1)?.sleepers === 0;
+}
+
+/** Each built house with more sleepers than room, or with a crowded sleeper (above), and no room planned, adds one: walls of
  * material in stock, else of material within reach (the plans wait for it). True when a built
  * house has a room planned or ground to add one, so homeless sleepers wait for it rather than
  * for another house. */
@@ -136,13 +143,19 @@ export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: num
       continue;
     }
     const { sleepers, room } = bedsOf(world, content, main);
-    if (sleepers <= room) continue;
-    // A house that could not add a room looks again the next day, not every hour.
+    // Short of beds, or someone crowded (privacy under its line) with no empty room to move to,
+    // while the house has fewer rooms than `house.private` (phase review).
+    const short = sleepers > room;
+    if (!short && rows.length >= content.buildings.house.private) continue;
+    // A house that could not add a room looks again the next day, not every hour; one with
+    // nobody short of a bed looks for someone crowded once a day too.
     if (!only && world.tick < (main['tried'] as number) + TICKS_PER_DAY) {
-      growing ||= !main['full'];
+      if (short) growing ||= !main['full'];
       continue;
     }
     main['tried'] = world.tick;
+    const crowded = short ? undefined : crowdedIn(world, main)[0];
+    if (!short && (!crowded || rows.some((h) => emptyRoom(ctx, h)))) continue;
     const site = stageSite(ctx, main, green);
     main['full'] = site ? 0 : 1;
     if (!site) continue;
@@ -153,16 +166,22 @@ export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: num
     const inStock = wallFor(world, content, plan, false);
     const { wall } = inStock.fits ? inStock : wallFor(world, content, plan, true);
     const stage = content.buildings.house.stage;
-    const line = ctx.emit('build.grows', {
-      causes: [main['built'] as number, ...[main['moved'] as number].filter((l) => l > 0)],
-      data: {
-        sleepers,
-        size: sizeOf(content, main).name,
-        room,
-        nth: nthOf(rows.length),
-        side: site.side,
-      },
-    });
+    const size = sizeOf(content, main).name;
+    const line = crowded
+      ? ctx.emit('build.growsPrivate', {
+          causes: [main['built'] as number, crowded.line].filter((l) => l > 0),
+          actors: [crowded.p.id],
+          data: {
+            name: crowded.p['name'] as string,
+            size,
+            nth: nthOf(rows.length),
+            side: site.side,
+          },
+        })
+      : ctx.emit('build.grows', {
+          causes: [main['built'] as number, ...[main['moved'] as number].filter((l) => l > 0)],
+          data: { sleepers, size, room, nth: nthOf(rows.length), side: site.side },
+        });
     placeHouse(ctx, site, stage, wall, line, {
       why: `the flattest side of the ${sizeOf(content, main).name}: ${site.rise} m of rise`,
       of: main.id,

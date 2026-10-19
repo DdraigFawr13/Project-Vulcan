@@ -19,6 +19,7 @@ import {
   valleyOf,
   submitCommand,
   SYSTEMS,
+  TEST_TOOLS,
   toNdjson,
   whyOf,
   yesterdayOf,
@@ -46,6 +47,8 @@ const sim = createSim(
 );
 const systemNames = SYSTEMS.map((s) => s.id);
 let world: WorldState | undefined;
+/** The page's test mode: test tools are applied only when it is on. */
+let testMode = false;
 let pace = createPace(performance.now());
 /** Chunk versions the page has already been sent, per level; empty until the first snapshot. */
 let sent: number[][] = [];
@@ -257,8 +260,13 @@ function handle(message: ToWorker): void {
     case 'requestSnapshot':
       if (world) snapshot(world);
       return;
+    case 'testMode':
+      testMode = message.on;
+      return;
     case 'command':
       if (!world) throw new Error('A command arrived before the world began.');
+      // A test tool from a page not in test mode is dropped before the command log (V-041).
+      if (!testMode && TEST_TOOLS.includes(message.kind)) return;
       submitCommand(world, message);
       // Paused, a lever takes effect at once (stamped for the next tick, as it would apply), and
       // the page sees it now rather than once time runs.

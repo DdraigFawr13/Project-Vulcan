@@ -116,6 +116,9 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   const day = dayOf(world, content);
   const night = hour >= day.sleepFrom || hour < day.workFrom;
   const rest = valueOf(ctx, p, 'rest');
+  // Below its warning line, warmth beats sleep as it beats work (P3.6, V-046; phase review: a
+  // room built in a hard winter was slept in cold until its hearth stood).
+  if (warming(ctx, p)) return;
   if (p['doing'] === 'sleep') {
     if (night || rest < life.sleep.wake) return;
     p['doing'] = '';
@@ -124,8 +127,6 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     goToBed(ctx, p, night);
     return;
   }
-  // Below its warning line, warmth beats work (P3.6, V-046).
-  if (warming(ctx, p)) return;
   const hours = hour >= day.workFrom && hour < day.workTo;
   if (working(ctx, p, hours)) {
     p['doing'] = 'work';

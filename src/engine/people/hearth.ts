@@ -52,7 +52,12 @@ export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
     if (stuck && !stuck['waited'])
       stuck['waited'] = ctx.emit('build.waiting', {
         causes: [stuck['line'] as number],
-        data: { part: 'hearth', x: stuck['x'] as number, y: stuck['y'] as number, good: 'stone' },
+        data: {
+          part: `hearth ${placeOf(ctx.world, ctx.content, stuck).where}`,
+          x: stuck['x'] as number,
+          y: stuck['y'] as number,
+          good: 'stone',
+        },
       });
     return false;
   }

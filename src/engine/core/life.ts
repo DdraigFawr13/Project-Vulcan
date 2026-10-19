@@ -122,6 +122,8 @@ export interface HouseDef {
   floor: string;
   sizes: readonly SizeDef[];
   stage: SizeDef;
+  /** The most rooms a house grows to for privacy (the house itself counted). */
+  private: number;
 }
 
 /** How a room is scored when asked (P3.3). */

@@ -107,6 +107,7 @@ export const peopleSystem: System = {
     'work.tookUpClearing',
     'people.movedIn',
     'people.claimedBed',
+    'people.movedRoom',
     'work.tookUpCarpentry',
     'work.tookUpHearth',
     'work.tookUpTending',

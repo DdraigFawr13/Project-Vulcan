@@ -91,6 +91,17 @@ export {
   setTile,
 } from './map/index.ts';
 
+/** The test-mode tools (V-041): direct orders on a tile, never levers. The worker refuses them
+ * unless the page opened in test mode. */
+export const TEST_TOOLS: readonly string[] = [
+  'placeBuilding',
+  'deconstruct',
+  'cutStairs',
+  'sinkShaft',
+  'markFell',
+  'markStore',
+];
+
 /** The game's systems in tick order. Later milestones add theirs here. */
 export const SYSTEMS: readonly System[] = [
   regionSystem,
