@@ -29,7 +29,7 @@ export type {
   ValleyPreview,
   WeatherView,
 } from './protocol.ts';
-export type { GoodsView, StockView } from './protocol-goods.ts';
+export type { GoodsView, ItemView, StockView } from './protocol-goods.ts';
 export { SAVE_VERSION } from './save.ts';
 export type { SaveFile } from './save.ts';
 

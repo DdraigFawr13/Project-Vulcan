@@ -112,7 +112,7 @@ function free(ctx: SystemContext, tiles: [number, number][], green: { x: number;
 
 /** Whether an ingot lies in the store: the smithy is wanted from then (tools.json materials, and
  * any item that names the ore it is smelted from). */
-function ingotInStore(world: WorldState, content: EngineContent): EntityRow | undefined {
+export function ingotInStore(world: WorldState, content: EngineContent): EntityRow | undefined {
   const ingots = new Set([
     ...content.items.filter((i) => i.ore).map((i) => i.id),
     ...content.tools.materials.flatMap((m) => (m.ingot ? [m.ingot] : [])),
@@ -245,6 +245,24 @@ function finishSmithy(ctx: SystemContext, s: EntityRow): void {
   s['built'] = ctx.emit('smithy.built', { causes: [last] });
 }
 
+/** The pieces laid with this smithy's plan. */
+const piecesIn = (world: WorldState, s: EntityRow): EntityRow[] =>
+  furnitureOf(world).filter(
+    (f) => inRect(rectOf(s), f['x'] as number, f['y'] as number) && f['line'] === s['line'],
+  );
+
+/** Why a smithy cannot be sent back (the Build sheet shows no button then), else undefined. */
+export function sendBackBlock(world: WorldState, s: EntityRow): string | undefined {
+  if (s['state'] !== 'plan') return 'no such plan';
+  if (s['sent']) return 'it was sent back once already';
+  const begun =
+    plansOf(world).some((p) => p['house'] === s.id && (p['done'] as number) > 0) ||
+    piecesIn(world, s).some(
+      (f) => f['state'] === 'built' || (f['have'] as number) > 0 || (f['work'] as number) >= 0,
+    );
+  return begun ? 'building has begun' : undefined;
+}
+
 /** The `sendBack {smithy}` lever: a smithy still planned, nothing built or made, not itself a
  * replacement, is dropped; what was brought is laid back, the site is never chosen again and the
  * colony chooses again at once. */
@@ -256,24 +274,9 @@ export function sendBackSmithy(
 ): void {
   const { world, content } = ctx;
   const s = smithiesOf(world).find((r) => r.id === data['smithy']);
+  const why = s ? sendBackBlock(world, s) : 'no such plan';
   const plans = s ? plansOf(world).filter((p) => p['house'] === s.id) : [];
-  const pieces = s
-    ? furnitureOf(world).filter(
-        (f) => inRect(rectOf(s), f['x'] as number, f['y'] as number) && f['line'] === s['line'],
-      )
-    : [];
-  const why =
-    !s || s['state'] !== 'plan'
-      ? 'no such plan'
-      : s['sent']
-        ? 'it was sent back once already'
-        : plans.some((p) => (p['done'] as number) > 0) ||
-            pieces.some(
-              (f) =>
-                f['state'] === 'built' || (f['have'] as number) > 0 || (f['work'] as number) >= 0,
-            )
-          ? 'building has begun'
-          : undefined;
+  const pieces = s ? piecesIn(world, s) : [];
   if (why) {
     ctx.emit('command.refused', { causes: [cause], data: { kind: 'sendBack', reason: why } });
     return;

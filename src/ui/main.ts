@@ -100,6 +100,7 @@ const panel = new Panel(
   hudRoot,
   {
     why: (id) => send({ type: 'why', id }),
+    item: (id) => sheets.openItem(id),
     save: () => send({ type: 'save', auto: false }),
     exportLedger: () => send({ type: 'export', kind: 'ndjson' }),
     load: (meta) => void saves.load(meta),
@@ -124,8 +125,8 @@ const sheets = new Sheets({
   send,
   tick: () => worldTick,
   lines: () => saves.ledger,
-  show: (x, y, z) => {
-    closePanel();
+  show: (x, y, z, keep) => {
+    if (!keep) closePanel();
     setLevel(z);
     renderer.lookAt(x, y);
     renderer.mark({ x, y });
@@ -146,9 +147,7 @@ const picker = new Picker(hudRoot, {
   },
   roll: (next) => roll(next),
 });
-function roll(next: string): void {
-  location.search = `?seed=${encodeURIComponent(next)}`;
-}
+const roll = (next: string): void => void (location.search = `?seed=${encodeURIComponent(next)}`);
 const saves = new Saves({
   seed,
   renderer,
@@ -265,7 +264,8 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
         renderer.mark(message.tile);
         hud.showPanel(undefined);
       }
-    } else if (message.type === 'picker') {
+    } else if (message.type === 'item') sheets.showItem(message.item);
+    else if (message.type === 'picker') {
       hud.hideScreen();
       picker.show(message);
     } else if (message.type === 'region') {

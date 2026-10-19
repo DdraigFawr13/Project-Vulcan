@@ -29,6 +29,7 @@ import { shaftPlans, stockNote } from './mine.ts';
 import { furnitureGoods, tilePiece } from './furniture.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
+import { stationGoods, tileWorks } from './works.ts';
 
 const nameOf = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 
@@ -57,7 +58,7 @@ export function goodsOf(world: WorldState): GoodsView {
         state: p['state'] as string,
         house: p['house'] as number,
       })),
-    furniture: furnitureGoods(world),
+    furniture: [...furnitureGoods(world), ...stationGoods(world)],
     fires: fireGoods(world),
     work: workBars(world),
     fields: fieldFrames(world),
@@ -93,9 +94,12 @@ export function tileGoods(
     const count = i['count'] as number;
     const kind = i['kind'] as string;
     const made = line(i['made']);
+    const def = content.items.find((d) => d.id === kind);
     return {
       text: `${nameOf(kind)}${count > 1 ? ` × ${count}` : ''}${i['state'] === 'laid' ? ', laid out' : ''}`,
       ...(made && { made }),
+      // A tool or an ingot has a page of its own: where it came from (P4.6).
+      ...((def?.tool || def?.good === 'metal') && { item: i.id }),
     };
   });
   const tile = storeOf(world).find((s) => s['x'] === x && s['y'] === y && s['z'] === z);
@@ -110,6 +114,7 @@ export function tileGoods(
     ...(surface && !inStore(world, x, y, 0) && freeTile(world, content, x, y) && { open: true }),
     ...(surface && planOf(world, x, y, line)),
     ...(surface && tilePiece(world, x, y, lineOf)),
+    ...(surface && tileWorks(world, x, y, lineOf)),
   };
 }
 

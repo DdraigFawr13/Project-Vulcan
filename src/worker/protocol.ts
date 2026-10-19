@@ -4,8 +4,8 @@
 // steps it, writes a ledger line or draws from an RNG stream.
 import type { Command, EventData, RegionSite, RegionValley } from '../engine/index.ts';
 import type { SaveFile } from './save.ts';
-import type { GoodsView, StockView } from './protocol-goods.ts';
-export type { GoodsView, Spot3, StockView } from './protocol-goods.ts';
+import type { GoodsView, ItemView, StockView, WorksView } from './protocol-goods.ts';
+export type { GoodsView, ItemView, Spot3, StockView } from './protocol-goods.ts';
 import type { AnswerView, HoursView, LawView } from './protocol-law.ts';
 export type { AnswerView, HoursView, LawView } from './protocol-law.ts';
 import type {
@@ -52,7 +52,9 @@ export type ToWorker =
   /** The inspector: one tile's record on level `z` (0 surface, 1 to 4 below) and its last line. */
   | { type: 'inspect'; x: number; y: number; z?: number }
   /** "why?": a ledger line's causes back to the world's first line. */
-  | { type: 'why'; id: number };
+  | { type: 'why'; id: number }
+  /** The item page (P4.6): one tool or ingot stack and where it came from. */
+  | { type: 'item'; id: number };
 
 /** The clock as the page shows it; the worker computes it from the tick and the content calendar. */
 export interface ClockView {
@@ -177,7 +179,7 @@ export interface TileView {
   /** The line that last changed the tile, or its older record once its day is sealed. */
   changedBy?: LedgerLine;
   /** What lies on the tile (P2.4), e.g. "logs × 25", each with the line that made or brought it. */
-  goods?: { text: string; made?: LedgerLine }[];
+  goods?: { text: string; made?: LedgerLine; item?: number }[];
   /** Part of the store, with the line that set the tile up. */
   store?: { made?: LedgerLine };
   /** Test mode (`?debug`): a tree is marked here, a tree could be, or the store could take it. */
@@ -194,6 +196,8 @@ export interface TileView {
   piece?: PieceView;
   /** The field this tile is part of (P4.7). */
   field?: FieldView;
+  /** The smelter, charcoal clamp or smithy here (Bundle 3). */
+  works?: WorksView;
   /** The shaft plan on this tile (Bundle 2). */
   shaft?: ShaftView;
 }
@@ -313,6 +317,8 @@ export interface WalkerView {
     word: string;
     declined?: number;
   }[];
+  /** The tools they hold, each with its hours left (V-088); owned like a bed, no lever. */
+  tools: { id: number; kind: string; text: string }[];
   /** The cloak they wear and how worn it is, in words (V-092); none without one. */
   wearing?: string;
   /** Their live memories (V-091): the text, its mood in points, the days before it fades, the
@@ -391,6 +397,8 @@ export type FromWorker =
   /** Days the engine sealed since the last run, for the page to archive (P2.0). */
   | { type: 'segments'; items: { key: string; text: string }[] }
   | { type: 'inspected'; tile: TileView | undefined }
+  /** The item page for an `item` request; none when the item is gone. */
+  | { type: 'item'; item: ItemView | undefined }
   /** The causes of line `id`, nearest first, each with its depth (1 is a direct cause). */
   | { type: 'causes'; id: number; lines: (LedgerLine & { depth: number })[] }
   /** The region of a plain seed and its valleys on offer, before any world begins. */

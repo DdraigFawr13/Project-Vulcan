@@ -7,11 +7,10 @@ import { el } from './dom.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 import { fillStock, stockRows } from './stock.ts';
 import { testMode } from './testmode.ts';
-import { fieldFacts, fieldLines } from './fieldrows.ts';
 import { landFacts } from './landrows.ts';
-import { pieceFacts, pieceLines } from './piecerows.ts';
-import { planFacts, planLines } from './planrows.ts';
-import { shaftBack, shaftFacts, shaftLines, shaftTitle } from './shaftrows.ts';
+import { shaftBack, shaftTitle } from './shaftrows.ts';
+import { standingFacts, standingLines } from './tilerows.ts';
+import { worksDoing } from './worksrows.ts';
 import { testTools, type TestOrder } from './testtools.ts';
 
 export type PanelKind =
@@ -24,6 +23,7 @@ export type PanelKind =
   | 'work'
   | 'build'
   | 'laws'
+  | 'item'
   | 'alerts'
   | 'dawn';
 
@@ -41,6 +41,8 @@ export interface PanelActions {
   test(tile: TileView, kind: TestOrder, arg?: number | string): void;
   /** Send the plan of house `id` (or of a shaft, `sendBackShaft`) back: the colony chooses again. */
   sendBack(tile: TileView, id: number, kind: 'sendBack' | 'sendBackShaft'): void;
+  /** Opens the item page of a tool or an ingot stack (view only). */
+  item(id: number): void;
   /** The Stock lever: how much of `good` the colony keeps. */
   setStock(good: string, level: string): void;
   /** Test mode: skips a month or a season, tick by tick, then pauses. */
@@ -102,29 +104,26 @@ export class Panel {
     const where = tile.z === 0 ? '' : ` · ${tile.z} level${tile.z > 1 ? 's' : ''} down`;
     this.open(
       'tile',
-      tile.field?.name ?? (shaftTitle(tile) || `Tile ${tile.x}, ${tile.y}${where}`),
+      tile.works?.name ??
+        tile.field?.name ??
+        (shaftTitle(tile) || `Tile ${tile.x}, ${tile.y}${where}`),
     );
     const facts = el('dl', { class: 'kv' });
     // What lies here comes first: it is usually what a tap was after (Morgan, Phase 3 playtest).
     for (const [key, value] of [
       ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
-      ...(tile.piece || tile.field || tile.shaft ? [] : landFacts(tile)),
+      ...(tile.piece || tile.field || tile.shaft || tile.works ? [] : landFacts(tile)),
       ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
       ...(tile.store ? [['store', 'part of the colony store']] : []),
-      ...(tile.piece
-        ? pieceFacts(tile)
-        : tile.field
-          ? fieldFacts(tile)
-          : tile.shaft
-            ? shaftFacts(tile)
-            : planFacts(tile)),
-      ...(tile.below && !tile.piece ? [['below', tile.below]] : []),
+      ...standingFacts(tile),
+      ...(tile.below && !tile.piece && !tile.works ? [['below', tile.below]] : []),
       ...(this.debug
         ? [['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`]]
         : []),
     ])
       facts.append(el('dt', {}, key), el('dd', {}, value));
     this.body.replaceChildren(facts);
+    this.body.append(...worksDoing(tile, (id) => this.actions.item(id)));
     if (tile.stain && !tile.piece && !tile.field && !tile.shaft)
       this.body.append(el('p', { class: 'aside' }, STAIN_NOTE));
     if (tile.ways) {
@@ -158,19 +157,12 @@ export class Panel {
       );
     if (typeof notice === 'string') this.body.append(el('p', { class: 'note' }, notice));
     else if (notice) this.body.append(this.lineRow(notice, 'Not done · '));
-    for (const [line, label] of tile.piece
-      ? pieceLines(tile)
-      : tile.field
-        ? fieldLines(tile)
-        : tile.shaft
-          ? shaftLines(tile)
-          : planLines(tile))
-      this.body.append(this.lineRow(line, label));
+    for (const [line, label] of standingLines(tile)) this.body.append(this.lineRow(line, label));
     for (const g of tile.goods ?? [])
       if (g.made) this.body.append(this.lineRow(g.made, 'Made by · '));
     if (tile.store?.made && !tile.goods)
       this.body.append(this.lineRow(tile.store.made, 'Store · '));
-    if (tile.piece) return;
+    if (tile.piece || tile.works) return;
     if (tile.changedBy) this.body.append(this.lineRow(tile.changedBy, 'Last changed · '));
     else this.body.append(el('p', { class: 'muted' }, 'The line that last changed it is gone.'));
   }
