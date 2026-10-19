@@ -72,6 +72,7 @@ export {
   cloakOf,
   freeTile,
   goodsSystem,
+  granaryOf,
   haveOf,
   heldBy,
   inStore,

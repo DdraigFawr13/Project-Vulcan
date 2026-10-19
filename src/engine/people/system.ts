@@ -137,6 +137,7 @@ export const peopleSystem: System = {
     'work.declined',
     'skill.rose',
     ...['work.tookUpSowing', 'work.tookUpReaping', 'field.harvested', 'farm.harvestHome'],
+    ...['field.granaryLaid', 'goods.granaryGrew'],
     'goods.ateSeed',
     ...['work.tookUpStation', 'metal.smelterBuilt', 'work.tookUpCharcoal', 'metal.clampLit'],
     ...[

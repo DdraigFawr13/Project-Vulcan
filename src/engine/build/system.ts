@@ -6,13 +6,15 @@
 // grows a house that has outgrown its beds, and says once when nobody is able to build. Since
 // P4.7 it also widens the town ring when no house fits and sites, ripens and frosts fields
 // (fields.ts, fieldlife.ts, ring.ts).
-import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import type { EngineContent, EntityRow } from '../core/index.ts';
 import { addEntity, removeEntity } from '../entity/index.ts';
 import { inStore, itemsAt, itemsOf, raiseStock } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
+import { greenOf } from './ring.ts';
 import { FURNITURE_TABLES } from './furniture.ts';
 import { tickFields, markLeaving } from './fieldlife.ts';
+import { tickGranaries } from './granary.ts';
 import { FIELD_TABLES, planFields, sendBackField } from './fields.ts';
 import { finishHouses, growHouses } from './grow.ts';
 import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
@@ -91,15 +93,6 @@ function ableToBuild(content: EngineContent, p: EntityRow): boolean {
   );
 }
 
-/** The green (V-050): the tile where the cart first stopped, fixed when the world begins. */
-export function greenOf(world: WorldState): Spot {
-  const at = (world.systems['build']?.['green'] ?? 0) - 1;
-  const map = world.map;
-  return at < 0
-    ? { x: map.startX, y: map.startY, z: 0 }
-    : { x: at % map.width, y: Math.floor(at / map.width), z: 0 };
-}
-
 /** The colony sites again at once after a plan is sent back: a house for the homeless, or the
  * room a house needs. */
 function chooseAgain(ctx: SystemContext, h: EntityRow, line: number): void {
@@ -115,6 +108,8 @@ function sitingHouse(ctx: SystemContext, green: Spot, siting: () => void): void 
   siting();
   if (ctx.state['ringLine'] !== before) markLeaving(ctx, green, ctx.state['ringLine']!);
 }
+
+export { greenOf };
 
 export const buildSystem: System = {
   id: 'build',
@@ -142,6 +137,7 @@ export const buildSystem: System = {
     'metal.clampPlanned',
     ...['town.ringWidened', 'field.needed', 'field.noGround', 'field.sited', 'field.sentBack'],
     ...['field.ripe', 'field.frostKilled', 'field.noSeed', 'field.sown', 'field.leftToGrass'],
+    'field.granaryLaid',
     ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
   ],
   // `nobody`: the line saying nobody is able to build, while that holds; `green`: the green's
@@ -190,6 +186,7 @@ export const buildSystem: System = {
     // A house adds a room for the homeless before another house is sited ("cottage, then grow").
     if (!growHouses(ctx, green)) sitingHouse(ctx, green, () => planHouse(ctx, green, []));
     tickFields(ctx);
+    tickGranaries(ctx);
     planFields(ctx, green, []);
     planBench(ctx);
     planSmithy(ctx, green);

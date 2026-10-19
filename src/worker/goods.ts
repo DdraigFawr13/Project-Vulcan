@@ -5,6 +5,7 @@ import { content } from '../content/index.ts';
 import {
   freeTile,
   haveOf,
+  granaryOf,
   inStore,
   isTree,
   itemsAt,
@@ -54,6 +55,7 @@ export function goodsOf(world: WorldState): GoodsView {
       .filter((i) => !i['holder'] && i['state'] !== 'held' && !inCart(i))
       .map((i) => ({ ...at(i), frame: frameOf(i['kind'] as string, i['state'] as string) })),
     store: storeOf(world).map(at),
+    granary: granaryOf(world).map(at),
     marks: marksOf(world).map((m) => ({ x: m['x'] as number, y: m['y'] as number, z: 0 })),
     plans: plansOf(world)
       .filter((p) => p['state'] !== 'built')
@@ -109,11 +111,14 @@ export function tileGoods(
   });
   const tile = storeOf(world).find((s) => s['x'] === x && s['y'] === y && s['z'] === z);
   const store = tile && line(tile['made']);
+  const bin = granaryOf(world).find((g) => g['x'] === x && g['y'] === y && g['z'] === z);
+  const binned = bin && line(bin['made']);
   const surface = z === 0;
   const i = y * world.map.width + x;
   return {
     ...(goods.length && { goods }),
     ...(tile && { store: { ...(store && { made: store }) } }),
+    ...(bin && { granary: { ...(binned && { made: binned }) } }),
     ...(surface && marksOf(world).some((m) => m['x'] === x && m['y'] === y) && { marked: true }),
     ...(surface && isTree(world, content, i) && { tree: true }),
     ...(surface && !inStore(world, x, y, 0) && freeTile(world, content, x, y) && { open: true }),

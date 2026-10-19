@@ -272,6 +272,10 @@ export const LIFE_SCHEMAS = {
     // and is lost to a frost under `frost` degrees C before it is ripe. `seed` is the item sown
     // (one a tile); a seed tile scores fertility x `weigh.fertility` less tiles to water x
     // `weigh.water` less tiles to the green, and the best `weigh.tries` are grown.
+    // (P4.7 review) A field is one compact block as near square as fits, every tile good soil,
+    // sited at the nearest such block to the ring's edge: a block scores its average fertility x
+    // `weigh.fertility` less its tiles to water x `weigh.water` less its tiles past the ring x
+    // `weigh.near`, and the best `weigh.tries` that can be reached are compared.
     // Bundle 3: the smithy, 3 deep by 4 along the best smith's house wall nearest water (search
     // `near` tiles for water); open-sided, a `floor` under each of `pieces` (furniture kinds).
     smithy: obj({
@@ -284,10 +288,13 @@ export const LIFE_SCHEMAS = {
       pieces: texts,
     }),
     town: obj({ ring: num({ min: 1 }), step: num({ min: 1 }), most: num({ min: 1 }) }),
+    // The granary the band lays out beside a field once it is reaped: `width` by `height` tiles at
+    // first, growing to `most` tiles when full. It keeps the harvest the store's Food plate leaves.
+    granary: obj({ width: num({ min: 1 }), height: num({ min: 1 }), most: num({ min: 1 }) }),
     field: obj({
       name: text,
       seed: ref('items'),
-      weigh: obj({ fertility: count, water: count, tries: num({ min: 1 }) }),
+      weigh: obj({ fertility: count, water: count, near: count, tries: num({ min: 1 }) }),
       start: num({ min: 1, max: 4 }),
       perMouth: num({ min: 1 }),
       reach: num({ min: 1 }),

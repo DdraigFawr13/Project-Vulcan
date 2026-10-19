@@ -22,7 +22,8 @@
 "stage":{"id":"room","name":"room","w":5,"h":4,"sleeps":2},"private":4},
 "smithy":{"name":"Smithy","start":2,"depth":3,"length":4,"near":20,"floor":"floor-stone","pieces":["forge","anvil","tub"]},
 "town":{"ring":16,"step":4,"most":32},
-"field":{"name":"Fields","seed":"seed","weigh":{"fertility":2,"water":4,"tries":40},"start":2,"perMouth":12,"reach":45,"water":8,"good":40,"least":6,"crops":[
+"granary":{"width":3,"height":2,"most":12},
+"field":{"name":"Fields","seed":"seed","weigh":{"fertility":2,"water":4,"near":100,"tries":40},"start":2,"perMouth":6,"reach":45,"water":8,"good":40,"least":6,"crops":[
 {"id":"barley","name":"barley","item":"grain","sow":["Thawmonth","Seedmonth"],"days":84,"yield":50,"frost":-1},
 {"id":"turnips","name":"turnips","item":"turnips","sow":["Highsun","Goldmonth"],"days":56,"yield":50,"frost":-1}
 ]},

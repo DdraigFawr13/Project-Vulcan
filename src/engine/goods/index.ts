@@ -11,6 +11,18 @@ export {
   takeFrom,
 } from './stacks.ts';
 export {
+  addGranary,
+  granaryFor,
+  granaryGrowSpot,
+  granaryOf,
+  GRANARY_TABLES,
+  granarySlot,
+  growGranary,
+  inGranary,
+  keepable,
+  storedEnough,
+} from './granary.ts';
+export {
   freeTile,
   growSpot,
   growStore,
