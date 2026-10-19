@@ -84,21 +84,30 @@ export function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void 
 /** Whether the store already holds what a Stock plate asks of this item's kind (at least a
  * stack): then the rest stays where it lies until it is used or wanted, so the logs of a cleared
  * house site cannot fill the store (seen on anvil: 760 logs, no room left for ore). Builders
- * fetch from where it lies. Kinds with no plate of their own are always carried. */
+ * fetch from where it lies. A kind counts towards its own plate, else its good's (grain and
+ * turnips are food: a harvest of 3,000 grain filled the store 225 days a year on every seed, the
+ * Phase 4 review). Kinds with no plate of either are always carried. */
 function storedEnough(ctx: SystemContext): (i: EntityRow) => boolean {
   const { world, content } = ctx;
+  const good = new Map(content.items.map((d) => [d.id, d.good]));
+  const plated = (kind: string): string | undefined => {
+    if (content.work.stock.some((s) => s.good === kind)) return kind;
+    const g = good.get(kind);
+    return g && content.work.stock.some((s) => s.good === g) ? g : undefined;
+  };
   const stored = new Map<string, number>();
   for (const i of itemsOf(world)) {
     if (i['holder'] || !inStore(world, i['x'] as number, i['y'] as number, i['z'] as number))
       continue;
-    const kind = i['kind'] as string;
-    stored.set(kind, (stored.get(kind) ?? 0) + (i['count'] as number));
+    const plate = plated(i['kind'] as string);
+    if (plate) stored.set(plate, (stored.get(plate) ?? 0) + (i['count'] as number));
   }
   return (i) => {
     const kind = i['kind'] as string;
-    if (!content.work.stock.some((s) => s.good === kind)) return false;
-    const keep = Math.max(wantOf(world, content, kind), stackSize(content, kind));
-    return (stored.get(kind) ?? 0) >= keep;
+    const plate = plated(kind);
+    if (!plate) return false;
+    const keep = Math.max(wantOf(world, content, plate), stackSize(content, kind));
+    return (stored.get(plate) ?? 0) >= keep;
   };
 }
 
