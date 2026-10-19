@@ -18,8 +18,7 @@ export type ToWorker =
   | { type: 'settle'; site: number }
   /** Asks for the running world's region map (the Region panel); a plain-seed world has none. */
   | { type: 'region' }
-  /** Starts from a save instead of a seed and ends in the same state; a save that fails its
-   * check is refused (`loadRefused`) and the running world carries on untouched. */
+  /** Starts from a save; one that fails its check is refused (`loadRefused`), world untouched. */
   | { type: 'load'; save: unknown }
   | { type: 'command'; tick: number; kind: string; data?: EventData }
   /** Whether the page opened in test mode; until it says so, test tools are refused (V-041). */
@@ -28,17 +27,17 @@ export type ToWorker =
   | { type: 'setSpeed'; speed: Speed }
   /** Skip ahead (P2.7): run as fast as the device allows until a notable line, then pause. */
   | { type: 'skip' }
+  /** On arrival, once, before the first tick: the band takes the cart to its second green. */
+  | { type: 'lookAgain' }
   /** Test mode only, refused otherwise: skip a whole month or season, then pause. */
   | { type: 'jump'; span: 'month' | 'season' }
   /** The page asks once per screen frame, with at most one request waiting. */
   | { type: 'requestSnapshot' }
-  /** Asks for the running world as a save; `auto` is echoed back for the page's autosave slot, and
-   * `standby` for the copy the page holds to write at once if the tab closes. */
+  /** The running world as a save; `auto` and `standby` (the tab-close copy) are echoed back. */
   | { type: 'save'; auto: boolean; standby?: boolean }
   /** The whole ledger as NDJSON. */
   | { type: 'export'; kind: 'ndjson' }
-  /** The inspector: one tile's record on level `z` (0 the surface, 1 to 4 below) and the ledger
-   * line that last changed it. */
+  /** The inspector: one tile's record on level `z` (0 surface, 1 to 4 below) and its last line. */
   | { type: 'inspect'; x: number; y: number; z?: number }
   /** "why?": a ledger line's causes back to the world's first line. */
   | { type: 'why'; id: number };
@@ -344,6 +343,8 @@ export type FromWorker =
       /** Whether the world has not yet run a tick: the band has just arrived. */
       fresh: boolean;
       people: PersonView[];
+      /** Why the band chose its green, and whether the player may still send it back (once). */
+      green?: { text: string; again: boolean };
     }
   | {
       type: 'snapshot';

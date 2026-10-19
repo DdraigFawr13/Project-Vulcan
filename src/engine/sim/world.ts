@@ -56,8 +56,9 @@ export function createSim(
   return { content, templates, notable: notableOf(content.events), systems, tables, recentDays };
 }
 
-/** A new world at 06:00 on day 1, its first ledger line already written. */
-export function createWorld(sim: Sim, seed: string): WorldState {
+/** A new world at 06:00 on day 1, its first ledger line already written. `look` is 1 for the
+ * same valley with the band's first green sent back (the map system's second choice, V-050). */
+export function createWorld(sim: Sim, seed: string, look = 0): WorldState {
   const world: WorldState = {
     seed,
     tick: START_TICK,
@@ -102,6 +103,7 @@ export function createWorld(sim: Sim, seed: string): WorldState {
     },
   };
   for (const system of sim.systems) world.systems[system.id] = { ...system.initialState };
+  if (look && world.systems['map']) world.systems['map']['look'] = look;
   world.begunEvent = emit(world, sim.templates, 'world.begun', { data: { seed } });
   for (const system of sim.systems) system.init?.(contextFor(world, sim, system));
   return world;

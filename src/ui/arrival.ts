@@ -1,5 +1,7 @@
 // The arrival screen (P2.1): before play, the five who came, where from, and who can build and
-// cook. Arrive closes it on the paused valley. Shows the worker's views; decides nothing.
+// cook, and where the band stopped the cart (the green) and why. Arrive closes it on the paused
+// valley; Look elsewhere, offered once, has the band take the cart to its second choice (V-083).
+// Shows the worker's views; decides nothing.
 import type { PersonView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { ableWord, personCard } from './person.ts';
@@ -8,12 +10,19 @@ import { portrait } from './portrait.ts';
 const list = (items: readonly string[]): string =>
   items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 
+export interface ArrivalView {
+  place: string;
+  date: string;
+  people: readonly PersonView[];
+  /** The line saying where the cart stopped and why, and whether it may still be sent back. */
+  green: { text: string; again: boolean } | undefined;
+}
+
 export function showArrival(
   parent: HTMLElement,
-  place: string,
-  date: string,
-  people: readonly PersonView[],
+  { place, date, people, green }: ArrivalView,
   arrive: () => void,
+  lookAgain: () => void,
 ): void {
   const root = el('div', { class: 'arrival', 'data-testid': 'arrival' });
   const homes = new Map<string, PersonView>();
@@ -53,7 +62,20 @@ export function showArrival(
     root.remove();
     arrive();
   });
-  foot.append(el('div', { class: 'ok' }, said.join(' ')), go);
+  foot.append(el('div', { class: 'ok' }, said.join(' ')));
+  if (green) foot.append(el('p', { class: 'where', 'data-testid': 'green-line' }, green.text));
+  const buttons = el('div', { class: 'ago' });
+  if (green?.again) {
+    const look = el('button', { type: 'button', class: 'big', 'data-testid': 'look-again' });
+    look.append('Look elsewhere', el('small', {}, 'the band picks its next spot, once'));
+    look.addEventListener('click', () => {
+      root.remove();
+      lookAgain();
+    });
+    buttons.append(look);
+  }
+  buttons.append(go);
+  foot.append(buttons);
   root.append(head, cards, more, foot);
   parent.append(root);
   requestAnimationFrame(() => {

@@ -22,7 +22,7 @@ Every milestone runs the `map-check` skill (`npm run map:stats` and `npm run map
 
 Elevation, climate, biomes, fertility, trees, bushes, herbs and stone from content (`terrain.json` generator dials and floors, the forked `biomes.json`, Vulcan's `features.json`), drawn from the `worldgen` stream in `mapSystem.init`; the start tile; `tiles-world` and `sprites-nature` sheets; inspector fields. Mock-up: engine (10-seed stats table and map renders). Done when: every seed in the list has at least 400 buildable tiles, 40 trees and 20 stone (rock or boulder) within 30 tiles of the start (a 61 by 61 square).
 
-- Reading list: `docs/ARCHITECTURE.md#map`, `#rng`; `docs/DECISIONS.md` V-008, V-013; `docs/ART.md` row P1.1 to P1.3; `src/engine/map/MODULE.md`; `src/worker/MODULE.md`; `src/render/MODULE.md`
+- Reading list: `docs/ARCHITECTURE.md#map`, `#rng`; `docs/ART.md` row P1.1 to P1.3; `src/engine/map/MODULE.md`; `src/worker/MODULE.md`; `src/render/MODULE.md`
 
 ### P1.2 Water
 
