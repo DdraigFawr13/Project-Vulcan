@@ -6,7 +6,8 @@ import { haveOf, ingotWant } from '../goods/index.ts';
 export const MINE_TABLES: Schemas = {
   /** `to`: the level of the vein; `state`: one of `SHAFT_STATES`; `depth`: the deepest level sunk
    * so far (0 at first); `sentBack`: 1 for the plan that replaced one sent back, which cannot be
-   * sent back again; `line`: the line that planned it. */
+   * sent back again; `line`: the line that planned it; `why`: its reason in words, kept for the
+   * tile page after the line's day is sealed. */
   shaft: {
     x: 'int',
     y: 'int',
@@ -16,6 +17,7 @@ export const MINE_TABLES: Schemas = {
     depth: 'count',
     sentBack: 'count',
     line: 'event',
+    why: 'text',
   },
 };
 

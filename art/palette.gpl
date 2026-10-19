@@ -115,6 +115,9 @@ Columns: 4
 240 240 240	tint light
 208 208 208	tint mid
 168 168 168	tint dark
+# Wattle and daub walls (V-096): pale clay, and the darker frame lines left showing through it.
+205 180 138	clay wash
+ 92  80  60	clay frame
 # Hearth and Page controls (P2.8, docs/UI_STYLE.md): oak, iron, ember and paper.
  74  51  34	ui oak
 107  74  48	ui oak light

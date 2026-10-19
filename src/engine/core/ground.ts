@@ -22,7 +22,9 @@ export interface FeatureDef {
     rocks: Readonly<Record<string, number>>;
     /** Marks the surface above the vein with a stain (V-087). */
     stain?: boolean;
-    /** The stain's colour in words for the tile page and reasons ("rust"). */
+    /** The stain's colour on the surface, a #rrggbb string. */
+    stainColour?: string;
+    /** The stain's colour in words for the tile page ("rust"). */
     stainWord?: string;
   };
 }
@@ -70,6 +72,10 @@ export interface UndergroundDials {
   };
   /** The most tiles one opening shows at once (V-030). */
   reveal: number;
+  /** The picture of unknown ground below the surface (the renderer lays `<art>.1`). */
+  fogArt: string;
+  /** How much of its brightness a vein keeps when it glints through unknown ground (0 to 1). */
+  fogVein: number;
   stairsDown: string;
   stairsUp: string;
   stairs: string;

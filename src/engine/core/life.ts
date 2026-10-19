@@ -122,7 +122,13 @@ export interface WorkDef {
   haul: { load: number; kinds: readonly string[] };
   store: { width: number; height: number; most: number };
   hours: { from: number; to: number };
-  priority: { jobs: readonly string[]; start: number; words: readonly string[] };
+  priority: {
+    jobs: readonly string[];
+    start: number;
+    words: readonly string[];
+    /** Trade headings on the Work sheet, each folding the rows of its `jobs` (V-071). */
+    headings: readonly { name: string; jobs: readonly string[] }[];
+  };
   learn: { start: number; perLevel: number };
   cook: {
     job: string;

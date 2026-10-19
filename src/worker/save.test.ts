@@ -49,7 +49,17 @@ const addShaft = (s: SaveFile, fields: Record<string, string | number>) => {
   s.state.nextEntityId += 1;
   (s.state.entities['shaft'] ??= []).push({
     id,
-    ...{ x: 1, y: 1, metal: 'iron', to: 1, state: 'planned', depth: 0, sentBack: 0, line: 1 },
+    ...{
+      x: 1,
+      y: 1,
+      metal: 'iron',
+      to: 1,
+      state: 'planned',
+      depth: 0,
+      sentBack: 0,
+      line: 1,
+      why: '',
+    },
     ...fields,
   });
 };

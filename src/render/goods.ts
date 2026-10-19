@@ -13,6 +13,7 @@ export class GoodsSprites {
     store: [],
     marks: [],
     plans: [],
+    shafts: [],
     furniture: [],
     fires: [],
     work: [],

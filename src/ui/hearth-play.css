@@ -171,6 +171,29 @@
 .prio .note {
   color: var(--rubric);
 }
+/* A trade heading (V-071): ruled off, a text-like fold button of at least 44 px, its rows indented. */
+.prio.head {
+  border-top: 2px solid var(--rule);
+}
+.prio.under {
+  margin-left: 18px;
+}
+#hud .prio .fold {
+  border: 0;
+  border-image: none;
+  min-width: var(--tap);
+  padding: 0 6px 0 0;
+  background: none;
+  color: var(--ink);
+  text-shadow: none;
+  text-align: left;
+  font: 700 18px/1.2 var(--name);
+}
+#hud .prio .fold:active:not(:disabled) {
+  background: var(--track);
+  color: var(--ink);
+  transform: translateY(1px);
+}
 .step {
   display: flex;
   align-items: center;

@@ -13,6 +13,7 @@ import type {
   PieceView,
   PlanView,
   RoomView,
+  ShaftView,
 } from './protocol-build.ts';
 
 /** 0 is paused; 1, 2 and 3 run 10, 30 and 100 game minutes a second. */
@@ -162,6 +163,9 @@ export interface TileView {
   /** What grows or lies on the tile, with what it yields, e.g. "ash (25 logs)" or
    * "copper vein (20 copper ore)". */
   feature?: string;
+  /** Surface only: the ore stain on the ground and where its vein lies, e.g. "iron lies below, on
+   * level 3"; the ground line names the stain's colour. */
+  stain?: string;
   /** Where stairs or a shaft on the tile lead to a reached level; absent with no way up or down. */
   ways?: { up: boolean; down: boolean };
   chunkX: number;
@@ -188,6 +192,8 @@ export interface TileView {
   piece?: PieceView;
   /** The field this tile is part of (P4.7). */
   field?: FieldView;
+  /** The shaft plan on this tile (Bundle 2). */
+  shaft?: ShaftView;
 }
 
 /** Yesterday's tally (P2.9): the date, logs felled, items carried into the store, berries
@@ -358,6 +364,8 @@ export type FromWorker =
       /** Items, the store and marks (P2.4). */
       goods: GoodsView;
       stock: StockView[];
+      /** A shaft is planned or dug and not sent back: the Work sheet's Mining row shows. */
+      mining: boolean;
       /** The Build sheet's view (P3.7), when changed. */
       build?: BuildView;
       /** The day before's tally for the dawn page (P2.9); none on the first day. */

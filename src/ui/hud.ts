@@ -194,13 +194,17 @@ export class Hud {
       );
   }
 
-  /** Level `z` of `depth` is on screen (0 the surface); `reached` says whether it has tiles. */
-  showLevel(z: number, depth: number, reached: boolean): void {
+  /** Level `z` of `depth` is on screen (0 the surface); `reached` says which levels below have
+   * tiles. The level plates are normal view buttons once any shaft or stairs exist on the map (so
+   * some level below is reached); until then only test mode shows them (its tools make the first). */
+  showLevel(z: number, depth: number, reached: readonly boolean[]): void {
     this.where = z === 0 ? 'surface' : `${z} level${z > 1 ? 's' : ''} down`;
     this.levelLabel.textContent = z === 0 ? 'S' : `−${z}`;
     this.up.disabled = z === 0;
     this.down.disabled = z >= depth;
-    this.unreached.hidden = reached;
+    for (const e of [this.up, this.levelLabel, this.down])
+      e.hidden = !(this.testMode || reached.some(Boolean));
+    this.unreached.hidden = z === 0 || reached[z - 1] === true;
     this.unreached.replaceChildren(
       el('b', {}, 'Not reached yet'),
       el(

@@ -35,6 +35,7 @@ import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave, saveOf } from './save.ts';
 import { buildView } from './build.ts';
 import { goodsOf, stockView } from './goods.ts';
+import { miningShown } from './mine.ts';
 import { peopleOf, walkersOf } from './people.ts';
 import { clockView, placeWords, tileView, weatherOf } from './views.ts';
 
@@ -97,11 +98,15 @@ function run(ticks: number): void {
   }
 }
 
-/** Where the person a notable line is about stands as it is sent, in words from the camp. */
+/** Where the person a notable line is about stands as it is sent, in words from the camp; for a
+ * shaft plan, where the shaft is to be. */
 function whereOf(e: SimEvent): Pick<LedgerLine, 'where'> {
   const p = world && e.actors[0] !== undefined ? entityOf(world, 'person', e.actors[0]) : undefined;
-  if (!world || !p) return {};
-  const [x, y, z] = [p['x'] as number, p['y'] as number, p['z'] as number];
+  const shaft = e.type === 'mine.shaftPlanned';
+  if (!world || !(p || shaft)) return {};
+  const [x, y, z] = p
+    ? [p['x'] as number, p['y'] as number, p['z'] as number]
+    : [e.data['x'] as number, e.data['y'] as number, 0];
   return { where: { x, y, z, words: placeWords(world.map, x, y, z) } };
 }
 
@@ -173,6 +178,7 @@ function snapshot(w: WorldState): void {
       walkers: walkersOf(w),
       goods: goodsOf(w),
       stock: stockView(w),
+      mining: miningShown(w),
       ...(build && { build }),
       ...(yesterday && { yesterday }),
     },

@@ -25,6 +25,7 @@ import {
 } from '../engine/index.ts';
 import { fieldFrames } from './fields.ts';
 import { fireGoods, workBars } from './fires.ts';
+import { shaftPlans, stockNote } from './mine.ts';
 import { furnitureGoods, tilePiece } from './furniture.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
@@ -60,6 +61,7 @@ export function goodsOf(world: WorldState): GoodsView {
     fires: fireGoods(world),
     work: workBars(world),
     fields: fieldFrames(world),
+    shafts: shaftPlans(world),
   };
 }
 
@@ -72,7 +74,7 @@ export const stockView = (world: WorldState): StockView[] =>
     want: wantOf(world, content, def.good),
     level: (stockOf(world, def.good)?.['level'] as string) ?? def.start,
     levels: def.levels.map((l) => ({ id: l.id, word: l.word, count: l.count })),
-    ...(def.note && { note: def.note }),
+    ...(def.note && { note: stockNote(world, def.good, def.note) }),
   }));
 
 /** The inspector's goods rows for tile (x, y, z), each with the line that made or brought it. */
