@@ -8,7 +8,7 @@ Goal: the first playable loop, from bronze to iron, food from fields, and coloni
 - [x] Bundle 1, food and winter: P4.7, seed grain, harvest home, cloaks, quiet winter
 - [x] Bundle 2, mining: P4.1
 - [x] Bundle 3, metal: P4.2, P4.3, P4.4, P4.6, craft firsts
-- [x] Bundle 4, people: P4.8 (mock-up https://claude.ai/artifact/Xcur1yF6RpqqgRidtShQta)
+- [x] Bundle 4, people: P4.8
 - [ ] P4.9 balance pass, then the phase review
 
 P4.5 (waterwheel) moved to P5.11 beside the mill; the smithy uses hand bellows (V-085).
