@@ -10,13 +10,12 @@ import { expect, test, type Page } from '@playwright/test';
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
 /** The last snapshot's tick and the worker's clock when it was sent (ms). */
-const reading = async (page: Page) => {
-  const debug = page.getByTestId('debug');
-  return {
-    tick: Number(await debug.getAttribute('data-tick')),
-    at: Number(await debug.getAttribute('data-at')),
-  };
-};
+// Both read in one step: read one at a time, a busy page can update `at` from a newer snapshot
+// between the two, which made a correct 100 a second read as 148 in CI.
+const reading = (page: Page) =>
+  page
+    .getByTestId('debug')
+    .evaluate((d) => ({ tick: Number(d.dataset['tick']), at: Number(d.dataset['at']) }));
 
 /** What breaks the phone rules on the screen as shown: small tap targets or text, or overflow. */
 const phoneRules = (page: Page) =>
