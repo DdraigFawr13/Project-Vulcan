@@ -7,7 +7,7 @@ Goal: a roof and a room. Entry: Phase 2 done and live (2026-10-18). Spec approve
 - [x] P3.1 and P3.2 Build job and building parts (one bundle, VR-61): engine PR #38, screens PR #39, 2026-10-18
 - [x] P3.7, P3.3 and P3.8 Build sheet, rooms and the first growth stage (one bundle): engine PR #42, screens PR #43, 2026-10-19
 - [x] P3.4 and P3.5 Carpentry, furniture, beauty, privacy and ownership (one bundle): engine PR #44, screens PR #45, 2026-10-19
-- [ ] P3.6 Hearth and firewood (engine PR in progress, 2026-10-19; screens next, with a build progress bar Morgan asked for)
+- [x] P3.6 Hearth and firewood: engine PR #46, screens PR (number to fill), 2026-10-19
 - [ ] Phase review
 
 Taste board (VR-56): https://claude.ai/artifact/K4ebFPoLf9a8T8SAppoNyn. Morgan's picks (2026-10-18), binding every Phase 3 mock-up: slim walls, a band about a third of a tile wide through the middle of the wall's own tile, see-through beside it, so the tile shows the room's floor on its inner half and the ground outside on its outer half, for every floor and ground kind (Morgan: "make sure that it works with different floor types"); roofs are never drawn, and a tile's roof shows on its tile sheet; the hearth is an open ring of stones that also serves as an outdoor campfire; warmth shows as firelight at night plus a word and degrees on the room's page.

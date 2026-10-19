@@ -26,6 +26,7 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
+import { roomWarmth } from './fires.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { BuildRow, BuildView } from './protocol-build.ts';
 
@@ -144,6 +145,7 @@ export function tileHouse(
         beds: room.beds
           ? `${room.beds}${room.crowded ? ', crowded' : ''}`
           : `none yet${open ? `: ${open > 1 ? `the ${open} carry their bedrolls` : 'one carries their bedroll'} in at dusk` : ''}`,
+        warmth: roomWarmth(world, x, y),
       },
     }),
   };

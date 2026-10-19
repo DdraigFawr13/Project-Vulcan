@@ -16,6 +16,7 @@ import {
   type WorldState,
 } from '../engine/index.ts';
 import { feedsOf } from './comfort.ts';
+import { hearthDoing, tendDoing } from './fires.ts';
 import { carpentryDoing } from './furniture.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 
@@ -82,6 +83,11 @@ function doingOf(p: EntityRow): string {
   if (p['doing'] === 'work' && p['job'] === 'build') return walking ? 'Going to build' : 'Building';
   if (p['doing'] === 'work' && p['job'] === 'carpentry')
     return walking ? 'Going to make furniture' : 'Making furniture';
+  if (p['doing'] === 'work' && p['job'] === 'hearth')
+    return walking ? 'Going to make a hearth' : 'Making a hearth';
+  if (p['doing'] === 'work' && p['job'] === 'tend')
+    return walking ? 'Going to a fire' : 'Tending a fire';
+  if (p['doing'] === 'warm') return 'Warming up';
   if (p['doing'] === 'work') return walking ? 'Carrying to the store' : 'Hauling';
   return walking ? 'Strolling' : 'Idle';
 }
@@ -97,6 +103,7 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   if (doing === 'sleep') return { text: say(walking ? 'goSleep' : 'sleep') };
   if (doing === 'eat') return { text: say(walking ? 'goEat' : 'eat') };
   if (doing === 'relax') return { text: say('relax') };
+  if (doing === 'warm') return { text: say('warm') };
   if (doing !== 'work') return { text: say(walking ? 'stroll' : 'idle') };
   const job = p['job'] as string;
   const took = p['took'] as number;
@@ -114,6 +121,11 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
     const { key, vars } = carpentryDoing(world, p);
     return { text: say(key, vars), ...why };
   }
+  if (job === 'tend') {
+    const { key, vars } = tendDoing(world, p);
+    return { text: say(key, vars), ...why };
+  }
+  if (job === 'hearth') return { text: say('hearth', hearthDoing(world, p)), ...why };
   if (job === 'fell' || job === 'forage' || job === 'quarry') {
     const good =
       job === 'fell'

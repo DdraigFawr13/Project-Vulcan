@@ -50,7 +50,7 @@ export {
   type Room,
 } from './build/index.ts';
 export { calendarSystem } from './calendar/index.ts';
-export { fireSystem, heatAt } from './fire/index.ts';
+export { fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
 export {
   freeTile,
   goodsSystem,
@@ -64,7 +64,7 @@ export {
   storeOf,
   wantOf,
 } from './goods/index.ts';
-export { moodOf, needOf, needsSystem } from './needs/index.ts';
+export { feltAt, moodOf, needOf, needsSystem } from './needs/index.ts';
 export {
   dayOf,
   declinedLine,

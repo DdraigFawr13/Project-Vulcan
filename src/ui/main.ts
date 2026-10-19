@@ -219,7 +219,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       if (skipping && !message.skipping) speed = message.speed;
       skipping = message.skipping;
       sheets.snapshot(message);
-      renderer.setGoods(message.goods);
+      renderer.setGoods(message.goods, message);
       if (message.build) renderer.setBuild(message.build);
       stock = message.stock;
       panel.setStock(stock);

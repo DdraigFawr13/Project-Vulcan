@@ -21,6 +21,7 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
+import { fireGoods, workBars } from './fires.ts';
 import { furnitureGoods, tilePiece } from './furniture.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
@@ -53,6 +54,8 @@ export function goodsOf(world: WorldState): GoodsView {
         house: p['house'] as number,
       })),
     furniture: furnitureGoods(world),
+    fires: fireGoods(world),
+    work: workBars(world),
   };
 }
 
