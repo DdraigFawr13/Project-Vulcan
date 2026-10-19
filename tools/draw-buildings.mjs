@@ -4,7 +4,7 @@
 // the four sides it joins a neighbour on (`.<mask>`: north 1, east 2, south 4, west 8); the rest
 // of the tile shows what lies under it, and the renderer lays a half floor (`.half.<side>`) on
 // the side of a wall that meets a floor (a quarter, `.q.<corner>`, in an inner corner), so a wall
-// works over every floor and ground. Doors come
+// works over every floor and ground. Doors are a narrow leaf drawn over the wall they stand in,
 // in a run east-west (`.h`) or north-south (`.v`); stairs are the plan's ghost only (a cut stair
 // is a tile kind). Seeded and deterministic.
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -183,9 +183,12 @@ function quarter(full, corner) {
   return img;
 }
 
-// A door in a run east-west (`h`) or north-south (`v`): a slim post of the material at each
-// end, and between them an oak leaf of boards laid across the run, with iron hinge straps and
-// a latch, or for stone an open threshold of flags. The band is lit and shaded like a wall's.
+// A door in a run east-west (`h`) or north-south (`v`): a narrow leaf about a third of a tile
+// wide in the middle of the band, between dark jambs; the rest of the tile is clear, and the
+// renderer lays the wall it stands in under it, so the door reads as one block in the wall
+// (Morgan's pick, 2026-10-19). Wood is an oak leaf with a latch; stone an open sill of flags.
+const LEAF0 = 10;
+const LEAF1 = 21;
 function door(p, material, run) {
   const h = run === 'h';
   const rects = bandRects(h ? 10 : 5);
@@ -195,38 +198,21 @@ function door(p, material, run) {
         if (!inBand(rects, x, y)) continue;
         const along = h ? x : y;
         const across = (h ? y : x) - B0;
-        if (along < 3 || along > S - 4) {
-          put(
-            x,
-            y,
-            material === 'stone' ? stoneAt(p, x, y) : along % 31 === 0 ? p['ui oak dark'] : p.trunk,
-          );
+        if (along < LEAF0 || along > LEAF1) continue;
+        if (along === LEAF0 || along === LEAF1) {
+          put(x, y, p['ui oak dark']);
           continue;
         }
         if (material === 'stone') {
-          const joint = (along - 3) % 13 === 12 || across === 5;
-          put(
-            x,
-            y,
-            joint ? p['floor dark'] : noise(32, along, across) < 0.5 ? p.floor : p['floor light'],
-          );
+          put(x, y, noise(32, along, across) < 0.5 ? p.floor : p['floor light']);
           continue;
         }
-        // Boards 5 px wide across the run, with flecks of grain; short iron hinge straps.
-        const seam = (along - 3) % 5 === 4;
-        const strap = (across === 2 || across === 8) && along < 10;
-        const grain = noise(33, along, across) > 0.9;
-        put(
-          x,
-          y,
-          strap ? p['ui iron'] : seam ? p['ui oak grain'] : grain ? p['ui oak'] : p['ui oak light'],
-        );
+        put(x, y, noise(33, along, across) > 0.88 ? p['ui oak'] : p['ui oak light']);
       }
     if (material === 'wood') {
       // The latch, beside the middle of the leaf.
-      const [lx, ly] = h ? [24, B0 + 5] : [B0 + 5, 24];
+      const [lx, ly] = h ? [LEAF1 - 2, B0 + 5] : [B0 + 5, LEAF1 - 2];
       put(lx, ly, p['ui iron light']);
-      put(h ? lx + 1 : lx, h ? ly : ly + 1, p['ui iron dark']);
     }
   });
   // Lit along the top, shaded along the bottom, like a wall.

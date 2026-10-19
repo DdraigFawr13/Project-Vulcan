@@ -2,7 +2,8 @@
 // everything, then walls and doors, with plans drawn faint over the ground as what they will
 // be. Slim walls are a band through the middle of their tile (the taste board's pick): a wall
 // joins the walls and doors beside it, and on a side (or inner corner) that meets a floor the
-// floor's half (or quarter) shows under it, so a wall reads over every floor and ground. A part to come down shows tinted.
+// floor's half (or quarter) shows under it, so a wall reads over every floor and ground. A door
+// is a narrow leaf over the band of the wall it stands in. A part to come down shows tinted.
 // Plans are drawn whole into one picture that is then made faint, so the pieces of a planned
 // wall and the floor halves under it never stack into darker patches.
 // Pictures only: what is built comes from the chunks' `built` and the snapshot's plans.
@@ -144,11 +145,18 @@ export class BuildSprites {
         (m, [, dx, dy, bit]) => (joins(at(x + dx, y + dy)) ? m | bit : m),
         0,
       );
-      const frame =
-        kind === 'wall'
-          ? `${s.part.art}.${mask}`
-          : `${s.part.art}.${mask & 5 && !(mask & 10) ? 'v' : 'h'}`;
-      this.put(x, y, frame, s, 7);
+      if (kind === 'wall') {
+        this.put(x, y, `${s.part.art}.${mask}`, s, 7);
+        continue;
+      }
+      // A door is a narrow leaf in the wall it stands in: that wall's band first, in the
+      // material of the first wall beside it, then the leaf.
+      const run = mask & 5 && !(mask & 10) ? 'v' : 'h';
+      const wall = SIDES.map(([, dx, dy]) => at(x + dx, y + dy)).find(
+        (n) => n?.part.kind === 'wall',
+      );
+      if (wall) this.put(x, y, `${wall.part.art}.${run === 'v' ? 5 : 10}`, s, 7);
+      this.put(x, y, `${s.part.art}.${run}`, s, 7);
     }
     this.drawGhosts();
   }
