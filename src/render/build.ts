@@ -188,7 +188,11 @@ export class BuildSprites {
   }
 
   private put(x: number, y: number, frame: string, s: Shown, depth: number): void {
-    if (!this.scene.textures.get(BUILDINGS).has(frame)) return;
+    const sheet = this.scene.textures.get(BUILDINGS);
+    // Wattle and daub has no art yet (V-096): it shows as the wood wall until it does.
+    if (!sheet.has(frame) && frame.startsWith('build.wall-daub'))
+      frame = frame.replace('wall-daub', 'wall-wood');
+    if (!sheet.has(frame)) return;
     if (s.plan) this.ghosts.push({ x, y, frame, s, depth });
     else this.image(x, y, frame, s, depth);
   }

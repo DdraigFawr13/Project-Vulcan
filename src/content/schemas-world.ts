@@ -166,9 +166,8 @@ export const WORLD_SCHEMAS = {
       spoilPerDay: opt(share),
       cooked: opt(bool()),
       forms: opt(texts),
-      // Bundle 3: an ingot names the ore it is smelted from; a tool is a kind of tool in a material.
-      ore: opt(ref('items')),
-      tool: opt(obj({ kind: text, material: text })),
+      ore: opt(ref('items')), // an ingot's ore item (P4.1)
+      tool: opt(obj({ kind: text, material: text })), // a tool's kind and material (Bundle 3)
       effects: opt(
         list(
           obj({
@@ -182,8 +181,7 @@ export const WORLD_SCHEMAS = {
       downsides: opt(texts),
     }),
   ),
-  // Vulcan's own, not forked: the ledger text of every event type the engine may emit.
-  // Slots are {actorN}, {subjectN} and data keys; the engine refuses an event that leaves one empty.
+  // Vulcan's own, not forked: the ledger text of every event type the engine may emit; slots are {actorN}, {subjectN} and data keys, and an event that leaves one empty is refused.
   // `notable` (P2.6, P2.7) makes a line an alert and a stop for skip ahead: `{}` always, or data
   // values a line must have, alternatives split by `|` (a mood only when it fell low).
   events: list(
@@ -359,6 +357,8 @@ export const WORLD_SCHEMAS = {
           wide: share,
           cavernCell: num({ min: 2 }),
         }),
+        // The most tiles one opening shows at once (V-030 fog).
+        reveal: num({ min: 1 }),
         stairsDown: ref('terrain'),
         stairsUp: ref('terrain'),
         stairs: ref('terrain'),
@@ -375,6 +375,7 @@ export const WORLD_SCHEMAS = {
         variants: num({ min: 1 }),
         buildable: opt(bool()),
         stone: opt(bool()),
+        digs: opt(obj({ item: ref('items'), count: num({ min: 1 }) })), // what digging it gives
         // Water can be waded (shallow) or not crossed (deep); `marker` names a picture in the
         // nature sheet drawn over the tile, such as a spring's.
         water: opt(oneOf('shallow', 'deep')),
@@ -382,8 +383,7 @@ export const WORLD_SCHEMAS = {
         marker: opt(str()),
         // Earth and clay underground: walls until dug, like rock, but not stone.
         solid: opt(bool()),
-        // P2.3: walking cost per tile, 1 when left out; stone, solid ground and deep water are
-        // never walked.
+        // P2.3: walking cost per tile, 1 when left out; stone, solid ground, deep water: never.
         walk: opt(num({ min: 1 })),
       }),
     ),

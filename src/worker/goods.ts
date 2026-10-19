@@ -11,6 +11,7 @@ import {
   itemsOf,
   loadOf,
   marksOf,
+  nextNeed,
   partOf,
   planAt,
   plansOf,
@@ -134,8 +135,8 @@ function planOf(
       ? 'taking it down'
       : carrying
         ? `bringing ${carrying['count'] as number} ${nameOf(part.material)}`
-        : (row['have'] as number) < part.cost
-          ? `fetching ${nameOf(part.material)}`
+        : nextNeed(content, row)
+          ? `fetching ${nameOf(nextNeed(content, row)!.material)}`
           : 'building';
   return {
     plan: {

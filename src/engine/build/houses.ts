@@ -16,11 +16,12 @@ import { itemsOf, layItem, marksOf, raiseStock } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bedOwnedBy, furnitureOf, piecesOf } from './furniture.ts';
-import { planPart, plansOf } from './plans.ts';
+import { plansOf, refundOf } from './plans.ts';
 import { widenRing } from './ring.ts';
 import { roomAt } from './rooms.ts';
 import {
   chooseHouse,
+  costOf,
   housesOf,
   inRect,
   onEdge,
@@ -37,6 +38,7 @@ export const HOUSE_TABLES: Schemas = {
    * replaced one sent back (it cannot be sent back); `built` the line it was finished under;
    * `moved` the last line of someone carrying their bedroll in; `tried` the tick a built house
    * last looked for where to add a room, and `full` 1 when no side of it had ground for one;
+   * `wall` the id of the wall part it is built in (a room keeps its house's, V-097);
    * `cold` the line saying a cold room of it had no floor free for a hearth (phase review). */
   house: {
     size: 'text',
@@ -54,6 +56,7 @@ export const HOUSE_TABLES: Schemas = {
     moved: 'event',
     tried: 'int',
     full: 'count',
+    wall: 'text',
     cold: 'event',
   },
   /** The Build sheet's level for a kind of building (1 first to 4 last) and its order. */
@@ -266,19 +269,19 @@ export function placeHouse(
       moved: 0,
       tried: -TICKS_PER_DAY,
       full: 0,
+      wall: wall.id,
       cold: 0,
     },
   });
   const parts = partsOf(content, site, site.door, wall, extra.skip);
   for (const { x, y, part } of parts)
     addEntity(world, 'plan', {
-      ...{ part: part.id, x, y, z: 0, have: 0, work: -1, state: 'plan', house: id },
+      ...{ part: part.id, x, y, z: 0, have: 0, also: 0, work: -1, state: 'plan', house: id },
       ...{ line, done: 0, waited: 0, shut: 0, held: 0 },
     });
   for (const i of site.trees)
     addEntity(world, 'mark', { x: i % map.width, y: Math.floor(i / map.width), line, house: id });
-  for (const good of new Set(parts.map((p) => p.part.material)))
-    raiseStock(ctx, good, size.name, line);
+  for (const good of costOf(parts).keys()) raiseStock(ctx, good, size.name, line);
   return id;
 }
 
@@ -376,11 +379,9 @@ export function sendBack(
     data: { size: sizeOf(content, main).name, room: h!['of'] ? ' room' : '' },
   });
   for (const p of plans) {
-    const have = p['have'] as number;
-    if (have > 0) {
-      const at = { x: p['x'] as number, y: p['y'] as number, z: 0 };
-      layItem(world, { kind: planPart(content, p).material, count: have, ...at, made: line });
-    }
+    const at = { x: p['x'] as number, y: p['y'] as number, z: 0 };
+    for (const { kind, count } of refundOf(content, p))
+      if (count > 0) layItem(world, { kind, count, ...at, made: line });
     removeEntity(world, 'plan', p.id);
   }
   for (const m of marksOf(world).filter((m) => m['house'] === h!.id))

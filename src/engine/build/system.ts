@@ -55,10 +55,11 @@ function placeBuilding(ctx: SystemContext, data: Readonly<Record<string, unknown
   if (why) return refuse(ctx, 'placeBuilding', why, cause);
   const line = ctx.emit('build.planned', { causes: [cause], data: { part: part.name, x, y } });
   addEntity(world, 'plan', {
-    ...{ part: part.id, x, y, z: 0, have: 0, work: -1, state: 'plan' },
+    ...{ part: part.id, x, y, z: 0, have: 0, also: 0, work: -1, state: 'plan' },
     ...{ line, done: 0, waited: 0, shut: 0, held: 0, house: 0 },
   });
   raiseStock(ctx, part.material, part.name, line);
+  if (part.also) raiseStock(ctx, part.also.material, part.name, line);
 }
 
 /** `deconstruct {x, y}` (test mode): a part or plan there is to come down. A plan nothing was
@@ -72,7 +73,7 @@ function deconstruct(ctx: SystemContext, data: Readonly<Record<string, unknown>>
   const at = { part: part.name, x: plan['x'] as number, y: plan['y'] as number };
   if (part.kind === 'stair' && plan['state'] === 'built')
     return refuse(ctx, 'deconstruct', 'a stair stays once cut', cause);
-  if (plan['state'] === 'plan' && !(plan['have'] as number)) {
+  if (plan['state'] === 'plan' && !(plan['have'] as number) && !(plan['also'] as number)) {
     ctx.emit('build.dropped', { causes: [cause], data: at });
     return removeEntity(world, 'plan', plan.id);
   }

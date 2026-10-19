@@ -99,6 +99,7 @@ export function createWorld(sim: Sim, seed: string, look = 0): WorldState {
       auraSpots: [],
       ice: new Uint8Array(0),
       built: new Uint8Array(0),
+      stains: new Uint8Array(0),
       levels: [],
     },
   };

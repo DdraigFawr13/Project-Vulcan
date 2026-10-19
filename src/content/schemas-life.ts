@@ -109,6 +109,28 @@ export const LIFE_SCHEMAS = {
       camp: count,
       reach: count,
     }),
+    // Mining (P4.1, V-086, V-087): the jobs.json job; minutes to sink a shaft one level, dig a
+    // rock or earth tile and mine a vein tile at skill `skilled`; the `ladder` items (item: count)
+    // the first level takes (ore an ingot wants is the smelting recipe's, metal.json); `floors` the tile kind digging leaves, by what was dug.
+    mine: obj({
+      job: ref('jobs'),
+      shaft: count,
+      dig: count,
+      vein: count,
+      skilled: count,
+      ladder: map(count, 'items'),
+      floors: obj({ stone: str(), earth: str() }),
+      // A shaft may sit up to `near` tiles from its stain, on the nearest open ground; not within
+      // `avoid` tiles of a plan sent back or a shaft spent; on ground whose walking multiplier is
+      // at most `walk` (1 is plain ground). `why` is the sentence a shaft plan gives for itself
+      // ({Metal}, {metal}, {have}, {want}, {word}, {far}, {dir}); `words` say what each mining
+      // task is, in the taking-up line ({m} is the metal).
+      near: count,
+      avoid: count,
+      walk: num({ min: 1 }),
+      why: text,
+      words: obj({ sink: text, tunnel: text, mine: text, clay: text }),
+    }),
     // Foraging (P2.9): the jobs.json job and the good it serves, minutes a bush takes at skill
     // `skilled`, bushes looked for within `reach` tiles of the store; a bush picked is ripe again
     // after `regrowDays` days, and bushes only grow back in the named `months`.
@@ -211,6 +233,8 @@ export const LIFE_SCHEMAS = {
         kind: oneOf('wall', 'floor', 'door', 'stair'),
         material: ref('items'),
         cost: num({ min: 1 }),
+        // A second material brought after the first (wattle and daub: clay, then logs).
+        also: opt(obj({ material: ref('items'), cost: num({ min: 1 }) })),
         minutes: num({ min: 1 }),
         art: text,
       }),

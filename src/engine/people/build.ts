@@ -5,14 +5,7 @@
 // building skill). A part to come down is taken down the same way and its material laid back.
 // A plan whose material cannot be reached says so once, as an alert, until some is brought.
 import type { EngineContent, EntityRow } from '../core/index.ts';
-import {
-  finishPlan,
-  planPart,
-  plansOf,
-  refundOf,
-  stillNeeded,
-  takeDownPlan,
-} from '../build/index.ts';
+import { finishPlan, nextNeed, planPart, plansOf, refundOf, takeDownPlan } from '../build/index.ts';
 import { inStore, itemsAt, itemsOf, layItem, loadOf, storeOf, takeFrom } from '../goods/index.ts';
 import { withBuilt } from '../map/index.ts';
 import { canReach, reachFrom, walkAt } from '../paths/index.ts';
@@ -37,9 +30,13 @@ const taken = (ctx: SystemContext, p: EntityRow): Set<number> =>
       .map((q) => q['plan'] as number),
   );
 
-/** The nearest stack of `kind` `p` can reach that no one else is fetching: one in the store
- * before one lying out at the same distance (also used for furniture wood, carpentry.ts). */
-export function stackOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow | undefined {
+/** The stacks of `kind` `p` can reach that no one else is fetching, each scored by its distance
+ * (one in the store before one lying out at the same distance), in item order. */
+export function reachableStacks(
+  ctx: SystemContext,
+  p: EntityRow,
+  kind: string,
+): { item: EntityRow; score: number }[] {
   const { world, content } = ctx;
   const others = new Set([
     ...busy(world, p, 'haul'),
@@ -50,20 +47,30 @@ export function stackOf(ctx: SystemContext, p: EntityRow, kind: string): EntityR
     ...busy(world, p, 'station'),
   ]);
   const from = spotOf(p);
-  let best: EntityRow | undefined;
-  let far = Infinity;
+  const out: { item: EntityRow; score: number }[] = [];
   for (const i of itemsOf(world)) {
     if (i['kind'] !== kind || i['holder'] || others.has(i.id)) continue;
     const at = spotOf(i);
     const d = Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y)) * 2;
-    const score = d + (inStore(world, at.x, at.y, at.z) ? 0 : 1);
-    if (score < far && canReach(content, world.map, from, at)) [best, far] = [i, score];
+    if (canReach(content, world.map, from, at))
+      out.push({ item: i, score: d + (inStore(world, at.x, at.y, at.z) ? 0 : 1) });
   }
-  return best;
+  return out;
 }
 
-const materialFor = (ctx: SystemContext, p: EntityRow, plan: EntityRow) =>
-  stackOf(ctx, p, planPart(ctx.content, plan).material);
+/** The nearest stack of `kind` `p` can reach that no one else is fetching (also used for
+ * furniture wood, carpentry.ts). */
+export function stackOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow | undefined {
+  let best: { item: EntityRow; score: number } | undefined;
+  for (const s of reachableStacks(ctx, p, kind)) if (!best || s.score < best.score) best = s;
+  return best?.item;
+}
+
+/** A stack of the material the plan needs next (its own first, then its second). */
+const materialFor = (ctx: SystemContext, p: EntityRow, plan: EntityRow) => {
+  const next = nextNeed(ctx.content, plan);
+  return next && stackOf(ctx, p, next.material);
+};
 
 /** Whether a tree or log still stands on the plan's tile, to be felled first (a house's site,
  * P3.7). */
@@ -98,7 +105,7 @@ function choosePlan(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
     })
     .sort((a, b) => a[0] - b[0] || a[1].id - b[1].id);
   for (const [, r] of open) {
-    if (stillNeeded(content, r) > 0 && !materialFor(ctx, p, r)) continue;
+    if (nextNeed(content, r) && !materialFor(ctx, p, r)) continue;
     if (besideReachable(ctx, p, r)) return r;
   }
   return undefined;
@@ -159,11 +166,12 @@ function sayWaiting(ctx: SystemContext, p: EntityRow): void {
   const onItsWay = (kind: string) =>
     itemsOf(world).some((i) => i['kind'] === kind && (i['holder'] || fetching.has(i.id)));
   for (const r of plans) {
-    if (r['waited'] || stillNeeded(content, r) <= 0 || materialFor(ctx, p, r)) continue;
+    const next = nextNeed(content, r);
+    if (r['waited'] || !next || materialFor(ctx, p, r)) continue;
     const part = planPart(content, r);
-    if (onItsWay(part.material)) continue;
-    const same = plans.find((o) => o['waited'] && planPart(content, o).material === part.material);
-    const good = content.items.find((i) => i.id === part.material)?.name ?? part.material;
+    if (onItsWay(next.material)) continue;
+    const same = plans.find((o) => o['waited'] && nextNeed(content, o)?.material === next.material);
+    const good = content.items.find((i) => i.id === next.material)?.name ?? next.material;
     r['waited'] =
       (same?.['waited'] as number | undefined) ??
       ctx.emit('build.waiting', {
@@ -231,18 +239,19 @@ export function building(ctx: SystemContext, p: EntityRow): boolean {
   const [x, y] = [plan['x'] as number, plan['y'] as number];
   const here = spotOf(p);
   const beside = here.z === 0 && Math.max(Math.abs(here.x - x), Math.abs(here.y - y)) === 1;
-  const need = stillNeeded(content, plan);
+  const next = nextNeed(content, plan);
   const load = loadOf(world, p.id);
-  if (load && (need <= 0 || load['kind'] !== part.material)) return stop(p);
-  if (load) {
+  if (load && (!next || load['kind'] !== next.material)) return stop(p);
+  if (load && next) {
     if (!beside) return goBeside(ctx, p, x, y) || stop(p);
-    const used = Math.min(need, load['count'] as number);
-    plan['have'] = (plan['have'] as number) + used;
+    const used = Math.min(next.count, load['count'] as number);
+    const field = next.material === part.material ? 'have' : 'also';
+    plan[field] = (plan[field] as number) + used;
     plan['waited'] = 0;
     takeFrom(world, load, used);
     return true;
   }
-  if (need > 0) return fetchMaterial(ctx, p, plan, need);
+  if (next) return fetchMaterial(ctx, p, plan, next.count);
   if (!beside) return goBeside(ctx, p, x, y) || stop(p);
   const level = skillOf(world, p, skillName(content));
   if ((plan['work'] as number) < 0) {
@@ -351,15 +360,24 @@ function takeDown(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
   const { content } = ctx;
   const part = planPart(content, plan);
   const at = { x: plan['x'] as number, y: plan['y'] as number, z: 0 };
-  const back = refundOf(content, plan);
-  const good = content.items.find((i) => i.id === part.material)?.name ?? part.material;
+  const name = (id: string): string => content.items.find((i) => i.id === id)?.name ?? id;
+  // Both materials of a two-material part, as "4 clay and 1 log" (those with something to give).
+  const back = refundOf(content, plan)
+    .filter((r) => r.count > 0)
+    .map((r) => `${r.count} ${name(r.kind)}`);
   const line = ctx.emit('build.takenDown', {
     causes: [p['took'] as number, plan['line'] as number],
     actors: [p.id],
-    data: { name: p['name'] as string, part: part.name, x: at.x, y: at.y, count: back, good },
+    data: {
+      ...{ name: p['name'] as string, part: part.name, x: at.x, y: at.y },
+      back:
+        back.length > 1
+          ? `${back.slice(0, -1).join(', ')} and ${back.at(-1)}`
+          : (back[0] ?? 'nothing'),
+    },
   });
-  const { kind, count } = takeDownPlan(ctx, plan, line);
-  layAround(ctx, kind, count, at, line);
+  for (const { kind, count } of takeDownPlan(ctx, plan, line))
+    if (count > 0) layAround(ctx, kind, count, at, line);
   stop(p);
   return true;
 }

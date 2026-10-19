@@ -174,7 +174,7 @@ describe('carpentry and furniture', () => {
   }
 
   it('keeps carpentry an indirect lever: a Work sheet row after Building, no command to place or assign', () => {
-    const levers = ['setStock', 'setPriority', 'setDay', 'setBuild', 'sendBack'];
+    const levers = ['setStock', 'setPriority', 'setDay', 'setBuild', 'sendBack', 'sendBackShaft'];
     const tools = [
       'placeBuilding',
       'deconstruct',

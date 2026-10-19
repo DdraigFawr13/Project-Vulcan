@@ -115,6 +115,24 @@ export interface WorkDef {
     camp: number;
     reach: number;
   };
+  /** Mining (P4.1): minutes per shaft level, rock or earth tile and vein tile; the first level's
+   * ladder; ore per ingot (placeholder until Bundle 3); the floor digging leaves. */
+  mine: {
+    job: string;
+    shaft: number;
+    dig: number;
+    vein: number;
+    skilled: number;
+    ladder: Readonly<Record<string, number>>;
+    floors: { stone: string; earth: string };
+    near: number;
+    /** Tiles kept clear of a plan sent back or a shaft spent; the most walking multiplier a
+     * shaft's ground may have (1: plain); the shaft plan's sentence and the taking-up words. */
+    avoid: number;
+    walk: number;
+    why: string;
+    words: { sink: string; tunnel: string; mine: string; clay: string };
+  };
   forage: {
     job: string;
     good: string;
@@ -155,6 +173,8 @@ export interface PartDef {
   kind: 'wall' | 'floor' | 'door' | 'stair';
   material: string;
   cost: number;
+  /** A second material brought after the first (wattle and daub: clay, then logs). */
+  also?: { material: string; cost: number };
   minutes: number;
   art: string;
 }
