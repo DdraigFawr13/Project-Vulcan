@@ -226,13 +226,18 @@ export function partsOf(
 /** The material each part list needs, by good. */
 export function costOf(parts: readonly { part: PartDef }[]): Map<string, number> {
   const need = new Map<string, number>();
-  for (const { part } of parts) need.set(part.material, (need.get(part.material) ?? 0) + part.cost);
+  for (const { part } of parts) {
+    need.set(part.material, (need.get(part.material) ?? 0) + part.cost);
+    if (part.also)
+      need.set(part.also.material, (need.get(part.also.material) ?? 0) + part.also.cost);
+  }
   return need;
 }
 
 /** How much of a good the colony has and could get: all of it wherever it lies, plus, when
  * `ground` is set, what the trees, logs and boulders within `house.reach` tiles of the store
- * would give (Morgan, 2026-10-18: house size counts what is within reach). */
+ * would give, and the known tiles on level 1 that dig it (Morgan, 2026-10-18: house size counts
+ * what is within reach). */
 export function withinReach(
   world: WorldState,
   content: EngineContent,
@@ -252,6 +257,16 @@ export function withinReach(
       if (def && def.yields === good && ['tree', 'log', 'boulder'].includes(def.kind))
         total += def.amount;
     }
+  // Ground dug for it: every known tile on level 1 whose kind digs `good` (V-097, clay).
+  const known = map.levels[0]?.known;
+  const under = map.levels[0]?.tiles;
+  if (known && under)
+    for (let y = Math.max(0, oy - reach); y <= Math.min(map.height - 1, oy + reach); y += 1)
+      for (let x = Math.max(0, ox - reach); x <= Math.min(map.width - 1, ox + reach); x += 1) {
+        const i = y * map.width + x;
+        const digs = known[i] === 1 ? content.terrain.kinds[under[i]!]!.digs : undefined;
+        if (digs && digs.item === good) total += digs.count;
+      }
   return total;
 }
 
@@ -265,27 +280,14 @@ function affords(
   return [...costOf(parts)].every(([good, n]) => withinReach(world, content, good, ground) >= n);
 }
 
-/** The first wall part (content order) whose whole cost, with the door and floor, the colony
- * has or could get; else the last, and the plans wait for material. */
-export function wallFor(
-  world: WorldState,
-  content: EngineContent,
-  plan: (wall: PartDef) => readonly { part: PartDef }[],
-  ground: boolean,
-): { wall: PartDef; fits: boolean } {
-  const walls = content.buildings.house.walls.map((id) => partOf(content, id)!);
-  const wall = walls.find((w) => affords(world, content, plan(w), ground));
-  return wall ? { wall, fits: true } : { wall: walls.at(-1)!, fits: false };
-}
-
 /** The house to build for `sleepers` people, and where. The size is the largest the colony has
  * or could get the material for in some wall material that sleeps no more than them (start
  * small and grow: a house adds rooms as its sleepers outgrow it, grow.ts), else the smallest
  * that can be finished. The walls are of the MOST PLENTIFUL material (stock plus what lies
  * within `reach`) among those that can finish a house of that size; ties keep content order
  * (Morgan, 2026-10-19, amending V-096). With material for none, the smallest with ground for it
- * and the last wall in content order (its plans wait for material). `why` says which. Undefined
- * when no ground near the green fits any size. */
+ * and the most plentiful wall material, ties to the last in content order (its plans wait for
+ * material). `why` says which. Undefined when no ground near the green fits any size. */
 export function chooseHouse(
   world: WorldState,
   content: EngineContent,
@@ -306,7 +308,10 @@ export function chooseHouse(
   const able = sited.filter((o) => walls.some((w) => fits(o, w)));
   const pick = able.findLast((o) => o.size.sleeps <= sleepers) ?? able[0];
   if (!pick) {
-    const wall = walls.at(-1)!;
+    // The most plentiful material, ties to the last in content order (not clay, which only miners
+    // will dig, while wood stands about).
+    const have = (w: PartDef) => withinReach(world, content, w.material, true);
+    const wall = walls.reduce((best, w) => (have(w) >= have(best) ? w : best));
     return {
       ...sited[0]!,
       wall,

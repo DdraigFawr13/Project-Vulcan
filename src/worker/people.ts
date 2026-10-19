@@ -13,6 +13,7 @@ import {
   memoriesOf,
   moodOf,
   needOf,
+  nextNeed,
   partOf,
   plansOf,
   progressOf,
@@ -118,9 +119,9 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
     const plan = plansOf(world).find((r) => r.id === p['plan']);
     const part = plan && partOf(content, plan['part'] as string);
     const carrying = loadOf(world, p.id);
-    const short = plan && part && (plan['have'] as number) < part.cost && plan['state'] === 'plan';
-    const key = plan?.['state'] === 'down' ? 'takeDown' : short && !carrying ? 'fetch' : 'build';
-    const what = nameOf(content.items, part?.material ?? '');
+    const next = plan && nextNeed(content, plan);
+    const key = plan?.['state'] === 'down' ? 'takeDown' : next && !carrying ? 'fetch' : 'build';
+    const what = nameOf(content.items, next ? next.material : (part?.material ?? ''));
     return { text: say(key, { part: part?.name ?? '', what }), ...why };
   }
   if (job === 'carpentry') {

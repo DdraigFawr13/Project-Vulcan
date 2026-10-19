@@ -25,6 +25,7 @@ export {
   planAt,
   planPart,
   plansOf,
+  nextNeed,
   refundOf,
   stillNeeded,
   takeDownPlan,

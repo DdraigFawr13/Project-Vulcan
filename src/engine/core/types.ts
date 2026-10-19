@@ -158,14 +158,12 @@ export interface MapState {
   auraSpots: AuraSpot[];
   /** Freezing degree-days on each still-water tile (the weather's ice count); 0 elsewhere. */
   ice: Uint8Array;
-  /** What colonists have built on each surface tile (P3.1): 0 for nothing, else 1 + an index into
-   * `EngineContent.buildings.parts`. A stair is a tile kind instead (it leads down). */
+  /** Built on each surface tile (P3.1): 0, or 1 + a `buildings.parts` index; a stair is a tile kind. */
   built: Uint8Array;
   /** Surface only: 0, or 1 + the features index of the stained vein below the tile (the
    * shallowest stained level wins), V-087. */
   stains: Uint8Array;
-  /** The levels below, index 0 for level 1 down: null until stairs or a shaft first reach one
-   * (DECISIONS V-014), so a level nobody has reached costs no memory and no save space. */
+  /** The levels below, 0 for level 1: null until stairs or a shaft reach one (V-014), so it costs nothing. */
   levels: (LevelState | null)[];
 }
 
@@ -311,6 +309,7 @@ export interface TerrainDef {
     variants: number;
     buildable?: boolean;
     stone?: boolean;
+    digs?: { item: string; count: number };
     water?: 'shallow' | 'deep';
     drinkable?: boolean;
     marker?: string;

@@ -374,6 +374,7 @@ export const WORLD_SCHEMAS = {
         variants: num({ min: 1 }),
         buildable: opt(bool()),
         stone: opt(bool()),
+        digs: opt(obj({ item: ref('items'), count: num({ min: 1 }) })), // what digging it gives
         // Water can be waded (shallow) or not crossed (deep); `marker` names a picture in the
         // nature sheet drawn over the tile, such as a spring's.
         water: opt(oneOf('shallow', 'deep')),

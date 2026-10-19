@@ -5,6 +5,7 @@
 "parts":[
 {"id":"wall-stone","name":"stone wall","kind":"wall","material":"stone","cost":5,"minutes":60,"art":"build.wall-stone"},
 {"id":"wall-wood","name":"wood wall","kind":"wall","material":"logs","cost":4,"minutes":45,"art":"build.wall-wood"},
+{"id":"wall-daub","name":"wattle and daub wall","kind":"wall","material":"clay","cost":3,"also":{"material":"logs","cost":1},"minutes":40,"art":"build.wall-daub"},
 {"id":"floor-stone","name":"stone floor","kind":"floor","material":"stone","cost":2,"minutes":30,"art":"build.floor-stone"},
 {"id":"floor-wood","name":"wood floor","kind":"floor","material":"logs","cost":2,"minutes":20,"art":"build.floor-wood"},
 {"id":"door-wood","name":"wooden door","kind":"door","material":"logs","cost":4,"minutes":40,"art":"build.door-wood"},
@@ -12,7 +13,7 @@
 {"id":"stair-stone","name":"stone stair down","kind":"stair","material":"stone","cost":10,"minutes":120,"art":"build.stair-stone"},
 {"id":"stair-wood","name":"wooden stair down","kind":"stair","material":"logs","cost":6,"minutes":90,"art":"build.stair-wood"}
 ],
-"house":{"name":"Houses","start":1,"near":14,"reach":40,"walls":["wall-stone","wall-wood"],"door":"door-wood","floor":"floor-wood",
+"house":{"name":"Houses","start":1,"near":14,"reach":40,"walls":["wall-stone","wall-wood","wall-daub"],"door":"door-wood","floor":"floor-wood",
 "sizes":[
 {"id":"lean-to","name":"lean-to","w":4,"h":4,"sleeps":2},
 {"id":"cottage","name":"cottage","w":6,"h":4,"sleeps":4},

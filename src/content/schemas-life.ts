@@ -211,6 +211,8 @@ export const LIFE_SCHEMAS = {
         kind: oneOf('wall', 'floor', 'door', 'stair'),
         material: ref('items'),
         cost: num({ min: 1 }),
+        // A second material brought after the first (wattle and daub: clay, then logs).
+        also: opt(obj({ material: ref('items'), cost: num({ min: 1 }) })),
         minutes: num({ min: 1 }),
         art: text,
       }),

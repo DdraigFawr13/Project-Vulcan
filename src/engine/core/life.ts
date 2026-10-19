@@ -125,6 +125,8 @@ export interface PartDef {
   kind: 'wall' | 'floor' | 'door' | 'stair';
   material: string;
   cost: number;
+  /** A second material brought after the first (wattle and daub: clay, then logs). */
+  also?: { material: string; cost: number };
   minutes: number;
   art: string;
 }

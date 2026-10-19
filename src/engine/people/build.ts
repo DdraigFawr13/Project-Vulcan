@@ -5,14 +5,7 @@
 // building skill). A part to come down is taken down the same way and its material laid back.
 // A plan whose material cannot be reached says so once, as an alert, until some is brought.
 import type { EngineContent, EntityRow } from '../core/index.ts';
-import {
-  finishPlan,
-  planPart,
-  plansOf,
-  refundOf,
-  stillNeeded,
-  takeDownPlan,
-} from '../build/index.ts';
+import { finishPlan, nextNeed, planPart, plansOf, refundOf, takeDownPlan } from '../build/index.ts';
 import { inStore, itemsAt, itemsOf, layItem, loadOf, storeOf, takeFrom } from '../goods/index.ts';
 import { withBuilt } from '../map/index.ts';
 import { canReach, reachFrom, walkAt } from '../paths/index.ts';
@@ -60,8 +53,11 @@ export function stackOf(ctx: SystemContext, p: EntityRow, kind: string): EntityR
   return best;
 }
 
-const materialFor = (ctx: SystemContext, p: EntityRow, plan: EntityRow) =>
-  stackOf(ctx, p, planPart(ctx.content, plan).material);
+/** A stack of the material the plan needs next (its own first, then its second). */
+const materialFor = (ctx: SystemContext, p: EntityRow, plan: EntityRow) => {
+  const next = nextNeed(ctx.content, plan);
+  return next && stackOf(ctx, p, next.material);
+};
 
 /** Whether a tree or log still stands on the plan's tile, to be felled first (a house's site,
  * P3.7). */
@@ -96,7 +92,7 @@ function choosePlan(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
     })
     .sort((a, b) => a[0] - b[0] || a[1].id - b[1].id);
   for (const [, r] of open) {
-    if (stillNeeded(content, r) > 0 && !materialFor(ctx, p, r)) continue;
+    if (nextNeed(content, r) && !materialFor(ctx, p, r)) continue;
     if (besideReachable(ctx, p, r)) return r;
   }
   return undefined;
@@ -157,11 +153,12 @@ function sayWaiting(ctx: SystemContext, p: EntityRow): void {
   const onItsWay = (kind: string) =>
     itemsOf(world).some((i) => i['kind'] === kind && (i['holder'] || fetching.has(i.id)));
   for (const r of plans) {
-    if (r['waited'] || stillNeeded(content, r) <= 0 || materialFor(ctx, p, r)) continue;
+    const next = nextNeed(content, r);
+    if (r['waited'] || !next || materialFor(ctx, p, r)) continue;
     const part = planPart(content, r);
-    if (onItsWay(part.material)) continue;
-    const same = plans.find((o) => o['waited'] && planPart(content, o).material === part.material);
-    const good = content.items.find((i) => i.id === part.material)?.name ?? part.material;
+    if (onItsWay(next.material)) continue;
+    const same = plans.find((o) => o['waited'] && nextNeed(content, o)?.material === next.material);
+    const good = content.items.find((i) => i.id === next.material)?.name ?? next.material;
     r['waited'] =
       (same?.['waited'] as number | undefined) ??
       ctx.emit('build.waiting', {
@@ -229,18 +226,19 @@ export function building(ctx: SystemContext, p: EntityRow): boolean {
   const [x, y] = [plan['x'] as number, plan['y'] as number];
   const here = spotOf(p);
   const beside = here.z === 0 && Math.max(Math.abs(here.x - x), Math.abs(here.y - y)) === 1;
-  const need = stillNeeded(content, plan);
+  const next = nextNeed(content, plan);
   const load = loadOf(world, p.id);
-  if (load && (need <= 0 || load['kind'] !== part.material)) return stop(p);
-  if (load) {
+  if (load && (!next || load['kind'] !== next.material)) return stop(p);
+  if (load && next) {
     if (!beside) return goBeside(ctx, p, x, y) || stop(p);
-    const used = Math.min(need, load['count'] as number);
-    plan['have'] = (plan['have'] as number) + used;
+    const used = Math.min(next.count, load['count'] as number);
+    const field = next.material === part.material ? 'have' : 'also';
+    plan[field] = (plan[field] as number) + used;
     plan['waited'] = 0;
     takeFrom(world, load, used);
     return true;
   }
-  if (need > 0) return fetchMaterial(ctx, p, plan, need);
+  if (next) return fetchMaterial(ctx, p, plan, next.count);
   if (!beside) return goBeside(ctx, p, x, y) || stop(p);
   const level = skillOf(world, p, skillName(content));
   if ((plan['work'] as number) < 0) {
@@ -347,15 +345,15 @@ function takeDown(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
   const { content } = ctx;
   const part = planPart(content, plan);
   const at = { x: plan['x'] as number, y: plan['y'] as number, z: 0 };
-  const back = refundOf(content, plan);
+  const back = refundOf(content, plan)[0]!.count;
   const good = content.items.find((i) => i.id === part.material)?.name ?? part.material;
   const line = ctx.emit('build.takenDown', {
     causes: [p['took'] as number, plan['line'] as number],
     actors: [p.id],
     data: { name: p['name'] as string, part: part.name, x: at.x, y: at.y, count: back, good },
   });
-  const { kind, count } = takeDownPlan(ctx, plan, line);
-  layAround(ctx, kind, count, at, line);
+  for (const { kind, count } of takeDownPlan(ctx, plan, line))
+    if (count > 0) layAround(ctx, kind, count, at, line);
   stop(p);
   return true;
 }

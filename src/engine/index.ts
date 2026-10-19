@@ -43,6 +43,7 @@ export {
   pieceAt,
   piecesOf,
   planAt,
+  nextNeed,
   planPart,
   plansOf,
   qualityOf,
