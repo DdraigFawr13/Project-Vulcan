@@ -14,6 +14,7 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "check": "node tools/check.mjs",
+    "check:full": "node tools/check.mjs --full",
     "typecheck": "tsc --noEmit",
     "boundaries": "node tools/check-boundaries.mjs",
     "limits": "node tools/check-limits.mjs",
