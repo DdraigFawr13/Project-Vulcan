@@ -67,4 +67,4 @@ export {
 export { finishReaping, finishSowing } from './fieldlife.ts';
 export { ringOf } from './ring.ts';
 export { sizeOfStation, stationAt, stationOf, stationsOf, STATION_TABLES } from './station.ts';
-export { smithiesOf } from './smithy.ts';
+export { ingotInStore, sendBackBlock, smithiesOf } from './smithy.ts';

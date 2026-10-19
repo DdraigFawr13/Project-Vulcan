@@ -55,6 +55,12 @@ export {
   roomsOf,
   rowsOf,
   sizeOf,
+  ingotInStore,
+  sendBackBlock,
+  smithiesOf,
+  stationAt,
+  stationOf,
+  stationsOf,
   type Room,
 } from './build/index.ts';
 export { calendarSystem } from './calendar/index.ts';
@@ -66,14 +72,19 @@ export {
   freeTile,
   goodsSystem,
   haveOf,
+  heldBy,
   inStore,
   isTree,
   itemsAt,
   itemsOf,
+  lifeFor,
   loadOf,
   marksOf,
+  speedOf,
   stockOf,
   storeOf,
+  toolOf,
+  trailOf,
   wantOf,
 } from './goods/index.ts';
 export {

@@ -36,7 +36,10 @@ export function pieceFacts(tile: TileView): [string, string][] {
   if (room && built && piece.fire) rows.push(['room', `${room.name}, ${room.tiles} tiles inside`]);
   if (room && built && piece.fire) rows.push(['warmth', room.warmth]);
   rows.push(['paths', 'does not block the way']);
-  return rows;
+  // On the smithy's page the piece adds only what and who made it; the page says the rest.
+  return tile.works
+    ? rows.filter(([k]) => ['built', 'plan', 'quality', 'maker'].includes(k))
+    : rows;
 }
 
 /** The lines behind a piece with their labels: claimed, made, and placed (the bench's, or while

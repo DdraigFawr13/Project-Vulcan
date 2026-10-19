@@ -167,6 +167,8 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   const firewood = panel.getByTestId('stock-firewood');
   await expect(firewood).toContainText(/^Firewood: \d+ of 20 wanted/);
   await expect(firewood.getByRole('button', { name: 'Plenty (60)' })).toBeVisible();
+  // P4.5: the Bronze plate is one of the four ingot plates.
+  await expect(panel.getByTestId('stock-bronze-ingot')).toContainText('Bronze ingots');
   // P4.7: the Seed plate sits above Food with its own three levels (none, some 100, plenty 200).
   await expect(panel.getByTestId('stock-seed')).toContainText(/^Seed: \d+ of 100 wanted/);
   await expect(
