@@ -45,7 +45,7 @@ export function goodsOf(world: WorldState): GoodsView {
   });
   return {
     items: itemsOf(world)
-      .filter((i) => !i['holder'])
+      .filter((i) => !i['holder'] && i['state'] !== 'held')
       .map((i) => ({ ...at(i), frame: frameOf(i['kind'] as string, i['state'] as string) })),
     store: storeOf(world).map(at),
     marks: marksOf(world).map((m) => ({ x: m['x'] as number, y: m['y'] as number, z: 0 })),

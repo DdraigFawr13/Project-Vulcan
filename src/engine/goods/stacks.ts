@@ -23,13 +23,21 @@ export const GOODS_TABLES: Schemas = {
     wear: 'count',
     /** The line that made or brought it, for "why?". */
     made: 'event',
+    /** Where it came from (Bundle 3, P4.6): a compact JSON list of steps, '' for none. */
+    trail: 'text',
+    /** A tool in use (Bundle 3, V-088): `owner` has it, `state` `held`, it lies on no tile (x, y
+     * -1); `wear` is the work minutes left in it and `worked` the minutes it has been used. */
+    worked: 'count',
   },
 };
 
 export const itemsOf = (world: WorldState): EntityRow[] => world.entities['item'] ?? [];
 
+/** A tool never stacks: each has its own wear, quality and trail. */
 export const stackSize = (content: EngineContent, kind: string): number =>
-  content.life.stacks[kind] ?? content.life.stacks['default'] ?? 25;
+  content.items.find((i) => i.id === kind)?.tool
+    ? 1
+    : (content.life.stacks[kind] ?? content.life.stacks['default'] ?? 25);
 
 /** The stacks lying on a tile (not carried). */
 export const itemsAt = (world: WorldState, x: number, y: number, z: number): EntityRow[] =>
@@ -39,15 +47,23 @@ export const itemsAt = (world: WorldState, x: number, y: number, z: number): Ent
 export function layItem(
   world: WorldState,
   fields: { kind: string; count: number; x: number; y: number; z: number; made: number },
-  extra: { owner?: number; state?: string; wear?: number } = {},
+  extra: {
+    owner?: number;
+    state?: string;
+    wear?: number;
+    quality?: string;
+    trail?: string;
+  } = {},
 ): number {
   return addEntity(world, 'item', {
     ...fields,
-    quality: 'plain',
+    quality: extra.quality ?? 'plain',
     holder: 0,
     owner: extra.owner ?? 0,
     state: extra.state ?? '',
     wear: extra.wear ?? 0,
+    trail: extra.trail ?? '',
+    worked: 0,
   });
 }
 

@@ -65,8 +65,36 @@ export interface ItemDef {
   good: string;
   /** A cooked dish (items.json): eaten in preference to raw food (work.cook). */
   cooked?: boolean;
-  /** An ingot's ore item (items.json). */
+  /** An ingot names the ore it is smelted from (Bundle 3). */
   ore?: string;
+  /** A tool: its kind (tools.json) and material. */
+  tool?: { kind: string; material: string };
+}
+
+/** Tools (tools.json, Bundle 3, V-088): kinds and what each serves, materials with speed (per cent)
+ * and life (work minutes), the quality bonus and how a tool is made. */
+export interface ToolsDef {
+  week: number;
+  cart: number;
+  /** The material of the cart's tools, and the Work sheet kind (jobs.json) that smiths them. */
+  cartMaterial: string;
+  job: string;
+  none: number;
+  step: number;
+  stream: string;
+  roll: number;
+  skilled: number;
+  charcoal: string;
+  kinds: readonly {
+    id: string;
+    name: string;
+    serves: readonly string[];
+    ingots: number;
+    charcoal: number;
+    minutes: number;
+  }[];
+  materials: readonly { id: string; name: string; speed: number; life: number; ingot?: string }[];
+  quality: Readonly<Record<string, number>>;
 }
 
 /** The colony's work (work.json, P2.4): stock levels (the player's lever), felling, carrying,
@@ -96,7 +124,6 @@ export interface WorkDef {
     vein: number;
     skilled: number;
     ladder: Readonly<Record<string, number>>;
-    perIngot: number;
     floors: { stone: string; earth: string };
     near: number;
     /** Tiles kept clear of a plan sent back or a shaft spent; the most walking multiplier a
@@ -165,6 +192,15 @@ export interface BuildingsDef {
   downShare: number;
   parts: readonly PartDef[];
   house: HouseDef;
+  smithy: {
+    name: string;
+    start: number;
+    depth: number;
+    length: number;
+    near: number;
+    floor: string;
+    pieces: readonly string[];
+  };
   town: { ring: number; step: number; most: number };
   field: FieldDef;
   rooms: RoomsDef;
@@ -262,6 +298,8 @@ export interface JobDef {
   id: string;
   name: string;
   skill?: string;
+  /** The piece or station the work is done at (a furniture kind or a station kind). */
+  workplace?: string;
   requirements: Readonly<Record<string, number>>;
 }
 

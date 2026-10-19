@@ -6,6 +6,7 @@ import type { EngineContent, WorldState } from '../core/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { System } from '../sim/index.ts';
 import { GOODS_TABLES, itemsOf, layItem, stackSize } from './stacks.ts';
+import { layTool, restOf } from './tools.ts';
 import { markCommands, MARK_TABLES } from './marks.ts';
 import { dryAt, setStock, setUpStock, setUpStore, STORE_TABLES } from './store.ts';
 
@@ -67,8 +68,13 @@ export const goodsSystem: System = {
         count: Math.min(size, g.count - k * size),
       }));
     });
-    const tiles = freeTilesNear(world, content, 1 + stacks.length + people.length);
-    if (tiles.length < 1 + stacks.length + people.length) return;
+    const used = 1 + stacks.length + people.length;
+    const tiles = freeTilesNear(
+      world,
+      content,
+      used + content.tools.kinds.length * content.tools.cart,
+    );
+    if (tiles.length < used) return;
     const made = ctx.emit('goods.unloaded', {
       causes: [arrived],
       data: {
@@ -101,5 +107,12 @@ export const goodsSystem: System = {
     }
     setUpStore(ctx, made);
     setUpStock(ctx, made);
+    // The cart's stone tools (tools.json `cart` of each kind) are kept with the cart.
+    const stone = content.tools.cartMaterial;
+    for (const kind of content.tools.kinds)
+      for (let n = 0; n < content.tools.cart; n += 1)
+        layTool(world, content, restOf(world, content), {
+          ...{ kind: kind.id, material: stone, quality: 'plain', made },
+        });
   },
 };

@@ -332,7 +332,9 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   for (let skips = 0; skips < 30 && !foodGone.test(await alertText(page)); skips++)
     await skipOnce();
   expect(await alertText(page)).toMatch(foodGone);
-  for (let skips = 0; skips < 6 && (await hungry.count()) === 0; skips++) await skipOnce();
+  // Seed grain is eaten under the warning line first (Bundle 1), and Bundle 3's notable lines
+  // (a stone tool breaking) stop the skip too: 7 skips on this seed after the merge.
+  for (let skips = 0; skips < 10 && (await hungry.count()) === 0; skips++) await skipOnce();
   await hungry.first().click({ timeout: 5000 });
   await expect(panel.getByTestId('chain')).toContainText("ate the last of the band's food");
   // P2.9: the sheet says what they are doing; ⋯ → Yesterday opens the dawn page with the
@@ -374,7 +376,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByTestId('open-stock').click();
   for (const plate of ['Iron ingots', 'Copper ingots', 'Tin ingots'])
     await expect(panel).toContainText(plate);
-  await expect(panel.getByTestId('stock-iron-ingot')).toContainText(/ iron ore so far\./);
+  await expect(panel.getByTestId('stock-iron-ingot')).toContainText(/ iron ore in the store\./);
   await expect(panel.getByTestId('stock-stone')).toContainText('comes up as stone.');
   await expect(panel).not.toContainText('join this sheet when quarrying');
   await panel.getByTestId('stock-iron-ingot').getByRole('button', { name: 'Some (10)' }).click();

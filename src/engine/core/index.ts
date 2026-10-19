@@ -9,3 +9,4 @@ export * from './region.ts';
 export * from './people.ts';
 export * from './ground.ts';
 export * from './life.ts';
+export * from './metal.ts';

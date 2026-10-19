@@ -165,8 +165,9 @@ export const WORLD_SCHEMAS = {
       spoilPerMonth: opt(share),
       spoilPerDay: opt(share),
       cooked: opt(bool()),
-      ore: opt(ref('items')), // an ingot's ore item (P4.1)
       forms: opt(texts),
+      ore: opt(ref('items')), // an ingot's ore item (P4.1)
+      tool: opt(obj({ kind: text, material: text })), // a tool's kind and material (Bundle 3)
       effects: opt(
         list(
           obj({
@@ -382,8 +383,7 @@ export const WORLD_SCHEMAS = {
         marker: opt(str()),
         // Earth and clay underground: walls until dug, like rock, but not stone.
         solid: opt(bool()),
-        // P2.3: walking cost per tile, 1 when left out; stone, solid ground and deep water are
-        // never walked.
+        // P2.3: walking cost per tile, 1 when left out; stone, solid ground, deep water: never.
         walk: opt(num({ min: 1 })),
       }),
     ),

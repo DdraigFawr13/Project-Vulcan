@@ -2,7 +2,7 @@
 // leisure, what each food gives, mood words, and the cart the band arrives with. Need values run
 // from 0 to `scale`; rates are per game hour.
 import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
-import { count, id, text } from './schema-fields';
+import { count, id, text, texts } from './schema-fields';
 
 // A house size or stage: a footprint of walls round a floor, and how many it sleeps.
 const size = obj({
@@ -111,8 +111,7 @@ export const LIFE_SCHEMAS = {
     }),
     // Mining (P4.1, V-086, V-087): the jobs.json job; minutes to sink a shaft one level, dig a
     // rock or earth tile and mine a vein tile at skill `skilled`; the `ladder` items (item: count)
-    // the first level takes; `perIngot` ore an ingot wants (a placeholder until the smelter's
-    // recipe, Bundle 3, owns it); `floors` the tile kind digging leaves, by what was dug.
+    // the first level takes (ore an ingot wants is the smelting recipe's, metal.json); `floors` the tile kind digging leaves, by what was dug.
     mine: obj({
       job: ref('jobs'),
       shaft: count,
@@ -120,7 +119,6 @@ export const LIFE_SCHEMAS = {
       vein: count,
       skilled: count,
       ladder: map(count, 'items'),
-      perIngot: num({ min: 1 }),
       floors: obj({ stone: str(), earth: str() }),
       // A shaft may sit up to `near` tiles from its stain, on the nearest open ground; not within
       // `avoid` tiles of a plan sent back or a shaft spent; on ground whose walking multiplier is
@@ -271,6 +269,17 @@ export const LIFE_SCHEMAS = {
     // and is lost to a frost under `frost` degrees C before it is ripe. `seed` is the item sown
     // (one a tile); a seed tile scores fertility x `weigh.fertility` less tiles to water x
     // `weigh.water` less tiles to the green, and the best `weigh.tries` are grown.
+    // Bundle 3: the smithy, 3 deep by 4 along the best smith's house wall nearest water (search
+    // `near` tiles for water); open-sided, a `floor` under each of `pieces` (furniture kinds).
+    smithy: obj({
+      name: text,
+      start: num({ min: 1 }),
+      depth: num({ min: 1 }),
+      length: num({ min: 1 }),
+      near: num({ min: 1 }),
+      floor: text,
+      pieces: texts,
+    }),
     town: obj({ ring: num({ min: 1 }), step: num({ min: 1 }), most: num({ min: 1 }) }),
     field: obj({
       name: text,

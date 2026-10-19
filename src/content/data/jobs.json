@@ -10,8 +10,11 @@
   {"id":"build","risk":0.001,"name":"Building","worker":"builder","skill":"building","requirements":{"strength":8},"workplace":"construction","action":"build","serves":"shelter","heavy":true},
   {"id":"carpentry","name":"Carpentry","worker":"carpenter","skill":"crafting","requirements":{},"workplace":"construction","action":"build","serves":"shelter"},
   {"id":"tend","name":"Tending","worker":"tender","requirements":{},"workplace":"fire","action":"tend","serves":"shelter"},
+  {"id":"smith","name":"Smithing","worker":"smith","skill":"smithing","requirements":{"strength":8},"workplace":"forge","action":"build","serves":"tools"},
   {"id":"craft-tools","name":"Toolmaking","worker":"toolmaker","skill":"crafting","requirements":{"agility":9},"workplace":"forge","inputs":{"ore":1,"logs":1},"outputs":{"tools":1},"serves":"tools"},
   {"id":"craft-wares","name":"Crafting","worker":"craftsman","skill":"crafting","requirements":{"agility":9},"workplace":"workshop","inputs":{"logs":0.25},"reserve":{"logs":300},"outputs":{"wares":1},"serves":"goods"},
   {"id":"heal","name":"Herbalism","worker":"herbalist","skill":"herbalism","requirements":{"intellect":10},"workplace":"herbs","outputs":{"herbs":1},"serves":"health"},
+  {"id":"charcoal","name":"Charcoal","worker":"charcoal burner","skill":"woodcutting","requirements":{},"workplace":"clamp","serves":"materials"},
+  {"id":"smelt","name":"Smelting","worker":"smelter","skill":"smithing","requirements":{},"workplace":"smelter","serves":"materials"},
   {"id":"haul","risk":0.0005,"name":"Hauling","worker":"hauler","requirements":{},"workplace":"construction","action":"haul","serves":"shelter","heavy":true}
 ]

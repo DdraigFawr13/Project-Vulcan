@@ -20,6 +20,7 @@ import items from './data/items.json';
 import jobs from './data/jobs.json';
 import life from './data/life.json';
 import lore from './data/lore.json';
+import metal from './data/metal.json';
 import memories from './data/memories.json';
 import names from './data/names.json';
 import needs from './data/needs.json';
@@ -30,6 +31,7 @@ import schools from './data/schools.json';
 import seasons from './data/seasons.json';
 import terrain from './data/terrain.json';
 import tiers from './data/tiers.json';
+import tools from './data/tools.json';
 import traits from './data/traits.json';
 import weather from './data/weather.json';
 import work from './data/work.json';
@@ -65,6 +67,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   life,
   lore,
   memories,
+  metal,
   names,
   needs,
   races,
@@ -74,6 +77,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   seasons,
   terrain,
   tiers,
+  tools,
   traits,
   weather,
   work,

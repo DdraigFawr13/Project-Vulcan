@@ -5,7 +5,7 @@
 // Also digging clay for a wall that waits for it. Ore, rubble and clay lie where they come out
 // and haulers carry them up (haul.ts). Taking up, each level, tile dug and vein mined are lines.
 import type { EntityRow } from '../core/index.ts';
-import { haveOf, layItem, loadOf, stockOf, wantOf } from '../goods/index.ts';
+import { haveOf, layItem, loadOf, stockOf, trailText, wantOf } from '../goods/index.ts';
 import { diggable, layerOf, openAround, setTile } from '../map/index.ts';
 import { metalsOf, nextDig, oreShort, shaftFor, veinOpen } from '../mine/index.ts';
 import { pack, reachFrom, unpack, type Spot } from '../paths/index.ts';
@@ -250,12 +250,23 @@ function dig(ctx: SystemContext, p: EntityRow, at: Spot): void {
     at.z,
   );
   openAround(ctx, at.x, at.y, at.z, line);
-  if (item && count) layYield(ctx, item, count, at, line);
+  // A vein's ore keeps the tile it came from (P4.6): the step its ingots and tools carry on.
+  const trail = feature?.yields
+    ? trailText([{ s: 'mined', who: base.name, tick: world.tick, ...at, k: feature.yields }])
+    : '';
+  if (item && count) layYield(ctx, item, count, at, line, trail);
 }
 
 /** Lays what the digging gave on the open ground around the tile; whatever finds no free tile
  * lies on the dug tile itself, on top of a stack if one is there: nothing vanishes. */
-export function layYield(ctx: SystemContext, item: string, count: number, at: Spot, made: number) {
-  const left = count - layAround(ctx, item, count, at, made);
-  if (left > 0) layItem(ctx.world, { kind: item, count: left, ...at, made });
+export function layYield(
+  ctx: SystemContext,
+  item: string,
+  count: number,
+  at: Spot,
+  made: number,
+  trail = '',
+) {
+  const left = count - layAround(ctx, item, count, at, made, trail);
+  if (left > 0) layItem(ctx.world, { kind: item, count: left, ...at, made }, { trail });
 }
