@@ -165,9 +165,10 @@ export const WORLD_SCHEMAS = {
       spoilPerMonth: opt(share),
       spoilPerDay: opt(share),
       cooked: opt(bool()),
-      // An ingot's ore item (Bundle 3): the item smelted into it.
-      ore: opt(ref('items')),
       forms: opt(texts),
+      // Bundle 3: an ingot names the ore it is smelted from; a tool is a kind of tool in a material.
+      ore: opt(ref('items')),
+      tool: opt(obj({ kind: text, material: text })),
       effects: opt(
         list(
           obj({

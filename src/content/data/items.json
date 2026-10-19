@@ -39,5 +39,17 @@
   {"id":"book","name":"book","good":"luxury","per":1,"kind":"book","forms":["book of flame","treatise on fire","smith-lore","book of tides","treatise on water","sailing-lore","book of stone","treatise on earth","delving-lore","book of winds","treatise on air","weather-lore","book of growth","treatise on life","healing-lore","book of thought","treatise on mind","memory-lore","chronicle","herbal","law-book","psalter","ledger"],"effects":[{"kind":"attribute","attribute":"intellect","bonus":1}]},
   {"id":"bedroll","name":"bedroll","good":"goods","per":1,"kind":"gear"},
   {"id":"cart","name":"handcart","good":"goods","per":1,"kind":"gear"},
-  {"id":"cloak","name":"wool cloak","good":"goods","per":1,"kind":"gear"}
+  {"id":"cloak","name":"wool cloak","good":"goods","per":1,"kind":"gear"},
+  {"id":"stone-axe","name":"stone axe","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"axe","material":"stone"}},
+  {"id":"bronze-axe","name":"bronze axe","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"axe","material":"bronze"}},
+  {"id":"iron-axe","name":"iron axe","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"axe","material":"iron"}},
+  {"id":"stone-pick","name":"stone pick","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"pick","material":"stone"}},
+  {"id":"bronze-pick","name":"bronze pick","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"pick","material":"bronze"}},
+  {"id":"iron-pick","name":"iron pick","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"pick","material":"iron"}},
+  {"id":"stone-hoe","name":"stone hoe","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hoe","material":"stone"}},
+  {"id":"bronze-hoe","name":"bronze hoe","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hoe","material":"bronze"}},
+  {"id":"iron-hoe","name":"iron hoe","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hoe","material":"iron"}},
+  {"id":"stone-hammer","name":"stone hammer","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hammer","material":"stone"}},
+  {"id":"bronze-hammer","name":"bronze hammer","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hammer","material":"bronze"}},
+  {"id":"iron-hammer","name":"iron hammer","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hammer","material":"iron"}}
 ]

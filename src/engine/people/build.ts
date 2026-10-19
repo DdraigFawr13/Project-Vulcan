@@ -18,6 +18,7 @@ import { withBuilt } from '../map/index.ts';
 import { canReach, reachFrom, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
+import { scaled, worked } from './tools.ts';
 import { able, outranked, priorityLine } from './priority.ts';
 import { busy, layAround, people, same, skillOf, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
@@ -246,10 +247,12 @@ export function building(ctx: SystemContext, p: EntityRow): boolean {
   const level = skillOf(world, p, skillName(content));
   if ((plan['work'] as number) < 0) {
     const share = plan['state'] === 'down' ? content.buildings.downShare : 100;
-    plan['work'] = minutesFor(content, Math.ceil((part.minutes * share) / 100), level);
+    const minutes = minutesFor(content, Math.ceil((part.minutes * share) / 100), level);
+    plan['work'] = scaled(ctx, p, 'build', minutes);
   }
   if ((plan['work'] as number) > 0) {
     plan['work'] = (plan['work'] as number) - 1;
+    worked(ctx, p, 'build');
     practise(ctx, p, skillName(content), p['took'] as number);
   }
   if ((plan['work'] as number) > 0) return true;

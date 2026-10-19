@@ -34,13 +34,15 @@ import { foraging, takeUpForaging } from './forage.ts';
 import { practise } from './learn.ts';
 import { smelting, takeUpSmelting } from './smelt.ts';
 import { stationing, takeUpStation } from './station.ts';
+import { smithing, takeUpSmithing } from './smith.ts';
 import { busy, goBeside, layAround, people, same, skillOf, SIDES, spotOf } from './spots.ts';
 import { able, declineIfUnable, jobsInOrder, outranked, priorityLine } from './priority.ts';
 import { tallyAdd } from './tally.ts';
+import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `hearth` (a hearth being made), `tend`, `haul`,
+  /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
    * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
@@ -55,6 +57,11 @@ export const JOB_FIELDS = {
   next: 'int',
   /** The recipe being smelted (metal.json) or the clamp's task, `stack` or `open`; '' for none. */
   make: 'text',
+  /** Smithing (Bundle 3): the tool being made as `kind:material`, the trail text of its inputs, and
+   * the line of this person's first fine-or-better piece (V-093), 0 until they make one. */
+  making: 'text',
+  carry: 'text',
+  fine: 'event',
 } as const;
 
 /** Work that takes a feature off the map for what it yields: felling (logs) and quarrying (P3.1,
@@ -187,6 +194,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'station' && hours && stationing(ctx, p)) return true;
   if (p['job'] === 'charcoal' && hours && burning(ctx, p)) return true;
   if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
+  if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
   const load = loadOf(world, p.id);
   if (load) {
     p['job'] = 'haul';
@@ -201,6 +209,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
     const here = spotOf(p);
     if (here.z === 0 && Math.abs(here.x - tx) + Math.abs(here.y - ty) === 1) {
       p['work'] = (p['work'] as number) - 1;
+      worked(ctx, p, g.job);
       practise(ctx, p, jobSkill(content, g), p['took'] as number);
       if ((p['work'] as number) <= 0) {
         fell(ctx, p, target, g);
@@ -318,6 +327,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
   charcoal: takeUpCharcoal,
   smelt: takeUpSmelting,
+  smith: takeUpSmithing,
 };
 
 const jobSkill = (content: EngineContent, g: Gather): string =>
@@ -328,6 +338,7 @@ function startGathering(ctx: SystemContext, p: EntityRow, tree: number, g: Gathe
   const level = skillOf(ctx.world, p, jobSkill(ctx.content, g));
   p['job'] = g.job;
   p['target'] = tree;
-  p['work'] = Math.ceil((g.def.minutes * 2 * g.def.skilled) / (g.def.skilled + level));
+  const minutes = Math.ceil((g.def.minutes * 2 * g.def.skilled) / (g.def.skilled + level));
+  p['work'] = scaled(ctx, p, g.job, minutes);
   return true;
 }

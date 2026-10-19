@@ -19,6 +19,7 @@
 {"id":"longhouse","name":"longhouse","w":8,"h":6,"sleeps":8}
 ],
 "stage":{"id":"room","name":"room","w":5,"h":4,"sleeps":2},"private":4},
+"smithy":{"name":"Smithy","start":2,"depth":3,"length":4,"near":20,"floor":"floor-stone","pieces":["forge","anvil","tub"]},
 "town":{"ring":16,"step":4,"most":32},
 "field":{"name":"Fields","seed":"seed","weigh":{"fertility":2,"water":4,"tries":40},"start":2,"perMouth":12,"reach":45,"water":8,"good":40,"least":6,"crops":[
 {"id":"barley","name":"barley","item":"grain","sow":["Thawmonth","Seedmonth"],"days":84,"yield":50,"frost":-1},
@@ -34,6 +35,9 @@
 "furniture":{"job":"carpentry","skilled":10,"material":"logs","stream":"craft","roll":2,
 "kinds":[
 {"id":"hearth","name":"hearth","cost":4,"minutes":60,"art":"furn.hearth","beds":0,"seats":0,"place":"centre","job":"build","material":"stone"},
+{"id":"forge","name":"forge","cost":3,"minutes":90,"art":"furn.forge","beds":0,"seats":0,"place":"centre","job":"build","material":"stone"},
+{"id":"anvil","name":"anvil block","cost":3,"minutes":60,"art":"furn.anvil","beds":0,"seats":0,"place":"centre","job":"build","material":"stone"},
+{"id":"tub","name":"quench tub","cost":6,"minutes":60,"art":"furn.tub","beds":0,"seats":0,"place":"centre","job":"build","material":"logs"},
 {"id":"bench","name":"bench","cost":3,"minutes":120,"art":"furn.bench","beds":0,"seats":0,"place":"wall"},
 {"id":"bed","name":"bed","cost":4,"minutes":90,"art":"furn.bed","beds":1,"seats":0,"place":"wall"},
 {"id":"table","name":"table","cost":3,"minutes":75,"art":"furn.table","beds":0,"seats":0,"place":"middle"},

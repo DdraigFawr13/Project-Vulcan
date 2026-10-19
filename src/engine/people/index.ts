@@ -8,3 +8,4 @@ export { progressOf } from './learn.ts';
 export { yesterdayOf } from './tally.ts';
 export type { Tally } from './tally.ts';
 export { declinedLine, levelOf } from './priority.ts';
+export { toolFactor } from './tools.ts';

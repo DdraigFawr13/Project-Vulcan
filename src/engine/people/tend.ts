@@ -29,6 +29,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
 import { able, outranked, priorityLine } from './priority.ts';
 import { goBeside, people, same, spotOf } from './spots.ts';
+import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
 /** What `p` would do: tend a fire (`fire` and the fuel `item` to fetch) or split `logs`. */
@@ -190,7 +191,7 @@ function begin(ctx: SystemContext, p: EntityRow, got: Pick, extra: number[] = []
   if (got.fire) p['plan'] = got.fire['piece'] as number;
   else {
     p['plan'] = -got.n;
-    p['work'] = got.n * content.work.fire.split.minutes;
+    p['work'] = scaled(ctx, p, 'split', got.n * content.work.fire.split.minutes);
   }
   return tending(ctx, p);
 }
@@ -302,6 +303,7 @@ function splitting(ctx: SystemContext, p: EntityRow): boolean {
   if (!logs) return stop(p);
   if (!same(spotOf(logs), spotOf(p))) return walkTo(ctx, p, spotOf(logs)) || stop(p);
   p['work'] = (p['work'] as number) - 1;
+  worked(ctx, p, 'split');
   if ((p['work'] as number) > 0) return true;
   const n = Math.min(-(p['plan'] as number), logs['count'] as number);
   const item = fuelOf(content, split.fuel)?.item;

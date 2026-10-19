@@ -1,17 +1,25 @@
 // The people system (P2.1): when a world begins, the band arrives. Each person is a row of the
 // `person` table with a row per skill and per trait, standing near the start tile, and one ledger
 // line names them all. Each minute they walk (P2.3) and choose what to do from their needs (P2.2, mind.ts).
-import { clockAt, type EngineContent, type MapState, type WorldState } from '../core/index.ts';
+import {
+  clockAt,
+  streamFor,
+  type EngineContent,
+  type MapState,
+  type WorldState,
+} from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { valleyOf } from '../region/index.ts';
 import type { System } from '../sim/index.ts';
 import { drawBand, type Home } from './band.ts';
+import { drawSmithing, SMITHING } from './smithing.ts';
 import { setDay } from './day.ts';
 import { FORAGE_TABLES } from './forage.ts';
 import { JOB_FIELDS } from './jobs.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
 import { markUsed } from './hearth.ts';
 import { PRIORITY_TABLES, setPriority } from './priority.ts';
+import { TOOL_TABLES, toolsDaily } from './tools.ts';
 import { rollTally, TALLY_START } from './tally.ts';
 import { stepAlong, WALK_FIELDS } from './walk.ts';
 
@@ -58,6 +66,7 @@ export const PEOPLE_TABLES: Schemas = {
   trait: { person: 'entity', trait: 'text' },
   ...PRIORITY_TABLES,
   ...FORAGE_TABLES,
+  ...TOOL_TABLES,
 };
 
 /** Where the band came from: the valley's neighbours, or the home culture for a plain seed. */
@@ -139,13 +148,15 @@ export const peopleSystem: System = {
       'metal.mixed',
       'metal.waiting',
     ],
+    ...['tool.taken', 'tool.broke', 'work.tookUpSmithing', 'smith.made', 'smith.noIngots'],
+    'craft.firstFine',
   ],
   tables: PEOPLE_TABLES,
   // The colony's day (day.ts) is kept here once the player changes it, with its line.
-  refs: ['dayLine'],
+  refs: ['dayLine', 'noIngots'],
   // Yesterday's tally (tally.ts) lives in the state too, and `idle`: the signature of the rooms
   // when carpentry last found nothing to make (carpentry.ts).
-  initialState: { ...TALLY_START, idle: 0 },
+  initialState: { ...TALLY_START, idle: 0, noIngots: 0 },
   commands: {
     setPriority: (ctx, command, cause) => setPriority(ctx, command.data, cause),
     setDay: (ctx, command, cause) => setDay(ctx, command.data, cause),
@@ -154,6 +165,8 @@ export const peopleSystem: System = {
     const { world, content } = ctx;
     const homes = homesOf(world, content);
     const band = drawBand(ctx.rng(), content, homes);
+    // Smithing is drawn after the band from its own stream, so the band is as it always was.
+    const smithing = drawSmithing(streamFor(world, 'smithing'), content, band);
     const found = valleyOf(world.seed, content);
     // The arrival follows the choice of valley; a plain seed has none, so it follows the beginning.
     const settled = world.log.find((e) => e.type === 'region.settled')?.id ?? world.begunEvent;
@@ -186,15 +199,18 @@ export const peopleSystem: System = {
           seeded: 0,
         },
         ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0, make: '' },
+        ...{ making: '', carry: '', fine: 0 },
       });
       for (const skill of content.band.skills)
         addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0 });
+      addEntity(world, 'skill', { person: id, skill: SMITHING, ...smithing[k]!, xp: 0 });
       for (const trait of p.traits) addEntity(world, 'trait', { person: id, trait });
     });
   },
   run(ctx) {
     rollTally(ctx);
     markUsed(ctx);
+    toolsDaily(ctx);
     const hour = hourNow(ctx);
     for (const p of ctx.world.entities['person'] ?? []) {
       if (p['status'] !== 'alive') continue;

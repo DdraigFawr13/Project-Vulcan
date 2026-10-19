@@ -43,7 +43,20 @@ describe('metal', () => {
       ['copper-ore', 6],
       ['tin-ore', 2],
     ]);
-    for (let d = 0; d < 20 && haveOf(w, content, 'bronze-ingot') < 4; d += 1) step(w, sim, DAY);
+    // Each smelting line traces to the Bronze plate; checked daily, before older days are sealed.
+    let traced = 0;
+    for (let d = 0; d < 20 && haveOf(w, content, 'bronze-ingot') < 4; d += 1) {
+      for (const e of step(w, sim, DAY)) {
+        if (e.type === 'metal.charcoalMade')
+          expect(whyOf(w, e.id).map((c) => c.event.type)).toContain('metal.clampLit');
+        if (e.type !== 'metal.smelted' && e.type !== 'metal.mixed') continue;
+        const chain = whyOf(w, e.id).map((c) => c.event.type);
+        expect(chain).toContain('work.tookUpSmelting');
+        expect(chain.some((t) => t === 'goods.stockRaised' || t === 'goods.stockSet')).toBe(true);
+        traced += 1;
+      }
+    }
+    expect(traced).toBeGreaterThan(0);
     // The Bronze plate was the only order given.
     expect(w.commandLog.map((c) => c.kind)).toEqual(['setStock']);
     expect(lines(w, 'command.refused')).toEqual([]);
@@ -65,17 +78,6 @@ describe('metal', () => {
     expect(smelted).toEqual(expect.arrayContaining(['copper ingots', 'tin ingots']));
     const mixed = lines(w, 'metal.mixed');
     expect(mixed).toHaveLength(1);
-    for (const e of [...lines(w, 'metal.smelted'), ...mixed]) {
-      const chain = whyOf(w, e.id).map((c) => c.event);
-      const plate = chain.find(
-        (c) => c.type === 'goods.stockRaised' || c.type === 'goods.stockSet',
-      );
-      expect(chain.map((c) => c.type)).toContain('work.tookUpSmelting');
-      expect(plate).toBeDefined();
-    }
-    expect(whyOf(w, lines(w, 'metal.charcoalMade')[0]!.id).map((c) => c.event.type)).toContain(
-      'metal.clampLit',
-    );
     // The bronze remembers its ore, its smelting and its mixing.
     const bronze = itemsOf(w).find((i) => i['kind'] === 'bronze-ingot')!;
     const steps = trailOf(bronze);

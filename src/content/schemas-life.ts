@@ -2,7 +2,7 @@
 // leisure, what each food gives, mood words, and the cart the band arrives with. Need values run
 // from 0 to `scale`; rates are per game hour.
 import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
-import { count, id, text } from './schema-fields';
+import { count, id, text, texts } from './schema-fields';
 
 // A house size or stage: a footprint of walls round a floor, and how many it sleeps.
 const size = obj({
@@ -242,6 +242,17 @@ export const LIFE_SCHEMAS = {
     // and is lost to a frost under `frost` degrees C before it is ripe. `seed` is the item sown
     // (one a tile); a seed tile scores fertility x `weigh.fertility` less tiles to water x
     // `weigh.water` less tiles to the green, and the best `weigh.tries` are grown.
+    // Bundle 3: the smithy, 3 deep by 4 along the best smith's house wall nearest water (search
+    // `near` tiles for water); open-sided, a `floor` under each of `pieces` (furniture kinds).
+    smithy: obj({
+      name: text,
+      start: num({ min: 1 }),
+      depth: num({ min: 1 }),
+      length: num({ min: 1 }),
+      near: num({ min: 1 }),
+      floor: text,
+      pieces: texts,
+    }),
     town: obj({ ring: num({ min: 1 }), step: num({ min: 1 }), most: num({ min: 1 }) }),
     field: obj({
       name: text,

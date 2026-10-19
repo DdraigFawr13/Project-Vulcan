@@ -133,6 +133,11 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   }
   if (job === 'cook' || job === 'charcoal' || job === 'smelt' || job === 'station')
     return { text: say(job), ...why };
+  if (job === 'smith') {
+    const [tool = ''] = String(p['making']).split(':');
+    const who = (world.entities['person'] ?? []).find((q) => q.id === p['plan']);
+    return { text: say('smith', { tool, who: (who?.['name'] as string) ?? '' }), ...why };
+  }
   if (job === 'farm') {
     const f = fieldsOf(world).find((r) => r.id === p['plan']);
     const crop =

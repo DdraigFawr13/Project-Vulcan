@@ -58,7 +58,8 @@ describe('the band', () => {
       expect(String(line.data['names'])).toContain(p['name'] as string);
     }
     const skills = world.entities['skill']!.filter((s) => s['person'] === people[0]!.id);
-    expect(skills).toHaveLength(content.band.skills.length);
+    // Smithing (Bundle 3) is drawn apart from the band, after it: one more row.
+    expect(skills).toHaveLength(content.band.skills.length + 1);
     expect(entityOf(world, 'person', people[0]!.id)).toBe(people[0]);
   });
 });

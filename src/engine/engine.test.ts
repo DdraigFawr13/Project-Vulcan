@@ -45,6 +45,7 @@ const fixtureContent: EngineContent = {
   work: content.work,
   jobs: content.jobs,
   buildings: content.buildings,
+  tools: content.tools,
   items: content.items,
   metal: content.metal,
   events: [

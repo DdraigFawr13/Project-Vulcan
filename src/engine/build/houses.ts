@@ -62,6 +62,7 @@ export const HOUSE_TABLES: Schemas = {
 
 export const HOUSE_KIND = 'house';
 export const FIELD_KIND = 'field';
+export const SMITHY_KIND = 'smithy';
 
 /** The size (or added room) a house row is. */
 export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>
@@ -102,7 +103,12 @@ export function wantOf(
   const row = (world.entities['want'] ?? []).find((r) => r['kind'] === kind);
   return row
     ? { level: row['level'] as number, line: row['line'] as number }
-    : { level: content.buildings[kind === FIELD_KIND ? 'field' : 'house'].start };
+    : {
+        level:
+          content.buildings[
+            kind === FIELD_KIND ? 'field' : kind === SMITHY_KIND ? 'smithy' : 'house'
+          ].start,
+      };
 }
 
 /** The `setBuild {kind, level}` lever (V-049): how much the colony wants a kind of building. */
@@ -116,7 +122,7 @@ export function setBuild(
   const levels = content.work.priority.words.length;
   const kind = data['kind'];
   if (
-    (kind !== HOUSE_KIND && kind !== FIELD_KIND) ||
+    (kind !== HOUSE_KIND && kind !== FIELD_KIND && kind !== SMITHY_KIND) ||
     !Number.isSafeInteger(level) ||
     level < 1 ||
     level > levels
@@ -128,7 +134,9 @@ export function setBuild(
     return;
   }
   if (wantOf(world, content, kind).level === level) return;
-  const name = kind === FIELD_KIND ? content.buildings.field.name : content.buildings.house.name;
+  const name =
+    content.buildings[kind === FIELD_KIND ? 'field' : kind === SMITHY_KIND ? 'smithy' : 'house']
+      .name;
   const line = ctx.emit('build.wantSet', {
     causes: [cause],
     data: { kind: name, word: content.work.priority.words[level - 1]! },

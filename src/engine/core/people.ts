@@ -1,5 +1,7 @@
 // What the people system reads from content: the band's dials (band.json) and the forked races,
 // cultures, traits and skills a colonist is made from.
+import type { ToolsDef } from './life.ts';
+import type { MetalDefs } from './metal.ts';
 
 /** Vulcan's band file (src/content/data/band.json): how the five who arrive are drawn (P2.1). */
 export interface BandDef {
@@ -42,7 +44,7 @@ export interface BandDef {
   wander: { radius: number; rest: readonly number[] };
 }
 
-export interface PeopleDefs {
+export interface PeopleDefs extends MetalDefs {
   band: BandDef;
   races: readonly {
     id: string;
@@ -54,4 +56,6 @@ export interface PeopleDefs {
   }[];
   traits: readonly { id: string; name: string; weight: number; excludes: readonly string[] }[];
   abilities: readonly { id: string; name: string; learnAttributes: readonly string[] }[];
+  /** Bundle 3: tools and how they are smithed (tools.json). */
+  tools: ToolsDef;
 }

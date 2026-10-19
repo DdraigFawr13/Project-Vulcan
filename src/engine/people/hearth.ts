@@ -3,7 +3,7 @@
 // up the nearest planned hearth they can fetch stone for and works it where it stands, through the
 // same making flow as furniture (carpentry.ts `furnishing`), with the job word `hearth` on them.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { furnitureKind, furnitureOf } from '../build/index.ts';
+import { furnitureKind, furnitureOf, HEARTH } from '../build/index.ts';
 import { firesOf, pieceOfFire, placeOf, reachOf } from '../fire/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
@@ -53,16 +53,21 @@ export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
       stuck['waited'] = ctx.emit('build.waiting', {
         causes: [stuck['line'] as number],
         data: {
-          part: `hearth ${placeOf(ctx.world, ctx.content, stuck).where}`,
+          part:
+            furnitureKind(ctx.content, stuck).id === HEARTH
+              ? `hearth ${placeOf(ctx.world, ctx.content, stuck).where}`
+              : furnitureKind(ctx.content, stuck).name,
           x: stuck['x'] as number,
           y: stuck['y'] as number,
-          good: 'stone',
+          good: furnitureKind(ctx.content, stuck).material!,
         },
       });
     return false;
   }
   const kind = furnitureKind(content, piece);
   const here = placeOf(world, content, piece);
+  // A smithy's forge, anvil block or tub is made the same way, for the smithy.
+  const station = kind.id !== HEARTH;
   p['took'] = ctx.emit('work.tookUpHearth', {
     causes: [piece['line'] as number, priorityLine(world, p.id, job)].filter(
       (l): l is number => !!l,
@@ -70,9 +75,13 @@ export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
     actors: [p.id],
     data: {
       name: p['name'] as string,
-      kind: here.indoors ? kind.name : 'campfire',
-      room: here.room,
-      why: here.indoors ? 'it has no hearth' : 'the band has no fire',
+      kind: station || here.indoors ? kind.name : 'campfire',
+      room: station ? 'smithy' : here.room,
+      why: station
+        ? 'the smithy has none'
+        : here.indoors
+          ? 'it has no hearth'
+          : 'the band has no fire',
     },
   });
   p['job'] = 'hearth';
