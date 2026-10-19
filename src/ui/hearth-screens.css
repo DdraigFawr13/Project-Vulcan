@@ -387,6 +387,18 @@
 .need .n {
   text-align: right;
 }
+.need .feeds {
+  grid-column: 2 / -1;
+  margin-top: -2px;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.need .feeds:empty {
+  display: none;
+}
+.need.low .feeds {
+  color: var(--mood-bad);
+}
 .sbar {
   position: relative;
   height: 8px;

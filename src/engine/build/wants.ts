@@ -136,7 +136,7 @@ export function siteFor(
 }
 
 /** What a room lacks, in the order of its role's wants: counts include pieces still planned. */
-function lacks(world: WorldState, content: EngineContent, rr: RoomRow) {
+export function lacks(world: WorldState, content: EngineContent, rr: RoomRow) {
   const def = content.buildings.rooms.wants.find((w) => w.role === rr.room.role?.id);
   const inside = new Set(rr.room.tiles);
   const width = world.map.width;

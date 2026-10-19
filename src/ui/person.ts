@@ -60,18 +60,20 @@ export function needRow(): HTMLElement {
   const bar = el('span', { class: 'sbar', role: 'img' });
   bar.append(el('i'), el('b'));
   const word = el('span', { class: 'n' });
-  row.append(el('span'), bar, word);
+  row.append(el('span'), bar, word, el('span', { class: 'feeds' }));
   return row;
 }
 
 export function fillNeed(row: HTMLElement, n: NeedView): void {
-  const [name, bar, word] = [...row.children] as HTMLElement[];
+  const [name, bar, word, feeds] = [...row.children] as HTMLElement[];
   row.dataset['line'] = String(n.why);
   row.classList.toggle('low', n.low);
   name!.textContent = n.name;
   bar!.setAttribute('aria-label', `${n.name} ${n.share} of 100, warning under ${n.line}`);
   (bar!.children[0] as HTMLElement).style.width = `${n.share}%`;
   (bar!.children[1] as HTMLElement).style.left = `${n.line}%`;
+  // What feeds it (beauty, privacy), in words from the worker.
+  if (feeds!.textContent !== (n.feeds ?? '')) feeds!.textContent = n.feeds ?? '';
   // Snapshots keep coming while paused, so the word and its "why?" are rebuilt only when they
   // change: a button replaced each snapshot slips out from under a finger mid-tap.
   const shown = n.low ? `${n.word}|${n.why}` : n.word;

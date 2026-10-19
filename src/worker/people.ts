@@ -15,6 +15,8 @@ import {
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
+import { feedsOf } from './comfort.ts';
+import { carpentryDoing } from './furniture.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 
 const nameOf = (list: readonly { id: string; name: string }[], id: string): string =>
@@ -78,6 +80,8 @@ function doingOf(p: EntityRow): string {
   if (p['doing'] === 'work' && p['job'] === 'quarry')
     return walking ? 'Going to a boulder' : 'Quarrying';
   if (p['doing'] === 'work' && p['job'] === 'build') return walking ? 'Going to build' : 'Building';
+  if (p['doing'] === 'work' && p['job'] === 'carpentry')
+    return walking ? 'Going to make furniture' : 'Making furniture';
   if (p['doing'] === 'work') return walking ? 'Carrying to the store' : 'Hauling';
   return walking ? 'Strolling' : 'Idle';
 }
@@ -106,6 +110,10 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
     const what = nameOf(content.items, part?.material ?? '');
     return { text: say(key, { part: part?.name ?? '', what }), ...why };
   }
+  if (job === 'carpentry') {
+    const { key, vars } = carpentryDoing(world, p);
+    return { text: say(key, vars), ...why };
+  }
   if (job === 'fell' || job === 'forage' || job === 'quarry') {
     const good =
       job === 'fell'
@@ -131,6 +139,7 @@ function barsOf(world: WorldState, p: EntityRow): { mood: NeedView; needs: NeedV
     const row = needOf(world, p.id, def.id);
     const value = (row?.['value'] as number) ?? 0;
     const low = row?.['low'] === 1;
+    const feeds = feedsOf(world, p, def.id);
     return {
       name: def.name,
       share: share(value),
@@ -138,6 +147,7 @@ function barsOf(world: WorldState, p: EntityRow): { mood: NeedView; needs: NeedV
       word: low ? def.lowWord : def.okWord,
       low,
       why: (row?.['line'] as number) ?? 0,
+      ...(feeds && { feeds }),
     };
   });
   const row = moodOf(world, p.id);

@@ -21,6 +21,7 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
+import { furnitureGoods, tilePiece } from './furniture.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
 
@@ -51,6 +52,7 @@ export function goodsOf(world: WorldState): GoodsView {
         state: p['state'] as string,
         house: p['house'] as number,
       })),
+    furniture: furnitureGoods(world),
   };
 }
 
@@ -97,6 +99,7 @@ export function tileGoods(
     ...(surface && isTree(world, content, i) && { tree: true }),
     ...(surface && !inStore(world, x, y, 0) && freeTile(world, content, x, y) && { open: true }),
     ...(surface && planOf(world, x, y, line)),
+    ...(surface && tilePiece(world, x, y, lineOf)),
   };
 }
 

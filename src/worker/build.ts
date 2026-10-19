@@ -14,12 +14,14 @@ import {
   planAt,
   planPart,
   plansOf,
+  piecesOf,
   recordOf,
   rectOf,
   roomAt,
   rowsOf,
   sizeOf,
   type EntityRow,
+  type Room,
   type SimEvent,
   type Stub,
   type WorldState,
@@ -91,6 +93,19 @@ export function buildView(world: WorldState): BuildView {
   };
 }
 
+/** "Pedr's bedroom" when every bed in the room is one person's, else "the cottage". */
+function roomWords(world: WorldState, room: Room, house: string): string {
+  const inside = new Set(room.tiles);
+  const owners = new Set(
+    piecesOf(world, 'bed')
+      .filter((b) => inside.has((b['y'] as number) * world.map.width + (b['x'] as number)))
+      .map((b) => b['owner'] as number),
+  );
+  const [owner] = owners.size === 1 ? owners : [];
+  const who = (world.entities['person'] ?? []).find((p) => p.id === owner);
+  return who && room.role ? `${who['name'] as string}'s ${room.role.name}` : `the ${house}`;
+}
+
 /** The tile's house and room rows (surface only): which house the tile belongs to, its roof and,
  * once walls and a door close it in, its room as `roomAt` works it out. */
 export function tileHouse(
@@ -121,7 +136,7 @@ export function tileHouse(
     },
     ...(room && {
       room: {
-        name: `the ${name}`,
+        name: roomWords(world, room, name),
         tiles: room.tiles.length,
         role: room.role?.name ?? `none yet: a bed makes it a ${bed.name}`,
         beauty: `${room.beauty}, ${room.look}`,

@@ -5,8 +5,8 @@
 {"id":"rest","name":"Rest","fall":300,"low":3000,"seek":2500,"lowWord":"Tired","okWord":"Rested","weight":2},
 {"id":"warmth","name":"Warmth","fall":0,"low":3000,"seek":0,"lowWord":"Cold","okWord":"Warm","weight":2},
 {"id":"recreation","name":"Recreation","fall":150,"low":3000,"seek":3500,"lowWord":"Bored","okWord":"Relaxed","weight":1},
-{"id":"beauty","name":"Beauty","fall":0,"low":3000,"seek":0,"lowWord":"Gloomy","okWord":"Pleased","weight":1},
-{"id":"privacy","name":"Privacy","fall":0,"low":3000,"seek":0,"lowWord":"Crowded","okWord":"Private","weight":1}
+{"id":"beauty","name":"Beauty","fall":0,"low":3000,"seek":0,"lowWord":"Gloomy","okWord":"Fine","weight":1},
+{"id":"privacy","name":"Privacy","fall":0,"low":3000,"seek":0,"lowWord":"Crowded","okWord":"Settled","weight":1}
 ],
 "start":[8000,9000,9000,8000,6000,8000],
 "beauty":{"neutral":6000,"perPoint":1000,"rate":250,"outdoors":50},

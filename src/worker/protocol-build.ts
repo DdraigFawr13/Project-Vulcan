@@ -85,3 +85,31 @@ export interface PlanView {
   /** The alert saying it waits: for material, or because the wall would shut someone in. */
   waiting?: LedgerLine;
 }
+
+/** A piece of furniture on a tile (P3.4, P3.5), each value in words from the engine's answers. */
+export interface PieceView {
+  /** The kind's content id and name, e.g. `bed`, "bed". */
+  kind: string;
+  name: string;
+  /** `plan` while it is being made, `built` once it stands. */
+  state: string;
+  /** "plain, made by Brennwen": the quality word and the maker (built only). */
+  quality?: string;
+  /** A bed's owner: "Pedr's bed", or "nobody yet". */
+  owner?: string;
+  /** What it adds to its room's beauty: "0 to the room". */
+  beauty?: string;
+  /** A bed's rest against a bedroll. */
+  rest?: string;
+  /** A bed's privacy: "Pedr sleeps alone here", "3 sleep here". */
+  privacy?: string;
+  /** Planned: wood brought, "2 of 4 logs here", and who is making it and what they are doing. */
+  wood?: string;
+  maker?: string;
+  /** The bench (built): what it is making, who is at it and what comes next, and why. */
+  bench?: { making: string; maker: string; next: string };
+  /** The lines behind it: placed, made, and a bed's claiming. */
+  placed?: LedgerLine;
+  made?: LedgerLine;
+  claimed?: LedgerLine;
+}
