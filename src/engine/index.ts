@@ -28,7 +28,11 @@ export {
   furnitureOf,
   greenOf,
   cropNow,
+  ringOf,
+  cropOf,
+  fieldDone,
   fieldsOf,
+  fieldTiles,
   homeless,
   houseAt,
   housesOf,
@@ -54,6 +58,7 @@ export {
 export { calendarSystem } from './calendar/index.ts';
 export { fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
 export {
+  cloakOf,
   freeTile,
   goodsSystem,
   haveOf,

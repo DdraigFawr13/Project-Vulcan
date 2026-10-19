@@ -7,6 +7,7 @@ import { el } from './dom.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 import { fillStock, stockRows } from './stock.ts';
 import { testMode } from './testmode.ts';
+import { fieldFacts, fieldLines } from './fieldrows.ts';
 import { pieceFacts, pieceLines } from './piecerows.ts';
 import { planFacts, planLines } from './planrows.ts';
 import { testTools, type TestOrder } from './testtools.ts';
@@ -92,7 +93,7 @@ export class Panel {
    * last dig order here: a line saying it waits for time to run, or the ledger line refusing it. */
   showTile(tile: TileView, depth: number, notice?: string | LedgerLine): void {
     const where = tile.z === 0 ? '' : ` · ${tile.z} level${tile.z > 1 ? 's' : ''} down`;
-    this.open('tile', `Tile ${tile.x}, ${tile.y}${where}`);
+    this.open('tile', tile.field?.name ?? `Tile ${tile.x}, ${tile.y}${where}`);
     const facts = el('dl', { class: 'kv' });
     // Under a piece of furniture the land says nothing: the page opens on the piece (P3.4).
     const land: string[][] = [
@@ -112,10 +113,10 @@ export class Panel {
     // What lies here comes first: it is usually what a tap was after (Morgan, Phase 3 playtest).
     for (const [key, value] of [
       ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
-      ...(tile.piece ? [] : land),
+      ...(tile.piece || tile.field ? [] : land),
       ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
       ...(tile.store ? [['store', 'part of the colony store']] : []),
-      ...(tile.piece ? pieceFacts(tile) : planFacts(tile)),
+      ...(tile.piece ? pieceFacts(tile) : tile.field ? fieldFacts(tile) : planFacts(tile)),
       ...(tile.below && !tile.piece ? [['below', tile.below]] : []),
       ...(this.debug
         ? [['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`]]
@@ -151,7 +152,11 @@ export class Panel {
       );
     if (typeof notice === 'string') this.body.append(el('p', { class: 'note' }, notice));
     else if (notice) this.body.append(this.lineRow(notice, 'Not done · '));
-    for (const [line, label] of tile.piece ? pieceLines(tile) : planLines(tile))
+    for (const [line, label] of tile.piece
+      ? pieceLines(tile)
+      : tile.field
+        ? fieldLines(tile)
+        : planLines(tile))
       this.body.append(this.lineRow(line, label));
     for (const g of tile.goods ?? [])
       if (g.made) this.body.append(this.lineRow(g.made, 'Made by · '));

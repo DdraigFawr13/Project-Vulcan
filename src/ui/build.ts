@@ -8,8 +8,8 @@ import { el } from './dom.ts';
 import { stepper, WORDS } from './stepper.ts';
 
 export interface BuildActions {
-  setBuild(level: number): void;
-  sendBack(house: number): void;
+  setBuild(kind: 'house' | 'field', level: number): void;
+  sendBack(kind: 'house' | 'field', id: number): void;
   /** The sheet changed on its own (a lever sent): draw it again. */
   refresh(): void;
 }
@@ -26,10 +26,19 @@ function planLine(h: BuildRow): HTMLElement {
   return p;
 }
 
+/** "Barley field, 36 tiles, east of the green: planned." */
+function fieldLine(f: BuildView['fields'][number]): HTMLElement {
+  const p = el('p', { 'data-testid': 'build-field' });
+  p.append(el('b', {}, f.name), `, ${f.tiles} tiles, ${f.dir} of the green: ${f.words}.`);
+  return p;
+}
+
 export class BuildSheet {
   /** Levers sent and not yet seen in a snapshot. */
   private level: number | undefined;
+  private fieldLevel: number | undefined;
   private readonly back = new Set<number>();
+  private readonly backFields = new Set<number>();
   private readonly actions: BuildActions;
   constructor(actions: BuildActions) {
     this.actions = actions;
@@ -38,20 +47,73 @@ export class BuildSheet {
   /** A key for what the sheet shows, so it is redrawn only when that changes. */
   key(view: BuildView): string {
     this.settle(view);
-    return JSON.stringify([view, this.level, [...this.back]]);
+    return JSON.stringify([
+      view,
+      this.level,
+      this.fieldLevel,
+      [...this.back],
+      [...this.backFields],
+    ]);
   }
 
-  rows(view: BuildView): HTMLElement[] {
-    const level = this.level ?? view.want.level;
-    const houses = el('div', { class: 'prio', 'data-testid': 'build-houses' });
-    houses.append(
-      el('span', { class: 'job' }, 'Houses'),
-      stepper(level, WORDS[level - 1] ?? '', 'Houses', (next) => {
-        this.level = next;
-        this.actions.setBuild(next);
+  /** A kind's priority row: the Work sheet's own stepper, sent as `setBuild`. */
+  private levelRow(kind: 'house' | 'field', name: string, shown: number): HTMLElement {
+    const row = el('div', { class: 'prio', 'data-testid': `build-${kind}s` });
+    row.append(
+      el('span', { class: 'job' }, name),
+      stepper(shown, WORDS[shown - 1] ?? '', name, (next) => {
+        if (kind === 'house') this.level = next;
+        else this.fieldLevel = next;
+        this.actions.setBuild(kind, next);
         this.actions.refresh();
       }),
     );
+    return row;
+  }
+
+  /** The Fields row, the need in tiles of crops and each field with its reason. */
+  private fieldRows(view: BuildView): HTMLElement[] {
+    const rows: HTMLElement[] = [
+      this.levelRow('field', 'Fields', this.fieldLevel ?? view.fieldWant.level),
+      el('p', { 'data-testid': 'build-field-need' }, `Need: ${view.fieldNeed}.`),
+    ];
+    if (view.noField)
+      rows.push(
+        el(
+          'p',
+          { class: 'problem', role: 'alert' },
+          'No good soil outside the town ring fits a field',
+        ),
+      );
+    for (const f of view.fields) {
+      rows.push(fieldLine(f));
+      if (f.state !== 'plan') continue;
+      rows.push(el('p', { class: 'aside' }, `Why here: ${f.why}.`));
+      if (f.back) {
+        const sending = this.backFields.has(f.id);
+        const button = el(
+          'button',
+          { type: 'button', 'data-testid': 'send-back-field' },
+          sending ? 'Sending back…' : 'Send back',
+        );
+        button.disabled = sending;
+        button.addEventListener('click', () => {
+          this.backFields.add(f.id);
+          this.actions.sendBack('field', f.id);
+          this.actions.refresh();
+        });
+        const row = el('div', { class: 'row' });
+        row.append(button);
+        rows.push(row);
+      } else if (f.sent) rows.push(el('p', { class: 'muted' }, 'sent back once'));
+    }
+    if (!view.fields.length && !view.noField)
+      rows.push(el('p', { class: 'muted' }, 'No field is planned.'));
+    return rows;
+  }
+
+  rows(view: BuildView): HTMLElement[] {
+    const houses = this.levelRow('house', 'Houses', this.level ?? view.want.level);
     const open = view.houses.filter((h) => h.state === 'plan');
     const rows: HTMLElement[] = [
       el(
@@ -59,6 +121,7 @@ export class BuildSheet {
         { class: 'aside' },
         'What the colony needs built. Colonists choose where it goes and how big, and say why.',
       ),
+      ...this.fieldRows(view),
       houses,
       el('p', { 'data-testid': 'build-need' }, `Need: ${view.need}.`),
     ];
@@ -95,7 +158,7 @@ export class BuildSheet {
       button.disabled = sending;
       button.addEventListener('click', () => {
         this.back.add(h.id);
-        this.actions.sendBack(h.id);
+        this.actions.sendBack('house', h.id);
         this.actions.refresh();
       });
       const row = el('div', { class: 'row' });
@@ -109,6 +172,9 @@ export class BuildSheet {
   /** Drops levers the snapshot now shows. */
   settle(view: BuildView): void {
     if (this.level === view.want.level) this.level = undefined;
+    if (this.fieldLevel === view.fieldWant.level) this.fieldLevel = undefined;
+    for (const id of this.backFields)
+      if (!view.fields.some((f) => f.id === id && f.back)) this.backFields.delete(id);
     for (const id of this.back)
       if (!view.houses.some((h) => h.id === id && h.back)) this.back.delete(id);
   }

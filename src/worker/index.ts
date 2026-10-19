@@ -14,14 +14,12 @@ export type {
   ChunkView,
   ClockView,
   FromWorker,
-  GoodsView,
   LedgerLine,
   NeedView,
   PersonView,
   WalkerView,
   RegionView,
   Speed,
-  StockView,
   YesterdayView,
   TileView,
   TimingView,
@@ -29,6 +27,7 @@ export type {
   ValleyPreview,
   WeatherView,
 } from './protocol.ts';
+export type { GoodsView, StockView } from './protocol-goods.ts';
 export { SAVE_VERSION } from './save.ts';
 export type { SaveFile } from './save.ts';
 

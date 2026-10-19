@@ -59,8 +59,8 @@ export class Sheets {
       refresh: () => this.refresh(),
     });
     this.build = new BuildSheet({
-      setBuild: (level) => command('setBuild', { kind: 'house', level }),
-      sendBack: (house) => command('sendBack', { house }),
+      setBuild: (kind, level) => command('setBuild', { kind, level }),
+      sendBack: (kind, id) => command('sendBack', { [kind]: id }),
       refresh: () => this.refreshBuild(),
     });
     this.person = new PersonSheet(deps.panel, {

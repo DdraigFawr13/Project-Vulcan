@@ -14,6 +14,7 @@ import type {
 import { BuildSprites } from './build.ts';
 import { Firelight } from './firelight.ts';
 import { FurnitureSprites } from './furniture.ts';
+import { FieldSprites } from './fields.ts';
 import { GoodsSprites } from './goods.ts';
 import { GreenSprites } from './green.ts';
 import { PeopleSprites } from './people.ts';
@@ -79,6 +80,7 @@ export function startRenderer(
   const people = new PeopleSprites(game, scene);
   const goods = new GoodsSprites(game, scene);
   const build = new BuildSprites(game, scene);
+  const fields = new FieldSprites(game, scene);
   const furniture = new FurnitureSprites(game, scene);
   const green = new GreenSprites(game, scene);
   const light = new Firelight(game, scene);
@@ -87,6 +89,7 @@ export function startRenderer(
     setMapSize: (width, height) => {
       scene.setMapSize(width, height);
       build.setMapSize(width, height);
+      fields.setMapSize(width);
       light.setMapSize(width, height);
     },
     applyChunks: (chunks) => {
@@ -102,6 +105,7 @@ export function startRenderer(
       people.setLevel(z);
       goods.setLevel(z);
       build.setLevel(z);
+      fields.setLevel(z);
       furniture.setLevel(z);
       green.setLevel(z);
       light.setLevel(z);
@@ -113,6 +117,7 @@ export function startRenderer(
     setGoods: (view, sky) => {
       goods.set(view);
       build.setPlans(view.plans);
+      fields.set(view.fields);
       furniture.set(view.furniture);
       light.set(view.fires, sky.clock);
       bars.set(view.work, sky.skipping ? 3 : sky.speed);

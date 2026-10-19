@@ -16,6 +16,7 @@ export class GoodsSprites {
     furniture: [],
     fires: [],
     work: [],
+    fields: [],
   };
   private shown: Phaser.GameObjects.Image[] = [];
   private key = '';

@@ -92,6 +92,8 @@ export const LIFE_SCHEMAS = {
         name: text,
         levels: list(obj({ id, word: text, count })),
         start: str(),
+        // A line under the plate saying what the good is for.
+        note: opt(text),
       }),
     ),
     // Felling: the jobs.json job (its skill and strength), minutes a tree takes at skill

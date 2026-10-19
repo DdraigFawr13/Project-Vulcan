@@ -56,8 +56,58 @@ export interface BuildRow {
   mats: { good: string; have: number; cost: number }[];
 }
 
-/** The Build sheet (P3.7): the Houses level, the need, the green and every house and room. */
+/** A field on the Build sheet (P4.7): what the colony laid out, never a tile to pick (V-049). */
+export interface FieldRow {
+  id: number;
+  /** "Barley field", or "Field" while no crop is chosen. */
+  name: string;
+  tiles: number;
+  /** `plan`, `sown`, `ripe` or `fallow`, and the same in words ("planned", "sown", "ripe"). */
+  state: string;
+  words: string;
+  /** Where it lies from the green: "east", "south-west". */
+  dir: string;
+  /** It can still be sent back: planned, nothing sown, not itself a replacement. */
+  back: boolean;
+  /** It replaced a plan sent back. */
+  sent: boolean;
+  why: string;
+}
+
+/** A tile's field (P4.7): each value in words from the engine's answers, for the tile page. */
+export interface FieldView {
+  id: number;
+  name: string;
+  /** "barley, ripe". */
+  crop: string;
+  /** "36 tiles, 18 tiles east of the green". */
+  size: string;
+  /** Sowing, growing or reaping progress, and what it will yield. */
+  harvest: string;
+  /** The seed kept back or still to be. */
+  seed: string;
+  /** What a frost does to it. */
+  frost: string;
+  /** Who is sowing or reaping it now. */
+  here?: string;
+  /** The reason it lies there. */
+  why: string;
+  /** Lines behind it: its latest, the taking up of its work and the one that laid it out. */
+  last?: LedgerLine;
+  took?: LedgerLine;
+  sited?: LedgerLine;
+}
+
+/** The Build sheet (P3.7): the Houses level, the need, the green and every house and room; since
+ * P4.7 also the Fields level, its need in tiles and every field. */
 export interface BuildView {
+  /** The Fields level (1 first to 4 last) and its word. */
+  fieldWant: { level: number; word: string };
+  /** "food for five through winter, about 60 tiles of crops. 36 laid out, 12 planned". */
+  fieldNeed: string;
+  /** No good soil outside the town ring fits a field. */
+  noField: boolean;
+  fields: FieldRow[];
   green: { x: number; y: number };
   want: { level: number; word: string };
   /** "5 people sleep under the open sky", or "none now". */

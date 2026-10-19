@@ -4,7 +4,16 @@
 // steps it, writes a ledger line or draws from an RNG stream.
 import type { Command, EventData, RegionSite, RegionValley } from '../engine/index.ts';
 import type { SaveFile } from './save.ts';
-import type { BuildView, HouseView, PieceView, PlanView, RoomView } from './protocol-build.ts';
+import type { GoodsView, StockView } from './protocol-goods.ts';
+export type { GoodsView, Spot3, StockView } from './protocol-goods.ts';
+import type {
+  BuildView,
+  FieldView,
+  HouseView,
+  PieceView,
+  PlanView,
+  RoomView,
+} from './protocol-build.ts';
 
 /** 0 is paused; 1, 2 and 3 run 10, 30 and 100 game minutes a second. */
 export type Speed = 0 | 1 | 2 | 3;
@@ -173,41 +182,8 @@ export interface TileView {
   room?: RoomView;
   /** A piece of furniture planned or standing here (P3.4). */
   piece?: PieceView;
-}
-
-/** A tile spot, for the map's goods layer. */
-export interface Spot3 {
-  x: number;
-  y: number;
-  z: number;
-}
-
-/** What the map draws for goods (P2.4): items on the ground by art frame, the store's tiles and
- * test-mode marks. */
-export interface GoodsView {
-  items: (Spot3 & { frame: string })[];
-  store: Spot3[];
-  marks: Spot3[];
-  /** Parts planned or to come down (P3.1), for the map's faint plan layer; built ones are in
-   * the chunks' `built`. */
-  plans: (Spot3 & { part: string; state: string; house: number })[];
-  /** Furniture (P3.4): the art id and facing (the page picks the frame), planned ones faint. */
-  furniture: (Spot3 & { art: string; facing: string; plan: boolean })[];
-  /** Lit fires (P3.6) for the night's firelight: the glow's reach in tiles, dimmer when banked. */
-  fires: (Spot3 & { radius: number; banked: boolean })[];
-  /** Plans, parts and pieces someone is working now (P3.6): minutes done of the total, for the
-   * progress bar. Apart from the lists above so the map redraws only when those change. */
-  work: (Spot3 & { done: number; total: number })[];
-}
-
-/** One good's stock lever (P2.4): how much the colony has and wants, and the levels to pick. */
-export interface StockView {
-  good: string;
-  name: string;
-  have: number;
-  want: number;
-  level: string;
-  levels: { id: string; word: string; count: number }[];
+  /** The field this tile is part of (P4.7). */
+  field?: FieldView;
 }
 
 /** Yesterday's tally (P2.9): the date, logs felled, items carried into the store, berries
@@ -325,6 +301,10 @@ export interface WalkerView {
     word: string;
     declined?: number;
   }[];
+  /** The cloak they wear and how worn it is, in words (V-092); none without one. */
+  wearing?: string;
+  /** Their live memories (V-091): the text, its mood in points and the days before it fades. */
+  memories: { text: string; mood: number; days: number }[];
 }
 
 export type FromWorker =

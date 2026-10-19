@@ -1120,9 +1120,109 @@
         "h": 32
       }
     },
-    "furn.bed.h": {
+    "field.fallow": {
       "frame": {
         "x": 69,
+        "y": 205,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "field.plan": {
+      "frame": {
+        "x": 103,
+        "y": 205,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "field.ripe.barley": {
+      "frame": {
+        "x": 137,
+        "y": 205,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "field.ripe.turnips": {
+      "frame": {
+        "x": 171,
+        "y": 205,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "field.sown": {
+      "frame": {
+        "x": 205,
+        "y": 205,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "furn.bed.h": {
+      "frame": {
+        "x": 239,
         "y": 205,
         "w": 32,
         "h": 32
@@ -1142,7 +1242,7 @@
     },
     "furn.bed.v": {
       "frame": {
-        "x": 103,
+        "x": 273,
         "y": 205,
         "w": 32,
         "h": 32
@@ -1162,106 +1262,6 @@
     },
     "furn.bench": {
       "frame": {
-        "x": 137,
-        "y": 205,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "furn.chair.e": {
-      "frame": {
-        "x": 171,
-        "y": 205,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "furn.chair.n": {
-      "frame": {
-        "x": 205,
-        "y": 205,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "furn.chair.s": {
-      "frame": {
-        "x": 239,
-        "y": 205,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "furn.chair.w": {
-      "frame": {
-        "x": 273,
-        "y": 205,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "furn.chest": {
-      "frame": {
         "x": 1,
         "y": 239,
         "w": 32,
@@ -1280,7 +1280,7 @@
         "h": 32
       }
     },
-    "furn.hearth": {
+    "furn.chair.e": {
       "frame": {
         "x": 35,
         "y": 239,
@@ -1300,7 +1300,7 @@
         "h": 32
       }
     },
-    "furn.hearth.banked": {
+    "furn.chair.n": {
       "frame": {
         "x": 69,
         "y": 239,
@@ -1320,7 +1320,7 @@
         "h": 32
       }
     },
-    "furn.hearth.lit.1": {
+    "furn.chair.s": {
       "frame": {
         "x": 103,
         "y": 239,
@@ -1340,7 +1340,7 @@
         "h": 32
       }
     },
-    "furn.hearth.lit.2": {
+    "furn.chair.w": {
       "frame": {
         "x": 137,
         "y": 239,
@@ -1360,7 +1360,7 @@
         "h": 32
       }
     },
-    "furn.hearth.lit.3": {
+    "furn.chest": {
       "frame": {
         "x": 171,
         "y": 239,
@@ -1380,7 +1380,7 @@
         "h": 32
       }
     },
-    "furn.shelf.e": {
+    "furn.hearth": {
       "frame": {
         "x": 205,
         "y": 239,
@@ -1400,7 +1400,7 @@
         "h": 32
       }
     },
-    "furn.shelf.n": {
+    "furn.hearth.banked": {
       "frame": {
         "x": 239,
         "y": 239,
@@ -1420,7 +1420,7 @@
         "h": 32
       }
     },
-    "furn.shelf.s": {
+    "furn.hearth.lit.1": {
       "frame": {
         "x": 273,
         "y": 239,
@@ -1440,7 +1440,7 @@
         "h": 32
       }
     },
-    "furn.shelf.w": {
+    "furn.hearth.lit.2": {
       "frame": {
         "x": 1,
         "y": 273,
@@ -1460,9 +1460,109 @@
         "h": 32
       }
     },
-    "furn.table": {
+    "furn.hearth.lit.3": {
       "frame": {
         "x": 35,
+        "y": 273,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "furn.shelf.e": {
+      "frame": {
+        "x": 69,
+        "y": 273,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "furn.shelf.n": {
+      "frame": {
+        "x": 103,
+        "y": 273,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "furn.shelf.s": {
+      "frame": {
+        "x": 137,
+        "y": 273,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "furn.shelf.w": {
+      "frame": {
+        "x": 171,
+        "y": 273,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "furn.table": {
+      "frame": {
+        "x": 205,
         "y": 273,
         "w": 32,
         "h": 32
@@ -1543,6 +1643,11 @@
       "build.wall-wood.7",
       "build.wall-wood.8",
       "build.wall-wood.9",
+      "field.fallow",
+      "field.plan",
+      "field.ripe.barley",
+      "field.ripe.turnips",
+      "field.sown",
       "furn.bed.h",
       "furn.bed.v",
       "furn.bench",

@@ -26,6 +26,7 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
+import { buildFields } from './fields.ts';
 import { roomWarmth } from './fires.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { BuildRow, BuildView } from './protocol-build.ts';
@@ -73,6 +74,7 @@ export function buildView(world: WorldState): BuildView {
   return {
     green: { x: green.x, y: green.y },
     want: { level, word: content.work.priority.words[level - 1] ?? '' },
+    ...buildFields(world),
     need: needOf(world),
     noGround: !!state['noGround'] && homeless(world, content).length > 0,
     houses: housesOf(world)

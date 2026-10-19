@@ -3,18 +3,21 @@
 import { content } from '../content/index.ts';
 import {
   clockAt,
+  cloakOf,
   cropNow,
   declinedLine,
   fieldsOf,
   itemsOf,
   levelOf,
   loadOf,
+  memoriesOf,
   moodOf,
   needOf,
   partOf,
   plansOf,
   progressOf,
   stockOf,
+  TICKS_PER_DAY,
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
@@ -198,6 +201,8 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     ...barsOf(world, p),
     doing: doingOf(p),
     now: nowOf(world, p),
+    ...wearingOf(world, p),
+    memories: memoriesView(world, p),
     skills: skillsOf(world, p),
     work: content.work.priority.jobs.map((job) => {
       const level = levelOf(world, content, p.id, job);
@@ -213,6 +218,35 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
       };
     }),
   }));
+
+/** The cloak a person wears and how worn it is (V-092): "Wool cloak, worn 30%, warmer outdoors". */
+function wearingOf(world: WorldState, p: EntityRow): { wearing?: string } {
+  const cloak = cloakOf(world, p.id);
+  if (!cloak) return {};
+  const { last, warmth } = content.life.cloak;
+  const worn = Math.round(100 - ((cloak['wear'] as number) * 100) / last);
+  const name = nameOf(content.items, cloak['kind'] as string);
+  return {
+    wearing: `${name[0]!.toUpperCase()}${name.slice(1)}: worn ${worn}%, ${warmth} °C warmer outdoors.`,
+  };
+}
+
+/** A person's live memories in words from memories.json, with the days before each fades. */
+function memoriesView(world: WorldState, p: EntityRow): WalkerView['memories'] {
+  const people = world.entities['person'] ?? [];
+  return memoriesOf(world, p.id).flatMap((m) => {
+    const def = content.memories.find((d) => d.id === m['memory']);
+    if (!def) return [];
+    const about = people.find((q) => q.id === m['about'])?.['name'] as string | undefined;
+    return [
+      {
+        text: def.text.replace('{about}', about ?? 'someone'),
+        mood: def.mood,
+        days: Math.max(1, Math.ceil(((m['until'] as number) - world.tick) / TICKS_PER_DAY)),
+      },
+    ];
+  });
+}
 
 /** A person's skills with practice towards the next level (P2.5). */
 function skillsOf(world: WorldState, p: EntityRow): WalkerView['skills'] {

@@ -8,6 +8,7 @@ import { createImage, encodePng } from './png.mjs';
 import { surface } from './draw-items-surface.mjs';
 import { readPalette } from './draw-tiles-base.mjs';
 import { noise } from './draw-nature.mjs';
+import { cropItems } from './draw-items-crops.mjs';
 
 const S = 32;
 
@@ -344,6 +345,8 @@ export function drawItems(p = readPalette()) {
       zone.data.set(edge ? [...p['straw light'], 220] : [...p.straw, 72], (y * S + x) * 4);
     }
   frames['zone.stockpile'] = zone;
+
+  Object.assign(frames, cropItems(p));
 
   icon('cart', (s) => {
     // Handcart, top-down three-quarter: two shafts toward the viewer, bed, load and two wheels.

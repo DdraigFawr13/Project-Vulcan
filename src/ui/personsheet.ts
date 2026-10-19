@@ -28,6 +28,8 @@ export class PersonSheet {
   /** What they are doing and why (P2.9), above the tabs; filled in place each snapshot. */
   private now = el('div', { class: 'doingnow', 'data-testid': 'doing-now' });
   private rows: HTMLElement[] = [];
+  /** The Needs tab's Wearing and Memories sections, filled in place each snapshot. */
+  private extra = el('div', { class: 'wearmem', 'data-testid': 'wear-memories' });
   /** What the open tab last showed, so it is redrawn only when that changes. */
   private drawn = '';
 
@@ -64,6 +66,30 @@ export class PersonSheet {
     const w = this.walker();
     if (!w) return;
     [w.mood, ...w.needs].forEach((n, k) => this.rows[k] && fillNeed(this.rows[k], n));
+    this.fillExtra(w);
+  }
+
+  /** "Wearing" (the worn cloak) and "Memories" (each live one and the days left); the text is
+   * the worker's, redrawn only when it changes. */
+  private fillExtra(w: WalkerView): void {
+    const shown = JSON.stringify([w.wearing, w.memories]);
+    if (this.extra.dataset['shown'] === shown) return;
+    this.extra.dataset['shown'] = shown;
+    const memories = w.memories.length
+      ? w.memories.map((m) =>
+          el(
+            'p',
+            { class: 'memory' },
+            `${m.text}: ${m.mood > 0 ? '+' : '−'}${Math.abs(m.mood)}, fades ${m.days > 1 ? `in ${m.days} days` : 'tomorrow'}.`,
+          ),
+        )
+      : [el('p', { class: 'muted' }, 'Nothing weighs on them now.')];
+    this.extra.replaceChildren(
+      el('h3', {}, 'Wearing'),
+      el('p', { class: 'wearing' }, w.wearing ?? 'No cloak.'),
+      el('h3', {}, 'Memories'),
+      ...memories,
+    );
   }
 
   /** "Doing now" and its why?, rebuilt only when the sentence or its line changes, so a chain
@@ -168,6 +194,7 @@ export class PersonSheet {
       return [...lines.map((l) => this.panel.lineRow(l)), arrived];
     }
     this.rows = [needRow(), ...(w?.needs ?? []).map(() => needRow())];
-    return [el('p', { class: 'pwho' }, whoLine(p, true)), ...this.rows];
+    this.extra.dataset['shown'] = '';
+    return [el('p', { class: 'pwho' }, whoLine(p, true)), ...this.rows, this.extra];
   }
 }
