@@ -8,7 +8,7 @@ import {
   chunkTiles,
   createSim,
   createWorld,
-  dayOf,
+  lawHours,
   entityOf,
   layerOf,
   makeRegion,
@@ -35,6 +35,7 @@ import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave, saveOf } from './save.ts';
 import { buildView } from './build.ts';
 import { goodsOf, stockView } from './goods.ts';
+import { lawView } from './law.ts';
 import { miningShown } from './mine.ts';
 import { peopleOf, walkersOf } from './people.ts';
 import { clockView, placeWords, tileView, weatherOf } from './views.ts';
@@ -168,7 +169,8 @@ function snapshot(w: WorldState): void {
       at: pace.last,
       speed: pace.speed,
       skipping: pace.skip,
-      day: dayOf(w, content),
+      day: lawHours(w, content),
+      law: lawView(w),
       clock: clockView(w.tick),
       chunks,
       reached: w.map.levels.map((level) => level !== null),

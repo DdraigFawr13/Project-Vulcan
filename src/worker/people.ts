@@ -25,6 +25,7 @@ import {
 import { feedsOf } from './comfort.ts';
 import { hearthDoing, tendDoing } from './fires.ts';
 import { carpentryDoing } from './furniture.ts';
+import { lawOfWalker, leanWords } from './law.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 
 const nameOf = (list: readonly { id: string; name: string }[], id: string): string =>
@@ -219,6 +220,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     now: nowOf(world, p),
     ...wearingOf(world, p),
     memories: memoriesView(world, p),
+    ...lawOfWalker(world, p),
     skills: skillsOf(world, p),
     work: content.work.priority.jobs.map((job) => {
       const level = levelOf(world, content, p.id, job);
@@ -259,10 +261,14 @@ function memoriesView(world: WorldState, p: EntityRow): WalkerView['memories'] {
         text: def.text.replace('{about}', about ?? 'someone'),
         mood: def.mood,
         days: Math.max(1, Math.ceil(((m['until'] as number) - world.tick) / TICKS_PER_DAY)),
+        why: m['line'] as number,
+        ...withLean(leanWords(world, m['memory'] as string)),
       },
     ];
   });
 }
+
+const withLean = (lean: string | undefined) => (lean ? { lean } : {});
 
 /** A person's skills with practice towards the next level (P2.5). */
 function skillsOf(world: WorldState, p: EntityRow): WalkerView['skills'] {

@@ -6,6 +6,8 @@ import type { Command, EventData, RegionSite, RegionValley } from '../engine/ind
 import type { SaveFile } from './save.ts';
 import type { GoodsView, StockView } from './protocol-goods.ts';
 export type { GoodsView, Spot3, StockView } from './protocol-goods.ts';
+import type { AnswerView, HoursView, LawView } from './protocol-law.ts';
+export type { AnswerView, HoursView, LawView } from './protocol-law.ts';
 import type {
   BuildView,
   FieldView,
@@ -313,8 +315,13 @@ export interface WalkerView {
   }[];
   /** The cloak they wear and how worn it is, in words (V-092); none without one. */
   wearing?: string;
-  /** Their live memories (V-091): the text, its mood in points and the days before it fades. */
-  memories: { text: string; mood: number; days: number }[];
+  /** Their live memories (V-091): the text, its mood in points, the days before it fades, the
+   * line that made it (for "why?") and, when it weighs on the law now, which way (P4.8). */
+  memories: { text: string; mood: number; days: number; why: number; lean?: string }[];
+  /** Their answer to the work-hours law (P4.8); none while the law is Customary. */
+  law?: AnswerView;
+  /** Their warmth warning line, 0 to 100, and why it is where it is (V-046), in words. */
+  warmLine: { line: number; usual: number; text: string };
 }
 
 export type FromWorker =
@@ -346,8 +353,11 @@ export type FromWorker =
       speed: Speed;
       /** Skipping ahead; ends paused, on the tick that wrote a notable line. */
       skipping: boolean;
-      /** The colony's day (P2.5): work from and until, and bedtime, in whole hours. */
-      day: { workFrom: number; workTo: number; sleepFrom: number };
+      /** The colony's day (P2.5): work from and until, and bedtime, in whole hours; since P4.8 the
+       * hours the work-hours law sets this season. */
+      day: HoursView;
+      /** The Laws page (P4.8). */
+      law: LawView;
       clock: ClockView;
       /** Chunks changed since the last snapshot, on every reached level; the first one after
        * `ready`, and the first after a level is reached, carry all of that level's. */

@@ -76,6 +76,9 @@ export const LIFE_SCHEMAS = {
     }),
     // Memories (V-091): each live memory's mood, in points, counts `weight` times in the mood.
     memory: obj({ weight: count }),
+    // The warmth warning line moves by temperament and memories (V-046): points a trait or a held
+    // memory adds to it, each memory row counted (P4.8).
+    warmthLine: obj({ traits: map(num(), 'traits'), memories: map(num(), 'memories') }),
     // The wool cloak (V-092): outdoors it adds `warmth` degrees to the felt temperature; each hour
     // outdoors below comfort it wears `wear`, from `last`; at 0 it is gone.
     cloak: obj({ warmth: num(), wear: num({ min: 1 }), last: num({ min: 1 }) }),

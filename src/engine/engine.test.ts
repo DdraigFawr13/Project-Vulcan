@@ -42,6 +42,7 @@ const fixtureContent: EngineContent = {
   abilities: content.abilities,
   life: content.life,
   memories: content.memories,
+  laws: content.laws,
   work: content.work,
   jobs: content.jobs,
   buildings: content.buildings,

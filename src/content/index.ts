@@ -21,6 +21,7 @@ import jobs from './data/jobs.json';
 import life from './data/life.json';
 import lore from './data/lore.json';
 import metal from './data/metal.json';
+import laws from './data/laws.json';
 import memories from './data/memories.json';
 import names from './data/names.json';
 import needs from './data/needs.json';
@@ -64,6 +65,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   'great-works': greatWorks,
   items,
   jobs,
+  laws,
   life,
   lore,
   memories,

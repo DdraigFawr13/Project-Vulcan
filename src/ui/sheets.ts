@@ -4,6 +4,7 @@
 import type {
   BuildView,
   FromWorker,
+  LawView,
   LedgerLine,
   PersonView,
   ToWorker,
@@ -14,6 +15,7 @@ import { BuildSheet } from './build.ts';
 import { Dawn } from './dawn.ts';
 import { el } from './dom.ts';
 import type { Panel } from './panel.ts';
+import { LawSheet } from './laws.ts';
 import { PersonSheet } from './personsheet.ts';
 import { Play } from './play.ts';
 import { WorkSheet, type Day } from './work.ts';
@@ -39,11 +41,14 @@ export class Sheets {
   private workKey = '';
   private buildView: BuildView | undefined;
   private buildKey = '';
+  private lawView: LawView | undefined;
+  private lawKey = '';
   /** A world just began or loaded; its first batch of lines is not news. */
   private loaded = false;
   private readonly play: Play;
   private readonly work: WorkSheet;
   private readonly build: BuildSheet;
+  private readonly laws: LawSheet;
   private readonly person: PersonSheet;
   private readonly dawn: Dawn;
 
@@ -55,13 +60,20 @@ export class Sheets {
       deps.send({ type: 'command', tick: deps.tick() + 1, kind, data });
     this.work = new WorkSheet({
       setPriority: (person, job, level) => command('setPriority', { person, job, level }),
-      setDay: (day) => command('setDay', { ...day }),
+      openLaws: () => {
+        this.open('laws');
+        deps.opened();
+      },
       refresh: () => this.refresh(),
     });
     this.build = new BuildSheet({
       setBuild: (kind, level) => command('setBuild', { kind, level }),
       sendBack: (kind, id) => command('sendBack', { [kind]: id }),
       refresh: () => this.refreshBuild(),
+    });
+    this.laws = new LawSheet({
+      setLaw: (law, setting) => command('setLaw', { law, setting }),
+      refresh: () => this.refreshLaws(),
     });
     this.person = new PersonSheet(deps.panel, {
       work: (p, w) => this.work.personRows(p, w),
@@ -93,12 +105,16 @@ export class Sheets {
     this.refresh(true);
   }
 
-  /** ⋯ → Work, Build or Yesterday (the dawn page at any time). */
-  open(kind: 'work' | 'build' | 'dawn'): void {
+  /** ⋯ → Work, Build, Laws or Yesterday (the dawn page at any time). */
+  open(kind: 'work' | 'build' | 'laws' | 'dawn'): void {
     if (kind === 'work') return this.showWork();
     if (kind === 'build') {
       this.buildKey = '';
       return this.refreshBuild(true);
+    }
+    if (kind === 'laws') {
+      this.lawKey = '';
+      return this.refreshLaws(true);
     }
     this.dawn.show();
     this.play.select(undefined);
@@ -137,19 +153,21 @@ export class Sheets {
   }
 
   snapshot(message: Extract<FromWorker, { type: 'snapshot' }>): void {
-    const { walkers, day } = message;
+    const { walkers, day, law } = message;
     this.walkers = walkers;
     this.day = day;
+    this.lawView = law;
     const food = message.stock.find((s) => s.good === content.work.forage.good)?.have;
     this.dawn.snapshot(message.yesterday, food, message.speed === 1 && !message.skipping);
     this.play.setWalkers(walkers);
     // Settled here, not only by the Work sheet: a person's Work tab shows the same pending levers.
-    this.work.settle(walkers, day);
+    this.work.settle(walkers);
     this.work.setShaft(message.mining);
     this.person.setWalkers(walkers);
     this.refresh();
     if (message.build) this.buildView = message.build;
     this.refreshBuild();
+    this.refreshLaws();
   }
 
   lines(batch: readonly LedgerLine[]): void {
@@ -167,10 +185,31 @@ export class Sheets {
       if (panel.kind === 'person') this.person.setWalkers(this.walkers);
       return;
     }
-    const key = this.work.key(this.walkers, this.day);
+    const key = this.work.key(this.walkers, this.day, this.settingName());
     if (key === this.workKey) return;
     this.workKey = key;
-    panel.showView('work', 'Work', this.work.rows(this.people, this.walkers, this.day));
+    panel.showView(
+      'work',
+      'Work',
+      this.work.rows(this.people, this.walkers, this.day, this.settingName()),
+    );
+    this.play.select(undefined);
+  }
+
+  /** The law's current setting in words, for the Work sheet's "Set by the work-hours law". */
+  private settingName(): string {
+    const v = this.lawView;
+    return v?.settings.find((s) => s.id === v.setting)?.name ?? '';
+  }
+
+  /** Redraws an open Laws sheet when what it shows has changed (or `open`s it). */
+  private refreshLaws(open = false): void {
+    const view = this.lawView;
+    if (!view || (!open && this.deps.panel.kind !== 'laws')) return;
+    const key = this.laws.key(view);
+    if (key === this.lawKey) return;
+    this.lawKey = key;
+    this.deps.panel.showView('laws', 'Laws', this.laws.rows(view));
     this.play.select(undefined);
   }
 

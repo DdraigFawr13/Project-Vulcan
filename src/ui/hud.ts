@@ -6,7 +6,8 @@ import type { ClockView, Speed, TimingView, WeatherView } from '../worker/index.
 import { el } from './dom.ts';
 
 /** The panels the bar opens. */
-export type PanelButton = 'ledger' | 'work' | 'build' | 'stock' | 'saves' | 'region' | 'dawn';
+export type PanelButton =
+  'ledger' | 'work' | 'build' | 'laws' | 'stock' | 'saves' | 'region' | 'dawn';
 
 const SPEED_LABELS: Record<Speed, string> = { 0: '❚❚', 1: '1×', 2: '2×', 3: '3×' };
 
@@ -98,6 +99,7 @@ export class Hud {
       ['ledger', 'Ledger'],
       ['work', 'Work'],
       ['build', 'Build'],
+      ['laws', 'Laws'],
       ['stock', 'Stock'],
       ['region', 'Region'],
       ['dawn', 'Yesterday'],
@@ -230,6 +232,7 @@ export class Hud {
       String(
         kind === 'work' ||
           kind === 'build' ||
+          kind === 'laws' ||
           kind === 'stock' ||
           kind === 'region' ||
           kind === 'saves',

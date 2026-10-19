@@ -65,26 +65,52 @@ export class PersonSheet {
   private fillNeeds(): void {
     const w = this.walker();
     if (!w) return;
-    [w.mood, ...w.needs].forEach((n, k) => this.rows[k] && fillNeed(this.rows[k], n));
+    [w.mood, ...w.needs].forEach((n, k) => {
+      const row = this.rows[k];
+      if (!row) return;
+      // Warmth shows this person's own line, not the usual one (V-046).
+      fillNeed(row, n.name === 'Warmth' ? { ...n, line: w.warmLine.line } : n);
+    });
     this.fillExtra(w);
   }
 
   /** "Wearing" (the worn cloak) and "Memories" (each live one and the days left); the text is
    * the worker's, redrawn only when it changes. */
   private fillExtra(w: WalkerView): void {
-    const shown = JSON.stringify([w.wearing, w.memories]);
+    const shown = JSON.stringify([w.wearing, w.memories, w.law, w.warmLine]);
     if (this.extra.dataset['shown'] === shown) return;
     this.extra.dataset['shown'] = shown;
     const memories = w.memories.length
-      ? w.memories.map((m) =>
-          el(
-            'p',
-            { class: 'memory' },
-            `${m.text}: ${m.mood > 0 ? '+' : '−'}${Math.abs(m.mood)}, fades ${m.days > 1 ? `in ${m.days} days` : 'tomorrow'}.`,
-          ),
-        )
+      ? w.memories.map((m) => {
+          const row = el('div', { class: 'mem' });
+          const left = m.days > 1 ? `${m.days} days left` : 'fades tomorrow';
+          row.append(
+            el('span', {}, m.text),
+            el(
+              'span',
+              { class: 'pts' },
+              `${m.mood > 0 ? '+' : '−'}${Math.abs(m.mood)} mood, ${left}${m.lean ? `, ${m.lean}` : ''}`,
+            ),
+            el('button', { type: 'button', class: 'why', 'data-why': String(m.why) }, 'why?'),
+          );
+          return row;
+        })
       : [el('p', { class: 'muted' }, 'Nothing weighs on them now.')];
+    const law = w.law
+      ? el('p', { 'data-line': String(w.law.why) }, '')
+      : el('p', {}, 'Keeps the customary hours.');
+    if (w.law) {
+      law.append(
+        el('b', {}, `Work hours: ${w.law.answer}.`),
+        ` ${w.law.text} `,
+        el('button', { type: 'button', class: 'why', 'data-why': String(w.law.why) }, 'why?'),
+      );
+    }
     this.extra.replaceChildren(
+      el('h3', {}, 'The law'),
+      law,
+      el('h3', {}, 'Warmth line'),
+      el('p', {}, w.warmLine.text),
       el('h3', {}, 'Wearing'),
       el('p', { class: 'wearing' }, w.wearing ?? 'No cloak.'),
       el('h3', {}, 'Memories'),

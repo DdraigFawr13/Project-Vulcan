@@ -10,6 +10,7 @@ export type {
   RoomView,
   ShaftView,
 } from './protocol-build.ts';
+export type { AnswerView, HoursView, LawView } from './protocol-law.ts';
 export type {
   AuraView,
   ChunkView,
