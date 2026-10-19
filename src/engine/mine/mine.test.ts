@@ -15,9 +15,10 @@ import {
   type WorldState,
 } from '../index.ts';
 import { greenOf, ringOf } from '../build/index.ts';
-import { inStore, itemsOf } from '../goods/index.ts';
+import { inStore, itemsOf, layItem } from '../goods/index.ts';
 import { walkAt } from '../paths/index.ts';
-import { shaftsOf } from './index.ts';
+import { nextDig, shaftsOf } from './index.ts';
+import { openVein } from './site.ts';
 
 const DAY = 1440;
 const SEEDS = ['anvil', 'smoke', 'tallow'];
@@ -41,6 +42,18 @@ function run(seed: string, days: number, content: Content = base, level = 'some'
   const world = createWorld(sim, seed);
   send(world, 'setStock', { good: 'iron-ingot', level });
   step(world, sim, days * DAY);
+  return { sim, world };
+}
+
+/** A world with the iron plate raised, run until someone has taken up sinking the first shaft. */
+function untilSinking() {
+  const sim = createSim(base);
+  const world = createWorld(sim, 'tallow');
+  send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
+  const sinker = () =>
+    (world.entities['person'] ?? []).some((q) => q['job'] === 'mine' && q['task'] === 'sink');
+  for (let m = 0; m < (8 * DAY) / 10 && !sinker(); m += 1) step(world, sim, 10);
+  expect(sinker()).toBe(true);
   return { sim, world };
 }
 
@@ -161,6 +174,124 @@ describe('mining', () => {
     const clay = itemsOf(world).filter((i) => i['kind'] === 'clay');
     expect(clay.length).toBeGreaterThan(0);
     expect(clay.every((i) => i['z'] === 0 || i['holder'])).toBe(true);
+  });
+
+  it('spends a sunk shaft that opens no way to a vein, says so once and sites another', () => {
+    const sim = createSim(base);
+    const world = createWorld(sim, 'tallow');
+    send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
+    for (let d = 0; d < 12 && shaftsOf(world)[0]?.['state'] !== 'done'; d += 1)
+      step(world, sim, DAY);
+    const first = shaftsOf(world)[0]!;
+    expect(first['state']).toBe('done');
+    // The vein is worked out: none of it is left on its level.
+    const iron = base.features.findIndex((f) => f.id === 'iron') + 1;
+    const level = world.map.levels[(first['to'] as number) - 1]!;
+    level.features.forEach((f, i) => f === iron && (level.features[i] = 0));
+    step(world, sim, 3 * DAY);
+    const alerts = linesOf(world, 'mine.noVein');
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]!.data['metal']).toBe('iron');
+    expect(whyOf(world, alerts[0]!.id).map((c) => c.event.type)).toContain('goods.stockSet');
+    expect(shaftsOf(world)[0]!['state']).toBe('spent');
+    const next = shaftsOf(world)[1]!;
+    expect(next['state']).not.toBe('sent');
+    expect(next['sentBack']).toBe(0);
+    const apart = Math.max(
+      Math.abs((next['x'] as number) - (first['x'] as number)),
+      Math.abs((next['y'] as number) - (first['y'] as number)),
+    );
+    expect(apart).toBeGreaterThan(base.work.mine.avoid);
+    expect(whyOf(world, next['line'] as number).map((c) => c.event.type)).toContain('mine.noVein');
+    // Once for each change of the plate, however many shafts come to nothing.
+    step(world, sim, 8 * DAY);
+    expect(linesOf(world, 'mine.noVein')).toHaveLength(1);
+  });
+
+  it('refuses to send a shaft back once someone has taken up sinking it', () => {
+    const { sim, world } = untilSinking();
+    const shaft = shaftsOf(world)[0]!;
+    expect([shaft['state'], shaft['depth']]).toEqual(['planned', 0]);
+    send(world, 'sendBackShaft', { shaft: shaft.id });
+    step(world, sim, 1);
+    const refused = linesOf(world, 'command.refused').at(-1)!;
+    expect(refused.data['reason']).toBe('digging has begun');
+    expect(shaft['state']).not.toBe('sent');
+  });
+
+  it('sinks with a ladder of logs though the logs lie in stacks of one', () => {
+    const { sim, world } = untilSinking();
+    // Every stack of logs lying about is broken into single logs, before the sinker fetches any.
+    for (const item of [...itemsOf(world)])
+      if (item['kind'] === 'logs' && !item['holder'])
+        while ((item['count'] as number) > 1) {
+          item['count'] = (item['count'] as number) - 1;
+          const { x, y, z, made } = item as Record<string, number>;
+          layItem(world, { kind: 'logs', count: 1, x: x!, y: y!, z: z!, made: made! });
+        }
+    for (let m = 0; m < DAY / 10 && !linesOf(world, 'mine.sank').length; m += 1)
+      step(world, sim, 10);
+    expect(linesOf(world, 'mine.sank')[0]?.data['ladder']).toBe(' with 2 logs for a ladder');
+  });
+
+  it('says once that the logs for a ladder cannot be had, and waits', () => {
+    const bare: Content = {
+      ...base,
+      work: { ...base.work, mine: { ...base.work.mine, ladder: { logs: 100000 } } },
+    };
+    const { world } = run('tallow', 4, bare);
+    const alerts = linesOf(world, 'mine.noLadder');
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]!.data).toEqual({ metal: 'iron', logs: 100000 });
+    expect(whyOf(world, alerts[0]!.id).map((c) => c.event.type)).toContain('goods.stockSet');
+    expect(linesOf(world, 'mine.sank')).toHaveLength(0);
+  });
+
+  it('sees a vein through the fog but plans its tunnel only on ground it knows', () => {
+    const sim = createSim(base);
+    const world = createWorld(sim, 'tallow');
+    const { startX: x, startY: y } = world.map;
+    send(world, 'sinkShaft', { x, y, z: 0, to: 3 });
+    step(world, sim, 1);
+    const map = world.map;
+    const iron = base.features.findIndex((f) => f.id === 'iron') + 1;
+    const level = map.levels[2]!;
+    level.features.forEach((f, i) => f === iron && (level.features[i] = 0));
+    const kind = (id: string) => base.terrain.kinds.findIndex((k) => k.id === id);
+    const at = (dx: number) => y * map.width + x + dx;
+    // A band of rock round the shaft foot, shown, with an iron tile at its end, not shown.
+    for (let dy = -2; dy <= 2; dy += 1)
+      for (let dx = 1; dx <= 8; dx += 1) {
+        level.tiles[(y + dy) * map.width + x + dx] = kind('rock-wall');
+        level.known[(y + dy) * map.width + x + dx] = 1;
+      }
+    level.features[at(8)] = iron;
+    level.known[at(8)] = 0;
+    expect(openVein(world, base, 'iron')).toBe(false);
+    level.tiles[at(1)] = kind('rock-wall');
+    level.features[at(1)] = iron;
+    level.known[at(1)] = 0;
+    // A vein tile beside the foot counts as open though it was never shown.
+    expect(openVein(world, base, 'iron')).toBe(true);
+    level.features[at(1)] = 0;
+    const foot = { x, y, z: 3 };
+    const next = () => nextDig(world, base, foot, 'iron', new Set())?.tile;
+    expect(next()).toBe(at(1));
+    // Ground not shown costs as rock, whatever it is: a cave floor there is the next tile to dig.
+    level.tiles[at(1)] = kind(base.terrain.generator.underground.caves.kind);
+    level.known[at(1)] = 0;
+    expect(next()).toBe(at(1));
+    // Shown, it is open ground and the way goes on through it.
+    level.known[at(1)] = 1;
+    expect(next()).toBe(at(2));
+    // Shown water no one can walk is never routed through.
+    level.tiles[at(1)] = kind('rock-wall');
+    level.tiles[at(2)] = kind('water-deep');
+    level.known[at(2)] = 1;
+    for (const dy of [-1, 1]) level.tiles[(y + dy) * map.width + x + 2] = kind('rock-wall');
+    const route = nextDig(world, base, foot, 'iron', new Set());
+    expect(route?.tile).not.toBe(at(2));
+    expect(route).toBeDefined();
   });
 
   it('is deterministic: the same seed and lever give the same ledger', () => {

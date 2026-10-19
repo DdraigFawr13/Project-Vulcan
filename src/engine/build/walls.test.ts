@@ -15,6 +15,7 @@ import {
   type WorldState,
 } from '../index.ts';
 import { layItem } from '../goods/index.ts';
+import { raiseChunk } from '../map/index.ts';
 import { greenOf, nextNeed, partOf, plansOf, stillNeeded } from './index.ts';
 import { chooseHouse, costOf, partsOf, withinReach } from './site.ts';
 
@@ -139,5 +140,45 @@ describe('wattle and daub walls', () => {
     expect(withinReach(world, base, 'clay', true)).toBe(0);
     level.known[(y + 1) * world.map.width + x] = 1;
     expect(withinReach(world, base, 'clay', true)).toBe(10);
+  });
+
+  it('count no clay a miner could not get beside, from the green', () => {
+    const sim = createSim(base);
+    const world = createWorld(sim, SEEDS[0]!);
+    const map = world.map;
+    const { startX: x, startY: y } = map;
+    submitCommand(world, { tick: world.tick + 1, kind: 'cutStairs', data: { x, y, z: 0 } });
+    step(world, sim, 1);
+    const level = map.levels[0]!;
+    const kind = (id: string) => base.terrain.kinds.findIndex((k) => k.id === id);
+    const at = (dx: number, dy: number) => (y + dy) * map.width + x + dx;
+    // A box of rock round the foot, so the only open ground is the foot itself.
+    for (let dy = -4; dy <= 4; dy += 1)
+      for (let dx = -4; dx <= 4; dx += 1) {
+        level.tiles[at(dx, dy)] = kind('rock-wall');
+        level.known[at(dx, dy)] = 1;
+      }
+    const foot = kind(base.terrain.generator.underground.stairsUp);
+    level.tiles[at(0, 0)] = foot;
+    const clay = kind('clay');
+    // Known clay with rock on every side: nobody can stand beside it.
+    level.tiles[at(3, 3)] = clay;
+    // Known clay beside a pocket of floor shut off from the foot.
+    level.tiles[at(-3, -3)] = clay;
+    level.tiles[at(-3, -2)] = kind('stone-floor');
+    raiseChunk(map, x, y, 1);
+    expect(withinReach(world, base, 'clay', true)).toBe(0);
+    // Clay beside the foot is reached; so is the clay beside floor joined to it.
+    level.tiles[at(1, 0)] = clay;
+    expect(withinReach(world, base, 'clay', true)).toBe(10);
+    for (const [dx, dy] of [
+      [-3, -1],
+      [-3, 0],
+      [-2, 0],
+      [-1, 0],
+    ] as const)
+      level.tiles[at(dx, dy)] = kind('stone-floor');
+    raiseChunk(map, x, y, 1);
+    expect(withinReach(world, base, 'clay', true)).toBe(20);
   });
 });

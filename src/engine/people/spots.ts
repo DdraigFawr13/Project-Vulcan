@@ -1,11 +1,13 @@
 // Shared footing for the work in jobs.ts and forage.ts: where someone stands, who is on what,
 // walking to stand beside a tile, and laying a yield out on the open ground around it.
-import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import type { EntityRow, WorldState } from '../core/index.ts';
 import { planAt } from '../build/index.ts';
 import { itemsAt, layItem, stackSize } from '../goods/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { walkTo } from './walk.ts';
+
+export { besideReachable } from '../paths/index.ts';
 
 /** A tree is worked from a side, never a corner, so its tile (and the logs on it) can be reached
  * from where they stood: a corner step past two blocked sides is not allowed (paths). */
@@ -88,22 +90,4 @@ export function layAround(
         left -= n;
       }
   return count - left;
-}
-
-/** Whether someone who can reach what `reach` says can stand on a side of tile `i`. */
-export function besideReachable(
-  world: WorldState,
-  content: EngineContent,
-  reach: (to: { x: number; y: number; z: number }) => boolean,
-  i: number,
-  z = 0,
-): boolean {
-  const map = world.map;
-  const [x, y] = [i % map.width, Math.floor(i / map.width)];
-  return SIDES.some(([dx, dy]) => {
-    const [sx, sy] = [x + dx, y + dy];
-    if (sx < 0 || sy < 0 || sx >= map.width || sy >= map.height) return false;
-    if (!walkAt(content, map, z, sy * map.width + sx)) return false;
-    return reach({ x: sx, y: sy, z });
-  });
 }

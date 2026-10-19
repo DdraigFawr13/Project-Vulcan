@@ -34,6 +34,26 @@ const sim = createSim(content, [...SYSTEMS, keeper]);
 const world = createWorld(sim, 'save-test');
 step(world, sim, 10 * TICKS_PER_DAY);
 
+/** A reached level for a save that has none yet. */
+const levelOf = (s: SaveFile) => ({
+  tiles: new Uint8Array(s.state.map.tiles.length),
+  tileCauses: new Int32Array(s.state.map.tiles.length),
+  features: new Uint8Array(s.state.map.tiles.length),
+  known: new Uint8Array(s.state.map.tiles.length),
+  chunkVersions: [...s.state.map.chunkVersions],
+});
+
+/** Adds a mining-shaft row to a save, sound but for what `fields` change. */
+const addShaft = (s: SaveFile, fields: Record<string, string | number>) => {
+  const id = s.state.nextEntityId;
+  s.state.nextEntityId += 1;
+  (s.state.entities['shaft'] ??= []).push({
+    id,
+    ...{ x: 1, y: 1, metal: 'iron', to: 1, state: 'planned', depth: 0, sentBack: 0, line: 1 },
+    ...fields,
+  });
+};
+
 describe('saves', () => {
   it('round-trips a world through a structured clone unchanged', () => {
     const save = structuredClone(saveOf(world, contentHash));
@@ -84,6 +104,16 @@ describe('saves', () => {
       (s: SaveFile) => (s.state.map.rock = new Uint8Array(3)),
       (s: SaveFile) => (s.state.map.ice = new Uint8Array(3)),
       (s: SaveFile) => s.state.map.auraSpots.push({ ...s.state.map.auraSpots[0]!, school: 'none' }),
+      // Ore stains name a feature; a level's known marks are 0 or 1.
+      (s: SaveFile) => (s.state.map.stains[0] = 250),
+      (s: SaveFile) => {
+        s.state.map.levels[0] ??= levelOf(s);
+        s.state.map.levels[0].known[0] = 2;
+      },
+      // A shaft is in a known state, no deeper than its level, on a level there is.
+      (s: SaveFile) => addShaft(s, { state: 'sunk' }),
+      (s: SaveFile) => addShaft(s, { depth: 3, to: 2 }),
+      (s: SaveFile) => addShaft(s, { to: 99, depth: 0 }),
       // A level below one nobody has reached.
       (s: SaveFile) =>
         (s.state.map.levels[1] = {
@@ -99,13 +129,21 @@ describe('saves', () => {
       hurt(bad);
       expect(check(bad)).toThrow('damaged');
     }
+    // The shaft row the damage cases bend is itself sound.
+    const sound = save();
+    addShaft(sound, {});
+    expect(check(sound)).not.toThrow();
   });
 
   // P1.3 done-when: a level not yet reached costs no memory. Structured-clone bytes (what
-  // IndexedDB stores) are measured before and after stairs reach level 1.
+  // IndexedDB stores) are measured before and after stairs reach level 1. Only the level arrays are
+  // measured: V8 writes a plain array in one of two layouts (2 or about 5.6 bytes an element) by
+  // its internal element kind, and `map.tileCauses` flips kind while the tick runs, depending on
+  // how warm the optimiser is from the test files run earlier in the worker (`isolate: false`).
+  // Measured whole, the save grew by an extra 84 kB in about 1 run of 4.
   it('stores nothing for a level until it is reached', () => {
     const fresh = createWorld(sim, 'save-test');
-    const bytes = () => serialize(saveOf(fresh, contentHash)).length;
+    const bytes = () => serialize(fresh.map.levels).length;
     const before = bytes();
     expect(fresh.map.levels.every((level) => level === null)).toBe(true);
     const { startX: x, startY: y } = fresh.map;

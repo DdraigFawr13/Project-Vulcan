@@ -99,6 +99,12 @@ export interface WorkDef {
     perIngot: number;
     floors: { stone: string; earth: string };
     near: number;
+    /** Tiles kept clear of a plan sent back or a shaft spent; the most walking multiplier a
+     * shaft's ground may have (1: plain); the shaft plan's sentence and the taking-up words. */
+    avoid: number;
+    walk: number;
+    why: string;
+    words: { sink: string; tunnel: string; mine: string; clay: string };
   };
   forage: {
     job: string;

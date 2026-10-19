@@ -131,7 +131,7 @@ export const peopleSystem: System = {
     'skill.rose',
     ...['work.tookUpSowing', 'work.tookUpReaping', 'field.harvested', 'farm.harvestHome'],
     'goods.ateSeed',
-    ...['mine.sank', 'mine.dug', 'mine.veinMined', 'mine.clayDug'],
+    ...['mine.sank', 'mine.dug', 'mine.veinMined', 'mine.clayDug', 'mine.noLadder'],
   ],
   tables: PEOPLE_TABLES,
   // The colony's day (day.ts) is kept here once the player changes it, with its line.

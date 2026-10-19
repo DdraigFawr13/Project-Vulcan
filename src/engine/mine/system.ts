@@ -1,12 +1,15 @@
 // The mine system (P4.1, V-086, V-087): sites a shaft by a stain when a metal is wanted and no open
 // vein can feed it, as a plan with a reason; the player's one lever is `sendBackShaft`, once a
-// plan. Digging is the people's (src/engine/people/mine.ts).
+// plan, before anyone has begun it. A sunk shaft that opens no way to a vein is spent and a new one
+// is sited. Digging is the people's (src/engine/people/mine.ts).
+import type { EntityRow } from '../core/index.ts';
 import { addEntity, entityOf } from '../entity/index.ts';
 import { haveOf, stockOf, wantOf } from '../goods/index.ts';
 import { TICKS_PER_DAY } from '../core/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
-import { MINE_TABLES, metalsOf, oreShort, shaftFor, shaftsOf } from './shafts.ts';
+import { fill, MINE_TABLES, metalsOf, oreShort, shaftFor, shaftsOf } from './shafts.ts';
 import { openVein, siteShaft } from './site.ts';
+import { nextDig } from './tunnel.ts';
 
 const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -32,10 +35,10 @@ function planShaft(
   }
   const word = name.vein?.stainWord ?? '';
   const ingot = `${metal}-ingot`;
-  const why =
-    `${capital(metal)} is wanted (${haveOf(world, content, ingot)} of ${wantOf(world, content, ingot)} ingots) ` +
-    `and no open vein holds ${metal}. This is by the nearest ${word} stain past the town ring: ` +
-    `${site.far} tiles ${site.dir} of the green, on dry, level ground.`;
+  const why = fill(content.work.mine.why, {
+    ...{ Metal: capital(metal), metal, have: haveOf(world, content, ingot) },
+    ...{ want: wantOf(world, content, ingot), word, far: site.far, dir: site.dir },
+  });
   const planned = ctx.emit('mine.shaftPlanned', {
     causes: [...causes, ...(line ? [line] : [])],
     data: { metal, level: name.vein?.level ?? 0, tiles: site.far, dir: site.dir, why },
@@ -47,8 +50,14 @@ function planShaft(
   return true;
 }
 
-/** `sendBackShaft {shaft}`: a shaft plan not yet started, once; the colony looks for another stain
- * at least `AVOID` tiles off. */
+/** Whether a person has taken up sinking the shaft (they may not have sunk a level yet). */
+const sinking = (ctx: SystemContext, shaft: EntityRow): boolean =>
+  (ctx.world.entities['person'] ?? []).some(
+    (q) => q['job'] === 'mine' && q['task'] === 'sink' && q['plan'] === shaft.id,
+  );
+
+/** `sendBackShaft {shaft}`: a shaft plan not yet begun (nobody has taken up sinking it), once; the
+ * colony looks for another stain at least `work.mine.avoid` tiles off. */
 function sendBackShaft(
   ctx: SystemContext,
   data: Readonly<Record<string, unknown>>,
@@ -59,7 +68,7 @@ function sendBackShaft(
     ? 'there is no such shaft'
     : row['state'] === 'sent'
       ? 'it was sent back already'
-      : row['state'] !== 'planned' || row['depth']
+      : row['state'] !== 'planned' || row['depth'] || sinking(ctx, row)
         ? 'digging has begun'
         : row['sentBack']
           ? 'a plan that replaced one sent back cannot be sent back again'
@@ -82,7 +91,7 @@ function sendBackShaft(
 export const mineSystem: System = {
   id: 'mine',
   every: 'hour',
-  emits: ['mine.shaftPlanned', 'mine.shaftSentBack', 'mine.noStain'],
+  emits: ['mine.shaftPlanned', 'mine.shaftSentBack', 'mine.noStain', 'mine.noVein'],
   // `sig`: a mark of the ingot plates' lines and `day` the day of the last look, so the colony
   // looks again once a day or when a plate changes.
   initialState: { sig: 0, day: -1 },
@@ -99,9 +108,25 @@ export const mineSystem: System = {
     if (sig === state['sig'] && day === state['day']) return;
     [state['sig'], state['day']] = [sig, day];
     for (const metal of metals) {
-      if (!oreShort(world, content, metal) || shaftFor(world, metal)) continue;
-      if (openVein(world, content, metal)) continue;
-      planShaft(ctx, metal, shaftsOf(world).some((s) => s['metal'] === metal) ? 1 : 0, []);
+      if (!oreShort(world, content, metal) || openVein(world, content, metal)) continue;
+      const causes: number[] = [];
+      const live = shaftFor(world, metal);
+      if (live) {
+        // A sunk shaft with no way on to a vein is spent: said once for each change of the plate.
+        if (live['state'] !== 'done') continue;
+        const foot = { x: live['x'] as number, y: live['y'] as number, z: live['to'] as number };
+        if (nextDig(world, content, foot, metal, new Set())) continue;
+        const line = (stockOf(world, `${metal}-ingot`)?.['line'] as number | undefined) ?? 0;
+        live['state'] = 'spent';
+        if (state[`novein-${metal}`] !== line)
+          causes.push(ctx.emit('mine.noVein', { causes: line ? [line] : [], data: { metal } }));
+        state[`novein-${metal}`] = line;
+      }
+      // A plan that replaces one sent back (still unplaced for want of a stain) cannot be sent back.
+      const last = shaftsOf(world)
+        .filter((s) => s['metal'] === metal)
+        .at(-1);
+      planShaft(ctx, metal, last?.['state'] === 'sent' ? 1 : 0, causes);
     }
   },
 };

@@ -5,6 +5,7 @@ export {
   chunksAcross,
   chunksDown,
   chunkTiles,
+  diggable,
   layerOf,
   raiseChunk,
   setBuilt,

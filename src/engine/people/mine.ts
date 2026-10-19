@@ -5,28 +5,19 @@
 // Also digging clay for a wall that waits for it. Ore, rubble and clay lie where they come out
 // and haulers carry them up (haul.ts). Taking up, each level, tile dug and vein mined are lines.
 import type { EntityRow } from '../core/index.ts';
-import { haveOf, stockOf, wantOf } from '../goods/index.ts';
-import { layerOf, openAround, setTile } from '../map/index.ts';
-import { metalsOf, nextDig, oreShort, shaftFor } from '../mine/index.ts';
+import { haveOf, layItem, loadOf, stockOf, wantOf } from '../goods/index.ts';
+import { diggable, layerOf, openAround, setTile } from '../map/index.ts';
+import { metalsOf, nextDig, oreShort, shaftFor, veinOpen } from '../mine/index.ts';
 import { pack, reachFrom, unpack, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { stackOf } from './build.ts';
+import { reachableStacks } from './build.ts';
 import { clayWork } from './clay.ts';
 import { ladderOf, sinking } from './shaft.ts';
-import {
-  nameOf,
-  practiseMining,
-  start,
-  stop,
-  takenBy,
-  WORDS,
-  type Kind,
-  type Task,
-} from './minetask.ts';
+import { nameOf, practiseMining, start, stop, takenBy, type Kind, type Task } from './minetask.ts';
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
-import { besideReachable, goBeside, layAround, people, spotOf } from './spots.ts';
+import { goBeside, layAround, people, spotOf } from './spots.ts';
 
-/** The nearest known vein tile of `metal` someone can get beside, as a packed node. */
+/** The nearest vein tile of `metal` someone can get beside (`veinOpen`), as a packed node. */
 function veinFor(ctx: SystemContext, p: EntityRow, metal: string): number | undefined {
   const { world, content } = ctx;
   const map = world.map;
@@ -40,14 +31,37 @@ function veinFor(ctx: SystemContext, p: EntityRow, metal: string): number | unde
   let best: number | undefined;
   let score = Infinity;
   for (let i = 0; i < layer.features.length; i += 1) {
-    if (layer.features[i] !== f || !layer.known[i] || taken.has(pack(map, { x: 0, y: 0, z }) + i))
-      continue;
+    if (layer.features[i] !== f || taken.has(pack(map, { x: 0, y: 0, z }) + i)) continue;
     const [x, y] = [i % map.width, Math.floor(i / map.width)];
     const d = Math.max(Math.abs(x - here.x), Math.abs(y - here.y)) * 1000000 + i;
-    if (d < score && besideReachable(world, content, reach, i, z))
+    if (d < score && veinOpen(world, content, reach, f, i))
       [best, score] = [pack(map, { x, y, z }), d];
   }
   return best;
+}
+
+/** Whether the logs for the ladder can be had: what `p` holds and the stacks they can reach make
+ * up its count. When they do not, `mine.noLadder` says so once for each change of the plate. */
+function laddered(
+  ctx: SystemContext,
+  p: EntityRow,
+  metal: string,
+  ladder: { kind: string; count: number },
+  plate: number | undefined,
+): boolean {
+  const held = loadOf(ctx.world, p.id);
+  const have =
+    (held?.['kind'] === ladder.kind ? (held['count'] as number) : 0) +
+    reachableStacks(ctx, p, ladder.kind).reduce((n, s) => n + (s.item['count'] as number), 0);
+  if (have >= ladder.count) return true;
+  const mark = `noLadder-${metal}`;
+  if (ctx.state[mark] !== (plate ?? 0))
+    ctx.emit('mine.noLadder', {
+      causes: plate ? [plate] : [],
+      data: { metal, logs: ladder.count },
+    });
+  ctx.state[mark] = plate ?? 0;
+  return false;
 }
 
 /** What this person would do next, or undefined when nothing is wanted. */
@@ -69,7 +83,7 @@ function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
       have: haveOf(world, content, ingot),
       want: wantOf(world, content, ingot),
     };
-    const word = (kind: Kind): string => WORDS[kind].replace('{m}', metal);
+    const word = (kind: Kind): string => mine.words[kind].replace('{m}', metal);
     const vein = veinFor(ctx, p, metal);
     if (vein !== undefined)
       return {
@@ -83,11 +97,15 @@ function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
     const shaft = shaftFor(world, metal);
     if (!shaft) continue;
     const mate = (kind: Kind) => others.some((q) => q['task'] === kind && q['plan'] === shaft.id);
+    // The shaft's plan line is a cause of the taking up, after the plate's.
+    const causes = [...base.causes, shaft['line'] as number];
     if (shaft['state'] !== 'done') {
       const ladder = shaft['depth'] === 0 ? ladderOf(content) : undefined;
-      if (mate('sink') || (ladder && !stackOf(ctx, p, ladder.kind))) continue;
+      if (mate('sink')) continue;
+      if (ladder && !laddered(ctx, p, metal, ladder, base.causes[0])) continue;
       return {
         ...base,
+        causes,
         kind: 'sink',
         plan: shaft.id,
         target: -1,
@@ -113,6 +131,7 @@ function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
     const minutes = layerOf(map, z)!.features[dig.tile] ? mine.vein : mine.dig;
     return {
       ...base,
+      causes,
       kind: 'tunnel',
       plan: shaft.id,
       target: pack(map, tile),
@@ -148,7 +167,7 @@ export function takeUpMining(ctx: SystemContext, p: EntityRow): boolean {
 /** Carries on with the same kind of task after one is done, without a new taking up. */
 function carryOn(ctx: SystemContext, p: EntityRow): boolean {
   const t = workFor(ctx, p);
-  if (!t || t.kind !== p['task']) return stop(p);
+  if (!t || t.kind !== p['task']) return stop(ctx, p);
   start(ctx, p, t);
   return true;
 }
@@ -159,17 +178,25 @@ export function mining(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
   const map = world.map;
   const target = p['target'] as number;
-  if (target < 0) return stop(p);
+  if (target < 0) return stop(ctx, p);
   const { x, y, z } = unpack(map, target);
   const layer = layerOf(map, z);
   const i = y * map.width + x;
-  // The tile must still be rock or earth (a vein tile still holds its vein).
+  // The tile must still be rock or earth (a vein tile still holds its vein). A tunnel's next tile
+  // not yet shown may be open ground instead (a cave, water): it is only shown, below.
   const kind = layer && content.terrain.kinds[layer.tiles[i]!];
-  if (!layer || !kind || (!kind.stone && !kind.solid)) return stop(p);
-  if (p['task'] === 'mine' && !layer.features[i]) return stop(p);
+  if (!layer || !kind) return stop(ctx, p);
+  const unseen = p['task'] === 'tunnel' && !map.levels[z - 1]?.known[i] && !diggable(kind);
+  if (!diggable(kind) && !unseen) return stop(ctx, p);
+  if (p['task'] === 'mine' && !layer.features[i]) return stop(ctx, p);
   const here = spotOf(p);
   if (here.z !== z || Math.abs(here.x - x) + Math.abs(here.y - y) !== 1)
-    return goBeside(ctx, p, x, y, z) || stop(p);
+    return goBeside(ctx, p, x, y, z) || stop(ctx, p);
+  if (unseen) {
+    // Nothing to dig: standing beside it shows it, and the way is found again.
+    openAround(ctx, x, y, z, p['took'] as number);
+    return carryOn(ctx, p);
+  }
   p['work'] = (p['work'] as number) - 1;
   practiseMining(ctx, p);
   if ((p['work'] as number) > 0) return true;
@@ -223,5 +250,12 @@ function dig(ctx: SystemContext, p: EntityRow, at: Spot): void {
     at.z,
   );
   openAround(ctx, at.x, at.y, at.z, line);
-  if (item && count) layAround(ctx, item, count, at, line);
+  if (item && count) layYield(ctx, item, count, at, line);
+}
+
+/** Lays what the digging gave on the open ground around the tile; whatever finds no free tile
+ * lies on the dug tile itself, on top of a stack if one is there: nothing vanishes. */
+export function layYield(ctx: SystemContext, item: string, count: number, at: Spot, made: number) {
+  const left = count - layAround(ctx, item, count, at, made);
+  if (left > 0) layItem(ctx.world, { kind: item, count: left, ...at, made });
 }

@@ -5,6 +5,7 @@ import {
   chunksDown,
   type EngineContent,
   type Schemas,
+  SHAFT_STATES,
   tablesProblem,
   WATER,
   type WorldState,
@@ -126,6 +127,8 @@ export function checkSave(
     w.biomes.every((b) => b < content.biomes.biomes.length) &&
     w.features.every((f) => f <= content.features.length) &&
     w.built.every((b) => b <= content.buildings.parts.length) &&
+    // Ore stains name a feature (V-087).
+    w.stains.every((f) => f <= content.features.length) &&
     // Each plan is of a known part, on the map and in a known state (P3.1).
     (world.entities['plan'] ?? []).every(
       (r) =>
@@ -154,7 +157,16 @@ export function checkSave(
           level.chunkVersions.length === w.chunkVersions.length &&
           level.chunkVersions.every((v) => Number.isSafeInteger(v) && v >= 1) &&
           level.tiles.every((t) => t < kinds.length) &&
-          level.features.every((f) => f <= content.features.length)),
+          level.features.every((f) => f <= content.features.length) &&
+          level.known.every((k) => k <= 1)),
+    ) &&
+    // Each shaft is in a known state, sunk no deeper than its vein's level, which is a level there is
+    // (P4.1).
+    (world.entities['shaft'] ?? []).every(
+      (r) =>
+        SHAFT_STATES.includes(r['state'] as (typeof SHAFT_STATES)[number]) &&
+        (r['depth'] as number) <= (r['to'] as number) &&
+        (r['to'] as number) <= w.levels.length,
     ) &&
     ['north', 'south', 'east', 'west'].includes(w.riverExit) &&
     // The weather's spell names a known kind; its counters are whole numbers (P1.4).

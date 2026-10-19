@@ -10,6 +10,11 @@ export const CHUNK = 16;
 export const chunksAcross = (map: MapState): number => Math.ceil(map.width / CHUNK);
 export const chunksDown = (map: MapState): number => Math.ceil(map.height / CHUNK);
 
+/** Whether a terrain kind has to be dug out to be passed: rock (`stone`) or packed earth
+ * (`solid`). Open ground, floors and water are not. */
+export const diggable = (kind: { stone?: boolean; solid?: boolean }): boolean =>
+  !!(kind.stone || kind.solid);
+
 /** One level's tiles, features, causes and chunk versions; undefined below an unreached level. */
 export function layerOf(map: MapState, z: number): MapState | LevelState | undefined {
   if (z === 0) return map;

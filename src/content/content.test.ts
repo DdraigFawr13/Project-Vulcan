@@ -49,6 +49,14 @@ describe('content', () => {
     ]);
   });
 
+  it('refuses a vein whose yield is not a haul kind', () => {
+    const broken = copy();
+    broken.work.haul.kinds = broken.work.haul.kinds.filter((k: string) => k !== 'iron-ore');
+    expect(validateContent(broken)).toEqual([
+      'features[iron].yields: "iron-ore" is not in work.haul.kinds, so nobody would carry it',
+    ]);
+  });
+
   it('changes its fingerprint when any entry changes', () => {
     const changed = copy();
     changed.items[0].per += 0.001;

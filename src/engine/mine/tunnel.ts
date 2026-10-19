@@ -1,8 +1,10 @@
-// Tunnelling toward a vein (P4.1): on the shaft's vein level, open ground costs a step and each
-// rock or earth tile the minutes digging it takes, so the way found runs through open ground
-// first and then the cheapest line of tiles to dig. Ties go to the lower tile index.
+// Tunnelling toward a vein (P4.1): on the shaft's vein level, known open ground costs a step and
+// each rock or earth tile the minutes digging it takes, so the way found runs through open ground
+// first and then the cheapest line of tiles to dig. Miners plan on what they know (V-030): a tile
+// not yet shown costs as rock whatever it really is, and veins show through the fog (V-094).
+// Ties go to the lower tile index.
 import type { EngineContent, WorldState } from '../core/index.ts';
-import { layerOf } from '../map/index.ts';
+import { diggable } from '../map/index.ts';
 import { walkAt } from '../paths/index.ts';
 
 const SIDES = [
@@ -13,8 +15,10 @@ const SIDES = [
 ] as const;
 
 /** The next tile to dig on level `z` on the cheapest way from the shaft foot at (x, y) to a vein
- * tile of `metal`, and the open tile it is dug from; undefined when no such way exists.
- * `taken` are tile indices others are working, which the way goes round. */
+ * tile of `metal`, and the open tile it is dug from; undefined when no such way exists. The next
+ * tile is the first on the way that is not known open ground, so it may turn out to be open
+ * (a cave, water) when reached: the miner then only shows it (people/mine.ts) and the way is
+ * found again. `taken` are tile indices others are working, which the way goes round. */
 export function nextDig(
   world: WorldState,
   content: EngineContent,
@@ -23,20 +27,22 @@ export function nextDig(
   taken: ReadonlySet<number>,
 ): { tile: number; from: number } | undefined {
   const map = world.map;
-  const layer = layerOf(map, at.z);
+  const layer = map.levels[at.z - 1];
   const f = content.features.findIndex((d) => d.id === metal) + 1;
   if (!layer || !f) return undefined;
   const { kinds } = content.terrain;
   const { dig, vein } = content.work.mine;
   const [W, H] = [map.width, map.height];
   const size = W * H;
-  /** Cost to enter tile `i`; 0 when it can be neither walked nor dug. */
+  /** Known open ground: shown, and walkable. */
+  const open = (i: number): boolean => !!layer.known[i] && walkAt(content, map, at.z, i) > 0;
+  /** Cost to enter tile `i`; 0 when it can be neither walked nor dug (known water not walked). */
   const enter = (i: number): number => {
     if (taken.has(i)) return 0;
-    if (walkAt(content, map, at.z, i)) return 1;
+    if (open(i)) return 1;
     if (layer.features[i]) return vein;
-    const kind = kinds[layer.tiles[i]!]!;
-    return kind.stone || kind.solid ? dig : 0;
+    if (!layer.known[i]) return dig;
+    return diggable(kinds[layer.tiles[i]!]!) ? dig : 0;
   };
   const far = new Float64Array(size).fill(Infinity);
   const prev = new Int32Array(size).fill(-1);
@@ -77,7 +83,7 @@ export function nextDig(
     if (layer.features[i] === f) {
       // Walk back to the first tile on the way that is not open ground.
       let tile = i;
-      for (let j = i; j !== start; j = prev[j]!) if (!walkAt(content, map, at.z, j)) tile = j;
+      for (let j = i; j !== start; j = prev[j]!) if (!open(j)) tile = j;
       return { tile, from: prev[tile]! };
     }
     const [x, y] = [i % W, Math.floor(i / W)];

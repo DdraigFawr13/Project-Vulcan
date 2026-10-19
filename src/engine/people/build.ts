@@ -29,9 +29,13 @@ const taken = (ctx: SystemContext, p: EntityRow): Set<number> =>
       .map((q) => q['plan'] as number),
   );
 
-/** The nearest stack of `kind` `p` can reach that no one else is fetching: one in the store
- * before one lying out at the same distance (also used for furniture wood, carpentry.ts). */
-export function stackOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow | undefined {
+/** The stacks of `kind` `p` can reach that no one else is fetching, each scored by its distance
+ * (one in the store before one lying out at the same distance), in item order. */
+export function reachableStacks(
+  ctx: SystemContext,
+  p: EntityRow,
+  kind: string,
+): { item: EntityRow; score: number }[] {
   const { world, content } = ctx;
   const others = new Set([
     ...busy(world, p, 'haul'),
@@ -41,16 +45,23 @@ export function stackOf(ctx: SystemContext, p: EntityRow, kind: string): EntityR
     ...busy(world, p, 'tend'),
   ]);
   const from = spotOf(p);
-  let best: EntityRow | undefined;
-  let far = Infinity;
+  const out: { item: EntityRow; score: number }[] = [];
   for (const i of itemsOf(world)) {
     if (i['kind'] !== kind || i['holder'] || others.has(i.id)) continue;
     const at = spotOf(i);
     const d = Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y)) * 2;
-    const score = d + (inStore(world, at.x, at.y, at.z) ? 0 : 1);
-    if (score < far && canReach(content, world.map, from, at)) [best, far] = [i, score];
+    if (canReach(content, world.map, from, at))
+      out.push({ item: i, score: d + (inStore(world, at.x, at.y, at.z) ? 0 : 1) });
   }
-  return best;
+  return out;
+}
+
+/** The nearest stack of `kind` `p` can reach that no one else is fetching (also used for
+ * furniture wood, carpentry.ts). */
+export function stackOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow | undefined {
+  let best: { item: EntityRow; score: number } | undefined;
+  for (const s of reachableStacks(ctx, p, kind)) if (!best || s.score < best.score) best = s;
+  return best?.item;
 }
 
 /** A stack of the material the plan needs next (its own first, then its second). */
@@ -345,12 +356,21 @@ function takeDown(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
   const { content } = ctx;
   const part = planPart(content, plan);
   const at = { x: plan['x'] as number, y: plan['y'] as number, z: 0 };
-  const back = refundOf(content, plan)[0]!.count;
-  const good = content.items.find((i) => i.id === part.material)?.name ?? part.material;
+  const name = (id: string): string => content.items.find((i) => i.id === id)?.name ?? id;
+  // Both materials of a two-material part, as "4 clay and 1 log" (those with something to give).
+  const back = refundOf(content, plan)
+    .filter((r) => r.count > 0)
+    .map((r) => `${r.count} ${name(r.kind)}`);
   const line = ctx.emit('build.takenDown', {
     causes: [p['took'] as number, plan['line'] as number],
     actors: [p.id],
-    data: { name: p['name'] as string, part: part.name, x: at.x, y: at.y, count: back, good },
+    data: {
+      ...{ name: p['name'] as string, part: part.name, x: at.x, y: at.y },
+      back:
+        back.length > 1
+          ? `${back.slice(0, -1).join(', ')} and ${back.at(-1)}`
+          : (back[0] ?? 'nothing'),
+    },
   });
   for (const { kind, count } of takeDownPlan(ctx, plan, line))
     if (count > 0) layAround(ctx, kind, count, at, line);

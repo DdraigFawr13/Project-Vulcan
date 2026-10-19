@@ -4,7 +4,15 @@
 // milestones keep these orders and give the digging to colonists.
 import type { Command, EngineContent, LevelState } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { CHUNK, chunksAcross, chunksDown, layerOf, raiseChunk, setTile } from './tiles.ts';
+import {
+  CHUNK,
+  chunksAcross,
+  chunksDown,
+  diggable,
+  layerOf,
+  raiseChunk,
+  setTile,
+} from './tiles.ts';
 import { placesOf } from './aura.ts';
 import { makeLevel } from './underground.ts';
 
@@ -172,8 +180,7 @@ export function openAround(
   if (!layer) return undefined;
   const { kinds, generator } = ctx.content.terrain;
   const { width: W, height: H } = map;
-  const open = (i: number): boolean =>
-    !kinds[layer.tiles[i]!]!.solid && !kinds[layer.tiles[i]!]!.stone;
+  const open = (i: number): boolean => !diggable(kinds[layer.tiles[i]!]!);
   const changed = new Set<number>();
   const mark = (i: number): boolean => {
     if (layer.known[i]) return false;

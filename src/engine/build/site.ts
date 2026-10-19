@@ -4,7 +4,8 @@
 // The lowest wins and ties go in tile order, so the same seed gives the same town.
 import type { EngineContent, EntityRow, PartDef, SizeDef, WorldState } from '../core/index.ts';
 import { haveOf, itemsOf, storeOf } from '../goods/index.ts';
-import type { Spot } from '../paths/index.ts';
+import { reachFrom, type Spot } from '../paths/index.ts';
+import { DUG_LEVEL, digsFor } from './dug.ts';
 import { inRect, isTreeAt, wayFrom, wayTo, type Rect, type Site, type Way } from './way.ts';
 
 export { inRect, type Rect, type Site } from './way.ts';
@@ -236,8 +237,8 @@ export function costOf(parts: readonly { part: PartDef }[]): Map<string, number>
 
 /** How much of a good the colony has and could get: all of it wherever it lies, plus, when
  * `ground` is set, what the trees, logs and boulders within `house.reach` tiles of the store
- * would give, and the known tiles on level 1 that dig it (Morgan, 2026-10-18: house size counts
- * what is within reach). */
+ * would give, and the known tiles on level 1 that dig it and a miner could get beside (Morgan,
+ * 2026-10-18: house size counts what is within reach). */
 export function withinReach(
   world: WorldState,
   content: EngineContent,
@@ -257,16 +258,16 @@ export function withinReach(
       if (def && def.yields === good && ['tree', 'log', 'boulder'].includes(def.kind))
         total += def.amount;
     }
-  // Ground dug for it: every known tile on level 1 whose kind digs `good` (V-097, clay).
-  const known = map.levels[0]?.known;
-  const under = map.levels[0]?.tiles;
-  if (known && under)
-    for (let y = Math.max(0, oy - reach); y <= Math.min(map.height - 1, oy + reach); y += 1)
-      for (let x = Math.max(0, ox - reach); x <= Math.min(map.width - 1, ox + reach); x += 1) {
-        const i = y * map.width + x;
-        const digs = known[i] === 1 ? content.terrain.kinds[under[i]!]!.digs : undefined;
-        if (digs && digs.item === good) total += digs.count;
-      }
+  // Ground dug for it (V-097, clay): the tiles a miner could dig (`digsFor`) from the store.
+  const under = map.levels[DUG_LEVEL - 1];
+  if (!under) return total;
+  const reached = reachFrom(content, map, { x: ox, y: oy, z: 0 });
+  for (let y = Math.max(0, oy - reach); y <= Math.min(map.height - 1, oy + reach); y += 1)
+    for (let x = Math.max(0, ox - reach); x <= Math.min(map.width - 1, ox + reach); x += 1) {
+      const i = y * map.width + x;
+      if (digsFor(world, content, reached, i, good))
+        total += content.terrain.kinds[under.tiles[i]!]!.digs!.count;
+    }
   return total;
 }
 
