@@ -50,7 +50,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-61** Small milestones that touch the same area run as one bundle in one thread, so repo setup and spec reading are paid once; the coordinator names the bundle when it starts the thread (Morgan, 2026-10-18; each setup is roughly 150 to 250k tokens, estimated).
 
 - **VR-64** Screen mock-ups word their buttons, alerts, empty sheets and "why?" lines with the `design:ux-copy` skill; Vulcan's voice stays in UI_STYLE and VR-37 (Morgan, skills review 2026-10-19).
-- **VR-65** Every screen mock-up passes an accessibility check at 390 px before its spot check: text contrast 4.5 to 1, control contrast 3 to 1, the tap-target floor in UI_STYLE, and colour never the only signal (VR-37). It comes from the `design:accessibility-review` skill, narrowed to what fits a phone game, and is built once as a Playwright script (VR-53); until the script exists, the thread checks these four by hand (Morgan, skills review 2026-10-19).
+- **VR-65** Every screen mock-up passes an accessibility check at 390 px before its spot check: text contrast 4.5 to 1, control contrast 3 to 1, the 44 px tap-target floor in UI_STYLE (V-077), and colour never the only signal (VR-37). It comes from the `design:accessibility-review` skill, narrowed to what fits a phone game, and is built once as a Playwright script (VR-53); until the script exists, the thread checks these four by hand (Morgan, skills review 2026-10-19).
 
 ## 7. Lean testing
 

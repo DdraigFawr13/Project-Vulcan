@@ -80,3 +80,4 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-074 | Trades are learned much faster beside a master; practice alone still teaches, more slowly; children often take a parent's trade (Morgan, 2026-10-19). |
 | V-075 | Indoor trades work after dark only with light; candles get a stock plate; the work-hours law sets how late (Morgan, 2026-10-19). |
 | V-076 | New trades land beside the systems they need: P5.11 to P5.13, P6.11 to P6.13, P7.7, P9.7 and rows in P5.4, P7.1, P7.3, P8.1, P9.1; Phases 3 and 4 gain none (Morgan, 2026-10-19). |
+| V-077 | Tap targets are at least 44 px, up from V-037's 40 px, to match the touch-target guideline the mock-up accessibility check uses (VR-65) (Morgan, skills review 2026-10-19). |
