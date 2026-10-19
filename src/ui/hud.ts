@@ -6,7 +6,7 @@ import type { ClockView, Speed, TimingView, WeatherView } from '../worker/index.
 import { el } from './dom.ts';
 
 /** The panels the bar opens. */
-export type PanelButton = 'ledger' | 'work' | 'stock' | 'saves' | 'region' | 'dawn';
+export type PanelButton = 'ledger' | 'work' | 'build' | 'stock' | 'saves' | 'region' | 'dawn';
 
 const SPEED_LABELS: Record<Speed, string> = { 0: '❚❚', 1: '1×', 2: '2×', 3: '3×' };
 
@@ -97,6 +97,7 @@ export class Hud {
     for (const [kind, label] of [
       ['ledger', 'Ledger'],
       ['work', 'Work'],
+      ['build', 'Build'],
       ['stock', 'Stock'],
       ['region', 'Region'],
       ['dawn', 'Yesterday'],
@@ -222,7 +223,13 @@ export class Hud {
     // On a phone a folded panel's button is out of sight, so ⋯ shows it is open.
     this.menu.button.setAttribute(
       'aria-pressed',
-      String(kind === 'work' || kind === 'stock' || kind === 'region' || kind === 'saves'),
+      String(
+        kind === 'work' ||
+          kind === 'build' ||
+          kind === 'stock' ||
+          kind === 'region' ||
+          kind === 'saves',
+      ),
     );
   }
 

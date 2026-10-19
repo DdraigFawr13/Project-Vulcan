@@ -1,8 +1,16 @@
 // The P2.5 to P2.7 screens wired together: the portrait strip and alert line under the bar, the
-// person sheet, the Work sheet, the Alerts sheet and the dawn page (P2.9). Levers go out as commands for the next tick;
+// person sheet, the Work and Build sheets, the Alerts sheet and the dawn page (P2.9). Levers go out as commands for the next tick;
 // Show on an alert moves the camera to the place, never a person (V-015).
-import type { FromWorker, LedgerLine, PersonView, ToWorker, WalkerView } from '../worker/index.ts';
+import type {
+  BuildView,
+  FromWorker,
+  LedgerLine,
+  PersonView,
+  ToWorker,
+  WalkerView,
+} from '../worker/index.ts';
 import { content } from '../content/index.ts';
+import { BuildSheet } from './build.ts';
 import { Dawn } from './dawn.ts';
 import { el } from './dom.ts';
 import type { Panel } from './panel.ts';
@@ -29,10 +37,13 @@ export class Sheets {
   private walkers: readonly WalkerView[] = [];
   private day: Day = { workFrom: 6, workTo: 18, sleepFrom: 22 };
   private workKey = '';
+  private buildView: BuildView | undefined;
+  private buildKey = '';
   /** A world just began or loaded; its first batch of lines is not news. */
   private loaded = false;
   private readonly play: Play;
   private readonly work: WorkSheet;
+  private readonly build: BuildSheet;
   private readonly person: PersonSheet;
   private readonly dawn: Dawn;
 
@@ -46,6 +57,11 @@ export class Sheets {
       setPriority: (person, job, level) => command('setPriority', { person, job, level }),
       setDay: (day) => command('setDay', { ...day }),
       refresh: () => this.refresh(),
+    });
+    this.build = new BuildSheet({
+      setBuild: (level) => command('setBuild', { kind: 'house', level }),
+      sendBack: (house) => command('sendBack', { house }),
+      refresh: () => this.refreshBuild(),
     });
     this.person = new PersonSheet(deps.panel, {
       work: (p, w) => this.work.personRows(p, w),
@@ -77,9 +93,13 @@ export class Sheets {
     this.refresh(true);
   }
 
-  /** ⋯ → Work, or ⋯ → Yesterday: the dawn page at any time. */
-  open(kind: 'work' | 'dawn'): void {
+  /** ⋯ → Work, Build or Yesterday (the dawn page at any time). */
+  open(kind: 'work' | 'build' | 'dawn'): void {
     if (kind === 'work') return this.showWork();
+    if (kind === 'build') {
+      this.buildKey = '';
+      return this.refreshBuild(true);
+    }
     this.dawn.show();
     this.play.select(undefined);
   }
@@ -127,6 +147,8 @@ export class Sheets {
     this.work.settle(walkers, day);
     this.person.setWalkers(walkers);
     this.refresh();
+    if (message.build) this.buildView = message.build;
+    this.refreshBuild();
   }
 
   lines(batch: readonly LedgerLine[]): void {
@@ -148,6 +170,17 @@ export class Sheets {
     if (key === this.workKey) return;
     this.workKey = key;
     panel.showView('work', 'Work', this.work.rows(this.people, this.walkers, this.day));
+    this.play.select(undefined);
+  }
+
+  /** Redraws an open Build sheet when what it shows has changed (or `open`s it). */
+  private refreshBuild(open = false): void {
+    const view = this.buildView;
+    if (!view || (!open && this.deps.panel.kind !== 'build')) return;
+    const key = this.build.key(view);
+    if (key === this.buildKey) return;
+    this.buildKey = key;
+    this.deps.panel.showView('build', 'Build', this.build.rows(view));
     this.play.select(undefined);
   }
 }

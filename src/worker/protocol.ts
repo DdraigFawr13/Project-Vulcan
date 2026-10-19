@@ -4,6 +4,7 @@
 // steps it, writes a ledger line or draws from an RNG stream.
 import type { Command, EventData, RegionSite, RegionValley } from '../engine/index.ts';
 import type { SaveFile } from './save.ts';
+import type { BuildView, HouseView, PlanView, RoomView } from './protocol-build.ts';
 
 /** 0 is paused; 1, 2 and 3 run 10, 30 and 100 game minutes a second. */
 export type Speed = 0 | 1 | 2 | 3;
@@ -163,27 +164,10 @@ export interface TileView {
   open?: true;
   /** A part planned, built or to come down here (P3.1): see `PlanView`. */
   plan?: PlanView;
-}
-
-/** A tile of a part (P3.1, P3.2): what it is, how far it has got, who is on it and why. */
-export interface PlanView {
-  /** The part's content id and name, e.g. `wall-stone`, "stone wall". */
-  part: string;
-  name: string;
-  /** `plan` (to build), `built`, or `down` (to come down). */
-  state: string;
-  /** Material brought, of the part's cost, and the material's name. */
-  have: number;
-  cost: number;
-  good: string;
-  /** The person building it or taking it down, and what they are doing now. */
-  builder?: string;
-  doing?: string;
-  /** The plan's line (placed, or ordered down), and the line it was built under. */
-  placed?: LedgerLine;
-  built?: LedgerLine;
-  /** The alert saying it waits: for material, or because the wall would shut someone in. */
-  waiting?: LedgerLine;
+  /** The house or room this tile is part of (P3.7). */
+  house?: HouseView;
+  /** The room walls and a door close in around this tile (P3.3). */
+  room?: RoomView;
 }
 
 /** A tile spot, for the map's goods layer. */
@@ -201,7 +185,7 @@ export interface GoodsView {
   marks: Spot3[];
   /** Parts planned or to come down (P3.1), for the map's faint plan layer; built ones are in
    * the chunks' `built`. */
-  plans: (Spot3 & { part: string; state: string })[];
+  plans: (Spot3 & { part: string; state: string; house: number })[];
 }
 
 /** One good's stock lever (P2.4): how much the colony has and wants, and the levels to pick. */
@@ -374,6 +358,8 @@ export type FromWorker =
       /** Items, the store and marks (P2.4). */
       goods: GoodsView;
       stock: StockView[];
+      /** The Build sheet's view (P3.7), when changed. */
+      build?: BuildView;
       /** The day before's tally for the dawn page (P2.9); none on the first day. */
       yesterday?: YesterdayView;
     }

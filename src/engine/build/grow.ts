@@ -5,7 +5,7 @@
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { bedsOf, mainOf, placeHouse, rowsOf, sizeOf } from './houses.ts';
+import { bedsOf, mainOf, nthOf, placeHouse, rowsOf, sizeOf } from './houses.ts';
 import { plansOf } from './plans.ts';
 import { roomAt } from './rooms.ts';
 import { isTreeAt, wayFrom, wayTo } from './way.ts';
@@ -23,7 +23,6 @@ import {
 } from './site.ts';
 
 const COUNTS = ['no', 'one', 'two', 'three', 'four', 'five', 'six'];
-const NTH = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'];
 
 /** Planned houses and rooms whose parts all stand are built. */
 export function finishHouses(ctx: SystemContext): void {
@@ -160,7 +159,7 @@ export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: num
         sleepers,
         size: sizeOf(content, main).name,
         room,
-        nth: NTH[rows.length] ?? 'another',
+        nth: nthOf(rows.length),
         side: site.side,
       },
     });

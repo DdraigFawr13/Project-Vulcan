@@ -27,7 +27,6 @@ if (!parent || !hudRoot) throw new Error('index.html is missing #game or #hud');
 
 const params = new URLSearchParams(location.search);
 const seed = params.get('seed') ?? 'ledger-1';
-// A seed alone opens the site picker; with `site` it begins that valley (P1.5).
 const site = params.get('site');
 const debug = testModeOn(params); // test tools and developer readouts (testmode.ts)
 const worker = spawnSimWorker();
@@ -45,7 +44,6 @@ let worldTick = 0;
 let waiting = false;
 let stopped = false;
 let frame = 0;
-/** The tile the inspector last showed. */
 let shown: TileView | undefined;
 const orders = new Orders((message) => send(message));
 /** The colony's stock levels as of the last snapshot, for the Stock sheet (P2.4). */
@@ -83,7 +81,7 @@ const hud = new Hud(
   hudRoot,
   {
     setSpeed,
-    skip: () => void (ready && !stopped && !saves.loading && send({ type: 'skip' })),
+    skip: () => ready && !stopped && !saves.loading && void send({ type: 'skip' }),
     zoom: (direction) => renderer.zoomStep(direction),
     level: (direction) => setLevel(level + direction),
     reload: () => location.reload(),
@@ -106,6 +104,7 @@ const panel = new Panel(
     load: (meta) => void saves.load(meta),
     remove: (meta) => void saves.remove(meta),
     test: (tile, kind, arg) => orders.give(tile, kind, worldTick + 1, arg),
+    sendBack: (tile, house) => orders.give(tile, 'sendBack', worldTick + 1, house),
     setStock: (good, level) =>
       send({ type: 'command', tick: worldTick + 1, kind: 'setStock', data: { good, level } }),
     go: (tile, z) => {
@@ -172,7 +171,7 @@ function openPanel(kind: PanelButton): void {
   if (kind === 'ledger') panel.showLedger(saves.ledger);
   else if (kind === 'region') send({ type: 'region' });
   else if (kind === 'stock') panel.showStock(stock);
-  else if (kind === 'work' || kind === 'dawn') sheets.open(kind);
+  else if (kind === 'work' || kind === 'build' || kind === 'dawn') sheets.open(kind);
   else void saves.showList();
   hud.showPanel(kind);
 }
@@ -221,6 +220,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       skipping = message.skipping;
       sheets.snapshot(message);
       renderer.setGoods(message.goods);
+      if (message.build) renderer.setBuild(message.build);
       stock = message.stock;
       panel.setStock(stock);
       renderer.setAura(message.aura);

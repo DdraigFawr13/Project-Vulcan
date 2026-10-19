@@ -2,8 +2,6 @@
 // been brought, who is on it and what it does to the way, then the lines behind it.
 import type { LedgerLine, TileView } from '../worker/index.ts';
 
-type PlanView = NonNullable<TileView['plan']>;
-
 const STATES: Record<string, string> = {
   plan: 'planned',
   built: 'built',
@@ -17,29 +15,51 @@ const PATHS: Record<string, string> = {
   stair: 'a way down',
 };
 
-/** The tile page's rows for a plan or built part: key and value. */
-export function planFacts(plan: PlanView): [string, string][] {
+/** The tile page's rows for a plan or built part: key and value. A tile in a house adds its roof
+ * and, once built, its room, beds and warmth (P3.7, P3.3); the worker puts each in words. */
+export function planFacts(tile: TileView): [string, string][] {
+  const { plan, house, room } = tile;
+  if (!plan) return [];
   const kind = plan.part.split('-')[0]!;
   const built = plan.state === 'built';
+  const what = `${plan.name}, ${STATES[plan.state] ?? plan.state}`;
   const rows: [string, string][] = [
-    [built ? 'built' : 'plan', `${plan.name}, ${STATES[plan.state] ?? plan.state}`],
+    [built ? 'built' : 'plan', house && !built ? `${house.name}: ${what}` : what],
   ];
   if (!built) rows.push([plan.good, `${plan.have} of ${plan.cost} here`]);
   if (plan.builder) rows.push(['builder', `${plan.builder}, ${plan.doing ?? 'on it'}`]);
   else if (!built) rows.push(['builder', 'nobody yet']);
   rows.push(['paths', built || plan.state === 'down' ? (PATHS[kind] ?? '') : 'open until built']);
+  if (room)
+    rows.push(
+      ['room', `${room.name}, ${room.tiles} tiles inside`],
+      ['role', room.role],
+      ['beauty', room.beauty],
+      ['impressiveness', room.impressiveness],
+    );
+  if (house) rows.push(['roof', house.roof]);
+  if (room) {
+    const warmth = tile.temperature === undefined ? '' : `${tile.temperature} °C, `;
+    rows.push(['beds', room.beds], ['warmth', `${warmth}as outdoors (hearths come in P3.6)`]);
+  }
   return rows;
 }
 
-/** The lines behind a plan, with their labels: placed, built and waiting. */
-export function planLines(plan: PlanView): [LedgerLine, string][] {
+/** The lines behind a plan, with their labels: placed, built and waiting. A house's plan was
+ * placed by the line that sited it. */
+export function planLines(tile: TileView): [LedgerLine, string][] {
+  const { plan, house } = tile;
+  if (!plan) return [];
+  const sited = house?.sited && plan.placed?.id === house.sited.id;
   return [
     ...(plan.waiting ? ([[plan.waiting, 'Waiting · ']] as [LedgerLine, string][]) : []),
     ...(plan.placed
-      ? ([[plan.placed, plan.state === 'down' ? 'Ordered down · ' : 'Planned · ']] as [
-          LedgerLine,
-          string,
-        ][])
+      ? ([
+          [
+            plan.placed,
+            plan.state === 'down' ? 'Ordered down · ' : sited ? 'Sited · ' : 'Planned · ',
+          ],
+        ] as [LedgerLine, string][])
       : []),
     ...(plan.built ? ([[plan.built, 'Built · ']] as [LedgerLine, string][]) : []),
   ];

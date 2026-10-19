@@ -1,7 +1,7 @@
-// The test tools' orders (dig, mark a tree, add a store tile, plan a part or take one down): each
-// is stamped for the next tick
-// and the tile is asked for again once it is answered, so the sheet shows the result. A dig order
-// is followed until its answer (at once while paused), and a refusal is kept to show once.
+// The test tools' orders (dig, mark a tree, add a store tile, plan a part or take one down) and a
+// house's Send back: each is stamped for the next tick and the tile is asked for again once it is
+// answered, so the sheet shows the result. A dig order is followed until its answer (at once while
+// paused), and a refusal is kept to show once.
 import type { LedgerLine, TileView, ToWorker } from '../worker/index.ts';
 
 /** The ledger lines that answer a dig order. At 3x an order can land a tick or two late. */
@@ -38,7 +38,9 @@ export class Orders {
     this.order = { x, y, z, tick, dig };
     const data = dig
       ? { x, y, z, ...(arg !== undefined && { to: arg }) }
-      : { x, y, ...(kind === 'placeBuilding' && arg !== undefined && { part: arg }) };
+      : kind === 'sendBack'
+        ? { house: arg as number }
+        : { x, y, ...(kind === 'placeBuilding' && arg !== undefined && { part: arg }) };
     this.send({ type: 'command', tick, kind, data });
     this.send({ type: 'inspect', x, y, z });
   }
