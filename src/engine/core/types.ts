@@ -324,6 +324,8 @@ export interface TerrainDef {
       buildable: number;
       wood: number;
       stone: number;
+      /** How the band scores a green (src/engine/map/green.ts). */
+      green: Record<'near' | 'rise' | 'water' | 'spare' | 'edge' | 'apart', number>;
     };
   };
   floors: Readonly<Record<string, string>>;

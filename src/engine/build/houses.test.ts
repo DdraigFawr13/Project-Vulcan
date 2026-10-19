@@ -78,7 +78,8 @@ describe('houses', () => {
   // Houses start first (content `house.start`), so the lever moves them to second.
   it('sets the Build level, and sends a plan back once', () => {
     const world = createWorld(sim, 'tallow/3');
-    step(world, sim, DAY / 2);
+    // Sent back as soon as it is sited: once building has begun a plan stays (refused).
+    while (!housesOf(world).length && world.tick < DAY) step(world, sim, 10);
     const first = firstHouse(world);
     expect(first['state']).toBe('plan');
     submitCommand(world, {

@@ -77,4 +77,24 @@ describe('surface map', () => {
     expect(froze.every((id) => ice.has(recordOf(world, id)?.type ?? ''))).toBe(true);
     expect(world.map.tileCauses.every((id) => recordOf(world, id))).toBe(true);
   });
+
+  // The green (V-083): the band's first choice is level-ish dry ground with water a short walk
+  // off, says so in its line, and a second choice lies `apart` tiles away; the same seed made
+  // with the first sent back starts there, with a line saying how far the band moved.
+  const mapOnly = createSim(content, [regionSystem, mapSystem]);
+  it.each(MAP_SEEDS)('seed %s chooses a green and a second spot to send it back to', (seed) => {
+    const green = content.terrain.generator.start.green;
+    const first = createWorld(mapOnly, seed);
+    const line = first.log.find((e) => e.type === 'map.green')!;
+    expect(line.causes).toEqual([first.log.find((e) => e.type === 'map.formed')!.id]);
+    expect(line.data['ground']).toMatch(/^(level|gently sloping|sloping), (dry|mostly dry)$/);
+    expect(first.systems['map']).toMatchObject({ look: 0, next: 1 });
+    const again = createWorld(mapOnly, seed, 1);
+    const moved = again.log.find((e) => e.type === 'map.greenAgain')!;
+    const [dx, dy] = [again.map.startX - first.map.startX, again.map.startY - first.map.startY];
+    expect(Math.max(Math.abs(dx), Math.abs(dy))).toBeGreaterThanOrEqual(green.apart);
+    expect(moved.data['tiles']).toBe(Math.max(Math.abs(dx), Math.abs(dy)));
+    // Only the start differs: the land is the same valley.
+    expect(again.map.tiles).toEqual(first.map.tiles);
+  });
 });

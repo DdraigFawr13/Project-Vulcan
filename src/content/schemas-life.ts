@@ -44,8 +44,16 @@ export const LIFE_SCHEMAS = {
     // asleep with others in the room it falls `perOther` for each of them.
     privacy: obj({ gain: count, perOther: count }),
     // Comfortable at `comfort` °C or warmer (`bedroll` degrees warmer asleep in one): warmth
-    // rises `rise` an hour, else falls `perDegree` for each degree short. Underground is `below`.
-    warmth: obj({ comfort: num(), bedroll: count, rise: count, perDegree: count, below: num() }),
+    // rises `rise` an hour (plus `catchUp` of the way back to the warning line), else falls
+    // `perDegree` for each degree short. Underground is `below`.
+    warmth: obj({
+      comfort: num(),
+      bedroll: count,
+      rise: count,
+      catchUp: num({ min: 0, max: 1 }),
+      perDegree: count,
+      below: num(),
+    }),
     // Leisure from `from` o'clock to bedtime: recreation gains `gain` an hour, `company` more
     // with someone else at leisure within `reach` tiles.
     relax: obj({ from: count, gain: count, company: count, reach: count }),
