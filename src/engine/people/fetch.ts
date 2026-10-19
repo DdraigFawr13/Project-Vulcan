@@ -17,7 +17,7 @@ export const heldOf = (ctx: SystemContext, p: EntityRow, kind: string): number =
 /** The free stacks of `kind` `p` can reach, nearest first (ties by id) and not taken by another's job. */
 function stacksOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow[] {
   const { world, content } = ctx;
-  const taken = new Set([...busy(world, p, 'charcoal'), ...busy(world, p, 'smelt')]);
+  const taken = new Set(['charcoal', 'smelt', 'smith'].flatMap((j) => [...busy(world, p, j)]));
   const from = spotOf(p);
   const far = (i: EntityRow) =>
     Math.max(Math.abs((i['x'] as number) - from.x), Math.abs((i['y'] as number) - from.y));

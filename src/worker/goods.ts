@@ -49,7 +49,12 @@ export function goodsOf(world: WorldState): GoodsView {
   // cart alone there and the inspector lists them.
   const cart = itemsOf(world).find((i) => i['kind'] === content.life.cart.kind);
   const inCart = (i: { [k: string]: unknown }) =>
-    !!cart && i !== cart && i['x'] === cart['x'] && i['y'] === cart['y'] && i['z'] === cart['z'];
+    !!cart &&
+    i !== cart &&
+    !!content.items.find((x) => x.id === i['kind'])?.tool &&
+    i['x'] === cart['x'] &&
+    i['y'] === cart['y'] &&
+    i['z'] === cart['z'];
   return {
     items: itemsOf(world)
       .filter((i) => !i['holder'] && i['state'] !== 'held' && !inCart(i))

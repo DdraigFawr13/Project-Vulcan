@@ -127,11 +127,11 @@ const sheets = new Sheets({
   lines: () => saves.ledger,
   show: (x, y, z, keep) => {
     if (!keep) closePanel();
-    setLevel(z);
+    setLevel(z, keep);
     renderer.lookAt(x, y);
     renderer.mark({ x, y });
   },
-  opened: () => hud.showPanel(undefined),
+  opened: (kind) => hud.showPanel(kind),
 });
 const picker = new Picker(hudRoot, {
   settle: (chosen) => {
@@ -159,10 +159,10 @@ const saves = new Saves({
   running: () => ready && !stopped,
 });
 
-function setLevel(z: number): void {
+function setLevel(z: number, keep = false): void {
   if (!ready || z < 0 || z > depth || z === level) return;
   level = z;
-  closePanel();
+  if (!keep) closePanel();
   renderer.setLevel(z);
   hud.showLevel(z, depth, reached);
 }
@@ -329,7 +329,7 @@ const onKey = (e: KeyboardEvent): void =>
     pause: () => setSpeed(speed === 0 ? lastRunning : 0),
     speed: setSpeed,
     zoom: (direction) => renderer.zoomStep(direction),
-    level: (direction) => setLevel(level + direction),
+    level: (d) => (debug || reached[level + d - 1] || level + d === 0) && setLevel(level + d),
   });
 
 // A hidden tab pauses, so no game time passes unseen, and resumes at its speed when shown again.

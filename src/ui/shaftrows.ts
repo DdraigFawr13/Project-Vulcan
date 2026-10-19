@@ -24,7 +24,11 @@ export function shaftFacts(tile: TileView): [string, string][] {
 
 /** Send back, while the plan can still be sent back, and the aside that says what it does. */
 export function shaftBack(tile: TileView, sendBack: () => void): HTMLElement[] {
-  if (!tile.shaft?.back) return [];
+  if (!tile.shaft) return [];
+  if (!tile.shaft.back)
+    return tile.shaft.here || tile.shaft.state === 'sinking'
+      ? [el('p', { class: 'muted' }, 'Digging has begun: it stays.')]
+      : [];
   const button = el(
     'button',
     { type: 'button', class: 'solid', 'data-testid': 'send-back-shaft' },

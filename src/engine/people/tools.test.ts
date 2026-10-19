@@ -16,9 +16,11 @@ import {
 } from '../index.ts';
 import { addEntity } from '../entity/index.ts';
 import {
+  freeTile,
   freeTools,
   heldBy,
   HELD,
+  inStore,
   layItem,
   layTool,
   restOf,
@@ -274,6 +276,45 @@ describe('tools in use', () => {
     const axes = (e: { data: Record<string, unknown> }) => String(e.data['what']).includes('axe');
     expect(lines(w, 'smith.made').filter(axes)).toEqual([]);
     expect(lines(w, 'work.tookUpSmithing').filter(axes)).toEqual([]);
+  });
+
+  it('makes a tool from ingots and charcoal lying just outside a full store', () => {
+    const w = createWorld(sim, 'ledger');
+    const [a] = people(w);
+    clearFree(w, 'axe');
+    addEntity(w, 'usage', { person: a!.id, kind: 'axe', minutes: 5000 });
+    setForge(w);
+    // The ingots and charcoal lie on free ground beside the store.
+    const spot = restOf(w, content);
+    const free: { x: number; y: number }[] = [];
+    for (let r = 1; r < 12; r += 1)
+      for (let y = spot.y - r; y <= spot.y + r; y += 1)
+        for (let x = spot.x - r; x <= spot.x + r; x += 1)
+          if (!free.some((f) => f.x === x && f.y === y) && freeTile(w, content, x, y))
+            free.push({ x, y });
+    const outside = free.splice(0, 2);
+    // The store is at its largest and every tile holds logs, so nothing can be carried in.
+    for (const at of free.splice(0, content.work.store.most - storeOf(w).length))
+      addEntity(w, 'store', { ...at, z: 0, made: 1 });
+    for (const t of storeOf(w)) {
+      const [x, y] = [t['x'] as number, t['y'] as number];
+      if (!itemsOf(w).some((i) => i['x'] === x && i['y'] === y))
+        layItem(w, { kind: 'logs', count: 1, x, y, z: 0, made: 1 });
+    }
+    expect(storeOf(w)).toHaveLength(content.work.store.most);
+    const [ingots, charcoal] = [
+      layItem(w, { kind: 'iron-ingot', count: 2, ...outside[0]!, z: 0, made: 1 }),
+      layItem(w, { kind: content.tools.charcoal, count: 1, ...outside[1]!, z: 0, made: 1 }),
+    ];
+    const lies = (id: number) => itemsOf(w).find((i) => i.id === id)!;
+    for (const id of [ingots, charcoal]) expect(lies(id)['holder']).toBeFalsy();
+    // The smith takes the work up with them lying outside.
+    for (let t = 0; t < 4 * DAY && !lines(w, 'work.tookUpSmithing').length; t += 5) step(w, sim, 5);
+    expect(lines(w, 'work.tookUpSmithing')).toHaveLength(1);
+    expect(inStore(w, lies(ingots)['x'] as number, lies(ingots)['y'] as number, 0)).toBe(false);
+    step(w, sim, 3 * DAY);
+    const made = lines(w, 'smith.made').find((e) => String(e.data['what']).includes('iron axe'));
+    expect(made).toBeDefined();
   });
 
   it('burns charcoal for a tool want when the ingots are in and the charcoal is not', () => {

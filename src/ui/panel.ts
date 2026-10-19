@@ -62,6 +62,8 @@ const when = (c: ClockView) => `${pad(c.hour)}:${pad(c.minute)}, Day ${c.day} of
 
 export class Panel {
   private shown: PanelKind | undefined;
+  /** The "why?" just tapped and where its chain goes, until the worker answers. */
+  private asked: { id: number; at: HTMLElement } | undefined;
   private readonly root = el('aside', { class: 'panel', 'data-testid': 'panel', hidden: '' });
   private readonly title = el('h2');
   private readonly body = el('div', { class: 'panel-body' });
@@ -247,10 +249,14 @@ export class Panel {
 
   /** Opens the causes of line `id` under each place it is shown. */
   showCauses(id: number, lines: readonly (LedgerLine & { depth: number })[]): void {
-    // Only the panel's own rows, not rows inside another line's open chain.
-    for (const host of this.body.querySelectorAll<HTMLElement>(`:scope > [data-line="${id}"]`)) {
-      host.querySelector(':scope > .chain')?.remove();
-      const chain = el('div', { class: 'chain', 'data-testid': 'chain' });
+    // The panel's own rows (not rows inside another line's open chain) and the place that was
+    // tapped, wherever it sits (a memory, a lean link).
+    const hosts = new Set(this.body.querySelectorAll<HTMLElement>(`:scope > [data-line="${id}"]`));
+    if (this.asked?.id === id && this.body.contains(this.asked.at)) hosts.add(this.asked.at);
+    this.asked = undefined;
+    for (const host of hosts) {
+      host.querySelector(`:scope > .chain[data-for="${id}"]`)?.remove();
+      const chain = el('div', { class: 'chain', 'data-testid': 'chain', 'data-for': String(id) });
       for (const line of lines) {
         const row = this.lineRow(line, '', false);
         row.style.setProperty('--depth', String(line.depth));
@@ -375,10 +381,14 @@ export class Panel {
     const target = e.target as HTMLElement;
     const why = target.dataset['why'];
     if (why) {
-      const host = target.closest('[data-line]');
-      const open = host?.querySelector(':scope > .chain');
+      // The chain opens under its own line when it has one, else under the tapped button's parent.
+      const at = target.closest<HTMLElement>(`[data-line="${why}"]`) ?? target.parentElement!;
+      const open = at.querySelector(`:scope > .chain[data-for="${why}"]`);
       if (open) open.remove();
-      else this.actions.why(Number(why));
+      else {
+        this.asked = { id: Number(why), at };
+        this.actions.why(Number(why));
+      }
     } else if (target.dataset['act'] === 'save') this.actions.save();
     else if (target.dataset['act'] === 'export') this.actions.exportLedger();
     else if (target.dataset['act'] === 'testmode') testMode(!this.debug);

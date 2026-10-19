@@ -208,7 +208,7 @@ export interface ShaftView {
   work: string;
   /** Who is sinking it now. */
   here?: string;
-  /** It can still be sent back: planned, not started, not itself a replacement. */
+  /** It can still be sent back: planned, not started, nobody sinking it, not itself a replacement. */
   back: boolean;
   /** The line that planned it; its "why?" leads to the plate. */
   placed?: LedgerLine;

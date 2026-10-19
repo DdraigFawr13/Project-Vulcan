@@ -232,34 +232,81 @@ export class WorkSheet {
     this.actions.setPriority(p.id, job.job, level);
   }
 
-  /** The desktop grid: a person per row, a kind of work per column; a cell cycles 1 to 4. */
+  /** The desktop grid: a person per column, a kind of work per row, grouped under the trade
+   * headings like the phone sheet (a heading's cell sets every row under it); a cell cycles 1 to 4. */
   private grid(people: readonly PersonView[], walkers: readonly WalkerView[]) {
-    const jobs = visibleJobs(walkers[0]?.work ?? [], this.shaft);
     const table = el('table', { class: 'grid' });
     const head = el('tr', {}, el('th', {}, ''));
-    for (const j of jobs) head.append(el('th', {}, j.name));
+    for (const p of people) head.append(el('th', { class: 'who', title: p.name }, first(p)));
     table.append(head);
     const notes: HTMLElement[] = [];
-    for (const p of people) {
-      const w = walkers.find((x) => x.id === p.id);
-      const tr = el('tr', {}, el('th', {}, first(p)));
-      for (const job of visibleJobs(w?.work ?? [], this.shaft)) {
-        const level = this.pending.get(`${p.id}:${job.job}`) ?? job.level;
-        const label = `${job.name} for ${p.name}: ${WORDS[level - 1]}`;
-        const cell = el(
-          'button',
-          { type: 'button', class: 'cell', 'aria-label': label },
-          String(level),
-        );
-        cell.addEventListener('click', () => this.priority(p, job, (level % LEVELS) + 1));
-        tr.append(el('td', {}, cell));
-        if (job.declined) {
+    const jobOf = (p: PersonView, id: string): Job | undefined =>
+      visibleJobs(walkers.find((x) => x.id === p.id)?.work ?? [], this.shaft).find(
+        (j) => j.job === id,
+      );
+    const level = (p: PersonView, job: Job) => this.pending.get(`${p.id}:${job.job}`) ?? job.level;
+    const cell = (p: PersonView, label: string, now: number, set: (to: number) => void) => {
+      const b = el(
+        'button',
+        {
+          type: 'button',
+          class: 'cell',
+          'aria-label': `${label} for ${p.name}: ${WORDS[now - 1]}`,
+        },
+        String(now),
+      );
+      b.addEventListener('click', () => set((now % LEVELS) + 1));
+      return el('td', {}, b);
+    };
+    const line = (name: HTMLElement, cells: HTMLElement[], under = false) => {
+      const tr = el('tr', under ? { class: 'under' } : {}, el('th', {}, name));
+      tr.append(...cells);
+      table.append(tr);
+    };
+    const rowFor = (job: Job, under: boolean) => {
+      line(
+        el('span', {}, job.name),
+        people.map((p) => {
+          const j = jobOf(p, job.job);
+          return j ? cell(p, j.name, level(p, j), (to) => this.priority(p, j, to)) : el('td');
+        }),
+        under,
+      );
+      for (const p of people) {
+        const j = jobOf(p, job.job);
+        if (j?.declined && !this.pending.has(`${p.id}:${j.job}`)) {
           const row = el('div', { class: 'prio' });
-          this.declined(row, p, job);
+          this.declined(row, p, j);
           notes.push(row);
         }
       }
-      table.append(tr);
+    };
+    const { plain, groups } = grouped(visibleJobs(walkers[0]?.work ?? [], this.shaft));
+    for (const job of plain) rowFor(job, false);
+    for (const g of groups) {
+      const open = this.unfolded.has(g.name);
+      const fold = el(
+        'button',
+        { type: 'button', class: 'fold', 'aria-expanded': String(open), 'data-heading': g.name },
+        `${open ? '▾' : '▸'} ${g.name}`,
+      );
+      fold.addEventListener('click', () => {
+        if (!this.unfolded.delete(g.name)) this.unfolded.add(g.name);
+        this.actions.refresh();
+      });
+      line(
+        fold,
+        people.map((p) => {
+          const jobs = g.jobs.flatMap((j) => jobOf(p, j.job) ?? []);
+          if (!jobs.length) return el('td');
+          const common = commonLevel(jobs.map((j) => level(p, j)));
+          return cell(p, `${g.name}, every row`, common, (to) => {
+            for (const j of jobs) this.send(p, j, to);
+            this.actions.refresh();
+          });
+        }),
+      );
+      if (open) for (const job of g.jobs) rowFor(job, true);
     }
     return [table, ...notes];
   }
