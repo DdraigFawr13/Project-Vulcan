@@ -27,13 +27,12 @@ export {
   freeTools,
   heldBy,
   HELD,
-  isWorn,
   layTool,
   lifeFor,
-  nextMaterial,
   restOf,
   speedOf,
   toolOf,
+  wornAsk,
   wornTools,
 } from './tools.ts';
 export { eatFrom, foodGoneLine } from './food.ts';

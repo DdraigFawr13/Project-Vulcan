@@ -66,6 +66,7 @@ export function layItem(
     wear: extra.wear ?? 0,
     trail: extra.trail ?? '',
     worked: 0,
+    worn: 0,
   });
 }
 

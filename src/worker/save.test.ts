@@ -124,15 +124,9 @@ describe('saves', () => {
       (s: SaveFile) => addShaft(s, { state: 'sunk' }),
       (s: SaveFile) => addShaft(s, { depth: 3, to: 2 }),
       (s: SaveFile) => addShaft(s, { to: 99, depth: 0 }),
-      // A level below one nobody has reached.
-      (s: SaveFile) =>
-        (s.state.map.levels[1] = {
-          tiles: new Uint8Array(s.state.map.tiles.length),
-          tileCauses: new Int32Array(s.state.map.tiles.length),
-          features: new Uint8Array(s.state.map.tiles.length),
-          known: new Uint8Array(s.state.map.tiles.length),
-          chunkVersions: [...s.state.map.chunkVersions],
-        }),
+      // A level below one nobody has reached (worn tools sink a shaft early, so skip one past the
+      // deepest reached).
+      (s: SaveFile) => (s.state.map.levels[s.state.map.levels.length + 1] = levelOf(s)),
     ];
     for (const hurt of damage) {
       const bad = save();

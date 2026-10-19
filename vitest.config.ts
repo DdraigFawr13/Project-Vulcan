@@ -18,6 +18,8 @@ const slowFiles = [
   'src/engine/people/jobs.test.ts',
   'src/engine/sim/skip.test.ts',
   'src/worker/save.test.ts',
+  // A 136-day run (Bundle 1's field views): 15 s of the quick tier's 37 s (P4.9).
+  'src/worker/fields.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).

@@ -5,16 +5,7 @@
 // back. A tool at no wear left breaks. The work's minutes are divided by the tool's speed.
 import { clockAt, TICKS_PER_DAY, type EngineContent, type EntityRow } from '../core/index.ts';
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
-import {
-  freeTools,
-  heldBy,
-  HELD,
-  isWorn,
-  nextMaterial,
-  restOf,
-  speedOf,
-  toolOf,
-} from '../goods/index.ts';
+import { freeTools, heldBy, HELD, restOf, speedOf, toolOf, wornAsk } from '../goods/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { dayOf } from './day.ts';
@@ -127,7 +118,7 @@ export function worked(ctx: SystemContext, p: EntityRow, use: string): void {
   if (!tool) return;
   tool['worked'] = (tool['worked'] as number) + 1;
   tool['wear'] = (tool['wear'] as number) - 1;
-  if (!tool['worn'] && isWorn(content, tool)) wornLine(ctx, p, tool);
+  if (!tool['worn']) wornLine(ctx, p, tool);
   if ((tool['wear'] as number) > 0) return;
   ctx.emit('tool.broke', {
     causes: [tool['made'] as number].filter((l) => l > 0),
@@ -146,7 +137,7 @@ export function worked(ctx: SystemContext, p: EntityRow, use: string): void {
 function wornLine(ctx: SystemContext, p: EntityRow, tool: EntityRow): void {
   const { content } = ctx;
   const t = content.items.find((i) => i.id === tool['kind'])!;
-  const next = t.tool && nextMaterial(content, t.tool.material);
+  const next = wornAsk(content, tool);
   if (!t.tool || !next?.ingot) return;
   const kind = content.tools.kinds.find((k) => k.id === t.tool!.kind)!;
   const ingot = content.items.find((i) => i.id === next.ingot)?.name ?? next.ingot;

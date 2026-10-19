@@ -138,17 +138,25 @@ export function slotFor(
   return best;
 }
 
+/** Each item kind's `good` (items.json), worked out once per content: `haveOf` is hot. */
+const goodCache = new WeakMap<EngineContent, Map<string, string | undefined>>();
+function goodsOf(content: EngineContent): Map<string, string | undefined> {
+  let m = goodCache.get(content);
+  if (!m) goodCache.set(content, (m = new Map(content.items.map((d) => [d.id, d.good]))));
+  return m;
+}
+
 /** How much of a good the colony has: in the store, lying about where someone can get to it, or
  * being carried. A good is an item kind (logs) or the `good` an item belongs to in items.json
  * (food: preserved, berries...). Logs shut in by trees and a new wall are not had (P4.9: on anvil
  * 94 of them stopped all felling for a year, and the fires went out in Lastsnow). */
 export function haveOf(world: WorldState, content: EngineContent, good: string): number {
   const map = world.map;
+  const goods = goodsOf(content);
   let reach: ((to: Spot) => boolean) | undefined;
   let n = 0;
   for (const i of itemsOf(world)) {
-    if (i['kind'] !== good && content.items.find((d) => d.id === i['kind'])?.good !== good)
-      continue;
+    if (i['kind'] !== good && goods.get(i['kind'] as string) !== good) continue;
     // Off the map (x -1) is an owned tool between uses, kept as carried.
     if (!i['holder'] && (i['x'] as number) >= 0) {
       reach ??= reachFrom(content, map, { x: map.startX, y: map.startY, z: 0 });

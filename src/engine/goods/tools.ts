@@ -52,17 +52,23 @@ export function speedOf(content: EngineContent, item: EntityRow): number {
 
 /** The material a worn tool of `material` asks to be replaced by: the next one up that is smithed
  * from an ingot (stone asks for bronze, bronze for iron, iron for none). */
-export function nextMaterial(content: EngineContent, material: string) {
+function nextMaterial(content: EngineContent, material: string) {
   const all = content.tools.materials;
   return all.slice(all.findIndex((m) => m.id === material) + 1).find((m) => m.ingot);
 }
 
 /** Whether a tool has under `tools.worn` per cent of its life left. */
-export function isWorn(content: EngineContent, item: EntityRow): boolean {
+function isWorn(content: EngineContent, item: EntityRow): boolean {
   const t = toolOf(content, item);
   if (!t) return false;
   const life = lifeFor(content, t.material, item['quality'] as string);
   return (item['wear'] as number) * 100 < life * content.tools.worn;
+}
+
+/** The material a tool asks to be replaced by once worn, if it is worn and one can be smithed. */
+export function wornAsk(content: EngineContent, item: EntityRow) {
+  const t = toolOf(content, item);
+  return t && isWorn(content, item) ? nextMaterial(content, t.material) : undefined;
 }
 
 const rank = (content: EngineContent, material: string): number =>
@@ -70,9 +76,13 @@ const rank = (content: EngineContent, material: string): number =>
 
 /** Held worn tools that ask for a better one (Morgan's card, P4.9): each with the material and
  * ingot it asks for, while no free tool of its kind that good or better lies at the cart. */
-export function wornTools(world: WorldState, content: EngineContent) {
-  const out: { item: EntityRow; kind: string; material: string; ingot: string; ingots: number }[] =
-    [];
+export function wornTools(world: WorldState, content: EngineContent): readonly Worn[] {
+  // Worked out once a tick and line: what changes the answer (a tool worn, made, taken or
+  // broken) writes a line, and the want is read many times a minute.
+  const key = `${world.tick}:${world.nextEventId}`;
+  const hit = wornCache.get(world);
+  if (hit?.key === key && hit.content === content) return hit.out;
+  const out: Worn[] = [];
   for (const item of itemsOf(world)) {
     const t = isHeld(item) ? toolOf(content, item) : undefined;
     if (!t || !isWorn(content, item)) continue;
@@ -84,8 +94,15 @@ export function wornTools(world: WorldState, content: EngineContent) {
     const ingots = content.tools.kinds.find((k) => k.id === t.kind)?.ingots ?? 0;
     out.push({ item, kind: t.kind, material: next.id, ingot: next.ingot, ingots });
   }
+  wornCache.set(world, { key, content, out });
   return out;
 }
+
+type Worn = { item: EntityRow; kind: string; material: string; ingot: string; ingots: number };
+const wornCache = new WeakMap<
+  WorldState,
+  { key: string; content: EngineContent; out: readonly Worn[] }
+>();
 
 /** Ingots of `ingot` the worn tools ask for. */
 export const wornIngots = (world: WorldState, content: EngineContent, ingot: string): number =>

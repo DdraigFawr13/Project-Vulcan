@@ -24,7 +24,7 @@ One page. Everything else is read only at the section a reading list names.
 
 ## Handoffs
 
-Delegate only when it is cheaper (VR-51): over about 30k tokens of reading or output, over about 150 lines of spec'd code, or parallel work. Agents and when to use them: `docs/TOOLKIT.md` §2. Every brief names its reading list and asks for a capped report.
+Delegate only when cheaper (VR-51): ~30k tokens of reading or output, ~150 lines of spec'd code, or parallel work. Agents: `docs/TOOLKIT.md` §2. Each brief names its reading list and caps its report.
 
 ## Budgets (log overruns as OVER, VR-47)
 

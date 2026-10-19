@@ -6,7 +6,7 @@
 // floors and pieces stand it is built and smiths work at the forge.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
-import { inStore, itemsOf, layItem, raiseStock } from '../goods/index.ts';
+import { inStore, itemsOf, layItem, marksOf, raiseStock } from '../goods/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bedOwnedBy, furnitureOf } from './furniture.ts';
@@ -271,7 +271,7 @@ function place(
   def.pieces.forEach((kind, k) => {
     const [x, y] = spots[k]!;
     addEntity(world, 'plan', {
-      ...{ part: floor.id, x, y, z: 0, have: 0, work: -1, state: 'plan', house: id },
+      ...{ part: floor.id, x, y, z: 0, have: 0, also: 0, work: -1, state: 'plan', house: id },
       ...{ line, done: 0, waited: 0, shut: 0, held: 0 },
     });
     const piece = content.buildings.furniture.kinds.find((q) => q.id === kind)!;
@@ -355,6 +355,8 @@ export function sendBackSmithy(
       });
     removeEntity(world, 'plan', p.id);
   }
+  for (const m of marksOf(world).filter((m) => m['house'] === s!.id))
+    removeEntity(world, 'mark', m.id);
   for (const f of pieces) {
     const kind = content.buildings.furniture.kinds.find((q) => q.id === f['kind'])!;
     if ((f['have'] as number) > 0)
