@@ -62,8 +62,11 @@ describe('fire views', () => {
     expect(seen.some((t) => /^(Tending: |Splitting logs|Warming up)/.test(t))).toBe(true);
     expect(seen.some((t) => /\{/.test(t))).toBe(false);
 
+    // A fire in the open warms to its full radius; a room's hearth to the room's far side (by
+    // day 6 of a hard winter the band may be indoors and the campfire burnt down).
     const fire = goodsOf(w).fires[0]!;
-    expect(fire.radius).toBeGreaterThanOrEqual(content.work.fire.radius);
+    const indoors = !!roomAt(w, winter, fire.x, fire.y);
+    expect(fire.radius).toBeGreaterThanOrEqual(indoors ? 2 : content.work.fire.radius);
     const piece = tileGoods(w, fire.x, fire.y, 0, nobody).piece!;
     expect(piece.fire?.state).toMatch(/^(lit|banked)/);
     expect(piece.fire?.fuel).toMatch(/^firewood, (\d+ h)?( ?\d+ min)? left/);

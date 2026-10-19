@@ -73,9 +73,12 @@ describe('fields', () => {
         .filter((i) => i['kind'] === kind && inStore(world, i['x'] as number, i['y'] as number, 0))
         .reduce((n, i) => n + (i['count'] as number), 0);
     step(world, sim, 80 * DAY);
-    // The cart's seed all went into the ground; the turnips sown after the barley use the
-    // harvest's seed again, so watch the store hour by hour.
-    expect(stored('seed')).toBe(0);
+    // The cart's seed went into the ground, a seed a tile; the turnips sown after the barley use
+    // the harvest's seed again, so watch the store hour by hour.
+    const sown = fieldsOf(world).reduce((n, f) => n + (f['tiles'] as number[]).length, 0);
+    const before = stored('seed');
+    const cart = content.life.cart.goods.find((g) => g.kind === 'seed')!.count;
+    expect(before).toBeLessThanOrEqual(cart - sown);
     const most = { grain: 0, seed: 0 };
     // Each reaper remembers bringing it in (V-091), the memory citing the harvest home.
     let remembered: boolean | undefined;
@@ -106,7 +109,7 @@ describe('fields', () => {
     expect(remembered).toBe(true);
     // Hauled in: grain stands in the store, and the seed the cart brought was topped up.
     expect(most.grain).toBeGreaterThan(0);
-    expect(most.seed).toBeGreaterThan(0);
+    expect(most.seed).toBeGreaterThan(before);
   }, 20000);
 
   it('loses a sown crop to frost and the line cites the weather spell', () => {

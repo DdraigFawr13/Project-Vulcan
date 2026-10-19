@@ -17,7 +17,7 @@
 "eat":{"preserved":6000,"berries":1500,"fish":4000,"game":4000,"grain":3000,"turnips":2500,"seed":2000,"meal":8000},
 "lastResort":["seed"],
 "mood":[{"word":"Content","at":6000},{"word":"Steady","at":4000},{"word":"Low","at":2000},{"word":"Miserable","at":0}],
-"cart":{"kind":"cart","goods":[{"kind":"preserved","count":240},{"kind":"seed","count":40}],"bedroll":"bedroll","cloak":"cloak"},
+"cart":{"kind":"cart","goods":[{"kind":"preserved","count":480},{"kind":"seed","count":80}],"bedroll":"bedroll","cloak":"cloak"},
 "memory":{"weight":100},
 "cloak":{"warmth":4,"wear":1,"last":2700},
 "stacks":{"preserved":50,"grain":50,"turnips":50,"seed":50,"logs":25,"stone":25,"default":25}

@@ -25,13 +25,16 @@ describe('skip ahead', () => {
       kind: 'setStock',
       data: { good: 'logs', level: 'plenty' },
     };
+    // No food wanted: nobody forages, so the cart's food runs out before the first harvest.
+    const fast = { tick: lever.tick, kind: 'setStock', data: { good: 'food', level: 'none' } };
     submitCommand(skipped, lever);
+    submitCommand(skipped, fast);
     // A quiet month: the first notable line is the colony siting its house; skipping on from
     // each stop reaches the band eating the last of the cart's food.
     const stops: string[] = [];
     let from = start;
-    while (stops.at(-1) !== 'goods.foodGone' && skipped.tick < start + 60 * DAY) {
-      step(skipped, sim, 60 * DAY, sim.notable);
+    while (stops.at(-1) !== 'goods.foodGone' && skipped.tick < start + 90 * DAY) {
+      step(skipped, sim, 90 * DAY, sim.notable);
       const stop = skipped.log.at(-1)!;
       expect(stop.tick).toBe(skipped.tick);
       stops.push(skipped.log.filter((e) => e.tick === skipped.tick).find(sim.notable)!.type);
@@ -48,6 +51,7 @@ describe('skip ahead', () => {
 
     const run = createWorld(sim, 'ledger');
     submitCommand(run, lever);
+    submitCommand(run, fast);
     while (run.tick < skipped.tick) step(run, sim, Math.min(100, skipped.tick - run.tick));
     expect(toNdjson(allLines(run))).toBe(toNdjson(allLines(skipped)));
 

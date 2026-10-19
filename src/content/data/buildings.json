@@ -20,7 +20,7 @@
 ],
 "stage":{"id":"room","name":"room","w":5,"h":4,"sleeps":2},"private":4},
 "town":{"ring":16,"step":4,"most":32},
-"field":{"name":"Fields","seed":"seed","weigh":{"fertility":2,"water":4,"tries":40},"start":2,"perMouth":10,"reach":45,"water":8,"good":40,"least":6,"crops":[
+"field":{"name":"Fields","seed":"seed","weigh":{"fertility":2,"water":4,"tries":40},"start":2,"perMouth":12,"reach":45,"water":8,"good":40,"least":6,"crops":[
 {"id":"barley","name":"barley","item":"grain","sow":["Thawmonth","Seedmonth"],"days":84,"yield":50,"frost":-1},
 {"id":"turnips","name":"turnips","item":"turnips","sow":["Highsun","Goldmonth"],"days":56,"yield":50,"frost":-1}
 ]},

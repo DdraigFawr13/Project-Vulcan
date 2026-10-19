@@ -8,6 +8,7 @@
 // felling or quarrying and each tree felled or boulder broken are ledger lines; trips are not.
 import { houseName } from '../build/index.ts';
 import { raiseChunk } from '../map/index.ts';
+import { needOf } from '../needs/index.ts';
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import {
   haveOf,
@@ -213,6 +214,10 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
     if (item && walkTo(ctx, p, spotOf(item))) return true;
     p['target'] = -1;
   }
+  // Under its seek line, recreation beats taking up new work (P2.2): the mind lets them relax.
+  const fun = needOf(world, p.id, 'recreation');
+  const seek = content.life.needs.find((n) => n.id === 'recreation')?.seek ?? 0;
+  if (fun && (fun['value'] as number) < seek) return false;
   if (world.tick < (p['next'] as number)) return false;
   return takeUp(ctx, p);
 }
