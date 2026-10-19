@@ -190,6 +190,11 @@ export interface GoodsView {
   plans: (Spot3 & { part: string; state: string; house: number })[];
   /** Furniture (P3.4): the art id and facing (the page picks the frame), planned ones faint. */
   furniture: (Spot3 & { art: string; facing: string; plan: boolean })[];
+  /** Lit fires (P3.6) for the night's firelight: the glow's reach in tiles, dimmer when banked. */
+  fires: (Spot3 & { radius: number; banked: boolean })[];
+  /** Plans, parts and pieces someone is working now (P3.6): minutes done of the total, for the
+   * progress bar. Apart from the lists above so the map redraws only when those change. */
+  work: (Spot3 & { done: number; total: number })[];
 }
 
 /** One good's stock lever (P2.4): how much the colony has and wants, and the levels to pick. */

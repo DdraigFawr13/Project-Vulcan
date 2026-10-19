@@ -26,6 +26,8 @@ export interface RoomView {
   beauty: string;
   impressiveness: string;
   beds: string;
+  /** "Warm, 14 °C · no hearth" (P3.6): the felt temperature at the tile and the room's hearth. */
+  warmth: string;
 }
 
 /** A house or a room added to one, for the Build sheet and the map (P3.7, P3.8). */
@@ -103,11 +105,23 @@ export interface PieceView {
   rest?: string;
   /** A bed's privacy: "Pedr sleeps alone here", "3 sleep here". */
   privacy?: string;
-  /** Planned: wood brought, "2 of 4 logs here", and who is making it and what they are doing. */
+  /** Planned: material brought, "2 of 4 logs here", its name ("logs", "stone"), and who is making
+   * it and what they are doing. */
   wood?: string;
+  good?: string;
   maker?: string;
   /** The bench (built): what it is making, who is at it and what comes next, and why. */
   bench?: { making: string; maker: string; next: string };
+  /** A built hearth's fire (P3.6): where it is, whether it is lit, banked or out, its fuel left,
+   * what it warms, and the line of its last change with a word for it. */
+  fire?: {
+    where: string;
+    state: string;
+    fuel: string;
+    reach: string;
+    last?: LedgerLine;
+    lastLabel?: string;
+  };
   /** The lines behind it: placed, made, and a bed's claiming. */
   placed?: LedgerLine;
   made?: LedgerLine;

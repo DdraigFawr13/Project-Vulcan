@@ -14,7 +14,7 @@ import { noise } from './draw-nature.mjs';
 
 const S = 32;
 
-function canvas() {
+export function canvas() {
   const img = createImage(S, S);
   const put = (x, y, c) => {
     if (x < 0 || y < 0 || x >= S || y >= S) return;
@@ -32,7 +32,7 @@ function canvas() {
 }
 
 const has = (img, x, y) => x >= 0 && y >= 0 && x < S && y < S && img.data[(y * S + x) * 4 + 3] > 0;
-function outline(img, ink) {
+export function outline(img, ink) {
   const mark = [];
   for (let y = 0; y < S; y++)
     for (let x = 0; x < S; x++)

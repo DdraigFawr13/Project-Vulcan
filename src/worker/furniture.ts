@@ -22,11 +22,17 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
+import { fireView, hearthArt, hearthName } from './fires.ts';
 import type { GoodsView, LedgerLine } from './protocol.ts';
 import type { PieceView } from './protocol-build.ts';
 
 const def = content.buildings.furniture;
 const wood = content.items.find((i) => i.id === def.material)?.name ?? def.material;
+/** The name of what a kind is made of: logs, or a hearth's stone. */
+const materialName = (kind: { material?: string }): string => {
+  const id = kind.material ?? def.material;
+  return content.items.find((i) => i.id === id)?.name ?? id;
+};
 const aOrAn = (word: string): string => `${/^[aeiou]/.test(word) ? 'an' : 'a'} ${word}`;
 
 const personName = (world: WorldState, id: unknown): string =>
@@ -35,7 +41,10 @@ const personName = (world: WorldState, id: unknown): string =>
 /** The person on a planned piece, if any. */
 const makerOf = (world: WorldState, piece: EntityRow): EntityRow | undefined =>
   (world.entities['person'] ?? []).find(
-    (p) => p['status'] === 'alive' && p['job'] === 'carpentry' && p['plan'] === piece.id,
+    (p) =>
+      p['status'] === 'alive' &&
+      ['carpentry', 'hearth'].includes(p['job'] as string) &&
+      p['plan'] === piece.id,
   );
 
 /** The "Making" rows of a piece that is not built: the maker and what they are doing. */
@@ -43,11 +52,12 @@ function makingOf(world: WorldState, piece: EntityRow): string {
   const who = makerOf(world, piece);
   if (!who) return 'nobody yet';
   const load = itemsOf(world).find((i) => i['holder'] === who.id);
-  const short = (piece['have'] as number) < furnitureKind(content, piece).cost;
+  const kind = furnitureKind(content, piece);
+  const short = (piece['have'] as number) < kind.cost;
   const doing = load
-    ? `bringing ${load['count'] as number} ${wood}`
+    ? `bringing ${load['count'] as number} ${materialName(kind)}`
     : short
-      ? `fetching ${wood}`
+      ? `fetching ${materialName(kind)}`
       : 'at work';
   return `${who['name'] as string}, ${doing}`;
 }
@@ -58,7 +68,7 @@ export const furnitureGoods = (world: WorldState): GoodsView['furniture'] =>
     x: f['x'] as number,
     y: f['y'] as number,
     z: f['z'] as number,
-    art: furnitureKind(content, f).art,
+    art: hearthArt(world, f, furnitureKind(content, f).art),
     facing: f['facing'] as string,
     plan: f['state'] !== 'built',
   }));
@@ -137,6 +147,7 @@ export function tilePiece(
   const [placed, made] = [line(f['line']), built ? line(f['made']) : undefined];
   const room = built && kind.beds > 0 ? roomAt(world, content, x, y) : undefined;
   const claim = claimOf(world, f);
+  const fire = built ? fireView(world, f, lineOf) : undefined;
   const claimed = claim && lineOf(claim);
   const quality = qualityOf(content, f['quality'] as number);
   const maker = f['maker'] ? `, made by ${personName(world, f['maker'])}` : '';
@@ -145,7 +156,7 @@ export function tilePiece(
   return {
     piece: {
       kind: kind.id,
-      name: kind.name,
+      name: kind.id === 'hearth' ? hearthName(world, f) : kind.name,
       state: f['state'] as string,
       ...(built && {
         quality: `${quality.word}${maker}`,
@@ -160,9 +171,11 @@ export function tilePiece(
         privacy: privacyOf(world, f, room.sleepers),
       }),
       ...(!built && {
-        wood: `${f['have'] as number} of ${kind.cost} ${wood} here`,
+        wood: `${f['have'] as number} of ${kind.cost} ${materialName(kind)} here`,
+        good: materialName(kind),
         maker: makingOf(world, f),
       }),
+      ...(fire && { fire }),
       ...(f === benchOf(world) && { bench: benchOfView(world) }),
       ...(placed && { placed }),
       ...(made && { made }),

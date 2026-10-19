@@ -8,7 +8,15 @@ import { ITEMS } from './sheets.ts';
 const TILE = 32;
 
 export class GoodsSprites {
-  private view: GoodsView = { items: [], store: [], marks: [], plans: [], furniture: [] };
+  private view: GoodsView = {
+    items: [],
+    store: [],
+    marks: [],
+    plans: [],
+    furniture: [],
+    fires: [],
+    work: [],
+  };
   private shown: Phaser.GameObjects.Image[] = [];
   private key = '';
   private z = 0;

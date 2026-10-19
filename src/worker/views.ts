@@ -6,10 +6,10 @@ import {
   CHUNK,
   chunksAcross,
   clockAt,
+  feltAt,
   isFrozen,
   layerOf,
   recordOf,
-  tileTemperature,
   type MapState,
   type SimEvent,
   type Stub,
@@ -49,7 +49,7 @@ function climateOf(w: WorldState, x: number, y: number, z: number): Partial<Tile
   const school = spot && content.schools.find((s) => s.id === spot.school);
   return {
     ...(z === 0 && {
-      temperature: tileTemperature(content, map, w.systems['weather']?.['temp'] ?? 0, i),
+      temperature: feltAt(w, content, i),
     }),
     ...(z === 0 && WATER[map.water[i]!] === 'lake' && { ice: iceOf(w, i) }),
     ...((aura > 0 || spot) && {

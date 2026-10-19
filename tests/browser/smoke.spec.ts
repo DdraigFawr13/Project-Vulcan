@@ -160,6 +160,10 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(panel.getByTestId('stock-logs')).toContainText('of 50 wanted');
   await panel.getByTestId('stock-logs').getByRole('button', { name: 'Plenty (200)' }).click();
   await expect(panel.getByTestId('stock-logs')).toContainText('of 200 wanted');
+  // P3.6: Firewood is its own plate, with the same three levels as Wood (V-048).
+  const firewood = panel.getByTestId('stock-firewood');
+  await expect(firewood).toContainText(/^Firewood: \d+ of 20 wanted/);
+  await expect(firewood.getByRole('button', { name: 'Plenty (60)' })).toBeVisible();
   // Food is a stock level too (P2.9). Wanting none means nobody forages, so the band goes hungry
   // when the cart runs out, which the "why?" step below needs.
   await panel.getByTestId('stock-food').getByRole('button', { name: /^None/ }).click();
@@ -233,6 +237,14 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   const carpentry = panel.locator('.prio').filter({ hasText: 'Carpentry' });
   await expect(carpentry).toContainText(/crafting \d+, can reach \d+/);
   for (const b of await carpentry.getByRole('button').all()) {
+    const box = (await b.boundingBox())!;
+    expect([box.width, box.height].every((n) => n >= 42)).toBe(true);
+  }
+  // P3.6: Tending is its own row beside Felling and Hauling, with the same four-step priority.
+  const tend = panel.locator('.prio[data-job="tend"]');
+  await expect(tend).toContainText('Tending');
+  await expect(tend).toContainText('no skill needed');
+  for (const b of await tend.getByRole('button').all()) {
     const box = (await b.boundingBox())!;
     expect([box.width, box.height].every((n) => n >= 42)).toBe(true);
   }

@@ -5,15 +5,19 @@ import type {
   AuraView,
   BuildView,
   ChunkView,
+  ClockView,
   GoodsView,
   PersonView,
+  Speed,
   WalkerView,
 } from '../worker/index.ts';
 import { BuildSprites } from './build.ts';
+import { Firelight } from './firelight.ts';
 import { FurnitureSprites } from './furniture.ts';
 import { GoodsSprites } from './goods.ts';
 import { GreenSprites } from './green.ts';
 import { PeopleSprites } from './people.ts';
+import { WorkBars } from './progress.ts';
 import { TILE, ValleyScene, type Hover } from './scene.ts';
 
 export type { Hover } from './scene.ts';
@@ -38,8 +42,9 @@ export interface Renderer {
   /** Moves the people to where the latest snapshot stands them (P2.3); they glide there. */
   movePeople(walkers: readonly WalkerView[]): void;
   /** Draws the store, the items lying about and test marks (P2.4), the plans (P3.1) and the
-   * furniture (P3.4). */
-  setGoods(goods: GoodsView): void;
+   * furniture (P3.4); at night the firelight (P3.6), and the progress bars, which glide at the
+   * snapshot's speed (a skip counts as the fastest). */
+  setGoods(goods: GoodsView, sky: { speed: Speed; skipping: boolean; clock: ClockView }): void;
   /** Draws the green and the names of planned houses (P3.7). */
   setBuild(view: BuildView): void;
   /** Marks the inspected tile, or clears the mark. */
@@ -76,10 +81,13 @@ export function startRenderer(
   const build = new BuildSprites(game, scene);
   const furniture = new FurnitureSprites(game, scene);
   const green = new GreenSprites(game, scene);
+  const light = new Firelight(game, scene);
+  const bars = new WorkBars(game, scene);
   return {
     setMapSize: (width, height) => {
       scene.setMapSize(width, height);
       build.setMapSize(width, height);
+      light.setMapSize(width, height);
     },
     applyChunks: (chunks) => {
       scene.applyChunks(chunks);
@@ -96,14 +104,18 @@ export function startRenderer(
       build.setLevel(z);
       furniture.setLevel(z);
       green.setLevel(z);
+      light.setLevel(z);
+      bars.setLevel(z);
     },
     setPeople: (list) => people.set(list),
     personAt: (x, y) => people.at(x, y),
     movePeople: (walkers) => people.move(walkers),
-    setGoods: (view) => {
+    setGoods: (view, sky) => {
       goods.set(view);
       build.setPlans(view.plans);
       furniture.set(view.furniture);
+      light.set(view.fires, sky.clock);
+      bars.set(view.work, sky.skipping ? 3 : sky.speed);
     },
     setBuild: (view) => green.set(view),
     mark: (tile) => scene.mark(tile),

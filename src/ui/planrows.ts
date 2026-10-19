@@ -39,8 +39,7 @@ export function planFacts(tile: TileView): [string, string][] {
     );
   if (house) rows.push(['roof', house.roof]);
   if (room) {
-    const warmth = tile.temperature === undefined ? '' : `${tile.temperature} °C, `;
-    rows.push(['beds', room.beds], ['warmth', `${warmth}as outdoors (hearths come in P3.6)`]);
+    rows.push(['beds', room.beds], ['warmth', room.warmth]);
   }
   return rows;
 }
