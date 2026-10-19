@@ -76,3 +76,15 @@ export function expireMemories(world: WorldState): void {
   for (const m of rowsOf(world).filter((r) => world.tick >= (r['until'] as number)))
     removeEntity(world, 'memory', m.id);
 }
+
+/** A person's warmth warning line (V-046, P4.8): the need's line moved by their traits and each
+ * memory they hold, as life.json `warmthLine` says, kept within the scale. */
+export function warmLineOf(world: WorldState, content: EngineContent, person: number): number {
+  const base = content.life.needs.find((n) => n.id === 'warmth')?.low ?? 0;
+  const { traits, memories } = content.life.warmthLine;
+  let line = base;
+  for (const t of world.entities['trait'] ?? [])
+    if (t['person'] === person) line += traits[t['trait'] as string] ?? 0;
+  for (const m of memoriesOf(world, person)) line += memories[m['memory'] as string] ?? 0;
+  return Math.max(0, Math.min(content.life.scale, line));
+}

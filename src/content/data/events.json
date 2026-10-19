@@ -126,5 +126,9 @@
 {"id":"smithy.sited","importance":2,"template":"The colony plans a smithy on the {dir} side of the {house}: {why}.","notable":{}},
 {"id":"smithy.noGround","importance":2,"template":"No free ground beside {name}'s house fits a smithy.","notable":{}},
 {"id":"smithy.built","importance":2,"template":"The smithy is built: forge, anvil block and quench tub.","notable":{}},
-{"id":"smithy.sentBack","importance":2,"template":"The smithy plan was sent back: the colony chooses again."}
+{"id":"smithy.sentBack","importance":2,"template":"The smithy plan was sent back: the colony chooses again."},
+{"id":"law.set","importance":2,"template":"The {law} is now {setting}."},
+{"id":"law.answered","importance":2,"template":"{name} {now}{verb} {days}: {reasons}.","notable":{"answer":"refuses"}},
+{"id":"law.keptCustom","importance":2,"template":"{name} {did}: refuses {days}.","notable":{}},
+{"id":"law.saw","importance":1,"template":"{names} saw {name} refuse {days}."}
 ]

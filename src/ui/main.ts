@@ -172,7 +172,7 @@ function openPanel(kind: PanelButton): void {
   if (kind === 'ledger') panel.showLedger(saves.ledger);
   else if (kind === 'region') send({ type: 'region' });
   else if (kind === 'stock') panel.showStock(stock);
-  else if (kind === 'work' || kind === 'build' || kind === 'dawn') sheets.open(kind);
+  else if (kind !== 'saves') sheets.open(kind);
   else void saves.showList();
   hud.showPanel(kind);
 }

@@ -7,6 +7,7 @@ import { goodsSystem } from './goods/index.ts';
 import { mapSystem } from './map/index.ts';
 import { mineSystem } from './mine/index.ts';
 import { needsSystem } from './needs/index.ts';
+import { lawSystem } from './law/index.ts';
 import { peopleSystem } from './people/index.ts';
 import { regionSystem } from './region/index.ts';
 import { weatherSystem } from './weather/index.ts';
@@ -95,7 +96,20 @@ export {
   moodOf,
   needOf,
   needsSystem,
+  warmLineOf,
 } from './needs/index.ts';
+export {
+  customaryHours,
+  hoursOf,
+  lawDef,
+  lawHours,
+  lawSystem,
+  leanOf,
+  settingOf,
+  weigh,
+  WORK_HOURS,
+  type Answer,
+} from './law/index.ts';
 export {
   dayOf,
   declinedLine,
@@ -143,6 +157,7 @@ export const SYSTEMS: readonly System[] = [
   mineSystem,
   fireSystem,
   needsSystem,
+  lawSystem,
   calendarSystem,
   weatherSystem,
 ];

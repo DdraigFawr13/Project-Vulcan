@@ -328,3 +328,40 @@ table.grid td {
 .panel .empty {
   font-style: italic;
 }
+
+/* Laws sheet and the person sheet's law block (P4.8): an answer per person, refusals first. */
+.lawset {
+  font-size: 15px;
+}
+.group {
+  margin: 14px 0 2px;
+  font: 700 15px var(--name);
+  color: var(--rubric);
+}
+.ans {
+  border-top: 1px solid var(--rule);
+  padding: 8px 0 6px;
+}
+.ans .who {
+  font: 700 16px var(--name);
+}
+.ans p {
+  margin: 3px 0;
+}
+.ans .w {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.mem {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-size: 15px;
+  margin: 4px 0;
+}
+.mem .pts {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
