@@ -4,7 +4,7 @@
 import { clockAt } from '../core/index.ts';
 import { stockOf, wantOf } from '../goods/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
-import { FIRE_TABLES, firesOf, fuelOf, occupied, pieceOfFire, placeOf, timeWords } from './fire.ts';
+import { FIRE_TABLES, firesOf, fuelOf, pieceOfFire, placeOf, timeWords } from './fire.ts';
 
 function runFires(ctx: SystemContext): void {
   const { world, content } = ctx;
@@ -12,10 +12,8 @@ function runFires(ctx: SystemContext): void {
   // Dawn is when the colony's work starts (people/day.ts keeps it once the player changes it).
   const dawn = world.systems['people']?.['workFrom'] ?? content.work.hours.from;
   for (const f of firesOf(world)) {
-    // Only a lit fire keeps track of use: it is the idle burn-down that reads it.
     if (!f['lit']) continue;
     const piece = pieceOfFire(world, f);
-    if (occupied(world, content, piece)) f['used'] = world.tick;
     if (f['banked'] && hour === dawn) {
       f['banked'] = 0;
       f['line'] = ctx.emit('fire.unbanked', {
@@ -49,7 +47,7 @@ function runFires(ctx: SystemContext): void {
 export const fireSystem: System = {
   id: 'fire',
   every: 'hour',
-  emits: ['fire.built', 'fire.lit', 'fire.out', 'fire.banked', 'fire.unbanked'],
+  emits: ['fire.out', 'fire.unbanked'],
   tables: FIRE_TABLES,
   run: runFires,
 };

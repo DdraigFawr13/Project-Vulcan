@@ -1,7 +1,7 @@
 // Hearths (P3.6, V-041, V-049, V-050): colonists decide where fires go. The first is the campfire
-// on the green, planned in the first hour on the nearest free open tile; after that every built
-// room with a role (a place to sleep) that has no hearth, planned or built, gets one, sited by
-// the hearth kind's `place` hint like the rest of a room's wants (wants.ts). A planned hearth is
+// on the green, planned in the first hour on the nearest free open tile; after that a built room
+// gets one only when someone is in it while it is under `rooms.hearthBelow` without a fire
+// (V-068), sited by the hearth kind's `place` hint (wants.ts). A planned hearth is
 // a furniture piece in state `plan`; builders make it where it stands (people/hearth.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
@@ -112,7 +112,7 @@ export function planRoomHearths(ctx: SystemContext): void {
     );
     const cause = cold?.['low']
       ? (cold['line'] as number)
-      : (world.systems['weather']?.['spell'] ?? 0);
+      : (world.systems['weather']?.['spell'] as number) || world.begunEvent;
     const line = ctx.emit('fire.plannedCold', {
       causes: [cause].filter((c) => c > 0),
       actors: [who.id],

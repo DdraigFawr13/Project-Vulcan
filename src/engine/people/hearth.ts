@@ -2,9 +2,9 @@
 // them, so a hearth is a row of the Work sheet's Building kind. A free person able to build takes
 // up the nearest planned hearth they can fetch stone for and works it where it stands, through the
 // same making flow as furniture (carpentry.ts `furnishing`), with the job word `hearth` on them.
-import type { EntityRow } from '../core/index.ts';
+import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { furnitureKind, furnitureOf } from '../build/index.ts';
-import { placeOf } from '../fire/index.ts';
+import { firesOf, pieceOfFire, placeOf, reachOf } from '../fire/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
 import { furnishing } from './carpentry.ts';
@@ -74,4 +74,30 @@ export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
   p['plan'] = piece.id;
   p['target'] = -1;
   return furnishing(ctx, p);
+}
+
+/** Whether someone alive, awake or asleep, is in a fire's reach now (`reach` if already worked
+ * out). */
+export function occupied(
+  world: WorldState,
+  content: EngineContent,
+  piece: EntityRow,
+  reach: readonly number[] = reachOf(world, content, piece),
+): boolean {
+  const tiles = new Set(reach);
+  return (world.entities['person'] ?? []).some(
+    (p) =>
+      p['status'] === 'alive' &&
+      p['z'] === 0 &&
+      tiles.has((p['y'] as number) * world.map.width + (p['x'] as number)),
+  );
+}
+
+/** Each hour, every lit fire someone is in the reach of is marked used now: the tenders' idle
+ * rule reads it (V-048), and the fire itself knows no people (V-042). */
+export function markUsed(ctx: SystemContext): void {
+  const { world, content } = ctx;
+  if (world.tick % 60 !== 0) return;
+  for (const f of firesOf(world))
+    if (f['lit'] && occupied(world, content, pieceOfFire(world, f))) f['used'] = world.tick;
 }

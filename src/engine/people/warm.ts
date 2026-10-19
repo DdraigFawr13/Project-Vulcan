@@ -92,7 +92,9 @@ export function warming(ctx: SystemContext, p: EntityRow): boolean {
       return true;
     }
   }
-  // Out of a warm place to go, a free person lights or feeds a fire themselves.
+  // Out of a warm place to go, they light or feed a fire themselves, leaving any work for good:
+  // with no fire lit anywhere it would only keep them cold (V-046).
+  if (!target && p['job'] && coldPick(ctx, p)) Object.assign(p, { job: '', plan: 0, target: -1 });
   const got = target || p['job'] ? undefined : coldPick(ctx, p);
   if (got) {
     go();

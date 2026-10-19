@@ -1,8 +1,8 @@
 // Fire (P3.6, V-042): a hearth is a furniture piece (build/furniture.ts) and a fire is the row
 // keyed to it: whether it is lit, the fuel it has left in minutes, which fuel, whether it is banked
-// (burning low and slow for the night) and the tick it was last used. A fire knows no people or
-// rooms in its own rules except through `occupied`, which the idle check reads. Its heat is
-// worked out when asked (heat.ts) and nothing about a room's warmth is stored (V-043).
+// (burning low and slow for the night) and the tick it was last used, which the people mark
+// (people/hearth.ts `markUsed`): a fire knows no people (V-042). Its heat reaches its room's tiles,
+// worked out when asked (heat.ts), and nothing about a room's warmth is stored (V-043).
 import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { furnitureOf, greenOf, houseAt, roomAt, roomName } from '../build/index.ts';
@@ -45,9 +45,6 @@ export function createFire(ctx: SystemContext, piece: EntityRow, cause: number):
   });
 }
 
-const tileOf = (world: WorldState, r: EntityRow): number =>
-  (r['y'] as number) * world.map.width + (r['x'] as number);
-
 /** The surface tiles a fire warms: those of the closed room it stands in, else the open tiles
  * within `fire.radius` of it. */
 export function reachOf(world: WorldState, content: EngineContent, piece: EntityRow): number[] {
@@ -81,20 +78,6 @@ export function placeOf(
   return near
     ? { where: 'on the green', room: 'green', indoors: false }
     : { where: 'outdoors', room: 'open ground', indoors: false };
-}
-
-/** Whether someone alive, awake or asleep, is in a fire's reach now (`reach` if already worked
- * out). */
-export function occupied(
-  world: WorldState,
-  content: EngineContent,
-  piece: EntityRow,
-  reach: readonly number[] = reachOf(world, content, piece),
-): boolean {
-  const tiles = new Set(reach);
-  return (world.entities['person'] ?? []).some(
-    (p) => p['status'] === 'alive' && p['z'] === 0 && tiles.has(tileOf(world, p)),
-  );
 }
 
 /** A tick in words: "06:00 on day 3 of Thawmonth". */

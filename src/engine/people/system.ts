@@ -10,6 +10,7 @@ import { setDay } from './day.ts';
 import { FORAGE_TABLES } from './forage.ts';
 import { JOB_FIELDS } from './jobs.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
+import { markUsed } from './hearth.ts';
 import { PRIORITY_TABLES, setPriority } from './priority.ts';
 import { rollTally, TALLY_START } from './tally.ts';
 import { stepAlong, WALK_FIELDS } from './walk.ts';
@@ -111,6 +112,8 @@ export const peopleSystem: System = {
     'work.tookUpTending',
     'people.warming',
     'fire.lit',
+    'fire.built',
+    'fire.banked',
     'furniture.made',
     'work.felled',
     'work.tookUpBuilding',
@@ -169,6 +172,7 @@ export const peopleSystem: System = {
   },
   run(ctx) {
     rollTally(ctx);
+    markUsed(ctx);
     const hour = hourNow(ctx);
     for (const p of ctx.world.entities['person'] ?? []) {
       if (p['status'] !== 'alive') continue;

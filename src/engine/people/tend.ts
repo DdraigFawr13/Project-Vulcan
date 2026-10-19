@@ -10,7 +10,8 @@
 // themselves when no warm place is to be had (warm.ts, V-046).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { furnitureOf } from '../build/index.ts';
-import { fireOf, firesOf, fuelOf, occupied, pieceOfFire, placeOf } from '../fire/index.ts';
+import { fireOf, firesOf, fuelOf, pieceOfFire, placeOf } from '../fire/index.ts';
+import { occupied } from './hearth.ts';
 import { haveOf, inStore, itemsOf, layItem, stockOf, takeFrom, wantOf } from '../goods/index.ts';
 import { needOf } from '../needs/index.ts';
 import { canReach } from '../paths/index.ts';
@@ -91,14 +92,14 @@ function pick(ctx: SystemContext, p: EntityRow, cold = false): Pick | undefined 
     .filter(({ piece }) => !on.has(piece.id))
     .sort((a, b) => cheb(from, spotOf(a.piece)) - cheb(from, spotOf(b.piece)) || a.f.id - b.f.id);
   const recent = (f: EntityRow) => world.tick - (f['used'] as number) < t.idle;
-  // A fire adds nothing to a tile already at the comfort line, so none is lit or fed there.
+  // A fire is lit or fed only where its tile is under the hearth line without one (V-068).
   const chilly = (piece: EntityRow) =>
     tileTemperature(
       content,
       world.map,
       world.systems['weather']?.['temp'] ?? 0,
       (piece['y'] as number) * world.map.width + (piece['x'] as number),
-    ) < content.life.warmth.comfort;
+    ) < content.buildings.rooms.hearthBelow;
   const tendIt = (f: EntityRow, piece: EntityRow, why: string): Pick | undefined => {
     const item = fuelFor(ctx, p, f);
     return item
@@ -154,7 +155,7 @@ function pick(ctx: SystemContext, p: EntityRow, cold = false): Pick | undefined 
       logs,
       n,
       why: `the colony wants more ${fuel.item} (${have} of ${want})`,
-      cause: (plate?.['line'] as number) ?? 0,
+      cause: (plate?.['line'] as number) || world.begunEvent,
     };
   }
   for (const { f, piece } of fires)

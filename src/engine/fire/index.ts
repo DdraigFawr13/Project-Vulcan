@@ -8,7 +8,6 @@ export {
   firesOf,
   fuelOf,
   layHearth,
-  occupied,
   pieceOfFire,
   placeOf,
   reachOf,
