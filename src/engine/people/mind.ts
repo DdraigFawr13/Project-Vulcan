@@ -7,7 +7,7 @@ import { clockAt, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { eatFrom, itemsAt, itemsOf } from '../goods/index.ts';
 import { addMemory, changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { dayOf } from './day.ts';
+import { hoursOf } from '../law/index.ts';
 import { bedOwnedBy } from '../build/index.ts';
 import { bankFire } from '../fire/index.ts';
 import { claimBed } from './claim.ts';
@@ -153,7 +153,7 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     }
     p['retry'] = world.tick + RETRY;
   }
-  const day = dayOf(world, content);
+  const day = hoursOf(world, content, p.id);
   const night = hour >= day.sleepFrom || hour < day.workFrom;
   const rest = valueOf(ctx, p, 'rest');
   // Below its warning line, warmth beats sleep as it beats work (P3.6, V-046; phase review: a

@@ -140,7 +140,15 @@ describe('building', () => {
   });
 
   it('has only indirect levers and test-mode tools (V-041)', () => {
-    const levers = ['setStock', 'setPriority', 'setDay', 'setBuild', 'sendBack', 'sendBackShaft'];
+    const levers = [
+      'setStock',
+      'setPriority',
+      'setDay',
+      'setBuild',
+      'sendBack',
+      'sendBackShaft',
+      'setLaw',
+    ];
     const testTools = TEST_TOOLS;
     const kinds = SYSTEMS.flatMap((s) => Object.keys(s.commands ?? {}));
     expect(kinds.filter((k) => !levers.includes(k) && !testTools.includes(k))).toEqual([]);

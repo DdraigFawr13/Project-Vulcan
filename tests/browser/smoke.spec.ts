@@ -258,6 +258,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('open-work').click();
   await expect(panel).toContainText("The colony's day");
+  await expect(panel.locator('[data-day]')).toHaveCount(0);
   // Bundle 2 (V-071): trades sit under headings; the first begins open and the rest folded. A
   // folded heading's stepper sets every row under it, one priority each, and unfolding shows them.
   const land = panel.locator('.prio.head[data-heading="Land"]');
@@ -367,6 +368,16 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(houses).toContainText('first');
   await houses.getByRole('button', { name: 'Houses: lower' }).click();
   await expect(houses).toContainText('second');
+  expect(await phoneRules(page)).toEqual([]);
+  // P4.8: ⋯ → Laws has the work-hours law's settings as 44 px buttons, and the Work sheet's day
+  // is read-only (no steppers).
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByTestId('open-laws').click();
+  await expect(panel).toContainText('Work hours');
+  const settings = panel.getByRole('group', { name: 'Work hours law' }).getByRole('button');
+  expect(await settings.count()).toBeGreaterThanOrEqual(3);
+  for (const b of await settings.all())
+    expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   expect(await phoneRules(page)).toEqual([]);
   await page.getByTestId('open-ledger').click();
   await expect(panel).toContainText(/ now puts Houses second\./);

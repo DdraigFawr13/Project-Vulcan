@@ -4,20 +4,18 @@
 // that says why. A change is a lever for the next tick, applied at once while paused, and shown
 // as sent until the snapshot carries it. Everything shown comes from the snapshot (GAME-02).
 import { content } from '../content/index.ts';
-import type { PersonView, WalkerView } from '../worker/index.ts';
+import type { HoursView, PersonView, WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
+import { dayStrip } from './daystrip.ts';
 import { LEVELS, stepper, WORDS } from './stepper.ts';
 import { commonLevel, grouped, visibleJobs, type Group } from './workheads.ts';
 
-export interface Day {
-  workFrom: number;
-  workTo: number;
-  sleepFrom: number;
-}
+export type Day = HoursView;
 
 export interface WorkActions {
   setPriority(person: number, job: string, level: number): void;
-  setDay(day: Day): void;
+  /** The colony's day shows the law; this opens the Laws sheet. */
+  openLaws(): void;
   /** The sheet changed on its own (another person shown, a lever sent): draw it again. */
   refresh(): void;
 }
@@ -35,7 +33,6 @@ function makesNote(): string {
     : '';
 }
 
-const hh = (h: number) => `${String(h % 24).padStart(2, '0')}:00`;
 const wide = () => matchMedia('(min-width: 641px)').matches;
 const first = (p: PersonView) => p.name.split(' ')[0]!;
 
@@ -44,7 +41,6 @@ export class WorkSheet {
   private index = 0;
   /** Levers sent and not yet seen in a snapshot, shown as sent meanwhile. */
   private readonly pending = new Map<string, number>();
-  private pendingDay: Day | undefined;
   /** Headings folded open (V-071): the first begins open, the rest folded. */
   private readonly unfolded = new Set<string>(
     content.work.priority.headings.slice(0, 1).map((h) => h.name),
@@ -70,16 +66,16 @@ export class WorkSheet {
   }
 
   /** A key for what the sheet shows, so it is redrawn only when that changes. */
-  key(walkers: readonly WalkerView[], day: Day): string {
-    this.settle(walkers, day);
+  key(walkers: readonly WalkerView[], day: Day, setting: string): string {
+    this.settle(walkers);
     const work = walkers.map((w) => [w.work, w.skills.map((s) => s.level)]);
     const open = [...this.unfolded];
     return JSON.stringify([
       this.index,
       work,
       day,
+      setting,
       [...this.pending],
-      this.pendingDay,
       wide(),
       open,
       this.shaft,
@@ -87,14 +83,19 @@ export class WorkSheet {
   }
 
   /** The whole sheet: the band's priorities and the colony's day. */
-  rows(people: readonly PersonView[], walkers: readonly WalkerView[], day: Day): HTMLElement[] {
+  rows(
+    people: readonly PersonView[],
+    walkers: readonly WalkerView[],
+    day: Day,
+    setting: string,
+  ): HTMLElement[] {
     return [
       ...(wide() ? this.grid(people, walkers) : this.one(people, walkers)),
       ...(walkers[0]?.work.some((j) => j.job === content.buildings.furniture.job)
         ? [el('p', { class: 'aside' }, makesNote())]
         : []),
       el('p', { class: 'aside' }, 'Other kinds of work join this list when the band can do them.'),
-      ...this.dayRows(day),
+      ...this.dayRows(day, setting, () => this.actions.openLaws()),
     ];
   }
 
@@ -263,79 +264,23 @@ export class WorkSheet {
     return [table, ...notes];
   }
 
-  private dayRows(day: Day): HTMLElement[] {
-    const d = this.pendingDay ?? day;
-    const label = `Work ${hh(d.workFrom)} to ${hh(d.workTo)}, bed at ${hh(d.sleepFrom)}`;
-    const strip = el('div', { class: 'day', role: 'img', 'aria-label': label });
-    for (let h = 0; h < 24; h += 1)
-      strip.append(
-        el('i', { class: h < d.workFrom || h >= d.sleepFrom ? 's' : h < d.workTo ? 'w' : 'f' }),
-      );
-    const hours = el('div', { class: 'dayk' });
-    for (const h of [0, 6, 12, 18, 24]) hours.append(el('span', {}, String(h).padStart(2, '0')));
-    const legend = el('p', { class: 'legend' });
-    for (const [k, word] of [
-      ['s', 'sleep'],
-      ['w', 'work'],
-      ['f', 'free time'],
-    ] as const)
-      legend.append(el('b', { class: k }), word);
-    // Steppers stop at the edges the worker also checks: work begins after 01:00, ends after it
-    // begins, and bed is no earlier than the end of work.
-    const ok = (n: Day) =>
-      n.workFrom >= 1 && n.workFrom < n.workTo && n.workTo <= n.sleepFrom && n.sleepFrom <= 24;
-    const row = (name: string, part: keyof Day) => {
-      const r = el('div', { class: 'prio', 'data-day': part }, el('span', { class: 'job' }, name));
-      r.append(
-        stepper(
-          d[part],
-          '',
-          name,
-          (v) => {
-            const next = { ...d, [part]: v };
-            if (!ok(next)) return;
-            this.pendingDay = next;
-            this.actions.setDay(next);
-            this.actions.refresh();
-          },
-          hh,
-          0,
-          24,
-          (v) => ok({ ...d, [part]: v }),
-        ),
-      );
-      return r;
-    };
+  private dayRows(day: Day, setting: string, openLaws: () => void): HTMLElement[] {
+    const open = el('button', { type: 'button', 'data-testid': 'work-open-laws' }, 'Open Laws');
+    open.addEventListener('click', openLaws);
     return [
       el('h3', {}, "The colony's day"),
-      el(
-        'p',
-        { class: 'aside' },
-        'One timetable for everyone. Each person keeps to it as well as their needs allow.',
-      ),
-      strip,
-      hours,
-      legend,
-      row('Work starts', 'workFrom'),
-      row('Work ends', 'workTo'),
-      row('Bed at', 'sleepFrom'),
+      el('p', { class: 'aside' }, `Set by the work-hours law: ${setting}.`),
+      ...dayStrip(day),
+      el('div', { class: 'row' }, open),
     ];
   }
 
   /** Drops pending levers the snapshot now shows. */
-  settle(walkers: readonly WalkerView[], day: Day): void {
+  settle(walkers: readonly WalkerView[]): void {
     for (const [key, level] of this.pending) {
       const [id, job] = key.split(':');
       const now = walkers.find((w) => w.id === Number(id))?.work.find((j) => j.job === job);
       if (!now || now.level === level) this.pending.delete(key);
     }
-    const d = this.pendingDay;
-    if (
-      d &&
-      d.workFrom === day.workFrom &&
-      d.workTo === day.workTo &&
-      d.sleepFrom === day.sleepFrom
-    )
-      this.pendingDay = undefined;
   }
 }

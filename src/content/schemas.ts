@@ -2,6 +2,7 @@
 // References name the file whose ids they must match; validate.ts resolves them.
 import { CLIMATE_SCHEMAS } from './schemas-climate';
 import { GROUND_SCHEMAS } from './schemas-ground';
+import { LAWS_SCHEMAS } from './schemas-laws';
 import { LIFE_SCHEMAS } from './schemas-life';
 import { METAL_SCHEMAS } from './schemas-metal';
 import { PEOPLE_SCHEMAS } from './schemas-people';
@@ -13,6 +14,7 @@ export const SCHEMAS = {
   ...WORLD_SCHEMAS,
   ...GROUND_SCHEMAS,
   ...LIFE_SCHEMAS,
+  ...LAWS_SCHEMAS,
   ...METAL_SCHEMAS,
   ...CLIMATE_SCHEMAS,
   ...PEOPLE_SCHEMAS,

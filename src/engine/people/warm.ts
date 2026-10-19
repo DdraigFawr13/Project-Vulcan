@@ -2,13 +2,13 @@
 // what they are doing and goes to the nearest reachable tile a lit fire warms enough (the felt
 // temperature there reaches the comfort line), and stays, `doing: warm`, until warmth is back to
 // the line plus `life.again`. With no lit fire to reach, they light or feed the nearest hearth
-// that is out or low themselves (tend.ts), if firewood can be reached. One line when they go. A
-// later phase lets temperament and memories shift the line (P4.8).
+// that is out or low themselves (tend.ts), if firewood can be reached. One line when they go.
+// Temperament and memories move each person's line (P4.8, needs `warmLineOf`).
 import type { EntityRow } from '../core/index.ts';
 import { furnitureOf, HEARTH } from '../build/index.ts';
 import { heatMap } from '../fire/index.ts';
 import { loadOf } from '../goods/index.ts';
-import { feltAt, needOf } from '../needs/index.ts';
+import { feltAt, needOf, warmLineOf } from '../needs/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { spotOf } from './spots.ts';
@@ -63,12 +63,13 @@ export function warming(ctx: SystemContext, p: EntityRow): boolean {
   const row = needOf(world, p.id, 'warmth');
   if (!def || !row || p['z'] !== 0 || p['job'] === 'tend') return false;
   const value = row['value'] as number;
+  const low = warmLineOf(world, content, p.id);
   const on = p['doing'] === 'warm';
-  if (on && value >= def.low + life.again) {
+  if (on && value >= low + life.again) {
     p['doing'] = '';
     return false;
   }
-  if (!on && (value >= def.low || world.tick < (p['chill'] as number))) return false;
+  if (!on && (value >= low || world.tick < (p['chill'] as number))) return false;
   if (on && (p['path'] as number[]).length > 0) return true;
   const i = (p['y'] as number) * world.map.width + (p['x'] as number);
   const go = (): void => {

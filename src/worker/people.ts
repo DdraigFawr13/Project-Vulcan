@@ -25,6 +25,7 @@ import {
 import { feedsOf } from './comfort.ts';
 import { hearthDoing, tendDoing } from './fires.ts';
 import { carpentryDoing } from './furniture.ts';
+import { lawOfWalker, leanWords } from './law.ts';
 import { personTools } from './items.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 import { jobShown } from './jobrows.ts';
@@ -221,6 +222,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     now: nowOf(world, p),
     ...wearingOf(world, p),
     memories: memoriesView(world, p),
+    ...lawOfWalker(world, p),
     tools: personTools(world, p.id),
     skills: skillsOf(world, p),
     // Rows appear once their station exists (V-071).
@@ -265,10 +267,14 @@ function memoriesView(world: WorldState, p: EntityRow): WalkerView['memories'] {
         text: def.text.replace('{about}', about ?? 'someone'),
         mood: def.mood,
         days: Math.max(1, Math.ceil(((m['until'] as number) - world.tick) / TICKS_PER_DAY)),
+        why: m['line'] as number,
+        ...withLean(leanWords(world, m['memory'] as string)),
       },
     ];
   });
 }
+
+const withLean = (lean: string | undefined) => (lean ? { lean } : {});
 
 /** A person's skills with practice towards the next level (P2.5). */
 function skillsOf(world: WorldState, p: EntityRow): WalkerView['skills'] {

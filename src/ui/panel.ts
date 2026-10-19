@@ -22,6 +22,7 @@ export type PanelKind =
   | 'stock'
   | 'work'
   | 'build'
+  | 'laws'
   | 'item'
   | 'alerts'
   | 'dawn';

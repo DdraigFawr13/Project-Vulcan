@@ -47,5 +47,9 @@
   {"id":"book-lost","mood":-8,"decayDays":56,"text":"{about} lost a lent book"},
   {"id":"awakened","mood":15,"decayDays":112,"text":"Woke to the magic"},
   {"id":"far-from-aura","mood":-8,"decayDays":3,"text":"Far from the old places: the land is thin"},
-  {"id":"no-ore-work","mood":-6,"decayDays":3,"text":"No ore or stone worked for two weeks"}
+  {"id":"no-ore-work","mood":-6,"decayDays":3,"text":"No ore or stone worked for two weeks"},
+  {"id":"saw-refused-long","mood":-2,"decayDays":7,"text":"Saw {about} refuse the long days"},
+  {"id":"saw-refused-short","mood":-2,"decayDays":7,"text":"Saw {about} refuse the short days"},
+  {"id":"grumbled-long","mood":-4,"decayDays":3,"text":"Worked the long days against their will"},
+  {"id":"grumbled-short","mood":-4,"decayDays":3,"text":"Kept the short days against their will"}
 ]
