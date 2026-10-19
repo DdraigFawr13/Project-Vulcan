@@ -67,7 +67,8 @@ export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
   const kind = furnitureKind(content, piece);
   const here = placeOf(world, content, piece);
   // A smithy's forge, anvil block or tub is made the same way, for the smithy.
-  const station = kind.id !== HEARTH;
+  const station = content.buildings.smithy.pieces.includes(kind.id);
+  const smithy = content.buildings.smithy.name.toLowerCase();
   p['took'] = ctx.emit('work.tookUpHearth', {
     causes: [piece['line'] as number, priorityLine(world, p.id, job)].filter(
       (l): l is number => !!l,
@@ -76,9 +77,9 @@ export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
     data: {
       name: p['name'] as string,
       kind: station || here.indoors ? kind.name : 'campfire',
-      room: station ? 'smithy' : here.room,
+      room: station ? smithy : here.room,
       why: station
-        ? 'the smithy has none'
+        ? `the ${smithy} has none`
         : here.indoors
           ? 'it has no hearth'
           : 'the band has no fire',

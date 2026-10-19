@@ -15,6 +15,8 @@ export interface MetalDef {
   clamp: {
     job: string;
     item: string;
+    /** The item stacked on the clamp. */
+    wood: string;
     logs: number;
     yield: number;
     build: number;

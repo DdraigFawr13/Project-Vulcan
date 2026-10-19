@@ -31,11 +31,15 @@ export const smithiesOf = (world: WorldState): EntityRow[] => world.entities['sm
 const SIDES = ['east', 'west', 'south', 'north'] as const;
 type Side = (typeof SIDES)[number];
 
-/** The smithing level of a person. */
-const levelOf = (world: WorldState, id: number): number =>
-  ((world.entities['skill'] ?? []).find((s) => s['person'] === id && s['skill'] === 'smithing')?.[
-    'level'
-  ] as number) ?? 0;
+/** The smithing level of a person (the skill of the smith job, tools.json `job`). */
+const levelOf = (world: WorldState, content: EngineContent, id: number): number => {
+  const skill = content.jobs.find((j) => j.id === content.tools.job)?.skill;
+  return (
+    ((world.entities['skill'] ?? []).find((s) => s['person'] === id && s['skill'] === skill)?.[
+      'level'
+    ] as number) ?? 0
+  );
+};
 
 /** The house (main row) `person` sleeps in, once built: their bed's, else their laid bedroll's. */
 function houseOfPerson(world: WorldState, content: EngineContent, id: number) {
@@ -132,7 +136,7 @@ export function planSmithy(ctx: SystemContext, green: { x: number; y: number }, 
   // The best smith: highest smithing level, ties by id, with a built house of their own.
   const smiths = (world.entities['person'] ?? [])
     .filter((p) => p['status'] === 'alive')
-    .sort((a, b) => levelOf(world, b.id) - levelOf(world, a.id) || a.id - b.id);
+    .sort((a, b) => levelOf(world, content, b.id) - levelOf(world, content, a.id) || a.id - b.id);
   const smith = smiths[0];
   const house = smith && houseOfPerson(world, content, smith.id);
   if (!smith || !house) return;
@@ -167,7 +171,7 @@ export function planSmithy(ctx: SystemContext, green: { x: number; y: number }, 
     best.d > def.near
       ? `no water lies within ${def.near} tiles`
       : `the water is ${best.d} tile${best.d > 1 ? 's' : ''} off`;
-  const why = `${smith['name'] as string} is the best smith (smithing ${levelOf(world, smith.id)}), and ${water}`;
+  const why = `${smith['name'] as string} is the best smith (smithing ${levelOf(world, content, smith.id)}), and ${water}`;
   const want = wantOf(world, content, SMITHY);
   const line = ctx.emit('smithy.sited', {
     causes: [ingot['made'] as number, want.line ?? 0, house['built'] as number].filter(

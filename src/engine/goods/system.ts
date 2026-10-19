@@ -108,7 +108,7 @@ export const goodsSystem: System = {
     setUpStore(ctx, made);
     setUpStock(ctx, made);
     // The cart's stone tools (tools.json `cart` of each kind) are kept with the cart.
-    const stone = content.tools.materials[0]!.id;
+    const stone = content.tools.cartMaterial;
     for (const kind of content.tools.kinds)
       for (let n = 0; n < content.tools.cart; n += 1)
         layTool(world, content, restOf(world, content), {

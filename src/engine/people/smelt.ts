@@ -3,7 +3,8 @@
 // are in hand and it is short, else the metal with the most ingots wanted. They carry the inputs
 // from wherever they lie, work beside the smelter `minutes × 2 × skilled ÷ (skilled + level)`
 // (practising smithing), and lay the output for haulers. The ingots keep a trail (goods metal.ts).
-// A wanted recipe short only of charcoal is one `metal.waiting` alert, cleared when it arrives.
+// A wanted recipe short of an input the colony has none of (charcoal, ore) is one `metal.waiting`
+// alert per input, cleared when it arrives.
 import type { EntityRow, RecipeDef } from '../core/index.ts';
 import { stationOf } from '../build/index.ts';
 import {
@@ -21,7 +22,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { fetchKind, reachableOf, useHeld } from './fetch.ts';
 import { practise } from './learn.ts';
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
-import { goBeside, layAround, people, skillOf, spotOf } from './spots.ts';
+import { canStandBeside, goBeside, layAll, people, skillOf, spotOf } from './spots.ts';
 
 const stop = (p: EntityRow): false => {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0, make: '' });
@@ -34,44 +35,51 @@ const skillName = (ctx: SystemContext): string =>
 const nameOf = (ctx: SystemContext, kind: string): string =>
   ctx.content.items.find((i) => i.id === kind)?.name ?? kind;
 
-/** What `p` would make, or the input a wanted recipe is waiting for (only charcoal, the fuel). */
-function choose(ctx: SystemContext, p: EntityRow): { recipe?: RecipeDef; missing?: string } {
+/** What `p` would make, and every input a wanted recipe is waiting for: ore or ingots the colony
+ * has none of (an ingot a wanted recipe makes is not waited for), and the fuel it has none of. */
+function choose(ctx: SystemContext, p: EntityRow): { recipe?: RecipeDef; missing: string[] } {
   const { world, content } = ctx;
   const fuel = content.metal.clamp.item;
+  const made = new Set(content.metal.recipes.map((r) => r.makes));
   const wants = content.metal.recipes
     .map((r, k) => ({ r, k, want: ingotWant(world, content, r.id) }))
     .filter((c) => c.want > 0)
     .sort((a, b) => +b.r.alloy - +a.r.alloy || b.want - a.want || a.k - b.k);
-  let missing: string | undefined;
+  const missing = new Set<string>();
+  let recipe: RecipeDef | undefined;
   for (const { r } of wants) {
+    for (const i of r.inputs)
+      if (i.kind !== fuel && !made.has(i.kind) && haveOf(world, content, i.kind) < i.count)
+        missing.add(i.kind);
     // Cheap first: the colony must hold the inputs at all.
     if (r.inputs.some((i) => i.kind !== fuel && haveOf(world, content, i.kind) < i.count)) continue;
     const short = r.inputs.filter((i) => reachableOf(ctx, p, i.kind) < i.count);
-    if (!short.length) return { recipe: r };
+    if (!short.length) recipe ??= r;
     // Short of charcoal the colony has none of (some may only be on its way in a hauler's arms).
-    const none = short.every((i) => i.kind === fuel && haveOf(world, content, fuel) < i.count);
-    if (none) missing ??= fuel;
+    else if (short.every((i) => i.kind === fuel && haveOf(world, content, fuel) < i.count))
+      missing.add(fuel);
   }
-  return missing ? { missing } : {};
+  return { ...(recipe && { recipe }), missing: [...missing] };
 }
 
-/** The waiting alert is said once per missing input and cleared when nothing is missing; not said
- * while charcoal is on its way (a lit clamp, or someone burning it). */
-function alert(ctx: SystemContext, smelter: EntityRow, missing: string | undefined): void {
+/** The waiting alerts are said once per missing input, kept in the smelter's `waitFor`, and an
+ * input leaves the list when it is no longer missing; fuel is not said while it is on its way (a
+ * lit clamp, or someone burning it). */
+function alert(ctx: SystemContext, smelter: EntityRow, missing: readonly string[]): void {
   const { world } = ctx;
-  if (!missing) {
-    Object.assign(smelter, { alert: 0, waitFor: '' });
-    return;
-  }
   const coming =
     stationOf(world, 'clamp')?.['state'] === 'lit' ||
     people(world).some((q) => q['job'] === 'charcoal');
-  if (coming || smelter['waitFor'] === missing) return;
-  smelter['waitFor'] = missing;
-  smelter['alert'] = ctx.emit('metal.waiting', {
-    causes: [smelter['line'] as number],
-    data: { where: `at ${smelter['x']}, ${smelter['y']}`, good: nameOf(ctx, missing) },
-  });
+  const fuel = ctx.content.metal.clamp.item;
+  const said = String(smelter['waitFor']).split(',').filter(Boolean);
+  const now = missing.filter((m) => !(coming && m === fuel));
+  for (const m of now.filter((k) => !said.includes(k)))
+    smelter['alert'] = ctx.emit('metal.waiting', {
+      causes: [smelter['line'] as number],
+      data: { where: `at ${smelter['x']}, ${smelter['y']}`, good: nameOf(ctx, m) },
+    });
+  smelter['waitFor'] = now.join(',');
+  if (!now.length) smelter['alert'] = 0;
 }
 
 /** Takes up smelting if a wanted recipe's inputs can be reached and nobody free who puts it higher
@@ -88,9 +96,9 @@ export function takeUpSmelting(ctx: SystemContext, p: EntityRow): boolean {
   if (people(world).some((q) => q.id !== p.id && q['job'] === 'smelt')) return false;
   if (outranked(ctx, p, def.job, (q) => !!choose(ctx, q).recipe)) return false;
   const got = choose(ctx, p);
-  alert(ctx, smelter, got.recipe ? undefined : got.missing);
+  alert(ctx, smelter, got.missing);
   const r = got.recipe;
-  if (!r) return false;
+  if (!r || !canStandBeside(ctx, p, smelter['x'] as number, smelter['y'] as number)) return false;
   const by = wantedBy(world, content, r.id);
   p['took'] = ctx.emit('work.tookUpSmelting', {
     causes: [by?.line ?? 0, priorityLine(world, p.id, def.job)].filter((l): l is number => !!l),
@@ -147,7 +155,7 @@ export function smelting(ctx: SystemContext, p: EntityRow): boolean {
       where: `at ${x}, ${y}`,
     },
   });
-  layAround(ctx, r.makes, r.out, here, line, trail);
+  layAll(ctx, r.makes, r.out, here, line, trail);
   stop(p);
   return true;
 }

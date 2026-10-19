@@ -59,8 +59,11 @@ export const toolFactor = (
 const nameOf = (content: EngineContent, item: EntityRow): string => {
   const def = content.items.find((i) => i.id === item['kind'])!;
   const q = item['quality'] as string;
-  return `${/^[aeiou]/.test(q) ? 'an' : 'a'} ${q === 'plain' ? '' : `${q} `}${def.name}`;
+  const what = `${q === 'plain' ? '' : `${q} `}${def.name}`;
+  return `${/^[aeiou]/.test(what) ? 'an' : 'a'} ${what}`;
 };
+
+const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** A tool put back is kept with the cart again. */
 function putBack(ctx: SystemContext, item: EntityRow): void {
@@ -75,7 +78,10 @@ export function giveTool(ctx: SystemContext, item: EntityRow, p: EntityRow, why:
   ctx.emit('tool.taken', {
     causes: [item['made'] as number].filter((l) => l > 0),
     actors: [p.id],
-    data: { name: p['name'] as string, what: nameOf(content, item), why },
+    data: {
+      ...{ name: p['name'] as string, what: nameOf(content, item), why },
+      back: old ? ` ${cap(nameOf(content, old))} went back to the cart.` : '',
+    },
   });
   Object.assign(item, { owner: p.id, state: 'held', ...HELD });
   if (old) putBack(ctx, old);
@@ -165,8 +171,21 @@ export function toolsDaily(ctx: SystemContext): void {
   }
 }
 
-/** Heldest tool of `kind` that `person` holds, for the smith's wants. */
+/** Speed of the best tool of `kind` that `person` holds (0 for none), quality included. */
 export const heldSpeed = (ctx: SystemContext, person: number, kind: string): number => {
   const t = bestHeld(ctx, person, kind);
   return t ? speedOf(ctx.content, t) : 0;
 };
+
+/** Speed of the tool's material alone, quality left out (0 if it is not a tool). */
+export const materialSpeed = (content: EngineContent, item: EntityRow): number =>
+  content.tools.materials.find((m) => m.id === toolOf(content, item)?.material)?.speed ?? 0;
+
+/** The best material (its speed) among the tools of `kind` that `person` holds; 0 for none. */
+export const heldMaterial = (ctx: SystemContext, person: number, kind: string): number =>
+  Math.max(
+    0,
+    ...heldBy(ctx.world, ctx.content, person)
+      .filter((i) => toolOf(ctx.content, i)?.kind === kind)
+      .map((i) => materialSpeed(ctx.content, i)),
+  );

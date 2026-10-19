@@ -153,10 +153,10 @@ export const peopleSystem: System = {
   ],
   tables: PEOPLE_TABLES,
   // The colony's day (day.ts) is kept here once the player changes it, with its line.
-  refs: ['dayLine', 'noIngots'],
+  refs: ['dayLine', 'noIngots', 'noCharcoal'],
   // Yesterday's tally (tally.ts) lives in the state too, and `idle`: the signature of the rooms
   // when carpentry last found nothing to make (carpentry.ts).
-  initialState: { ...TALLY_START, idle: 0, noIngots: 0 },
+  initialState: { ...TALLY_START, idle: 0, noIngots: 0, noCharcoal: 0 },
   commands: {
     setPriority: (ctx, command, cause) => setPriority(ctx, command.data, cause),
     setDay: (ctx, command, cause) => setDay(ctx, command.data, cause),
@@ -199,7 +199,7 @@ export const peopleSystem: System = {
           seeded: 0,
         },
         ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0, make: '' },
-        ...{ making: '', carry: '', fine: 0 },
+        ...{ making: '', fine: 0 },
       });
       for (const skill of content.band.skills)
         addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0 });

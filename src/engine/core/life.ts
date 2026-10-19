@@ -76,6 +76,9 @@ export interface ItemDef {
 export interface ToolsDef {
   week: number;
   cart: number;
+  /** The material of the cart's tools, and the Work sheet kind (jobs.json) that smiths them. */
+  cartMaterial: string;
+  job: string;
   none: number;
   step: number;
   stream: string;
@@ -269,6 +272,8 @@ export interface JobDef {
   id: string;
   name: string;
   skill?: string;
+  /** The piece or station the work is done at (a furniture kind or a station kind). */
+  workplace?: string;
   requirements: Readonly<Record<string, number>>;
 }
 

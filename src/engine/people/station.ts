@@ -11,7 +11,7 @@ import { stackOf } from './build.ts';
 import { fetchWood } from './carpentry.ts';
 import { practise } from './learn.ts';
 import { able, outranked, priorityLine } from './priority.ts';
-import { goBeside, people, skillOf, spotOf } from './spots.ts';
+import { canStandBeside, goBeside, people, skillOf, spotOf } from './spots.ts';
 
 const stop = (p: EntityRow): false => {
   Object.assign(p, { job: '', plan: 0, target: -1 });
@@ -28,6 +28,7 @@ function choose(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const def = content.metal.smelter;
   if (!s || s['state'] !== 'plan') return undefined;
   if (people(world).some((q) => q.id !== p.id && q['job'] === 'station')) return undefined;
+  if (!canStandBeside(ctx, p, s['x'] as number, s['y'] as number)) return undefined;
   return (s['have'] as number) >= def.cost || stackOf(ctx, p, def.material) ? s : undefined;
 }
 

@@ -41,6 +41,9 @@ import { tallyAdd } from './tally.ts';
 import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
+/** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
+const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
+
 export const JOB_FIELDS = {
   /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
    * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
@@ -57,10 +60,9 @@ export const JOB_FIELDS = {
   next: 'int',
   /** The recipe being smelted (metal.json) or the clamp's task, `stack` or `open`; '' for none. */
   make: 'text',
-  /** Smithing (Bundle 3): the tool being made as `kind:material`, the trail text of its inputs, and
-   * the line of this person's first fine-or-better piece (V-093), 0 until they make one. */
+  /** Smithing (Bundle 3): the tool being made as `kind:material`, and the line of this person's
+   * first fine-or-better piece (V-093), 0 until they make one. */
   making: 'text',
-  carry: 'text',
   fine: 'event',
 } as const;
 
@@ -196,7 +198,8 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
   if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
   const load = loadOf(world, p.id);
-  if (load) {
+  // Out of hours the metal and station work keeps what it fetched and resumes next morning.
+  if (load && !HOLDS.includes(p['job'] as string)) {
     p['job'] = 'haul';
     deliver(ctx, p, load);
     return true;
@@ -245,7 +248,12 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
 function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   const { world } = ctx;
   if (takeUpMarked(ctx, p, false)) return true;
-  for (const job of jobsInOrder(world, ctx.content, p)) if (TAKE_UP[job]?.(ctx, p)) return true;
+  for (const job of jobsInOrder(world, ctx.content, p)) {
+    const before = p['took'];
+    if (TAKE_UP[job]?.(ctx, p)) return true;
+    // Taken up (a line said) and stopped at once: look again later, not at the next kind.
+    if (p['took'] !== before) break;
+  }
   p['job'] = '';
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;

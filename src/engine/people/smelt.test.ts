@@ -100,9 +100,9 @@ describe('metal', () => {
     const w = withOre([['copper-ore', 6]], none);
     step(w, none, 8 * DAY);
     expect(lines(w, 'metal.charcoalMade')).toEqual([]);
-    const waiting = lines(w, 'metal.waiting');
-    expect(waiting).toHaveLength(1);
-    expect(waiting[0]!.data['good']).toBe('charcoal');
+    // One alert for each input the colony is short of: the charcoal, and the tin ore bronze needs.
+    const waiting = lines(w, 'metal.waiting').map((e) => e.data['good']);
+    expect(waiting.sort()).toEqual(['charcoal', expect.stringMatching(/tin ore/i)]);
     expect(haveOf(w, content, 'copper-ingot')).toBe(0);
   });
 });

@@ -46,6 +46,24 @@ function clearFree(w: World, kind: string): void {
     w.entities['item'] = itemsOf(w).filter((i) => i.id !== t.id);
 }
 
+/** A standing forge beside the cart. */
+function setForge(w: World): void {
+  const spot = restOf(w, content);
+  const unloaded = lines(w, 'goods.unloaded')[0]!.id;
+  addEntity(w, 'furniture', {
+    ...{ kind: 'forge', x: spot.x + 1, y: spot.y, z: 0, facing: 's', quality: 0, maker: 0 },
+    ...{ owner: 0, made: unloaded, line: unloaded, state: 'built', have: 0, work: 0, waited: 0 },
+  });
+}
+
+/** Lays `count` of `kind` on an empty store tile. */
+function stock(w: World, kind: string, count: number): void {
+  const at = storeOf(w).find(
+    (s) => !itemsOf(w).some((i) => i['x'] === s['x'] && i['y'] === s['y']),
+  )!;
+  layItem(w, { kind, count, x: at['x'] as number, y: at['y'] as number, z: 0, made: 1 });
+}
+
 describe('smithing and the band', () => {
   it('leaves names and every other skill of a seed as the band draw makes them', () => {
     for (const seed of ['ledger', 'tallow', 'anvil']) {
@@ -150,17 +168,9 @@ describe('tools in use', () => {
     old['wear'] = 5;
     addEntity(w, 'usage', { person: a!.id, kind: 'axe', minutes: 5000 });
     // A standing forge, two iron ingots and charcoal in the store, and wood wanted.
-    const store = storeOf(w);
-    const at = (k: number) => ({ x: store[k]!['x'] as number, y: store[k]!['y'] as number, z: 0 });
-    const spot = restOf(w, content);
-    addEntity(w, 'furniture', {
-      ...{ kind: 'forge', x: spot.x + 1, y: spot.y, z: 0, facing: 's', quality: 0, maker: 0 },
-      ...{ owner: 0, made: unloaded, line: unloaded, state: 'built', have: 0, work: 0, waited: 0 },
-    });
-    const free = (k: number) => itemsOf(w).every((i) => i['x'] !== at(k).x || i['y'] !== at(k).y);
-    const [i1, i2] = [5, 4].map((k) => (free(k) ? k : 3));
-    layItem(w, { kind: 'iron-ingot', count: 2, ...at(i1!), made: unloaded });
-    layItem(w, { kind: content.tools.charcoal, count: 1, ...at(i2!), made: unloaded });
+    setForge(w);
+    stock(w, 'iron-ingot', 2);
+    stock(w, content.tools.charcoal, 1);
     submitCommand(w, {
       tick: w.tick + 1,
       kind: 'setStock',
@@ -173,6 +183,11 @@ describe('tools in use', () => {
     expect(broke.actors).toEqual([a!.id]);
     const made = lines(w, 'smith.made').find((e) => String(e.data['what']).includes('iron axe'))!;
     expect(made).toBeDefined();
+    // One axe was made, and nobody took up smithing it again afterwards.
+    expect(
+      lines(w, 'smith.made').filter((e) => String(e.data['what']).includes('axe')),
+    ).toHaveLength(1);
+    expect(lines(w, 'work.tookUpSmithing').filter((e) => e.id > made.id)).toEqual([]);
     expect(made.data['who']).toBe(a!['name']);
     const mine = heldBy(w, content, a!.id).filter((t) => kindOf(t) === 'axe');
     expect(mine.map((t) => t['kind'])).toContain('iron-axe');
@@ -214,20 +229,89 @@ describe('tools in use', () => {
   it('says once, naming the plates to raise, that a tool waits for ingots', () => {
     const w = createWorld(sim, 'ledger');
     const [a] = people(w);
-    const unloaded = lines(w, 'goods.unloaded')[0]!.id;
     clearFree(w, 'axe');
     addEntity(w, 'usage', { person: a!.id, kind: 'axe', minutes: 5000 });
-    const spot = restOf(w, content);
-    addEntity(w, 'furniture', {
-      ...{ kind: 'forge', x: spot.x + 1, y: spot.y, z: 0, facing: 's', quality: 0, maker: 0 },
-      ...{ owner: 0, made: unloaded, line: unloaded, state: 'built', have: 0, work: 0, waited: 0 },
-    });
+    setForge(w);
     step(w, sim, 3 * DAY);
     const alerts = lines(w, 'smith.noIngots');
     expect(alerts).toHaveLength(1);
     expect(alerts[0]!.data['tool']).toBe('axe');
-    expect(String(alerts[0]!.data['plates'])).toContain('iron ingot');
+    expect(String(alerts[0]!.data['lack'])).toBe('bronze or iron ingots');
+    expect(String(alerts[0]!.data['fix']).toLowerCase()).toContain('iron ingot');
     expect(lines(w, 'smith.made')).toHaveLength(0);
+  });
+
+  it('does not make a tool again for a poor one of the best material', () => {
+    const w = createWorld(sim, 'ledger');
+    const unloaded = lines(w, 'goods.unloaded')[0]!.id;
+    clearFree(w, 'axe');
+    for (const p of people(w)) {
+      const axe = layTool(w, content, restOf(w, content), {
+        ...{ kind: 'axe', material: 'iron', quality: 'poor', made: unloaded },
+      });
+      hand(axe, p.id);
+      addEntity(w, 'usage', { person: p.id, kind: 'axe', minutes: 5000 });
+    }
+    setForge(w);
+    stock(w, 'iron-ingot', 2);
+    stock(w, content.tools.charcoal, 2);
+    step(w, sim, 3 * DAY);
+    const axes = (e: { data: Record<string, unknown> }) => String(e.data['what']).includes('axe');
+    expect(lines(w, 'smith.made').filter(axes)).toEqual([]);
+    expect(lines(w, 'work.tookUpSmithing').filter(axes)).toEqual([]);
+  });
+
+  it('burns charcoal for a tool want when the ingots are in and the charcoal is not', () => {
+    const w = createWorld(sim, 'ledger');
+    const [a] = people(w);
+    clearFree(w, 'axe');
+    addEntity(w, 'usage', { person: a!.id, kind: 'axe', minutes: 5000 });
+    setForge(w);
+    stock(w, 'iron-ingot', 2);
+    stock(w, 'logs', 30);
+    // The smelter stands and the clamp is planned, as the metal chain leaves them.
+    const map = w.map;
+    const open = (size: number, from: number) => {
+      const spot = restOf(w, content);
+      for (let r = from; r < 14; r += 1)
+        for (let y = spot.y - r; y <= spot.y + r; y += 1)
+          for (let x = spot.x - r; x <= spot.x + r; x += 1) {
+            const tiles = [...Array(size * size).keys()].map(
+              (k) => (y + Math.floor(k / size)) * map.width + x + (k % size),
+            );
+            const ok = tiles.every((i) => {
+              const kind = content.terrain.kinds[map.tiles[i]!]!;
+              const [tx, ty] = [i % map.width, Math.floor(i / map.width)];
+              return (
+                kind.buildable &&
+                !kind.water &&
+                !map.features[i] &&
+                !itemsOf(w).some((it) => it['x'] === tx && it['y'] === ty) &&
+                !(w.entities['station'] ?? []).some(
+                  (s) =>
+                    Math.abs((s['x'] as number) - tx) < 3 && Math.abs((s['y'] as number) - ty) < 3,
+                )
+              );
+            });
+            if (ok) return { x, y };
+          }
+      throw new Error('no open ground');
+    };
+    const smelter = open(1, 4);
+    const row = (kind: string, at: { x: number; y: number }, size: number, state: string) =>
+      addEntity(w, 'station', {
+        ...{ kind, x: at.x, y: at.y, z: 0, w: size, h: size, state, line: 1, have: 0, work: -1 },
+        ...{ made: 1, lit: 0, litLine: 0, alert: 0, waitFor: '' },
+      });
+    row('smelter', smelter, 1, 'built');
+    row('clamp', open(2, 4), 2, 'idle');
+    step(w, sim, 8 * DAY);
+    expect(lines(w, 'metal.clampLit').length).toBeGreaterThan(0);
+    expect(lines(w, 'metal.charcoalMade').length).toBeGreaterThan(0);
+    const made = lines(w, 'smith.made').find((e) => String(e.data['what']).includes('iron axe'));
+    expect(made).toBeDefined();
+    // The tool's ingots and charcoal left the store only when it was finished.
+    expect(lines(w, 'smith.noIngots').map((e) => e.data['lack'])).not.toContain('iron ingots');
   });
 });
 

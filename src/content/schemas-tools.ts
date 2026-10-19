@@ -7,9 +7,11 @@ import { count, id, text, texts } from './schema-fields';
 export const TOOLS_SCHEMAS = {
   tools: obj({
     // Days over which "who does that work most" is counted, and the stone tools of each kind
-    // in the cart.
+    // in the cart (of `cartMaterial`); `job` is the Work sheet kind that smiths them.
     week: num({ min: 1 }),
     cart: count,
+    cartMaterial: text,
+    job: ref('jobs'),
     none: num({ min: 1 }),
     // Per cent of a tool's life one quality step from plain adds or takes away.
     step: count,

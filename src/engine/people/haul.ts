@@ -8,8 +8,11 @@ import {
   itemsAt,
   itemsOf,
   layItem,
+  mergeTrails,
   slotFor,
   takeFrom,
+  trailOf,
+  trailText,
 } from '../goods/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -45,6 +48,9 @@ export function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void
   const stack = itemsAt(world, here.x, here.y, here.z).find((i) => i['kind'] === kind);
   if (stack) {
     stack['count'] = (stack['count'] as number) + count;
+    // The stack keeps where both lots came from.
+    const trails = [trailOf(stack), trailOf(load)];
+    stack['trail'] = trailText(mergeTrails(trails, content.metal.trail.most));
     takeFrom(world, load, count);
   } else Object.assign(load, { ...here, holder: 0 });
   p['job'] = '';

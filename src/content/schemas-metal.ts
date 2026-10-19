@@ -6,12 +6,13 @@ import { count, id } from './schema-fields';
 
 export const METAL_SCHEMAS = {
   metal: obj({
-    // The charcoal clamp: a `size` by `size` spot beside the smelter. A burner stacks `logs` logs
+    // The charcoal clamp: a `size` by `size` spot beside the smelter. A burner stacks `logs` of `wood`
     // on it (`build` minutes), lights it, it burns `burn` minutes untended, then opening it takes
     // `open` minutes and lays `yield` charcoal. Worked at skill `skilled` of the job's skill.
     clamp: obj({
       job: ref('jobs'),
       item: ref('items'),
+      wood: ref('items'),
       logs: num({ min: 1 }),
       yield: num({ min: 1 }),
       build: num({ min: 1 }),

@@ -12,9 +12,8 @@ import type { SystemContext } from '../sim/index.ts';
 import { fetchKind, reachableOf, useHeld } from './fetch.ts';
 import { practise } from './learn.ts';
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
-import { goBeside, layAround, people, skillOf, spotOf } from './spots.ts';
-
-const LOGS = 'logs';
+import { canStandBeside, goBeside, layAll, people, skillOf, spotOf } from './spots.ts';
+import { toolCharcoal } from './smith.ts';
 
 const stop = (p: EntityRow): false => {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0, make: '' });
@@ -23,6 +22,10 @@ const stop = (p: EntityRow): false => {
 
 const skillName = (ctx: SystemContext): string =>
   ctx.content.jobs.find((j) => j.id === ctx.content.metal.clamp.job)?.skill ?? '';
+
+/** The charcoal wanted: what the planned smelting burns and what the open tool wants need. */
+const wanted = (ctx: SystemContext): number =>
+  charcoalNeeded(ctx.world, ctx.content) + toolCharcoal(ctx);
 
 /** What `p` would do at the clamp: open it once it has burned down, else stack and light it while
  * charcoal is short and the logs can be reached. */
@@ -33,10 +36,13 @@ function choose(ctx: SystemContext, p: EntityRow): 'open' | 'stack' | undefined 
   if (!clamp || !stationOf(world, 'smelter')) return undefined;
   if (people(world).some((q) => q.id !== p.id && q['job'] === 'charcoal')) return undefined;
   if (clamp['state'] === 'lit')
-    return world.tick >= (clamp['lit'] as number) + def.burn ? 'open' : undefined;
-  const have = haveOf(world, content, def.item);
-  if (have >= charcoalNeeded(world, content)) return undefined;
-  return reachableOf(ctx, p, LOGS) >= def.logs ? 'stack' : undefined;
+    return world.tick >= (clamp['lit'] as number) + def.burn &&
+      canStandBeside(ctx, p, clamp['x'] as number, clamp['y'] as number)
+      ? 'open'
+      : undefined;
+  if (haveOf(world, content, def.item) >= wanted(ctx)) return undefined;
+  if (!canStandBeside(ctx, p, clamp['x'] as number, clamp['y'] as number)) return undefined;
+  return reachableOf(ctx, p, def.wood) >= def.logs ? 'stack' : undefined;
 }
 
 /** Takes up the clamp if it is ready to open, or charcoal is short, and nobody free who puts it
@@ -63,7 +69,7 @@ export function takeUpCharcoal(ctx: SystemContext, p: EntityRow): boolean {
       why:
         task === 'open'
           ? 'the clamp has burned down'
-          : `the smelting needs ${charcoalNeeded(world, content)} charcoal and there is ${have}`,
+          : `${wanted(ctx)} charcoal is wanted for smelting and tools and there is ${have}`,
     },
   });
   const level = skillOf(world, p, skillName(ctx));
@@ -84,7 +90,7 @@ export function burning(ctx: SystemContext, p: EntityRow): boolean {
   if (!clamp || clamp.id !== p['plan']) return stop(p);
   if (task === 'open' ? clamp['state'] !== 'lit' : clamp['state'] !== 'idle') return stop(p);
   if (task === 'stack') {
-    const got = fetchKind(ctx, p, LOGS, def.logs);
+    const got = fetchKind(ctx, p, def.wood, def.logs);
     if (got === 'none') return stop(p);
     if (got === 'walking') return true;
   }
@@ -97,7 +103,7 @@ export function burning(ctx: SystemContext, p: EntityRow): boolean {
   if ((p['work'] as number) > 0) return true;
   const where = `at ${x}, ${y}`;
   if (task === 'stack') {
-    useHeld(ctx, p, LOGS, def.logs);
+    useHeld(ctx, p, def.wood, def.logs);
     clamp['state'] = 'lit';
     clamp['lit'] = world.tick;
     clamp['litLine'] = ctx.emit('metal.clampLit', {
@@ -113,7 +119,14 @@ export function burning(ctx: SystemContext, p: EntityRow): boolean {
     });
     const step: Step = { s: 'burned', who: p['name'] as string, tick: world.tick, ...here };
     step.n = def.yield;
-    layAround(ctx, def.item, def.yield, here, line, trailText(withStep([], step)));
+    layAll(
+      ctx,
+      def.item,
+      def.yield,
+      here,
+      line,
+      trailText(withStep([], step, content.metal.trail.most)),
+    );
     Object.assign(clamp, { state: 'idle', lit: 0, litLine: 0 });
   }
   stop(p);

@@ -105,3 +105,31 @@ export function besideReachable(
     return reach({ x: sx, y: sy, z: 0 });
   });
 }
+
+/** Lays everything: what `layAround` finds no free tile for goes down on `at` itself, so nothing
+ * made vanishes. */
+export function layAll(
+  ctx: SystemContext,
+  kind: string,
+  count: number,
+  at: Spot,
+  made: number,
+  trail = '',
+): void {
+  let left = count - layAround(ctx, kind, count, at, made, trail);
+  const size = stackSize(ctx.content, kind);
+  while (left > 0) {
+    const n = Math.min(size, left);
+    layItem(ctx.world, { kind, count: n, ...at, made }, { trail });
+    left -= n;
+  }
+}
+
+/** Whether `p` can reach a side of surface tile (x, y): work there is worth taking up. */
+export const canStandBeside = (ctx: SystemContext, p: EntityRow, x: number, y: number): boolean =>
+  besideReachable(
+    ctx.world,
+    ctx.content,
+    (to) => canReach(ctx.content, ctx.world.map, spotOf(p), to),
+    y * ctx.world.map.width + x,
+  );

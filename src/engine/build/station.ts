@@ -58,6 +58,8 @@ export const stationTiles = (world: WorldState): number[] =>
     return out;
   });
 
-/** A station's size in tiles, from content. */
+/** A station's size in tiles, from content: the clamp is the workplace of the charcoal job. */
 export const sizeOfStation = (content: EngineContent, kind: string): number =>
-  kind === 'clamp' ? content.metal.clamp.size : content.metal.smelter.size;
+  kind === content.jobs.find((j) => j.id === content.metal.clamp.job)?.workplace
+    ? content.metal.clamp.size
+    : content.metal.smelter.size;

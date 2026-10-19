@@ -1,5 +1,5 @@
 {
-"clamp":{"job":"charcoal","item":"charcoal","logs":10,"yield":5,"build":60,"burn":1440,"open":60,"skilled":10,"size":2},
+"clamp":{"job":"charcoal","item":"charcoal","wood":"logs","logs":10,"yield":5,"build":60,"burn":1440,"open":60,"skilled":10,"size":2},
 "smelter":{"job":"smelt","size":1,"material":"stone","cost":8,"minutes":90,"skilled":10,"reach":8},
 "recipes":[
 {"id":"copper","makes":"copper-ingot","out":1,"inputs":[{"kind":"copper-ore","count":2},{"kind":"charcoal","count":2}],"minutes":120,"alloy":false},
