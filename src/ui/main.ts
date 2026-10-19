@@ -66,7 +66,6 @@ const setSpeed = (next: Speed): void => {
   if (next !== 0) lastRunning = next;
   send({ type: 'setSpeed', speed: next });
 };
-
 const renderer = startRenderer(parent, {
   onHover: (tile) => hud.showTile(tile),
   onSelect: (tile) => {
@@ -112,11 +111,7 @@ const panel = new Panel(
       if (level === z) send({ type: 'inspect', x: tile.x, y: tile.y, z });
     },
     newGame: (next) => roll(next),
-    jump: (span) => {
-      if (!ready || stopped || saves.loading) return;
-      send({ type: 'jump', span });
-      closePanel();
-    },
+    jump: (span) => ready && !stopped && !saves.loading && void send({ type: 'jump', span }),
     close: () => closePanel(),
   },
   debug,

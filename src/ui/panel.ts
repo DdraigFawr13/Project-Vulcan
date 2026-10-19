@@ -302,7 +302,10 @@ export class Panel {
           { type: 'button', 'data-testid': `jump-${span}` },
           `Jump a ${span}`,
         );
-        go.addEventListener('click', () => this.actions.jump(span));
+        go.addEventListener('click', () => {
+          this.actions.jump(span);
+          this.actions.close();
+        });
         test.append(go);
       }
     this.body.replaceChildren(now, form, el('h3', {}, 'Test mode'), about, test);
