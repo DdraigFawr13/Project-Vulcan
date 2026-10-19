@@ -17,9 +17,23 @@ export interface Pace {
   last: number;
   /** Skipping ahead (P2.7): run for `SKIP_MS` each wake instead of at the speed's rate. */
   skip: boolean;
+  /** A test-mode jump's last tick: the skip runs to it and ignores notable lines on the way. */
+  until?: number;
 }
 
 export const createPace = (now: number): Pace => ({ speed: 0, owed: 0, last: now, skip: false });
+
+/** A test-mode jump (Morgan, Phase 3 playtest): skip from `tick` for `ticks` ticks, tick by tick
+ * as any skip, stopping at the end rather than at the first notable line. */
+export function jump(pace: Pace, tick: number, ticks: number): void {
+  pace.skip = true;
+  pace.until = tick + ticks;
+}
+
+/** Whether a skip that has just run up to `tick` ends here: a jump at its last tick, a plain skip
+ * at a notable line. */
+export const skipEnds = (pace: Pace, tick: number, notable: boolean): boolean =>
+  pace.until === undefined ? notable : tick >= pace.until;
 
 /** Changes speed, ending any skip; returns the ticks still owed at the old speed, which the
  * caller runs first. */
@@ -27,12 +41,14 @@ export function setSpeed(pace: Pace, speed: Speed, now: number): number {
   const due = ticksDue(pace, now);
   pace.speed = speed;
   pace.skip = false;
+  delete pace.until;
   return due;
 }
 
-/** A skip has reached a notable line: it ends paused, owing nothing. */
+/** A skip has reached a notable line (a jump, its end): it ends paused, owing nothing. */
 export function stopSkip(pace: Pace): void {
   pace.skip = false;
+  delete pace.until;
   pace.speed = 0;
   pace.owed = 0;
 }

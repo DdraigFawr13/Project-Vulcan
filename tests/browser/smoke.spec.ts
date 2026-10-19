@@ -226,6 +226,21 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(page.getByTestId('level')).toHaveText('−2');
   await expect(panel).toContainText('shaft');
 
+  // Each face fills its ring exactly, so the head sits centred (Morgan's playtests, twice).
+  const faces = await page.locator('.pslot .face').evaluateAll((all) =>
+    all.map((f) => {
+      const ring = f.getBoundingClientRect();
+      const pic = f.querySelector('canvas')!.getBoundingClientRect();
+      return (
+        Math.abs(pic.x + pic.width / 2 - (ring.x + ring.width / 2)) + pic.width - f.clientWidth
+      );
+    }),
+  );
+  expect(
+    faces.every((off) => Math.abs(off) < 0.5),
+    `face offsets ${faces}`,
+  ).toBe(true);
+
   // P2.5 to P2.7 on a phone. A face opens that person's sheet in tabs; the Work sheet's stepper
   // ranks hauling higher, which is a ledger line naming the person, never an order to a tile.
   await page.locator('.pslot').first().click();

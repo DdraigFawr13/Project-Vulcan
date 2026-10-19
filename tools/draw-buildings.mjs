@@ -4,7 +4,7 @@
 // the four sides it joins a neighbour on (`.<mask>`: north 1, east 2, south 4, west 8); the rest
 // of the tile shows what lies under it, and the renderer lays a half floor (`.half.<side>`) on
 // the side of a wall that meets a floor (a quarter, `.q.<corner>`, in an inner corner), so a wall
-// works over every floor and ground. Doors are a narrow leaf drawn over the wall they stand in,
+// works over every floor and ground. Doors are a leaf half a tile wide drawn over the wall they stand in,
 // in a run east-west (`.h`) or north-south (`.v`); stairs are the plan's ghost only (a cut stair
 // is a tile kind). Seeded and deterministic.
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -183,12 +183,13 @@ function quarter(full, corner) {
   return img;
 }
 
-// A door in a run east-west (`h`) or north-south (`v`): a narrow leaf about a third of a tile
-// wide in the middle of the band, between dark jambs; the rest of the tile is clear, and the
-// renderer lays the wall it stands in under it, so the door reads as one block in the wall
-// (Morgan's pick, 2026-10-19). Wood is an oak leaf with a latch; stone an open sill of flags.
-const LEAF0 = 10;
-const LEAF1 = 21;
+// A door in a run east-west (`h`) or north-south (`v`): a leaf half a tile wide in the middle of
+// the band, between dark jambs; the rest of the tile is clear, and the renderer lays the wall it
+// stands in under it, so the door reads as one block in the wall (Morgan's pick, 2026-10-19,
+// widened from a third at the Phase 3 playtest). Wood is an oak leaf with a latch; stone an open
+// sill of flags.
+const LEAF0 = 8;
+const LEAF1 = 23;
 function door(p, material, run) {
   const h = run === 'h';
   const rects = bandRects(h ? 10 : 5);

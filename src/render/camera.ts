@@ -43,9 +43,32 @@ export class CameraControls {
     });
     input.on('pointermove', (p: Phaser.Input.Pointer) => this.move(p));
     input.on('pointerup', () => {
-      // Let the release's own hover check run before the drag flag clears.
-      scene.time.delayedCall(0, () => (this.dragging = false));
+      // Let the release's own hover check run before the drag flag clears, and keep it set until
+      // the last finger of a pinch lifts, so lifting the second finger is not read as a tap.
+      scene.time.delayedCall(0, () => {
+        if (!this.touches().some((t) => t.isDown)) this.dragging = false;
+      });
     });
+    // A finger lifted from a page part that was redrawn while held (the clock, a sheet line) ends
+    // on a detached node, so the lift never reaches Phaser and its pointer stays down: every later
+    // touch then reads as a pinch, zooming but never panning or selecting (Morgan, Phase 3
+    // playtest). Each new touch first frees any pointer whose finger is no longer down; a pointer
+    // holding a new finger's id is stale too, since browsers may reuse ids.
+    const reconcile = (e: TouchEvent): void => {
+      const fresh = new Set(Array.from(e.changedTouches, (t) => t.identifier));
+      const live = new Set(
+        Array.from(e.touches, (t) => t.identifier).filter((id) => !fresh.has(id)),
+      );
+      for (const t of this.touches())
+        if (t.active && !live.has(t.identifier)) {
+          t.reset();
+          this.pinchBase = 0;
+        }
+    };
+    window.addEventListener('touchstart', reconcile, { capture: true, passive: true });
+    scene.events.once(Phaser.Scenes.Events.DESTROY, () =>
+      window.removeEventListener('touchstart', reconcile, { capture: true }),
+    );
     input.on('wheel', (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
       if (dy === 0) return;
       this.target = undefined;
@@ -59,6 +82,11 @@ export class CameraControls {
     if (keyboard)
       for (const name of ['W', 'A', 'S', 'D', 'UP', 'LEFT', 'DOWN', 'RIGHT'])
         this.keys[name] = keyboard.addKey(name, false);
+  }
+
+  /** The touch pointers (Phaser keeps the mouse at index 0). */
+  private touches(): Phaser.Input.Pointer[] {
+    return this.scene.input.manager.pointers.slice(1);
   }
 
   get camera(): Phaser.Cameras.Scene2D.Camera {
