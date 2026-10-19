@@ -10,7 +10,7 @@ Flat-shaded pixel art in the muted palette, readable at 32 px, nothing drawn bef
 | P2.1, P2.4 | `sprites-people`, `items` | one body per race, 4 facings, 2 walk frames, tinted hair and clothing overlays, carried-item slot; icons for logs, stone, ores, ingots, food, tools, weapons, cloth, leather, herbs |
 | P3.2 | `buildings` | slim walls by material, a band a third of a tile wide autotiled by the four sides it joins (`build.wall-<material>.<mask>`, north 1, east 2, south 4, west 8), floors with half and quarter frames for under a wall's open side (`build.floor-<material>`, `.half.<side>`, `.q.<corner>`), doors in an east-west or north-south run (`.h`, `.v`), stair plan ghosts, by `tools/draw-buildings.mjs`; later bundles: bed, table, chair, chest, shelf, carpentry bench |
 | P3.6 | `buildings` | the hearth, an open ring of stones that is also the outdoor campfire: `furn.hearth` (cold), `furn.hearth.lit.1` to `.3` (flames, cycled by the page), `furn.hearth.banked` (embers), by `tools/draw-hearth.mjs` |
-| P4.5 | `workshops` | charcoal clamp, smelter, smithy, anvil, bellows, waterwheel (2 frames), power lines |
+| P4.5 | `workshops` | charcoal clamp, smelter, smithy, anvil, hand bellows (Bundle 3; the waterwheel and its power lines move to P5.11, V-085) |
 | UI reskin | `ui` | Hearth and Page controls (docs/UI_STYLE.md): `ui.plank` bar strip, `ui.iron` and `ui.iron.on` button plates, `ui.oak-frame` page frame with iron corners, `ui.paper` texture; 9-slice, drawn at 1 art px to 2 CSS px |
 | Phase 5 onward | later | animals, crops, sickbed, loom, creatures, dragon, fire, caravan |
 
