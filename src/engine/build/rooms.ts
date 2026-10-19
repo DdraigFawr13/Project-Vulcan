@@ -4,13 +4,20 @@
 // impressiveness come from its tiles and what lies in it, by the weights in content `rooms`.
 import type { EngineContent, WorldState } from '../core/index.ts';
 import { itemsOf } from '../goods/index.ts';
+import { piecesOf, qualityOf } from './furniture.ts';
 
 export interface Room {
   /** Its tiles, as surface tile indices in the order found. */
   tiles: number[];
   doors: number;
-  /** Bedrolls laid in it (beds come in P3.4). */
+  /** Door tile indices in its edge. */
+  doorTiles: number[];
+  /** Places to sleep: the most of its bed pieces and the people sleeping in it (P3.4). */
   beds: number;
+  /** People sleeping in it: bedrolls laid in it, and beds owned (P3.5). */
+  sleepers: number;
+  /** Built bed pieces in it, free or owned. */
+  bedPieces: number;
   /** The first content role it has the beds for, or undefined (a bed makes it a bedroom). */
   role?: { id: string; name: string };
   beauty: number;
@@ -57,20 +64,26 @@ export function roomAt(
   }
   if (!doors.size) return undefined;
   const inside = new Set(tiles);
-  const beds = itemsOf(world).filter(
+  const at = (r: { [k: string]: unknown }) =>
+    r['z'] === 0 && inside.has((r['y'] as number) * map.width + (r['x'] as number));
+  const rolls = itemsOf(world).filter(
     (i) =>
-      i['kind'] === content.life.cart.bedroll &&
-      i['state'] === 'laid' &&
-      !i['holder'] &&
-      i['z'] === 0 &&
-      inside.has((i['y'] as number) * map.width + (i['x'] as number)),
+      i['kind'] === content.life.cart.bedroll && i['state'] === 'laid' && !i['holder'] && at(i),
   ).length;
+  const pieces = piecesOf(world).filter(at);
+  const bedList = pieces.filter((f) => f['kind'] === 'bed');
+  const sleepers = rolls + bedList.filter((f) => f['owner']).length;
+  const beds = Math.max(bedList.length, sleepers);
   const floors = tiles.reduce((sum, i) => {
     const part = content.buildings.parts[map.built[i]! - 1];
     return sum + (part?.kind === 'floor' ? (def.floors[part.id] ?? 0) : def.bare);
   }, 0);
   const crowded = beds > 0 && beds * def.crowd.tiles > tiles.length;
-  const beauty = Math.round(floors / tiles.length) + (crowded ? def.crowd.beauty : 0);
+  const made = pieces.reduce(
+    (sum, f) => sum + qualityOf(content, f['quality'] as number).beauty,
+    0,
+  );
+  const beauty = Math.round(floors / tiles.length) + (crowded ? def.crowd.beauty : 0) + made;
   const impressiveness = Math.min(
     def.top,
     Math.max(0, Math.round(tiles.length / def.perSize) + beauty),
@@ -79,7 +92,10 @@ export function roomAt(
   return {
     tiles,
     doors: doors.size,
+    doorTiles: [...doors],
     beds,
+    sleepers,
+    bedPieces: bedList.length,
     ...(role && { role: { id: role.id, name: role.name } }),
     beauty,
     look: def.looks.find((l) => beauty >= l.at)?.word ?? '',

@@ -22,5 +22,23 @@
 "rooms":{"most":120,"roof":"thatch","perSize":3,"top":100,"crowd":{"tiles":2,"beauty":-2},"bare":-1,
 "floors":{"floor-wood":0,"floor-stone":1},
 "roles":[{"id":"barracks","name":"barracks","beds":3},{"id":"bedroom","name":"bedroom","beds":1}],
-"looks":[{"at":1,"word":"pleasant"},{"at":0,"word":"plain"},{"at":-99,"word":"dreary"}]}
+"looks":[{"at":1,"word":"pleasant"},{"at":0,"word":"plain"},{"at":-99,"word":"dreary"}],
+"wants":[
+{"role":"bedroom","kinds":[{"kind":"bed","per":"sleeper"},{"kind":"table","per":"room"},{"kind":"chair","per":"sleeper"},{"kind":"chest","per":"room"},{"kind":"shelf","per":"room"}]},
+{"role":"barracks","kinds":[{"kind":"bed","per":"sleeper"},{"kind":"table","per":"room"},{"kind":"chair","per":"sleeper"},{"kind":"chest","per":"room"},{"kind":"shelf","per":"room"}]}]},
+"furniture":{"job":"carpentry","skilled":10,"material":"logs","stream":"craft","roll":2,
+"kinds":[
+{"id":"bench","name":"bench","cost":3,"minutes":120,"art":"furn.bench","beds":0,"seats":0,"place":"wall"},
+{"id":"bed","name":"bed","cost":4,"minutes":90,"art":"furn.bed","beds":1,"seats":0,"place":"wall"},
+{"id":"table","name":"table","cost":3,"minutes":75,"art":"furn.table","beds":0,"seats":0,"place":"middle"},
+{"id":"chair","name":"chair","cost":1,"minutes":45,"art":"furn.chair","beds":0,"seats":1,"place":"beside table"},
+{"id":"chest","name":"chest","cost":2,"minutes":60,"art":"furn.chest","beds":0,"seats":0,"place":"bed foot"},
+{"id":"shelf","name":"shelf","cost":1,"minutes":40,"art":"furn.shelf","beds":0,"seats":0,"place":"wall"}],
+"quality":[
+{"id":"masterwork","word":"masterwork","at":13,"beauty":3},
+{"id":"excellent","word":"excellent","at":10,"beauty":2},
+{"id":"fine","word":"fine","at":6,"beauty":1},
+{"id":"plain","word":"plain","at":2,"beauty":0},
+{"id":"poor","word":"poor","at":0,"beauty":-1},
+{"id":"awful","word":"awful","at":-99,"beauty":-2}]}
 }

@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { haveOf, itemsOf, storeOf } from '../goods/index.ts';
-import { createSim, createWorld, step, submitCommand, whyOf } from '../index.ts';
+import { createSim, createWorld, furnitureOf, step, submitCommand, whyOf } from '../index.ts';
 
 const sim = createSim(content);
 const inStoreCount = (world: ReturnType<typeof createWorld>): number =>
@@ -28,8 +28,17 @@ describe('work', () => {
       const want = content.work.stock[0]!.levels.find(
         (l) => l.id === content.work.stock[0]!.start,
       )!;
-      expect(haveOf(world, content, 'logs')).toBeGreaterThanOrEqual(want.count);
-      expect(inStoreCount(world)).toBe(haveOf(world, content, 'logs'));
+      // Carpenters (P3.4) take wood for the bench and beds; felling makes it up.
+      const wood = furnitureOf(world).reduce(
+        (n, f) =>
+          n +
+          (f['state'] === 'built'
+            ? content.buildings.furniture.kinds.find((k) => k.id === f['kind'])!.cost
+            : (f['have'] as number)),
+        0,
+      );
+      expect(haveOf(world, content, 'logs') + wood).toBeGreaterThanOrEqual(want.count);
+      expect(inStoreCount(world)).toBeLessThanOrEqual(haveOf(world, content, 'logs'));
       // Felling lines lead back through taking it up to the colony's stock level.
       const felled = world.log.find((e) => e.type === 'work.felled')!;
       const chain = whyOf(world, felled.id).map((c) => c.event.type);

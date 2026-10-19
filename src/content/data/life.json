@@ -4,10 +4,14 @@
 {"id":"food","name":"Food","fall":400,"low":3000,"seek":4500,"lowWord":"Hungry","okWord":"Fed","weight":3},
 {"id":"rest","name":"Rest","fall":300,"low":3000,"seek":2500,"lowWord":"Tired","okWord":"Rested","weight":2},
 {"id":"warmth","name":"Warmth","fall":0,"low":3000,"seek":0,"lowWord":"Cold","okWord":"Warm","weight":2},
-{"id":"recreation","name":"Recreation","fall":150,"low":3000,"seek":3500,"lowWord":"Bored","okWord":"Relaxed","weight":1}
+{"id":"recreation","name":"Recreation","fall":150,"low":3000,"seek":3500,"lowWord":"Bored","okWord":"Relaxed","weight":1},
+{"id":"beauty","name":"Beauty","fall":0,"low":3000,"seek":0,"lowWord":"Gloomy","okWord":"Pleased","weight":1},
+{"id":"privacy","name":"Privacy","fall":0,"low":3000,"seek":0,"lowWord":"Crowded","okWord":"Private","weight":1}
 ],
-"start":[8000,9000,9000,8000],
-"sleep":{"bedroll":1200,"ground":700,"from":22,"to":6,"wake":9500},
+"start":[8000,9000,9000,8000,6000,8000],
+"beauty":{"neutral":6000,"perPoint":1000,"rate":250,"outdoors":50},
+"privacy":{"gain":600,"perOther":100},
+"sleep":{"bed":1600,"bedroll":1200,"ground":700,"from":22,"to":6,"wake":9500},
 "warmth":{"comfort":0,"bedroll":6,"rise":1000,"perDegree":200,"below":10},
 "relax":{"from":18,"gain":800,"company":400,"reach":2},
 "eat":{"preserved":6000,"berries":1500,"fish":4000,"game":4000,"grain":3000,"meal":8000},

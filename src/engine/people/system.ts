@@ -105,6 +105,9 @@ export const peopleSystem: System = {
     'work.tookUpMarked',
     'work.tookUpClearing',
     'people.movedIn',
+    'people.claimedBed',
+    'work.tookUpCarpentry',
+    'furniture.made',
     'work.felled',
     'work.tookUpBuilding',
     'build.waiting',
@@ -120,8 +123,9 @@ export const peopleSystem: System = {
   tables: PEOPLE_TABLES,
   // The colony's day (day.ts) is kept here once the player changes it, with its line.
   refs: ['dayLine'],
-  // Yesterday's tally (tally.ts) lives in the state too.
-  initialState: TALLY_START,
+  // Yesterday's tally (tally.ts) lives in the state too, and `idle`: the signature of the rooms
+  // when carpentry last found nothing to make (carpentry.ts).
+  initialState: { ...TALLY_START, idle: 0 },
   commands: {
     setPriority: (ctx, command, cause) => setPriority(ctx, command.data, cause),
     setDay: (ctx, command, cause) => setDay(ctx, command.data, cause),

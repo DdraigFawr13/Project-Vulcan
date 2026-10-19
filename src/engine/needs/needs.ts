@@ -8,6 +8,8 @@ import { addEntity, type Schemas } from '../entity/index.ts';
 import { foodGoneLine, itemsAt } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { tileTemperature } from '../weather/index.ts';
+import { bedOwnedBy, houseAt, type Room } from '../build/index.ts';
+import { comfortOf, roomHere } from './comfort.ts';
 
 export const NEEDS_TABLES: Schemas = {
   need: {
@@ -77,6 +79,12 @@ function onBedroll(world: WorldState, p: EntityRow): boolean {
   return here.some((i) => i['owner'] === p.id && i['state'] === 'laid');
 }
 
+/** Asleep in their own bed (P3.5). */
+const inBed = (world: WorldState, p: EntityRow): boolean => {
+  const bed = bedOwnedBy(world, p.id);
+  return !!bed && bed['x'] === p['x'] && bed['y'] === p['y'] && bed['z'] === p['z'];
+};
+
 /** The temperature a person feels where they stand. */
 function feels(ctx: SystemContext, p: EntityRow): number {
   const { world, content } = ctx;
@@ -101,13 +109,24 @@ function company(world: WorldState, content: EngineContent, p: EntityRow): boole
 }
 
 /** One hour's change to one need of one person. */
-function hourOf(ctx: SystemContext, p: EntityRow, id: string, fall: number): number {
+function hourOf(
+  ctx: SystemContext,
+  p: EntityRow,
+  id: string,
+  fall: number,
+  where: () => Room | undefined,
+): number {
   const { world, content } = ctx;
   const life = content.life;
+  if (id === 'beauty' || id === 'privacy') return comfortOf(ctx, p, id, where);
   if (id === 'rest' && asleep(p))
-    return onBedroll(world, p) ? life.sleep.bedroll : life.sleep.ground;
+    return inBed(world, p)
+      ? life.sleep.bed
+      : onBedroll(world, p)
+        ? life.sleep.bedroll
+        : life.sleep.ground;
   if (id === 'warmth') {
-    const bed = asleep(p) && onBedroll(world, p) ? life.warmth.bedroll : 0;
+    const bed = asleep(p) && (onBedroll(world, p) || inBed(world, p)) ? life.warmth.bedroll : 0;
     const short = life.warmth.comfort - (feels(ctx, p) + bed);
     return short <= 0 ? life.warmth.rise : -short * life.warmth.perDegree;
   }
@@ -116,9 +135,14 @@ function hourOf(ctx: SystemContext, p: EntityRow, id: string, fall: number): num
   return -fall;
 }
 
-/** What explains a need going low: the weather spell for cold, else its last line. */
-function causeOf(ctx: SystemContext, row: EntityRow): number {
+/** What explains a need going low: the weather spell for cold, the room's building for beauty
+ * and privacy (P3.5), else its last line. */
+function causeOf(ctx: SystemContext, p: EntityRow, row: EntityRow): number {
   const spell = ctx.world.systems['weather']?.['spell'];
+  if (row['need'] === 'beauty' || row['need'] === 'privacy') {
+    const built = houseAt(ctx.world, p['x'] as number, p['y'] as number)?.['built'] as number;
+    if (built > 0) return built;
+  }
   if (row['need'] === 'warmth' && spell) return spell;
   // Hunger after the food ran out cites the line where the last of it was eaten (P2.6).
   const gone = foodGoneLine(ctx.world);
@@ -133,10 +157,13 @@ export function runNeeds(ctx: SystemContext): void {
     if (p['status'] !== 'alive') continue;
     const name = p['name'] as string;
     let worst: EntityRow | undefined;
+    // The room they stand in, worked out once an hour and only if a need asks.
+    let room: Room | undefined | null = null;
+    const where = () => (room === null ? (room = roomHere(ctx, p)) : room);
     for (const def of life.needs) {
       const row = needOf(world, p.id, def.id);
       if (!row) continue;
-      changeNeed(content, row, hourOf(ctx, p, def.id, def.fall));
+      changeNeed(content, row, hourOf(ctx, p, def.id, def.fall, where));
       crossed(ctx, p, row, def);
       if (!worst || (row['value'] as number) < (worst['value'] as number)) worst = row;
     }
@@ -174,7 +201,7 @@ export function crossed(
   const data = { name: p['name'] as string, need: def.name.toLowerCase() };
   if (!row['low'] && value < def.low) {
     row['line'] = ctx.emit('need.low', {
-      causes: [causeOf(ctx, row)],
+      causes: [causeOf(ctx, p, row)],
       actors: [p.id],
       data: { ...data, word: def.lowWord.toLowerCase() },
     });

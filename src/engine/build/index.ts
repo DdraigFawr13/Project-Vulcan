@@ -28,3 +28,23 @@ export {
   stillNeeded,
   takeDownPlan,
 } from './plans.ts';
+export {
+  anyBench,
+  bedOwnedBy,
+  benchOf,
+  furnitureOf,
+  FURNITURE_TABLES,
+  kindOf as furnitureKind,
+  pieceAt,
+  piecesOf,
+  qualityOf,
+} from './furniture.ts';
+export {
+  nextWant,
+  roomName,
+  roomsOf,
+  siteFor,
+  wantSignature,
+  type RoomRow,
+  type Want,
+} from './wants.ts';

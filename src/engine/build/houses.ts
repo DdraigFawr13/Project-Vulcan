@@ -15,6 +15,7 @@ import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
 import { itemsOf, layItem, marksOf, raiseStock } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { bedOwnedBy, furnitureOf, piecesOf } from './furniture.ts';
 import { planPart, plansOf } from './plans.ts';
 import { roomAt } from './rooms.ts';
 import {
@@ -132,13 +133,21 @@ export function homeOf(world: WorldState, content: EngineContent, bed: EntityRow
   return h && h['state'] === 'built' ? mainOf(world, h) : undefined;
 }
 
-/** The people asleep under the open sky: alive, and their bedroll in no built house. */
+/** The built house a bed piece stands in, if any. */
+function bedHome(world: WorldState, bed: EntityRow): EntityRow | undefined {
+  const h = houseAt(world, bed['x'] as number, bed['y'] as number);
+  return h && h['state'] === 'built' ? mainOf(world, h) : undefined;
+}
+
+/** The people asleep under the open sky: alive, and neither their bedroll nor their bed (P3.5)
+ * in a built house. */
 export function homeless(world: WorldState, content: EngineContent): EntityRow[] {
   const beds = itemsOf(world).filter((i) => isBed(content, i));
   return (world.entities['person'] ?? []).filter((p) => {
     if (p['status'] !== 'alive') return false;
     const bed = beds.find((b) => b['owner'] === p.id);
-    return !bed || !homeOf(world, content, bed);
+    const own = bedOwnedBy(world, p.id);
+    return (!bed || !homeOf(world, content, bed)) && !(own && bedHome(world, own));
   });
 }
 
@@ -149,7 +158,9 @@ export function bedsOf(world: WorldState, content: EngineContent, main: EntityRo
   const first = housesOf(world).find((h) => !h['of'] && h['state'] === 'built');
   const sleepers =
     itemsOf(world).filter((i) => isBed(content, i) && homeOf(world, content, i)?.id === main.id)
-      .length + (first?.id === main.id ? homeless(world, content).length : 0);
+      .length +
+    piecesOf(world, 'bed').filter((b) => b['owner'] && bedHome(world, b)?.id === main.id).length +
+    (first?.id === main.id ? homeless(world, content).length : 0);
   return { sleepers, room: rows.reduce((n, h) => n + sizeOf(content, h).sleeps, 0) };
 }
 
@@ -168,6 +179,9 @@ export function bedSpot(
     ...itemsOf(world)
       .filter((i) => !i['holder'] && i['z'] === 0)
       .map((i) => (i['y'] as number) * map.width + (i['x'] as number)),
+    ...furnitureOf(world)
+      .filter((f) => f['z'] === 0)
+      .map((f) => (f['y'] as number) * map.width + (f['x'] as number)),
     ...reserved,
   ]);
   const from = leaving && houseAt(world, leaving.x, leaving.y);

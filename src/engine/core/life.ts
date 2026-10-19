@@ -21,7 +21,9 @@ export interface LifeDef {
   needs: readonly NeedDef[];
   /** Each need's value on arrival, in the order of `needs`. */
   start: readonly number[];
-  sleep: { bedroll: number; ground: number; from: number; to: number; wake: number };
+  sleep: { bed: number; bedroll: number; ground: number; from: number; to: number; wake: number };
+  beauty: { neutral: number; perPoint: number; rate: number; outdoors: number };
+  privacy: { gain: number; perOther: number };
   warmth: { comfort: number; bedroll: number; rise: number; perDegree: number; below: number };
   relax: { from: number; gain: number; company: number; reach: number };
   /** Food each item kind gives when one is eaten. */
@@ -96,6 +98,7 @@ export interface BuildingsDef {
   parts: readonly PartDef[];
   house: HouseDef;
   rooms: RoomsDef;
+  furniture: FurnitureDef;
 }
 
 /** A house size or stage (P3.7, P3.8): a w by h footprint of walls round a floor. */
@@ -131,6 +134,35 @@ export interface RoomsDef {
   floors: Readonly<Record<string, number>>;
   roles: readonly { id: string; name: string; beds: number }[];
   looks: readonly { at: number; word: string }[];
+  /** What a room of a role lacks, in the order it is made (P3.4). */
+  wants: readonly {
+    role: string;
+    kinds: readonly { kind: string; per: 'sleeper' | 'room' }[];
+  }[];
+}
+
+/** One kind of furniture (P3.4): its cost in the furniture material and its work at crafting 0. */
+export interface FurnitureKind {
+  id: string;
+  name: string;
+  cost: number;
+  minutes: number;
+  art: string;
+  beds: number;
+  seats: number;
+  place: 'wall' | 'middle' | 'beside table' | 'bed foot';
+}
+
+/** Carpentry and furniture (buildings.json `furniture`, P3.4). */
+export interface FurnitureDef {
+  job: string;
+  skilled: number;
+  material: string;
+  stream: string;
+  roll: number;
+  kinds: readonly FurnitureKind[];
+  /** Highest first: the first whose `at` a quality score reaches. */
+  quality: readonly { id: string; word: string; at: number; beauty: number }[];
 }
 
 /** The forked jobs list (jobs.json): only what work reads. */

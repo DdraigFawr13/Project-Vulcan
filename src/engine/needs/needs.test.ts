@@ -1,10 +1,11 @@
 // P2.2: a week on three seeds keeps every need above its warning line, the band eats from the
-// cart and sleeps on its bedrolls, and a need that goes low writes a line citing what explains it.
+// cart and sleeps on its bedrolls or, once made, in beds (P3.4), and a need that goes low writes a line citing what explains it.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { removeEntity } from '../entity/index.ts';
 import { itemsOf } from '../goods/index.ts';
 import { createSim, createWorld, step, submitCommand } from '../index.ts';
+import { bedOwnedBy } from '../build/index.ts';
 import { moodOf, needOf } from './index.ts';
 
 const sim = createSim(content);
@@ -24,22 +25,31 @@ describe('needs', () => {
       for (let h = 0; h < 7 * 24; h += 1) {
         step(world, sim, 60);
         for (const p of people)
-          for (const def of content.life.needs)
+          // Privacy (P3.5) is meant to fall in a shared room: the band's barracks cottage.
+          for (const def of content.life.needs.filter((n) => n.id !== 'privacy'))
             expect(needOf(world, p.id, def.id)!['value'], `${def.id} hour ${h}`).toBeGreaterThan(
               def.low,
             );
-        // 02:00 each night: who is asleep on their own bedroll.
+        // 02:00 each night: who is asleep on their own bedroll, or in their own bed.
         if (h % 24 === 19)
-          onBeds += people.filter((p) =>
-            itemsOf(world).some(
-              (i) => i['owner'] === p.id && i['x'] === p['x'] && i['y'] === p['y'],
-            ),
+          onBeds += people.filter(
+            (p) =>
+              itemsOf(world).some(
+                (i) => i['owner'] === p.id && i['x'] === p['x'] && i['y'] === p['y'],
+              ) ||
+              (bedOwnedBy(world, p.id)?.['x'] === p['x'] &&
+                bedOwnedBy(world, p.id)?.['y'] === p['y']),
           ).length;
       }
       expect(rations(world)).toBeLessThan(before);
       expect(onBeds).toBeGreaterThanOrEqual(people.length * 6);
       expect(world.log.filter((e) => e.type === 'goods.unloaded')).toHaveLength(1);
-      expect(world.log.some((e) => e.type === 'need.low' || e.type === 'mood.changed')).toBe(false);
+      // Only the barracks (P3.5) writes lines: privacy going low, and the mood it drags down.
+      const lines = world.log.filter((e) => e.type === 'need.low' || e.type === 'mood.changed');
+      for (const e of lines) {
+        const why = e.type === 'need.low' ? e : world.log.find((l) => l.id === e.causes[0]);
+        expect(why?.data['need'], `${e.type} at ${e.tick}`).toBe('privacy');
+      }
     });
   }
 
