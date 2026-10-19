@@ -58,6 +58,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-25** Budgets: `npm run check` under 60 s, CI under 5 minutes. A change that breaks a budget removes or merges tests before it adds more. When a new test covers an old one, delete the old one.
 - **VR-26** Each bug fix adds one regression test at the level where the bug lived, and no more.
 - **VR-27** While iterating, run only the related tests; run the full check once before each push (VER-02).
+- **VR-63** A browser-smoke locator names the exact row it means by its label (the Food need, not the first `.need`), never the first match of a class or button name (LESSONS "test" x2).
 
 ## 8. Design rules for this game
 

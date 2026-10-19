@@ -3,7 +3,7 @@
 // drawn from a stream: metres of rise across it, plus tiles from the green, plus trees to fell.
 // The lowest wins and ties go in tile order, so the same seed gives the same town.
 import type { EngineContent, EntityRow, PartDef, SizeDef, WorldState } from '../core/index.ts';
-import { haveOf, inStore, itemsAt, storeOf } from '../goods/index.ts';
+import { haveOf, itemsOf, storeOf } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';
 import { inRect, isTreeAt, wayFrom, wayTo, type Rect, type Site, type Way } from './way.ts';
 
@@ -30,11 +30,39 @@ export const rectOf = (h: EntityRow): Rect => ({
   h: h['h'] as number,
 });
 
+/** One round of siting's view of the surface, worked out once: the tiles with something lying
+ * on them, and those with a part built, a store tile or a plan on them. */
+export interface Ground {
+  items: ReadonlySet<number>;
+  taken: ReadonlySet<number>;
+}
+
+export function groundOf(world: WorldState): Ground {
+  const width = world.map.width;
+  const at = (r: EntityRow) => (r['y'] as number) * width + (r['x'] as number);
+  const taken = new Set([
+    ...storeOf(world)
+      .filter((s) => s['z'] === 0)
+      .map(at),
+    ...plansOf(world).map(at),
+  ]);
+  world.map.built.forEach((b, i) => b && taken.add(i));
+  return {
+    items: new Set(
+      itemsOf(world)
+        .filter((i) => i['z'] === 0 && !i['holder'])
+        .map(at),
+    ),
+    taken,
+  };
+}
+
 /** What a footprint tile holds for building: `no`, a tree to fell first, or open ground (a bush
  * or herbs there is cleared when the part is built). */
 function tileFit(
   world: WorldState,
   content: EngineContent,
+  ground: Ground,
   x: number,
   y: number,
 ): 'no' | 'tree' | 'ok' {
@@ -43,7 +71,7 @@ function tileFit(
   const i = y * map.width + x;
   const kind = content.terrain.kinds[map.tiles[i]!]!;
   if (!kind.buildable || kind.water || kind.solid || map.built[i]) return 'no';
-  if (itemsAt(world, x, y, 0).length) return 'no';
+  if (ground.items.has(i)) return 'no';
   const f = map.features[i]! ? content.features[map.features[i]! - 1]! : undefined;
   if (f && (f.kind === 'tree' || f.kind === 'log')) return 'tree';
   if (f && f.kind !== 'bush' && f.kind !== 'herb') return 'no';
@@ -52,25 +80,13 @@ function tileFit(
 
 /** Whether anything built, planned, stored or sent back is on or beside the footprint (a tile
  * is kept clear round a building), other than the house rows in `own`. */
-function crowded(world: WorldState, r: Rect, own: ReadonlySet<number>): boolean {
+function crowded(world: WorldState, ground: Ground, r: Rect, mine: readonly EntityRow[]): boolean {
   const ring = { x: r.x - 1, y: r.y - 1, w: r.w + 2, h: r.h + 2 };
-  const map = world.map;
-  const mine = housesOf(world).filter((h) => own.has(h.id));
-  const inOwn = (x: number, y: number) => mine.some((h) => inRect(rectOf(h), x, y));
-  for (const [x, y] of tilesOf(ring)) {
-    if (inOwn(x, y)) continue;
-    if (map.built[y * map.width + x] || inStore(world, x, y, 0)) return true;
-  }
-  if (
-    plansOf(world).some(
-      (p) =>
-        inRect(ring, p['x'] as number, p['y'] as number) &&
-        !inOwn(p['x'] as number, p['y'] as number),
-    )
-  )
-    return true;
+  const width = world.map.width;
+  for (const [x, y] of tilesOf(ring))
+    if (ground.taken.has(y * width + x) && !mine.some((h) => inRect(rectOf(h), x, y))) return true;
   return housesOf(world).some((h) => {
-    if (own.has(h.id)) return false;
+    if (mine.includes(h)) return false;
     const o = rectOf(h);
     const pad = h['state'] === 'sent' ? r : ring;
     return o.x < pad.x + pad.w && pad.x < o.x + o.w && o.y < pad.y + pad.h && pad.y < o.y + o.h;
@@ -84,17 +100,18 @@ export function scoreRect(
   content: EngineContent,
   r: Rect,
   own: ReadonlySet<number> = new Set(),
+  ground: Ground = groundOf(world),
 ): { rise: number; trees: number[] } | undefined {
-  if (crowded(world, r, own)) return undefined;
-  const map = world.map;
   const mine = housesOf(world).filter((h) => own.has(h.id));
+  if (crowded(world, ground, r, mine)) return undefined;
+  const map = world.map;
   let low = Infinity;
   let high = -Infinity;
   const trees: number[] = [];
   for (const [x, y] of tilesOf(r)) {
     const i = y * map.width + x;
     if (!mine.some((h) => inRect(rectOf(h), x, y))) {
-      const fit = tileFit(world, content, x, y);
+      const fit = tileFit(world, content, ground, x, y);
       if (fit === 'no') return undefined;
       if (fit === 'tree') trees.push(i);
     }
@@ -138,6 +155,7 @@ export function siteFor(
   green: Spot,
   size: { w: number; h: number },
   way: Way = wayFrom(world, content, green),
+  ground: Ground = groundOf(world),
 ): Site | undefined {
   const near = content.buildings.house.near;
   const width = world.map.width;
@@ -152,7 +170,7 @@ export function siteFor(
       const out = outsideOf(r, door);
       const path = way.trees[out.y * width + out.x]!;
       if (path < 0) continue;
-      const s = scoreRect(world, content, r);
+      const s = scoreRect(world, content, r, undefined, ground);
       if (!s) continue;
       found.push({ site: { ...r, ...s, far: d, door }, score: s.rise + d + s.trees.length + path });
     }
@@ -259,8 +277,9 @@ export function chooseHouse(
   sleepers: number,
 ): { size: SizeDef; site: Site; wall: PartDef } | undefined {
   const way = wayFrom(world, content, green);
+  const ground = groundOf(world);
   const sited = content.buildings.house.sizes.flatMap((size) => {
-    const site = siteFor(world, content, green, size, way);
+    const site = siteFor(world, content, green, size, way, ground);
     return site ? [{ size, site }] : [];
   });
   if (!sited.length) return undefined;
