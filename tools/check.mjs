@@ -1,10 +1,13 @@
-// `npm run check`: every local check in order, with step timings against the 60 s budget
-// (PLAN.md §6). Stops at the first failure; warns, never fails, on time alone.
+// `npm run check`: every local check in order, with step timings against its budget (RULES.md
+// VR-67). Stops at the first failure; warns, never fails, on time alone. The quick check leaves
+// out the slow colony-run test files listed in vitest.config.ts; `npm run check:full` (`--full`)
+// runs every file, once before a PR is marked ready, and CI's core job runs it too.
 import { appendFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { root } from './lib.mjs';
 
-const budgetSeconds = 60;
+const full = process.argv.includes('--full');
+const budgetSeconds = full ? 75 : 40;
 const steps = [
   ['ai-master', 'node .claude/master/sync.mjs --check'],
   ['format', 'npx prettier --check --cache .'],
@@ -13,7 +16,7 @@ const steps = [
   ['limits', 'node tools/check-limits.mjs'],
   ['codemap', 'node tools/codemap.mjs --check'],
   ['reading', 'node tools/reading-cost.mjs'],
-  ['unit', 'npx vitest run'],
+  ['unit', full ? 'npx vitest run' : 'VULCAN_TESTS=quick npx vitest run'],
   ['build', 'npx vite build --logLevel warn'],
 ];
 
@@ -29,7 +32,7 @@ for (const [name, command] of steps) {
   }
 }
 const total = (Date.now() - start) / 1000;
-const line = `check passed in ${total.toFixed(1)}s: ${times.join(', ')}`;
+const line = `${full ? 'full ' : ''}check passed in ${total.toFixed(1)}s: ${times.join(', ')}`;
 process.stdout.write(`\n${line}\n`);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${line}\n`);
 if (total > budgetSeconds)

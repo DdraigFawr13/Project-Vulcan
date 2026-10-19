@@ -1,7 +1,7 @@
 name: CI
 
 # Two parallel jobs, matching Story-Generator's CI:
-#   core:    `npm run check` (AI-master drift, format, typecheck, boundaries, size limits,
+#   core:    `npm run check:full` (AI-master drift, format, typecheck, boundaries, size limits,
 #            code map, reading cost, unit tests, build)
 #   browser: the Chromium smoke (tests/browser) against the production build
 #
@@ -37,8 +37,9 @@ jobs:
           cache: npm
       - run: npm install --global npm@11.9.0
       - run: npm ci
-      # The same steps as a local `npm run check`; its step timings go to the job summary.
-      - run: npm run check
+      # The same steps as a local `npm run check:full` (every test file, RULES VR-67); its step
+      # timings go to the job summary.
+      - run: npm run check:full
 
   browser:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
