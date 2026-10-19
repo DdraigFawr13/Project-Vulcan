@@ -72,7 +72,12 @@ export function validateContent(files: Files): string[] {
   }
   // Tier caps read the files as typed, so they run only once every shape is valid.
   if (errors.length === 0)
-    errors.push(...checkTierCaps(files), ...checkTerrain(files), ...checkCalendar(files));
+    errors.push(
+      ...checkTierCaps(files),
+      ...checkTerrain(files),
+      ...checkCalendar(files),
+      ...checkHouse(files),
+    );
   errors.push(...checkBand(files));
   return errors;
 }
@@ -203,5 +208,24 @@ function checkBand(files: Files): string[] {
   if (b.defaultClothes.length === 0) errors.push('band.defaultClothes: empty');
   for (const c of colours)
     if (!/^#[0-9a-f]{6}$/.test(c)) errors.push(`band: colour "${c}" is not #rrggbb`);
+  return errors;
+}
+
+// A house names parts of the right kind (src/engine/build), and room floors are floor parts.
+function checkHouse(files: Files): string[] {
+  const b = files['buildings'] as {
+    parts: { id: string; kind: string }[];
+    house: { walls: string[]; door: string; floor: string };
+    rooms: { floors: Record<string, number> };
+  };
+  const kindOf = (id: string) => b.parts.find((p) => p.id === id)?.kind;
+  const errors: string[] = [];
+  const want = (id: string, kind: string, at: string) => {
+    if (kindOf(id) !== kind) errors.push(`buildings.${at}: "${id}" is not a ${kind} part`);
+  };
+  b.house.walls.forEach((w, k) => want(w, 'wall', `house.walls[${k}]`));
+  want(b.house.door, 'door', 'house.door');
+  want(b.house.floor, 'floor', 'house.floor');
+  for (const f of Object.keys(b.rooms.floors)) want(f, 'floor', `rooms.floors.${f}`);
   return errors;
 }

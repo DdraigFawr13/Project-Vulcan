@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
-import { createSim, createWorld, recordOf, step, TICKS_PER_DAY, WATER } from '../index.ts';
+import {
+  calendarSystem,
+  createSim,
+  createWorld,
+  mapSystem,
+  recordOf,
+  regionSystem,
+  step,
+  TICKS_PER_DAY,
+  WATER,
+  weatherSystem,
+} from '../index.ts';
 import { strandedWater, waterNearStart } from './checks.ts';
 import { reachableAround } from './features.ts';
 import { MAP_SEEDS } from './seeds.ts';
@@ -14,7 +25,9 @@ import { MAP_SEEDS } from './seeds.ts';
 describe('surface map', () => {
   const sim = createSim(content);
   const need = content.terrain.generator.start;
-  // One world per seed: the first test reads it as made, the second runs its year.
+  // A year of weather needs only the land, the calendar and the weather, not the colony's year.
+  const weatherSim = createSim(content, [regionSystem, mapSystem, calendarSystem, weatherSystem]);
+  // One world per seed for the tests that read it as made.
   const worlds = new Map<string, ReturnType<typeof createWorld>>();
   const worldOf = (seed: string) =>
     worlds.get(seed) ?? worlds.set(seed, createWorld(sim, seed)).get(seed)!;
@@ -45,10 +58,10 @@ describe('surface map', () => {
     }
   });
   it.each(MAP_SEEDS)('seed %s freezes still water in a year, never a spring', (seed) => {
-    const world = worldOf(seed);
+    const world = createWorld(weatherSim, seed);
     let mostFrozen = 0;
     for (let day = 0; day < 336; day += 1) {
-      step(world, sim, TICKS_PER_DAY);
+      step(world, weatherSim, TICKS_PER_DAY);
       mostFrozen = Math.max(mostFrozen, world.systems['weather']!['frozen']!);
     }
     expect(mostFrozen).toBeGreaterThan(0);

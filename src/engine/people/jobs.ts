@@ -6,6 +6,7 @@
 // store into it, onto a matching stack. Quarrying (P3.1) is felling's twin for stone: boulders
 // broken up while the colony has less stone than it wants. Building is build.ts. Taking up
 // felling or quarrying and each tree felled or boulder broken are ledger lines; trips are not.
+import { houseName } from '../build/index.ts';
 import { raiseChunk } from '../map/index.ts';
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import {
@@ -16,6 +17,7 @@ import {
   itemsOf,
   layItem,
   markedTree,
+  growSpot,
   slotFor,
   stockOf,
   storeOf,
@@ -204,12 +206,25 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const from = spotOf(p);
   let best: EntityRow | undefined;
   let far = Infinity;
+  // A load the full store has no room for, and cannot grow for, stays where it lies; carrying
+  // it would only set it down again (seen on a forest seed once a house's site was cleared).
+  // Worked out only for a load that would be nearest, once per kind and size.
+  let grows: boolean | undefined;
+  const fits = new Map<string, boolean>();
+  const room = (i: EntityRow) => {
+    grows ??= growSpot(world, content) !== undefined;
+    if (grows) return true;
+    const key = `${i['kind']}:${i['count']}`;
+    if (!fits.has(key))
+      fits.set(key, !!slotFor(world, content, i['kind'] as string, i['count'] as number, from));
+    return fits.get(key)!;
+  };
   for (const i of itemsOf(world)) {
     if (i['holder'] || !kinds.includes(i['kind'] as string) || taken.has(i.id)) continue;
     const at = spotOf(i);
-    if (inStore(world, at.x, at.y, at.z)) continue;
     const d = Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y));
-    if (d < far && canReach(content, world.map, from, at)) [best, far] = [i, d];
+    if (d >= far || inStore(world, at.x, at.y, at.z) || !room(i)) continue;
+    if (canReach(content, world.map, from, at)) [best, far] = [i, d];
   }
   return best;
 }
@@ -278,29 +293,40 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   return takeUp(ctx, p);
 }
 
-/** Chooses new work: a marked tree first (test mode), then the Work sheet's kinds of work in
- * their own priority order (priority.ts): felling while wood is short, else carrying. */
+/** Chooses new work: a tree marked by a test-mode order first, then the Work sheet's kinds of
+ * work in their own priority order (priority.ts): felling while wood is short, foraging while
+ * food is, carrying, building (a house's site cleared first) and the rest. */
 function takeUp(ctx: SystemContext, p: EntityRow): boolean {
-  const { world, content } = ctx;
-  const fellDef = content.work.fell;
-  const marked = able(content, p, fellDef.job)
-    ? markedTree(world, content, busy(world, p, 'fell'), spotOf(p), (x, y) =>
-        goBeside(ctx, p, x, y),
-      )
-    : undefined;
-  if (marked) {
-    p['took'] = ctx.emit('work.tookUpMarked', {
-      causes: [marked.line],
-      actors: [p.id],
-      data: { name: p['name'] as string },
-    });
-    return startGathering(ctx, p, marked.tree, gatherOf(content, 'fell')!);
-  }
-  for (const job of jobsInOrder(world, content, p)) if (TAKE_UP[job]?.(ctx, p)) return true;
+  const { world } = ctx;
+  if (takeUpMarked(ctx, p, false)) return true;
+  for (const job of jobsInOrder(world, ctx.content, p)) if (TAKE_UP[job]?.(ctx, p)) return true;
   p['job'] = '';
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;
   return false;
+}
+
+/** The nearest marked tree they can get beside: a test-mode order's, or (`forHouse`, P3.7) one
+ * on a house's site or its way in, which is felling work in its place on the Work sheet. */
+function takeUpMarked(ctx: SystemContext, p: EntityRow, forHouse: boolean): boolean {
+  const { world, content } = ctx;
+  if (!able(content, p, content.work.fell.job)) return false;
+  const marked = markedTree(
+    world,
+    content,
+    busy(world, p, 'fell'),
+    spotOf(p),
+    (x, y) => goBeside(ctx, p, x, y),
+    forHouse,
+  );
+  if (!marked) return false;
+  const site = forHouse ? houseName(world, content, marked.house) : '';
+  p['took'] = ctx.emit(forHouse ? 'work.tookUpClearing' : 'work.tookUpMarked', {
+    causes: [marked.line],
+    actors: [p.id],
+    data: { name: p['name'] as string, ...(site && { size: site }) },
+  });
+  return startGathering(ctx, p, marked.tree, gatherOf(content, 'fell')!);
 }
 
 /** Felling (quarrying), while the colony's wood (stone) is short of its stock level, unless
@@ -352,7 +378,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   fell: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'fell')!),
   haul: takeUpHauling,
   forage: takeUpForaging,
-  build: takeUpBuilding,
+  build: (ctx, p) => takeUpMarked(ctx, p, true) || takeUpBuilding(ctx, p),
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
 };
 

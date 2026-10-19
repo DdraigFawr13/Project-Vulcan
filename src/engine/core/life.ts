@@ -94,6 +94,43 @@ export interface BuildingsDef {
   skilled: number;
   downShare: number;
   parts: readonly PartDef[];
+  house: HouseDef;
+  rooms: RoomsDef;
+}
+
+/** A house size or stage (P3.7, P3.8): a w by h footprint of walls round a floor. */
+export interface SizeDef {
+  id: string;
+  name: string;
+  w: number;
+  h: number;
+  sleeps: number;
+}
+
+/** What colonists build a house of and the sizes they choose from (P3.7, V-051). */
+export interface HouseDef {
+  name: string;
+  start: number;
+  near: number;
+  reach: number;
+  walls: readonly string[];
+  door: string;
+  floor: string;
+  sizes: readonly SizeDef[];
+  stage: SizeDef;
+}
+
+/** How a room is scored when asked (P3.3). */
+export interface RoomsDef {
+  most: number;
+  roof: string;
+  perSize: number;
+  top: number;
+  crowd: { tiles: number; beauty: number };
+  bare: number;
+  floors: Readonly<Record<string, number>>;
+  roles: readonly { id: string; name: string; beds: number }[];
+  looks: readonly { at: number; word: string }[];
 }
 
 /** The forked jobs list (jobs.json): only what work reads. */

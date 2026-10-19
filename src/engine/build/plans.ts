@@ -12,7 +12,8 @@ export const BUILD_TABLES: Schemas = {
    * left once building has started, -1 before; `line`: the plan's line; `done`: the line it
    * was built under, 0 before; `waited`: the line saying it waits for material, 0 when not;
    * `shut`: the line saying the wall would shut someone in or the store off, 0 when not;
-   * `held`: the tick before which nobody tries to finish it again. */
+   * `held`: the tick before which nobody tries to finish it again; `house`: the house (or
+   * room) it is part of, 0 for a part placed in test mode. */
   plan: {
     part: 'text',
     x: 'int',
@@ -26,6 +27,7 @@ export const BUILD_TABLES: Schemas = {
     waited: 'event',
     shut: 'event',
     held: 'int',
+    house: 'entity',
   },
 };
 
@@ -51,10 +53,12 @@ export const refundOf = (content: EngineContent, plan: EntityRow): number =>
   (plan['done'] as number) > 0 ? planPart(content, plan).cost : (plan['have'] as number);
 
 /** The part is finished under `cause` (the builder's line): a wall, door or floor is set on the
- * map; a stair cuts stairs down, reaching the level below if nobody has. */
+ * map (anything growing there is cleared); a stair cuts stairs down, reaching the level below if nobody has. */
 export function finishPlan(ctx: SystemContext, plan: EntityRow, cause: number): void {
   const part = planPart(ctx.content, plan);
   const [x, y, z] = [plan['x'] as number, plan['y'] as number, plan['z'] as number];
+  // A bush or herbs on a house's site is cleared as the part goes up (site.ts).
+  if (z === 0) ctx.world.map.features[y * ctx.world.map.width + x] = 0;
   if (part.kind === 'stair') cutStairsAt(ctx, x, y, z, cause);
   else setBuilt(ctx, x, y, ctx.content.buildings.parts.indexOf(part) + 1, cause);
   Object.assign(plan, { state: 'built', done: cause, work: 0, waited: 0 });

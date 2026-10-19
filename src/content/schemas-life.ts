@@ -4,6 +4,15 @@
 import { list, map, num, obj, oneOf, ref, str } from './schema';
 import { count, id, text } from './schema-fields';
 
+// A house size or stage: a footprint of walls round a floor, and how many it sleeps.
+const size = obj({
+  id,
+  name: text,
+  w: num({ min: 3 }),
+  h: num({ min: 3 }),
+  sleeps: num({ min: 1 }),
+});
+
 export const LIFE_SCHEMAS = {
   life: obj({
     scale: num({ min: 100 }),
@@ -125,5 +134,35 @@ export const LIFE_SCHEMAS = {
         art: text,
       }),
     ),
+    // P3.7 (V-049, V-051): what a house is made of and the sizes colonists choose from, smallest
+    // first; `near` is how many tiles from the green it may stand. `walls` are part ids, the
+    // first whose material lies within
+    // `reach` tiles of the store taken. `stage` is the room a house adds (P3.8).
+    house: obj({
+      name: text,
+      start: num({ min: 1, max: 4 }),
+      near: num({ min: 1 }),
+      reach: num({ min: 1 }),
+      walls: list(text),
+      door: text,
+      floor: text,
+      sizes: list(size),
+      stage: size,
+    }),
+    // P3.3: rooms are worked out when asked. Impressiveness is the room's tiles over `perSize`
+    // plus its beauty, out of `top`; beauty is the floors' average (`bare` where none is
+    // built), less `crowd.beauty` when there is a bed for fewer than `crowd.tiles` tiles. The
+    // first role whose `beds` the room has is its role.
+    rooms: obj({
+      most: num({ min: 1 }),
+      roof: text,
+      perSize: num({ min: 1 }),
+      top: num({ min: 1 }),
+      crowd: obj({ tiles: num({ min: 1 }), beauty: num() }),
+      bare: num(),
+      floors: map(num()),
+      roles: list(obj({ id, name: text, beds: num({ min: 1 }) })),
+      looks: list(obj({ at: num(), word: text })),
+    }),
   }),
 };

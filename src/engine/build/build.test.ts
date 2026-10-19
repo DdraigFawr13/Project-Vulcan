@@ -62,7 +62,11 @@ describe('building', () => {
       expect(walkAt(content, world.map, 0, t.y * world.map.width + t.x)).toBe(0);
     }
     // Each wall traces back through the builder taking it up to the plan and the order.
-    const built = world.log.find((e) => e.type === 'build.built')!;
+    // (The colony's own house is built too; find a line for this wall.)
+    const built = world.log.find(
+      (e) =>
+        e.type === 'build.built' && wall.some((t) => t.x === e.data['x'] && t.y === e.data['y']),
+    )!;
     const chain = whyOf(world, built.id).map((c) => c.event.type);
     expect(chain.slice(0, 3)).toEqual(['work.tookUpBuilding', 'build.planned', 'command.applied']);
     // The stone was broken from boulders by someone who took up quarrying.

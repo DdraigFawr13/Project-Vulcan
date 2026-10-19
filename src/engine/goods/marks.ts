@@ -9,8 +9,9 @@ import type { SystemContext } from '../sim/index.ts';
 import { freeTile } from './store.ts';
 
 export const MARK_TABLES: Schemas = {
-  /** A surface tree marked to fell in test mode, and the order that marked it. */
-  mark: { x: 'int', y: 'int', line: 'event' },
+  /** A surface tree marked to fell, and the line that marked it: a test-mode order, or a house
+   * sited over it (`house`, P3.7; 0 for a test mark), whose site is cleared first. */
+  mark: { x: 'int', y: 'int', line: 'event', house: 'entity' },
 };
 
 export const marksOf = (world: WorldState): EntityRow[] => world.entities['mark'] ?? [];
@@ -46,7 +47,7 @@ export const markCommands = {
     if (!tile || !isTree(ctx.world, ctx.content, i))
       return refuse(ctx, 'markFell', 'no tree there', cause);
     if (marksOf(ctx.world).some((m) => m['x'] === tile.x && m['y'] === tile.y)) return;
-    addEntity(ctx.world, 'mark', { ...tile, line: cause });
+    addEntity(ctx.world, 'mark', { ...tile, line: cause, house: 0 });
   },
   markStore(ctx: SystemContext, data: Readonly<Record<string, unknown>>, cause: number): void {
     const tile = at(ctx, data);
@@ -58,22 +59,24 @@ export const markCommands = {
 };
 
 /** The nearest marked tree not in `taken` that `goTo` can set them off beside (it does), with
- * the order that marked it. */
+ * the order that marked it: of a house's site when `forHouse`, else of a test-mode order. */
 export function markedTree(
   world: WorldState,
   content: EngineContent,
   taken: ReadonlySet<number>,
   here: Spot,
   goTo: (x: number, y: number) => boolean,
-): { tree: number; line: number } | undefined {
+  forHouse: boolean,
+): { tree: number; line: number; house: number } | undefined {
   const width = world.map.width;
   const far = (m: EntityRow) =>
     Math.max(Math.abs((m['x'] as number) - here.x), Math.abs((m['y'] as number) - here.y));
   const marks = marksOf(world)
     .map((m) => ({ m, i: (m['y'] as number) * width + (m['x'] as number) }))
-    .filter(({ i }) => isTree(world, content, i) && !taken.has(i))
+    .filter(({ m, i }) => !!m['house'] === forHouse && isTree(world, content, i) && !taken.has(i))
     .sort((a, b) => far(a.m) - far(b.m) || a.m.id - b.m.id);
   for (const { m, i } of marks)
-    if (goTo(m['x'] as number, m['y'] as number)) return { tree: i, line: m['line'] as number };
+    if (goTo(m['x'] as number, m['y'] as number))
+      return { tree: i, line: m['line'] as number, house: m['house'] as number };
   return undefined;
 }
