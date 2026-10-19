@@ -186,6 +186,9 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
   if (p['job'] === 'cook' && hours && cooking(ctx, p)) return true;
   const load = loadOf(world, p.id);
+  // A shaft's ladder fetched before the day's work ended is kept for the morning, not carried
+  // back to the store (the sinker then lost the job to others' work first).
+  if (load && !hours && p['job'] === 'mine' && p['task'] === 'sink') return false;
   if (load) {
     p['job'] = 'haul';
     deliver(ctx, p, load);
