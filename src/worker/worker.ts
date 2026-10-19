@@ -20,6 +20,7 @@ import {
   submitCommand,
   SYSTEMS,
   TEST_TOOLS,
+  ticksPerMonth,
   toNdjson,
   whyOf,
   yesterdayOf,
@@ -27,7 +28,7 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
-import { createPace, setSpeed, SKIP_MS, stopSkip, ticksDue } from './pace.ts';
+import { createPace, jump, setSpeed, SKIP_MS, skipEnds, stopSkip, ticksDue } from './pace.ts';
 import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type { ChunkView, FromWorker, LedgerLine, ToWorker } from './protocol.ts';
 import { pickerBuffers, previewOf, regionView } from './region.ts';
@@ -85,7 +86,10 @@ function run(ticks: number): void {
   if (pace.skip) {
     // Tick by tick, exactly as at any speed, so a skip writes the ledger a 3x run would.
     const until = performance.now() + SKIP_MS;
-    while (pace.skip && performance.now() < until) if (tickOnce(w)) stopSkip(pace);
+    while (pace.skip && performance.now() < until) {
+      const notable = tickOnce(w);
+      if (skipEnds(pace, w.tick, notable)) stopSkip(pace);
+    }
   } else for (let i = 0; i < ticks; i += 1) tickOnce(w);
   if (w.sealed.length) {
     post({ type: 'segments', items: w.sealed.map(({ key, text }) => ({ key, text })) });
@@ -257,6 +261,14 @@ function handle(message: ToWorker): void {
     case 'skip':
       if (world) pace.skip = true;
       return;
+    case 'jump': {
+      // A time jump is a test tool: a page not in test mode gets nothing (V-041).
+      if (!world || !testMode) return;
+      const { monthsPerYear, seasons } = content.calendar;
+      const months = message.span === 'month' ? 1 : monthsPerYear / seasons.length;
+      jump(pace, world.tick, months * ticksPerMonth(content.calendar));
+      return;
+    }
     case 'requestSnapshot':
       if (world) snapshot(world);
       return;

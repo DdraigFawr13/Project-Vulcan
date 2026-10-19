@@ -39,6 +39,8 @@ export interface PanelActions {
   sendBack(tile: TileView, house: number): void;
   /** The Stock lever: how much of `good` the colony keeps. */
   setStock(good: string, level: string): void;
+  /** Test mode: skips a month or a season, tick by tick, then pauses. */
+  jump(span: 'month' | 'season'): void;
   /** Follows the tile's stairs or shaft to level `z` and inspects the same spot there. */
   go(tile: TileView, z: number): void;
   close(): void;
@@ -107,12 +109,13 @@ export class Panel {
       ...(tile.drinkable !== undefined ? [['drinkable', tile.drinkable ? 'yes' : 'no']] : []),
       ...(tile.crossing ? [['crossing', tile.crossing]] : []),
     ];
+    // What lies here comes first: it is usually what a tap was after (Morgan, Phase 3 playtest).
     for (const [key, value] of [
+      ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
       ...(tile.piece ? [] : land),
       ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
       ...(tile.store ? [['store', 'part of the colony store']] : []),
       ...(tile.piece ? pieceFacts(tile) : planFacts(tile)),
-      ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
       ...(tile.below && !tile.piece ? [['below', tile.below]] : []),
       ...(this.debug
         ? [['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`]]
@@ -289,8 +292,19 @@ export class Panel {
     const about = el(
       'p',
       { class: 'aside' },
-      'Direct tools for trying things out: dig down, mark a tree, add a store tile. Your colonists choose their own work in the normal game.',
+      'Direct tools for trying things out: dig down, mark a tree, add a store tile, jump ahead in time. Your colonists choose their own work in the normal game.',
     );
+    // Jumps run every tick on the way, as a skip does, so what follows is what play would give.
+    if (this.debug)
+      for (const span of ['month', 'season'] as const) {
+        const go = el(
+          'button',
+          { type: 'button', 'data-testid': `jump-${span}` },
+          `Jump a ${span}`,
+        );
+        go.addEventListener('click', () => this.actions.jump(span));
+        test.append(go);
+      }
     this.body.replaceChildren(now, form, el('h3', {}, 'Test mode'), about, test);
     if (problem) this.body.append(el('p', { class: 'problem', role: 'alert' }, problem));
     if (!saves.length) this.body.append(el('p', { class: 'muted' }, 'No saves yet.'));

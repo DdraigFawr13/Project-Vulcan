@@ -112,6 +112,11 @@ const panel = new Panel(
       if (level === z) send({ type: 'inspect', x: tile.x, y: tile.y, z });
     },
     newGame: (next) => roll(next),
+    jump: (span) => {
+      if (!ready || stopped || saves.loading) return;
+      send({ type: 'jump', span });
+      closePanel();
+    },
     close: () => closePanel(),
   },
   debug,

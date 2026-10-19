@@ -28,6 +28,8 @@ export type ToWorker =
   | { type: 'setSpeed'; speed: Speed }
   /** Skip ahead (P2.7): run as fast as the device allows until a notable line, then pause. */
   | { type: 'skip' }
+  /** Test mode only, refused otherwise: skip a whole month or season, then pause. */
+  | { type: 'jump'; span: 'month' | 'season' }
   /** The page asks once per screen frame, with at most one request waiting. */
   | { type: 'requestSnapshot' }
   /** Asks for the running world as a save; `auto` is echoed back for the page's autosave slot, and
