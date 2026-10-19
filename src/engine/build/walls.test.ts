@@ -134,6 +134,8 @@ describe('wattle and daub walls', () => {
     const level = world.map.levels[0]!;
     const clay = base.terrain.kinds.findIndex((k) => k.id === 'clay');
     level.tiles[(y + 1) * world.map.width + x] = clay;
+    // Cutting the stairs showed the ground around their foot (V-030): this tile starts unknown.
+    level.known[(y + 1) * world.map.width + x] = 0;
     expect(withinReach(world, base, 'clay', true)).toBe(0);
     level.known[(y + 1) * world.map.width + x] = 1;
     expect(withinReach(world, base, 'clay', true)).toBe(10);

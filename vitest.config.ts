@@ -12,6 +12,7 @@ const slowFiles = [
   'src/engine/build/houses.test.ts',
   'src/engine/fire/fire.test.ts',
   'src/engine/map/map.test.ts',
+  'src/engine/mine/mine.test.ts',
   'src/engine/needs/winter.test.ts',
   'src/engine/people/forage.test.ts',
   'src/engine/people/jobs.test.ts',

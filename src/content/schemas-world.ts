@@ -165,6 +165,7 @@ export const WORLD_SCHEMAS = {
       spoilPerMonth: opt(share),
       spoilPerDay: opt(share),
       cooked: opt(bool()),
+      ore: opt(ref('items')), // an ingot's ore item (P4.1)
       forms: opt(texts),
       effects: opt(
         list(
@@ -179,8 +180,7 @@ export const WORLD_SCHEMAS = {
       downsides: opt(texts),
     }),
   ),
-  // Vulcan's own, not forked: the ledger text of every event type the engine may emit.
-  // Slots are {actorN}, {subjectN} and data keys; the engine refuses an event that leaves one empty.
+  // Vulcan's own, not forked: the ledger text of every event type the engine may emit; slots are {actorN}, {subjectN} and data keys, and an event that leaves one empty is refused.
   // `notable` (P2.6, P2.7) makes a line an alert and a stop for skip ahead: `{}` always, or data
   // values a line must have, alternatives split by `|` (a mood only when it fell low).
   events: list(

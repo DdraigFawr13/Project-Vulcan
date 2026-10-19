@@ -22,6 +22,8 @@ export interface FeatureDef {
     rocks: Readonly<Record<string, number>>;
     /** Marks the surface above the vein with a stain (V-087). */
     stain?: boolean;
+    /** The stain's colour in words for the tile page and reasons ("rust"). */
+    stainWord?: string;
   };
 }
 

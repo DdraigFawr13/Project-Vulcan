@@ -131,6 +131,7 @@ export const peopleSystem: System = {
     'skill.rose',
     ...['work.tookUpSowing', 'work.tookUpReaping', 'field.harvested', 'farm.harvestHome'],
     'goods.ateSeed',
+    ...['mine.sank', 'mine.dug', 'mine.veinMined', 'mine.clayDug'],
   ],
   tables: PEOPLE_TABLES,
   // The colony's day (day.ts) is kept here once the player changes it, with its line.
@@ -177,7 +178,7 @@ export const peopleSystem: System = {
           chill: 0,
           seeded: 0,
         },
-        ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0 },
+        ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0, task: '', what: '' },
       });
       for (const skill of content.band.skills)
         addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0 });

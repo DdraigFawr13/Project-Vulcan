@@ -23,6 +23,7 @@ import {
 import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
+import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
 import { takeUpHearth } from './hearth.ts';
@@ -37,7 +38,7 @@ import { tallyAdd } from './tally.ts';
 import { walkTo } from './walk.ts';
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `hearth` (a hearth being made), `tend`, `haul`
+  /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `tend`, `haul`
    * or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
@@ -46,8 +47,12 @@ export const JOB_FIELDS = {
   work: 'int',
   /** Their line taking up the work, which each tree they fell (or part they build) cites. */
   took: 'event',
-  /** The plan they are building (P3.1) or the field they are sowing or reaping (P4.7), or 0. */
+  /** The plan they are building (P3.1), the field they are sowing or reaping (P4.7), the shaft
+   * they are sinking or tunnelling from (P4.1) or the wall waiting for their clay, or 0. */
   plan: 'int',
+  /** Mining (P4.1): `sink`, `tunnel`, `mine` or `clay`, and the metal (or the part, for clay). */
+  task: 'text',
+  what: 'text',
   /** The tick before which they do not look for work again after finding none. */
   next: 'int',
 } as const;
@@ -174,6 +179,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
   if (p['job'] === 'build' && hours && building(ctx, p)) return true;
+  if (p['job'] === 'mine' && hours && mining(ctx, p)) return true;
   if (p['job'] === 'farm' && hours && farming(ctx, p)) return true;
   if (p['job'] === 'carpentry' && hours && furnishing(ctx, p)) return true;
   if (p['job'] === 'hearth' && hours && furnishing(ctx, p)) return true;
@@ -304,6 +310,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   cook: takeUpCooking,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
+  mine: takeUpMining,
 };
 
 const jobSkill = (content: EngineContent, g: Gather): string =>

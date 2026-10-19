@@ -109,6 +109,22 @@ export const LIFE_SCHEMAS = {
       camp: count,
       reach: count,
     }),
+    // Mining (P4.1, V-086, V-087): the jobs.json job; minutes to sink a shaft one level, dig a
+    // rock or earth tile and mine a vein tile at skill `skilled`; the `ladder` items (item: count)
+    // the first level takes; `perIngot` ore an ingot wants (a placeholder until the smelter's
+    // recipe, Bundle 3, owns it); `floors` the tile kind digging leaves, by what was dug.
+    mine: obj({
+      job: ref('jobs'),
+      shaft: count,
+      dig: count,
+      vein: count,
+      skilled: count,
+      ladder: map(count, 'items'),
+      perIngot: num({ min: 1 }),
+      floors: obj({ stone: str(), earth: str() }),
+      // A shaft may sit up to `near` tiles from its stain, on the nearest open ground.
+      near: count,
+    }),
     // Foraging (P2.9): the jobs.json job and the good it serves, minutes a bush takes at skill
     // `skilled`, bushes looked for within `reach` tiles of the store; a bush picked is ripe again
     // after `regrowDays` days, and bushes only grow back in the named `months`.
