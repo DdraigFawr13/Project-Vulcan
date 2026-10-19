@@ -49,6 +49,9 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-60** A mock-up is text plus two or three images and a three-seed table; the ten-seed done-when table is produced only by the phase review (Morgan, 2026-10-18; ten-seed galleries made mock-ups slow to build and large to review).
 - **VR-61** Small milestones that touch the same area run as one bundle in one thread, so repo setup and spec reading are paid once; the coordinator names the bundle when it starts the thread (Morgan, 2026-10-18; each setup is roughly 150 to 250k tokens, estimated).
 
+- **VR-64** Screen mock-ups word their buttons, alerts, empty sheets and "why?" lines with the `design:ux-copy` skill; Vulcan's voice stays in UI_STYLE and VR-37 (Morgan, skills review 2026-10-19).
+- **VR-65** Every screen mock-up passes an accessibility check at 390 px before its spot check: text contrast 4.5 to 1, control contrast 3 to 1, the tap-target floor in UI_STYLE, and colour never the only signal (VR-37). It comes from the `design:accessibility-review` skill, narrowed to what fits a phone game, and is built once as a Playwright script (VR-53); until the script exists, the thread checks these four by hand (Morgan, skills review 2026-10-19).
+
 ## 7. Lean testing
 
 - **VR-21** One determinism test for the whole engine (same seed and commands, same log), not one per system (GAME-06).
@@ -94,3 +97,4 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-52** Log each handoff (agent, tokens, minutes, rework needed) in the thread-times line. An agent or skill that costs more than the direct route, or needs rework twice in a phase, is changed or dropped at the phase review (DEL-07).
 - **VR-53** Deterministic chores are scripts, not agents or skills.
 - **VR-54** No GitHub Actions minutes before a branch is ready to merge (Morgan, 2026-10-17). PRs open as drafts; CI is skipped on drafts and runs once when the PR is marked ready for review. Run `npm run check` and the browser smoke locally on every push instead. Mark a PR ready only when nothing more is planned for it, and batch any fixes after that into one push (CI-02, GIT-05).
+- **VR-66** Three new skills are on trial and stay only if they are measured cheaper or equal at the same quality (DEL-07, VR-52): the `shepherd:reviewer` at the Phase 3 phase review, run on the same diff beside `reviewer` and `design-reviewer` in branch mode (its PR mode needs the GitHub command line), with findings and tokens compared; `shepherd` while coding, logged in one milestone's thread-times line (loaded or not, what it changed, tokens); and `setup-audit`, run once at project scope for readiness and cost. Each result goes in TOOLKIT §3 (Morgan, skills review 2026-10-19).

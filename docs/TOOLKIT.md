@@ -49,6 +49,12 @@ The four new agents are on trial: each is measured on first use against doing th
 | `run` | built in | Launching the game to screenshot or play a playtest |
 | `code-review`, `simplify` | built in | Milestone self-review before asking for review |
 | `harvest-lessons` | built in | Monthly, to push general lessons back to AI-Master |
+| `design:ux-copy` | plugin | Wording in screen mock-ups (VR-64) |
+| `design:accessibility-review` | plugin | Source of the mock-up accessibility check (VR-65); the check itself is a script |
+| `shepherd`, `shepherd:reviewer` | plugin, on trial | Coding, and the Phase 3 phase review beside `reviewer` (VR-66) |
+| `setup-audit` | plugin, on trial | Once, for the cloud-session setup (VR-66) |
+
+Plugin skills reviewed and not used (2026-10-19, page https://claude.ai/artifact/4pN1XAYnHiL3SX6KppCxby): the engineering code review, testing strategy (its pyramid clashes with VR-21 to VR-27), architecture, system design, debug, deploy checklist, standup, incident response and documentation; the design critique, design system, handoff and research skills (later candidates: critique on a taste board, research synthesis once others playtest); Figma.
 
 AI-Master layers synced: `core`, `stacks/node-web`, `project-types/game`. The `simulator` layer is not adopted: its golden-file rule (SIM-02) clashes with computing expected values at test time (VR-24), and SIM-05 is about industrial safety.
 
@@ -59,7 +65,7 @@ AI-Master layers synced: `core`, `stacks/node-web`, `project-types/game`. The `s
 | GitHub | PRs, CI status, reviews, branch cleanup | Always on |
 | Vercel | Check the live deploy matches the merge commit | Production from `main` only |
 | OpenArt | Optional placeholder art; the likely tool for the final art (V-034) | Paid credits: ask Morgan with an estimate first (SAFE-04) |
-| tldraw, Figma | Optional diagrams or layout sketches | HTML mock-up artifacts are the default because they read on a phone |
+| tldraw, Figma | Optional diagrams or layout sketches | HTML mock-up artifacts are the default because they read on a phone; the Figma plugin's connection failed in thread containers (2026-10-19) |
 | Mobbin | Reference screens for panels and inspectors | Reference only; nothing copied |
 | Supabase | Not used | Cloud saves dropped for save files (V-032) |
 | Claude Docs, Google Drive, Canva | Not used | The plan stays as files plus one artifact page |
