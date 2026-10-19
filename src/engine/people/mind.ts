@@ -9,19 +9,27 @@ import { changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { dayOf } from './day.ts';
 import { bedOwnedBy } from '../build/index.ts';
+import { bankFire } from '../fire/index.ts';
 import { claimBed } from './claim.ts';
 import { carryBed, movesIn } from './home.ts';
 import { working } from './jobs.ts';
+import { spotOf } from './spots.ts';
 import { tallyAdd } from './tally.ts';
 import { walkTo, wander } from './walk.ts';
+import { tendInEvening } from './tend.ts';
+import { warming } from './warm.ts';
 
 export const MIND_FIELDS = {
-  /** `eat`, `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `relax` or '' (idle). */
+  /** `eat`, `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `warm` (warm.ts), `relax` or ''
+   * (idle). */
   doing: 'text',
   /** The tick before which they do not look for food again after finding none they can reach. */
   retry: 'int',
   /** While moving in: the surface tile (index + 1) they carry their bedroll to, else 0. */
   bedTo: 'int',
+  /** The tick before which a cold person does not look for a warm place again after finding
+   * none (warm.ts). */
+  chill: 'int',
 } as const;
 
 const RETRY = 60;
@@ -67,7 +75,7 @@ function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
 
 /** Lies down: on their own laid-out bedroll when there is a way to it, else where they stand;
  * first carrying it into a house that has room (home.ts). */
-function goToBed(ctx: SystemContext, p: EntityRow): void {
+function goToBed(ctx: SystemContext, p: EntityRow, night: boolean): void {
   claimBed(ctx, p);
   if (movesIn(ctx, p)) return;
   p['doing'] = 'sleep';
@@ -79,6 +87,8 @@ function goToBed(ctx: SystemContext, p: EntityRow): void {
   if (bed && !there)
     walkTo(ctx, p, { x: bed['x'] as number, y: bed['y'] as number, z: bed['z'] as number });
   else p['path'] = [];
+  // Going to bed for the night, they bank the fire that warms their bed (P3.6, V-048).
+  if (night) bankFire(ctx, p, bed ? spotOf(bed) : spotOf(p));
 }
 
 /** One minute of choosing, after the minute's steps. */
@@ -111,11 +121,17 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     p['doing'] = '';
   }
   if (night || rest < seekOf(ctx, 'rest')) {
-    goToBed(ctx, p);
+    goToBed(ctx, p, night);
     return;
   }
+  // Below its warning line, warmth beats work (P3.6, V-046).
+  if (warming(ctx, p)) return;
   const hours = hour >= day.workFrom && hour < day.workTo;
   if (working(ctx, p, hours)) {
+    p['doing'] = 'work';
+    return;
+  }
+  if (!hours && tendInEvening(ctx, p)) {
     p['doing'] = 'work';
     return;
   }

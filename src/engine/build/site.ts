@@ -8,6 +8,7 @@ import type { Spot } from '../paths/index.ts';
 import { inRect, isTreeAt, wayFrom, wayTo, type Rect, type Site, type Way } from './way.ts';
 
 export { inRect, type Rect, type Site } from './way.ts';
+import { furnitureOf } from './furniture.ts';
 import { partOf, plansOf } from './plans.ts';
 
 /** Whether (x, y) is on the rectangle's edge, where its walls and door stand. */
@@ -45,6 +46,14 @@ export function groundOf(world: WorldState): Ground {
       .filter((s) => s['z'] === 0)
       .map(at),
     ...plansOf(world).map(at),
+    // A piece standing outside every house, the campfire (P3.6); those in a room are its own.
+    ...furnitureOf(world)
+      .filter(
+        (f) =>
+          f['z'] === 0 &&
+          !housesOf(world).some((h) => inRect(rectOf(h), f['x'] as number, f['y'] as number)),
+      )
+      .map(at),
   ]);
   world.map.built.forEach((b, i) => b && taken.add(i));
   return {

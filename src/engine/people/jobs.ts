@@ -9,25 +9,13 @@
 import { houseName } from '../build/index.ts';
 import { raiseChunk } from '../map/index.ts';
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import {
-  growStore,
-  haveOf,
-  inStore,
-  itemsAt,
-  itemsOf,
-  layItem,
-  markedTree,
-  growSpot,
-  slotFor,
-  stockOf,
-  storeOf,
-  takeFrom,
-  unmark,
-  wantOf,
-} from '../goods/index.ts';
+import { haveOf, itemsOf, markedTree, stockOf, storeOf, unmark, wantOf } from '../goods/index.ts';
 import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
+import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
+import { takeUpHearth } from './hearth.ts';
+import { takeUpTending, tending } from './tend.ts';
 import { furnishing, takeUpCarpentry } from './carpentry.ts';
 import { foraging, takeUpForaging } from './forage.ts';
 import { practise } from './learn.ts';
@@ -37,7 +25,8 @@ import { tallyAdd } from './tally.ts';
 import { walkTo } from './walk.ts';
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `build`, `carpentry`, `haul` or '' (none). */
+  /** `fell`, `quarry`, `forage`, `build`, `carpentry`, `hearth` (a hearth being made), `tend`, `haul`
+   * or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -50,8 +39,6 @@ export const JOB_FIELDS = {
   /** The tick before which they do not look for work again after finding none. */
   next: 'int',
 } as const;
-
-const LOOK_AGAIN = 30;
 
 /** Work that takes a feature off the map for what it yields: felling (logs) and quarrying (P3.1,
  * stone). `kinds` are the feature kinds worked, preferred in that order. */
@@ -150,86 +137,6 @@ function fell(ctx: SystemContext, p: EntityRow, i: number, g: Gather): void {
   if (g.job === 'fell') tallyAdd(ctx, 'felled', laid);
 }
 
-/** Carrying: to the store with what they hold; the store grows when the load finds no room. */
-function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void {
-  const { world, content } = ctx;
-  const kind = load['kind'] as string;
-  const count = load['count'] as number;
-  const here = spotOf(p);
-  const slot = slotFor(world, content, kind, count, here) ?? growStore(ctx, load['made'] as number);
-  if (!slot) {
-    // Nowhere to put it: set it down here and look for work again later.
-    Object.assign(load, { ...here, holder: 0 });
-    p['next'] = world.tick + LOOK_AGAIN;
-    p['job'] = '';
-    return;
-  }
-  if (!same(slot, here)) {
-    if (!walkTo(ctx, p, slot)) {
-      Object.assign(load, { ...here, holder: 0 });
-      p['job'] = '';
-    }
-    return;
-  }
-  tallyAdd(ctx, 'hauled', count);
-  const stack = itemsAt(world, here.x, here.y, here.z).find((i) => i['kind'] === kind);
-  if (stack) {
-    stack['count'] = (stack['count'] as number) + count;
-    takeFrom(world, load, count);
-  } else Object.assign(load, { ...here, holder: 0 });
-  p['job'] = '';
-}
-
-/** Picks up what lies on their tile: all of it, or a load. */
-function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
-  const load = ctx.content.work.haul.load;
-  const count = item['count'] as number;
-  if (count <= load) {
-    item['holder'] = p.id;
-    return;
-  }
-  takeFrom(ctx.world, item, load);
-  const id = layItem(ctx.world, {
-    kind: item['kind'] as string,
-    count: load,
-    ...spotOf(p),
-    made: item['made'] as number,
-  });
-  const carried = itemsOf(ctx.world).find((i) => i.id === id)!;
-  carried['holder'] = p.id;
-}
-
-/** Something lying outside the store that should be carried in, nearest them. */
-function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
-  const { world, content } = ctx;
-  const kinds = content.work.haul.kinds;
-  const taken = busy(world, p, 'haul');
-  const from = spotOf(p);
-  let best: EntityRow | undefined;
-  let far = Infinity;
-  // A load the full store has no room for, and cannot grow for, stays where it lies; carrying
-  // it would only set it down again (seen on a forest seed once a house's site was cleared).
-  // Worked out only for a load that would be nearest, once per kind and size.
-  let grows: boolean | undefined;
-  const fits = new Map<string, boolean>();
-  const room = (i: EntityRow) => {
-    grows ??= growSpot(world, content) !== undefined;
-    if (grows) return true;
-    const key = `${i['kind']}:${i['count']}`;
-    if (!fits.has(key))
-      fits.set(key, !!slotFor(world, content, i['kind'] as string, i['count'] as number, from));
-    return fits.get(key)!;
-  };
-  for (const i of itemsOf(world)) {
-    if (i['holder'] || !kinds.includes(i['kind'] as string) || taken.has(i.id)) continue;
-    const at = spotOf(i);
-    const d = Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y));
-    if (d >= far || inStore(world, at.x, at.y, at.z) || !room(i)) continue;
-    if (canReach(content, world.map, from, at)) [best, far] = [i, d];
-  }
-  return best;
-}
-
 /** Felling (quarrying) is wanted when the colony has less wood (stone) than its stock level
  * asks, counting what others are already working on, so no more take it up than are needed. */
 function shortOf(
@@ -256,6 +163,8 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['doing'] === 'work' && walking) return true;
   if (p['job'] === 'build' && hours && building(ctx, p)) return true;
   if (p['job'] === 'carpentry' && hours && furnishing(ctx, p)) return true;
+  if (p['job'] === 'hearth' && hours && furnishing(ctx, p)) return true;
+  if (p['job'] === 'tend' && tending(ctx, p)) return true;
   const load = itemsOf(world).find((i) => i['holder'] === p.id);
   if (load) {
     p['job'] = 'haul';
@@ -365,22 +274,14 @@ function takeUpGathering(ctx: SystemContext, p: EntityRow, g: Gather): boolean {
   return startGathering(ctx, p, tree, g);
 }
 
-/** Carrying the nearest load lying outside the store. */
-function takeUpHauling(ctx: SystemContext, p: EntityRow): boolean {
-  const item = chooseLoad(ctx, p);
-  if (!item || !walkTo(ctx, p, spotOf(item))) return false;
-  p['job'] = 'haul';
-  p['target'] = item.id;
-  return true;
-}
-
 /** How each kind of work on the Work sheet is taken up; a kind with no entry is never taken up
  * (content `work.priority.jobs` may list one before its milestone brings the work). */
 const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boolean>> = {
   fell: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'fell')!),
   haul: takeUpHauling,
   forage: takeUpForaging,
-  build: (ctx, p) => takeUpMarked(ctx, p, true) || takeUpBuilding(ctx, p),
+  build: (ctx, p) => takeUpMarked(ctx, p, true) || takeUpHearth(ctx, p) || takeUpBuilding(ctx, p),
+  tend: takeUpTending,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
 };

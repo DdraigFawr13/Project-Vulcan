@@ -7,6 +7,7 @@ import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { foodGoneLine, itemsAt } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { heatAt } from '../fire/index.ts';
 import { tileTemperature } from '../weather/index.ts';
 import { bedOwnedBy, houseAt, type Room } from '../build/index.ts';
 import { comfortOf, roomHere } from './comfort.ts';
@@ -85,13 +86,18 @@ const inBed = (world: WorldState, p: EntityRow): boolean => {
   return !!bed && bed['x'] === p['x'] && bed['y'] === p['y'] && bed['z'] === p['z'];
 };
 
+/** The temperature felt at surface tile `i`: the tile's own (weather) plus what lit fires add
+ * there (fire, P3.6). */
+export function feltAt(world: WorldState, content: EngineContent, i: number): number {
+  const temp = tileTemperature(content, world.map, world.systems['weather']?.['temp'] ?? 0, i);
+  return temp + heatAt(world, content, i);
+}
+
 /** The temperature a person feels where they stand. */
 function feels(ctx: SystemContext, p: EntityRow): number {
   const { world, content } = ctx;
-  const map = world.map;
   if ((p['z'] as number) > 0) return content.life.warmth.below;
-  const i = (p['y'] as number) * map.width + (p['x'] as number);
-  return tileTemperature(content, map, world.systems['weather']?.['temp'] ?? 0, i);
+  return feltAt(world, content, (p['y'] as number) * world.map.width + (p['x'] as number));
 }
 
 /** Someone else at leisure within reach. */

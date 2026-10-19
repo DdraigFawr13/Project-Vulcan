@@ -35,6 +35,9 @@ export function freeTile(world: WorldState, content: EngineContent, x: number, y
   // Not where a part is planned or built (the build system's `plan` table, P3.1).
   if ((world.entities['plan'] ?? []).some((p) => p['x'] === x && p['y'] === y && p['z'] === 0))
     return false;
+  // Nor where a hearth or other furniture piece stands (P3.6).
+  if ((world.entities['furniture'] ?? []).some((f) => f['x'] === x && f['y'] === y && f['z'] === 0))
+    return false;
   return canReach(content, map, { x: map.startX, y: map.startY, z: 0 }, { x, y, z: 0 });
 }
 

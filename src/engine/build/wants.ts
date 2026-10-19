@@ -82,7 +82,9 @@ export function siteFor(
   const idx = (f: EntityRow) => (f['y'] as number) * width + (f['x'] as number);
   // What lies on the room's tiles (a bedroll, a pile) and the pieces: those tiles are taken.
   const lying = itemsOf(world).filter((i) => !i['holder'] && i['z'] === 0 && inside.has(idx(i)));
-  const taken = new Set([...lying.map(idx), ...pieces.map(idx)]);
+  // A bed may stand where a sleeper's bedroll lies: the roll goes when they claim it.
+  const blocking = lying.filter((i) => kind !== 'bed' || i['kind'] !== content.life.cart.bedroll);
+  const taken = new Set([...blocking.map(idx), ...pieces.map(idx)]);
   const free = room.tiles.filter((i) => !wayIn.has(i) && !taken.has(i)).sort((a, b) => a - b);
   if (!free.length) return undefined;
   const wallSide = (i: number) => DIRS.find(([, dx, dy]) => isWall(i + dx + dy * width));
@@ -104,9 +106,10 @@ export function siteFor(
   let pick: number | undefined;
   if (place === 'beside table' && beside('table').length) pick = beside('table')[0];
   else if (place === 'bed foot' && beside('bed').length) pick = beside('bed')[0];
-  else if (place === 'middle' || place === 'beside table') {
+  else if (place === 'middle' || place === 'beside table' || place === 'centre') {
     const open = free.filter((i) => !wallSide(i));
-    const list = open.length ? open : free;
+    // A hearth ('centre') takes the free tile nearest the middle, wall or not.
+    const list = open.length && place !== 'centre' ? open : free;
     const [sx, sy] = [
       room.tiles.reduce((s, i) => s + xy(i).x, 0),
       room.tiles.reduce((s, i) => s + xy(i).y, 0),
@@ -114,7 +117,10 @@ export function siteFor(
     const n = room.tiles.length;
     pick = best(
       list,
-      (i) => 100 * awayDoor(i) - Math.abs(xy(i).x * n - sx) - Math.abs(xy(i).y * n - sy),
+      (i) =>
+        (place === 'centre' ? 0 : 100 * awayDoor(i)) -
+        Math.abs(xy(i).x * n - sx) -
+        Math.abs(xy(i).y * n - sy),
     );
   } else {
     // Against a wall, as far from the door (and, but for a bed, from the beds) as it can be.
@@ -166,12 +172,19 @@ export function nextWant(world: WorldState, content: EngineContent): Want | unde
   }
   if (bed) return bed;
   const order = [...rooms].sort((a, b) => b.room.sleepers - a.room.sleepers);
-  for (const rr of order)
-    for (const l of lacks(world, content, rr)) {
-      if (l.have >= l.need) continue;
+  for (const rr of order) {
+    const wants = lacks(world, content, rr);
+    // Beds first in a room too: nothing else takes the floor a sleeper's bed would stand on.
+    const bedsLack = wants.some((w) => w.kind === 'bed' && w.have < w.need);
+    for (const l of wants) {
+      if (bedsLack && l.kind !== 'bed') continue;
+      // A hearth is the builders' to plan and make (hearths.ts), not carpentry's.
+      if (l.have >= l.need || content.buildings.furniture.kinds.find((k) => k.id === l.kind)?.job)
+        continue;
       const at = siteFor(world, content, rr, l.kind);
       if (at) return { ...l, rr, at };
     }
+  }
   return undefined;
 }
 

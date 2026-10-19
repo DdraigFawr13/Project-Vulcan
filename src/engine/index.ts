@@ -2,6 +2,7 @@
 // ledger, tick for tick (DECISIONS V-002, V-006). The worker is the only place it is run.
 import { buildSystem } from './build/index.ts';
 import { calendarSystem } from './calendar/index.ts';
+import { fireSystem } from './fire/index.ts';
 import { goodsSystem } from './goods/index.ts';
 import { mapSystem } from './map/index.ts';
 import { needsSystem } from './needs/index.ts';
@@ -49,6 +50,7 @@ export {
   type Room,
 } from './build/index.ts';
 export { calendarSystem } from './calendar/index.ts';
+export { fireSystem, heatAt } from './fire/index.ts';
 export {
   freeTile,
   goodsSystem,
@@ -96,6 +98,7 @@ export const SYSTEMS: readonly System[] = [
   peopleSystem,
   goodsSystem,
   buildSystem,
+  fireSystem,
   needsSystem,
   calendarSystem,
   weatherSystem,

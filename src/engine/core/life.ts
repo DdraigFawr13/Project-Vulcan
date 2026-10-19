@@ -71,6 +71,7 @@ export interface WorkDef {
     regrowDays: number;
     months: readonly string[];
   };
+  fire: FireDef;
   doing: Readonly<Record<string, string>>;
   haul: { load: number; kinds: readonly string[] };
   store: { width: number; height: number; most: number };
@@ -125,6 +126,7 @@ export interface HouseDef {
 
 /** How a room is scored when asked (P3.3). */
 export interface RoomsDef {
+  hearthBelow: number;
   most: number;
   roof: string;
   perSize: number;
@@ -150,7 +152,26 @@ export interface FurnitureKind {
   art: string;
   beds: number;
   seats: number;
-  place: 'wall' | 'middle' | 'beside table' | 'bed foot';
+  place: 'wall' | 'middle' | 'beside table' | 'bed foot' | 'centre';
+  /** P3.6: a kind made by another job than carpentry (a hearth, by builders), of its own
+   * material, where it stands. */
+  job?: string;
+  material?: string;
+}
+
+/** Fire and fuel (work.json `fire`, P3.6). */
+export interface FireDef {
+  fall: number;
+  radius: number;
+  fuels: readonly {
+    id: string;
+    item: string;
+    minutes: number;
+    heat: number;
+    banked: { heat: number; rate: number };
+  }[];
+  split: { from: string; fuel: string; per: number; minutes: number };
+  tend: { low: number; top: number; topBelow: number; idle: number; near: number };
 }
 
 /** Carpentry and furniture (buildings.json `furniture`, P3.4). */

@@ -37,7 +37,9 @@ function crafters(seed: string, level: number): World {
 
 /** The first piece made (lowest `made` line). */
 const firstMade = (w: World) =>
-  piecesOf(w).reduce((a, b) => ((a['made'] as number) < (b['made'] as number) ? a : b));
+  piecesOf(w)
+    .filter((f) => f['kind'] !== 'hearth')
+    .reduce((a, b) => ((a['made'] as number) < (b['made'] as number) ? a : b));
 
 describe('carpentry and furniture', () => {
   it('makes better furniture the better the carpenter (same seed, same first roll)', () => {
@@ -97,7 +99,12 @@ describe('carpentry and furniture', () => {
       expect(room.sleepers).toBe(room.bedPieces);
       // Every piece stands on a floor tile of a room, never on its way in.
       for (const f of furnitureOf(w)) {
-        const r = roomAt(w, content, f['x'] as number, f['y'] as number)!;
+        const r = roomAt(w, content, f['x'] as number, f['y'] as number);
+        // The campfire on the green is the one piece outside a room.
+        if (!r) {
+          expect(f['kind']).toBe('hearth');
+          continue;
+        }
         expect(
           r.doorTiles.flatMap((d) => [d - 1, d + 1, d - w.map.width, d + w.map.width]),
         ).not.toContain((f['y'] as number) * w.map.width + (f['x'] as number));

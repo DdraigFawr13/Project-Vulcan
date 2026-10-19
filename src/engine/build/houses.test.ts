@@ -10,7 +10,9 @@ import { homeless, housesOf, roomAt } from './index.ts';
 const sim = createSim(content);
 const DAY = 1440;
 // An open valley and a forest one (its site needs clearing).
-const SEEDS = ['ledger/1', 'tallow/3'];
+// (tallow/3 now sites a second house instead of a room: the campfire's stone leaves the stock
+// short when the first house is done.)
+const SEEDS = ['ledger/1', 'tallow/2'];
 type World = ReturnType<typeof createWorld>;
 const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === type);
 const firstHouse = (w: World) => housesOf(w).find((h) => !h['of'])!;

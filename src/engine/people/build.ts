@@ -44,6 +44,8 @@ export function stackOf(ctx: SystemContext, p: EntityRow, kind: string): EntityR
     ...busy(world, p, 'haul'),
     ...busy(world, p, 'build'),
     ...busy(world, p, 'carpentry'),
+    ...busy(world, p, 'hearth'),
+    ...busy(world, p, 'tend'),
   ]);
   const from = spotOf(p);
   let best: EntityRow | undefined;
@@ -150,6 +152,7 @@ function sayWaiting(ctx: SystemContext, p: EntityRow): void {
     ...busy(world, p, 'haul'),
     ...busy(world, p, 'build'),
     ...busy(world, p, 'carpentry'),
+    ...busy(world, p, 'hearth'),
   ]);
   const onItsWay = (kind: string) =>
     itemsOf(world).some((i) => i['kind'] === kind && (i['holder'] || fetching.has(i.id)));
