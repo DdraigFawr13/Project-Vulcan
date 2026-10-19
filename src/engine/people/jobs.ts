@@ -23,6 +23,7 @@ import {
 import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
+import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
@@ -32,14 +33,21 @@ import { furnishing, takeUpCarpentry } from './carpentry.ts';
 import { farming, takeUpFarming } from './farm.ts';
 import { foraging, takeUpForaging } from './forage.ts';
 import { practise } from './learn.ts';
+import { smelting, takeUpSmelting } from './smelt.ts';
+import { stationing, takeUpStation } from './station.ts';
+import { smithing, takeUpSmithing } from './smith.ts';
 import { busy, goBeside, layAround, people, same, skillOf, SIDES, spotOf } from './spots.ts';
 import { able, declineIfUnable, jobsInOrder, outranked, priorityLine } from './priority.ts';
 import { tallyAdd } from './tally.ts';
+import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
+/** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
+const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
+
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `tend`, `haul`
-   * or '' (none). */
+  /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
+   * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -55,6 +63,12 @@ export const JOB_FIELDS = {
   what: 'text',
   /** The tick before which they do not look for work again after finding none. */
   next: 'int',
+  /** The recipe being smelted (metal.json) or the clamp's task, `stack` or `open`; '' for none. */
+  make: 'text',
+  /** Smithing (Bundle 3): the tool being made as `kind:material`, and the line of this person's
+   * first fine-or-better piece (V-093), 0 until they make one. */
+  making: 'text',
+  fine: 'event',
 } as const;
 
 /** Work that takes a feature off the map for what it yields: felling (logs) and quarrying (P3.1,
@@ -185,11 +199,15 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'hearth' && hours && furnishing(ctx, p)) return true;
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
   if (p['job'] === 'cook' && hours && cooking(ctx, p)) return true;
+  if (p['job'] === 'station' && hours && stationing(ctx, p)) return true;
+  if (p['job'] === 'charcoal' && hours && burning(ctx, p)) return true;
+  if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
+  if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
   const load = loadOf(world, p.id);
-  // A shaft's ladder fetched before the day's work ended is kept for the morning, not carried
-  // back to the store (the sinker then lost the job to others' work first).
+  // Out of hours the metal and station work keeps what it fetched and resumes next morning, and
+  // so does a sinker the shaft's ladder (else they carried it back and lost the job).
   if (load && !hours && p['job'] === 'mine' && p['task'] === 'sink') return false;
-  if (load) {
+  if (load && !HOLDS.includes(p['job'] as string)) {
     p['job'] = 'haul';
     deliver(ctx, p, load);
     return true;
@@ -202,6 +220,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
     const here = spotOf(p);
     if (here.z === 0 && Math.abs(here.x - tx) + Math.abs(here.y - ty) === 1) {
       p['work'] = (p['work'] as number) - 1;
+      worked(ctx, p, g.job);
       practise(ctx, p, jobSkill(content, g), p['took'] as number);
       if ((p['work'] as number) <= 0) {
         fell(ctx, p, target, g);
@@ -237,7 +256,12 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
 function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   const { world } = ctx;
   if (takeUpMarked(ctx, p, false)) return true;
-  for (const job of jobsInOrder(world, ctx.content, p)) if (TAKE_UP[job]?.(ctx, p)) return true;
+  for (const job of jobsInOrder(world, ctx.content, p)) {
+    const before = p['took'];
+    if (TAKE_UP[job]?.(ctx, p)) return true;
+    // Taken up (a line said) and stopped at once: look again later, not at the next kind.
+    if (p['took'] !== before) break;
+  }
   p['job'] = '';
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;
@@ -308,12 +332,19 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   haul: takeUpHauling,
   forage: takeUpForaging,
   farm: takeUpFarming,
-  build: (ctx, p) => takeUpMarked(ctx, p, true) || takeUpHearth(ctx, p) || takeUpBuilding(ctx, p),
+  build: (ctx, p) =>
+    takeUpMarked(ctx, p, true) ||
+    takeUpHearth(ctx, p) ||
+    takeUpStation(ctx, p) ||
+    takeUpBuilding(ctx, p),
   tend: takeUpTending,
   cook: takeUpCooking,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
   mine: takeUpMining,
+  charcoal: takeUpCharcoal,
+  smelt: takeUpSmelting,
+  smith: takeUpSmithing,
 };
 
 const jobSkill = (content: EngineContent, g: Gather): string =>
@@ -324,6 +355,7 @@ function startGathering(ctx: SystemContext, p: EntityRow, tree: number, g: Gathe
   const level = skillOf(ctx.world, p, jobSkill(ctx.content, g));
   p['job'] = g.job;
   p['target'] = tree;
-  p['work'] = Math.ceil((g.def.minutes * 2 * g.def.skilled) / (g.def.skilled + level));
+  const minutes = Math.ceil((g.def.minutes * 2 * g.def.skilled) / (g.def.skilled + level));
+  p['work'] = scaled(ctx, p, g.job, minutes);
   return true;
 }

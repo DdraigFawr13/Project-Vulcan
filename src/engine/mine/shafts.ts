@@ -45,11 +45,14 @@ export const metalsOf = (content: EngineContent): readonly string[] =>
 export const oreOf = (content: EngineContent, metal: string): string =>
   content.features.find((f) => f.id === metal)?.yields ?? `${metal}-ore`;
 
-/** Ore still to find for a metal: what its ingot plate wants (the one function that says, in
- * goods) times `mine.perIngot`, less the ore held anywhere. 0 when the metal is not wanted. */
+/** Ore still to find for a metal: the ingots wanted (goods, plates and alloys) times the ore its
+ * smelting recipe takes an ingot (metal.json), less the ore held anywhere. 0 when not wanted. */
 export function oreShort(world: WorldState, content: EngineContent, metal: string): number {
-  const want = ingotWant(world, content, metal) * content.work.mine.perIngot;
-  return Math.max(0, want - haveOf(world, content, oreOf(content, metal)));
+  const ore = oreOf(content, metal);
+  const r = content.metal.recipes.find((x) => x.id === metal);
+  const per = r ? (r.inputs.find((i) => i.kind === ore)?.count ?? 0) / r.out : 0;
+  const want = Math.ceil(ingotWant(world, content, metal) * per);
+  return Math.max(0, want - haveOf(world, content, ore));
 }
 
 /** A content sentence with its `{slot}`s filled from `data` (a slot with no datum stays). */

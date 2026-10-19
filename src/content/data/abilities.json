@@ -9,6 +9,7 @@
   {"id":"cooking","name":"Cooking","family":"craft","requirements":{},"learnAttributes":["perception","intellect"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"food"}},
   {"id":"building","name":"Building","family":"craft","requirements":{},"learnAttributes":["strength","intellect"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"building"}},
   {"id":"crafting","name":"Crafting","family":"craft","requirements":{},"learnAttributes":["agility","intellect"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"tools"}},
+  {"id":"smithing","name":"Smithing","family":"craft","requirements":{},"learnAttributes":["strength","perception"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"metalwork"}},
   {"id":"herbalism","name":"Herbalism","family":"labour","requirements":{},"learnAttributes":["intellect","perception"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"herbs"}},
   {"id":"fighting","name":"Fighting","family":"combat","requirements":{},"learnAttributes":["strength","agility"],"learnFrom":["practice","teacher"],"effect":{"kind":"damage","damage":1}},
   {"id":"master_smithing","name":"Master smithing","family":"craft","requirements":{"strength":12,"perception":12},"learnAttributes":["strength","perception"],"learnFrom":["teacher","practice"],"effect":{"kind":"craft","tag":"fine_metalwork"}},

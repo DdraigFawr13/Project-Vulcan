@@ -1,13 +1,15 @@
 // Shared footing for the work in jobs.ts and forage.ts: where someone stands, who is on what,
 // walking to stand beside a tile, and laying a yield out on the open ground around it.
 import type { EntityRow, WorldState } from '../core/index.ts';
-import { planAt } from '../build/index.ts';
+import { planAt, stationAt } from '../build/index.ts';
 import { itemsAt, layItem, stackSize } from '../goods/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { walkTo } from './walk.ts';
 
-export { besideReachable } from '../paths/index.ts';
+import { besideReachable } from '../paths/index.ts';
+
+export { besideReachable };
 
 /** A tree is worked from a side, never a corner, so its tile (and the logs on it) can be reached
  * from where they stood: a corner step past two blocked sides is not allowed (paths). */
@@ -70,6 +72,7 @@ export function layAround(
   count: number,
   at: Spot,
   made: number,
+  trail = '',
 ): number {
   const { world, content } = ctx;
   const map = world.map;
@@ -83,11 +86,40 @@ export function layAround(
         if (x < 0 || y < 0 || x >= map.width || y >= map.height) continue;
         if (!walkAt(content, map, at.z, y * map.width + x) || itemsAt(world, x, y, at.z).length)
           continue;
-        if (at.z === 0 && planAt(world, x, y)?.['state'] === 'plan') continue;
+        if (at.z === 0 && (planAt(world, x, y)?.['state'] === 'plan' || stationAt(world, x, y)))
+          continue;
         if (!canReach(content, map, at, { x, y, z: at.z })) continue;
         const n = Math.min(size, left);
-        layItem(world, { kind, count: n, x, y, z: at.z, made });
+        layItem(world, { kind, count: n, x, y, z: at.z, made }, { trail });
         left -= n;
       }
   return count - left;
 }
+
+/** Lays everything: what `layAround` finds no free tile for goes down on `at` itself, so nothing
+ * made vanishes. */
+export function layAll(
+  ctx: SystemContext,
+  kind: string,
+  count: number,
+  at: Spot,
+  made: number,
+  trail = '',
+): void {
+  let left = count - layAround(ctx, kind, count, at, made, trail);
+  const size = stackSize(ctx.content, kind);
+  while (left > 0) {
+    const n = Math.min(size, left);
+    layItem(ctx.world, { kind, count: n, ...at, made }, { trail });
+    left -= n;
+  }
+}
+
+/** Whether `p` can reach a side of surface tile (x, y): work there is worth taking up. */
+export const canStandBeside = (ctx: SystemContext, p: EntityRow, x: number, y: number): boolean =>
+  besideReachable(
+    ctx.world,
+    ctx.content,
+    (to) => canReach(ctx.content, ctx.world.map, spotOf(p), to),
+    y * ctx.world.map.width + x,
+  );

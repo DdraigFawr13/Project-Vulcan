@@ -1,0 +1,13 @@
+{
+"week":7,"cart":3,"cartMaterial":"stone","job":"smith","none":75,"step":10,"stream":"craft","roll":2,"skilled":10,"charcoal":"charcoal",
+"kinds":[
+{"id":"axe","name":"axe","serves":["fell","split"],"ingots":2,"charcoal":1,"minutes":180},
+{"id":"pick","name":"pick","serves":["mine","quarry"],"ingots":2,"charcoal":1,"minutes":180},
+{"id":"hoe","name":"hoe","serves":["farm"],"ingots":1,"charcoal":1,"minutes":120},
+{"id":"hammer","name":"hammer","serves":["build","carpentry"],"ingots":1,"charcoal":1,"minutes":120}],
+"materials":[
+{"id":"stone","name":"stone","speed":100,"life":3600},
+{"id":"bronze","name":"bronze","speed":130,"life":12000,"ingot":"bronze-ingot"},
+{"id":"iron","name":"iron","speed":150,"life":24000,"ingot":"iron-ingot"}],
+"quality":{"awful":-20,"poor":-10,"plain":0,"fine":10,"excellent":20,"masterwork":30}
+}

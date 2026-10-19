@@ -28,11 +28,9 @@ describe('shaft views', () => {
     expect(miningShown(w)).toBe(false);
     expect(goodsOf(w).shafts).toEqual([]);
     const notes = Object.fromEntries(stockView(w).map((s) => [s.good, s.note]));
-    expect(notes['iron-ingot']).toContain('0 iron ore so far.');
-    expect(notes['copper-ingot']).toContain('0 copper ore so far.');
-    expect(notes['tin-ingot']).toBe(
-      'A bronze plate comes with the smelter, as bronze is mixed from copper and tin ingots.',
-    );
+    expect(notes['iron-ingot']).toContain('0 iron ore in the store.');
+    expect(notes['copper-ingot']).toContain('0 copper ore in the store.');
+    expect(notes['tin-ingot']).toContain('0 tin ore in the store.');
     expect(notes['stone']).toBe('Rock dug out of tunnels comes up as stone.');
   });
 

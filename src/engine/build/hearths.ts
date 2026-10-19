@@ -14,13 +14,19 @@ import { housesOf, rectOf } from './site.ts';
 import { tileTemperature } from '../weather/index.ts';
 import { roomName, siteFor } from './wants.ts';
 import { roomAt } from './rooms.ts';
+import { stationAt } from './station.ts';
 
 export const HEARTH = 'hearth';
 /** How far from the green the campfire may be set. */
 const SEARCH = 6;
 
 /** Open ground for the campfire: buildable, dry, clear, off the store and every house. */
-function openGround(world: WorldState, content: EngineContent, x: number, y: number): boolean {
+export function openGround(
+  world: WorldState,
+  content: EngineContent,
+  x: number,
+  y: number,
+): boolean {
   const map = world.map;
   if (x < 1 || y < 1 || x >= map.width - 1 || y >= map.height - 1) return false;
   const i = y * map.width + x;
@@ -28,6 +34,7 @@ function openGround(world: WorldState, content: EngineContent, x: number, y: num
   if (!kind.buildable || kind.water || kind.solid || map.built[i] || map.features[i]) return false;
   if (planAt(world, x, y) || inStore(world, x, y, 0) || itemsAt(world, x, y, 0).length)
     return false;
+  if (stationAt(world, x, y)) return false;
   if (furnitureOf(world).some((f) => f['x'] === x && f['y'] === y && f['z'] === 0)) return false;
   const pad = (h: EntityRow) => {
     const r = rectOf(h);
