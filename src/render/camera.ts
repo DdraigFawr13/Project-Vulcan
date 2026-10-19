@@ -93,11 +93,13 @@ export class CameraControls {
     return this.scene.cameras.main;
   }
 
-  /** Bounds the camera to the map and centres it there at the current zoom. */
-  frameMap(width: number, height: number): void {
+  /** Bounds the camera to the map and centres it at the current zoom on map point `on` (the
+   * band's green), or on the map's middle without one. */
+  frameMap(width: number, height: number, on?: { x: number; y: number }): void {
     this.mapSize = { width, height };
     this.refit();
-    this.camera.centerOn(width / 2, height / 2);
+    if (on) this.lookAt(on.x, on.y);
+    else this.camera.centerOn(width / 2, height / 2);
   }
 
   /** The bar over the top of the view is `px` tall; refits so no map row hides under it. */

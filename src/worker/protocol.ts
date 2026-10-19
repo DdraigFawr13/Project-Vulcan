@@ -339,8 +339,8 @@ export type FromWorker =
       /** Whether the world has not yet run a tick: the band has just arrived. */
       fresh: boolean;
       people: PersonView[];
-      /** Why the band chose its green, and whether the player may still send it back (once). */
-      green?: { text: string; again: boolean };
+      /** Why the band chose its green, if it may still be sent back (once), and its tile. */
+      green?: { text: string; again: boolean; x: number; y: number };
     }
   | {
       type: 'snapshot';

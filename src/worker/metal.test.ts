@@ -1,6 +1,6 @@
 // Bundle 3 as the page shows it: Work rows that wait for their station (V-071), the Smithy row,
 // a smelter's tile page and map piece, the Bronze plate's note, and the item page that walks a
-// tool's trail back to the ore (P4.6) and a person's tools.
+// tool's trail back to the ore (P4.6) and a person's tools, and the cart they are kept in.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { content } from '../content/index.ts';
@@ -142,5 +142,17 @@ describe('the metal screens', () => {
       expect(items.has(`item.${def.id}`), def.id).toBe(true);
     for (const kind of ['forge', 'anvil', 'tub'])
       expect(buildings.has(`furn.${kind}`), kind).toBe(true);
+  });
+  it('draws the cart on its tile, not the tools kept in it, and lists them there', () => {
+    // Morgan's playtest 2026-10-19: the twelve stone tools lay over the cart and hid it.
+    for (const seed of ['anvil', 'smoke', 'tallow']) {
+      const world = createWorld(sim, seed);
+      const { x, y, z } = restOf(world, content);
+      const drawn = goodsOf(world).items.filter((i) => i.x === x && i.y === y && i.z === z);
+      expect(drawn.map((i) => i.frame)).toEqual(['cart']);
+      const listed = tileGoods(world, x, y, z, nobody).goods!.map((g) => g.text);
+      expect(listed).toContain('handcart');
+      expect(listed.filter((t) => t.startsWith('stone '))).toHaveLength(12);
+    }
   });
 });
