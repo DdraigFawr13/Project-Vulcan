@@ -24,14 +24,18 @@ export {
   wantOf,
 } from './store.ts';
 export {
+  betterTool,
   freeTools,
   heldBy,
   HELD,
+  isWorn,
   layTool,
   lifeFor,
+  memoTools,
   restOf,
   speedOf,
   toolOf,
+  toolsChanged,
   wornAsk,
   wornTools,
 } from './tools.ts';

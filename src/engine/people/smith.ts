@@ -15,6 +15,7 @@ import {
   inStore,
   itemsOf,
   layTool,
+  memoTools,
   mergeTrails,
   restOf,
   speedOf,
@@ -75,8 +76,12 @@ function makeable(ctx: SystemContext, kind: string): string | undefined {
 /** Who wants a tool now, whoever works longest at the kind first; ties by kind order, person id.
  * A want is no tool of the kind held or free, or only a lower material than the best the store's
  * ingots could make (a poor tool of that material is not made again). Those being made now are
- * left out unless `all`. */
-export function toolWants(ctx: SystemContext, all = false): ToolWant[] {
+ * left out unless `all`. Worked out once until the tick, a line or a tool changes (every person
+ * asks each minute). */
+export const toolWants = (ctx: SystemContext, all = false): ToolWant[] =>
+  memoTools(ctx.world, ctx.content, all ? 'wants:all' : 'wants', () => wantsNow(ctx, all));
+
+function wantsNow(ctx: SystemContext, all: boolean): ToolWant[] {
   const { world, content } = ctx;
   const making = people(world)
     .filter((q) => q['job'] === JOB)

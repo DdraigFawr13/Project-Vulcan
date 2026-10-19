@@ -58,7 +58,7 @@ function nextMaterial(content: EngineContent, material: string) {
 }
 
 /** Whether a tool has under `tools.worn` per cent of its life left. */
-function isWorn(content: EngineContent, item: EntityRow): boolean {
+export function isWorn(content: EngineContent, item: EntityRow): boolean {
   const t = toolOf(content, item);
   if (!t) return false;
   const life = lifeFor(content, t.material, item['quality'] as string);
@@ -74,36 +74,67 @@ export function wornAsk(content: EngineContent, item: EntityRow) {
 const rank = (content: EngineContent, material: string): number =>
   content.tools.materials.findIndex((m) => m.id === material);
 
-/** Held worn tools that ask for a better one (Morgan's card, P4.9): each with the material and
- * ingot it asks for, while no free tool of its kind that good or better lies at the cart. */
-export function wornTools(world: WorldState, content: EngineContent): readonly Worn[] {
-  // Worked out once a tick and line: what changes the answer (a tool worn, made, taken or
-  // broken) writes a line, and the want is read many times a minute.
-  const key = `${world.tick}:${world.nextEventId}`;
-  const hit = wornCache.get(world);
-  if (hit?.key === key && hit.content === content) return hit.out;
-  const out: Worn[] = [];
-  for (const item of itemsOf(world)) {
-    const t = isHeld(item) ? toolOf(content, item) : undefined;
-    if (!t || !isWorn(content, item)) continue;
-    const next = nextMaterial(content, t.material);
-    if (!next?.ingot) continue;
-    const free = freeTools(world, content, t.kind);
-    if (free.some((f) => rank(content, toolOf(content, f)!.material) >= rank(content, next.id)))
-      continue;
-    const ingots = content.tools.kinds.find((k) => k.id === t.kind)?.ingots ?? 0;
-    out.push({ item, kind: t.kind, material: next.id, ingot: next.ingot, ingots });
-  }
-  wornCache.set(world, { key, content, out });
-  return out;
+// Answers worked out once a tick, line and tool change: a line is written when a tool is worn,
+// made, taken or broken, and `toolsChanged` is called where a tool moves (given, put back, handed
+// down). They are read many times a minute, by every person.
+const memos = new WeakMap<
+  WorldState,
+  { key: string; content: EngineContent; by: Map<string, unknown> }
+>();
+const epochs = new WeakMap<WorldState, number>();
+
+/** Drops the worked-out answers: a tool was given, put back, handed down, made or broken. */
+export const toolsChanged = (world: WorldState): void => {
+  epochs.set(world, (epochs.get(world) ?? 0) + 1);
+};
+
+/** `make()` once for `name` until the tick, the last line or the tools change. */
+export function memoTools<T>(
+  world: WorldState,
+  content: EngineContent,
+  name: string,
+  make: () => T,
+): T {
+  const key = `${world.tick}:${world.nextEventId}:${epochs.get(world) ?? 0}`;
+  let hit = memos.get(world);
+  if (hit?.key !== key || hit.content !== content)
+    memos.set(world, (hit = { key, content, by: new Map() }));
+  if (!hit.by.has(name)) hit.by.set(name, make());
+  return hit.by.get(name) as T;
 }
 
-type Worn = { item: EntityRow; kind: string; material: string; ingot: string; ingots: number };
-const wornCache = new WeakMap<
-  WorldState,
-  { key: string; content: EngineContent; out: readonly Worn[] }
->();
+/** Whether tool `a` is better than `b` of the same kind: faster, or as fast with more life left
+ * while `b` is worn (two sound tools of a rank are not swapped for a little wear). */
+export function betterTool(content: EngineContent, a: EntityRow, b: EntityRow): boolean {
+  const [sa, sb] = [speedOf(content, a), speedOf(content, b)];
+  return (
+    sa > sb || (sa === sb && isWorn(content, b) && (a['wear'] as number) > (b['wear'] as number))
+  );
+}
 
+/** Held worn tools that ask for a better one (Morgan's card, P4.9): each with the material and
+ * ingot it asks for, while no free tool of its kind that good or better lies at the cart. */
+export const wornTools = (world: WorldState, content: EngineContent): readonly Worn[] =>
+  memoTools(world, content, 'worn', () => {
+    const used = (world.entities['usage'] ?? []).filter((r) => (r['minutes'] as number) > 0);
+    const out: Worn[] = [];
+    for (const item of itemsOf(world)) {
+      const t = isHeld(item) ? toolOf(content, item) : undefined;
+      if (!t || !isWorn(content, item)) continue;
+      // A holder who no longer does that work (usage decays daily) asks for nothing.
+      if (!used.some((r) => r['person'] === item['owner'] && r['kind'] === t.kind)) continue;
+      const next = nextMaterial(content, t.material);
+      if (!next?.ingot) continue;
+      const free = freeTools(world, content, t.kind);
+      if (free.some((f) => rank(content, toolOf(content, f)!.material) >= rank(content, next.id)))
+        continue;
+      const ingots = content.tools.kinds.find((k) => k.id === t.kind)?.ingots ?? 0;
+      out.push({ item, kind: t.kind, material: next.id, ingot: next.ingot, ingots });
+    }
+    return out;
+  });
+
+type Worn = { item: EntityRow; kind: string; material: string; ingot: string; ingots: number };
 /** Ingots of `ingot` the worn tools ask for. */
 export const wornIngots = (world: WorldState, content: EngineContent, ingot: string): number =>
   wornTools(world, content)
@@ -111,11 +142,12 @@ export const wornIngots = (world: WorldState, content: EngineContent, ingot: str
     .reduce((n, w) => n + w.ingots, 0);
 
 /** The tools of a kind lying free (not held), best first, ties by id. */
-export function freeTools(world: WorldState, content: EngineContent, kind: string): EntityRow[] {
-  return itemsOf(world)
-    .filter((i) => toolOf(content, i)?.kind === kind && !isHeld(i) && !i['holder'])
-    .sort((a, b) => speedOf(content, b) - speedOf(content, a) || a.id - b.id);
-}
+export const freeTools = (world: WorldState, content: EngineContent, kind: string): EntityRow[] =>
+  memoTools(world, content, `free:${kind}`, () =>
+    itemsOf(world)
+      .filter((i) => toolOf(content, i)?.kind === kind && !isHeld(i) && !i['holder'])
+      .sort((a, b) => speedOf(content, b) - speedOf(content, a) || a.id - b.id),
+  );
 
 /** The tools `person` holds. */
 export const heldBy = (world: WorldState, content: EngineContent, person: number): EntityRow[] =>
@@ -138,5 +170,6 @@ export function layTool(
       ...(tool.trail && { trail: tool.trail }),
     },
   );
+  toolsChanged(world);
   return itemsOf(world).find((i) => i.id === id)!;
 }
