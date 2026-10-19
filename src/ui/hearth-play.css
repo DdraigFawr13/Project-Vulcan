@@ -40,9 +40,12 @@
   place-items: center;
   box-shadow: 0 0 0 2px var(--oak-dark);
 }
+/* The ring is the face's frame: the arrival card's .portrait border would widen the canvas to
+   46 px inside a 40 px ring and push the head off centre (Morgan, Phase 3 playtest). */
 .pslot .face canvas {
   width: 40px;
   height: 40px;
+  border: 0;
   image-rendering: pixelated;
 }
 .pslot.low .face {
