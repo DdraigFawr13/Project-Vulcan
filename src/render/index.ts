@@ -10,6 +10,7 @@ import type {
   WalkerView,
 } from '../worker/index.ts';
 import { BuildSprites } from './build.ts';
+import { FurnitureSprites } from './furniture.ts';
 import { GoodsSprites } from './goods.ts';
 import { GreenSprites } from './green.ts';
 import { PeopleSprites } from './people.ts';
@@ -36,7 +37,8 @@ export interface Renderer {
   personAt(x: number, y: number): PersonView | undefined;
   /** Moves the people to where the latest snapshot stands them (P2.3); they glide there. */
   movePeople(walkers: readonly WalkerView[]): void;
-  /** Draws the store, the items lying about and test marks (P2.4), and the plans (P3.1). */
+  /** Draws the store, the items lying about and test marks (P2.4), the plans (P3.1) and the
+   * furniture (P3.4). */
   setGoods(goods: GoodsView): void;
   /** Draws the green and the names of planned houses (P3.7). */
   setBuild(view: BuildView): void;
@@ -72,6 +74,7 @@ export function startRenderer(
   const people = new PeopleSprites(game, scene);
   const goods = new GoodsSprites(game, scene);
   const build = new BuildSprites(game, scene);
+  const furniture = new FurnitureSprites(game, scene);
   const green = new GreenSprites(game, scene);
   return {
     setMapSize: (width, height) => {
@@ -91,6 +94,7 @@ export function startRenderer(
       people.setLevel(z);
       goods.setLevel(z);
       build.setLevel(z);
+      furniture.setLevel(z);
       green.setLevel(z);
     },
     setPeople: (list) => people.set(list),
@@ -99,6 +103,7 @@ export function startRenderer(
     setGoods: (view) => {
       goods.set(view);
       build.setPlans(view.plans);
+      furniture.set(view.furniture);
     },
     setBuild: (view) => green.set(view),
     mark: (tile) => scene.mark(tile),

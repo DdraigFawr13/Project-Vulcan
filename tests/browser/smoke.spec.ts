@@ -229,6 +229,13 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('open-work').click();
   await expect(panel).toContainText("The colony's day");
+  // P3.4: Carpentry comes from content like the other rows, with its skill line and 42 px steppers.
+  const carpentry = panel.locator('.prio').filter({ hasText: 'Carpentry' });
+  await expect(carpentry).toContainText(/crafting \d+, can reach \d+/);
+  for (const b of await carpentry.getByRole('button').all()) {
+    const box = (await b.boundingBox())!;
+    expect([box.width, box.height].every((n) => n >= 42)).toBe(true);
+  }
   expect(await phoneRules(page)).toEqual([]);
   // Scrolled to its foot, the sheet keeps its title and ✕ in view.
   await panel.evaluate((p) => (p.scrollTop = p.scrollHeight));

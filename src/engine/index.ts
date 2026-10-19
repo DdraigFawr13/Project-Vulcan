@@ -23,12 +23,14 @@ export {
   buildSystem,
   buildWantOf,
   dirFrom,
+  furnitureKind,
   furnitureOf,
   greenOf,
   homeless,
   houseAt,
   housesOf,
   mainOf,
+  nextWant,
   nthOf,
   partOf,
   pieceAt,
@@ -39,9 +41,12 @@ export {
   qualityOf,
   rectOf,
   roomAt,
+  roomLacks,
   roomName,
+  roomsOf,
   rowsOf,
   sizeOf,
+  type Room,
 } from './build/index.ts';
 export { calendarSystem } from './calendar/index.ts';
 export {

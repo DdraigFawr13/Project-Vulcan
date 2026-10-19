@@ -3,6 +3,7 @@
 // Priorities are weighed, not obeyed (V-015): a person may decline, and the sheet shows the line
 // that says why. A change is a lever for the next tick, applied at once while paused, and shown
 // as sent until the snapshot carries it. Everything shown comes from the snapshot (GAME-02).
+import { content } from '../content/index.ts';
 import type { PersonView, WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { LEVELS, stepper, WORDS } from './stepper.ts';
@@ -21,6 +22,17 @@ export interface WorkActions {
 }
 
 type Job = WalkerView['work'][number];
+
+/** What colonists make first, from the first role's wants in content: "beds first, then a table,
+ * chairs, a chest, a shelf". */
+function makesNote(): string {
+  const kinds = content.buildings.rooms.wants[0]?.kinds ?? [];
+  const word = (k: (typeof kinds)[number]) => (k.per === 'sleeper' ? `${k.kind}s` : `a ${k.kind}`);
+  const [head, ...rest] = kinds;
+  return head
+    ? `Colonists make what a room lacks: ${word(head)} first, then ${rest.map(word).join(', ')}.`
+    : '';
+}
 
 const hh = (h: number) => `${String(h % 24).padStart(2, '0')}:00`;
 const wide = () => matchMedia('(min-width: 641px)').matches;
@@ -56,6 +68,9 @@ export class WorkSheet {
   rows(people: readonly PersonView[], walkers: readonly WalkerView[], day: Day): HTMLElement[] {
     return [
       ...(wide() ? this.grid(people, walkers) : this.one(people, walkers)),
+      ...(walkers[0]?.work.some((j) => j.job === content.buildings.furniture.job)
+        ? [el('p', { class: 'aside' }, makesNote())]
+        : []),
       el('p', { class: 'aside' }, 'Other kinds of work join this list when the band can do them.'),
       ...this.dayRows(day),
     ];

@@ -4,7 +4,7 @@
 // steps it, writes a ledger line or draws from an RNG stream.
 import type { Command, EventData, RegionSite, RegionValley } from '../engine/index.ts';
 import type { SaveFile } from './save.ts';
-import type { BuildView, HouseView, PlanView, RoomView } from './protocol-build.ts';
+import type { BuildView, HouseView, PieceView, PlanView, RoomView } from './protocol-build.ts';
 
 /** 0 is paused; 1, 2 and 3 run 10, 30 and 100 game minutes a second. */
 export type Speed = 0 | 1 | 2 | 3;
@@ -168,6 +168,8 @@ export interface TileView {
   house?: HouseView;
   /** The room walls and a door close in around this tile (P3.3). */
   room?: RoomView;
+  /** A piece of furniture planned or standing here (P3.4). */
+  piece?: PieceView;
 }
 
 /** A tile spot, for the map's goods layer. */
@@ -186,6 +188,8 @@ export interface GoodsView {
   /** Parts planned or to come down (P3.1), for the map's faint plan layer; built ones are in
    * the chunks' `built`. */
   plans: (Spot3 & { part: string; state: string; house: number })[];
+  /** Furniture (P3.4): the art id and facing (the page picks the frame), planned ones faint. */
+  furniture: (Spot3 & { art: string; facing: string; plan: boolean })[];
 }
 
 /** One good's stock lever (P2.4): how much the colony has and wants, and the levels to pick. */
@@ -283,6 +287,8 @@ export interface NeedView {
   low: boolean;
   /** The line that explains it, for "why?". */
   why: number;
+  /** What feeds it now, in words (P3.5): "plain room", "own bedroom"; beauty and privacy only. */
+  feeds?: string;
 }
 
 /** Where a person stands this tick (P2.3), sent with every snapshot so the screen can walk them,

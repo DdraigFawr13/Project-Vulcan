@@ -40,6 +40,7 @@ export {
   qualityOf,
 } from './furniture.ts';
 export {
+  lacks as roomLacks,
   nextWant,
   roomName,
   roomsOf,
