@@ -10,7 +10,11 @@ export function eatFrom(ctx: SystemContext, item: EntityRow, eater: EntityRow): 
   // The stack's own line (the cart unloaded, or whatever brought it) explains where it went.
   const made = item['made'] as number;
   takeFrom(world, item, 1);
-  if (itemsOf(world).some((i) => content.life.eat[i['kind'] as string] !== undefined)) return;
+  // Seed grain eaten as a last resort is not the band's food running out (P4.7).
+  const food = (kind: string) =>
+    content.life.eat[kind] !== undefined && !content.life.lastResort.includes(kind);
+  if (!food(item['kind'] as string)) return;
+  if (itemsOf(world).some((i) => food(i['kind'] as string))) return;
   const state = (world.systems['goods'] ??= {});
   state['foodGone'] = ctx.emit('goods.foodGone', {
     causes: made ? [made] : [],

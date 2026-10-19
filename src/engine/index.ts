@@ -27,6 +27,8 @@ export {
   furnitureKind,
   furnitureOf,
   greenOf,
+  cropNow,
+  fieldsOf,
   homeless,
   houseAt,
   housesOf,
@@ -59,12 +61,21 @@ export {
   isTree,
   itemsAt,
   itemsOf,
+  loadOf,
   marksOf,
   stockOf,
   storeOf,
   wantOf,
 } from './goods/index.ts';
-export { feltAt, moodOf, needOf, needsSystem } from './needs/index.ts';
+export {
+  addMemories,
+  addMemory,
+  feltAt,
+  memoriesOf,
+  moodOf,
+  needOf,
+  needsSystem,
+} from './needs/index.ts';
 export {
   dayOf,
   declinedLine,

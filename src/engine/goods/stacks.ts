@@ -17,8 +17,10 @@ export const GOODS_TABLES: Schemas = {
     /** The person carrying it (0 when it lies on the ground), or whose it is, for a bedroll. */
     holder: 'entity',
     owner: 'entity',
-    /** `laid` for a bedroll laid out to sleep on, else ''. */
+    /** `laid` for a bedroll laid out to sleep on, `worn` for a cloak on its owner, else ''. */
     state: 'text',
+    /** Wear left on a worn cloak (life.json `cloak`), else 0. */
+    wear: 'count',
     /** The line that made or brought it, for "why?". */
     made: 'event',
   },
@@ -37,7 +39,7 @@ export const itemsAt = (world: WorldState, x: number, y: number, z: number): Ent
 export function layItem(
   world: WorldState,
   fields: { kind: string; count: number; x: number; y: number; z: number; made: number },
-  extra: { owner?: number; state?: string } = {},
+  extra: { owner?: number; state?: string; wear?: number } = {},
 ): number {
   return addEntity(world, 'item', {
     ...fields,
@@ -45,8 +47,17 @@ export function layItem(
     holder: 0,
     owner: extra.owner ?? 0,
     state: extra.state ?? '',
+    wear: extra.wear ?? 0,
   });
 }
+
+/** What `person` is carrying to put down somewhere: the item they hold, not the cloak they wear. */
+export const loadOf = (world: WorldState, person: number): EntityRow | undefined =>
+  itemsOf(world).find((i) => i['holder'] === person && i['state'] !== 'worn');
+
+/** The cloak `person` is wearing, if any. */
+export const cloakOf = (world: WorldState, person: number): EntityRow | undefined =>
+  itemsOf(world).find((i) => i['holder'] === person && i['state'] === 'worn');
 
 /** Takes up to `count` from a stack; the stack goes when emptied. Returns how many were taken. */
 export function takeFrom(world: WorldState, item: EntityRow, count: number): number {

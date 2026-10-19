@@ -3,9 +3,12 @@
 import { content } from '../content/index.ts';
 import {
   clockAt,
+  cropNow,
   declinedLine,
+  fieldsOf,
   itemsOf,
   levelOf,
+  loadOf,
   moodOf,
   needOf,
   partOf,
@@ -111,7 +114,7 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   if (job === 'build') {
     const plan = plansOf(world).find((r) => r.id === p['plan']);
     const part = plan && partOf(content, plan['part'] as string);
-    const carrying = itemsOf(world).find((i) => i['holder'] === p.id);
+    const carrying = loadOf(world, p.id);
     const short = plan && part && (plan['have'] as number) < part.cost && plan['state'] === 'plan';
     const key = plan?.['state'] === 'down' ? 'takeDown' : short && !carrying ? 'fetch' : 'build';
     const what = nameOf(content.items, part?.material ?? '');
@@ -124,6 +127,16 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   if (job === 'tend') {
     const { key, vars } = tendDoing(world, p);
     return { text: say(key, vars), ...why };
+  }
+  if (job === 'cook') return { text: say('cook'), ...why };
+  if (job === 'farm') {
+    const f = fieldsOf(world).find((r) => r.id === p['plan']);
+    const crop =
+      f &&
+      (content.buildings.field.crops.find((c) => c.id === f['crop']) ?? cropNow(world, content, f));
+    const seed = loadOf(world, p.id)?.['kind'] === content.buildings.field.seed;
+    const key = f?.['state'] === 'ripe' ? 'reap' : seed ? 'sow' : 'fetchSeed';
+    return { text: say(key, { crop: crop?.name ?? '' }), ...why };
   }
   if (job === 'hearth') return { text: say('hearth', hearthDoing(world, p)), ...why };
   if (job === 'fell' || job === 'forage' || job === 'quarry') {
@@ -138,8 +151,7 @@ function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
     return { text: say(job, { good: def?.name ?? good ?? '', level: level ?? '' }), ...why };
   }
   const items = itemsOf(world);
-  const item =
-    items.find((i) => i['holder'] === p.id) ?? items.find((i) => i.id === (p['target'] as number));
+  const item = loadOf(world, p.id) ?? items.find((i) => i.id === (p['target'] as number));
   return { text: say('haul', { what: item ? nameOf(content.items, item['kind'] as string) : '' }) };
 }
 

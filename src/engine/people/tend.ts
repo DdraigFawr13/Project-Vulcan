@@ -12,7 +12,16 @@ import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { furnitureOf } from '../build/index.ts';
 import { fireOf, firesOf, fuelOf, pieceOfFire, placeOf } from '../fire/index.ts';
 import { occupied } from './hearth.ts';
-import { haveOf, inStore, itemsOf, layItem, stockOf, takeFrom, wantOf } from '../goods/index.ts';
+import {
+  haveOf,
+  inStore,
+  itemsOf,
+  layItem,
+  loadOf,
+  stockOf,
+  takeFrom,
+  wantOf,
+} from '../goods/index.ts';
 import { needOf } from '../needs/index.ts';
 import { canReach } from '../paths/index.ts';
 import { tileTemperature } from '../weather/index.ts';
@@ -248,7 +257,7 @@ export function tending(ctx: SystemContext, p: EntityRow): boolean {
   const fire = piece && fireOf(world, piece.id);
   if (!piece || !fire) return stop(p);
   const t = content.work.fire.tend;
-  const load = itemsOf(world).find((i) => i['holder'] === p.id);
+  const load = loadOf(world, p.id);
   const fuel = content.work.fire.fuels.find((f) => f.item === load?.['kind']);
   const room = (minutes: number) => Math.floor((t.top - (fire['fuel'] as number)) / minutes);
   if (!load) {

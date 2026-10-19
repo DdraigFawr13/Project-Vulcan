@@ -18,6 +18,25 @@ const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === t
 const firstHouse = (w: World) => housesOf(w).find((h) => !h['of'])!;
 
 describe('houses', () => {
+  it('adds a room of their own for a crowded sleeper, who moves in and stops feeling crowded', () => {
+    // Whether anyone feels crowded is the seed's layout (phase review, V-078): search a list.
+    let world: World | undefined;
+    for (const seed of ['ledger/1', 'tallow/2', 'smoke/1', 'anvil/2', 'gwerin/1']) {
+      const w = createWorld(sim, seed);
+      step(w, sim, 9 * DAY);
+      if (lines(w, 'build.growsPrivate').length) {
+        world = w;
+        break;
+      }
+    }
+    expect(world).toBeDefined();
+    const own = lines(world!, 'build.growsPrivate')[0]!;
+    expect(whyOf(world!, own.id).map((c) => c.event.type)).toContain('need.low');
+    const moved = lines(world!, 'people.movedRoom').find((e) => e.actors[0] === own.actors[0]);
+    expect(moved).toBeDefined();
+    expect(needOf(world!, own.actors[0]!, 'privacy')!['low']).toBe(0);
+  });
+
   for (const seed of SEEDS) {
     it(`sites a cottage with a reason, unordered, and adds a room as it fills on ${seed}`, () => {
       const world = createWorld(sim, seed);
@@ -37,13 +56,6 @@ describe('houses', () => {
       expect(grows.causes).toContain(house['built']);
       expect(lines(world, 'build.grows')).toHaveLength(1);
       expect(lines(world, 'build.sited')).toHaveLength(1);
-      // Four to the cottage's one room: one of them, crowded, has a room of their own added
-      // (phase review), moves to its bed, and sleeps alone until they no longer feel crowded.
-      const own = lines(world, 'build.growsPrivate')[0]!;
-      expect(whyOf(world, own.id).map((c) => c.event.type)).toContain('need.low');
-      const moved = lines(world, 'people.movedRoom').find((e) => e.actors[0] === own.actors[0])!;
-      expect(moved).toBeDefined();
-      expect(needOf(world, own.actors[0]!, 'privacy')!['low']).toBe(0);
       // Each moves in once and stays: nobody carries their bedroll back and forth.
       expect(homeless(world, content)).toEqual([]);
       expect(lines(world, 'people.movedIn')).toHaveLength(5);

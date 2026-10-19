@@ -3,9 +3,9 @@
 // their own bed or bedroll if they can get to it, take their leisure in the evening or when bored, and
 // otherwise stroll near the camp. What they are doing is the `doing` field, which the needs
 // system reads each hour; none of it is a ledger line until a need crosses its warning line.
-import { clockAt, type EntityRow } from '../core/index.ts';
+import { clockAt, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { eatFrom, itemsAt, itemsOf } from '../goods/index.ts';
-import { changeNeed, crossed, needOf } from '../needs/index.ts';
+import { addMemory, changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { dayOf } from './day.ts';
 import { bedOwnedBy } from '../build/index.ts';
@@ -30,6 +30,8 @@ export const MIND_FIELDS = {
   /** The tick before which a cold person does not look for a warm place again after finding
    * none (warm.ts). */
   chill: 'int',
+  /** The game day (1 + its index) they last ate seed grain, for one line a day (P4.7). */
+  seeded: 'int',
 } as const;
 
 const RETRY = 60;
@@ -40,25 +42,57 @@ const valueOf = (ctx: SystemContext, p: EntityRow, need: string): number =>
 const seekOf = (ctx: SystemContext, need: string): number =>
   ctx.content.life.needs.find((n) => n.id === need)?.seek ?? 0;
 
-const foodHere = (ctx: SystemContext, p: EntityRow): EntityRow | undefined =>
-  itemsAt(ctx.world, p['x'] as number, p['y'] as number, p['z'] as number).find(
-    (i) => ctx.content.life.eat[i['kind'] as string] !== undefined,
-  );
+const cooked = (ctx: SystemContext, i: EntityRow): boolean =>
+  !!ctx.content.items.find((d) => d.id === i['kind'])?.cooked;
 
-/** Sets off to the nearest food lying on the ground; false when there is none to reach. */
-function goEat(ctx: SystemContext, p: EntityRow): boolean {
+/** Food of last resort (seed grain, P4.7) is eaten only when `desperate`. */
+const edible = (ctx: SystemContext, kind: string, desperate: boolean): boolean =>
+  ctx.content.life.eat[kind] !== undefined &&
+  (desperate || !ctx.content.life.lastResort.includes(kind));
+
+/** Food on their tile: a cooked meal, then ordinary food, then (only when `desperate`) food of
+ * last resort. */
+const foodHere = (ctx: SystemContext, p: EntityRow, desperate: boolean): EntityRow | undefined => {
+  const here = itemsAt(ctx.world, p['x'] as number, p['y'] as number, p['z'] as number);
+  return (
+    here.find((i) => cooked(ctx, i) && edible(ctx, i['kind'] as string, false)) ??
+    here.find((i) => edible(ctx, i['kind'] as string, false)) ??
+    here.find((i) => edible(ctx, i['kind'] as string, desperate))
+  );
+};
+
+/** Sets off to the nearest food lying on the ground (food of last resort only when `desperate`),
+ * or a cooked meal if it is no more than `work.cook.prefer` tiles further; false when there is
+ * none to reach. */
+function goEat(ctx: SystemContext, p: EntityRow, desperate: boolean): boolean {
   const { x, y, z } = { x: p['x'] as number, y: p['y'] as number, z: p['z'] as number };
   let best: EntityRow | undefined;
   let far = Infinity;
+  let meal: EntityRow | undefined;
+  let mealFar = Infinity;
   for (const i of itemsOf(ctx.world)) {
-    if (i['holder'] || ctx.content.life.eat[i['kind'] as string] === undefined) continue;
+    if (i['holder'] || !edible(ctx, i['kind'] as string, desperate)) continue;
     const d =
       Math.max(Math.abs((i['x'] as number) - x), Math.abs((i['y'] as number) - y)) +
       Math.abs((i['z'] as number) - z) * 100;
     if (d < far) [best, far] = [i, d];
+    if (cooked(ctx, i) && d < mealFar) [meal, mealFar] = [i, d];
   }
+  if (meal && mealFar <= far + ctx.content.work.cook.prefer) best = meal;
   if (!best) return false;
   return walkTo(ctx, p, { x: best['x'] as number, y: best['y'] as number, z: best['z'] as number });
+}
+
+/** A hungry band ate seed (P4.7, V-089): one line a person a day, citing their hunger. */
+function saySeed(ctx: SystemContext, p: EntityRow, food: EntityRow): void {
+  const day = Math.floor(ctx.world.tick / TICKS_PER_DAY) + 1;
+  if (p['seeded'] === day) return;
+  p['seeded'] = day;
+  ctx.emit('goods.ateSeed', {
+    causes: [food['line'] as number].filter((l) => l > 0),
+    actors: [p.id],
+    data: { name: p['name'] as string },
+  });
 }
 
 /** Eats one of the stack they stand on. */
@@ -67,7 +101,11 @@ function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
   const row = needOf(ctx.world, p.id, 'food');
   if (!def || !row) return;
   const gives = ctx.content.life.eat[item['kind'] as string] ?? 0;
+  const [made, wasCooked] = [item['made'] as number, cooked(ctx, item)];
+  if (ctx.content.life.lastResort.includes(item['kind'] as string)) saySeed(ctx, p, row);
   eatFrom(ctx, item, p);
+  // A cooked meal is remembered (V-090): `ate-well`, citing the batch's line.
+  if (wasCooked) addMemory(ctx, p.id, 'ate-well', made);
   tallyAdd(ctx, 'eaten', 1);
   changeNeed(ctx.content, row, gives);
   crossed(ctx, p, row, def);
@@ -100,14 +138,16 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     if (!walking) carryBed(ctx, p);
     return;
   }
+  const low = life.needs.find((n) => n.id === 'food')?.low ?? 0;
   if (p['doing'] === 'eat') {
     if (walking) return;
-    const item = foodHere(ctx, p);
+    const item = foodHere(ctx, p, valueOf(ctx, p, 'food') < low);
     if (item) eat(ctx, p, item);
     p['doing'] = '';
   }
   if (valueOf(ctx, p, 'food') < seekOf(ctx, 'food') && world.tick >= (p['retry'] as number)) {
-    if (goEat(ctx, p)) {
+    // Seed grain only when under the warning line with nothing else to reach (P4.7).
+    if (goEat(ctx, p, false) || (valueOf(ctx, p, 'food') < low && goEat(ctx, p, true))) {
       p['doing'] = 'eat';
       return;
     }

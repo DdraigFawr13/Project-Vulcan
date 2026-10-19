@@ -7,7 +7,7 @@
 import type { EntityRow } from '../core/index.ts';
 import { furnitureOf, HEARTH } from '../build/index.ts';
 import { heatMap } from '../fire/index.ts';
-import { itemsOf } from '../goods/index.ts';
+import { loadOf } from '../goods/index.ts';
 import { feltAt, needOf } from '../needs/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -98,7 +98,7 @@ export function warming(ctx: SystemContext, p: EntityRow): boolean {
   if (!target && p['job'] && coldPick(ctx, p)) Object.assign(p, { job: '', plan: 0, target: -1 });
   // Hands full of something that is not fuel (stone from a building job), tending would stop at
   // once after its line said it began (phase review), so they carry it home first.
-  const load = itemsOf(world).find((i) => i['holder'] === p.id);
+  const load = loadOf(world, p.id);
   const full = load && !ctx.content.work.fire.fuels.some((f) => f.item === load['kind']);
   const got = target || p['job'] || full ? undefined : coldPick(ctx, p);
   if (got) {

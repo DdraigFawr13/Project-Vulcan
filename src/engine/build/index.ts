@@ -51,3 +51,16 @@ export {
   type Want,
 } from './wants.ts';
 export { HEARTH } from './hearths.ts';
+export {
+  cropNow,
+  sowNow,
+  cropOf,
+  doneOf as fieldDone,
+  FIELD_TABLES,
+  fieldsOf,
+  liveFields,
+  placeOf as fieldPlace,
+  tilesOf as fieldTiles,
+} from './fields.ts';
+export { finishReaping, finishSowing } from './fieldlife.ts';
+export { ringOf } from './ring.ts';

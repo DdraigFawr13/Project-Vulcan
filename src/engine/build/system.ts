@@ -3,13 +3,17 @@
 // back once (`sendBack`); placing a part on a chosen tile (`placeBuilding`) and `deconstruct`
 // stay test-mode tools (V-041, V-049). Builders take the work up themselves (people/build.ts).
 // Each hour it finishes houses whose parts stand, sites a house while people sleep in the open,
-// grows a house that has outgrown its beds, and says once when nobody is able to build.
+// grows a house that has outgrown its beds, and says once when nobody is able to build. Since
+// P4.7 it also widens the town ring when no house fits and sites, ripens and frosts fields
+// (fields.ts, fieldlife.ts, ring.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity, removeEntity } from '../entity/index.ts';
 import { inStore, itemsAt, itemsOf, raiseStock } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { FURNITURE_TABLES } from './furniture.ts';
+import { tickFields, markLeaving } from './fieldlife.ts';
+import { FIELD_TABLES, planFields, sendBackField } from './fields.ts';
 import { finishHouses, growHouses } from './grow.ts';
 import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
@@ -97,7 +101,15 @@ export function greenOf(world: WorldState): Spot {
 function chooseAgain(ctx: SystemContext, h: EntityRow, line: number): void {
   const green = greenOf(ctx.world);
   if (h['of']) growHouses(ctx, green, 1, h['of'] as number);
-  else planHouse(ctx, green, [line], 1);
+  else sitingHouse(ctx, green, () => planHouse(ctx, green, [line], 1));
+}
+
+/** Runs a round of house siting; if the town ring widened in it, the fields it now covers are
+ * marked to leave (fieldlife.ts). */
+function sitingHouse(ctx: SystemContext, green: Spot, siting: () => void): void {
+  const before = ctx.state['ringLine'];
+  siting();
+  if (ctx.state['ringLine'] !== before) markLeaving(ctx, green, ctx.state['ringLine']!);
 }
 
 export const buildSystem: System = {
@@ -121,20 +133,30 @@ export const buildSystem: System = {
     'fire.planned',
     'fire.plannedCold',
     'fire.noFloor',
+    ...['town.ringWidened', 'field.needed', 'field.noGround', 'field.sited', 'field.sentBack'],
+    ...['field.ripe', 'field.frostKilled', 'field.noSeed', 'field.sown', 'field.leftToGrass'],
   ],
   // `nobody`: the line saying nobody is able to build, while that holds; `green`: the green's
   // tile index plus one; `need`: the line saying people sleep in the open, while they do;
   // `noGround`: the alert that no ground near the green fits a house, while none does, and
   // `tried` the tick it last looked.
-  initialState: { nobody: 0, green: 0, need: 0, noGround: 0, tried: 0 },
-  refs: ['nobody', 'need', 'noGround'],
-  tables: { ...BUILD_TABLES, ...HOUSE_TABLES, ...FURNITURE_TABLES },
+  // P4.7: `ring` the town ring's radius once widened (0 until then) and `ringLine` the line that
+  // widened it; `fieldNeed`, `fieldNoGround` and `fieldTried` are `need`, `noGround` and `tried`
+  // for fields.
+  initialState: {
+    ...{ nobody: 0, green: 0, need: 0, noGround: 0, tried: 0, ring: 0, ringLine: 0 },
+    ...{ fieldNeed: 0, fieldNoGround: 0, fieldTried: 0 },
+  },
+  refs: ['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround'],
+  tables: { ...BUILD_TABLES, ...HOUSE_TABLES, ...FURNITURE_TABLES, ...FIELD_TABLES },
   commands: {
     placeBuilding: (ctx, command, cause) => placeBuilding(ctx, command.data, cause),
     deconstruct: (ctx, command, cause) => deconstruct(ctx, command.data, cause),
     setBuild: (ctx, command, cause) => setBuild(ctx, command.data, cause),
     sendBack: (ctx, command, cause) =>
-      sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
+      command.data['field'] !== undefined
+        ? sendBackField(ctx, command.data, cause, greenOf(ctx.world))
+        : sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
   },
   init(ctx) {
     const { world, content, state } = ctx;
@@ -149,7 +171,9 @@ export const buildSystem: System = {
     planCampfire(ctx, green);
     finishHouses(ctx);
     // A house adds a room for the homeless before another house is sited ("cottage, then grow").
-    if (!growHouses(ctx, green)) planHouse(ctx, green, []);
+    if (!growHouses(ctx, green)) sitingHouse(ctx, green, () => planHouse(ctx, green, []));
+    tickFields(ctx);
+    planFields(ctx, green, []);
     planBench(ctx);
     planRoomHearths(ctx);
     checkBuilders(ctx);

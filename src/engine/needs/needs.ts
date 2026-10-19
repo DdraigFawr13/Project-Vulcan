@@ -3,7 +3,12 @@
 // person sleeps, sits warm or takes their leisure (people/mind.ts decides what they are doing);
 // eating is the one rise that happens on the minute, in the mind. A line is written only when a
 // need crosses its warning line, down or back up, or the mood changes word.
-import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import {
+  TICKS_PER_DAY,
+  type EngineContent,
+  type EntityRow,
+  type WorldState,
+} from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { foodGoneLine, itemsAt } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -11,6 +16,8 @@ import { heatAt } from '../fire/index.ts';
 import { tileTemperature } from '../weather/index.ts';
 import { bedOwnedBy, houseAt, type Room } from '../build/index.ts';
 import { comfortOf, roomHere } from './comfort.ts';
+import { cloakWarmth, wearCloak } from './cloak.ts';
+import { expireMemories, MEMORY_TABLES, memoriesOf, memoryMood } from './memory.ts';
 
 export const NEEDS_TABLES: Schemas = {
   need: {
@@ -22,7 +29,10 @@ export const NEEDS_TABLES: Schemas = {
     low: 'count',
     /** The last line about it (or the arrival), for "why?". */
     line: 'event',
+    /** 1 + the game day of the last notable low line of a quiet need (V-092), else 0. */
+    noted: 'count',
   },
+  ...MEMORY_TABLES,
   mood: { person: 'entity', value: 'int', word: 'text', line: 'event' },
 };
 
@@ -43,7 +53,8 @@ export function changeNeed(content: EngineContent, row: EntityRow, by: number): 
 const wordFor = (content: EngineContent, value: number): string =>
   content.life.mood.find((m) => value >= m.at)?.word ?? content.life.mood.at(-1)!.word;
 
-/** The mood: the needs' mean weighted by their `weight`, in whole numbers. */
+/** The mood: the needs' mean weighted by their `weight`, plus the live memories' (memory.ts),
+ * in whole numbers held between 0 and the scale. */
 function moodValue(content: EngineContent, world: WorldState, person: number): number {
   let sum = 0;
   let weights = 0;
@@ -51,7 +62,8 @@ function moodValue(content: EngineContent, world: WorldState, person: number): n
     sum += ((needOf(world, person, def.id)?.['value'] as number) ?? 0) * def.weight;
     weights += def.weight;
   }
-  return Math.floor(sum / weights);
+  const value = Math.floor(sum / weights) + memoryMood(world, content, person);
+  return Math.max(0, Math.min(content.life.scale, value));
 }
 
 /** Gives each person their need rows and mood on arrival; the arrival line explains them. */
@@ -65,6 +77,7 @@ export function seedNeeds(world: WorldState, content: EngineContent): void {
         value: content.life.start[k] ?? content.life.scale,
         low: 0,
         line,
+        noted: 0,
       }),
     );
     const value = moodValue(content, world, p.id);
@@ -93,12 +106,16 @@ export function feltAt(world: WorldState, content: EngineContent, i: number): nu
   return temp + heatAt(world, content, i);
 }
 
-/** The temperature a person feels where they stand. */
-function feels(ctx: SystemContext, p: EntityRow): number {
+/** The temperature a person feels where they stand, before their cloak. */
+function feelsBare(ctx: SystemContext, p: EntityRow): number {
   const { world, content } = ctx;
   if ((p['z'] as number) > 0) return content.life.warmth.below;
   return feltAt(world, content, (p['y'] as number) * world.map.width + (p['x'] as number));
 }
+
+/** The temperature a person feels where they stand: the cloak they wear adds to it outdoors. */
+const feels = (ctx: SystemContext, p: EntityRow): number =>
+  feelsBare(ctx, p) + cloakWarmth(ctx.world, ctx.content, p);
 
 /** Someone else at leisure within reach. */
 function company(world: WorldState, content: EngineContent, p: EntityRow): boolean {
@@ -166,8 +183,10 @@ function causeOf(ctx: SystemContext, p: EntityRow, row: EntityRow): number {
 export function runNeeds(ctx: SystemContext): void {
   const { world, content } = ctx;
   const life = content.life;
+  expireMemories(world);
   for (const p of rowsOf(world, 'person')) {
     if (p['status'] !== 'alive') continue;
+    wearCloak(ctx, p, feelsBare(ctx, p));
     const name = p['name'] as string;
     let worst: EntityRow | undefined;
     // The room they stand in, worked out once an hour and only if a need asks.
@@ -192,8 +211,20 @@ export function runNeeds(ctx: SystemContext): void {
     }
     if (word !== mood['word']) {
       const way = value < (mood['value'] as number) ? 'fell' : 'rose';
+      // The newest memory pulling the same way is a cause too (V-091): "why?" finds the meal.
+      const pull = memoriesOf(world, p.id)
+        .filter((m) => {
+          const points = content.memories.find((d) => d.id === m['memory'])?.mood ?? 0;
+          return way === 'rose' ? points > 0 : points < 0;
+        })
+        .reduce<EntityRow | undefined>(
+          (a, m) => (!a || (m['line'] as number) > (a['line'] as number) ? m : a),
+          undefined,
+        );
       mood['line'] = ctx.emit('mood.changed', {
-        causes: [worst?.['line'] as number],
+        causes: [worst?.['line'] as number, ...(pull ? [pull['line'] as number] : [])].filter(
+          (l) => l > 0,
+        ),
         actors: [p.id],
         data: { name, way, word },
       });
@@ -213,10 +244,14 @@ export function crossed(
   const value = row['value'] as number;
   const data = { name: p['name'] as string, need: def.name.toLowerCase() };
   if (!row['low'] && value < def.low) {
+    // A quiet need (warmth, V-092) is notable the first time a game day, not every dip.
+    const today = Math.floor(ctx.world.tick / TICKS_PER_DAY) + 1;
+    const quiet = !!def.quiet && row['noted'] === today;
+    if (def.quiet && !quiet) row['noted'] = today;
     row['line'] = ctx.emit('need.low', {
       causes: [causeOf(ctx, p, row)],
       actors: [p.id],
-      data: { ...data, word: def.lowWord.toLowerCase() },
+      data: { ...data, word: def.lowWord.toLowerCase(), quiet: quiet ? 'yes' : 'no' },
     });
     row['low'] = 1;
   } else if (row['low'] && value >= def.low + ctx.content.life.again) {

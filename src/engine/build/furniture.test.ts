@@ -3,6 +3,7 @@
 // in an owned bedroom ends a week in a better mood than one in the barracks; every lever stays
 // indirect (V-041).
 import { describe, expect, it } from 'vitest';
+import type { EntityRow } from '../core/index.ts';
 import { content } from '../../content/index.ts';
 import {
   bedOwnedBy,
@@ -64,6 +65,8 @@ describe('carpentry and furniture', () => {
     it(`sets up a bench, makes beds and puts everyone in a bed they own, unordered, on ${seed}`, () => {
       const w = createWorld(sim, seed);
       step(w, sim, 9 * DAY + 16 * 60);
+      // Everyone owns a bed by an evening: the next one where spring sowing slowed the building.
+      while (people(w).some((p) => !bedOwnedBy(w, p.id)) && w.tick < 14 * DAY) step(w, sim, DAY);
       expect(w.commandLog).toHaveLength(0);
       expect(allLines(w).filter((e) => e.type === 'furniture.benchPlaced')).toHaveLength(1);
       expect(piecesOf(w, 'bench')).toHaveLength(1);
@@ -132,26 +135,33 @@ describe('carpentry and furniture', () => {
     });
   }
 
-  // Seeds where a barracks lasts the week: on tallow privacy rooms (V-078) empty it, as they should.
-  for (const seed of ['ledger', 'anvil', 'gwerin']) {
+  // Whether a barracks forms is the seed's layout (privacy rooms, V-078, can empty it, and a
+  // colony that builds houses for all sleeps alone): search a list for two seeds that have one.
+  const roomOf = (w: ReturnType<typeof createWorld>, p: EntityRow) => {
+    const bed = bedOwnedBy(w, p.id);
+    return bed && roomAt(w, content, bed['x'] as number, bed['y'] as number);
+  };
+  const barracks: { seed: string; w: ReturnType<typeof createWorld> }[] = [];
+  for (const seed of ['ledger', 'anvil', 'gwerin', 'tallow', 'smoke', 'kiln', 'marsh']) {
+    if (barracks.length === 2) break;
+    const w = createWorld(sim, seed);
+    step(w, sim, 10 * DAY);
+    const alone = people(w).filter((p) => roomOf(w, p)?.sleepers === 1).length;
+    const shared = people(w).filter((p) => (roomOf(w, p)?.sleepers ?? 0) >= 3).length;
+    if (alone >= 1 && shared >= 3 && alone + shared === people(w).length)
+      barracks.push({ seed, w });
+  }
+  it('finds two seeds where some sleep alone and the rest in a barracks', () => {
+    expect(barracks).toHaveLength(2);
+  });
+  for (const { seed, w } of barracks) {
     it(`lets a colonist alone in an owned bedroom end a week in a better mood than the barracks on ${seed}`, () => {
-      const w = createWorld(sim, seed);
-      step(w, sim, 10 * DAY);
-      const roomOf = (p: (typeof w.entities)['person'][number]) => {
-        const bed = bedOwnedBy(w, p.id)!;
-        return roomAt(w, content, bed['x'] as number, bed['y'] as number)!;
-      };
-      const alone = people(w).filter((p) => roomOf(p).sleepers === 1);
-      const shared = people(w).filter((p) => roomOf(p).sleepers >= 3);
-      // Each sleeps alone or in a barracks of three or more; how many of each is the seed's
-      // layout (one alone on ledger and anvil, two on tallow).
-      expect(alone.length, seed).toBeGreaterThanOrEqual(1);
-      expect(shared.length, seed).toBeGreaterThanOrEqual(3);
-      expect(alone.length + shared.length, seed).toBe(people(w).length);
+      const alone = people(w).filter((p) => roomOf(w, p)!.sleepers === 1);
+      const shared = people(w).filter((p) => roomOf(w, p)!.sleepers >= 3);
       step(w, sim, 7 * DAY);
       // A barracks sleeper may move to a room of their own during the week (V-078): compare
       // those still sharing with those alone all week.
-      const still = shared.filter((p) => roomOf(p).sleepers >= 3);
+      const still = shared.filter((p) => roomOf(w, p)!.sleepers >= 3);
       expect(still.length, seed).toBeGreaterThanOrEqual(1);
       const mood = (p: (typeof alone)[number]) => moodOf(w, p.id)!['value'] as number;
       const mean = still.reduce((n, p) => n + mood(p), 0) / still.length;

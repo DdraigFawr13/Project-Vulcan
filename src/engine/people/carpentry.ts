@@ -19,7 +19,7 @@ import {
 } from '../build/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { layHearth } from '../fire/index.ts';
-import { itemsOf, layItem, raiseStock, takeFrom } from '../goods/index.ts';
+import { itemsOf, layItem, loadOf, raiseStock, takeFrom } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
 import { practise } from './learn.ts';
@@ -197,7 +197,7 @@ export function furnishing(ctx: SystemContext, p: EntityRow): boolean {
   const here = spotOf(p);
   const beside = here.z === 0 && Math.abs(here.x - x) + Math.abs(here.y - y) === 1;
   const need = kind.cost - (piece['have'] as number);
-  const load = itemsOf(world).find((i) => i['holder'] === p.id);
+  const load = loadOf(world, p.id);
   if (load && (need <= 0 || load['kind'] !== material)) return stop(p);
   if (load) {
     if (!beside) return goBeside(ctx, p, x, y) || stop(p);

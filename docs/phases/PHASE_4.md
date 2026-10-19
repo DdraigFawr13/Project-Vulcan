@@ -33,7 +33,7 @@ Order: bundles 1 to 4, then P4.9. A bundle estimated over 1,200 lines splits int
 
 ### Bundle 1: P4.7 Fields and cooking, with seed grain, harvest home, cloaks and a quiet winter
 
-Fields row on the Build sheet; colonists site fields on good soil near water and size them; barley in spring, turnips into autumn; sow, grow, harvest; Seed plate and seed in the cart; Cook row; meals at any lit hearth; the "brought the harvest home together" memory; cloaks from the cart; the once-a-day cold line; colonists redrawn a quarter larger (V-095); houses built of the wall material nearest to hand, not stone first (V-096). Mock-up: UI. Done when: a field sown in spring plus foraging feeds five through the first winter on most seeds.
+Fields row on the Build sheet; colonists site fields on good soil near water and size them; barley in spring, turnips into autumn; sow, grow, harvest; Seed plate and seed in the cart; Cook row; meals at any lit hearth; the "brought the harvest home together" memory; cloaks from the cart; the once-a-day cold line; colonists redrawn a quarter larger (V-095); walls of the most plentiful material (V-097); fields past the ring (V-098). Mock-up: UI. Done when: a field sown in spring plus foraging feeds five through the first winter on most seeds.
 
 - Reading list: `docs/DECISIONS.md`; `docs/UI_STYLE.md`; `src/engine/build/MODULE.md`; `src/engine/goods/MODULE.md`; `src/engine/fire/MODULE.md`; `src/engine/needs/MODULE.md`; `src/ui/MODULE.md`
 

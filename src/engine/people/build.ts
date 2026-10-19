@@ -13,7 +13,7 @@ import {
   stillNeeded,
   takeDownPlan,
 } from '../build/index.ts';
-import { inStore, itemsAt, itemsOf, layItem, storeOf, takeFrom } from '../goods/index.ts';
+import { inStore, itemsAt, itemsOf, layItem, loadOf, storeOf, takeFrom } from '../goods/index.ts';
 import { withBuilt } from '../map/index.ts';
 import { canReach, reachFrom, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -230,7 +230,7 @@ export function building(ctx: SystemContext, p: EntityRow): boolean {
   const here = spotOf(p);
   const beside = here.z === 0 && Math.max(Math.abs(here.x - x), Math.abs(here.y - y)) === 1;
   const need = stillNeeded(content, plan);
-  const load = itemsOf(world).find((i) => i['holder'] === p.id);
+  const load = loadOf(world, p.id);
   if (load && (need <= 0 || load['kind'] !== part.material)) return stop(p);
   if (load) {
     if (!beside) return goBeside(ctx, p, x, y) || stop(p);

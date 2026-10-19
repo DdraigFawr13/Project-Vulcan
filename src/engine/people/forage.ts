@@ -8,11 +8,11 @@
 import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { haveOf, stockOf, storeOf, wantOf } from '../goods/index.ts';
-import { reachFrom, walkAt } from '../paths/index.ts';
+import { reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
 import { able, outranked, priorityLine } from './priority.ts';
-import { busy, goBeside, layAround, people, SIDES, skillOf, spotOf } from './spots.ts';
+import { besideReachable, busy, goBeside, layAround, people, skillOf, spotOf } from './spots.ts';
 import { tallyAdd } from './tally.ts';
 
 export const FORAGE_TABLES: Schemas = {
@@ -49,23 +49,6 @@ const regrown = (world: WorldState, content: EngineContent, x: number, y: number
 /** Ripe when it is in season and it was never picked or not for `regrowDays`. */
 export const ripe = (world: WorldState, content: EngineContent, x: number, y: number): boolean =>
   inSeason(world, content) && regrown(world, content, x, y);
-
-/** Whether someone who can reach what `reach` says can stand on a side of the bush at tile `i`. */
-function besideReachable(
-  world: WorldState,
-  content: EngineContent,
-  reach: (to: { x: number; y: number; z: number }) => boolean,
-  i: number,
-): boolean {
-  const map = world.map;
-  const [x, y] = [i % map.width, Math.floor(i / map.width)];
-  return SIDES.some(([dx, dy]) => {
-    const [sx, sy] = [x + dx, y + dy];
-    if (sx < 0 || sy < 0 || sx >= map.width || sy >= map.height) return false;
-    if (!walkAt(content, map, 0, sy * map.width + sx)) return false;
-    return reach({ x: sx, y: sy, z: 0 });
-  });
-}
 
 /** The surface tiles that hold a bush, found once per map: bushes are never planted or cleared,
  * so the list is the same however and whenever it is first made (a loaded world makes the same

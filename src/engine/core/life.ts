@@ -12,6 +12,8 @@ export interface NeedDef {
   okWord: string;
   /** Its share of the mood. */
   weight: number;
+  /** Its warning line is notable once a person a day (V-092). */
+  quiet?: boolean;
 }
 
 export interface LifeDef {
@@ -35,9 +37,21 @@ export interface LifeDef {
   relax: { from: number; gain: number; company: number; reach: number };
   /** Food each item kind gives when one is eaten. */
   eat: Readonly<Record<string, number>>;
+  /** Kinds eaten only when hungry with nothing else to reach (seed grain, P4.7). */
+  lastResort: readonly string[];
   /** Mood words, highest first. */
   mood: readonly { word: string; at: number }[];
-  cart: { kind: string; goods: readonly { kind: string; count: number }[]; bedroll: string };
+  cart: {
+    kind: string;
+    goods: readonly { kind: string; count: number }[];
+    bedroll: string;
+    cloak: string;
+  };
+  /** Each live memory's mood points count this many times in the mood (V-091). */
+  memory: { weight: number };
+  /** The wool cloak (V-092): degrees added outdoors, wear an hour outdoors in the cold, hours it
+   * lasts. */
+  cloak: { warmth: number; wear: number; last: number };
   /** Most of one kind a tile's stack holds (`default` for the rest). */
   stacks: Readonly<Record<string, number>>;
 }
@@ -49,6 +63,8 @@ export interface ItemDef {
   kind: string;
   /** The group it counts under for stock levels (food, timber...). */
   good: string;
+  /** A cooked dish (items.json): eaten in preference to raw food (work.cook). */
+  cooked?: boolean;
 }
 
 /** The colony's work (work.json, P2.4): stock levels (the player's lever), felling, carrying,
@@ -78,6 +94,8 @@ export interface WorkDef {
     regrowDays: number;
     months: readonly string[];
   };
+  /** Farming (P4.7): minutes to sow or reap a tile at skill `skilled`. */
+  farm: { job: string; sow: number; reap: number; skilled: number };
   fire: FireDef;
   doing: Readonly<Record<string, string>>;
   haul: { load: number; kinds: readonly string[] };
@@ -85,6 +103,19 @@ export interface WorkDef {
   hours: { from: number; to: number };
   priority: { jobs: readonly string[]; start: number; words: readonly string[] };
   learn: { start: number; perLevel: number };
+  cook: {
+    job: string;
+    meal: string;
+    fuel: string;
+    from: readonly string[];
+    /** A batch's food value over the raw food's it is made from. */
+    gain: number;
+    batch: number;
+    minutes: number;
+    skilled: number;
+    perPerson: number;
+    prefer: number;
+  };
 }
 
 /** One part colonists build (buildings.json, P3.1 and P3.2): a tile of one material. */
@@ -105,6 +136,8 @@ export interface BuildingsDef {
   downShare: number;
   parts: readonly PartDef[];
   house: HouseDef;
+  town: { ring: number; step: number; most: number };
+  field: FieldDef;
   rooms: RoomsDef;
   furniture: FurnitureDef;
 }
@@ -201,4 +234,41 @@ export interface JobDef {
   name: string;
   skill?: string;
   requirements: Readonly<Record<string, number>>;
+}
+
+/** A memory a person can hold (memories.json, V-091): its mood points, days it lasts and text. */
+export interface MemoryDef {
+  id: string;
+  mood: number;
+  decayDays: number;
+  text: string;
+  /** How many of it can be held at once (one when absent). */
+  stacks?: number;
+}
+
+/** A crop (P4.7): sown in the named months, ripe `days` days later, lost to a frost under `frost`. */
+export interface CropDef {
+  id: string;
+  name: string;
+  item: string;
+  sow: readonly string[];
+  days: number;
+  yield: number;
+  frost: number;
+}
+
+/** What colonists lay out as fields (P4.7, V-051, V-089). */
+export interface FieldDef {
+  name: string;
+  /** The item sown, one a tile (P4.7). */
+  seed: string;
+  /** Siting: a seed tile's score weights, and how many of the best are grown (fieldsite.ts). */
+  weigh: { fertility: number; water: number; tries: number };
+  start: number;
+  perMouth: number;
+  reach: number;
+  water: number;
+  good: number;
+  least: number;
+  crops: readonly CropDef[];
 }

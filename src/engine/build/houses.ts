@@ -17,6 +17,7 @@ import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bedOwnedBy, furnitureOf, piecesOf } from './furniture.ts';
 import { planPart, plansOf } from './plans.ts';
+import { widenRing } from './ring.ts';
 import { roomAt } from './rooms.ts';
 import {
   chooseHouse,
@@ -60,6 +61,7 @@ export const HOUSE_TABLES: Schemas = {
 };
 
 export const HOUSE_KIND = 'house';
+export const FIELD_KIND = 'field';
 
 /** The size (or added room) a house row is. */
 export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>
@@ -70,7 +72,9 @@ export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>
 /** The name of the house a row (by id) is or belongs to, e.g. "cottage". */
 export function houseName(world: WorldState, content: EngineContent, id: number): string {
   const h = housesOf(world).find((r) => r.id === id);
-  return h ? sizeOf(content, mainOf(world, h)).name : '';
+  if (h) return sizeOf(content, mainOf(world, h)).name;
+  // Trees on a field's site are cleared the same way (P4.7).
+  return (world.entities['field'] ?? []).some((f) => f.id === id) ? 'field' : '';
 }
 
 /** The house a row belongs to: itself, or the house a room was added to. */
@@ -88,15 +92,17 @@ export function houseAt(world: WorldState, x: number, y: number): EntityRow | un
   );
 }
 
-/** The Build sheet's level for houses, and the order that set it if the player did. */
+/** The Build sheet's level for a kind of building (houses, or fields, P4.7), and the order that
+ * set it if the player did. */
 export function wantOf(
   world: WorldState,
   content: EngineContent,
+  kind: string = HOUSE_KIND,
 ): { level: number; line?: number } {
-  const row = (world.entities['want'] ?? []).find((r) => r['kind'] === HOUSE_KIND);
+  const row = (world.entities['want'] ?? []).find((r) => r['kind'] === kind);
   return row
     ? { level: row['level'] as number, line: row['line'] as number }
-    : { level: content.buildings.house.start };
+    : { level: content.buildings[kind === FIELD_KIND ? 'field' : 'house'].start };
 }
 
 /** The `setBuild {kind, level}` lever (V-049): how much the colony wants a kind of building. */
@@ -108,21 +114,28 @@ export function setBuild(
   const { world, content } = ctx;
   const level = data['level'] as number;
   const levels = content.work.priority.words.length;
-  if (data['kind'] !== HOUSE_KIND || !Number.isSafeInteger(level) || level < 1 || level > levels) {
+  const kind = data['kind'];
+  if (
+    (kind !== HOUSE_KIND && kind !== FIELD_KIND) ||
+    !Number.isSafeInteger(level) ||
+    level < 1 ||
+    level > levels
+  ) {
     ctx.emit('command.refused', {
       causes: [cause],
       data: { kind: 'setBuild', reason: 'no such kind of building or level' },
     });
     return;
   }
-  if (wantOf(world, content).level === level) return;
+  if (wantOf(world, content, kind).level === level) return;
+  const name = kind === FIELD_KIND ? content.buildings.field.name : content.buildings.house.name;
   const line = ctx.emit('build.wantSet', {
     causes: [cause],
-    data: { kind: content.buildings.house.name, word: content.work.priority.words[level - 1]! },
+    data: { kind: name, word: content.work.priority.words[level - 1]! },
   });
-  const row = (world.entities['want'] ?? []).find((r) => r['kind'] === HOUSE_KIND);
+  const row = (world.entities['want'] ?? []).find((r) => r['kind'] === kind);
   if (row) Object.assign(row, { level, line });
-  else addEntity(world, 'want', { kind: HOUSE_KIND, level, line });
+  else addEntity(world, 'want', { kind, level, line });
 }
 
 const isBed = (content: EngineContent, i: EntityRow): boolean =>
@@ -304,16 +317,23 @@ export function planHouse(ctx: SystemContext, green: Spot, causes: number[], sen
   // With no ground found, the colony looks again once a day, not every hour.
   if (state['noGround'] && !sent && world.tick < (state['tried'] ?? 0) + TICKS_PER_DAY) return;
   state['tried'] = world.tick;
-  const pick = chooseHouse(world, content, green, open.length);
+  let pick = chooseHouse(world, content, green, open.length);
   if (!pick) {
     if (!state['noGround'])
       state['noGround'] = ctx.emit('build.noGround', { causes: [state['need']!] });
-    return;
+    // The town ring widens (P4.7) and the colony looks again.
+    if (widenRing(ctx, state['noGround']!)) pick = chooseHouse(world, content, green, open.length);
   }
+  if (!pick) return;
   state['noGround'] = 0;
   const line = ctx.emit('build.sited', {
     causes: [state['need']!, ...causes],
-    data: { size: pick.size.name, dir: dirFrom(green, pick.site), beds: pick.size.sleeps },
+    data: {
+      size: pick.size.name,
+      dir: dirFrom(green, pick.site),
+      beds: pick.size.sleeps,
+      why: pick.why,
+    },
   });
   placeHouse(ctx, pick.site, pick.size, pick.wall, line, { why: reasonOf(pick.site), sent });
 }

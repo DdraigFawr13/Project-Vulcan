@@ -7,8 +7,8 @@ import {
   furnitureKind,
   furnitureOf,
   houseAt,
-  itemsOf,
   levelOf,
+  loadOf,
   nextWant,
   pieceAt,
   qualityOf,
@@ -51,7 +51,7 @@ const makerOf = (world: WorldState, piece: EntityRow): EntityRow | undefined =>
 function makingOf(world: WorldState, piece: EntityRow): string {
   const who = makerOf(world, piece);
   if (!who) return 'nobody yet';
-  const load = itemsOf(world).find((i) => i['holder'] === who.id);
+  const load = loadOf(world, who.id);
   const kind = furnitureKind(content, piece);
   const short = (piece['have'] as number) < kind.cost;
   const doing = load

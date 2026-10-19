@@ -86,6 +86,19 @@ export const goodsSystem: System = {
         { owner: p.id, state: 'laid' },
       ),
     );
+    // Each settler arrives wearing a wool cloak (V-092): held and worn, so it lies on no tile.
+    for (const p of people) {
+      const at = {
+        kind: cart.cloak,
+        count: 1,
+        x: p['x'] as number,
+        y: p['y'] as number,
+        z: 0,
+        made,
+      };
+      const id = layItem(world, at, { owner: p.id, state: 'worn', wear: content.life.cloak.last });
+      itemsOf(world).find((i) => i.id === id)!['holder'] = p.id;
+    }
     setUpStore(ctx, made);
     setUpStock(ctx, made);
   },

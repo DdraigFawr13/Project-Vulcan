@@ -77,6 +77,7 @@ export function validateContent(files: Files): string[] {
       ...checkTerrain(files),
       ...checkCalendar(files),
       ...checkHouse(files),
+      ...checkCrops(files),
     );
   errors.push(...checkBand(files));
   return errors;
@@ -227,5 +228,18 @@ function checkHouse(files: Files): string[] {
   want(b.house.door, 'door', 'house.door');
   want(b.house.floor, 'floor', 'house.floor');
   for (const f of Object.keys(b.rooms.floors)) want(f, 'floor', `rooms.floors.${f}`);
+  return errors;
+}
+
+// A crop's sowing months are calendar months, and every crop has one (P4.7).
+function checkCrops(files: Files): string[] {
+  const b = files['buildings'] as { field: { crops: { id: string; sow: string[] }[] } };
+  const months = (files['calendar'] as { monthNames: string[] }).monthNames;
+  const errors: string[] = [];
+  for (const crop of b.field.crops) {
+    if (!crop.sow.length) errors.push(`buildings.field.crops[${crop.id}]: no sowing month`);
+    for (const m of crop.sow)
+      if (!months.includes(m)) errors.push(`buildings.field.crops[${crop.id}]: "${m}" is no month`);
+  }
   return errors;
 }

@@ -8,15 +8,27 @@
 // felling or quarrying and each tree felled or boulder broken are ledger lines; trips are not.
 import { houseName } from '../build/index.ts';
 import { raiseChunk } from '../map/index.ts';
+import { needOf } from '../needs/index.ts';
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { haveOf, itemsOf, markedTree, stockOf, storeOf, unmark, wantOf } from '../goods/index.ts';
+import {
+  haveOf,
+  itemsOf,
+  loadOf,
+  markedTree,
+  stockOf,
+  storeOf,
+  unmark,
+  wantOf,
+} from '../goods/index.ts';
 import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
+import { cooking, takeUpCooking } from './cook.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
 import { takeUpHearth } from './hearth.ts';
 import { takeUpTending, tending } from './tend.ts';
 import { furnishing, takeUpCarpentry } from './carpentry.ts';
+import { farming, takeUpFarming } from './farm.ts';
 import { foraging, takeUpForaging } from './forage.ts';
 import { practise } from './learn.ts';
 import { busy, goBeside, layAround, people, same, skillOf, SIDES, spotOf } from './spots.ts';
@@ -25,7 +37,7 @@ import { tallyAdd } from './tally.ts';
 import { walkTo } from './walk.ts';
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `build`, `carpentry`, `hearth` (a hearth being made), `tend`, `haul`
+  /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `hearth` (a hearth being made), `tend`, `haul`
    * or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
@@ -34,7 +46,7 @@ export const JOB_FIELDS = {
   work: 'int',
   /** Their line taking up the work, which each tree they fell (or part they build) cites. */
   took: 'event',
-  /** The plan they are building (P3.1), or 0. */
+  /** The plan they are building (P3.1) or the field they are sowing or reaping (P4.7), or 0. */
   plan: 'int',
   /** The tick before which they do not look for work again after finding none. */
   next: 'int',
@@ -162,10 +174,12 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
   if (p['job'] === 'build' && hours && building(ctx, p)) return true;
+  if (p['job'] === 'farm' && hours && farming(ctx, p)) return true;
   if (p['job'] === 'carpentry' && hours && furnishing(ctx, p)) return true;
   if (p['job'] === 'hearth' && hours && furnishing(ctx, p)) return true;
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
-  const load = itemsOf(world).find((i) => i['holder'] === p.id);
+  if (p['job'] === 'cook' && hours && cooking(ctx, p)) return true;
+  const load = loadOf(world, p.id);
   if (load) {
     p['job'] = 'haul';
     deliver(ctx, p, load);
@@ -200,6 +214,10 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
     if (item && walkTo(ctx, p, spotOf(item))) return true;
     p['target'] = -1;
   }
+  // Under its seek line, recreation beats taking up new work (P2.2): the mind lets them relax.
+  const fun = needOf(world, p.id, 'recreation');
+  const seek = content.life.needs.find((n) => n.id === 'recreation')?.seek ?? 0;
+  if (fun && (fun['value'] as number) < seek) return false;
   if (world.tick < (p['next'] as number)) return false;
   return takeUp(ctx, p);
 }
@@ -280,8 +298,10 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   fell: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'fell')!),
   haul: takeUpHauling,
   forage: takeUpForaging,
+  farm: takeUpFarming,
   build: (ctx, p) => takeUpMarked(ctx, p, true) || takeUpHearth(ctx, p) || takeUpBuilding(ctx, p),
   tend: takeUpTending,
+  cook: takeUpCooking,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
 };

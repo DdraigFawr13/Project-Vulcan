@@ -111,6 +111,8 @@ export const peopleSystem: System = {
     'work.tookUpCarpentry',
     'work.tookUpHearth',
     'work.tookUpTending',
+    'work.tookUpCooking',
+    'food.cooked',
     'people.warming',
     'fire.lit',
     'fire.built',
@@ -127,6 +129,8 @@ export const peopleSystem: System = {
     'work.declined',
     'work.daySet',
     'skill.rose',
+    ...['work.tookUpSowing', 'work.tookUpReaping', 'field.harvested', 'farm.harvestHome'],
+    'goods.ateSeed',
   ],
   tables: PEOPLE_TABLES,
   // The colony's day (day.ts) is kept here once the player changes it, with its line.
@@ -163,7 +167,16 @@ export const peopleSystem: System = {
         ...Object.fromEntries(ATTRIBUTES.map((a) => [a, p.attributes[a] ?? 0])),
         ...{ trade: p.trade, hair: p.hair, hairColour: p.hairColour, clothes: p.clothes },
         ...{ x: spots[k]![0], y: spots[k]![1], z: 0, status: 'alive', arrived },
-        ...{ path: [], stride: 0, rest: 30 + 15 * k, doing: '', retry: 0, bedTo: 0, chill: 0 },
+        ...{
+          path: [],
+          stride: 0,
+          rest: 30 + 15 * k,
+          doing: '',
+          retry: 0,
+          bedTo: 0,
+          chill: 0,
+          seeded: 0,
+        },
         ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0 },
       });
       for (const skill of content.band.skills)

@@ -7,7 +7,7 @@ import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { itemsOf, raiseStock } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { anyBench, furnitureOf } from './furniture.ts';
+import { anyBench, bedOwnedBy, furnitureOf } from './furniture.ts';
 import { HEARTH } from './hearths.ts';
 import { crowdedIn, mainOf, nthOf, rowsOf, sizeOf } from './houses.ts';
 import { roomAt, type Room } from './rooms.ts';
@@ -99,6 +99,16 @@ export function siteFor(
     .filter((i) => !wayIn.has(i) && !taken.has(i) && i !== hearthTile)
     .sort((a, b) => a - b);
   if (!free.length) return undefined;
+  // Beds first (P3.4): other pieces (not the bench beds are made at) leave a tile for each
+  // sleeper here without a bed, and one more while anyone in the colony has none, or a late
+  // sleeper finds the floor full.
+  if (kind !== 'bed' && kind !== 'bench' && kind !== HEARTH) {
+    const bedless = (world.entities['person'] ?? []).some(
+      (p) => p['status'] === 'alive' && !bedOwnedBy(world, p.id),
+    );
+    if (free.length <= Math.max(0, room.sleepers - room.bedPieces) + (bedless ? 1 : 0))
+      return undefined;
+  }
   const wallSide = (i: number) => DIRS.find(([, dx, dy]) => isWall(i + dx + dy * width));
   const apart = (i: number, from: number[]) => Math.min(99, ...from.map((j) => cheb(i, j)));
   const awayDoor = (i: number) => Math.min(3, apart(i, room.doorTiles));
