@@ -1,6 +1,6 @@
 # Phase 4: Mining, smithy, food and a first law (first playable)
 
-Goal: the first playable loop, from bronze to iron, food from fields, and colonists who weigh a law (V-022, V-023). Entry: Phase 3 done and live (2026-10-19). Plan source: the project file `vulcan/plan/phases/PHASE_4.md`. Design workshop: https://claude.ai/artifact/HtG6DgVYV11UNZSzWvroNz; taste board: https://claude.ai/artifact/D2YH7a9rHqcZ4hV3pAtdAj (decisions V-085 to V-095). Control stays indirect (V-041): the player sets ingot and seed stock, Work and Build rows, and the law; colonists choose the vein, the shaft, the field, the crop and who uses which tool.
+Goal: the first playable loop, from bronze to iron, food from fields, and colonists who weigh a law (V-022, V-023). Entry: Phase 3 done and live (2026-10-19). Plan source: the project file `vulcan/plan/phases/PHASE_4.md`. Design workshop: https://claude.ai/artifact/HtG6DgVYV11UNZSzWvroNz; taste board: https://claude.ai/artifact/D2YH7a9rHqcZ4hV3pAtdAj (decisions V-085 to V-096). Control stays indirect (V-041): the player sets ingot and seed stock, Work and Build rows, and the law; colonists choose the vein, the shaft, the field, the crop and who uses which tool.
 
 ## Status
 
@@ -33,13 +33,13 @@ Order: bundles 1 to 4, then P4.9. A bundle estimated over 1,200 lines splits int
 
 ### Bundle 1: P4.7 Fields and cooking, with seed grain, harvest home, cloaks and a quiet winter
 
-Fields row on the Build sheet; colonists site fields on good soil near water and size them; barley in spring, turnips into autumn; sow, grow, harvest; Seed plate and seed in the cart; Cook row; meals at any lit hearth; the "brought the harvest home together" memory; cloaks from the cart; the once-a-day cold line; colonists redrawn a quarter larger (V-095). Mock-up: UI. Done when: a field sown in spring plus foraging feeds five through the first winter on most seeds.
+Fields row on the Build sheet; colonists site fields on good soil near water and size them; barley in spring, turnips into autumn; sow, grow, harvest; Seed plate and seed in the cart; Cook row; meals at any lit hearth; the "brought the harvest home together" memory; cloaks from the cart; the once-a-day cold line; colonists redrawn a quarter larger (V-095); houses built of the wall material nearest to hand, not stone first (V-096). Mock-up: UI. Done when: a field sown in spring plus foraging feeds five through the first winter on most seeds.
 
 - Reading list: `docs/DECISIONS.md`; `docs/UI_STYLE.md`; `src/engine/build/MODULE.md`; `src/engine/goods/MODULE.md`; `src/engine/fire/MODULE.md`; `src/engine/needs/MODULE.md`; `src/ui/MODULE.md`
 
 ### Bundle 2: P4.1 Mining across levels and underground fog
 
-Surface stains above ore veins; the shaft sited from the want; tunnelling, rubble to stone, haulage up the stairs; darkness over unknown ground, caves and water revealed when mining opens next to them; Go down and Go up as view buttons; Work sheet trade headings (V-071). Mock-up: UI. Done when: with iron wanted in Stock, an iron vein below is mined and its ore reaches the surface store, with no order to a tile or a person.
+Surface stains above ore veins; the shaft sited from the want; tunnelling, rubble to stone, haulage up the stairs; darkness over unknown ground, caves and water revealed when mining opens next to them; Go down and Go up as view buttons; Work sheet trade headings (V-071); clay dug from level -1 makes wattle and daub walls (logs and clay, content, V-096). Mock-up: UI. Done when: with iron wanted in Stock, an iron vein below is mined and its ore reaches the surface store, with no order to a tile or a person.
 
 - Reading list: `docs/ART.md`; `src/engine/map/MODULE.md`; `src/engine/paths/MODULE.md`; `src/engine/build/MODULE.md`; `src/render/MODULE.md`; `src/ui/MODULE.md`
 
