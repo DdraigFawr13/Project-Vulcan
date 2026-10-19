@@ -12,7 +12,7 @@ Flat-shaded pixel art in the muted palette, readable at 32 px, nothing drawn bef
 | P3.6 | `buildings` | the hearth, an open ring of stones that is also the outdoor campfire: `furn.hearth` (cold), `furn.hearth.lit.1` to `.3` (flames, cycled by the page), `furn.hearth.banked` (embers), by `tools/draw-hearth.mjs` |
 | P4.1 | `buildings` | wattle and daub walls (`build.wall-daub.<mask>`: the timber band in pale clay), by `tools/draw-buildings.mjs` |
 | P4.7 | `buildings`, `items` | field furrows (`field.plan`, `.sown`, `.ripe.<crop>`, `.fallow`), `item.turnips`, `item.seed`, `item.cloak` |
-| P4.5 | `workshops` | charcoal clamp, smelter, smithy, anvil, hand bellows (Bundle 3; the waterwheel and its power lines move to P5.11, V-085) |
+| P4.5 | `buildings`, `items` | forge with bellows, anvil block, quench tub, smelter with bellows, charcoal clamp (2 by 2, `furn.clamp.<quarter>`, smoking `.lit.<quarter>` and `.<1-3>`), charcoal, four ingots, twelve tools, by `tools/draw-metal.mjs` (Bundle 3; the waterwheel and its power lines move to P5.11, V-085) |
 | UI reskin | `ui` | Hearth and Page controls (docs/UI_STYLE.md): `ui.plank` bar strip, `ui.iron` and `ui.iron.on` button plates, `ui.oak-frame` page frame with iron corners, `ui.paper` texture; 9-slice, drawn at 1 art px to 2 CSS px |
 | Phase 5 onward | later | animals, crops, sickbed, loom, creatures, dragon, fire, caravan |
 

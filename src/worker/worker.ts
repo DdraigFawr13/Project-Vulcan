@@ -35,6 +35,7 @@ import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave, saveOf } from './save.ts';
 import { buildView } from './build.ts';
 import { goodsOf, stockView } from './goods.ts';
+import { itemView } from './items.ts';
 import { miningShown } from './mine.ts';
 import { peopleOf, walkersOf } from './people.ts';
 import { clockView, placeWords, tileView, weatherOf } from './views.ts';
@@ -334,6 +335,9 @@ function handle(message: ToWorker): void {
           type: 'inspected',
           tile: tileView(world, message.x, message.y, message.z ?? 0, lineOf),
         });
+      return;
+    case 'item':
+      if (world) post({ type: 'item', item: itemView(world, message.id, lineOf) });
       return;
     case 'why':
       if (world)

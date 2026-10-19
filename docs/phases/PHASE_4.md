@@ -7,7 +7,7 @@ Goal: the first playable loop, from bronze to iron, food from fields, and coloni
 - [x] Spec approved by Morgan, 2026-10-19 (PR #53)
 - [x] Bundle 1, food and winter: P4.7, seed grain, harvest home, cloaks, quiet winter
 - [x] Bundle 2, mining: P4.1
-- [ ] Bundle 3, metal: P4.2, P4.3, P4.4, P4.6, craft firsts
+- [x] Bundle 3, metal: P4.2, P4.3, P4.4, P4.6, craft firsts
 - [ ] Bundle 4, people: P4.8
 - [ ] P4.9 balance pass, then the phase review
 

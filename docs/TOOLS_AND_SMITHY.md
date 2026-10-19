@@ -35,3 +35,7 @@ Detail kept out of the module contracts, which are on milestone reading lists wi
 ## Tests
 
 `src/engine/people/tools.test.ts`, `src/engine/build/smithy.test.ts`.
+
+## Screens (`src/ui`)
+
+- new levers: the Bronze Stock plate, the Build sheet's Smithy row (shown with the first ingot; `setBuild`, `sendBack {smithy}`, the plan's reason) and the Work rows Charcoal, Smelting and Smithing (shown once their station exists). `worksrows.ts`: tile pages of the smelter, clamp and smithy. `itemsheet.ts` (P4.6): an `item` page for a tool or ingot: made by, held by and why, speed, wear, and Made from, its trail to the ore, whose tile button only centres the map. The Needs tab adds Tools (hours left, a page link each; no lever).

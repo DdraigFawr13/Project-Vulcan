@@ -74,6 +74,21 @@ export interface FieldRow {
   why: string;
 }
 
+/** The Smithy row (Bundle 3, V-049): its level, and the plan once the colony has sited it. */
+export interface SmithyRow {
+  want: { level: number; word: string };
+  plan?: {
+    id: number;
+    /** `plan` or `built`. */
+    state: string;
+    /** "on the cottage's east side". */
+    where: string;
+    why: string;
+    back: boolean;
+    sent: boolean;
+  };
+}
+
 /** A tile's field (P4.7): each value in words from the engine's answers, for the tile page. */
 export interface FieldView {
   id: number;
@@ -108,6 +123,8 @@ export interface BuildView {
   /** No good soil outside the town ring fits a field. */
   noField: boolean;
   fields: FieldRow[];
+  /** Present once the first ingot lies in the store, or a smithy is planned. */
+  smithy?: SmithyRow;
   green: { x: number; y: number };
   want: { level: number; word: string };
   /** "5 people sleep under the open sky", or "none now". */

@@ -19,6 +19,8 @@ export interface PersonSources {
   work(p: PersonView, w: WalkerView | undefined): HTMLElement[];
   /** The ledger lines the page holds, oldest first. */
   lines(): readonly LedgerLine[];
+  /** Opens the item page of a tool they hold (view only). */
+  item(id: number): void;
 }
 
 export class PersonSheet {
@@ -69,10 +71,11 @@ export class PersonSheet {
     this.fillExtra(w);
   }
 
-  /** "Wearing" (the worn cloak) and "Memories" (each live one and the days left); the text is
-   * the worker's, redrawn only when it changes. */
+  /** "Wearing" (the worn cloak), "Memories" (each live one and the days left) and "Tools" (each
+   * with its hours left, a button to its page; owned like a bed, so no lever); the text is the
+   * worker's, redrawn only when it changes. */
   private fillExtra(w: WalkerView): void {
-    const shown = JSON.stringify([w.wearing, w.memories]);
+    const shown = JSON.stringify([w.wearing, w.memories, w.tools]);
     if (this.extra.dataset['shown'] === shown) return;
     this.extra.dataset['shown'] = shown;
     const memories = w.memories.length
@@ -89,7 +92,28 @@ export class PersonSheet {
       el('p', { class: 'wearing' }, w.wearing ?? 'No cloak.'),
       el('h3', {}, 'Memories'),
       ...memories,
+      el('h3', {}, 'Tools'),
+      ...this.toolRows(w),
     );
+  }
+
+  private toolRows(w: WalkerView): HTMLElement[] {
+    if (!w.tools.length) return [el('p', { class: 'muted' }, 'No tools of their own yet.')];
+    const rows = w.tools.map((t) => {
+      const go = el('button', { type: 'button', class: 'why', 'data-testid': 'tool' }, t.text);
+      go.addEventListener('click', () => this.sources.item(t.id));
+      const row = el('div', { class: 'prow' });
+      row.append(el('b', {}, t.kind), go);
+      return row;
+    });
+    return [
+      ...rows,
+      el(
+        'p',
+        { class: 'aside' },
+        'Tools are kept like beds. The best tool of each kind goes to whoever does that work most.',
+      ),
+    ];
   }
 
   /** "Doing now" and its why?, rebuilt only when the sentence or its line changes, so a chain
