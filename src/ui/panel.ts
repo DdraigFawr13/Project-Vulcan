@@ -11,6 +11,7 @@ import { landFacts } from './landrows.ts';
 import { shaftBack, shaftTitle } from './shaftrows.ts';
 import { standingFacts, standingLines } from './tilerows.ts';
 import { worksDoing } from './worksrows.ts';
+import { versionLine } from './version.ts';
 import { testTools, type TestOrder } from './testtools.ts';
 
 export type PanelKind =
@@ -313,7 +314,7 @@ export class Panel {
         });
         test.append(go);
       }
-    this.body.replaceChildren(now, form, el('h3', {}, 'Test mode'), about, test);
+    this.body.replaceChildren(now, form, versionLine(), el('h3', {}, 'Test mode'), about, test);
     if (problem) this.body.append(el('p', { class: 'problem', role: 'alert' }, problem));
     if (!saves.length) this.body.append(el('p', { class: 'muted' }, 'No saves yet.'));
     for (const meta of saves) {

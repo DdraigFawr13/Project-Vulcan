@@ -91,6 +91,8 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(arrival).toHaveCount(0);
   await expect(page.getByTestId('game').locator('canvas')).toBeVisible();
   await expect(page.getByTestId('clock')).toContainText('06:00 · Day 1 of Thawmonth, Year 1');
+  // The build's version stamp sits in the bar (phase.PR, or dev outside a PR merge).
+  await expect(page.getByTestId('version')).toHaveText(/^v\d+\.(\d+|dev)$/);
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
 
   // Paused at the start: the tick does not move.

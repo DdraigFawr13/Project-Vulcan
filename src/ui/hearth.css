@@ -453,3 +453,13 @@ body,
   margin-left: 6px;
   vertical-align: 2px;
 }
+/* The build's version at the end of the clock's second line: quiet, read-only (the Saves sheet
+   gives the full build). */
+.clock .version {
+  float: right;
+  margin-left: 8px;
+  font: 400 11px/1.6 var(--label);
+  font-style: normal;
+  color: var(--bone-soft);
+  opacity: 0.8;
+}

@@ -4,6 +4,7 @@
 // game rule (GAME-02).
 import type { ClockView, Speed, TimingView, WeatherView } from '../worker/index.ts';
 import { el } from './dom.ts';
+import { versionTag } from './version.ts';
 
 /** The panels the bar opens. */
 export type PanelButton =
@@ -27,6 +28,8 @@ export interface HudActions {
 
 export class Hud {
   private readonly clock = el('div', { class: 'clock', 'data-testid': 'clock' });
+  /** The build's version, quiet at the end of the clock's second line. */
+  private readonly version = versionTag();
   private readonly speeds = new Map<Speed, HTMLButtonElement>();
   /** Skip ahead (P2.7), lit while a skip runs. */
   private readonly skip = el(
@@ -169,7 +172,9 @@ export class Hud {
       this.clock.append(
         el('span', { class: 'testbadge', 'data-testid': 'test-badge' }, 'TEST MODE'),
       );
-    this.clock.append(el('small', {}, `${season}${sky} · ${this.where}`));
+    const line = el('small', {}, `${season}${sky} · ${this.where}`);
+    line.prepend(this.version);
+    this.clock.append(line);
     for (const [s, button] of this.speeds)
       button.setAttribute('aria-pressed', String(!skipping && s === speed));
     this.skip.setAttribute('aria-pressed', String(skipping));
