@@ -6,7 +6,8 @@ import type { WalkerView } from '../worker/index.ts';
 
 type Job = WalkerView['work'][number];
 
-/** Work that has nowhere to be done until a shaft exists or is planned: its row waits for one. */
+/** Work that has nowhere to be done until a shaft is planned or dug (the worker says when): its
+ * row waits for one. */
 const NEEDS_SHAFT: ReadonlySet<string> = new Set(['mine']);
 
 /** The rows to show: all of them, less the ones that wait for a shaft while there is none. */

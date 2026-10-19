@@ -28,7 +28,7 @@ export function stockRows(
     const head = el('p');
     head.append(el('b', {}, cap(s.name)), `: ${haveLine(s)}`);
     block.append(head, levels);
-    if (s.note) block.append(el('p', { class: 'aside' }, s.note));
+    if (s.note) block.append(el('p', { class: 'aside', 'data-note': '' }, s.note));
     // Foraging's good says when the bushes bear (P2.9, V-040), from content.
     const { good, months } = content.work.forage;
     if (s.good === good && months.length)
@@ -44,7 +44,6 @@ export function stockRows(
   return [
     el('p', {}, 'How much the colony keeps in its store. Whoever is free and able does the work.'),
     ...rows,
-    el('p', { class: 'muted' }, 'Stone and ore join this sheet when quarrying and mining arrive.'),
   ];
 }
 
@@ -53,6 +52,9 @@ export function fillStock(body: HTMLElement, stock: readonly StockView[]): void 
   for (const s of stock) {
     const head = body.querySelector(`[data-testid="stock-${s.good}"] > p`);
     if (head?.lastChild) head.lastChild.textContent = `: ${haveLine(s)}`;
+    // An ore count in a plate's note moves as miners haul.
+    const note = body.querySelector(`[data-testid="stock-${s.good}"] > [data-note]`);
+    if (note && s.note && note.textContent !== s.note) note.textContent = s.note;
   }
 }
 

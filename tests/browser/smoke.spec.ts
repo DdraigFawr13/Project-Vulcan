@@ -366,6 +366,44 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   expect(await phoneRules(page)).toEqual([]);
   await page.getByTestId('open-ledger').click();
   await expect(panel).toContainText(/ now puts Houses second\./);
+
+  // Bundle 2 mining: wanting some iron ingots (the Stock sheet shows the three ingot plates and
+  // their asides) gets the miners to plan a shaft by a stain, an alert whose Show leads to the
+  // plan's tile page: its rows, Send back (once) and the aside. Last, so the wanted iron does not alter the world the hunger wait above runs in.
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByTestId('open-stock').click();
+  for (const plate of ['Iron ingots', 'Copper ingots', 'Tin ingots'])
+    await expect(panel).toContainText(plate);
+  await expect(panel.getByTestId('stock-iron-ingot')).toContainText(/ iron ore so far\./);
+  await expect(panel.getByTestId('stock-stone')).toContainText('comes up as stone.');
+  await expect(panel).not.toContainText('join this sheet when quarrying');
+  await panel.getByTestId('stock-iron-ingot').getByRole('button', { name: 'Some (10)' }).click();
+  await page.getByTestId('speed-3').click();
+  // The miners look every hour; later alerts (hunger) may sit above the plan, so find its line.
+  await page.waitForTimeout(3000);
+  await page.getByTestId('speed-0').click();
+  await page.getByTestId('alert').click();
+  await panel
+    .locator('[data-line]')
+    .filter({ hasText: 'planned a shaft by the' })
+    .first()
+    .getByTestId('alert-show')
+    .click();
+  // Show centres the tile in the part of the screen below the bar.
+  const canvas2 = page.getByTestId('game').locator('canvas');
+  const mid = (await canvas2.boundingBox())!;
+  const bar = await page
+    .locator('#hud')
+    .evaluate((e) => parseFloat(e.style.getPropertyValue('--bar-h')));
+  await canvas2.click({ position: { x: mid.width / 2, y: mid.height / 2 + bar / 2 } });
+  await expect(panel).toContainText('Shaft, planned');
+  await expect(panel).toContainText('a shaft with a ladder, down to level');
+  await expect(panel).toContainText('2 logs for the ladder');
+  await expect(panel).toContainText('A plan can be sent back once');
+  await panel.getByTestId('send-back-shaft').click();
+  await expect(panel.getByTestId('send-back-shaft')).toBeHidden();
+  await page.getByTestId('open-ledger').click();
+  await expect(panel).toContainText('The shaft plan for iron was sent back');
   await page.getByTestId('speed-3').click();
   await page.setViewportSize({ width: 1280, height: 720 });
 

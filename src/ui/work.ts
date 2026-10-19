@@ -64,7 +64,7 @@ export class WorkSheet {
     );
   }
 
-  /** Whether a shaft exists (a level below is reached): the mining row shows from then on. */
+  /** Whether a shaft is planned or dug (the worker says): the mining row shows from then on. */
   setShaft(exists: boolean): void {
     this.shaft = exists;
   }

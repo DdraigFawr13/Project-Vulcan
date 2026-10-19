@@ -8,8 +8,10 @@ import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 import { fillStock, stockRows } from './stock.ts';
 import { testMode } from './testmode.ts';
 import { fieldFacts, fieldLines } from './fieldrows.ts';
+import { landFacts } from './landrows.ts';
 import { pieceFacts, pieceLines } from './piecerows.ts';
 import { planFacts, planLines } from './planrows.ts';
+import { shaftBack, shaftFacts, shaftLines, shaftTitle } from './shaftrows.ts';
 import { testTools, type TestOrder } from './testtools.ts';
 
 export type PanelKind =
@@ -36,8 +38,8 @@ export interface PanelActions {
   newGame(seed: string): void;
   /** A test tool (test mode) on the tile shown: dig, mark a tree, add a store tile. */
   test(tile: TileView, kind: TestOrder, arg?: number | string): void;
-  /** Send the colony's plan for this house back (the colony chooses another site). */
-  sendBack(tile: TileView, house: number): void;
+  /** Send the plan of house `id` (or of a shaft, `sendBackShaft`) back: the colony chooses again. */
+  sendBack(tile: TileView, id: number, kind: 'sendBack' | 'sendBackShaft'): void;
   /** The Stock lever: how much of `good` the colony keeps. */
   setStock(good: string, level: string): void;
   /** Test mode: skips a month or a season, tick by tick, then pauses. */
@@ -97,31 +99,24 @@ export class Panel {
    * last dig order here: a line saying it waits for time to run, or the ledger line refusing it. */
   showTile(tile: TileView, depth: number, notice?: string | LedgerLine): void {
     const where = tile.z === 0 ? '' : ` · ${tile.z} level${tile.z > 1 ? 's' : ''} down`;
-    this.open('tile', tile.field?.name ?? `Tile ${tile.x}, ${tile.y}${where}`);
+    this.open(
+      'tile',
+      tile.field?.name ?? (shaftTitle(tile) || `Tile ${tile.x}, ${tile.y}${where}`),
+    );
     const facts = el('dl', { class: 'kv' });
-    // Under a piece of furniture the land says nothing: the page opens on the piece (P3.4).
-    const land: string[][] = [
-      ['ground', tile.ground],
-      ...(tile.stain ? [['stain', tile.stain]] : []),
-      ...(tile.biome ? [['biome', tile.biome]] : []),
-      ...(tile.elevation !== undefined ? [['height', `${tile.elevation} m`]] : []),
-      ...(tile.fertility !== undefined ? [['fertility', `${tile.fertility} of 100`]] : []),
-      ...(tile.temperature !== undefined && !tile.room
-        ? [['temperature', `${tile.temperature} °C`]]
-        : []),
-      ...(tile.ice ? [['ice', tile.ice]] : []),
-      ...(tile.aura ? [['aura', tile.aura]] : []),
-      ...(tile.water ? [['water', tile.water]] : []),
-      ...(tile.drinkable !== undefined ? [['drinkable', tile.drinkable ? 'yes' : 'no']] : []),
-      ...(tile.crossing ? [['crossing', tile.crossing]] : []),
-    ];
     // What lies here comes first: it is usually what a tap was after (Morgan, Phase 3 playtest).
     for (const [key, value] of [
       ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
-      ...(tile.piece || tile.field ? [] : land),
+      ...(tile.piece || tile.field || tile.shaft ? [] : landFacts(tile)),
       ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
       ...(tile.store ? [['store', 'part of the colony store']] : []),
-      ...(tile.piece ? pieceFacts(tile) : tile.field ? fieldFacts(tile) : planFacts(tile)),
+      ...(tile.piece
+        ? pieceFacts(tile)
+        : tile.field
+          ? fieldFacts(tile)
+          : tile.shaft
+            ? shaftFacts(tile)
+            : planFacts(tile)),
       ...(tile.below && !tile.piece ? [['below', tile.below]] : []),
       ...(this.debug
         ? [['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`]]
@@ -129,7 +124,7 @@ export class Panel {
     ])
       facts.append(el('dt', {}, key), el('dd', {}, value));
     this.body.replaceChildren(facts);
-    if (tile.stain && !tile.piece && !tile.field)
+    if (tile.stain && !tile.piece && !tile.field && !tile.shaft)
       this.body.append(el('p', { class: 'aside' }, STAIN_NOTE));
     if (tile.ways) {
       const go = el('div', { class: 'row' });
@@ -148,11 +143,14 @@ export class Panel {
     }
     if (tile.house?.back) {
       const back = el('button', { type: 'button', 'data-testid': 'send-back-tile' }, 'Send back');
-      back.addEventListener('click', () => this.actions.sendBack(tile, tile.house!.id));
+      back.addEventListener('click', () => this.actions.sendBack(tile, tile.house!.id, 'sendBack'));
       const row = el('div', { class: 'row' });
       row.append(back);
       this.body.append(row);
     }
+    this.body.append(
+      ...shaftBack(tile, () => this.actions.sendBack(tile, tile.shaft!.id, 'sendBackShaft')),
+    );
     if (this.debug)
       this.body.append(
         ...testTools(tile, depth, (kind, arg) => this.actions.test(tile, kind, arg)),
@@ -163,7 +161,9 @@ export class Panel {
       ? pieceLines(tile)
       : tile.field
         ? fieldLines(tile)
-        : planLines(tile))
+        : tile.shaft
+          ? shaftLines(tile)
+          : planLines(tile))
       this.body.append(this.lineRow(line, label));
     for (const g of tile.goods ?? [])
       if (g.made) this.body.append(this.lineRow(g.made, 'Made by · '));

@@ -26,6 +26,8 @@ export interface GoodsView {
   /** Field tiles (P4.7) grouped by the art frame they show (planned, sown, ripe, fallow), as
    * tile indices (y * width + x); level 0 only. */
   fields: { frame: string; tiles: number[] }[];
+  /** Shaft plans (planned or being sunk) on the surface, for the map's faint plan layer. */
+  shafts: (Spot3 & { state: string })[];
 }
 
 /** One good's stock lever (P2.4): how much the colony has and wants, and the levels to pick. */

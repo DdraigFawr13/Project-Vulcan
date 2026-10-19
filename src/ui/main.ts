@@ -105,7 +105,7 @@ const panel = new Panel(
     load: (meta) => void saves.load(meta),
     remove: (meta) => void saves.remove(meta),
     test: (tile, kind, arg) => orders.give(tile, kind, worldTick + 1, arg),
-    sendBack: (tile, house) => orders.give(tile, 'sendBack', worldTick + 1, house),
+    sendBack: (tile, id, kind) => orders.give(tile, kind, worldTick + 1, id),
     setStock: (good, level) =>
       send({ type: 'command', tick: worldTick + 1, kind: 'setStock', data: { good, level } }),
     go: (tile, z) => {

@@ -177,3 +177,22 @@ export interface PieceView {
   made?: LedgerLine;
   claimed?: LedgerLine;
 }
+
+/** A shaft plan on a tile (Bundle 2): each value in words from the engine's answers, for the tile page. */
+export interface ShaftView {
+  id: number;
+  /** `planned` or `sinking`. */
+  state: string;
+  /** "a shaft with a ladder, down to level 3". */
+  what: string;
+  /** The reason it lies there, kept with the plan. */
+  why: string;
+  /** "about 4 hours a level, 12 in all, by whoever takes up Mining; 2 logs for the ladder". */
+  work: string;
+  /** Who is sinking it now. */
+  here?: string;
+  /** It can still be sent back: planned, not started, not itself a replacement. */
+  back: boolean;
+  /** The line that planned it; its "why?" leads to the plate. */
+  placed?: LedgerLine;
+}

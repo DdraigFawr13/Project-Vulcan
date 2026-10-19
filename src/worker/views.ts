@@ -20,6 +20,7 @@ import {
 import { tileHouse } from './build.ts';
 import { tileField } from './fields.ts';
 import { tileGoods } from './goods.ts';
+import { tileShaft } from './mine.ts';
 import type { ClockView, LedgerLine, TileView } from './protocol.ts';
 
 export function clockView(tick: number): ClockView {
@@ -121,6 +122,7 @@ export function tileView(
     ...tileGoods(w, x, y, z, lineOf),
     ...(z === 0 && tileHouse(w, x, y, lineOf)),
     ...(z === 0 && tileField(w, x, y, lineOf)),
+    ...(z === 0 && tileShaft(w, x, y, lineOf)),
   };
   // Unknown ground below is named only as unknown, with a vein glinting through (V-030).
   if (!dark) return rows;
