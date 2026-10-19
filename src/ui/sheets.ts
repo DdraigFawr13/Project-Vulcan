@@ -4,6 +4,7 @@
 import type {
   BuildView,
   FromWorker,
+  ItemView,
   LedgerLine,
   PersonView,
   ToWorker,
@@ -11,6 +12,7 @@ import type {
 } from '../worker/index.ts';
 import { content } from '../content/index.ts';
 import { BuildSheet } from './build.ts';
+import { itemRows } from './itemsheet.ts';
 import { Dawn } from './dawn.ts';
 import { el } from './dom.ts';
 import type { Panel } from './panel.ts';
@@ -26,8 +28,8 @@ export interface SheetDeps {
   tick(): number;
   /** The ledger lines the page holds, oldest first. */
   lines(): readonly LedgerLine[];
-  /** Moves the camera to a place (and its level) and marks it. */
-  show(x: number, y: number, z: number): void;
+  /** Moves the camera to a place (and its level) and marks it; `keep` leaves the sheet open. */
+  show(x: number, y: number, z: number, keep?: boolean): void;
   /** A sheet opened from the strip or the alert line: the bar shows no panel button pressed. */
   opened(): void;
 }
@@ -66,6 +68,7 @@ export class Sheets {
     this.person = new PersonSheet(deps.panel, {
       work: (p, w) => this.work.personRows(p, w),
       lines: deps.lines,
+      item: (id) => this.openItem(id),
     });
     this.dawn = new Dawn(deps.panel, deps.lines);
     this.play = new Play(deps.bar, {
@@ -85,6 +88,23 @@ export class Sheets {
   showPerson(p: PersonView): void {
     this.person.show(p);
     this.play.select(p.id);
+    this.deps.opened();
+  }
+
+  /** Asks for an item's page; `showItem` draws the answer. */
+  openItem(id: number): void {
+    this.deps.send({ type: 'item', id });
+  }
+
+  showItem(item: ItemView | undefined): void {
+    const { panel } = this.deps;
+    if (!item) return panel.showView('item', 'Item', [el('p', { class: 'muted' }, 'It is gone.')]);
+    const rows = itemRows(item, {
+      lineRow: (line, prefix) => panel.lineRow(line, prefix),
+      look: (x, y, z) => this.deps.show(x, y, z, true),
+    });
+    panel.showView('item', item.name, rows);
+    this.play.select(undefined);
     this.deps.opened();
   }
 

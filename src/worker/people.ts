@@ -25,7 +25,9 @@ import {
 import { feedsOf } from './comfort.ts';
 import { hearthDoing, tendDoing } from './fires.ts';
 import { carpentryDoing } from './furniture.ts';
+import { personTools } from './items.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
+import { jobShown } from './jobrows.ts';
 
 const nameOf = (list: readonly { id: string; name: string }[], id: string): string =>
   list.find((x) => x.id === id)?.name ?? id;
@@ -101,7 +103,7 @@ function doingOf(p: EntityRow): string {
 
 /** What a person is doing and why, in the words of content `work.doing` (P2.9): the sentence,
  * and the line where they took the work up when it has one. */
-function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
+export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   const words = content.work.doing;
   const walking = (p['path'] as number[]).length > 0;
   const say = (key: string, vars: Record<string, string> = {}): string =>
@@ -219,20 +221,24 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     now: nowOf(world, p),
     ...wearingOf(world, p),
     memories: memoriesView(world, p),
+    tools: personTools(world, p.id),
     skills: skillsOf(world, p),
-    work: content.work.priority.jobs.map((job) => {
-      const level = levelOf(world, content, p.id, job);
-      const declined = declinedLine(world, p.id, job);
-      const skill = content.jobs.find((j) => j.id === job)?.skill;
-      return {
-        job,
-        name: nameOf(content.jobs, job),
-        ...(skill && { skill }),
-        level,
-        word: content.work.priority.words[level - 1] ?? '',
-        ...(declined !== undefined && { declined }),
-      };
-    }),
+    // Rows appear once their station exists (V-071).
+    work: content.work.priority.jobs
+      .filter((job) => jobShown(world, job))
+      .map((job) => {
+        const level = levelOf(world, content, p.id, job);
+        const declined = declinedLine(world, p.id, job);
+        const skill = content.jobs.find((j) => j.id === job)?.skill;
+        return {
+          job,
+          name: nameOf(content.jobs, job),
+          ...(skill && { skill }),
+          level,
+          word: content.work.priority.words[level - 1] ?? '',
+          ...(declined !== undefined && { declined }),
+        };
+      }),
   }));
 
 /** The cloak a person wears and how worn it is (V-092): "Wool cloak, worn 30%, warmer outdoors". */

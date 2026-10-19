@@ -1,4 +1,6 @@
-// The wire shapes of what the map draws for goods and of the Stock sheet (P2.4 onward), split from protocol.ts.
+// The wire shapes of what the map draws for goods, the Stock sheet (P2.4 onward), the metal works' tile pages and
+// the item page (Bundle 3), split from protocol.ts.
+import type { LedgerLine } from './protocol.ts';
 
 /** A tile spot, for the map's goods layer. */
 export interface Spot3 {
@@ -40,4 +42,37 @@ export interface StockView {
   levels: { id: string; word: string; count: number }[];
   /** What the good is for, from content, shown under its plate. */
   note?: string;
+}
+
+/** A tile page for the smelter, the charcoal clamp or the smithy (Bundle 3): words from the engine. */
+export interface WorksView {
+  /** "Smelter", "Charcoal clamp" or "Smithy". */
+  name: string;
+  /** What it is, why it lies here, what it makes and the like, key and value. */
+  rows: [string, string][];
+  /** Who is working it and what they are doing, with the line they took the work up at. */
+  doing?: { who: string; text: string; why?: number } | undefined;
+  /** Its lines, labelled "Built", "Planned", "Waiting". */
+  lines: { label: string; line: LedgerLine }[];
+}
+
+/** One step of an item's "Made from": the words before a tile button, the button, and the rest. */
+export interface ItemStep {
+  /** How far in: 0 for the last step before the item, deeper for what went into it. */
+  depth: number;
+  text: string;
+  /** The mined step's tile, for a view-only button that centres the map on it (no command). */
+  tile?: { x: number; y: number; z: number; label: string };
+  after?: string;
+}
+
+/** The item page (P4.6): a tool or an ingot stack, and where it came from. */
+export interface ItemView {
+  id: number;
+  /** "Fine iron axe", "Bronze ingots". */
+  name: string;
+  facts: [string, string][];
+  steps: ItemStep[];
+  /** The line that made or laid it, for "why?". */
+  made?: LedgerLine;
 }

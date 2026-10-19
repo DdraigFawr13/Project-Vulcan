@@ -8,8 +8,8 @@ import { el } from './dom.ts';
 import { stepper, WORDS } from './stepper.ts';
 
 export interface BuildActions {
-  setBuild(kind: 'house' | 'field', level: number): void;
-  sendBack(kind: 'house' | 'field', id: number): void;
+  setBuild(kind: 'house' | 'field' | 'smithy', level: number): void;
+  sendBack(kind: 'house' | 'field' | 'smithy', id: number): void;
   /** The sheet changed on its own (a lever sent): draw it again. */
   refresh(): void;
 }
@@ -37,6 +37,8 @@ export class BuildSheet {
   /** Levers sent and not yet seen in a snapshot. */
   private level: number | undefined;
   private fieldLevel: number | undefined;
+  private smithyLevel: number | undefined;
+  private backSmithy = false;
   private readonly back = new Set<number>();
   private readonly backFields = new Set<number>();
   private readonly actions: BuildActions;
@@ -51,18 +53,21 @@ export class BuildSheet {
       view,
       this.level,
       this.fieldLevel,
+      this.smithyLevel,
+      this.backSmithy,
       [...this.back],
       [...this.backFields],
     ]);
   }
 
   /** A kind's priority row: the Work sheet's own stepper, sent as `setBuild`. */
-  private levelRow(kind: 'house' | 'field', name: string, shown: number): HTMLElement {
+  private levelRow(kind: 'house' | 'field' | 'smithy', name: string, shown: number): HTMLElement {
     const row = el('div', { class: 'prio', 'data-testid': `build-${kind}s` });
     row.append(
       el('span', { class: 'job' }, name),
       stepper(shown, WORDS[shown - 1] ?? '', name, (next) => {
         if (kind === 'house') this.level = next;
+        else if (kind === 'smithy') this.smithyLevel = next;
         else this.fieldLevel = next;
         this.actions.setBuild(kind, next);
         this.actions.refresh();
@@ -135,6 +140,7 @@ export class BuildSheet {
     for (const h of view.houses.filter((h) => h.state === 'built')) {
       rows.push(planLine(h));
     }
+    if (view.smithy) rows.push(...this.smithyRows(view.smithy));
     rows.push(
       el(
         'p',
@@ -142,6 +148,39 @@ export class BuildSheet {
         'A plan can be sent back once; colonists then choose another site.',
       ),
     );
+    return rows;
+  }
+
+  /** The Smithy row (it appears with the first ingot in the store): its level, and the plan with
+   * why the colony put it there and Send back while nothing is built. No tile, no person. */
+  private smithyRows(view: NonNullable<BuildView['smithy']>): HTMLElement[] {
+    const rows = [this.levelRow('smithy', 'Smithy', this.smithyLevel ?? view.want.level)];
+    const plan = view.plan;
+    if (!plan) return [...rows, el('p', { class: 'muted' }, 'No smithy is planned.')];
+    const line = el('p', { 'data-testid': 'build-smithy' });
+    line.append(
+      el('b', {}, 'Smithy'),
+      `, ${plan.state === 'built' ? 'built' : 'planned'} ${plan.where}. Why here: ${plan.why}.`,
+    );
+    rows.push(line);
+    if (plan.back) {
+      const button = el(
+        'button',
+        { type: 'button', 'data-testid': 'send-back-smithy' },
+        this.backSmithy ? 'Sending back…' : 'Send back',
+      );
+      button.disabled = this.backSmithy;
+      button.addEventListener('click', () => {
+        this.backSmithy = true;
+        this.actions.sendBack('smithy', plan.id);
+        this.actions.refresh();
+      });
+      const row = el('div', { class: 'row' });
+      row.append(button);
+      rows.push(row);
+    } else if (plan.sent) rows.push(el('p', { class: 'muted' }, 'sent back once'));
+    else if (plan.state === 'plan')
+      rows.push(el('p', { class: 'muted' }, 'Building has begun: it stays.'));
     return rows;
   }
 
@@ -173,6 +212,8 @@ export class BuildSheet {
   settle(view: BuildView): void {
     if (this.level === view.want.level) this.level = undefined;
     if (this.fieldLevel === view.fieldWant.level) this.fieldLevel = undefined;
+    if (this.smithyLevel === view.smithy?.want.level) this.smithyLevel = undefined;
+    if (!view.smithy?.plan?.back) this.backSmithy = false;
     for (const id of this.backFields)
       if (!view.fields.some((f) => f.id === id && f.back)) this.backFields.delete(id);
     for (const id of this.back)

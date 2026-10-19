@@ -9,6 +9,7 @@ import {
   homeless,
   houseAt,
   housesOf,
+  ingotInStore,
   mainOf,
   nthOf,
   planAt,
@@ -19,7 +20,9 @@ import {
   rectOf,
   roomAt,
   rowsOf,
+  sendBackBlock,
   sizeOf,
+  smithiesOf,
   type EntityRow,
   type Room,
   type SimEvent,
@@ -29,7 +32,7 @@ import {
 import { buildFields } from './fields.ts';
 import { roomWarmth } from './fires.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
-import type { BuildRow, BuildView } from './protocol-build.ts';
+import type { BuildRow, BuildView, SmithyRow } from './protocol-build.ts';
 
 const itemName = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 
@@ -72,15 +75,39 @@ function needOf(world: WorldState): string {
   return `${n} ${n > 1 ? 'people sleep' : 'person sleeps'} under the open sky`;
 }
 
+/** The Smithy row: shown once an ingot lies in the store or a smithy is planned (Bundle 3). */
+function smithyRow(world: WorldState): SmithyRow | undefined {
+  const s = smithiesOf(world).find((r) => r['state'] !== 'sent');
+  if (!s && !ingotInStore(world, content)) return undefined;
+  const { level } = buildWantOf(world, content, 'smithy');
+  const want = { level, word: content.work.priority.words[level - 1] ?? '' };
+  if (!s) return { want };
+  const house = housesOf(world).find((h) => h.id === s['house']);
+  const name = house ? sizeOf(content, mainOf(world, house)).name : 'house';
+  return {
+    want,
+    plan: {
+      id: s.id,
+      state: s['state'] as string,
+      where: `on the ${name}'s ${s['side'] as string} side`,
+      why: s['why'] as string,
+      back: !sendBackBlock(world, s),
+      sent: !!s['sent'],
+    },
+  };
+}
+
 /** The Build sheet and the map's green and house labels. */
 export function buildView(world: WorldState): BuildView {
   const green = greenOf(world);
   const level = buildWantOf(world, content).level;
   const state = world.systems['build'] ?? {};
+  const smithy = smithyRow(world);
   return {
     green: { x: green.x, y: green.y },
     want: { level, word: content.work.priority.words[level - 1] ?? '' },
     ...buildFields(world),
+    ...(smithy && { smithy }),
     need: needOf(world),
     noGround: !!state['noGround'] && homeless(world, content).length > 0,
     houses: housesOf(world)
