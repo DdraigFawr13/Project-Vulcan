@@ -1,7 +1,10 @@
 import { defineConfig } from 'vite';
+import { buildVersion } from './tools/version.ts';
 
 export default defineConfig({
   worker: { format: 'es' },
+  // The version stamp in the top bar (src/ui/version.ts).
+  define: { __BUILD__: JSON.stringify(buildVersion(import.meta.dirname)) },
   build: {
     // Phaser 4 alone is about 1.4 MB minified; the default 500 kB warning would fire on every build.
     chunkSizeWarningLimit: 1600,

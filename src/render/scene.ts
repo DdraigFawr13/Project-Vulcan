@@ -73,6 +73,8 @@ export class ValleyScene extends Phaser.Scene {
   private iceFrame = 0;
   private waterFrames = new Map<string, number>();
   private size = { width: 0, height: 0 };
+  /** Where the view opens, in map px: the green's middle. */
+  private focus: { x: number; y: number } | undefined;
   /** The first tile index of the nature tileset. */
   private natureGid = 0;
   /** Chunks that arrived before `create` ran, or before the map size was known. */
@@ -140,14 +142,17 @@ export class ValleyScene extends Phaser.Scene {
     this.hoverAt(this.pointerIn ? pointer : undefined);
   }
 
-  /** Sizes the map once the worker is ready. */
-  setMapSize(width: number, height: number): void {
+  /** Sizes the map once the worker is ready, and opens the view on tile `on` (the green). */
+  setMapSize(width: number, height: number, on?: { x: number; y: number }): void {
     this.size = { width, height };
+    this.focus = on && { x: (on.x + 0.5) * TILE, y: (on.y + 0.5) * TILE };
     this.levels = [];
     this.z = 0;
     this.show();
     this.stains?.set(new Uint8Array(0), width);
     if (this.sys.isActive() && this.frames.length) this.buildMap();
+    // A world after the first (Look elsewhere, a new game) keeps the map but opens on its own green.
+    if (this.layer) this.controls?.frameMap(width * TILE, height * TILE, this.focus);
   }
 
   applyChunks(chunks: readonly ChunkView[]): void {
@@ -269,7 +274,7 @@ export class ValleyScene extends Phaser.Scene {
     this.map = map;
     this.layer = layer;
     this.featureLayer = features.setDepth(2);
-    this.controls?.frameMap(width * TILE, height * TILE);
+    this.controls?.frameMap(width * TILE, height * TILE, this.focus);
     const waiting = this.waiting;
     this.waiting = [];
     this.applyChunks(waiting);

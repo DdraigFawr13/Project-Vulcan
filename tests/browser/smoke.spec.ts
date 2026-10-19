@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 // The one browser smoke (RULES.md VR-23): the bare link shows the title, a seed opens the site
 // picker, a valley is settled, the band's arrival screen names who can build and cook, the
@@ -7,6 +7,15 @@ import { expect, test, type Page } from '@playwright/test';
 // below once time runs and the inspector leads down them on a phone, then a shaft; a reload
 // continues where the game was, shaft and all; the title's Continue names the valley and loads it.
 // P2.5 to P2.7: a person's tabs, the Work sheet's stepper, Skip to a notable line and the alerts.
+/** Each button's smallest side (px) under `row`, measured in one step: the game runs while the
+ * Work sheet is open, and a snapshot that redraws it between finding a button and measuring it
+ * left a detached button with no box (CI, PR #63). */
+const buttonSides = (row: Locator) =>
+  row
+    .getByRole('button')
+    .evaluateAll((all) =>
+      all.map((b) => Math.min(b.getBoundingClientRect().width, b.getBoundingClientRect().height)),
+    );
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
 /** The alert line's newest notable line. */
@@ -82,6 +91,8 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(arrival).toHaveCount(0);
   await expect(page.getByTestId('game').locator('canvas')).toBeVisible();
   await expect(page.getByTestId('clock')).toContainText('06:00 · Day 1 of Thawmonth, Year 1');
+  // The build's version stamp sits in the bar (phase.PR, or dev outside a PR merge).
+  await expect(page.getByTestId('version')).toHaveText(/^v\d+\.(\d+|dev)$/);
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
 
   // Paused at the start: the tick does not move.
@@ -271,10 +282,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // P3.4: Carpentry comes from content like the other rows, with its skill line and 44 px steppers.
   const carpentry = panel.locator('.prio[data-job="carpentry"]');
   await expect(carpentry).toContainText(/crafting \d+, can reach \d+/);
-  for (const b of await carpentry.getByRole('button').all()) {
-    const box = (await b.boundingBox())!;
-    expect([box.width, box.height].every((n) => n >= 44)).toBe(true);
-  }
+  const carpentrySides = await buttonSides(carpentry);
+  expect(carpentrySides.length).toBeGreaterThan(0);
+  expect(
+    carpentrySides.every((n) => n >= 44),
+    `${carpentrySides}`,
+  ).toBe(true);
   // P4.7: Farming and Cooking come from content with the same steppers.
   await panel.locator('.prio.head[data-heading="Food"] .fold').click();
   for (const [job, name] of [
@@ -286,10 +299,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   const tend = panel.locator('.prio[data-job="tend"]');
   await expect(tend).toContainText('Tending');
   await expect(tend).toContainText('no skill needed');
-  for (const b of await tend.getByRole('button').all()) {
-    const box = (await b.boundingBox())!;
-    expect([box.width, box.height].every((n) => n >= 44)).toBe(true);
-  }
+  const tendSides = await buttonSides(tend);
+  expect(tendSides.length).toBeGreaterThan(0);
+  expect(
+    tendSides.every((n) => n >= 44),
+    `${tendSides}`,
+  ).toBe(true);
   expect(await phoneRules(page)).toEqual([]);
   // Scrolled to its foot, the sheet keeps its title and ✕ in view.
   await panel.evaluate((p) => (p.scrollTop = p.scrollHeight));
