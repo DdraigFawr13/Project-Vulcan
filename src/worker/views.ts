@@ -17,6 +17,7 @@ import {
   WATER,
   weatherWords,
 } from '../engine/index.ts';
+import { tileHouse } from './build.ts';
 import { tileGoods } from './goods.ts';
 import type { ClockView, LedgerLine, TileView } from './protocol.ts';
 
@@ -114,6 +115,7 @@ export function tileView(
     version: layer.chunkVersions[chunkY * chunksAcross(map) + chunkX]!,
     ...(changedBy && { changedBy: lineOf(changedBy) }),
     ...tileGoods(w, x, y, z, lineOf),
+    ...(z === 0 && tileHouse(w, x, y, lineOf)),
   };
 }
 

@@ -17,7 +17,16 @@ import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { planPart, plansOf } from './plans.ts';
 import { roomAt } from './rooms.ts';
-import { chooseHouse, housesOf, inRect, onEdge, partsOf, rectOf, type Site } from './site.ts';
+import {
+  chooseHouse,
+  housesOf,
+  inRect,
+  onEdge,
+  partsOf,
+  rectOf,
+  type Rect,
+  type Site,
+} from './site.ts';
 
 export const HOUSE_TABLES: Schemas = {
   /** A house, or a room added to one (`of`, the house; 0 for the house itself). `state`: `plan`,
@@ -220,8 +229,12 @@ export function placeHouse(
   return id;
 }
 
+/** "first", "second", ... for the nth room of a house, the house itself the first. */
+export const nthOf = (n: number): string =>
+  ['first', 'second', 'third', 'fourth', 'fifth', 'sixth'][n] ?? 'another';
+
 /** Words for where a footprint lies from the green. */
-export function dirFrom(green: Spot, site: Site): string {
+export function dirFrom(green: Spot, site: Rect): string {
   const [dx, dy] = [2 * site.x + site.w - 1 - 2 * green.x, 2 * site.y + site.h - 1 - 2 * green.y];
   const ns = dy < 0 ? 'north' : 'south';
   const ew = dx < 0 ? 'west' : 'east';

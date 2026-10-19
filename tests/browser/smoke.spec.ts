@@ -254,8 +254,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // slipped off it) and names the line that ate the last of the food.
   await page.locator('.pslot').first().click();
   await panel.getByRole('button', { name: 'Needs' }).click();
-  // Only the need rows' "why?": the "Doing now" line (P2.9) has its own, which matched first.
-  const hungry = panel.locator('.need').getByRole('button', { name: 'why?' });
+  // Only the Food row's "why?" (VR-63): the "Doing now" line (P2.9) and another low need, such as
+  // sleeping in the open before the house stands (P3.7), have their own, which matched first.
+  const hungry = panel
+    .locator('.need')
+    .filter({ hasText: 'Food' })
+    .getByRole('button', { name: 'why?' });
   for (let skips = 0; skips < 12 && (await hungry.count()) === 0; skips++) {
     const from = await tick(page);
     await page.getByTestId('speed-skip').click();
@@ -275,6 +279,22 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   expect(await phoneRules(page)).toEqual([]);
   await panel.getByRole('button', { name: 'Carry on' }).click();
   await expect(panel).toBeHidden();
+  // P3.7: the Build sheet under ⋯ has the Houses stepper (the colony's need, never a tile) and
+  // the colony's need. A level is a lever that applies at once while paused. Last, so the
+  // changed priority does not alter the world the hunger wait above runs in.
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByTestId('open-build').click();
+  const houses = page.getByTestId('build-houses');
+  await expect(houses).toContainText('Houses');
+  await expect(page.getByTestId('build-need')).toContainText('Need:');
+  for (const b of await houses.getByRole('button').all())
+    expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(42);
+  await expect(houses).toContainText('first');
+  await houses.getByRole('button', { name: 'Houses: lower' }).click();
+  await expect(houses).toContainText('second');
+  expect(await phoneRules(page)).toEqual([]);
+  await page.getByTestId('open-ledger').click();
+  await expect(panel).toContainText(/ now puts Houses second\./);
   await page.getByTestId('speed-3').click();
   await page.setViewportSize({ width: 1280, height: 720 });
 

@@ -21,7 +21,8 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
-import type { GoodsView, LedgerLine, PlanView, StockView, TileView } from './protocol.ts';
+import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
+import type { PlanView } from './protocol-build.ts';
 
 const nameOf = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 
@@ -44,7 +45,12 @@ export function goodsOf(world: WorldState): GoodsView {
     marks: marksOf(world).map((m) => ({ x: m['x'] as number, y: m['y'] as number, z: 0 })),
     plans: plansOf(world)
       .filter((p) => p['state'] !== 'built')
-      .map((p) => ({ ...at(p), part: p['part'] as string, state: p['state'] as string })),
+      .map((p) => ({
+        ...at(p),
+        part: p['part'] as string,
+        state: p['state'] as string,
+        house: p['house'] as number,
+      })),
   };
 }
 

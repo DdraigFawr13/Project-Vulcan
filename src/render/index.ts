@@ -1,9 +1,17 @@
 // Public surface of the render layer: boots Phaser with the valley scene and hands the page a
 // small handle to feed it snapshots and drive the camera.
 import Phaser from 'phaser';
-import type { AuraView, ChunkView, GoodsView, PersonView, WalkerView } from '../worker/index.ts';
+import type {
+  AuraView,
+  BuildView,
+  ChunkView,
+  GoodsView,
+  PersonView,
+  WalkerView,
+} from '../worker/index.ts';
 import { BuildSprites } from './build.ts';
 import { GoodsSprites } from './goods.ts';
+import { GreenSprites } from './green.ts';
 import { PeopleSprites } from './people.ts';
 import { TILE, ValleyScene, type Hover } from './scene.ts';
 
@@ -30,6 +38,8 @@ export interface Renderer {
   movePeople(walkers: readonly WalkerView[]): void;
   /** Draws the store, the items lying about and test marks (P2.4), and the plans (P3.1). */
   setGoods(goods: GoodsView): void;
+  /** Draws the green and the names of planned houses (P3.7). */
+  setBuild(view: BuildView): void;
   /** Marks the inspected tile, or clears the mark. */
   mark(tile: { x: number; y: number } | undefined): void;
   /** A small picture of the current view as a JPEG data URL, for the save list; '' if none. */
@@ -62,6 +72,7 @@ export function startRenderer(
   const people = new PeopleSprites(game, scene);
   const goods = new GoodsSprites(game, scene);
   const build = new BuildSprites(game, scene);
+  const green = new GreenSprites(game, scene);
   return {
     setMapSize: (width, height) => {
       scene.setMapSize(width, height);
@@ -80,6 +91,7 @@ export function startRenderer(
       people.setLevel(z);
       goods.setLevel(z);
       build.setLevel(z);
+      green.setLevel(z);
     },
     setPeople: (list) => people.set(list),
     personAt: (x, y) => people.at(x, y),
@@ -88,6 +100,7 @@ export function startRenderer(
       goods.set(view);
       build.setPlans(view.plans);
     },
+    setBuild: (view) => green.set(view),
     mark: (tile) => scene.mark(tile),
     thumbnail: () => thumbnailOf(game),
     fps: () => game.loop.actualFps,

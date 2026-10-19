@@ -5,6 +5,7 @@
 // as sent until the snapshot carries it. Everything shown comes from the snapshot (GAME-02).
 import type { PersonView, WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
+import { LEVELS, stepper, WORDS } from './stepper.ts';
 
 export interface Day {
   workFrom: number;
@@ -21,9 +22,6 @@ export interface WorkActions {
 
 type Job = WalkerView['work'][number];
 
-/** Levels run 1 (first) to 4 (last); the worker sends each level's word. */
-const LEVELS = 4;
-const WORDS = ['first', 'second', 'third', 'last'];
 const hh = (h: number) => `${String(h % 24).padStart(2, '0')}:00`;
 const wide = () => matchMedia('(min-width: 641px)').matches;
 const first = (p: PersonView) => p.name.split(' ')[0]!;
@@ -121,7 +119,7 @@ export class WorkSheet {
     name.append(el('small', {}, about));
     row.append(
       name,
-      this.stepper(want, WORDS[want - 1] ?? '', `${job.name} for ${p.name}`, (level) =>
+      stepper(want, WORDS[want - 1] ?? '', `${job.name} for ${p.name}`, (level) =>
         this.priority(p, job, level),
       ),
     );
@@ -201,7 +199,7 @@ export class WorkSheet {
     const row = (name: string, part: keyof Day) => {
       const r = el('div', { class: 'prio', 'data-day': part }, el('span', { class: 'job' }, name));
       r.append(
-        this.stepper(
+        stepper(
           d[part],
           '',
           name,
@@ -234,32 +232,6 @@ export class WorkSheet {
       row('Work ends', 'workTo'),
       row('Bed at', 'sleepFrom'),
     ];
-  }
-
-  /** − value +. A priority's + means nearer first (a lower number); an hour's + is later.
-   * `fits` says whether a value may be stepped to. */
-  private stepper(
-    value: number,
-    word: string,
-    label: string,
-    onChange: (v: number) => void,
-    show: (v: number) => string = String,
-    min = 1,
-    max = LEVELS,
-    fits: (v: number) => boolean = (v) => v >= min && v <= max,
-  ): HTMLElement {
-    const box = el('div', { class: 'step', role: 'group', 'aria-label': label });
-    const by = max === LEVELS ? -1 : 1;
-    const down = el('button', { type: 'button', 'aria-label': `${label}: lower` }, '−');
-    const up = el('button', { type: 'button', 'aria-label': `${label}: raise` }, '+');
-    down.disabled = !fits(value - by);
-    up.disabled = !fits(value + by);
-    down.addEventListener('click', () => onChange(value - by));
-    up.addEventListener('click', () => onChange(value + by));
-    const shown = el('span', { class: 'val' }, show(value));
-    if (word) shown.append(el('small', {}, word));
-    box.append(down, shown, up);
-    return box;
   }
 
   /** Drops pending levers the snapshot now shows. */

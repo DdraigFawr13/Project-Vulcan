@@ -16,7 +16,26 @@ export * from './log/index.ts';
 export * from './entity/index.ts';
 export { applyDue, createWorld, replay, step, submitCommand } from './sim/index.ts';
 export type { Cadence, Sim, System, SystemContext } from './sim/index.ts';
-export { buildSystem, partOf, planAt, plansOf } from './build/index.ts';
+export {
+  bedsOf,
+  buildSystem,
+  buildWantOf,
+  dirFrom,
+  greenOf,
+  homeless,
+  houseAt,
+  housesOf,
+  mainOf,
+  nthOf,
+  partOf,
+  planAt,
+  planPart,
+  plansOf,
+  rectOf,
+  roomAt,
+  rowsOf,
+  sizeOf,
+} from './build/index.ts';
 export { calendarSystem } from './calendar/index.ts';
 export {
   freeTile,

@@ -1,5 +1,6 @@
 // Public surface of the worker layer: the message protocol and a way to start the worker.
 export { TICKS_PER_SECOND } from './protocol.ts';
+export type { BuildRow, BuildView, HouseView, PlanView, RoomView } from './protocol-build.ts';
 export type {
   AuraView,
   ChunkView,

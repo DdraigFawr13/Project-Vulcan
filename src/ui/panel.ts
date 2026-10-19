@@ -11,7 +11,16 @@ import { planFacts, planLines } from './planrows.ts';
 import { testTools, type TestOrder } from './testtools.ts';
 
 export type PanelKind =
-  'tile' | 'person' | 'ledger' | 'saves' | 'region' | 'stock' | 'work' | 'alerts' | 'dawn';
+  | 'tile'
+  | 'person'
+  | 'ledger'
+  | 'saves'
+  | 'region'
+  | 'stock'
+  | 'work'
+  | 'build'
+  | 'alerts'
+  | 'dawn';
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;
@@ -25,6 +34,8 @@ export interface PanelActions {
   newGame(seed: string): void;
   /** A test tool (test mode) on the tile shown: dig, mark a tree, add a store tile. */
   test(tile: TileView, kind: TestOrder, arg?: number | string): void;
+  /** Send the colony's plan for this house back (the colony chooses another site). */
+  sendBack(tile: TileView, house: number): void;
   /** The Stock lever: how much of `good` the colony keeps. */
   setStock(good: string, level: string): void;
   /** Follows the tile's stairs or shaft to level `z` and inspects the same spot there. */
@@ -85,7 +96,9 @@ export class Panel {
       ...(tile.biome ? [['biome', tile.biome]] : []),
       ...(tile.elevation !== undefined ? [['height', `${tile.elevation} m`]] : []),
       ...(tile.fertility !== undefined ? [['fertility', `${tile.fertility} of 100`]] : []),
-      ...(tile.temperature !== undefined ? [['temperature', `${tile.temperature} °C`]] : []),
+      ...(tile.temperature !== undefined && !tile.room
+        ? [['temperature', `${tile.temperature} °C`]]
+        : []),
       ...(tile.ice ? [['ice', tile.ice]] : []),
       ...(tile.aura ? [['aura', tile.aura]] : []),
       ...(tile.water ? [['water', tile.water]] : []),
@@ -93,7 +106,7 @@ export class Panel {
       ...(tile.crossing ? [['crossing', tile.crossing]] : []),
       ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
       ...(tile.store ? [['store', 'part of the colony store']] : []),
-      ...(tile.plan ? planFacts(tile.plan) : []),
+      ...planFacts(tile),
       ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
       ...(tile.below ? [['below', tile.below]] : []),
       ...(this.debug
@@ -117,14 +130,20 @@ export class Panel {
       }
       this.body.append(go);
     }
+    if (tile.house?.back) {
+      const back = el('button', { type: 'button', 'data-testid': 'send-back-tile' }, 'Send back');
+      back.addEventListener('click', () => this.actions.sendBack(tile, tile.house!.id));
+      const row = el('div', { class: 'row' });
+      row.append(back);
+      this.body.append(row);
+    }
     if (this.debug)
       this.body.append(
         ...testTools(tile, depth, (kind, arg) => this.actions.test(tile, kind, arg)),
       );
     if (typeof notice === 'string') this.body.append(el('p', { class: 'note' }, notice));
     else if (notice) this.body.append(this.lineRow(notice, 'Not done · '));
-    if (tile.plan)
-      for (const [line, label] of planLines(tile.plan)) this.body.append(this.lineRow(line, label));
+    for (const [line, label] of planLines(tile)) this.body.append(this.lineRow(line, label));
     for (const g of tile.goods ?? [])
       if (g.made) this.body.append(this.lineRow(g.made, 'Made by · '));
     if (tile.store?.made && !tile.goods)

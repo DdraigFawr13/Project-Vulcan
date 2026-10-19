@@ -31,6 +31,7 @@ import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type { ChunkView, FromWorker, LedgerLine, ToWorker } from './protocol.ts';
 import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave, saveOf } from './save.ts';
+import { buildView } from './build.ts';
 import { goodsOf, stockView } from './goods.ts';
 import { peopleOf, walkersOf } from './people.ts';
 import { clockView, placeWords, tileView, weatherOf } from './views.ts';
@@ -48,6 +49,8 @@ let world: WorldState | undefined;
 let pace = createPace(performance.now());
 /** Chunk versions the page has already been sent, per level; empty until the first snapshot. */
 let sent: number[][] = [];
+/** The Build view last sent, as JSON; empty until the first snapshot. */
+let sentBuild = '';
 /** Ledger lines written since the last snapshot, collected as they are written: sealing trims
  * the log's front, so a long run could otherwise seal lines before they were posted. */
 let unposted: SimEvent[] = [];
@@ -123,6 +126,11 @@ function lineOf(e: SimEvent | Stub): LedgerLine {
 
 function snapshot(w: WorldState): void {
   const yesterday = yesterdayOf(w, content);
+  // The Build view goes out only when it changes, like the chunks.
+  const now = buildView(w);
+  const key = JSON.stringify(now);
+  const build = key === sentBuild ? undefined : now;
+  sentBuild = key;
   if (unposted.length) {
     post({ type: 'events', batch: unposted.map(lineOf) });
     unposted = [];
@@ -158,6 +166,7 @@ function snapshot(w: WorldState): void {
       walkers: walkersOf(w),
       goods: goodsOf(w),
       stock: stockView(w),
+      ...(build && { build }),
       ...(yesterday && { yesterday }),
     },
     chunks.flatMap((c) => [c.tiles.buffer, c.features.buffer, c.snow.buffer, c.ice.buffer]),
@@ -169,6 +178,7 @@ function snapshot(w: WorldState): void {
 function adopt(w: WorldState, from: 'seed' | 'save'): void {
   world = w;
   sent = [];
+  sentBuild = '';
   unposted = [...w.log];
   pace = createPace(performance.now());
   run(0); // hands over any sealed days the world arrived with (never ticks: the pace is fresh)
