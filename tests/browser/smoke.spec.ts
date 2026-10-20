@@ -335,18 +335,17 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await panel.getByTestId('stock-iron-ingot').getByRole('button', { name: 'Some (10)' }).click();
   // The plan is a notable line, so Skip stops paused on it, before a miner takes up sinking it
   // (then it can no longer be sent back). Worn tools plan copper and tin shafts first, and a
-  // hungry band plans slowly, so skip until iron's rust stain is on the alert line.
-  const ironPlan = /planned a shaft by the rust stain/;
-  for (let skips = 0; skips < 20 && !ironPlan.test(await alertText(page)); skips++)
-    await skipOnce();
-  expect(await alertText(page)).toMatch(ironPlan);
-  await page.getByTestId('alert').click();
-  await panel
+  // hungry band plans slowly, so skip until iron's rust stain is in the Alerts sheet (another alert
+  // on the same tick can take the alert line, as it did in CI).
+  const ironPlan = panel
     .locator('[data-line]')
-    .filter({ hasText: 'planned a shaft by the rust stain' })
-    .first()
-    .getByTestId('alert-show')
-    .click();
+    .filter({ hasText: 'planned a shaft by the rust stain' });
+  const planned = async () => {
+    await page.getByTestId('alert').click();
+    return (await ironPlan.count()) > 0;
+  };
+  for (let skips = 0; skips < 20 && !(await planned()); skips++) await skipOnce();
+  await ironPlan.first().getByTestId('alert-show').click();
   // Show centres the tile in the part of the screen below the bar.
   const canvas2 = page.getByTestId('game').locator('canvas');
   const mid = (await canvas2.boundingBox())!;
