@@ -315,6 +315,53 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await panel.getByRole('button', { name: /^Hauling for .+: raise$/ }).click();
   await page.getByTestId('open-ledger').click();
   await expect(panel).toContainText(/ now puts hauling second\./);
+  const skipOnce = async () => {
+    const from = await tick(page);
+    await page.getByTestId('speed-skip').click();
+    await expect.poll(() => tick(page)).toBeGreaterThan(from);
+    await expect(page.getByTestId('speed-skip')).toHaveAttribute('aria-pressed', 'false', {
+      timeout: 30_000,
+    });
+  }; // Bundle 2 mining: wanting some iron ingots (the Stock sheet shows the three ingot plates and
+  // their asides) gets the miners to plan a shaft by a stain, an alert whose Show leads to the
+  // plan's tile page: its rows, Send back (once) and the aside.
+  await page.getByRole('button', { name: 'More' }).click();
+  await page.getByTestId('open-stock').click();
+  for (const plate of ['Iron ingots', 'Copper ingots', 'Tin ingots'])
+    await expect(panel).toContainText(plate);
+  await expect(panel.getByTestId('stock-iron-ingot')).toContainText(/ iron ore in the store\./);
+  await expect(panel.getByTestId('stock-stone')).toContainText('comes up as stone.');
+  await expect(panel).not.toContainText('join this sheet when quarrying');
+  await panel.getByTestId('stock-iron-ingot').getByRole('button', { name: 'Some (10)' }).click();
+  // The plan is a notable line, so Skip stops paused on it, before a miner takes up sinking it
+  // (then it can no longer be sent back). Worn tools plan copper and tin shafts first, and a
+  // hungry band plans slowly, so skip until iron's rust stain is on the alert line.
+  const ironPlan = /planned a shaft by the rust stain/;
+  for (let skips = 0; skips < 20 && !ironPlan.test(await alertText(page)); skips++)
+    await skipOnce();
+  expect(await alertText(page)).toMatch(ironPlan);
+  await page.getByTestId('alert').click();
+  await panel
+    .locator('[data-line]')
+    .filter({ hasText: 'planned a shaft by the rust stain' })
+    .first()
+    .getByTestId('alert-show')
+    .click();
+  // Show centres the tile in the part of the screen below the bar.
+  const canvas2 = page.getByTestId('game').locator('canvas');
+  const mid = (await canvas2.boundingBox())!;
+  const bar = await page
+    .locator('#hud')
+    .evaluate((e) => parseFloat(e.style.getPropertyValue('--bar-h')));
+  await canvas2.click({ position: { x: mid.width / 2, y: mid.height / 2 + bar / 2 } });
+  await expect(panel).toContainText('Shaft, planned');
+  await expect(panel).toContainText('a shaft with a ladder, down to level');
+  await expect(panel).toContainText('2 logs for the ladder');
+  await expect(panel).toContainText('A plan can be sent back once');
+  await panel.getByTestId('send-back-shaft').click();
+  await expect(panel.getByTestId('send-back-shaft')).toBeHidden();
+  await page.getByTestId('open-ledger').click();
+  await expect(panel).toContainText('The shaft plan for iron was sent back');
   // Skip runs to the next notable line and stops there paused; the alert line opens the feed.
   await page.getByTestId('speed-skip').click();
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true', {
@@ -336,18 +383,11 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
     .filter({ hasText: 'Food' })
     .getByRole('button', { name: 'why?' });
   // Skip stops on every notable line, and Phase 3 added many before the food runs out (privacy,
-  // boredom, a second room: 14 skips on this seed), so the loop first waits for the line that
+  // boredom, a second room; Phase 4 craft firsts and shafts too), so the loop first waits for the line that
   // ate the last of the food on the alert line, then for the hunger it causes.
-  const skipOnce = async () => {
-    const from = await tick(page);
-    await page.getByTestId('speed-skip').click();
-    await expect.poll(() => tick(page)).toBeGreaterThan(from);
-    await expect(page.getByTestId('speed-skip')).toHaveAttribute('aria-pressed', 'false', {
-      timeout: 30_000,
-    });
-  };
+
   const foodGone = /ate the last of the band's food/;
-  for (let skips = 0; skips < 30 && !foodGone.test(await alertText(page)); skips++)
+  for (let skips = 0; skips < 60 && !foodGone.test(await alertText(page)); skips++)
     await skipOnce();
   expect(await alertText(page)).toMatch(foodGone);
   // Seed grain is eaten under the warning line first (Bundle 1), and Bundle 3's notable lines
@@ -397,43 +437,6 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByTestId('open-ledger').click();
   await expect(panel).toContainText(/ now puts Houses second\./);
 
-  // Bundle 2 mining: wanting some iron ingots (the Stock sheet shows the three ingot plates and
-  // their asides) gets the miners to plan a shaft by a stain, an alert whose Show leads to the
-  // plan's tile page: its rows, Send back (once) and the aside. Last, so the wanted iron does not alter the world the hunger wait above runs in.
-  await page.getByRole('button', { name: 'More' }).click();
-  await page.getByTestId('open-stock').click();
-  for (const plate of ['Iron ingots', 'Copper ingots', 'Tin ingots'])
-    await expect(panel).toContainText(plate);
-  await expect(panel.getByTestId('stock-iron-ingot')).toContainText(/ iron ore in the store\./);
-  await expect(panel.getByTestId('stock-stone')).toContainText('comes up as stone.');
-  await expect(panel).not.toContainText('join this sheet when quarrying');
-  await panel.getByTestId('stock-iron-ingot').getByRole('button', { name: 'Some (10)' }).click();
-  await page.getByTestId('speed-3').click();
-  // The miners look every hour; later alerts (hunger) may sit above the plan, so find its line.
-  await page.waitForTimeout(3000);
-  await page.getByTestId('speed-0').click();
-  await page.getByTestId('alert').click();
-  await panel
-    .locator('[data-line]')
-    .filter({ hasText: 'planned a shaft by the' })
-    .first()
-    .getByTestId('alert-show')
-    .click();
-  // Show centres the tile in the part of the screen below the bar.
-  const canvas2 = page.getByTestId('game').locator('canvas');
-  const mid = (await canvas2.boundingBox())!;
-  const bar = await page
-    .locator('#hud')
-    .evaluate((e) => parseFloat(e.style.getPropertyValue('--bar-h')));
-  await canvas2.click({ position: { x: mid.width / 2, y: mid.height / 2 + bar / 2 } });
-  await expect(panel).toContainText('Shaft, planned');
-  await expect(panel).toContainText('a shaft with a ladder, down to level');
-  await expect(panel).toContainText('2 logs for the ladder');
-  await expect(panel).toContainText('A plan can be sent back once');
-  await panel.getByTestId('send-back-shaft').click();
-  await expect(panel.getByTestId('send-back-shaft')).toBeHidden();
-  await page.getByTestId('open-ledger').click();
-  await expect(panel).toContainText('The shaft plan for iron was sent back');
   await page.getByTestId('speed-3').click();
   await page.setViewportSize({ width: 1280, height: 720 });
 
