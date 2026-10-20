@@ -52,6 +52,7 @@ export const WILD_SCHEMAS = {
     // Terrain kinds that take a print on a wet day (snow takes one on any ground).
     soft: list(ref('terrain')),
     printHours: num({ min: 1 }),
+    printRedraw: num({ min: 1, max: 24 }),
     // Hunters leave each herd its last `spare`.
     spare: count,
     // Placement: tiles from the start at least `start`, herds `apart`, the range's `radius`, draws

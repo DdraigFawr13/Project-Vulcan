@@ -2,7 +2,8 @@
 // the way it was going and when. Ground holds prints while snow lies on it, or on a wet day when
 // its terrain is soft; prints older than `wild.printHours` are gone. The layers are on the map
 // (`printKind`, `printAt`, `printDir`) and go to the screen in the chunks; a chunk's version is
-// raised for new prints at most once an hour, so the worker does not resend it every step.
+// raised for new or faded prints at most every `printRedraw` hours, so the worker does not resend
+// it every step.
 import type { EngineContent, WorldState } from '../core/index.ts';
 import { CHUNK, chunksAcross, raiseChunk } from '../map/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -52,7 +53,7 @@ export function printsAt(
   return { kind: def.id, name: def.name, ageHours: Math.floor(age / 60), dir: map.printDir[i]! };
 }
 
-/** Each hour, raises the version of every chunk that took a print since the last hour. */
+/** Every `printRedraw` hours, raises the version of every chunk that took or lost a print since. */
 export function raiseDirty(ctx: SystemContext): void {
   const { world, state } = ctx;
   const across = chunksAcross(world.map);
@@ -70,12 +71,12 @@ export function sweepPrints(ctx: SystemContext): void {
   const map = world.map;
   const limit = content.wild.printHours * 60;
   const across = chunksAcross(map);
-  const changed = new Set<number>();
   for (let i = 0; i < map.printKind.length; i += 1) {
     if (!map.printKind[i] || world.tick - map.printAt[i]! <= limit) continue;
     map.printKind[i] = 0;
     const x = i % map.width;
-    changed.add(Math.floor((i - x) / map.width / CHUNK) * across + Math.floor(x / CHUNK));
+    // Redrawn with the next prints (`raiseDirty`), once a chunk however many went.
+    ctx.state[`dirty${Math.floor((i - x) / map.width / CHUNK) * across + Math.floor(x / CHUNK)}`] =
+      1;
   }
-  for (const c of changed) raiseChunk(map, (c % across) * CHUNK, Math.floor(c / across) * CHUNK);
 }

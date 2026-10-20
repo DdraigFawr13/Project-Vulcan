@@ -54,8 +54,10 @@ function chooseWater(ctx: SystemContext, p: EntityRow): number | undefined {
 function foodShort(ctx: SystemContext, full = false): { have: number; want: number } | undefined {
   const { world, content } = ctx;
   const want = wantOf(world, content, 'food');
-  const have = haveOf(world, content, 'food');
   const line = full ? want : Math.floor((want * content.work.fish.from) / 100);
+  // Counting the store is the dear part: skipped while the plate wants nothing.
+  if (line <= 0) return undefined;
+  const have = haveOf(world, content, 'food');
   return have < line ? { have, want } : undefined;
 }
 

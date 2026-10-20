@@ -59,27 +59,27 @@ const readyToStand = (ctx: SystemContext, p: EntityRow): boolean => {
   );
 };
 
-/** The wolf and bear rows, kept for the tick: everyone's round asks (`predatorsNear` over the
- * world's animals, narrowed once). */
+/** The wolves and bears away from their den, kept for the tick: everyone's round asks, and on
+ * most minutes the list is empty and the round moves on at once. */
 const PREDATORS = new WeakMap<object, { tick: number; list: EntityRow[] }>();
 export function predatorsOf(ctx: SystemContext): EntityRow[] {
   const kept = PREDATORS.get(ctx.world);
   if (kept && kept.tick === ctx.world.tick) return kept.list;
-  const list = animalsOf(ctx.world).filter((a) => a['pack'] !== 0);
+  const pack = packOf(ctx.world);
+  const den = pack ? { x: pack['denX'] as number, y: pack['denY'] as number, z: 0 } : undefined;
+  const far = ctx.content.wild.folk.den;
+  const list = animalsOf(ctx.world).filter(
+    (a) => a['pack'] !== 0 && (!den || reach(spotOf(a), den) > far),
+  );
   PREDATORS.set(ctx.world, { tick: ctx.world.tick, list });
   return list;
 }
 
 /** The predators `p` sees now: within sight, not at the den. */
 function seenBy(ctx: SystemContext, p: EntityRow): EntityRow[] {
-  const { world, content } = ctx;
-  const folk = content.wild.folk;
+  const folk = ctx.content.wild.folk;
   const sight = isNight(ctx) ? folk.sight.night : folk.sight.day;
-  const pack = packOf(world);
-  const den = pack ? { x: pack['denX'] as number, y: pack['denY'] as number, z: 0 } : undefined;
-  return predatorsOf(ctx).filter(
-    (a) => reach(spotOf(a), spotOf(p)) <= sight && (!den || reach(spotOf(a), den) > folk.den),
-  );
+  return predatorsOf(ctx).filter((a) => reach(spotOf(a), spotOf(p)) <= sight);
 }
 
 /** The nearest house with a shut room that `p` can reach: where to run, and its name. */
@@ -210,7 +210,11 @@ function decide(ctx: SystemContext, group: readonly EntityRow[], seen: EntityRow
 
 /** The predator rung for `p` this minute: true when it took the minute (standing or fleeing). */
 export function predatorRung(ctx: SystemContext, p: EntityRow): boolean {
-  if (!upAndAbout(ctx, p)) return false;
+  const out = predatorsOf(ctx).length > 0;
+  if (!out || !upAndAbout(ctx, p)) {
+    if (!out && (p['doing'] === 'flee' || p['doing'] === 'stand')) p['doing'] = '';
+    return false;
+  }
   const seen = seenBy(ctx, p);
   const stance = p['doing'];
   if (!seen.length) {

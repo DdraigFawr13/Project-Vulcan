@@ -60,6 +60,7 @@ function foodShort(
   const { world, content } = ctx;
   const good = content.items.find((i) => i.id === 'game')?.good ?? 'food';
   const want = wantOf(world, content, good);
+  if (want <= 0) return undefined;
   const have = haveOf(world, content, good);
   let coming = 0;
   for (const q of people(world)) {

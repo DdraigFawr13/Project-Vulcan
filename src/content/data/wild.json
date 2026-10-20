@@ -16,6 +16,7 @@
 ],
 "soft": ["grass","dirt","forest-floor","needles","marsh","dry-grass","tundra"],
 "printHours": 24,
+"printRedraw": 4,
 "spare": 3,
 "place": {"start":30,"apart":14,"radius":12,"tries":12,"spread":3},
 "move": {"every":10,"fleeEvery":2,"trot":2,"fleeFor":30,"wander":3,"reach":24},

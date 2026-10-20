@@ -53,6 +53,8 @@ export interface WildDef {
   /** Grounds that take a print on a wet day. */
   soft: readonly string[];
   printHours: number;
+  /** Hours between redraws of the chunks that took or lost prints (each redraw resends them). */
+  printRedraw: number;
   /** Hunters leave each herd its last `spare`. */
   spare: number;
   place: { start: number; apart: number; radius: number; tries: number; spread: number };

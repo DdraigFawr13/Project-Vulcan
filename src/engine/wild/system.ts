@@ -35,7 +35,7 @@ export const wildSystem: System = {
     const tick = ctx.world.tick;
     if (tick % TICKS_PER_DAY === 0) dailyWild(ctx);
     if (tick % TICKS_PER_HOUR === 0) {
-      raiseDirty(ctx);
+      if (tick % (ctx.content.wild.printRedraw * TICKS_PER_HOUR) === 0) raiseDirty(ctx);
       visitOnHour(ctx);
     }
     moveAnimals(ctx);
