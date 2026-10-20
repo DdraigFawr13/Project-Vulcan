@@ -34,7 +34,7 @@ Rivers, lakes, shallow and deep water, springs, carved from P1.1's elevation; sh
 
 Four lazy levels with veins by level (`docs/ARCHITECTURE.md#map`), stairs and shafts, a level (`z`) in `MapState`, `setTile`, `ChunkView` and `inspect` together; level switch in the camera. Mock-up: UI. Done when: copper and tin are reachable on every seed; a level not yet reached costs no memory.
 
-- Reading list: `docs/ARCHITECTURE.md#map`; `docs/DECISIONS.md` V-014; `src/engine/map/MODULE.md`; `src/worker/MODULE.md`; `src/render/MODULE.md`
+- Reading list: `docs/ARCHITECTURE.md#map`; DECISIONS V-014 (grep); `src/engine/map/MODULE.md`; `src/worker/MODULE.md`; `src/render/MODULE.md`
 
 ### P1.4 Aura, seasons and weather
 
