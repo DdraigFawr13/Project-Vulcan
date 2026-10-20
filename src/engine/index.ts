@@ -67,7 +67,7 @@ export {
 export { calendarSystem } from './calendar/index.ts';
 export { SHAFT_STATES } from './mine/index.ts';
 export { fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
-export { shaftsOf } from './mine/index.ts';
+export { shaftFor, shaftsOf } from './mine/index.ts';
 export {
   cloakOf,
   freeTile,
@@ -75,6 +75,7 @@ export {
   granaryOf,
   haveOf,
   heldBy,
+  ingotWant,
   inStore,
   isTree,
   itemsAt,

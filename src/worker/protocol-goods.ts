@@ -44,6 +44,8 @@ export interface StockView {
   levels: { id: string; word: string; count: number }[];
   /** What the good is for, from content, shown under its plate. */
   note?: string;
+  /** An ingot plate's line: what that metal is waiting on now. */
+  status?: string;
 }
 
 /** A tile page for the smelter, the charcoal clamp or the smithy (Bundle 3): words from the engine. */
