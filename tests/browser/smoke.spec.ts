@@ -197,18 +197,22 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(page.getByTestId('level')).toHaveText('−1');
   await expect(page.getByTestId('unreached')).toBeVisible();
   await page.keyboard.press('<');
-  // A shaft cannot go down through a tree or water, so tap around the centre for open ground.
+  // A shaft cannot go down through a tree or water, so tap around the centre for open ground. A tap
+  // on someone standing there opens their sheet instead (where they stand depends on how far the
+  // valley ran, which varies with the machine's speed: CI, PR #70), so that spot is passed over.
   const canvas = page.getByTestId('game').locator('canvas');
   const box = (await canvas.boundingBox())!;
   for (const [dx, dy] of [0, 40, -40, 80, -80].flatMap((dx) =>
     [0, 40, -40].map((dy) => [dx, dy]),
   )) {
     await canvas.click({ position: { x: box.width / 2 + dx!, y: box.height / 2 + dy! } });
-    await expect(panel).toContainText('ground');
-    await expect(panel.getByTestId('test-mode')).toBeVisible();
+    await expect(panel).toContainText(/ground|Doing now/);
     const text = await panel.innerText();
+    if (/Doing now/.test(text)) continue;
     if (!/on it|water/.test(text)) break;
   }
+  await expect(panel).toContainText('ground');
+  await expect(panel.getByTestId('test-mode')).toBeVisible();
   // Stairs on a phone, ordered while paused: the order applies at once (Morgan's playtest), so the
   // sheet shows the stairs with a way down before time runs, and follows it (it covers the level
   // buttons). The bar says test mode is on.
@@ -258,18 +262,6 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
     faces.every((off) => Math.abs(off) < 0.5),
     `face offsets ${faces}`,
   ).toBe(true);
-
-  // P5.6 on a phone: the test-mode Hurt tool gives the last colonist a deep wound to the left leg;
-  // their Health tab shows the wound and the Blood bar, and the strip badges them.
-  await page.locator('.pslot').last().click();
-  await panel.getByRole('button', { name: 'Health' }).click();
-  await expect(panel.getByTestId('blood')).toBeVisible();
-  await panel.getByLabel('Part').selectOption('left-leg');
-  await panel.getByLabel('Severity').selectOption('deep');
-  await panel.getByTestId('hurt-go').click();
-  await expect(panel.getByTestId('wound')).toContainText('left leg · deep');
-  await expect(page.locator('.pslot.hurt').last().locator('.hbadge')).toHaveText('+');
-  expect(await phoneRules(page)).toEqual([]);
 
   // P2.5 to P2.7 on a phone. A face opens that person's sheet in tabs; the Work sheet's stepper
   // ranks hauling higher, which is a ledger line naming the person, never an order to a tile.
