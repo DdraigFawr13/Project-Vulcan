@@ -21,6 +21,8 @@ import { PRIORITY_TABLES, setPriority } from './priority.ts';
 import { TOOL_TABLES, toolsDaily } from './tools.ts';
 import { rollTally, TALLY_START } from './tally.ts';
 import { stepAlong, WALK_FIELDS } from './walk.ts';
+import { risk } from './accident.ts';
+import { careMinute } from './care.ts';
 
 const ATTRIBUTES = [
   'strength',
@@ -157,6 +159,8 @@ export const peopleSystem: System = {
     ],
     'craft.firstFine',
     ...['mine.sank', 'mine.dug', 'mine.veinMined', 'mine.clayDug', 'mine.noLadder'],
+    ...['health.hurt', 'health.found', 'health.missed', 'health.carried', 'health.bound'],
+    'work.tookUpBurial',
   ],
   tables: PEOPLE_TABLES,
   refs: ['noIngots', 'noCharcoal'],
@@ -217,10 +221,12 @@ export const peopleSystem: System = {
     markUsed(ctx);
     toolsDaily(ctx);
     const hour = hourNow(ctx);
+    careMinute(ctx);
     for (const p of ctx.world.entities['person'] ?? []) {
       if (p['status'] !== 'alive') continue;
       stepAlong(ctx, p);
       think(ctx, p, hour);
+      risk(ctx, p);
     }
   },
 };

@@ -50,6 +50,18 @@ export function freeTile(world: WorldState, content: EngineContent, x: number, y
     )
   )
     return false;
+  // Nor in a burial ground (build/burial.ts, P5.8).
+  if (
+    (world.entities['burial'] ?? []).some(
+      (b) =>
+        b['state'] === 'laid' &&
+        x >= (b['x'] as number) &&
+        x < (b['x'] as number) + (b['w'] as number) &&
+        y >= (b['y'] as number) &&
+        y < (b['y'] as number) + (b['h'] as number),
+    )
+  )
+    return false;
   // Nor where a hearth or other furniture piece stands (P3.6).
   if ((world.entities['furniture'] ?? []).some((f) => f['x'] === x && f['y'] === y && f['z'] === 0))
     return false;

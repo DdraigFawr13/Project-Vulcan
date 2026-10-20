@@ -85,7 +85,9 @@ export function seedNeeds(world: WorldState, content: EngineContent): void {
   }
 }
 
-const asleep = (p: EntityRow): boolean => p['doing'] === 'sleep' && !(p['path'] as number[]).length;
+// Lying hurt (P5.6) rests as sleep does.
+const asleep = (p: EntityRow): boolean =>
+  (p['doing'] === 'sleep' || p['doing'] === 'hurt') && !(p['path'] as number[]).length;
 
 /** Asleep on their own laid-out bedroll. */
 function onBedroll(world: WorldState, p: EntityRow): boolean {

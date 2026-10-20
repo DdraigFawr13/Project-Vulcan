@@ -40,7 +40,8 @@ export const HOUSE_TABLES: Schemas = {
    * `moved` the last line of someone carrying their bedroll in; `tried` the tick a built house
    * last looked for where to add a room, and `full` 1 when no side of it had ground for one;
    * `wall` the id of the wall part it is built in (a room keeps its house's, V-097);
-   * `cold` the line saying a cold room of it had no floor free for a hearth (phase review). */
+   * `cold` the line saying a cold room of it had no floor free for a hearth (phase review);
+   * `sick` 1 for a room added as the sickroom (P5.6), whose beds are the hurt's, nobody's own. */
   house: {
     size: 'text',
     x: 'int',
@@ -59,6 +60,7 @@ export const HOUSE_TABLES: Schemas = {
     full: 'count',
     wall: 'text',
     cold: 'event',
+    sick: 'count',
   },
   /** The Build sheet's level for a kind of building (1 first to 4 last) and its order. */
   want: { kind: 'text', level: 'count', line: 'event' },
@@ -197,7 +199,7 @@ export function homeless(world: WorldState, content: EngineContent): EntityRow[]
 /** Bedrolls laid in a house's rooms (with those of the colony's homeless, for its first house:
  * a house grows before another is built), and how many it has room for. */
 export function bedsOf(world: WorldState, content: EngineContent, main: EntityRow) {
-  const rows = rowsOf(world, main).filter((h) => h['state'] === 'built');
+  const rows = rowsOf(world, main).filter((h) => h['state'] === 'built' && !h['sick']);
   const first = housesOf(world).find((h) => !h['of'] && h['state'] === 'built');
   const sleepers =
     itemsOf(world).filter((i) => isBed(content, i) && homeOf(world, content, i)?.id === main.id)
@@ -232,7 +234,7 @@ export function bedSpot(
   const old = home && roomAt(world, content, leaving!.x, leaving!.y);
   const crowd = content.buildings.rooms.crowd.tiles;
   for (const h of home ? rowsOf(world, home) : housesOf(world)) {
-    if (h['state'] !== 'built') continue;
+    if (h['state'] !== 'built' || h['sick']) continue;
     const r = rectOf(h);
     const room = roomAt(world, content, r.x + 1, r.y + 1);
     if (home && (!room || room.tiles.includes(old?.tiles[0] ?? -1))) continue;
@@ -273,6 +275,7 @@ export function placeHouse(
       full: 0,
       wall: wall.id,
       cold: 0,
+      sick: 0,
     },
   });
   const parts = partsOf(content, site, site.door, wall, extra.skip);

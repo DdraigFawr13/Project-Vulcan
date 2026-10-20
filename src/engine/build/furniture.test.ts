@@ -4,7 +4,8 @@
 // indirect (V-041).
 import { describe, expect, it } from 'vitest';
 import type { EntityRow } from '../core/index.ts';
-import { content } from '../../content/index.ts';
+import { content as game } from '../../content/index.ts';
+import { withoutAccidents } from '../index.ts';
 import {
   bedOwnedBy,
   createSim,
@@ -23,6 +24,9 @@ import {
   whyOf,
 } from '../index.ts';
 import { HEARTH, siteFor } from './index.ts';
+
+// Accidents (P5.6) are left out: this tests carpentry and beds, not injury (health.test.ts does).
+const content = withoutAccidents(game);
 
 const sim = createSim(content);
 const DAY = 1440;
@@ -183,6 +187,7 @@ describe('carpentry and furniture', () => {
       'sinkShaft',
       'markFell',
       'markStore',
+      'hurt',
     ];
     const kinds = SYSTEMS.flatMap((s) => Object.keys(s.commands ?? {}));
     expect(kinds.filter((k) => !levers.includes(k) && !tools.includes(k))).toEqual([]);

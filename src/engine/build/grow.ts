@@ -121,7 +121,7 @@ export function stageSite(
 
 /** Whether built house row `h` is a room nobody sleeps in yet. */
 function emptyRoom(ctx: SystemContext, h: EntityRow): boolean {
-  if (h['state'] !== 'built') return false;
+  if (h['state'] !== 'built' || h['sick']) return false;
   const r = rectOf(h);
   return roomAt(ctx.world, ctx.content, r.x + 1, r.y + 1)?.sleepers === 0;
 }
@@ -144,7 +144,8 @@ export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: num
     // Short of beds, or someone crowded (privacy under its line) with no empty room to move to,
     // while the house has fewer rooms than `house.private` (phase review).
     const short = sleepers > room;
-    if (!short && rows.length >= content.buildings.house.private) continue;
+    if (!short && rows.filter((o) => !o['sick']).length >= content.buildings.house.private)
+      continue;
     // A house that could not add a room looks again the next day, not every hour; one with
     // nobody short of a bed looks for someone crowded once a day too.
     if (!only && world.tick < (main['tried'] as number) + TICKS_PER_DAY) {

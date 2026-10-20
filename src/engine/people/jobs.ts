@@ -23,6 +23,8 @@ import {
 import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
+import { burying, takeUpBurial } from './burial.ts';
+import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
@@ -203,6 +205,11 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'charcoal' && hours && burning(ctx, p)) return true;
   if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
   if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
+  // P5.6, P5.8: a burial is seen through once begun; dressing is work hours'.
+  if (p['job'] === 'bury' && burying(ctx, p)) return true;
+  // A dressing not finished by the end of work is left for whoever takes it up next.
+  if (p['job'] === 'dress' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
+  if (p['job'] === 'dress' && dressing(ctx, p)) return true;
   const load = loadOf(world, p.id);
   // Out of hours the metal and station work keeps what it fetched and resumes next morning, and
   // so does a sinker the shaft's ladder (else they carried it back and lost the job).
@@ -333,6 +340,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   forage: takeUpForaging,
   farm: takeUpFarming,
   build: (ctx, p) =>
+    takeUpBurial(ctx, p) ||
     takeUpMarked(ctx, p, true) ||
     takeUpHearth(ctx, p) ||
     takeUpStation(ctx, p) ||
@@ -345,6 +353,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   charcoal: takeUpCharcoal,
   smelt: takeUpSmelting,
   smith: takeUpSmithing,
+  heal: takeUpNursing,
 };
 
 const jobSkill = (content: EngineContent, g: Gather): string =>

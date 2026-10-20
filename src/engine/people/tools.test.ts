@@ -3,7 +3,8 @@
 // person who works a kind most; smithing is drawn apart from the band, so a seed's band is as it
 // was; the band arrives with stone tools of each kind.
 import { describe, expect, it } from 'vitest';
-import { content } from '../../content/index.ts';
+import { content as game } from '../../content/index.ts';
+import { withoutAccidents } from '../index.ts';
 import {
   allLines,
   createSim,
@@ -29,6 +30,9 @@ import {
 } from '../goods/index.ts';
 import { valleyOf } from '../region/index.ts';
 import { drawBand, toolFactor } from './index.ts';
+
+// Accidents (P5.6) are left out: this tests tools, not injury (health.test.ts does).
+const content = withoutAccidents(game);
 
 const sim = createSim(content);
 const DAY = 1440;
