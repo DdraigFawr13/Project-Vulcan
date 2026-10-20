@@ -163,7 +163,7 @@ function snapshot(w: WorldState): void {
         const i = cy * across + cx;
         if (seen[i] === layer.chunkVersions[i]) continue;
         seen[i] = layer.chunkVersions[i]!;
-        chunks.push(chunkTiles(w.map, cx, cy, z));
+        chunks.push(chunkTiles(w.map, cx, cy, z, w.tick));
       }
   }
   post(

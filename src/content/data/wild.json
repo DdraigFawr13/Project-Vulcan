@@ -1,0 +1,49 @@
+{
+"species": [
+{"id":"deer","name":"red deer","plural":"deer","kinds":["hind","hind","hind","stag"],"print":"hoof","meat":36,"leftovers":[{"item":"hide","count":1},{"item":"bone","count":2},{"item":"fat","count":1}],"flee":10,"perGame":1,"size":[6,9],"habitat":[{"biome":"temperate-forest","weight":100},{"biome":"taiga","weight":100},{"biome":"grassland","weight":15,"edge":3}],"perHerd":5500,"cap":16,"breed":{"months":["Bloommonth"],"rate":0.18}},
+{"id":"boar","name":"wild boar","plural":"boar","kinds":["boar"],"print":"hoof","meat":28,"leftovers":[{"item":"hide","count":1},{"item":"bone","count":2},{"item":"fat","count":2}],"flee":6,"perGame":1,"size":[4,6],"habitat":[{"biome":"temperate-forest","weight":100}],"perHerd":3500,"cap":10,"breed":{"months":["Highsun"],"rate":0.3}},
+{"id":"goat","name":"mountain goat","plural":"goats","kinds":["goat"],"print":"hoof","meat":14,"leftovers":[{"item":"hide","count":1},{"item":"bone","count":1},{"item":"fat","count":1}],"flee":10,"perGame":1,"size":[5,7],"habitat":[{"biome":"alpine","weight":100}],"ground":["gravel"],"foot":8,"perHerd":3000,"cap":12,"breed":{"months":["Bloommonth"],"rate":0.18}},
+{"id":"hare","name":"hare","plural":"hares","kinds":["hare"],"print":"hare","meat":1,"leftovers":[],"flee":5,"perGame":6,"size":[3,5],"habitat":[{"biome":"grassland","weight":100}],"perHerd":4600,"cap":40,"breed":{"months":["Thawmonth","Seedmonth","Bloommonth","Highsun","Goldmonth","Harvestmonth"],"rate":0.4}}
+],
+"predators": [
+{"kind":"wolf","name":"wolf","creature":"wolf-pack","size":[4,6],"print":"paw","meat":0,"leftovers":[{"item":"hide","count":1},{"item":"bone","count":1}]},
+{"kind":"bear","name":"cave bear","creature":"cave-bear","size":[1,1],"print":"paw","meat":0,"leftovers":[{"item":"hide","count":1},{"item":"bone","count":2},{"item":"fat","count":2}]}
+],
+"prints": [
+{"id":"paw","name":"paw prints"},
+{"id":"hoof","name":"hoof prints"},
+{"id":"hare","name":"hare tracks"}
+],
+"soft": ["grass","dirt","forest-floor","needles","marsh","dry-grass","tundra"],
+"printHours": 24,
+"spare": 3,
+"place": {"start":30,"apart":14,"radius":12,"tries":12,"spread":3},
+"move": {"every":10,"fleeEvery":2,"trot":3,"fleeFor":30,"wander":3,"reach":24},
+"winter": ["Firstfrost","Deepwinter","Frostmonth","Lastsnow"],
+"low": 50,
+"snowLoss": 0.004,
+"pack": {
+"den": {"from":40,"radius":4,"far":60},
+"near": "the high valley",
+"roam": 4,
+"offMap": 0.35,
+"offMapWinter": 0.13,
+"harsh": "harsh",
+"harshFactor": 0.55,
+"inValley": 0.07,
+"gameFull": 14,
+"snowFactor": 1.5,
+"snowMost": 50,
+"hungry": 7,
+"hungryEvery": 3,
+"visit": 12,
+"visitEvery": 4,
+"night": {"from":19,"to":5},
+"least": 2,
+"returns": {"month":"Thawmonth","chance":0.5},
+"why": {"harsh":"the hard frost keeps the herds low in the wider range","winter":"the winter keeps the herds low in the wider range","other":"the herds are thin in the wider range"},
+"left": {"dead":"the last of them is dead","few":"too few were left to hold the range"},
+"where": {"edge":"the edge of the town","midden":"the midden"}
+},
+"where": {"temperate-forest":"in the woods","taiga":"in the taiga","grassland":"on the grass","alpine":"on the high slopes","tundra":"on the tundra","steppe":"on the steppe","swamp":"by the fens","default":"in the valley"}
+}

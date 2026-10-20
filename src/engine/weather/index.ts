@@ -1,2 +1,3 @@
 // Public surface of the weather system.
-export { isFrozen, tileTemperature, weatherSystem, weatherWords } from './weather.ts';
+export { isFrozen, weatherSystem, weatherWords } from './weather.ts';
+export { tileTemperature } from './temperature.ts';

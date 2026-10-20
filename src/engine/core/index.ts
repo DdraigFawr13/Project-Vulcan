@@ -11,3 +11,4 @@ export * from './ground.ts';
 export * from './life.ts';
 export * from './laws.ts';
 export * from './metal.ts';
+export * from './wild.ts';

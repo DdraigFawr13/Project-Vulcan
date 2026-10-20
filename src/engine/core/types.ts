@@ -6,6 +6,7 @@ import type { FeatureDef, UndergroundDials, WalkingDef } from './ground.ts';
 import type { BuildingsDef, ItemDef, JobDef, LifeDef, MemoryDef, WorkDef } from './life.ts';
 import type { RngState } from './rng.ts';
 import type { CultureDef, NamesDef, RegionDef } from './region.ts';
+import type { WildDefs } from './wild.ts';
 
 /** The named RNG streams (docs/ARCHITECTURE.md "RNG"). A system draws only from its own. */
 export const STREAMS = [
@@ -13,6 +14,7 @@ export const STREAMS = [
   'veins',
   'weather',
   'wildlife',
+  'wild',
   'jobs',
   'needs',
   'health',
@@ -159,6 +161,13 @@ export interface MapState {
   auraSpots: AuraSpot[];
   /** Freezing degree-days on each still-water tile (the weather's ice count); 0 elsewhere. */
   ice: Uint8Array;
+  /** 1 where snow lies on the ground (the weather's, V-122), else 0; never on water. */
+  snowLie: Uint8Array;
+  /** Prints the animals left (the wild system's, V-122): 0, or 1 + an index into `wild.prints`;
+   * the tick each was made, and its direction 0 to 7 (n, ne, e, se, s, sw, w, nw). */
+  printKind: Uint8Array;
+  printAt: Int32Array;
+  printDir: Uint8Array;
   /** Built on each surface tile (P3.1): 0, or 1 + a `buildings.parts` index; a stair is a tile kind. */
   built: Uint8Array;
   /** Surface only: 0, or 1 + the features index of the stained vein below the tile (the
@@ -346,7 +355,7 @@ export interface CalendarDef {
 }
 
 /** The content the engine core reads. The worker passes the content layer's `content`. */
-export interface EngineContent extends PeopleDefs {
+export interface EngineContent extends PeopleDefs, WildDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */
   events: readonly { id: string; template: string; notable?: Readonly<Record<string, string>> }[];

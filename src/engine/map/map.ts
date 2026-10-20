@@ -80,6 +80,10 @@ export const mapSystem: System = {
     map.rainfall = ground.rainfall;
     map.floor = Math.round(ground.floor);
     map.ice = new Uint8Array(width * height);
+    map.snowLie = new Uint8Array(width * height);
+    map.printKind = new Uint8Array(width * height);
+    map.printAt = new Int32Array(width * height);
+    map.printDir = new Uint8Array(width * height);
     map.built = new Uint8Array(width * height);
     map.chunkVersions = new Array<number>(chunksAcross(map) * chunksDown(map)).fill(1);
     // The levels below are made only when first reached (levels.ts).

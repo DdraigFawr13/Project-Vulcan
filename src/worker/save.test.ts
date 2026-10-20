@@ -113,6 +113,8 @@ describe('saves', () => {
       (s: SaveFile) => s.state.map.levels.pop(),
       (s: SaveFile) => (s.state.map.rock = new Uint8Array(3)),
       (s: SaveFile) => (s.state.map.ice = new Uint8Array(3)),
+      (s: SaveFile) => (s.state.map.snowLie = new Uint8Array(3)),
+      (s: SaveFile) => (s.state.map.printAt = new Int32Array(3)),
       (s: SaveFile) => s.state.map.auraSpots.push({ ...s.state.map.auraSpots[0]!, school: 'none' }),
       // Ore stains name a feature; a level's known marks are 0 or 1.
       (s: SaveFile) => (s.state.map.stains[0] = 250),

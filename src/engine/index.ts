@@ -11,6 +11,7 @@ import { lawSystem } from './law/index.ts';
 import { peopleSystem } from './people/index.ts';
 import { regionSystem } from './region/index.ts';
 import { weatherSystem } from './weather/index.ts';
+import { wildSystem } from './wild/index.ts';
 import type { EngineContent } from './core/index.ts';
 import { createSim as createSimWith, type Sim, type System } from './sim/index.ts';
 
@@ -128,6 +129,21 @@ export { makeRegion, regionSystem, siteOf, valleyOf } from './region/index.ts';
 export type { Region, RegionNeighbour, RegionSite, RegionValley } from './region/index.ts';
 export { isFrozen, tileTemperature, weatherSystem, weatherWords } from './weather/index.ts';
 export {
+  animalsOf,
+  herdOf,
+  herdsOf,
+  huntable,
+  killAnimal,
+  markAttack,
+  packOf,
+  predatorsNear,
+  printsAt,
+  setLures,
+  spareCount,
+  WILD_TABLES,
+  wildSystem,
+} from './wild/index.ts';
+export {
   auraAt,
   CHUNK,
   chunksAcross,
@@ -162,6 +178,7 @@ export const SYSTEMS: readonly System[] = [
   lawSystem,
   calendarSystem,
   weatherSystem,
+  wildSystem,
 ];
 
 /** A simulation over `content` with the game's systems, or the given ones (tests add fixtures). */

@@ -1,0 +1,109 @@
+// What the wild valley reads from content (wild.json, Phase 5 Bundle 2) and the creatures file.
+
+/** A good left where an animal falls, or by a predator's kill. */
+export interface LeftoverDef {
+  item: string;
+  count: number;
+}
+
+/** One kind of game: how many herds the valley holds, how it lives and what it leaves. */
+export interface SpeciesDef {
+  id: string;
+  name: string;
+  plural: string;
+  /** Art kinds in a repeating pattern over a herd's animals (`hind` `hind` `stag`). */
+  kinds: readonly string[];
+  /** The print id (`wild.prints`) its feet leave. */
+  print: string;
+  /** Game laid where it falls, and the leftovers. */
+  meat: number;
+  leftovers: readonly LeftoverDef[];
+  /** Tiles at which a person sets the herd running. */
+  flee: number;
+  perGame: number;
+  size: readonly number[];
+  /** Habitat: a biome, its weight (per hundred) towards the herd count, and for an edge biome
+   * the tiles from a tree it may be placed within. */
+  habitat: readonly { biome: string; weight: number; edge?: number }[];
+  /** Terrain ids the herd stands on at placement (all open ground when left out). */
+  ground?: readonly string[];
+  /** With `ground`: a herd may stand on that ground within this many tiles of its biomes. */
+  foot?: number;
+  /** Weighted habitat tiles to a herd; herds = round(weighted tiles / perHerd). */
+  perHerd: number;
+  cap: number;
+  breed: { months: readonly string[]; rate: number };
+}
+
+/** A predator: the creature whose biomes and names it takes, and what its carcass leaves. */
+export interface PredatorDef {
+  kind: string;
+  name: string;
+  creature: string;
+  size: readonly number[];
+  print: string;
+  meat: number;
+  leftovers: readonly LeftoverDef[];
+}
+
+export interface WildDef {
+  species: readonly SpeciesDef[];
+  predators: readonly PredatorDef[];
+  prints: readonly { id: string; name: string }[];
+  /** Grounds that take a print on a wet day. */
+  soft: readonly string[];
+  printHours: number;
+  /** Hunters leave each herd its last `spare`. */
+  spare: number;
+  place: { start: number; apart: number; radius: number; tries: number; spread: number };
+  /** Minutes between steps; flight steps every `fleeEvery` and lasts `fleeFor` minutes. */
+  move: {
+    every: number;
+    fleeEvery: number;
+    trot: number;
+    fleeFor: number;
+    wander: number;
+    reach: number;
+  };
+  winter: readonly string[];
+  /** Herd sizes at which the line `wild.herdLow` is written: below this share (x/100) of the start. */
+  low: number;
+  /** A winter day's loss per animal, scaled by herd size over the species cap. */
+  snowLoss: number;
+  pack: {
+    den: { from: number; radius: number; far: number };
+    near: string;
+    roam: number;
+    offMap: number;
+    offMapWinter: number;
+    harsh: string;
+    harshFactor: number;
+    inValley: number;
+    gameFull: number;
+    snowFactor: number;
+    snowMost: number;
+    hungry: number;
+    hungryEvery: number;
+    visit: number;
+    visitEvery: number;
+    night: { from: number; to: number };
+    least: number;
+    returns: { month: string; chance: number };
+    why: { harsh: string; winter: string; other: string };
+    left: { dead: string; few: string };
+    where: { edge: string; midden: string };
+  };
+  where: Readonly<Record<string, string>>;
+}
+
+/** The part of a creature entry the pack reads. */
+export interface CreatureDef {
+  id: string;
+  biomes: readonly string[];
+  names: readonly string[];
+}
+
+export interface WildDefs {
+  wild: WildDef;
+  creatures: readonly CreatureDef[];
+}

@@ -49,6 +49,8 @@ const fixtureContent: EngineContent = {
   tools: content.tools,
   items: content.items,
   metal: content.metal,
+  wild: content.wild,
+  creatures: content.creatures,
   events: [
     ...content.events,
     { id: 'test.roll', template: 'The dice showed {value}.' },

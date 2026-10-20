@@ -22,12 +22,15 @@ export function layerOf(map: MapState, z: number): MapState | LevelState | undef
 }
 
 /** The ground, features, snow and ice of chunk (cx, cy) on level `z`, row by row; edge chunks
- * are narrower or shorter. Below the surface there is no snow or ice. */
+ * are narrower or shorter. Below the surface there is no snow or ice. `snowLie` is the weather's
+ * lying snow; `printKind` (0, or 1 + a `wild.prints` index), `printAge` (hours since, up to 255 at
+ * `tick`) and `printDir` (0 to 7) the animals' prints that `printHours` has not yet taken. */
 export function chunkTiles(
   map: MapState,
   cx: number,
   cy: number,
   z = 0,
+  tick = 0,
 ): {
   x: number;
   y: number;
@@ -38,6 +41,10 @@ export function chunkTiles(
   features: Uint8Array;
   snow: Uint8Array;
   ice: Uint8Array;
+  snowLie: Uint8Array;
+  printKind: Uint8Array;
+  printAge: Uint8Array;
+  printDir: Uint8Array;
   built: Uint8Array;
   known: Uint8Array;
   stains: Uint8Array;
@@ -52,6 +59,10 @@ export function chunkTiles(
   const features = new Uint8Array(w * h);
   const snow = new Uint8Array(w * h);
   const ice = new Uint8Array(w * h);
+  const snowLie = new Uint8Array(w * h);
+  const printKind = new Uint8Array(w * h);
+  const printAge = new Uint8Array(w * h);
+  const printDir = new Uint8Array(w * h);
   const built = new Uint8Array(w * h);
   const known = new Uint8Array(w * h);
   const stains = new Uint8Array(w * h);
@@ -62,11 +73,23 @@ export function chunkTiles(
       features[row * w + col] = layer.features[from]!;
       if (z === 0) snow[row * w + col] = map.snow[from]!;
       if (z === 0) ice[row * w + col] = map.ice[from]! >> 7;
+      if (z === 0) snowLie[row * w + col] = map.snowLie[from]!;
+      if (z === 0 && map.printKind[from]) {
+        printKind[row * w + col] = map.printKind[from]!;
+        printAge[row * w + col] = Math.max(
+          0,
+          Math.min(255, Math.floor((tick - map.printAt[from]!) / 60)),
+        );
+        printDir[row * w + col] = map.printDir[from]!;
+      }
       if (z === 0) built[row * w + col] = map.built[from]!;
       if (z === 0) stains[row * w + col] = map.stains[from]!;
       known[row * w + col] = z === 0 ? 1 : (layer as LevelState).known[from]!;
     }
-  return { x, y, z, w, h, tiles, features, snow, ice, built, known, stains };
+  return {
+    ...{ x, y, z, w, h, tiles, features, snow, ice, snowLie },
+    ...{ printKind, printAge, printDir, built, known, stains },
+  };
 }
 
 /**
