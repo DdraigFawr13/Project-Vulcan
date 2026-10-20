@@ -26,6 +26,8 @@ import {
 } from '../engine/index.ts';
 import { fieldFrames } from './fields.ts';
 import { fireGoods, workBars } from './fires.ts';
+import { jobBars } from './jobbars.ts';
+import { metalStatus } from './metalstatus.ts';
 import { shaftPlans, stockNote } from './mine.ts';
 import { furnitureGoods, tilePiece } from './furniture.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
@@ -72,11 +74,14 @@ export function goodsOf(world: WorldState): GoodsView {
       })),
     furniture: [...furnitureGoods(world), ...stationGoods(world)],
     fires: fireGoods(world),
-    work: workBars(world),
+    work: [...workBars(world), ...jobBars(world)],
     fields: fieldFrames(world),
     shafts: shaftPlans(world),
   };
 }
+
+const recipeOf = (good: string): string | undefined =>
+  content.metal.recipes.find((r) => r.makes === good)?.id;
 
 /** The stock lever, one row per good in work.json. */
 export const stockView = (world: WorldState): StockView[] =>
@@ -88,6 +93,7 @@ export const stockView = (world: WorldState): StockView[] =>
     level: (stockOf(world, def.good)?.['level'] as string) ?? def.start,
     levels: def.levels.map((l) => ({ id: l.id, word: l.word, count: l.count })),
     ...(def.note && { note: stockNote(world, def.good, def.note) }),
+    ...(recipeOf(def.good) && { status: metalStatus(world, content, recipeOf(def.good)!) }),
   }));
 
 /** The inspector's goods rows for tile (x, y, z), each with the line that made or brought it. */
