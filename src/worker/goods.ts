@@ -77,6 +77,7 @@ export function goodsOf(world: WorldState): GoodsView {
     work: [...workBars(world), ...jobBars(world)],
     fields: fieldFrames(world),
     shafts: shaftPlans(world),
+    middens: [], // hook: the people engine's midden sites go here
   };
 }
 

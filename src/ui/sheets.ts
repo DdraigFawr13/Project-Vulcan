@@ -5,6 +5,7 @@ import type {
   BuildView,
   FromWorker,
   LawView,
+  AnimalPage,
   ItemView,
   LedgerLine,
   PersonView,
@@ -12,6 +13,7 @@ import type {
   WalkerView,
 } from '../worker/index.ts';
 import { content } from '../content/index.ts';
+import { animalRows, goneRows } from './animalsheet.ts';
 import { BuildSheet } from './build.ts';
 import { itemRows } from './itemsheet.ts';
 import { Dawn } from './dawn.ts';
@@ -130,6 +132,15 @@ export class Sheets {
       look: (x, y, z) => this.deps.show(x, y, z, true),
     });
     panel.showView('item', item.name, rows);
+    this.play.select(undefined);
+    this.deps.opened();
+  }
+
+  /** The herd or pack page of a tapped animal (Bundle 2); view only. */
+  showAnimal(page: AnimalPage | undefined): void {
+    const { panel } = this.deps;
+    const rows = page ? animalRows(page, (line) => panel.lineRow(line)) : goneRows();
+    panel.showView('animal', page?.title ?? 'Animal', rows);
     this.play.select(undefined);
     this.deps.opened();
   }

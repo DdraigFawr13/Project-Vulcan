@@ -2,3 +2,4 @@
 export const PEOPLE = 'sprites-people';
 export const ITEMS = 'items';
 export const BUILDINGS = 'buildings';
+export const WILD = 'sprites-wild';

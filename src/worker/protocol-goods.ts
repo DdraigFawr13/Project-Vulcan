@@ -32,6 +32,8 @@ export interface GoodsView {
   fields: { frame: string; tiles: number[] }[];
   /** Shaft plans (planned or being sunk) on the surface, for the map's faint plan layer. */
   shafts: (Spot3 & { state: string })[];
+  /** Middens (Bundle 2 hook, drawn as `site.midden`): empty until the people engine lays them. */
+  middens: Spot3[];
 }
 
 /** One good's stock lever (P2.4): how much the colony has and wants, and the levels to pick. */
