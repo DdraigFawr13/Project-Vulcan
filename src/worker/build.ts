@@ -32,6 +32,7 @@ import {
 import { buildFields } from './fields.ts';
 import { burialRow, sickBeds, word } from './places.ts';
 import { roomWarmth } from './fires.ts';
+import { pastureRow } from './flock.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { BuildRow, BuildView, SmithyRow } from './protocol-build.ts';
 
@@ -105,12 +106,14 @@ export function buildView(world: WorldState): BuildView {
   const state = world.systems['build'] ?? {};
   const smithy = smithyRow(world);
   const burial = burialRow(world);
+  const pasture = pastureRow(world);
   return {
     green: { x: green.x, y: green.y },
     want: { level, word: content.work.priority.words[level - 1] ?? '' },
     ...buildFields(world),
     ...(smithy && { smithy }),
     ...(burial && { burial }),
+    ...(pasture && { pasture }),
     need: needOf(world),
     noGround: !!state['noGround'] && homeless(world, content).length > 0,
     houses: housesOf(world)

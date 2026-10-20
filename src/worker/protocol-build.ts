@@ -1,5 +1,6 @@
 // The wire shapes of plans, houses, rooms and the Build sheet (P3.1, P3.7, P3.3, P3.8), split from protocol.ts.
 import type { LedgerLine } from './protocol.ts';
+import type { PastureRow } from './protocol-flock.ts';
 
 /** A tile's house (P3.7): its name, why the colony chose the site, and whether it can be sent back. */
 export interface HouseView {
@@ -157,6 +158,8 @@ export interface BuildView {
   smithy?: SmithyRow;
   /** The burial ground, once the colony has laid one out (P5.8). */
   burial?: BurialRow;
+  /** Present while wild sheep or goats live in the valley, or a pasture is planned or built. */
+  pasture?: PastureRow;
   green: { x: number; y: number };
   want: { level: number; word: string };
   /** "5 people sleep under the open sky", or "none now". */

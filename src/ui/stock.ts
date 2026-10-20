@@ -2,7 +2,7 @@
 // player picks a level; who fells and hauls is the colonists' own choice (V-015). Shows what the
 // worker hands it; it computes no game rule (GAME-02).
 import { content } from '../content/index.ts';
-import type { LeftoversView, StockView } from '../worker/index.ts';
+import type { FlockPlate, LeftoversView, StockView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
@@ -52,6 +52,7 @@ export function stockRows(
   return [
     el('p', {}, 'How much the colony keeps in its store. Whoever is free and able does the work.'),
     ...rows,
+    ...(leftovers.flock ? [flockBlock(leftovers.flock)] : []),
     leftoverBlock(leftovers),
   ];
 }
@@ -63,6 +64,37 @@ function foodMix(aside: HTMLElement, l: LeftoversView): void {
   aside.textContent = `${parts.join(' and ')} count as food, beside the cart’s preserved food.`;
 }
 
+/** The flock plate (Bundle 3): head by kind word and the hay in the rick, read-only. The levers
+ * are the Pasture and Herding rows, not this sheet. */
+function flockBlock(plate: FlockPlate): HTMLElement {
+  const block = el('div', { class: 'kept', 'data-testid': 'stock-flock' });
+  block.append(el('h3', {}, 'The flock'), fillFlock(el('div', { 'data-flock': '' }), plate));
+  block.append(
+    el(
+      'p',
+      { class: 'aside' },
+      'The herders keep only what the hay can feed. Nothing to set here: the Pasture row and the Herding row are the levers.',
+    ),
+  );
+  return block;
+}
+
+/** "Sheep: 7 kept (1 ram, 6 ewes)" and "Hay: 830 in the rick...", one line each. */
+function fillFlock(box: Element, plate: FlockPlate): Element {
+  const lines = [...plate.head, ['Hay', plate.hay]];
+  const key = JSON.stringify(lines);
+  if (box.getAttribute('data-key') === key) return box;
+  box.setAttribute('data-key', key);
+  box.replaceChildren(
+    ...lines.map(([name, text]) => {
+      const p = el('p');
+      p.append(el('b', {}, name!), `: ${text}`);
+      return p;
+    }),
+  );
+  return box;
+}
+
 /** What the kills leave: kept in the store until a trade uses them (Phase 5B). */
 function leftoverBlock(l: LeftoversView): HTMLElement {
   const block = el('div', { class: 'kept', 'data-testid': 'stock-leftovers' });
@@ -72,7 +104,7 @@ function leftoverBlock(l: LeftoversView): HTMLElement {
     el(
       'p',
       { class: 'aside' },
-      'Kept in the store until a trade uses them: hides for the tanner, fat for candles (Phase 5B). Guts and scraps go to the midden past the town ring.',
+      `Kept in the store until a trade uses them: ${l.items.some((i) => i.item === 'fleece') ? 'fleece for the loom, ' : ''}hides for the tanner, fat for candles (Phase 5B). Guts and scraps go to the midden past the town ring.`,
     ),
   );
   return block;
@@ -94,6 +126,8 @@ export function fillStock(
   stock: readonly StockView[],
   leftovers: LeftoversView,
 ): void {
+  const flock = body.querySelector('[data-flock]');
+  if (flock && leftovers.flock) fillFlock(flock, leftovers.flock);
   const kept = body.querySelector('[data-leftovers]');
   if (kept) fillLeftovers(kept, leftovers);
   const mix = body.querySelector<HTMLElement>('[data-testid="food-mix"]');
@@ -122,7 +156,10 @@ export function drawStock(
   leftovers: LeftoversView,
   set: (good: string, level: string) => void,
 ): string {
-  const key = JSON.stringify(stock.map((s) => [s.good, s.level, s.want, s.levels]));
+  const key = JSON.stringify([
+    stock.map((s) => [s.good, s.level, s.want, s.levels]),
+    !!leftovers.flock,
+  ]);
   if (key === drawn) fillStock(body, stock, leftovers);
   else body.replaceChildren(...stockRows(stock, set, leftovers));
   return key;

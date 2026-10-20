@@ -3,13 +3,16 @@
 // where a house goes, how big and why (V-049), so nothing here picks a tile or a person. Levers
 // apply at once while paused and show as sent until the snapshot carries them. Everything shown
 // comes from the worker's `BuildView` (GAME-02).
+import { content } from '../content/index.ts';
 import type { BuildRow, BuildView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { stepper, WORDS } from './stepper.ts';
 
+type BuildKind = 'house' | 'field' | 'smithy' | 'pasture';
+
 export interface BuildActions {
-  setBuild(kind: 'house' | 'field' | 'smithy', level: number): void;
-  sendBack(kind: 'house' | 'field' | 'smithy' | 'burial', id: number): void;
+  setBuild(kind: BuildKind, level: number): void;
+  sendBack(kind: BuildKind | 'burial', id: number): void;
   /** The sheet changed on its own (a lever sent): draw it again. */
   refresh(): void;
 }
@@ -38,6 +41,8 @@ export class BuildSheet {
   private level: number | undefined;
   private fieldLevel: number | undefined;
   private smithyLevel: number | undefined;
+  private pastureLevel: number | undefined;
+  private backPasture = false;
   private backSmithy = false;
   private backBurial = false;
   private readonly back = new Set<number>();
@@ -55,21 +60,24 @@ export class BuildSheet {
       this.level,
       this.fieldLevel,
       this.smithyLevel,
+      this.pastureLevel,
       this.backSmithy,
       this.backBurial,
+      this.backPasture,
       [...this.back],
       [...this.backFields],
     ]);
   }
 
   /** A kind's priority row: the Work sheet's own stepper, sent as `setBuild`. */
-  private levelRow(kind: 'house' | 'field' | 'smithy', name: string, shown: number): HTMLElement {
+  private levelRow(kind: BuildKind, name: string, shown: number): HTMLElement {
     const row = el('div', { class: 'prio', 'data-testid': `build-${kind}s` });
     row.append(
       el('span', { class: 'job' }, name),
       stepper(shown, WORDS[shown - 1] ?? '', name, (next) => {
         if (kind === 'house') this.level = next;
         else if (kind === 'smithy') this.smithyLevel = next;
+        else if (kind === 'pasture') this.pastureLevel = next;
         else this.fieldLevel = next;
         this.actions.setBuild(kind, next);
         this.actions.refresh();
@@ -129,6 +137,7 @@ export class BuildSheet {
         'What the colony needs built. Colonists choose where it goes and how big, and say why.',
       ),
       ...this.fieldRows(view),
+      ...(view.pasture ? this.pastureRows(view.pasture) : []),
       houses,
       el('p', { 'data-testid': 'build-need' }, `Need: ${view.need}.`),
     ];
@@ -151,6 +160,37 @@ export class BuildSheet {
         'A plan can be sent back once; colonists then choose another site.',
       ),
     );
+    return rows;
+  }
+
+  /** The Pasture row (it appears while wild sheep or goats live in the valley, or a pasture is
+   * planned): its level, the need, and the plan with why the colony sited it there and Send back
+   * while nothing is built. No tile, no animal (V-041). */
+  private pastureRows(view: NonNullable<BuildView['pasture']>): HTMLElement[] {
+    const name = content.flock.pasture.name;
+    const rows = [
+      this.levelRow('pasture', name, this.pastureLevel ?? view.want.level),
+      el('p', { 'data-testid': 'build-pasture-need' }, `Need: ${view.need}.`),
+    ];
+    const plan = view.plan;
+    if (!plan) return rows;
+    const line = el('p', { 'data-testid': 'build-pasture' });
+    line.append(el('b', {}, name), `, ${plan.words}`);
+    rows.push(line, el('p', { class: 'aside' }, `Why here: ${plan.why}.`));
+    if (plan.back) {
+      const button = el(
+        'button',
+        { type: 'button', 'data-testid': 'send-back-pasture' },
+        this.backPasture ? 'Sending back…' : 'Send back',
+      );
+      button.disabled = this.backPasture;
+      button.addEventListener('click', () => {
+        this.backPasture = true;
+        this.actions.sendBack('pasture', plan.id);
+        this.actions.refresh();
+      });
+      rows.push(el('div', { class: 'row' }, button));
+    } else if (plan.sent) rows.push(el('p', { class: 'muted' }, 'sent back once'));
     return rows;
   }
 
@@ -247,6 +287,8 @@ export class BuildSheet {
     if (this.smithyLevel === view.smithy?.want.level) this.smithyLevel = undefined;
     if (!view.smithy?.plan?.back) this.backSmithy = false;
     if (!view.burial?.back) this.backBurial = false;
+    if (this.pastureLevel === view.pasture?.want.level) this.pastureLevel = undefined;
+    if (!view.pasture?.plan?.back) this.backPasture = false;
     for (const id of this.backFields)
       if (!view.fields.some((f) => f.id === id && f.back)) this.backFields.delete(id);
     for (const id of this.back)

@@ -19,6 +19,8 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
+import { flockPlate } from './flock.ts';
+import { keptPage } from './flockpage.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 
@@ -68,14 +70,16 @@ export function animalFeed(): { next(w: WorldState): AnimalView[] | undefined; r
 /** The hides, bone and fat in the colony's hands, and the game and fish counted as food. */
 export function leftoversView(world: WorldState): LeftoversView {
   const name = (id: string): string => content.items.find((i) => i.id === id)?.name ?? id;
+  const flock = flockPlate(world);
+  // Fleece is listed once a flock stands, or while the store still holds some.
+  const goods = ['hide', 'bone', 'fat'];
+  if (flock || haveOf(world, content, content.flock.shear.item) > 0)
+    goods.unshift(content.flock.shear.item);
   return {
-    items: ['hide', 'bone', 'fat'].map((item) => ({
-      item,
-      name: name(item),
-      have: haveOf(world, content, item),
-    })),
+    items: goods.map((item) => ({ item, name: name(item), have: haveOf(world, content, item) })),
     game: haveOf(world, content, 'game'),
     fish: haveOf(world, content, 'fish'),
+    ...(flock && { flock }),
   };
 }
 
@@ -111,6 +115,7 @@ export function animalPage(world: WorldState, id: number, lineOf: LineOf): Anima
   const animal = entityOf(world, 'animal', id);
   if (!animal) return undefined;
   const herd = animal['herd'] ? entityOf(world, 'herd', animal['herd'] as number) : undefined;
+  if (herd?.['kept']) return keptPage(world, animal, herd, lineOf);
   return herd ? herdPage(world, id, herd, lineOf) : packPage(world, id, animal, lineOf);
 }
 

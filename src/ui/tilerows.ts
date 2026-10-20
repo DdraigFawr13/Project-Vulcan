@@ -8,6 +8,10 @@ import { planFacts, planLines } from './planrows.ts';
 import { shaftFacts, shaftLines } from './shaftrows.ts';
 import { worksFacts, worksLines } from './worksrows.ts';
 
+/** What a stain on the ground means (taste board pick, V-087); the colours are content. */
+export const STAIN_NOTE =
+  'Stains show where ore lies below: green for copper, grey for tin, rust for iron. Miners dig where a wanted metal’s stain is; you set what is wanted on the Stock sheet.';
+
 /** The rows, key and value, of what stands on the tile. */
 export const standingFacts = (tile: TileView): string[][] => [
   ...worksFacts(tile),

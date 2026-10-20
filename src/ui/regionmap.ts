@@ -3,6 +3,7 @@
 // as an SVG layer with tap areas of about 40 px. A picture only; it computes no game rule (GAME-02).
 import { content } from '../content/index.ts';
 import type { RegionView } from '../worker/index.ts';
+import { el } from './dom.ts';
 
 type RegionSite = RegionView['sites'][number];
 
@@ -277,3 +278,34 @@ const PLURAL: Readonly<Record<string, string>> = { Elf: 'Elves', Dwarf: 'Dwarves
 export const siteWords = (site: RegionSite): string =>
   `${site.name}, a ${site.culture} ${site.kind} of ${site.people} · ${PLURAL[site.race] ?? `${site.race}s`} · rule: ${site.government} · faith: ${site.faith}\n` +
   `${site.realm ? `${site.realm}. ` : ''}${site.founded ? `Founded in Year ${site.founded}` : 'One of the first settlements'}. ${site.history}`.trimEnd();
+
+/** The Region sheet's rows: the map with the settled valley marked, a note that shows who lives at
+ * a tapped site, and the neighbours. */
+export function regionRows(region: RegionView, site: number): HTMLElement[] {
+  const valley = region.valleys[site - 1];
+  const note = el('p', { class: 'note' }, 'Tap a settlement to see who lives there.');
+  const map = regionMap(region, {
+    selected: site,
+    onlySelected: true,
+    onSite: (s) => (note.textContent = siteWords(s)),
+  });
+  const near = el('ul');
+  for (const n of valley?.near ?? [])
+    near.append(el('li', {}, `${n.name}, ${n.culture} ${n.kind}, ${n.days} days ${n.dir}`));
+  return [
+    el(
+      'p',
+      {},
+      valley ? `Your valley: ${valley.name}${valley.range ? `, under ${valley.range}` : ''}.` : '',
+    ),
+    map,
+    raceLegend(region),
+    note,
+    near,
+    el(
+      'p',
+      { class: 'muted' },
+      'No dealings with the neighbours yet: raids come in Phase 8, trade and travel in Phase 9.',
+    ),
+  ];
+}
