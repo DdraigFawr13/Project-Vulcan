@@ -110,3 +110,20 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-104 | Hand-me-down tools: the old tool goes to the worst holder (Phase 4 review). |
 | V-105 | Walking at half speed, clock unchanged (Morgan's card, Phase 4 review). |
 | V-106 | Every timed job shows the build progress bar (Phase 4 review). |
+| V-107 | Phase 5 splits into 5A Wolves and strangers and 5B Larder, loom and lamp, each live with a playtest; 5B gets its own round while 5A builds (Morgan, workshop https://claude.ai/artifact/JaA6PDXSCXvbMXWKErK7wv, 2026-10-20). |
+| V-108 | Irrigation channels parked, P5.2 is wells; P5.4 splits into wild (P5.4a) and kept animals (P5.4b). |
+| V-109 | Priority ladder: danger beats warmth, which beats sleep and hunger, which beat work; traits move a person's line (grows V-046, V-080). |
+| V-110 | Game herds and one named pack live in the valley; the pack's hunger rises as game falls, bringing it to flocks, then lone colonists. |
+| V-111 | Fight or flee on sight: the brave, armed and not alone stand; a few blows by skill and weapon; wounds to health; witnesses remember. |
+| V-112 | Hunt and Fish Work rows, pulled by the Food plate; hunters spare a herd's last few and want a predator that attacked; ice stops fishing. |
+| V-113 | Pasture Build row: a fold and hay meadow sited by colonists, herders tame wild beasts to fill it, hay after the first snow, an autumn cull (with proposal P3). |
+| V-114 | Six body parts; wounds bleed by severity and heal with rest and care; lasting marks are content with a plain effect. |
+| V-115 | The finder carries the hurt to their bed; a Heal row; a sickroom from need once two lie hurt or ill. |
+| V-116 | A burial ground sited at the first death; the grave names every cause; mourning by closeness; an unburied body unsettles. |
+| V-117 | Strangers law (Open door, Those in need, Closed); colonists weigh each stranger and the law settles a split band, with a line. |
+| V-118 | Newcomers come for spare food, beds and the colony's name: about two or three a year, fewer in winter, the first in the first autumn. |
+| V-119 | A home for every adult or couple (P5.14), each plan citing whose want it meets; newcomers sleep in the first cottage meanwhile. |
+| V-120 | Roads Build row: stone on the most worn stretch first, with a line naming the route. |
+| V-121 | The first cottage becomes the hall once the band has moved out (proposal P1). |
+| V-122 | Tracks on snow and mud fade over a day; a hunter crossing fresh ones follows them (proposal P2). |
+| V-123 | 5A looks (taste board https://claude.ai/artifact/7QMHTRi5A9UFqYcWuk9xuF): worn grass, stone roads, unmarked predators, fading prints, wattle folds, wooden grave markers, a body figure. |

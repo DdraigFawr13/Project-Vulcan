@@ -36,7 +36,7 @@ Order: bundles 1 to 4, then P4.9. A bundle estimated over 1,200 lines splits int
 
 Fields row on the Build sheet; colonists site fields on good soil near water and size them; barley in spring, turnips into autumn; sow, grow, harvest; Seed plate and seed in the cart; Cook row; meals at any lit hearth; the "brought the harvest home together" memory; cloaks from the cart; the once-a-day cold line; colonists redrawn a quarter larger (V-095); walls of the most plentiful material (V-097); fields past the ring (V-098). Mock-up: UI. Done when: a field sown in spring plus foraging feeds five through the first winter on most seeds.
 
-- Reading list: `docs/DECISIONS.md`; `docs/UI_STYLE.md`; `src/engine/build/MODULE.md`; `src/engine/goods/MODULE.md`; `src/engine/fire/MODULE.md`; `src/engine/needs/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/UI_STYLE.md`; `src/engine/build/MODULE.md`; `src/engine/goods/MODULE.md`; `src/engine/fire/MODULE.md`; `src/engine/needs/MODULE.md`; `src/ui/MODULE.md`
 
 ### Bundle 2: P4.1 Mining across levels and underground fog
 
@@ -54,7 +54,7 @@ Charcoal clamp and smelter sited at the edge, the smithy by the river and the sm
 
 Memories that touch a person from the ledger; the Laws page under ⋯ with the work-hours law (Short, Customary, Long); answers with reasons on the law page, refusals first; refusals spread through a memory; temperament and memories shift the warmth warning line (V-046). Mock-up: UI. Done when: two colonists react differently to the same law, each with a reason that links to its memories.
 
-- Reading list: `docs/DECISIONS.md`; `docs/UI_STYLE.md`; `src/engine/people/MODULE.md`; `src/engine/needs/MODULE.md`; `src/engine/log/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/UI_STYLE.md`; `src/engine/people/MODULE.md`; `src/engine/needs/MODULE.md`; `src/engine/log/MODULE.md`; `src/ui/MODULE.md`
 
 ### P4.9 One-year balance pass
 

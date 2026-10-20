@@ -33,7 +33,7 @@ Order: P3.1 and P3.2, then P3.7, P3.3 and P3.8, then P3.4 and P3.5, then P3.6. E
 
 Plans as entities; builders take up a plan by the Build priority, haul its material and build tile by tile; deconstructing returns the material. Until P3.7, plans come only from the test-mode `placeBuilding` tool (V-049). The lever-list test. Mock-up: UI (with P3.2). Done when: a wall plan is built from hauled stone, and deconstructing returns it.
 
-- Reading list: `docs/DECISIONS.md`; `docs/ARCHITECTURE.md#worker-protocol`; `src/engine/goods/MODULE.md`; `src/engine/people/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/ARCHITECTURE.md#worker-protocol`; `src/engine/goods/MODULE.md`; `src/engine/people/MODULE.md`; `src/ui/MODULE.md`
 
 ### P3.2 Walls, floors, doors, stairs in wood and stone
 
