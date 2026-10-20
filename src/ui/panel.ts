@@ -6,7 +6,7 @@ import type { ClockView, LedgerLine, RegionView, StockView, TileView } from '../
 import type { LeftoversView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
-import { fillStock, stockRows } from './stock.ts';
+import { drawStock } from './stock.ts';
 import { testMode } from './testmode.ts';
 import { landFacts } from './landrows.ts';
 import { placeHead, placeTitle } from './placerows.ts';
@@ -222,12 +222,8 @@ export class Panel {
   setStock(stock: readonly StockView[], leftovers = this.leftovers): void {
     [this.latest, this.leftovers] = [stock, leftovers];
     if (this.shown !== 'stock') return;
-    const key = JSON.stringify(stock.map((s) => [s.good, s.level, s.want, s.levels]));
-    if (key === this.stock) return fillStock(this.body, stock, leftovers);
-    this.stock = key;
-    this.body.replaceChildren(
-      ...stockRows(stock, (good, level) => this.actions.setStock(good, level), leftovers),
-    );
+    const set = (good: string, level: string) => this.actions.setStock(good, level);
+    this.stock = drawStock(this.body, this.stock, stock, leftovers, set);
   }
 
   /** A sheet drawn elsewhere (the person, Work and Alerts sheets): its title and its rows. */

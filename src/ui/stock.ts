@@ -112,3 +112,18 @@ export function fillStock(
 
 const haveLine = (s: StockView): string =>
   s.want ? `${s.have} of ${s.want} wanted` : `${s.have} kept, none wanted`;
+
+/** Draws the sheet anew when a level changed since `drawn` (its last key), else fills the counts
+ * in place; returns the new key. */
+export function drawStock(
+  body: HTMLElement,
+  drawn: string,
+  stock: readonly StockView[],
+  leftovers: LeftoversView,
+  set: (good: string, level: string) => void,
+): string {
+  const key = JSON.stringify(stock.map((s) => [s.good, s.level, s.want, s.levels]));
+  if (key === drawn) fillStock(body, stock, leftovers);
+  else body.replaceChildren(...stockRows(stock, set, leftovers));
+  return key;
+}
