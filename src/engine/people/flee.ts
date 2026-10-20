@@ -13,7 +13,7 @@ import { isDown, stopFor } from '../health/index.ts';
 import { addMemory } from '../needs/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { animalsOf, packOf } from '../wild/index.ts';
+import { animalsOf, packOf, whenWord } from '../wild/index.ts';
 import { people, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
 
@@ -169,11 +169,7 @@ function decide(ctx: SystemContext, group: readonly EntityRow[], seen: EntityRow
   if (state['sighted'] && world.tick - (state['sightedAt'] ?? 0) < 60) return;
   const pack = packOf(world)!;
   const green = greenOf(world);
-  const hour = clockAt(world.tick, content.calendar).hour;
-  const when =
-    folk.when.find((w) =>
-      w.from <= w.to ? hour >= w.from && hour < w.to : hour >= w.from || hour < w.to,
-    )?.word ?? '';
+  const when = whenWord(ctx);
   const where =
     content.wild.pack.where[(world.entities['midden'] ?? []).length ? 'midden' : 'edge'];
   const at = { x: seen['x'] as number, y: seen['y'] as number, w: 1, h: 1 };

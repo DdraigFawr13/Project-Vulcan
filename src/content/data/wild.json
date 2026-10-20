@@ -18,7 +18,7 @@
 "printHours": 24,
 "spare": 3,
 "place": {"start":30,"apart":14,"radius":12,"tries":12,"spread":3},
-"move": {"every":10,"fleeEvery":2,"trot":3,"fleeFor":30,"wander":3,"reach":24},
+"move": {"every":10,"fleeEvery":2,"trot":2,"fleeFor":30,"wander":3,"reach":24},
 "winter": ["Firstfrost","Deepwinter","Frostmonth","Lastsnow"],
 "low": 50,
 "snowLoss": 0.004,
@@ -38,7 +38,7 @@
 "hungryEvery": 3,
 "visit": 12,
 "visitEvery": 4,
-"night": {"from":19,"to":5},
+"night": {"from":17,"to":5},
 "least": 2,
 "returns": {"month":"Thawmonth","chance":0.5},
 "why": {"harsh":"the hard frost keeps the herds low in the wider range","winter":"the winter keeps the herds low in the wider range","other":"the herds are thin in the wider range"},
@@ -47,7 +47,7 @@
 },
 "folk": {
 "sight": {"day":8,"night":4},
-"night": {"from":19,"to":6},
+"night": {"from":21,"to":6},
 "bold": ["hot-tempered","hardy","steady"],
 "timid": ["melancholic"],
 "armed": ["axe","spear"],
@@ -67,7 +67,7 @@
 "memories": {"tracks":"saw-tracks","stood":"stood-together","attack":"saw-attack"},
 "compass": ["north","north-east","east","south-east","south","south-west","west","north-west"],
 "when": [{"from":17,"to":21,"word":"at dusk"},{"from":21,"to":5,"word":"in the night"},{"from":5,"to":9,"word":"at dawn"},{"from":9,"to":17,"word":"by day"}],
-"words": {"came":"came to {where} {when}","seen":"was sighted {dir} of the green {when}","stood":"{names} stood with their {weapons} ({traits}, side by side).","ran":"{names} ran for the {house}.","ranAway":"{names} ran.","last":"last to the {house} door","alone":"alone in the open","struck":"{name} struck it with {their} {weapon} and it fled, limping.","slew":"{name} struck it with {their} {weapon} and killed it.","bitten":"{name} was bitten {bites}.","bitePart":"on the {part}: {severity}","unhurt":"{name} was not bitten."}
+"words": {"came":"came to {where} {when}","seen":"came in sight {dir} of the green {when}","stood":"{names} stood with their {weapons} ({traits}, side by side).","ran":"{names} ran for the {house}.","ranAway":"{names} ran.","last":"last to the {house} door","alone":"alone in the open","struck":"{name} struck it with {their} {weapon} and it fled, limping.","slew":"{name} struck it with {their} {weapon} and killed it.","bitten":"{name} was bitten {bites}.","bitePart":"on the {part}: {severity}","unhurt":"{name} was not bitten."}
 },
 "where": {"temperate-forest":"in the woods","taiga":"in the taiga","grassland":"on the grass","alpine":"on the high slopes","tundra":"on the tundra","steppe":"on the steppe","swamp":"by the fens","default":"in the valley"}
 }

@@ -39,12 +39,16 @@ const NEIGHBOURS: readonly (readonly [number, number])[] = [
   ] as const),
 ];
 
-/** Moves `a` onto tile `to`, a neighbour, if it may go there; leaves its print. */
+/** Moves `a` onto tile `to`, a neighbour, if it may go there; leaves its print. Wolves and bears
+ * swim a river or cross a ford where people walk; game keeps to dry ground. */
 function stepTo(ctx: SystemContext, a: EntityRow, to: number): boolean {
   const { content, world } = ctx;
   const map = world.map;
   const [ox, oy] = [a['x'] as number, a['y'] as number];
-  if (!openAt(content, map, to) || stepCost(content, map, oy * map.width + ox, to) === 0)
+  if (
+    !(a['pack'] || openAt(content, map, to)) ||
+    stepCost(content, map, oy * map.width + ox, to) === 0
+  )
     return false;
   const [x, y] = [to % map.width, Math.floor(to / map.width)];
   a['facing'] = x > ox ? 'e' : x < ox ? 'w' : a['facing']!;
@@ -128,7 +132,8 @@ function run(ctx: SystemContext, folk: readonly (readonly [number, number])[]): 
 }
 
 /** The pack on the move between its den and the town's edge, at a trot: each animal with a way
- * takes a step; the first to arrive for a visit writes the line. */
+ * takes a step; the first to arrive for a visit writes the line. One whose way is blocked (a wall
+ * built since) stops short and does not count as arrived. */
 function trot(ctx: SystemContext): void {
   const { world, state } = ctx;
   const pack = packRow(world);
@@ -136,10 +141,13 @@ function trot(ctx: SystemContext): void {
   for (const a of animalsOf(world)) {
     const path = a['path'] as number[];
     if (!a['pack'] || !path.length) continue;
-    if (stepTo(ctx, a, path[0]!)) path.shift();
-    else a['path'] = [];
-    if (!(a['path'] as number[]).length && pack?.['visiting'] && !pack['shown']) arrived(ctx);
-    if ((a['path'] as number[]).length) going += 1;
+    if (!stepTo(ctx, a, path[0]!)) {
+      a['path'] = [];
+      continue;
+    }
+    path.shift();
+    if (!path.length && pack?.['visiting'] && !pack['shown']) arrived(ctx);
+    if (path.length) going += 1;
   }
   state['trot'] = going;
 }
@@ -211,8 +219,8 @@ function setOut(
   }
   const way = findPath(content, map, { x, y, z: 0 }, { x: tx, y: ty, z: 0 });
   if (!way || way.length > reach * 4) return;
-  // Water is never entered: the way ends before the first tile that is not open ground.
-  const blocked = way.findIndex((n) => !openAt(content, map, n));
+  // Game never enters water: its way ends before the first tile that is not open ground.
+  const blocked = a['pack'] ? -1 : way.findIndex((n) => !openAt(content, map, n));
   a['path'] = blocked < 0 ? way : way.slice(0, blocked);
 }
 

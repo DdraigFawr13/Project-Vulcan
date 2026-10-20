@@ -1,9 +1,10 @@
 // Ground and words the wild system shares: where an animal may stand, and how a place, a count of
 // game and a name read in a line.
-import type { EngineContent, MapState, WorldState } from '../core/index.ts';
+import { clockAt, type EngineContent, type MapState, type WorldState } from '../core/index.ts';
 import { dirFrom, greenOf } from '../build/index.ts';
 import { walkAt } from '../paths/index.ts';
 import { valleyOf } from '../region/index.ts';
+import type { SystemContext } from '../sim/index.ts';
 import { animalsOf, herdsOf } from './wild.ts';
 
 /** Open ground an animal may stand on: walkable, and never water (frozen or not). */
@@ -82,4 +83,14 @@ export function gameWords(world: WorldState, content: EngineContent): string {
 export function valleyGame(world: WorldState, content: EngineContent): number {
   const counts = gameCounts(world);
   return content.wild.species.reduce((sum, s) => sum + (counts.get(s.id) ?? 0) / s.perGame, 0);
+}
+
+/** The words for the hour now ("at dusk", "in the night"...), from `folk.when`. */
+export function whenWord(ctx: SystemContext): string {
+  const hour = clockAt(ctx.world.tick, ctx.content.calendar).hour;
+  return (
+    ctx.content.wild.folk.when.find((w) =>
+      w.from <= w.to ? hour >= w.from && hour < w.to : hour >= w.from || hour < w.to,
+    )?.word ?? ''
+  );
 }

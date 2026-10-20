@@ -10,6 +10,7 @@ describe('Work sheet headings', () => {
     const ids = content.work.priority.headings.flatMap((h) => h.jobs);
     expect(new Set(ids).size).toBe(ids.length);
     expect(content.work.priority.headings.map((h) => h.name)).toEqual([
+      'Wild',
       'Stone',
       'Wood',
       'Land',
@@ -23,6 +24,7 @@ describe('Work sheet headings', () => {
     const { plain, groups } = grouped(all);
     expect(plain.map((j) => j.job).sort()).toEqual(['build', 'haul', 'tend']);
     expect(groups.map((g) => [g.name, g.jobs.map((j) => j.job)])).toEqual([
+      ['Wild', ['hunt', 'fish']],
       ['Stone', ['mine', 'quarry']],
       ['Wood', ['fell', 'carpentry']],
       ['Land', ['farm', 'forage']],
@@ -35,11 +37,12 @@ describe('Work sheet headings', () => {
   it('hold the mine row back until a shaft exists', () => {
     const rows = all;
     expect(visibleJobs(rows, false).map((j) => j.job)).not.toContain('mine');
-    expect(grouped(visibleJobs(rows, false)).groups[0]!.jobs.map((j) => j.job)).toEqual(['quarry']);
-    expect(grouped(visibleJobs(rows, true)).groups[0]!.jobs.map((j) => j.job)).toEqual([
-      'mine',
-      'quarry',
-    ]);
+    const stone = (shaft: boolean) =>
+      grouped(visibleJobs(rows, shaft))
+        .groups.find((g) => g.name === 'Stone')!
+        .jobs.map((j) => j.job);
+    expect(stone(false)).toEqual(['quarry']);
+    expect(stone(true)).toEqual(['mine', 'quarry']);
   });
 
   it('show the rows’ common level, or the lowest when they differ', () => {

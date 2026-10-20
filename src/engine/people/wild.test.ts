@@ -96,7 +96,9 @@ describe('hunting and fishing', () => {
     step(w, sim, 6 * DAY);
     const left = animalsOf(w).filter((a) => a['herd'] === herd.id).length;
     expect(left).toBeGreaterThanOrEqual(spareCount(content));
-    expect(lines(w, 'wild.killed').length).toBeLessThanOrEqual(members.length - left);
+    // Hunters may take other game as well (hunting comes before foraging); this herd lost only
+    // what they took from it.
+    expect(herd['taken']).toBeLessThanOrEqual(members.length - left);
   });
 
   it('fishes the open water for fish and stops when the water freezes', () => {

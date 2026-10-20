@@ -163,6 +163,17 @@ describe('a hard winter with nothing eaten', () => {
     expect(edge.length).toBeGreaterThan(0);
     expect(typeOf(w, edge[0]!.causes[0]!)).toBe('wild.packHungry');
     expect(pack['visits']).toBeGreaterThan(0);
+    // By the next noon every wolf is home or on its way there (swimming the river if it must),
+    // none left in the town.
+    step(w, sim, DAY);
+    const home = { x: pack['denX'] as number, y: pack['denY'] as number };
+    for (const a of animalsOf(w).filter((a) => a['pack'])) {
+      const far = Math.max(
+        Math.abs((a['x'] as number) - home.x),
+        Math.abs((a['y'] as number) - home.y),
+      );
+      expect(far <= 2 * hard.wild.pack.roam || (a['path'] as number[]).length > 0).toBe(true);
+    }
   });
 });
 

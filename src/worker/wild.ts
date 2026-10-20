@@ -94,10 +94,11 @@ function groundWords(world: WorldState, x: number, y: number): string {
   return content.wild.where[biome] ?? content.wild.where['default']!;
 }
 
-/** A herd or pack's latest line and the wild line it cites, newest first (at most two). */
+/** A herd or pack's latest line and the wild line it cites, newest first (at most two); a herd
+ * placed at the start shows none rather than "A new world began". */
 function lastTwo(world: WorldState, id: unknown, lineOf: LineOf): LedgerLine[] {
   const first = typeof id === 'number' && id ? recordOf(world, id) : undefined;
-  if (!first) return [];
+  if (!first || id === world.begunEvent) return [];
   const out = [lineOf(first)];
   const cause = ('causes' in first ? (first.causes as number[]) : [])[0];
   const second = cause ? recordOf(world, cause) : undefined;

@@ -7,7 +7,7 @@ import { TICKS_PER_DAY } from '../core/index.ts';
 import { greenOf, ringOf } from '../build/index.ts';
 import { findPath } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { distance, openNear } from './ground.ts';
+import { distance, openNear, whenWord } from './ground.ts';
 import { animalsOf, packOf } from './wild.ts';
 
 /** Where the goods side says the pack would go instead of the ring's edge (state `lures` and
@@ -59,13 +59,11 @@ function sendAll(ctx: SystemContext, goal: number): void {
     );
     if (spot === undefined) continue;
     taken.add(spot);
-    const way = findPath(
-      content,
-      map,
-      { x: a['x'] as number, y: a['y'] as number, z: 0 },
-      { x: spot % map.width, y: Math.floor(spot / map.width), z: 0 },
-    );
-    if (way) Object.assign(a, { path: way, state: '' });
+    const at = { x: a['x'] as number, y: a['y'] as number, z: 0 };
+    const to = (i: number) => ({ x: i % map.width, y: Math.floor(i / map.width), z: 0 });
+    // A free tile cut off from the wolf (across a cliff) falls back to the goal itself.
+    const sure = findPath(content, map, at, to(spot)) ?? findPath(content, map, at, to(goal));
+    if (sure) Object.assign(a, { path: sure, state: '' });
   }
   ctx.state['trot'] = 1;
 }
@@ -118,6 +116,7 @@ export function arrived(ctx: SystemContext): void {
     data: {
       name: pack['name'] as string,
       where: target(ctx, den).where,
+      when: whenWord(ctx),
       days: pack['hunger'] as number,
     },
   });

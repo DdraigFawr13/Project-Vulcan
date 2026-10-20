@@ -122,7 +122,7 @@ export class WildSprites {
     return image && { x: image.x + TILE / 2, y: image.y + TILE / 2 };
   }
 
-  /** The middens (a hook: the list is empty until the people engine lays them), as `site.midden`. */
+  /** The middens the colony sited (people engine), as `site.midden`. */
   setMiddens(spots: readonly Spot3[]): void {
     const key = JSON.stringify(spots);
     if (key === this.middenKey || !this.live || !this.scene.textures.exists(WILD)) return;
