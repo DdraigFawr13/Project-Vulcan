@@ -127,6 +127,7 @@ body,
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
+    z-index: 1; /* above the strip's badged faces (P5.6, P5.8) */
     flex-direction: column;
     min-width: 168px;
     padding: 4px;

@@ -32,6 +32,10 @@ export interface GoodsView {
   fields: { frame: string; tiles: number[] }[];
   /** Shaft plans (planned or being sunk) on the surface, for the map's faint plan layer. */
   shafts: (Spot3 & { state: string })[];
+  /** Graves (P5.8): dug until the day's end, then filled, with a marker or not; surface only. */
+  graves: (Spot3 & { dug: boolean; marker: boolean })[];
+  /** The burial ground's rectangle, for its hurdle edge. */
+  burial: { x: number; y: number; w: number; h: number }[];
 }
 
 /** One good's stock lever (P2.4): how much the colony has and wants, and the levels to pick. */

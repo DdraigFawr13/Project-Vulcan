@@ -1,7 +1,7 @@
 // Shape of Vulcan's health file (src/content/data/health.json, P5.6, P5.8, V-114 to V-116): blood,
 // body parts, wound severities and kinds, the accidents of risky work, healing, festering, lasting
 // marks, care, the sickroom, mourning and burial. Chances are per cent unless named `per`.
-import { bool, list, num, obj, opt, ref } from './schema';
+import { bool, list, map, num, obj, opt, ref } from './schema';
 import { count, id, text, texts } from './schema-fields';
 
 const pair = list(num({ min: 0, max: 100 }), 2);
@@ -98,5 +98,9 @@ export const HEALTH_SCHEMAS = {
       marker: ref('items'),
       job: ref('jobs'),
     }),
+    // The words the Health tab, the Work sheet's footnote and the grave, burial-ground and
+    // sickroom pages read (P5.6, P5.8): sentences with
+    // `{slots}` filled by the worker, never worked out on the page.
+    words: map(text),
   }),
 };

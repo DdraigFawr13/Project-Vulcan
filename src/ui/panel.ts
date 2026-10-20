@@ -8,6 +8,7 @@ import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 import { fillStock, stockRows } from './stock.ts';
 import { testMode } from './testmode.ts';
 import { landFacts } from './landrows.ts';
+import { placeHead, placeTitle } from './placerows.ts';
 import { shaftBack, shaftTitle } from './shaftrows.ts';
 import { standingFacts, standingLines } from './tilerows.ts';
 import { worksDoing } from './worksrows.ts';
@@ -108,6 +109,7 @@ export class Panel {
     this.open(
       'tile',
       tile.works?.name ??
+        (placeTitle(tile) || undefined) ??
         tile.field?.name ??
         (shaftTitle(tile) || `Tile ${tile.x}, ${tile.y}${where}`),
     );
@@ -115,7 +117,9 @@ export class Panel {
     // What lies here comes first: it is usually what a tap was after (Morgan, Phase 3 playtest).
     for (const [key, value] of [
       ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
-      ...(tile.piece || tile.field || tile.shaft || tile.works ? [] : landFacts(tile)),
+      ...(tile.piece || tile.field || tile.shaft || tile.works || tile.place
+        ? []
+        : landFacts(tile)),
       ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
       ...(tile.store ? [['store', 'part of the colony store']] : []),
       ...standingFacts(tile),
@@ -125,7 +129,7 @@ export class Panel {
         : []),
     ])
       facts.append(el('dt', {}, key), el('dd', {}, value));
-    this.body.replaceChildren(facts);
+    this.body.replaceChildren(...placeHead(tile), facts);
     this.body.append(...worksDoing(tile, (id) => this.actions.item(id)));
     if (tile.stain && !tile.piece && !tile.field && !tile.shaft)
       this.body.append(el('p', { class: 'aside' }, STAIN_NOTE));
@@ -165,7 +169,7 @@ export class Panel {
       if (g.made) this.body.append(this.lineRow(g.made, 'Made by · '));
     if (tile.store?.made && !tile.goods)
       this.body.append(this.lineRow(tile.store.made, 'Store · '));
-    if (tile.piece || tile.works) return;
+    if (tile.piece || tile.works || tile.place) return;
     if (tile.changedBy) this.body.append(this.lineRow(tile.changedBy, 'Last changed · '));
     else this.body.append(el('p', { class: 'muted' }, 'The line that last changed it is gone.'));
   }

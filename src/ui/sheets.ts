@@ -20,6 +20,7 @@ import type { Panel } from './panel.ts';
 import { LawSheet } from './laws.ts';
 import { PersonSheet } from './personsheet.ts';
 import { Play } from './play.ts';
+import { testModeOn } from './testmode.ts';
 import { WorkSheet, type Day } from './work.ts';
 
 export interface SheetDeps {
@@ -84,6 +85,10 @@ export class Sheets {
       work: (p, w) => this.work.personRows(p, w),
       lines: deps.lines,
       item: (id) => this.openItem(id),
+      ...(testModeOn(new URLSearchParams(location.search)) && {
+        hurt: (person: number, part: string, severity: string) =>
+          command('hurt', { person, part, severity }),
+      }),
     });
     this.dawn = new Dawn(deps.panel, deps.lines);
     this.play = new Play(deps.bar, {

@@ -259,6 +259,18 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
     `face offsets ${faces}`,
   ).toBe(true);
 
+  // P5.6 on a phone: the test-mode Hurt tool gives the last colonist a deep wound to the left leg;
+  // their Health tab shows the wound and the Blood bar, and the strip badges them.
+  await page.locator('.pslot').last().click();
+  await panel.getByRole('button', { name: 'Health' }).click();
+  await expect(panel.getByTestId('blood')).toBeVisible();
+  await panel.getByLabel('Part').selectOption('left-leg');
+  await panel.getByLabel('Severity').selectOption('deep');
+  await panel.getByTestId('hurt-go').click();
+  await expect(panel.getByTestId('wound')).toContainText('left leg · deep');
+  await expect(page.locator('.pslot.hurt').last().locator('.hbadge')).toHaveText('+');
+  expect(await phoneRules(page)).toEqual([]);
+
   // P2.5 to P2.7 on a phone. A face opens that person's sheet in tabs; the Work sheet's stepper
   // ranks hauling higher, which is a ledger line naming the person, never an order to a tile.
   await page.locator('.pslot').first().click();
@@ -289,10 +301,14 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
     `${carpentrySides}`,
   ).toBe(true);
   // P4.7: Farming and Cooking come from content with the same steppers.
-  await panel.locator('.prio.head[data-heading="Food"] .fold').click();
+  // A heading over one row (Food, Care) is a label with no stepper or fold; its row is always shown.
+  await expect(panel.locator('.prio.head[data-heading="Food"] button')).toHaveCount(0);
+  await expect(panel.locator('.prio.head[data-heading="Care"] button')).toHaveCount(0);
+  await expect(panel.getByTestId('care-note')).toContainText('Binding a bleeding wound');
   for (const [job, name] of [
     ['farm', 'Farming'],
     ['cook', 'Cooking'],
+    ['heal', 'Healing'],
   ] as const)
     await expect(panel.locator(`.prio[data-job="${job}"]`)).toContainText(name);
   // P3.6: Tending is its own row beside Felling and Hauling, with the same four-step priority.

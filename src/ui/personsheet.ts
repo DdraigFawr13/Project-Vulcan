@@ -1,14 +1,16 @@
-// A person's sheet (P2.6) in tabs: Needs (mood and needs, live), Skills (each with its practice
+// A person's sheet (P2.6) in tabs: Needs (mood and needs, live), Health (P5.6, P5.8), Skills (each with its practice
 // towards the next level), Work (their priorities, as on the Work sheet) and Ledger (the lines
 // about them). It shows what the snapshot says; nothing here decides a rule (GAME-02).
 import type { LedgerLine, PersonView, WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import type { Panel } from './panel.ts';
+import { fillBlood, healthBody, healthKey } from './healthtab.ts';
 import { fillNeed, needRow, skillRows, whoLine } from './person.ts';
 
-export type PersonTab = 'needs' | 'skills' | 'work' | 'ledger';
+export type PersonTab = 'needs' | 'health' | 'skills' | 'work' | 'ledger';
 const TABS: readonly [PersonTab, string][] = [
   ['needs', 'Needs'],
+  ['health', 'Health'],
   ['skills', 'Skills'],
   ['work', 'Work'],
   ['ledger', 'Ledger'],
@@ -21,6 +23,8 @@ export interface PersonSources {
   lines(): readonly LedgerLine[];
   /** Opens the item page of a tool they hold (view only). */
   item(id: number): void;
+  /** Test mode only: gives them a wound by hand (the `hurt` command); none outside it. */
+  hurt?(person: number, part: string, severity: string): void;
 }
 
 export class PersonSheet {
@@ -30,6 +34,8 @@ export class PersonSheet {
   /** What they are doing and why (P2.9), above the tabs; filled in place each snapshot. */
   private now = el('div', { class: 'doingnow', 'data-testid': 'doing-now' });
   private rows: HTMLElement[] = [];
+  /** The Health tab's Blood row, moved in place each snapshot. */
+  private blood: HTMLElement | undefined;
   /** The Needs tab's Wearing and Memories sections, filled in place each snapshot. */
   private extra = el('div', { class: 'wearmem', 'data-testid': 'wear-memories' });
   /** What the open tab last showed, so it is redrawn only when that changes. */
@@ -62,6 +68,7 @@ export class PersonSheet {
     this.fillNow();
     if (this.tab === 'needs') this.fillNeeds();
     else if (this.key() !== this.drawn) this.draw();
+    else if (this.tab === 'health') fillBlood(this.blood, this.walker()?.health);
   }
 
   private fillNeeds(): void {
@@ -173,6 +180,7 @@ export class PersonSheet {
   private key(): string {
     const w = this.walker();
     // Levels only: practice moves every few minutes of work, and each redraw replaces the tabs.
+    if (this.tab === 'health') return healthKey(w?.health);
     if (this.tab === 'skills') return JSON.stringify(w?.skills.map((s) => s.level));
     if (this.tab === 'work')
       return JSON.stringify(this.sources.work(this.p!, w).map((r) => r.outerHTML));
@@ -202,6 +210,7 @@ export class PersonSheet {
     ]);
     this.fillNow();
     if (this.tab === 'needs') this.fillNeeds();
+    if (this.tab === 'health') fillBlood(this.blood, w?.health);
   }
 
   private body(p: PersonView, w: WalkerView | undefined): HTMLElement[] {
@@ -230,6 +239,15 @@ export class PersonSheet {
       ];
     }
     if (this.tab === 'work') return this.sources.work(p, w);
+    if (this.tab === 'health') {
+      const rows = healthBody(p, w?.health, {
+        lines: this.sources.lines,
+        lineRow: (l) => this.panel.lineRow(l),
+        ...(this.sources.hurt && { hurt: this.sources.hurt }),
+      });
+      this.blood = rows.find((r) => r.dataset['testid'] === 'blood');
+      return rows;
+    }
     if (this.tab === 'ledger') {
       const lines = this.mine().slice(-50).reverse();
       const arrived = el('div', { class: 'line prow', 'data-line': String(p.arrived) });

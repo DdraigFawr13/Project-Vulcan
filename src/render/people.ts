@@ -18,6 +18,9 @@ const GLIDE = 320;
 const CATCH_UP = 100;
 /** Milliseconds per walk frame. */
 const STRIDE = 160;
+/** The unburied dead are drawn grey (P5.8); a carried person lies a few pixels off their carrier. */
+const GREY = 0x8a8a8a;
+const CARRIED = { x: 4, y: 7 };
 
 const colour = (hex: string): number => Number.parseInt(hex.slice(1), 16);
 
@@ -31,11 +34,20 @@ interface Shown {
   hair: Phaser.GameObjects.Image | undefined;
   facing: Facing;
   walked: number;
+  /** Where a carried person lies from their carrier's tile, in pixels. */
+  off: { x: number; y: number };
+}
+
+/** A person's lying state from the snapshot (P5.6, P5.8): down, dead or buried, and carried. */
+interface Lying {
+  lying: WalkerView['lying'];
+  carried: boolean;
 }
 
 export class PeopleSprites {
   private people: PersonView[] = [];
   private shown = new Map<number, Shown>();
+  private lying = new Map<number, Lying>();
   private z = 0;
   private live = false;
 
@@ -69,6 +81,13 @@ export class PeopleSprites {
       if (!p) continue;
       if (p.z !== w.z) level = true;
       [p.x, p.y, p.z] = [w.x, w.y, w.z];
+      const was = this.lying.get(w.id);
+      const now = { lying: w.lying, carried: !!w.carried };
+      if (was && was.lying === now.lying && was.carried === now.carried) continue;
+      if (!was && !now.lying) continue;
+      this.lying.set(w.id, now);
+      const s = this.shown.get(w.id);
+      if (s) this.restyle(s);
     }
     if (level) this.draw();
   }
@@ -80,7 +99,9 @@ export class PeopleSprites {
 
   /** The person standing on a tile of the level on screen, if any. */
   at(x: number, y: number): PersonView | undefined {
-    return this.people.find((p) => p.x === x && p.y === y && p.z === this.z);
+    return this.people.find(
+      (p) => p.x === x && p.y === y && p.z === this.z && this.lying.get(p.id)?.lying !== 'buried',
+    );
   }
 
   private draw(): void {
@@ -108,15 +129,55 @@ export class PeopleSprites {
         )
         .setScale(SIZE)
         .setDepth(8);
-      this.shown.set(p.id, { view: p, box, body, clothes, hair, facing: 's', walked: 0 });
+      const s = {
+        view: p,
+        box,
+        body,
+        clothes,
+        hair,
+        facing: 's' as Facing,
+        walked: 0,
+        off: { x: 0, y: 0 },
+      };
+      this.shown.set(p.id, s);
+      this.restyle(s);
+      box.setPosition(p.x * TILE + LIFT_X + s.off.x, p.y * TILE + LIFT_Y + s.off.y);
+    }
+  }
+
+  /** Lying people (P5.6, P5.8): the stacked body, clothes and hair turn 90 degrees about the tile's
+   * middle; the dead go grey, the buried are not drawn, and a carried person lies over their
+   * carrier a few pixels off. A picture choice only. */
+  private restyle(s: Shown): void {
+    const st = this.lying.get(s.view.id);
+    const lying = st?.lying;
+    s.off = st?.carried ? CARRIED : { x: 0, y: 0 };
+    s.box.setVisible(lying !== 'buried').setDepth(st?.carried ? 8.2 : lying ? 7.9 : 8);
+    const dead = lying === 'dead' || lying === 'buried';
+    const tints: [Phaser.GameObjects.Image | undefined, number | undefined][] = [
+      [s.body, undefined],
+      [s.clothes, colour(s.view.look.clothes)],
+      [s.hair, colour(s.view.look.hairColour)],
+    ];
+    for (const [img, tint] of tints) {
+      if (!img) continue;
+      if (lying)
+        img
+          .setOrigin(0.5)
+          .setPosition(img.width / 2, img.height / 2)
+          .setAngle(90);
+      else img.setOrigin(0).setPosition(0, 0).setAngle(0);
+      if (dead) img.setTint(GREY);
+      else if (tint === undefined) img.clearTint();
+      else img.setTint(tint);
     }
   }
 
   /** Each frame: slide everyone towards their tile, face the way they go, step their frames. */
   private glide(delta: number): void {
     for (const s of this.shown.values()) {
-      const tx = s.view.x * TILE + LIFT_X;
-      const ty = s.view.y * TILE + LIFT_Y;
+      const tx = s.view.x * TILE + LIFT_X + s.off.x;
+      const ty = s.view.y * TILE + LIFT_Y + s.off.y;
       const dx = tx - s.box.x;
       const dy = ty - s.box.y;
       const far = Math.hypot(dx, dy);

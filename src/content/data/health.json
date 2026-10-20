@@ -13,5 +13,23 @@
 "care": {"job": "heal", "bind": 20, "dress": 15, "skilled": 4, "hear": 12, "missing": 2},
 "sickroom": {"hurt": 2, "beds": 2},
 "mourn": {"close": "grief", "band": "grief-band", "burial": "mourned-together", "saw": "saw-body", "near": 3, "unburied": 1},
-"burial": {"w": 4, "h": 3, "minutes": 60, "marker": "logs", "job": "build"}
+"burial": {"w": 4, "h": 3, "minutes": 60, "marker": "logs", "job": "build"},
+"words": {
+"well": "Well.", "hurtBleeding": "Hurt and bleeding.", "hurt": "Hurt.",
+"waiting": "Waiting to be found.", "carried": "Being carried to bed.", "resting": "Resting in bed until {they} can walk.", "mending": "Up and about, and mending.",
+"healed": "Healed.", "markWalk": "Walks a little slower.", "markWork": "Works a little slower.",
+"dead": "Dead. {cause}", "buried": "Buried in the burial ground.",
+"bloodWell": "Well", "bloodLosing": "Losing blood", "bloodRecovering": "Recovering",
+"bleedFast": "Bleeding fast. Not bound yet.", "bleedSlow": "Bleeding slowly. Not bound yet.",
+"rough": "Bound roughly{by}.", "roughBy": " by {name}",
+"bound": "Bound by {healer} at {time}.", "nextDressing": " Next dressing by {next}.", "overdue": " Dressing is overdue.",
+"abed": " Abed about {abed};", "mends": " mends in about {mends}.", "mendsOnly": " Mends in about {mends}.",
+"fever": " Fevered: the wound has festered.", "feverOver": " The fever broke.",
+"closedBound": "Bound by {healer} at {time}, too late.", "closedUnbound": "Not bound in time.",
+"cause": "{what} at {time}.", "markStory": "Left by a wound that healed at {time}.",
+"hint": "A {severity} wound may leave a lasting mark: about {pc} in 100 with a healer's care.",
+"lessDay": "a day", "days": "{n} days", "weeks": "{n} weeks", "today": "today", "onDay": "on {day}",
+"workNote": "Binding a bleeding wound comes before anything, day or night, for whoever puts Healing highest and is free. Dressings are work, done in work hours. Healing practises herbalism.",
+"graveTitle": "Grave", "graveSub": "The burial ground · past the town ring", "dugFor": "Dug for {name}; the burial is at the day's end.", "markerYes": "a carved wooden post, one log", "markerNo": "none", "buriedBy": "{by}, who dug the grave", "groundTitle": "Burial ground", "groundSub": "Sited by the colony, past the town ring", "plotsFree": "{free} of {total} plots free", "sickTitle": "Sickroom", "sickRole": "sickroom: the hurt are carried to a free bed here first", "sickFree": "free", "groundWhy": "the nearest free, dry ground past the town ring, away from water and fields", "bedWord": "a bed"
+}
 }
