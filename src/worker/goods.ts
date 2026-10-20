@@ -30,6 +30,7 @@ import { fireGoods, workBars } from './fires.ts';
 import { jobBars } from './jobbars.ts';
 import { metalStatus } from './metalstatus.ts';
 import { shaftPlans, stockNote } from './mine.ts';
+import { burialGoods } from './places.ts';
 import { furnitureGoods, tilePiece } from './furniture.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
@@ -79,6 +80,7 @@ export function goodsOf(world: WorldState): GoodsView {
     fields: fieldFrames(world),
     shafts: shaftPlans(world),
     middens: middensOf(world).map(({ x, y, z }) => ({ x, y, z })),
+    ...burialGoods(world),
   };
 }
 

@@ -394,3 +394,107 @@ table.grid tr.under th span {
 table.grid th small {
   display: block;
 }
+
+/* Hurt and dead on the strip (P5.6, P5.8): a red "+" badge on the hurt; the dead greyed, with a "†". */
+#hud button.pslot {
+  position: relative;
+}
+#hud button.pslot[hidden] {
+  display: none;
+}
+.pslot .hbadge {
+  position: absolute;
+  top: -2px;
+  right: calc(50% - 26px);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--mood-bad);
+  border: 1px solid var(--bone);
+  color: var(--bone);
+  font: 700 13px/14px var(--read);
+  text-align: center;
+}
+.pslot .hbadge[hidden] {
+  display: none;
+}
+.pslot.dead .hbadge {
+  background: var(--iron);
+}
+.pslot.dead .face canvas {
+  filter: grayscale(1) brightness(0.7);
+}
+.pslot.dead .face {
+  border-color: var(--iron);
+}
+
+/* The Health tab (P5.6, P5.8): the figure beside the state, the Blood bar, the wounds and marks. */
+.hhead {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 8px 0;
+}
+.figure {
+  flex: 0 0 84px;
+  width: 84px;
+  height: 148px;
+}
+.figure .part {
+  fill: var(--bone);
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.figure .part.bleeding {
+  fill: var(--mood-bad);
+}
+.figure .part.healing {
+  fill: var(--mood-low);
+}
+.figure .part.lasting {
+  fill: url(#vlc-hatch);
+}
+.hstate {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+.legend {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.legend .key {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--ink);
+  vertical-align: -1px;
+  margin-left: 6px;
+  background: var(--bone);
+}
+.legend .key.bleeding {
+  background: var(--mood-bad);
+}
+.legend .key.healing {
+  background: var(--mood-low);
+}
+.legend .key.lasting {
+  background: repeating-linear-gradient(45deg, var(--bone) 0 2px, var(--ink-soft) 2px 3px);
+}
+.wound {
+  border-top: 1px solid var(--rule);
+  padding: 4px 0;
+}
+.wound b {
+  font: 700 15px/1.2 var(--name);
+}
+.wound p {
+  margin: 2px 0;
+}
+.hurttool {
+  margin-top: 10px;
+}
+.hurtrow select,
+.hurtrow button {
+  min-height: 44px;
+}

@@ -9,7 +9,7 @@ import { stepper, WORDS } from './stepper.ts';
 
 export interface BuildActions {
   setBuild(kind: 'house' | 'field' | 'smithy', level: number): void;
-  sendBack(kind: 'house' | 'field' | 'smithy', id: number): void;
+  sendBack(kind: 'house' | 'field' | 'smithy' | 'burial', id: number): void;
   /** The sheet changed on its own (a lever sent): draw it again. */
   refresh(): void;
 }
@@ -39,6 +39,7 @@ export class BuildSheet {
   private fieldLevel: number | undefined;
   private smithyLevel: number | undefined;
   private backSmithy = false;
+  private backBurial = false;
   private readonly back = new Set<number>();
   private readonly backFields = new Set<number>();
   private readonly actions: BuildActions;
@@ -55,6 +56,7 @@ export class BuildSheet {
       this.fieldLevel,
       this.smithyLevel,
       this.backSmithy,
+      this.backBurial,
       [...this.back],
       [...this.backFields],
     ]);
@@ -141,6 +143,7 @@ export class BuildSheet {
       rows.push(planLine(h));
     }
     if (view.smithy) rows.push(...this.smithyRows(view.smithy));
+    if (view.burial) rows.push(...this.burialRows(view.burial));
     rows.push(
       el(
         'p',
@@ -184,6 +187,35 @@ export class BuildSheet {
     return rows;
   }
 
+  /** The burial ground (V-041): the colony sites it and digs the graves; the one lever is Send
+   * back, once, until the first grave is dug. No tile, no person. */
+  private burialRows(view: NonNullable<BuildView['burial']>): HTMLElement[] {
+    const line = el('p', { 'data-testid': 'build-burial' });
+    line.append(
+      el('b', {}, 'Burial ground'),
+      `, ${view.w} by ${view.h} tiles, ${view.dir} of the green. Why here: ${view.why}.`,
+    );
+    const rows = [line];
+    if (view.back) {
+      const button = el(
+        'button',
+        { type: 'button', 'data-testid': 'send-back-burial' },
+        this.backBurial ? 'Sending back…' : 'Send back',
+      );
+      button.disabled = this.backBurial;
+      button.addEventListener('click', () => {
+        this.backBurial = true;
+        this.actions.sendBack('burial', view.id);
+        this.actions.refresh();
+      });
+      const row = el('div', { class: 'row' });
+      row.append(button);
+      rows.push(row);
+    } else if (view.sent) rows.push(el('p', { class: 'muted' }, 'sent back once'));
+    else rows.push(el('p', { class: 'muted' }, 'A grave is dug: it stays.'));
+    return rows;
+  }
+
   /** A plan's line, why the colony chose the site, and Send back (or that it was sent back). */
   private plan(h: BuildRow): HTMLElement[] {
     const out = [planLine(h), el('p', { class: 'aside' }, `Chosen: ${h.why}.`)];
@@ -214,6 +246,7 @@ export class BuildSheet {
     if (this.fieldLevel === view.fieldWant.level) this.fieldLevel = undefined;
     if (this.smithyLevel === view.smithy?.want.level) this.smithyLevel = undefined;
     if (!view.smithy?.plan?.back) this.backSmithy = false;
+    if (!view.burial?.back) this.backBurial = false;
     for (const id of this.backFields)
       if (!view.fields.some((f) => f.id === id && f.back)) this.backFields.delete(id);
     for (const id of this.back)

@@ -9,7 +9,7 @@ export type { GoodsView, ItemView, Spot3, StockView } from './protocol-goods.ts'
 import type { HoursView, LawView } from './protocol-law.ts';
 export type { AnswerView, HoursView, LawView } from './protocol-law.ts';
 import type { WalkerView } from './protocol-people.ts';
-export type { NeedView, WalkerView } from './protocol-people.ts';
+export type { HealthView, NeedView, WalkerView } from './protocol-people.ts';
 import type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 export type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 import type {
@@ -17,6 +17,7 @@ import type {
   FieldView,
   HouseView,
   PieceView,
+  PlaceView,
   PlanView,
   RoomView,
   ShaftView,
@@ -221,6 +222,8 @@ export interface TileView {
   fade?: string;
   /** Snow lies on the tile, with the rule that takes it off. */
   snowLies?: string;
+  /** A grave or a burial-ground tile (P5.8). */
+  place?: PlaceView;
 }
 
 /** Yesterday's tally (P2.9): the date, logs felled, items carried into the store, berries

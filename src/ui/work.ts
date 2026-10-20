@@ -95,6 +95,11 @@ export class WorkSheet {
         ? [el('p', { class: 'aside' }, makesNote())]
         : []),
       el('p', { class: 'aside' }, 'Other kinds of work join this list when the band can do them.'),
+      el(
+        'p',
+        { class: 'aside', 'data-testid': 'care-note' },
+        content.health.words['workNote'] ?? '',
+      ),
       ...this.dayRows(day, setting, () => this.actions.openLaws()),
     ];
   }
@@ -119,7 +124,7 @@ export class WorkSheet {
       ...plain.map((job) => this.jobRow(p, w, job)),
       ...groups.flatMap((g) => [
         this.headingRow(p, g),
-        ...(this.unfolded.has(g.name)
+        ...(this.unfolded.has(g.name) || g.jobs.length === 1
           ? g.jobs.map((job) => {
               const row = this.jobRow(p, w, job);
               row.classList.add('under');
@@ -133,6 +138,14 @@ export class WorkSheet {
   /** A heading: a fold button (▾ open, ▸ folded), its rows' names beneath, and a stepper that
    * sets every row under it with the per-person priority command, one for each job. */
   private headingRow(p: PersonView, g: Group): HTMLElement {
+    // A heading over one row (Care) is just a label: the row is always shown and has the stepper.
+    if (g.jobs.length === 1) {
+      const label = el('div', { class: 'prio head single', 'data-heading': g.name });
+      const name = el('span', { class: 'job' }, `▾ ${g.name}`);
+      name.append(el('small', {}, g.jobs[0]!.name));
+      label.append(name);
+      return label;
+    }
     const open = this.unfolded.has(g.name);
     const fold = el(
       'button',
@@ -284,6 +297,15 @@ export class WorkSheet {
     const { plain, groups } = grouped(visibleJobs(walkers[0]?.work ?? [], this.shaft));
     for (const job of plain) rowFor(job, false);
     for (const g of groups) {
+      if (g.jobs.length === 1) {
+        // A heading over one row is a label; the row is always shown and carries the steppers.
+        line(
+          el('span', {}, `▾ ${g.name}`),
+          people.map(() => el('td')),
+        );
+        rowFor(g.jobs[0]!, true);
+        continue;
+      }
       const open = this.unfolded.has(g.name);
       const fold = el(
         'button',

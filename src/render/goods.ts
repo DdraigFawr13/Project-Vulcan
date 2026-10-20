@@ -17,6 +17,8 @@ export class GoodsSprites {
     marks: [],
     plans: [],
     shafts: [],
+    graves: [],
+    burial: [],
     furniture: [],
     fires: [],
     work: [],

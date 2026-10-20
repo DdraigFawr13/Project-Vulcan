@@ -24,6 +24,7 @@ import {
 } from '../engine/index.ts';
 import { feedsOf } from './comfort.ts';
 import { careNow } from './health.ts';
+import { deadNow, healthOf } from './healthview.ts';
 import { hearthDoing, tendDoing } from './fires.ts';
 import { carpentryDoing } from './furniture.ts';
 import { lawOfWalker, leanWords } from './law.ts';
@@ -84,6 +85,7 @@ export function peopleOf(world: WorldState): PersonView[] {
 /** What a person is doing, in words (P2.2). */
 function doingOf(p: EntityRow): string {
   const walking = (p['path'] as number[]).length > 0;
+  if (p['status'] === 'dead') return 'Dead';
   if (p['doing'] === 'hurt') return 'Lying hurt';
   if (p['doing'] === 'work' && p['job'] === 'carry') return 'Carrying the hurt';
   if (p['doing'] === 'work' && ['bind', 'dress', 'feed'].includes(p['job'] as string))
@@ -116,6 +118,8 @@ export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   const say = (key: string, vars: Record<string, string> = {}): string =>
     (words[key] ?? '').replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? '');
   const doing = p['doing'] as string;
+  const gone = deadNow(world, p);
+  if (gone) return gone;
   const care = careNow(world, p, say);
   if (care) return { text: care };
   if (doing === 'sleep') return { text: say(walking ? 'goSleep' : 'sleep') };
@@ -229,6 +233,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     doing: doingOf(p),
     now: nowOf(world, p),
     ...wearingOf(world, p),
+    ...withHealth(healthOf(world, p)),
     memories: memoriesView(world, p),
     ...lawOfWalker(world, p),
     tools: personTools(world, p.id),
@@ -281,6 +286,8 @@ function memoriesView(world: WorldState, p: EntityRow): WalkerView['memories'] {
     ];
   });
 }
+
+const withHealth = (health: WalkerView['health']) => (health ? { health } : {});
 
 const withLean = (lean: string | undefined) => (lean ? { lean } : {});
 

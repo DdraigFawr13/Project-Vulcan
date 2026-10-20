@@ -40,6 +40,7 @@ import { lawView } from './law.ts';
 import { itemView } from './items.ts';
 import { miningShown } from './mine.ts';
 import { peopleOf, walkersOf } from './people.ts';
+import { withLying } from './places.ts';
 import { clockView, placeWords, tileView, weatherOf } from './views.ts';
 import { animalFeed, animalPage, leftoversView } from './wild.ts';
 
@@ -185,7 +186,7 @@ function snapshot(w: WorldState): void {
       weather: weatherOf(w),
       aura: w.map.auraSpots.map(({ school, x, y, z, strength }) => ({ school, x, y, z, strength })),
       timing: timing.view,
-      walkers: walkersOf(w),
+      walkers: withLying(w, walkersOf(w)),
       ...(moved && { animals: moved }),
       leftovers: leftoversView(w),
       goods: goodsOf(w),

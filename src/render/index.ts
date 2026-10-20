@@ -16,6 +16,7 @@ import { BuildSprites } from './build.ts';
 import { Firelight } from './firelight.ts';
 import { FurnitureSprites } from './furniture.ts';
 import { FieldSprites } from './fields.ts';
+import { BurialSprites } from './burial.ts';
 import { ShaftSprites } from './shafts.ts';
 import { GoodsSprites } from './goods.ts';
 import { GreenSprites } from './green.ts';
@@ -90,6 +91,7 @@ export function startRenderer(
   const build = new BuildSprites(game, scene);
   const fields = new FieldSprites(game, scene);
   const shafts = new ShaftSprites(game, scene);
+  const burial = new BurialSprites(game, scene);
   const furniture = new FurnitureSprites(game, scene);
   const green = new GreenSprites(game, scene);
   const light = new Firelight(game, scene);
@@ -135,6 +137,7 @@ export function startRenderer(
       build.setLevel(z);
       fields.setLevel(z);
       shafts.setLevel(z);
+      burial.setLevel(z);
       furniture.setLevel(z);
       green.setLevel(z);
       light.setLevel(z);
@@ -154,6 +157,7 @@ export function startRenderer(
       build.setPlans(view.plans);
       fields.set(view.fields);
       shafts.set(view.shafts);
+      burial.set(view);
       furniture.set(view.furniture);
       light.set(view.fires, sky.clock);
       bars.set(view.work, sky.skipping ? 3 : sky.speed);
