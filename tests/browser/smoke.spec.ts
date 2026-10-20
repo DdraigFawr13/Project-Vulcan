@@ -18,9 +18,6 @@ const buttonSides = (row: Locator) =>
     );
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
-/** The alert line's newest notable line. */
-const alertText = async (page: Page) =>
-  (await page.getByTestId('alert').getAttribute('aria-label')) ?? '';
 /** The last snapshot's tick and the worker's clock when it was sent (ms). */
 // Both read in one step: read one at a time, a busy page can update `at` from a newer snapshot
 // between the two, which made a correct 100 a second read as 148 in CI.
@@ -122,7 +119,15 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // The inspector: a tap names the tile and the line that laid it out, a world-generation line
   // with no "why?". In the ledger, the first season's "why?" walks back to the root.
   const panel = page.getByTestId('panel');
-  await page.getByTestId('game').locator('canvas').click();
+  // A tap on someone standing there opens their sheet instead (where they stand depends on how
+  // far the 3x run went, which varies with the machine's speed), so that spot is passed over.
+  const view = page.getByTestId('game').locator('canvas');
+  const middle = (await view.boundingBox())!;
+  for (const dx of [0, 40, -40, 80, -80]) {
+    await view.click({ position: { x: middle.width / 2 + dx, y: middle.height / 2 } });
+    await expect(panel).toContainText(/Tile|Doing now/);
+    if (!/Doing now/.test(await panel.innerText())) break;
+  }
   await expect(panel).toContainText('Tile');
   await expect(panel).toContainText('The valley took shape');
   await expect(panel).toContainText('fertility');
@@ -186,7 +191,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
     panel.getByTestId('stock-seed').getByRole('button', { name: 'Plenty (200)' }),
   ).toBeVisible();
   // Food is a stock level too (P2.9). Wanting none means nobody forages, so the band goes hungry
-  // when the cart runs out, which the "why?" step below needs.
+  // when the cart runs out (the hunger "why?" is hunger.spec.ts; the shaft steps below run in it).
   await panel.getByTestId('stock-food').getByRole('button', { name: /^None/ }).click();
   await expect(panel.getByTestId('stock-food')).toContainText('none wanted');
   await page.getByTestId('open-ledger').click();
@@ -325,8 +330,12 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(panel).toContainText(/ now puts hauling second\./);
   const skipOnce = async () => {
     const from = await tick(page);
-    await page.getByTestId('speed-skip').click();
-    await expect.poll(() => tick(page)).toBeGreaterThan(from);
+    // The button is in place (the bar never moves), so the click skips Playwright's wait for two
+    // still frames, and the tick is polled every 50 ms: on a slow runner, mid-skip frames are
+    // slow, and those waits cost about a second on each of the forty-odd skips below, which took
+    // the smoke past its CI limit (PR #69).
+    await page.getByTestId('speed-skip').click({ force: true });
+    await expect.poll(() => tick(page), { intervals: [50] }).toBeGreaterThan(from);
     await expect(page.getByTestId('speed-skip')).toHaveAttribute('aria-pressed', 'false', {
       timeout: 30_000,
     });
@@ -378,30 +387,9 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByTestId('alert').click();
   await expect(panel.locator('[data-line]').first()).toBeVisible();
   expect(await phoneRules(page)).toEqual([]);
-  // Skips on to the band going hungry (the cart's food lasts about four weeks). Paused, the
-  // person sheet's "why?" holds still under a tap (it was rebuilt on every snapshot, so a tap
-  // slipped off it) and names the line that ate the last of the food.
+  // The band going hungry and the Food row's "why?" are their own spec (hunger.spec.ts), so the
+  // smoke keeps its time on CI's runner (PR #69).
   await page.locator('.pslot').first().click();
-  await panel.getByRole('button', { name: 'Needs' }).click();
-  // Only the Food row's "why?" (VR-63): the "Doing now" line (P2.9) and another low need, such as
-  // sleeping in the open before the house stands (P3.7), have their own, which matched first.
-  const hungry = panel
-    .locator('.need')
-    .filter({ hasText: 'Food' })
-    .getByRole('button', { name: 'why?' });
-  // Skip stops on every notable line, and Phase 3 added many before the food runs out (privacy,
-  // boredom, a second room; Phase 4 craft firsts and shafts too), so the loop first waits for the line that
-  // ate the last of the food on the alert line, then for the hunger it causes.
-
-  const foodGone = /ate the last of the band's food/;
-  for (let skips = 0; skips < 60 && !foodGone.test(await alertText(page)); skips++)
-    await skipOnce();
-  expect(await alertText(page)).toMatch(foodGone);
-  // Seed grain is eaten under the warning line first (Bundle 1), and Bundle 3's notable lines
-  // (a stone tool breaking) stop the skip too: 7 skips on this seed after the merge.
-  for (let skips = 0; skips < 10 && (await hungry.count()) === 0; skips++) await skipOnce();
-  await hungry.first().click({ timeout: 5000 });
-  await expect(panel.getByTestId('chain')).toContainText("ate the last of the band's food");
   // P2.9: the sheet says what they are doing; ⋯ → Yesterday opens the dawn page with the
   // day's figures.
   await expect(panel.getByTestId('doing-now')).toContainText('Doing now');
@@ -412,8 +400,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await panel.getByRole('button', { name: 'Carry on' }).click();
   await expect(panel).toBeHidden();
   // P3.7: the Build sheet under ⋯ has the Houses stepper (the colony's need, never a tile) and
-  // the colony's need. A level is a lever that applies at once while paused. Last, so the
-  // changed priority does not alter the world the hunger wait above runs in.
+  // the colony's need. A level is a lever that applies at once while paused.
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('open-build').click();
   // P4.7: Fields is a row like Houses, with its need in tiles of crops.
