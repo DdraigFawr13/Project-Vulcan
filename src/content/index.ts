@@ -16,6 +16,7 @@ import events from './data/events.json';
 import faiths from './data/faiths.json';
 import features from './data/features.json';
 import greatWorks from './data/great-works.json';
+import health from './data/health.json';
 import items from './data/items.json';
 import jobs from './data/jobs.json';
 import life from './data/life.json';
@@ -63,6 +64,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   faiths,
   features,
   'great-works': greatWorks,
+  health,
   items,
   jobs,
   laws,

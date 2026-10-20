@@ -2,7 +2,8 @@
 // to anyone, and taking it down gives the stone back; a stair built on the surface reaches
 // level 1; and every lever is either an indirect lever or a test-mode tool (V-041).
 import { describe, expect, it } from 'vitest';
-import { content } from '../../content/index.ts';
+import { content as game } from '../../content/index.ts';
+import { withoutAccidents } from '../index.ts';
 import { freeTile, itemsOf } from '../goods/index.ts';
 import {
   createSim,
@@ -17,6 +18,9 @@ import {
 } from '../index.ts';
 import { canReach, walkAt } from '../paths/index.ts';
 import { planAt, plansOf } from './index.ts';
+
+// Accidents (P5.6) are left out: this tests building, not injury (health.test.ts does).
+const content = withoutAccidents(game);
 
 const sim = createSim(content);
 const DAY = 1440;

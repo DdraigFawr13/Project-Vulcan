@@ -4,6 +4,7 @@
 // with nothing to do strolls to a tile near the camp and stands a while; P2.2 and P2.4 give them
 // reasons to go somewhere instead. Steps are state, never ledger lines (V-036).
 import type { EntityRow } from '../core/index.ts';
+import { markPercent } from '../health/index.ts';
 import { findPath, pack, stepCost, unpack, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
@@ -36,7 +37,11 @@ export function stepAlong(ctx: SystemContext, p: EntityRow): void {
   const map = ctx.world.map;
   let path = p['path'] as number[];
   if (!path.length) return;
-  let stride = (p['stride'] as number) + ctx.content.terrain.walking.speed;
+  // A lame leg (P5.6) walks slower: the stride's fraction is spread over the minutes.
+  const speed = ctx.content.terrain.walking.speed;
+  const lame = markPercent(ctx.world, ctx.content, p.id, 'walk');
+  const gain = lame < 100 ? Math.floor((speed * lame + (ctx.world.tick % 100)) / 100) : speed;
+  let stride = (p['stride'] as number) + gain;
   while (path.length) {
     const here = pack(map, spotOf(p));
     let cost = stepCost(ctx.content, map, here, path[0]!);

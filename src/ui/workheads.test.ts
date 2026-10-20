@@ -15,6 +15,7 @@ describe('Work sheet headings', () => {
       'Land',
       'Food',
       'Metal',
+      'Care',
     ]);
   });
 
@@ -27,6 +28,7 @@ describe('Work sheet headings', () => {
       ['Land', ['farm', 'forage']],
       ['Food', ['cook']],
       ['Metal', ['charcoal', 'smelt', 'smith']],
+      ['Care', ['heal']],
     ]);
   });
 

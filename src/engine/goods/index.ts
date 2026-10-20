@@ -23,6 +23,7 @@ export {
   storedEnough,
 } from './granary.ts';
 export {
+  dryAt,
   freeTile,
   growSpot,
   growStore,

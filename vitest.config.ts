@@ -20,6 +20,8 @@ const slowFiles = [
   'src/worker/save.test.ts',
   // A 136-day run (Bundle 1's field views): 15 s of the quick tier's 37 s (P4.9).
   'src/worker/fields.test.ts',
+  // Injury and death (P5.6, P5.8): a 20-day run to the first cottage, and a burial.
+  'src/engine/health/health.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).

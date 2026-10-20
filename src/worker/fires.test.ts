@@ -2,7 +2,8 @@
 // the fire's heat in it, the doing-now words of tending and making a hearth, the hearth's art by
 // state, and the progress of a plan being worked. A hard winter so fires are lit and tended.
 import { describe, expect, it } from 'vitest';
-import { content } from '../content/index.ts';
+import { content as game } from '../content/index.ts';
+import { withoutAccidents } from '../engine/index.ts';
 import {
   createSim,
   createWorld,
@@ -18,6 +19,9 @@ import { tileView } from './views.ts';
 import { goodsOf, tileGoods } from './goods.ts';
 import { tileHouse } from './build.ts';
 import { walkersOf } from './people.ts';
+
+// Accidents (P5.6) are left out: this tests fire views, not injury (health.test.ts does).
+const content = withoutAccidents(game);
 
 const winter = {
   ...content,

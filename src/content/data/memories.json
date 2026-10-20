@@ -51,5 +51,7 @@
   {"id":"saw-refused-long","mood":-2,"decayDays":7,"text":"Saw {about} refuse the long days"},
   {"id":"saw-refused-short","mood":-2,"decayDays":7,"text":"Saw {about} refuse the short days"},
   {"id":"grumbled-long","mood":-4,"decayDays":3,"text":"Worked the long days against their will"},
-  {"id":"grumbled-short","mood":-4,"decayDays":3,"text":"Kept the short days against their will"}
+  {"id":"grumbled-short","mood":-4,"decayDays":3,"text":"Kept the short days against their will"},
+{"id":"grief-band","mood":-8,"decayDays":10,"text":"Lost {about}"},
+{"id":"saw-body","mood":-6,"decayDays":3,"text":"Saw {about}'s body"}
 ]

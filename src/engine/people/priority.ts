@@ -72,6 +72,7 @@ export function outranked(
       q['job'] === '' &&
       q['doing'] !== 'sleep' &&
       q['doing'] !== 'eat' &&
+      q['doing'] !== 'hurt' &&
       world.tick >= (q['next'] as number) &&
       levelOf(world, content, q.id, job) < mine &&
       able(content, q, job) &&

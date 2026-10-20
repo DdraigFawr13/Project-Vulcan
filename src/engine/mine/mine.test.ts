@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { content as game, type Content } from '../../content/index.ts';
 import {
+  withoutAccidents,
   allLines,
   createSim,
   createWorld,
@@ -22,7 +23,8 @@ import { openVein } from './site.ts';
 const DAY = 1440;
 // The plate is the only want here: a tool counts as worn (and asks for metal, P4.9) only at its
 // last 1 per cent, far past these runs' days.
-const base: Content = { ...game, tools: { ...game.tools, worn: 1 } };
+// Accidents (P5.6) are left out: this tests mining, not injury (health.test.ts does).
+const base: Content = withoutAccidents({ ...game, tools: { ...game.tools, worn: 1 } });
 const SEEDS = ['anvil', 'smoke', 'tallow'];
 const ORE_SEEDS = ['anvil', 'smoke', 'tallow', 'ledger'];
 

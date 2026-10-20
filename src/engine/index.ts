@@ -4,6 +4,7 @@ import { buildSystem } from './build/index.ts';
 import { calendarSystem } from './calendar/index.ts';
 import { fireSystem } from './fire/index.ts';
 import { goodsSystem } from './goods/index.ts';
+import { healthSystem } from './health/index.ts';
 import { mapSystem } from './map/index.ts';
 import { mineSystem } from './mine/index.ts';
 import { needsSystem } from './needs/index.ts';
@@ -22,6 +23,11 @@ export type { Cadence, Sim, System, SystemContext } from './sim/index.ts';
 export {
   bedOwnedBy,
   bedsOf,
+  burialGround,
+  burialsOf,
+  freePlots,
+  gravesOf,
+  inBurial,
   benchOf,
   buildSystem,
   buildWantOf,
@@ -65,6 +71,23 @@ export {
   type Room,
 } from './build/index.ts';
 export { calendarSystem } from './calendar/index.ts';
+export {
+  armOut,
+  bedWords,
+  bodiesOf,
+  bodyOf,
+  healthSystem,
+  isDown,
+  markPercent,
+  openWounds,
+  pronouns,
+  scarsOf,
+  severityOf,
+  withoutAccidents,
+  woundName,
+  woundsOf,
+  woundWords,
+} from './health/index.ts';
 export { SHAFT_STATES } from './mine/index.ts';
 export { fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
 export { shaftFor, shaftsOf } from './mine/index.ts';
@@ -147,6 +170,7 @@ export const TEST_TOOLS: readonly string[] = [
   'sinkShaft',
   'markFell',
   'markStore',
+  'hurt',
 ];
 
 /** The game's systems in tick order. Later milestones add theirs here. */
@@ -154,6 +178,7 @@ export const SYSTEMS: readonly System[] = [
   regionSystem,
   mapSystem,
   peopleSystem,
+  healthSystem,
   goodsSystem,
   buildSystem,
   mineSystem,
