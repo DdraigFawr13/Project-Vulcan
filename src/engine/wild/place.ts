@@ -122,7 +122,7 @@ function spawn(
   }
   addEntity(world, 'animal', {
     ...{ herd: a.herd, pack: a.pack, kind: a.kind, x, y, z: 0, path: [], stride: 0 },
-    ...{ facing: rng.chance(0.5) ? 'e' : 'w', state: '', until: 0 },
+    ...{ facing: rng.chance(0.5) ? 'e' : 'w', state: '', until: 0, hurt: 0 },
   });
 }
 
@@ -188,14 +188,15 @@ export function settlePack(ctx: SystemContext, reach: Reach, cause: number): num
   if (!row) {
     const id = addEntity(world, 'pack', {
       ...{ species: '', name: '', size: 0, denX: den.x, denY: den.y, hunger: 0, lastKill: 0 },
-      ...{ line: 0, attacked: 0, attacks: 0, visits: 0, visitAt: 0, visiting: 0, shown: 0 },
+      ...{ line: 0, attacked: 0, attackedAt: 0, attacks: 0, visits: 0, visitAt: 0, visiting: 0 },
+      shown: 0,
       hungryLine: 0,
     });
     row = world.entities['pack']!.find((p) => p.id === id)!;
   }
   Object.assign(row, {
     ...{ species: pred.kind, name, size, hunger: 0, lastKill: world.tick, attacked: 0 },
-    ...{ attacks: 0, visits: 0, visitAt: 0, visiting: 0, shown: 0, hungryLine: 0 },
+    ...{ attacks: 0, attackedAt: 0, visits: 0, visitAt: 0, visiting: 0, shown: 0, hungryLine: 0 },
   });
   for (let k = 0; k < size; k += 1)
     spawn(ctx, rng, { herd: 0, pack: row.id, kind: pred.kind, x: den.x, y: den.y }, reach);

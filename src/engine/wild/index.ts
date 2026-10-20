@@ -5,12 +5,17 @@ export {
   herdOf,
   herdsOf,
   huntable,
+  membersOf,
   markAttack,
   packOf,
   predatorsNear,
+  speciesOf,
   spareCount,
   WILD_TABLES,
 } from './wild.ts';
 export { killAnimal } from './kill.ts';
+export { scareHerd, woundPredator } from './fight.ts';
+export { approach } from './move.ts';
 export { printsAt } from './prints.ts';
-export { setLures } from './visit.ts';
+export { drawOff, setLures } from './visit.ts';
+export { withoutWild } from './calm.ts';

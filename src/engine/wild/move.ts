@@ -54,6 +54,21 @@ function stepTo(ctx: SystemContext, a: EntityRow, to: number): boolean {
   return true;
 }
 
+/** Moves a pack animal one step nearer (x, y) when a neighbouring tile is closer and open; true if
+ * it moved (the prowl of a hungry pack, people/fight.ts). */
+export function approach(ctx: SystemContext, a: EntityRow, x: number, y: number): boolean {
+  const map = ctx.world.map;
+  const [ax, ay] = [a['x'] as number, a['y'] as number];
+  const gap = (px: number, py: number): number => (px - x) * (px - x) + (py - y) * (py - y);
+  let [best, far] = [-1, gap(ax, ay)];
+  for (const [dx, dy] of NEIGHBOURS) {
+    const [tx, ty] = [ax + dx, ay + dy];
+    if (tx < 0 || ty < 0 || tx >= map.width || ty >= map.height) continue;
+    if (gap(tx, ty) < far) [best, far] = [ty * map.width + tx, gap(tx, ty)];
+  }
+  return best >= 0 && stepTo(ctx, a, best);
+}
+
 /** One minute of the wild valley's animals: flight steps, then a resting walk on each `every`. */
 export function moveAnimals(ctx: SystemContext): void {
   const { world, content, state } = ctx;
@@ -62,12 +77,16 @@ export function moveAnimals(ctx: SystemContext): void {
   const runners = state['fleeing']! > 0 && world.tick % mv.fleeEvery === 0;
   const trotters = state['trot']! > 0 && world.tick % mv.trot === 0;
   if (!walkers && !runners && !trotters) return;
-  const folk = (world.entities['person'] ?? [])
-    .filter((p) => p['status'] === 'alive' && p['z'] === 0)
-    .map((p) => [p['x'] as number, p['y'] as number] as const);
+  const alive = (world.entities['person'] ?? []).filter(
+    (p) => p['status'] === 'alive' && p['z'] === 0,
+  );
+  const at = (p: EntityRow) => [p['x'] as number, p['y'] as number] as const;
+  // A hunter stalking does not frighten a herd: it is scared when the stalk fails (`scareHerd`).
+  const folk = alive.map(at);
+  const scary = alive.filter((p) => p['job'] !== content.work.hunt.job).map(at);
   if (runners) run(ctx, folk);
   if (trotters) trot(ctx);
-  if (walkers) walk(ctx, folk);
+  if (walkers) walk(ctx, scary);
   let fleeing = 0;
   for (const a of animalsOf(world)) if (a['state'] === 'flee') fleeing += 1;
   state['fleeing'] = fleeing;

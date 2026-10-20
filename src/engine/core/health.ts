@@ -42,7 +42,14 @@ export interface HealthDef {
   blood: { full: number; faint: number; slow: number; fast: number; regain: number };
   parts: readonly { id: string; name: string; limb?: string }[];
   severities: readonly SeverityDef[];
-  wounds: readonly { id: string; name: string; a: string; minor?: { name: string; a: string } }[];
+  wounds: readonly {
+    id: string;
+    name: string;
+    a: string;
+    /** Festering chances replacing the severities' own, [with care, without]. */
+    fester?: readonly number[];
+    minor?: { name: string; a: string };
+  }[];
   accidents: readonly AccidentDef[];
   chance: { per: number; skilled: number; worn: number };
   downLimb: string;

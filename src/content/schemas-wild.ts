@@ -113,5 +113,40 @@ export const WILD_SCHEMAS = {
     }),
     // Words for a herd's ground by biome id, with a `default`.
     where: map(text),
+    // The people's side (see WildDef.folk): sight by day and night, who stands (`bold` and not
+    // `timid` traits, holding a tool of an `armed` kind, another within `together`), the pack hungry
+    // `attackAfter` days attacking a lone person; the fight's `rounds`, strike and bite chances,
+    // wounds drawn by weight; a hurt wolf flees `limp` minutes; fresh tracks; memories; words.
+    folk: obj({
+      sight: obj({ day: count, night: count }),
+      night: obj({ from: count, to: count }),
+      bold: list(ref('traits')),
+      timid: list(ref('traits')),
+      armed: list(str()),
+      together: count,
+      den: count,
+      beside: count,
+      alone: count,
+      attackAfter: count,
+      prowl: count,
+      witness: count,
+      rounds: num({ min: 1 }),
+      strike: obj({ base: count, perLevel: count, most: count }),
+      bite: obj({
+        chance: count,
+        parts: list(obj({ id: str(), weight: count })),
+        severities: list(obj({ id: str(), weight: count })),
+      }),
+      hits: num({ min: 1 }),
+      limp: count,
+      tracks: obj({ hours: count, ring: count, packDays: count }),
+      memories: obj({ tracks: ref('memories'), stood: ref('memories'), attack: ref('memories') }),
+      compass: list(text, 8),
+      when: list(obj({ from: count, to: count, word: text })),
+      words: obj({
+        ...{ came: text, seen: text, stood: text, ran: text, ranAway: text, last: text },
+        ...{ alone: text, struck: text, slew: text, bitten: text, bitePart: text, unhurt: text },
+      }),
+    }),
   }),
 };

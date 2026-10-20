@@ -108,7 +108,9 @@ function fester(ctx: SystemContext, p: EntityRow, w: EntityRow): boolean {
   // Once a day, at the hour of the wound.
   if (age <= 0 || age % TICKS_PER_DAY >= 60) return false;
   if (w['fester'] === 0 && sev.fester && age <= f.days * TICKS_PER_DAY) {
-    const total = sev.fester[dressed(ctx, w) ? 0 : 1]!;
+    // A kind of wound may have its own chances (a bite festers more), for deep and grave ones.
+    const own = content.health.wounds.find((d) => d.id === w['kind'])?.fester;
+    const total = (own ?? sev.fester)[dressed(ctx, w) ? 0 : 1]!;
     if (!roll(ctx, dailyChance(total, f.days))) return false;
     w['fester'] = 1;
     w['feverEnd'] = world.tick + f.fever * TICKS_PER_DAY;

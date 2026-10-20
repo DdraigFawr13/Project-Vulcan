@@ -151,9 +151,47 @@ export interface WorkDef {
   };
   /** Farming (P4.7): minutes to sow or reap a tile at skill `skilled`. */
   farm: { job: string; sow: number; reap: number; skilled: number };
+  /** Hunting (P5.4a): stalking within `near` tiles, a kill chance (per cent) every `every` minutes
+   * of `chance` + `perLevel` per level of skill, at most `most`; `snare` species are snared, not
+   * stalked, one every `every` minutes; prints under `follow.hours` old are followed `ahead`
+   * tiles on; the pack is hunted in twos by those putting Hunt above priority `pack.level`. */
+  hunt: {
+    job: string;
+    /** Most hunters on game at once (the pack is hunted besides). */
+    crew: number;
+    /** Hunting is taken up when food is under this per cent of its Food plate, and given up when it is full. */
+    from: number;
+    near: number;
+    every: number;
+    chance: number;
+    perLevel: number;
+    most: number;
+    snare: { species: readonly string[]; every: number };
+    follow: { hours: number; ahead: number };
+    pack: { level: number };
+  };
+  /** Fishing: a catch of `count` each `every` minutes at `chance` + `perLevel` per level (per
+   * cent, at most `most`), from the bodies of water listed (the map's `WATER` names) within `reach`. */
+  fish: {
+    job: string;
+    /** Most anglers at once. */
+    crew: number;
+    /** Fishing is taken up under this per cent of the Food plate, and given up when it is full. */
+    from: number;
+    every: number;
+    chance: number;
+    perLevel: number;
+    most: number;
+    count: number;
+    water: readonly string[];
+    reach: number;
+  };
+  /** The midden: sited `past` tiles beyond the town ring, `apart` tiles from houses, fields and
+   * water, on ground walking at most `walk`. */
+  midden: { past: number; apart: number; walk: number };
   fire: FireDef;
   doing: Readonly<Record<string, string>>;
-  haul: { load: number; kinds: readonly string[] };
+  haul: { load: number; kinds: readonly string[]; midden: readonly string[] };
   store: { width: number; height: number; most: number };
   hours: { from: number; to: number };
   priority: {

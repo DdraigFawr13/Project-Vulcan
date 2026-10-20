@@ -94,6 +94,48 @@ export interface WildDef {
     where: { edge: string; midden: string };
   };
   where: Readonly<Record<string, string>>;
+  /** The people's side (flee, fight, attack, tracks): distances are tiles, chances per cent. */
+  folk: {
+    sight: { day: number; night: number };
+    night: { from: number; to: number };
+    bold: readonly string[];
+    timid: readonly string[];
+    armed: readonly string[];
+    together: number;
+    den: number;
+    beside: number;
+    alone: number;
+    attackAfter: number;
+    prowl: number;
+    witness: number;
+    rounds: number;
+    strike: { base: number; perLevel: number; most: number };
+    bite: {
+      chance: number;
+      parts: readonly { id: string; weight: number }[];
+      severities: readonly { id: string; weight: number }[];
+    };
+    hits: number;
+    limp: number;
+    tracks: { hours: number; ring: number; packDays: number };
+    memories: { tracks: string; stood: string; attack: string };
+    compass: readonly string[];
+    when: readonly { from: number; to: number; word: string }[];
+    words: {
+      came: string;
+      seen: string;
+      stood: string;
+      ran: string;
+      ranAway: string;
+      last: string;
+      alone: string;
+      struck: string;
+      slew: string;
+      bitten: string;
+      bitePart: string;
+      unhurt: string;
+    };
+  };
 }
 
 /** The part of a creature entry the pack reads. */

@@ -25,6 +25,7 @@ export {
   bedOwnedBy,
   bedsOf,
   burialGround,
+  middensOf,
   burialsOf,
   freePlots,
   gravesOf,
@@ -165,6 +166,8 @@ export {
   spareCount,
   WILD_TABLES,
   wildSystem,
+  withoutWild,
+  woundPredator,
 } from './wild/index.ts';
 export {
   auraAt,

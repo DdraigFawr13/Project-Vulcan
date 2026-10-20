@@ -43,13 +43,15 @@ const ringTiles = ([x, y]: [number, number], r: number): [number, number][] => {
 /**
  * `byPerson` (a person's id, 0 for none) kills `animal`, because of the line `cause` (0 for none).
  * Writes `wild.killed`, removes the animal, lays its game, leftovers and offal where it fell, adds
- * to its herd's `taken` and returns the line's id.
+ * to its herd's `taken` and returns the line's id. `type` is the line's event (a predator killed
+ * in a fight is `wild.predatorKilled`).
  */
 export function killAnimal(
   ctx: SystemContext,
   animal: EntityRow,
   byPerson: number,
   cause: number,
+  type = 'wild.killed',
 ): number {
   const { world, content } = ctx;
   const herd = herdOf(world, animal['herd'] as number);
@@ -59,7 +61,7 @@ export function killAnimal(
   const [x, y] = [animal['x'] as number, animal['y'] as number];
   const person = byPerson ? world.entities['person']?.find((p) => p.id === byPerson) : undefined;
   const causes = [cause, herd?.['line'] as number | undefined].filter((c): c is number => !!c);
-  const line = ctx.emit('wild.killed', {
+  const line = ctx.emit(type, {
     actors: byPerson ? [byPerson] : [],
     causes,
     data: {

@@ -24,6 +24,7 @@ import {
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { feeding, seekFeeders } from './feed.ts';
+import { predatorRung } from './flee.ts';
 import { practise } from './learn.ts';
 import { able, levelOf } from './priority.ts';
 import { people, same, skillOf, spotOf } from './spots.ts';
@@ -205,6 +206,8 @@ export function danger(ctx: SystemContext, p: EntityRow): boolean {
     Object.assign(p, { doing: 'hurt', path: [], stride: 0 });
     return true;
   }
+  // P5.4a: a predator in sight comes before everything, even carrying the hurt: stand or flee.
+  if (predatorRung(ctx, p)) return true;
   if (p['job'] === 'carry') return carrying(ctx, p);
   if (p['job'] === 'bind') return binding(ctx, p);
   if (p['job'] === 'feed') return feeding(ctx, p);

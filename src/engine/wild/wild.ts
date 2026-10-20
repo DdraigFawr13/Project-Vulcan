@@ -38,6 +38,8 @@ export const WILD_TABLES: Schemas = {
     facing: 'text',
     state: 'text',
     until: 'int',
+    /** Blows taken from people (a predator dies at `folk.hits`). */
+    hurt: 'count',
   },
   /** The valley's one pack (`size` 0 once it has left). `hunger` is days since its last meal,
    * `lastKill` the tick of it, `line` its latest line, `attacked` the line of its last attack on a
@@ -54,6 +56,7 @@ export const WILD_TABLES: Schemas = {
     lastKill: 'int',
     line: 'event',
     attacked: 'event',
+    attackedAt: 'int',
     attacks: 'count',
     visits: 'count',
     visitAt: 'int',
@@ -110,6 +113,7 @@ export function markAttack(ctx: SystemContext, line: number): void {
   const pack = packRow(ctx.world);
   if (!pack) return;
   pack['attacked'] = line;
+  pack['attackedAt'] = ctx.world.tick;
   pack['attacks'] = (pack['attacks'] as number) + 1;
   pack['line'] = line;
 }

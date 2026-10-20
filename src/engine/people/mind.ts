@@ -23,7 +23,7 @@ import { warming } from './warm.ts';
 
 export const MIND_FIELDS = {
   /** `eat`, `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `warm` (warm.ts), `hurt` (lying
-   * hurt, care.ts), `relax` or '' (idle). */
+   * hurt, care.ts), `flee` or `stand` (a predator in sight, flee.ts), `relax` or '' (idle). */
   doing: 'text',
   /** The tick before which they do not look for food again after finding none they can reach. */
   retry: 'int',

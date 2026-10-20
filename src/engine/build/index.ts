@@ -17,6 +17,7 @@ export {
   wantOf as buildWantOf,
 } from './houses.ts';
 export { roomAt, type Room } from './rooms.ts';
+export { atMidden, middensOf } from './midden.ts';
 export { burialGround, burialsOf, freePlots, gravesOf, inBurial } from './burial.ts';
 export { housesOf, rectOf, type Rect } from './site.ts';
 export { blockedByGoods, planTiles } from './clearing.ts';

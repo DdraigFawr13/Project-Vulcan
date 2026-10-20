@@ -83,7 +83,15 @@ function monthly(ctx: SystemContext, month: string): void {
       const from = rng.pick(members);
       addEntity(world, 'animal', {
         ...{ herd: herd.id, pack: 0, kind, x: from['x'] as number, y: from['y'] as number },
-        ...{ z: 0, path: [], stride: 0, facing: from['facing'] as string, state: '', until: 0 },
+        ...{
+          z: 0,
+          path: [],
+          stride: 0,
+          facing: from['facing'] as string,
+          state: '',
+          until: 0,
+          hurt: 0,
+        },
       });
     }
     if (gain) checkLow(ctx, herd);

@@ -33,6 +33,8 @@ import { takeUpHearth } from './hearth.ts';
 import { takeUpTending, tending } from './tend.ts';
 import { furnishing, takeUpCarpentry } from './carpentry.ts';
 import { farming, takeUpFarming } from './farm.ts';
+import { fishing, takeUpFishing } from './fish.ts';
+import { endHunt, hunting, takeUpHunting } from './hunt.ts';
 import { foraging, takeUpForaging } from './forage.ts';
 import { practise } from './learn.ts';
 import { smelting, takeUpSmelting } from './smelt.ts';
@@ -48,7 +50,7 @@ import { walkTo } from './walk.ts';
 const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `farm`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
+  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
    * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
@@ -192,11 +194,18 @@ function shortOf(
 export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boolean {
   const { world, content } = ctx;
   const map = world.map;
+  // P5.4a: hunting and fishing end at dusk, wherever they have got to.
+  if (!hours && (p['job'] === 'hunt' || p['job'] === 'fish')) {
+    endHunt(p);
+    p['path'] = [];
+  }
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
   if (p['job'] === 'build' && hours && building(ctx, p)) return true;
   if (p['job'] === 'mine' && hours && mining(ctx, p)) return true;
   if (p['job'] === 'farm' && hours && farming(ctx, p)) return true;
+  if (p['job'] === 'hunt' && hours && hunting(ctx, p)) return true;
+  if (p['job'] === 'fish' && hours && fishing(ctx, p)) return true;
   if (p['job'] === 'carpentry' && hours && furnishing(ctx, p)) return true;
   if (p['job'] === 'hearth' && hours && furnishing(ctx, p)) return true;
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
@@ -338,6 +347,8 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   fell: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'fell')!),
   haul: takeUpHauling,
   forage: takeUpForaging,
+  hunt: takeUpHunting,
+  fish: takeUpFishing,
   farm: takeUpFarming,
   build: (ctx, p) =>
     takeUpBurial(ctx, p) ||

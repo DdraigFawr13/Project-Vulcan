@@ -96,6 +96,18 @@ export function visitOnHour(ctx: SystemContext): void {
   }
 }
 
+/** After a fight the pack draws off to its den (`wild.packDrewOff`, citing the fight's line). */
+export function drawOff(ctx: SystemContext, cause: number): void {
+  const pack = packOf(ctx.world);
+  if (!pack) return;
+  pack['visiting'] = 0;
+  sendAll(ctx, (pack['denY'] as number) * ctx.world.map.width + (pack['denX'] as number));
+  pack['line'] = ctx.emit('wild.packDrewOff', {
+    causes: [cause],
+    data: { name: pack['name'] as string },
+  });
+}
+
 /** The first pack animal has reached the edge (or the midden): the line, once a visit. */
 export function arrived(ctx: SystemContext): void {
   const pack = packOf(ctx.world);
