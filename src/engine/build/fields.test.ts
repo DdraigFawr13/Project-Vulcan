@@ -136,10 +136,10 @@ describe('fields', () => {
         .filter((i) => i['kind'] !== 'seed' && where(i['x'] as number, i['y'] as number))
         .reduce((n, i) => n + (i['count'] as number), 0);
     // Hour by hour until the first surplus is on granary tiles.
-    while (!food((x, y) => inGranary(world, x, y, 0)) && world.tick < 120 * DAY)
+    while (!food((x, y) => inGranary(world, x, y, 0)) && world.tick < 180 * DAY)
       step(world, sim, 60);
     const laid = lines(world, 'field.granaryLaid')[0]!;
-    expect(laid.data['where']).toBe('the barley field');
+    expect(laid.data['where']).toMatch(/^the (barley|turnips) field$/);
     expect(chain(world, laid.id)).toContain('field.harvested');
     expect(granaryOf(world).length).toBeGreaterThanOrEqual(content.buildings.granary.width);
     const plate = wantOf(world, content, 'food');

@@ -233,7 +233,8 @@ describe('tools in use', () => {
   it('has a worn stone tool ask for bronze, so miners sink a shaft with no plate raised', () => {
     // Morgan's card (P4.9): a tool under its worn line wants the next material's ingots.
     const w = createWorld(sim, 'tallow');
-    step(w, sim, 4 * DAY);
+    // Six days: walking is half the Phase 4 speed (Morgan, Phase 4 review).
+    step(w, sim, 6 * DAY);
     expect(w.commandLog).toHaveLength(0);
     const worn = lines(w, 'tool.worn')[0]!;
     expect(worn.data['better']).toBe('bronze');

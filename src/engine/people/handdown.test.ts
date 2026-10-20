@@ -49,7 +49,7 @@ describe('hand-me-down tools', () => {
       t['wear'] = wear;
       return t;
     };
-    const [sa, sb, sc] = [stone(a!.id, 2000), stone(b!.id, 1900), stone(c!.id, 1000)];
+    const [sa, sb, sc] = [stone(a!.id, 2000), stone(b!.id, 1300), stone(c!.id, 1000)];
     for (const p of people(w).slice(3)) stone(p.id, 3600);
     const bronze = [1, 2].map(() =>
       layTool(w, content, restOf(w, content), {
