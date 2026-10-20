@@ -75,11 +75,11 @@ export function groundOf(world: WorldState): Ground {
 }
 
 /** What a footprint tile holds for building: `no`, a tree to fell first, or open ground (a bush
- * or herbs there is cleared when the part is built). */
+ * or herbs there is cleared when the part is built; goods lying there are carried aside first,
+ * clearing.ts). */
 function tileFit(
   world: WorldState,
   content: EngineContent,
-  ground: Ground,
   x: number,
   y: number,
 ): 'no' | 'tree' | 'ok' {
@@ -88,7 +88,6 @@ function tileFit(
   const i = y * map.width + x;
   const kind = content.terrain.kinds[map.tiles[i]!]!;
   if (!kind.buildable || kind.water || kind.solid || map.built[i]) return 'no';
-  if (ground.items.has(i)) return 'no';
   const f = map.features[i]! ? content.features[map.features[i]! - 1]! : undefined;
   if (f && (f.kind === 'tree' || f.kind === 'log')) return 'tree';
   if (f && f.kind !== 'bush' && f.kind !== 'herb') return 'no';
@@ -128,7 +127,7 @@ export function scoreRect(
   for (const [x, y] of tilesOf(r)) {
     const i = y * map.width + x;
     if (!mine.some((h) => inRect(rectOf(h), x, y))) {
-      const fit = tileFit(world, content, ground, x, y);
+      const fit = tileFit(world, content, x, y);
       if (fit === 'no') return undefined;
       if (fit === 'tree') trees.push(i);
     }

@@ -21,9 +21,10 @@ import {
   trailOf,
   trailText,
 } from '../goods/index.ts';
-import { canReach } from '../paths/index.ts';
+import { planTiles } from '../build/index.ts';
+import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { busy, same, spotOf } from './spots.ts';
+import { busy, layAround, same, spotOf } from './spots.ts';
 import { tallyAdd } from './tally.ts';
 import { walkTo } from './walk.ts';
 
@@ -42,6 +43,7 @@ export function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void
     keepable(content, kind) && granaryOf(world).length && storedEnough(world, content)(load)
       ? (granarySlot(world, content, kind, count, here) ?? growGranary(ctx, here, made))
       : (slotFor(world, content, kind, count, here) ?? growStore(ctx, made));
+  if (!slot && aside(ctx, p, load, here)) return;
   if (!slot) {
     // Nowhere to put it: set it down here and look for work again later.
     Object.assign(load, { ...here, holder: 0 });
@@ -66,6 +68,26 @@ export function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void
     takeFrom(world, load, count);
   } else Object.assign(load, { ...here, holder: 0 });
   p['job'] = '';
+}
+
+/** Goods lying where a house or room is planned (build/clearing.ts) that the store has no room
+ * for are set down on the nearest free tile outside every plan; true when all of it was. */
+function aside(ctx: SystemContext, p: EntityRow, load: EntityRow, here: Spot): boolean {
+  if (here.z !== 0 || !planTiles(ctx.world).has(here.y * ctx.world.map.width + here.x))
+    return false;
+  const count = load['count'] as number;
+  const laid = layAround(
+    ctx,
+    load['kind'] as string,
+    count,
+    here,
+    load['made'] as number,
+    load['trail'] as string,
+  );
+  if (!laid) return false;
+  takeFrom(ctx.world, load, laid);
+  p['job'] = '';
+  return laid === count;
 }
 
 /** Picks up what lies on their tile: all of it, or a load. */
@@ -124,12 +146,16 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
     );
   };
   const enough = storedEnough(world, content);
+  // Goods on a planned house's tiles are carried off whatever the Stock level (clearing.ts).
+  const clearing = planTiles(world);
   for (const i of itemsOf(world)) {
-    if (i['holder'] || !kinds.includes(i['kind'] as string) || taken.has(i.id)) continue;
+    if (i['holder'] || taken.has(i.id)) continue;
     const at = spotOf(i);
+    const marked = at.z === 0 && clearing.has(at.y * world.map.width + at.x);
+    if (!marked && !kinds.includes(i['kind'] as string)) continue;
     const d = Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y));
     if (d >= far || inStore(world, at.x, at.y, at.z)) continue;
-    if (enough(i) ? !keeps(i) : !room(i)) continue;
+    if (!marked && (enough(i) ? !keeps(i) : !room(i))) continue;
     if (canReach(content, world.map, from, at)) [best, far] = [i, d];
   }
   return best;

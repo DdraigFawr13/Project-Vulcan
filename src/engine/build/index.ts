@@ -18,6 +18,7 @@ export {
 } from './houses.ts';
 export { roomAt, type Room } from './rooms.ts';
 export { housesOf, rectOf, type Rect } from './site.ts';
+export { blockedByGoods, planTiles } from './clearing.ts';
 export { digsFor } from './dug.ts';
 export {
   BUILD_TABLES,

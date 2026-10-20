@@ -5,7 +5,15 @@
 // building skill). A part to come down is taken down the same way and its material laid back.
 // A plan whose material cannot be reached says so once, as an alert, until some is brought.
 import type { EngineContent, EntityRow } from '../core/index.ts';
-import { finishPlan, nextNeed, planPart, plansOf, refundOf, takeDownPlan } from '../build/index.ts';
+import {
+  blockedByGoods,
+  finishPlan,
+  nextNeed,
+  planPart,
+  plansOf,
+  refundOf,
+  takeDownPlan,
+} from '../build/index.ts';
 import { inStore, itemsAt, itemsOf, layItem, loadOf, storeOf, takeFrom } from '../goods/index.ts';
 import { withBuilt } from '../map/index.ts';
 import { canReach, reachFrom, walkAt } from '../paths/index.ts';
@@ -94,7 +102,8 @@ function choosePlan(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
         !others.has(r.id) &&
         r['z'] === from.z &&
         world.tick >= (r['held'] as number) &&
-        !standing(ctx, r),
+        !standing(ctx, r) &&
+        !blockedByGoods(world, r),
     )
     .map((r) => {
       const d = Math.max(

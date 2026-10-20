@@ -30,6 +30,7 @@ import {
   type Rect,
   type Site,
 } from './site.ts';
+import { sayGoodsAside } from './clearing.ts';
 
 export const HOUSE_TABLES: Schemas = {
   /** A house, or a room added to one (`of`, the house; 0 for the house itself). `state`: `plan`,
@@ -283,6 +284,9 @@ export function placeHouse(
   for (const i of site.trees)
     addEntity(world, 'mark', { x: i % map.width, y: Math.floor(i / map.width), line, house: id });
   for (const good of costOf(parts).keys()) raiseStock(ctx, good, size.name, line);
+  const main = housesOf(world).find((h) => h.id === extra.of);
+  const where = main ? `the ${sizeOf(content, main).name}'s new room` : `the new ${size.name}`;
+  sayGoodsAside(ctx, parts, line, where);
   return id;
 }
 
