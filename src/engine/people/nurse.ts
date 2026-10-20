@@ -45,7 +45,11 @@ export function takeUpNursing(ctx: SystemContext, p: EntityRow): boolean {
   const nearest = (list: EntityRow[]) =>
     [...list].sort((a, b) => far(spotOf(a), from) - far(spotOf(b), from) || a.id - b.id)[0];
   const hurt = people(world).filter(
-    (q) => q.id !== p.id && q['status'] === 'alive' && !bodyOf(world, q.id)?.['carrier'],
+    (q) =>
+      q.id !== p.id &&
+      q['status'] === 'alive' &&
+      !bodyOf(world, q.id)?.['carrier'] &&
+      !bodyOf(world, q.id)?.['healer'],
   );
   if (able(content, p, content.health.care.job)) {
     const busy = tended(world, p, 'dress', 'target');

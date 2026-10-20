@@ -70,7 +70,15 @@ export function die(ctx: SystemContext, p: EntityRow, cause: string, causes: num
   });
   stopFor(ctx, p, false);
   Object.assign(p, { status: 'dead', doing: '', path: [], stride: 0 });
-  Object.assign(body, { died: line, diedAt: world.tick, down: 1, healer: 0, carrier: 0 });
+  Object.assign(body, {
+    died: line,
+    diedAt: world.tick,
+    down: 1,
+    healer: 0,
+    carrier: 0,
+    bed: 0,
+    roll: 0,
+  });
   // Their tools go back to the cart; their bed is anyone's.
   const rest = restOf(world, content);
   for (const i of itemsOf(world))
@@ -128,7 +136,10 @@ export function buryAtDayEnd(ctx: SystemContext, hour: number): void {
     const d = (world.entities['person'] ?? []).find((p) => p.id === g['person']);
     const body = d && bodyOf(world, d.id);
     if (!d || !body) continue;
-    const there = alive(world).filter((q) => !bodyOf(world, q.id)?.['down']);
+    // Those above ground and on their feet at the day's end come to the grave.
+    const there = alive(world).filter(
+      (q) => q['z'] === 0 && q['doing'] !== 'sleep' && !bodyOf(world, q.id)?.['down'],
+    );
     const by = there.find((q) => q.id === g['by']) ?? there[0];
     const line = ctx.emit('health.buried', {
       causes: [body['died'] as number, g['line'] as number].filter((c) => c > 0),

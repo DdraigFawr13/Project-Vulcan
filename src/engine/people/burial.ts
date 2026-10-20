@@ -83,8 +83,13 @@ export function burying(ctx: SystemContext, p: EntityRow): boolean {
     if (body?.['carrier'] === p.id) body['carrier'] = 0;
     return stop(p);
   }
-  if ((p['path'] as number[]).length) return true;
   const plot = plotOf(ctx, p);
+  // The ground sent back under them: they set the body down and stop.
+  if (!freePlots(world).some((s) => same(s, plot))) {
+    if (body['carrier'] === p.id) body['carrier'] = 0;
+    return stop(p);
+  }
+  if ((p['path'] as number[]).length) return true;
   const here = spotOf(p);
   if (p['task'] === 'carry') {
     if (body['carrier'] !== p.id) {

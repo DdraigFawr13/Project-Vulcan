@@ -103,7 +103,13 @@ export function careMinute(ctx: SystemContext): void {
       else b['carrier'] = 0;
     }
     if (p['status'] !== 'alive') continue;
-    if (b['down'] && !b['finder'] && !b['carrier']) seekFinder(ctx, p, b);
+    // A finder or healer hurt, dead or called away on the way leaves them to someone else.
+    if (b['finder'] && !b['found'] && !on(world, b['finder'] as number, 'carry', p.id))
+      b['finder'] = 0;
+    if (b['healer'] && !on(world, b['healer'] as number, 'bind', p.id)) b['healer'] = 0;
+    if (b['down'] && !b['found'] && !b['finder'] && !b['carrier']) seekFinder(ctx, p, b);
+    else if (b['down'] && b['found'] && !b['bed'] && !b['carrier'] && ctx.world.tick % 60 === 0)
+      seekCarrier(ctx, p);
     if (!b['healer'] && unbound(ctx, p.id).length) seekHealer(ctx, p, b);
   }
   seekFeeders(
@@ -111,6 +117,28 @@ export function careMinute(ctx: SystemContext): void {
     (q, p) => free(world, q, p),
     (q, p) => answer(ctx, q, 'feed', p),
   );
+}
+
+/** Whether `id` is alive and on `job` for `target`. */
+const on = (world: WorldState, id: number, job: string, target: number): boolean => {
+  const q = personOf(world, id);
+  return q?.['status'] === 'alive' && q['job'] === job && q['target'] === target;
+};
+
+/** Found but left lying for want of a bed: each hour, once a bed is free, the nearest awake
+ * person comes to carry them to it. */
+function seekCarrier(ctx: SystemContext, p: EntityRow): void {
+  const { world, content } = ctx;
+  const bed = bedFor(ctx, p);
+  const at = spotOf(p);
+  if (!bed || same(at, bed.at)) return;
+  const q = people(world)
+    .filter((r) => free(world, r, p) && r['doing'] !== 'sleep')
+    .filter((r) => canReach(content, world.map, spotOf(r), at))
+    .sort((a, c) => far(spotOf(a), at) - far(spotOf(c), at) || a.id - c.id)[0];
+  if (!q) return;
+  answer(ctx, q, 'carry', p, 'fetch');
+  walkTo(ctx, q, at);
 }
 
 /** The nearest awake person who hears `p`, or after work anyone, comes to find them. */
@@ -204,10 +232,11 @@ function carrying(ctx: SystemContext, q: EntityRow): boolean {
     return done(q);
   }
   if ((q['path'] as number[]).length) return true;
-  if (q['task'] === 'find') {
+  if (q['task'] === 'find' || q['task'] === 'fetch') {
     if (!near(spotOf(q), spotOf(p)))
-      return walkTo(ctx, q, spotOf(p)) || ((b['finder'] = 0), done(q));
-    found(ctx, q, p, b);
+      return walkTo(ctx, q, spotOf(p)) || (q['task'] === 'find' && (b['finder'] = 0), done(q));
+    if (q['task'] === 'find') found(ctx, q, p, b);
+    else lift(ctx, q, p, b);
     return true;
   }
   // Carrying: laid on the bed when they get there.
@@ -255,6 +284,12 @@ function found(ctx: SystemContext, q: EntityRow, p: EntityRow, b: EntityRow): vo
     },
   });
   for (const w of wounds) w['care'] = line;
+  b['found'] = line;
+  lift(ctx, q, p, b);
+}
+
+/** Picks them up if there is a bed to carry them to, else leaves them lying there. */
+function lift(ctx: SystemContext, q: EntityRow, p: EntityRow, b: EntityRow): void {
   const bed = bedFor(ctx, p);
   if (!bed || same(spotOf(p), bed.at)) {
     if (bed) Object.assign(b, { bed: bed.id, roll: bed.roll });

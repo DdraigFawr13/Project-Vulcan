@@ -69,16 +69,18 @@ function bleed(ctx: SystemContext, p: EntityRow, wounds: EntityRow[]): boolean {
   const body = bodyOf(ctx.world, p.id)!;
   const rate = (n: number) => (n >= 2 ? b.fast : n === 1 ? b.slow : 0);
   const loss = wounds.reduce((s, w) => s + rate(w['mortal'] ? 2 : (w['bleed'] as number)), 0);
+  // The wound they would die of, chosen before this hour's binding slows the bleeding.
+  const worst = wounds
+    .filter((x) => x['mortal'] || (x['bleed'] as number) > 0)
+    .sort((x, y) => (y['mortal'] as number) - (x['mortal'] as number) || x.id - y.id)[0];
   for (const w of wounds)
     if (w['bound'] === 2 && !w['mortal'] && (w['bleed'] as number) > 0)
       w['bleed'] = (w['bleed'] as number) - 1;
   body['blood'] = loss
     ? Math.max(0, (body['blood'] as number) - loss)
     : Math.min(b.full, (body['blood'] as number) + b.regain);
-  if ((body['blood'] as number) > 0) return false;
-  const w = wounds
-    .filter((x) => x['mortal'] || (x['bleed'] as number) > 0)
-    .sort((x, y) => (y['mortal'] as number) - (x['mortal'] as number) || x.id - y.id)[0]!;
+  if ((body['blood'] as number) > 0 || !worst) return false;
+  const w = worst;
   const { they, them } = pronouns(p);
   const finder = personOf(ctx.world, body['finder'] as number);
   const healer = personOf(ctx.world, w['healer'] as number);
@@ -198,6 +200,6 @@ export function healHour(ctx: SystemContext): void {
 
 /** Back on their feet: they leave the bed they were laid on and go about their day. */
 function standUp(p: EntityRow, body: EntityRow): void {
-  Object.assign(body, { down: 0, bed: 0, roll: 0, finder: 0 });
+  Object.assign(body, { down: 0, bed: 0, roll: 0, finder: 0, found: 0 });
   if (p['doing'] === 'hurt') p['doing'] = '';
 }

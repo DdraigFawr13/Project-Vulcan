@@ -207,7 +207,9 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
   // P5.6, P5.8: a burial is seen through once begun; dressing is work hours'.
   if (p['job'] === 'bury' && burying(ctx, p)) return true;
-  if (p['job'] === 'dress' && hours && dressing(ctx, p)) return true;
+  // A dressing not finished by the end of work is left for whoever takes it up next.
+  if (p['job'] === 'dress' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
+  if (p['job'] === 'dress' && dressing(ctx, p)) return true;
   const load = loadOf(world, p.id);
   // Out of hours the metal and station work keeps what it fetched and resumes next morning, and
   // so does a sinker the shaft's ladder (else they carried it back and lost the job).

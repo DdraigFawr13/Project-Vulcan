@@ -115,6 +115,21 @@ describe('health', () => {
     ).toBe(true);
   });
 
+  it('names the wound they bled to death from even when its binding stopped it that hour', () => {
+    const sim = createSim(mortal);
+    const world = createWorld(sim, 'smoke');
+    step(world, sim, DAY / 2);
+    const p = people(world)[1]!;
+    send(world, 'hurt', { person: p.id, part: 'left-arm', severity: 'deep' });
+    step(world, sim, 1);
+    const w = openWounds(world, p.id)[0]!;
+    Object.assign(w, { bound: 2, bleed: 1 });
+    bodyOf(world, p.id)!['blood'] = 1;
+    step(world, sim, 60);
+    expect(p['status']).toBe('dead');
+    expect(lines(world, 'health.died')[0]!.data['cause']).toMatch(/left arm/);
+  });
+
   it('adds a sickroom to the first cottage once two lie hurt at once', () => {
     const sim = createSim(withoutAccidents(game));
     const world = createWorld(sim, 'tallow');
