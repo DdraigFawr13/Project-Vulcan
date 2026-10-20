@@ -66,8 +66,10 @@ describe('fields', () => {
     });
   }
 
+  // The granary test below goes on from this test's world, after its harvest (check:full budget).
+  const harvestWorld = createWorld(sim, SEEDS[0]!);
   it('sows in spring, reaps when ripe, and brings grain and seed to the store', () => {
-    const world = createWorld(sim, SEEDS[0]!);
+    const world = harvestWorld;
     const stored = (kind: string) =>
       itemsOf(world)
         .filter((i) => i['kind'] === kind && inStore(world, i['x'] as number, i['y'] as number, 0))
@@ -129,7 +131,7 @@ describe('fields', () => {
   });
 
   it('puts the surplus of a reaped field beyond the Food plate on granary tiles', () => {
-    const world = createWorld(sim, SEEDS[0]!);
+    const world = harvestWorld;
     const food = (where: (x: number, y: number) => boolean) =>
       itemsOf(world)
         .filter((i) => !i['holder'] && content.life.eat[i['kind'] as string] !== undefined)
