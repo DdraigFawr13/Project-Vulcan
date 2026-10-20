@@ -1,6 +1,6 @@
 {
 "surface": {"width":150,"height":150,"ground":"grass"},
-"walking": {"speed":10,"straight":10,"diagonal":14,"stairs":30,"shaft":60,"ice":2},
+"walking": {"speed":5,"straight":10,"diagonal":14,"stairs":30,"shaft":60,"ice":2},
 "generator": {
 "climates": [
 {"id":"temperate","name":"temperate","weight":7,"temperature":[9,14],"rainfall":[520,900]},

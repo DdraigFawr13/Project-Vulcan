@@ -209,6 +209,8 @@ export interface BuildingsDef {
     pieces: readonly string[];
   };
   town: { ring: number; step: number; most: number };
+  /** The granary beside a reaped field: its size and the most tiles it grows to (goods/granary.ts). */
+  granary: { width: number; height: number; most: number };
   field: FieldDef;
   rooms: RoomsDef;
   furniture: FurnitureDef;
@@ -336,8 +338,9 @@ export interface FieldDef {
   name: string;
   /** The item sown, one a tile (P4.7). */
   seed: string;
-  /** Siting: a seed tile's score weights, and how many of the best are grown (fieldsite.ts). */
-  weigh: { fertility: number; water: number; tries: number };
+  /** Siting: a block's score weights (`near` is per tile past the ring's edge), and how many of
+   * the best are tried for a way in (fieldsite.ts). */
+  weigh: { fertility: number; water: number; near: number; tries: number };
   start: number;
   perMouth: number;
   reach: number;

@@ -1,7 +1,7 @@
 // Fields (P4.7, V-049, V-051, V-089): the Build sheet's Fields row says how much the colony wants
 // them; nobody is told where. Each hour, while the band's field tiles are short of `perMouth`
 // for each living person and no field waits to be sown, the colony sites one outside the town
-// ring (fieldsite.ts); its trees are marked to fell when sowing needs the ground (fieldlife.ts). A plan may be sent back once. Growing,
+// ring (fieldsite.ts: one compact block, the nearest good soil); its trees are marked to fell when sowing needs the ground (fieldlife.ts). A plan may be sent back once. Growing,
 // frost, ripening and leaving the ground to grass are fieldlife.ts; sowing and reaping are
 // people/farm.ts.
 import {
@@ -159,9 +159,11 @@ export function planFields(ctx: SystemContext, green: Spot, causes: number[], se
   const ys = site.tiles.map((i) => Math.floor(i / map.width));
   const [x, y] = [Math.min(...xs), Math.min(...ys)];
   const dir = dirFrom(green, { x, y, w: Math.max(...xs) - x + 1, h: Math.max(...ys) - y + 1 });
+  const water = content.buildings.field.water;
   const why =
-    `the best good soil outside the town ring, ${site.far} tiles from the green, ` +
-    `${site.wet <= 1 ? 'by' : `${site.wet} tiles from`} water: fertility ${site.fert}, ` +
+    `the nearest good soil outside the town ring, ${site.far} tiles from the green, ` +
+    `${site.wet <= 1 ? 'by' : site.wet > water ? 'far from' : `${site.wet} tiles from`} water: ` +
+    `fertility ${site.fert}, ` +
     (site.trees.length
       ? `${site.trees.length} tree${site.trees.length > 1 ? 's' : ''} on it`
       : 'no trees on it');

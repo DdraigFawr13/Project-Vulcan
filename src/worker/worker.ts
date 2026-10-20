@@ -63,6 +63,8 @@ let sentBuild = '';
  * the log's front, so a long run could otherwise seal lines before they were posted. */
 let unposted: SimEvent[] = [];
 let timer: ReturnType<typeof setInterval> | undefined;
+/** A snapshot owed to the levers just sent, one for the whole burst. */
+let snapSoon: ReturnType<typeof setTimeout> | undefined;
 /** The valleys on offer in the picker, made from their seeds and not yet run. */
 let offered: WorldState[] = [];
 
@@ -311,7 +313,11 @@ function handle(message: ToWorker): void {
       // the page sees it now rather than once time runs.
       if (pace.speed === 0 && !pace.skip) {
         unposted.push(...applyDue(world, sim));
-        snapshot(world);
+        // One snapshot for a burst of levers (a heading's stepper sends a command per row).
+        snapSoon ??= setTimeout(() => {
+          snapSoon = undefined;
+          if (world) guarded(() => snapshot(world!));
+        }, 0);
       }
       return;
     // The rest only read the world, between ticks; with no world (stopped) they go unanswered.

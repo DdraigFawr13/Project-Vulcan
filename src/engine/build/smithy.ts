@@ -4,7 +4,12 @@
 // and a quench tub (furniture kinds that builders make, people/hearth.ts). Nobody places it; the
 // Build sheet's Smithy level is the colony's want, and the plan can be sent back once. When its
 // floors and pieces stand it is built and smiths work at the forge.
-import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import {
+  TICKS_PER_DAY,
+  type EngineContent,
+  type EntityRow,
+  type WorldState,
+} from '../core/index.ts';
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
 import { inStore, itemsOf, layItem, marksOf, raiseStock } from '../goods/index.ts';
 import { canReach } from '../paths/index.ts';
@@ -128,11 +133,11 @@ function free(
   return open ? fell : undefined;
 }
 
-/** Whether an ingot lies in the store: the smithy is wanted from then (tools.json materials, and
- * any item that names the ore it is smelted from). */
+/** Whether an ingot lies in the store: the smithy is wanted from then (the ingots of tools.json
+ * materials and of the metal recipes; raw ore does not count). */
 export function ingotInStore(world: WorldState, content: EngineContent): EntityRow | undefined {
   const ingots = new Set([
-    ...content.items.filter((i) => i.ore).map((i) => i.id),
+    ...content.metal.recipes.map((r) => r.makes),
     ...content.tools.materials.flatMap((m) => (m.ingot ? [m.ingot] : [])),
   ]);
   return itemsOf(world).find(
@@ -191,7 +196,8 @@ export function planSmithy(ctx: SystemContext, green: { x: number; y: number }, 
   const first = smiths[0];
   if (!first || !houseOfPerson(world, content, first.id)) return;
   // With no ground found, look again once a day, not every hour.
-  if (state['smithyNoGround'] && !sent && world.tick < (state['smithyTried'] ?? 0) + 1440) return;
+  if (state['smithyNoGround'] && !sent && world.tick < (state['smithyTried'] ?? 0) + TICKS_PER_DAY)
+    return;
   state['smithyTried'] = world.tick;
   let smith = first;
   let house = houseOfPerson(world, content, first.id)!;

@@ -32,8 +32,9 @@ export interface SheetDeps {
   lines(): readonly LedgerLine[];
   /** Moves the camera to a place (and its level) and marks it; `keep` leaves the sheet open. */
   show(x: number, y: number, z: number, keep?: boolean): void;
-  /** A sheet opened from the strip or the alert line: the bar shows no panel button pressed. */
-  opened(): void;
+  /** A sheet opened from the strip, the alert line or another sheet: the bar shows no panel
+   * button pressed, or only `kind`'s. */
+  opened(kind?: string): void;
 }
 
 export class Sheets {
@@ -45,6 +46,8 @@ export class Sheets {
   private buildKey = '';
   private lawView: LawView | undefined;
   private lawKey = '';
+  /** The item page open: its id, what it shows (as JSON) and whether a fresh copy is asked for. */
+  private itemOpen: { id: number; key: string; asked: boolean } | undefined;
   /** A world just began or loaded; its first batch of lines is not news. */
   private loaded = false;
   private readonly play: Play;
@@ -64,7 +67,7 @@ export class Sheets {
       setPriority: (person, job, level) => command('setPriority', { person, job, level }),
       openLaws: () => {
         this.open('laws');
-        deps.opened();
+        deps.opened('laws');
       },
       refresh: () => this.refresh(),
     });
@@ -110,7 +113,18 @@ export class Sheets {
 
   showItem(item: ItemView | undefined): void {
     const { panel } = this.deps;
-    if (!item) return panel.showView('item', 'Item', [el('p', { class: 'muted' }, 'It is gone.')]);
+    if (!item) {
+      this.itemOpen = undefined;
+      return panel.showView('item', 'Item', [el('p', { class: 'muted' }, 'It is gone.')]);
+    }
+    const key = JSON.stringify(item);
+    const open = this.itemOpen;
+    const refresh = open?.asked;
+    if (open) open.asked = false;
+    if (refresh && panel.kind !== 'item') return; // another sheet came up meanwhile
+    // A refresh with nothing new leaves the page (and any chain opened on it) alone.
+    if (open?.id === item.id && open.key === key && panel.kind === 'item') return;
+    this.itemOpen = { id: item.id, key, asked: false };
     const rows = itemRows(item, {
       lineRow: (line, prefix) => panel.lineRow(line, prefix),
       look: (x, y, z) => this.deps.show(x, y, z, true),
@@ -173,6 +187,7 @@ export class Sheets {
   }
 
   snapshot(message: Extract<FromWorker, { type: 'snapshot' }>): void {
+    const { panel } = this.deps;
     const { walkers, day, law } = message;
     this.walkers = walkers;
     this.day = day;
@@ -188,6 +203,12 @@ export class Sheets {
     if (message.build) this.buildView = message.build;
     this.refreshBuild();
     this.refreshLaws();
+    // The item page redraws from each snapshot (its wear and holder move), one ask in flight.
+    const item = this.itemOpen;
+    if (item && panel.kind === 'item' && !item.asked) {
+      item.asked = true;
+      this.openItem(item.id);
+    }
   }
 
   lines(batch: readonly LedgerLine[]): void {

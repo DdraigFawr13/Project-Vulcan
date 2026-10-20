@@ -6,11 +6,14 @@ import type { GoodsView } from '../worker/index.ts';
 import { ITEMS } from './sheets.ts';
 
 const TILE = 32;
+/** A granary tile: the store's straw, tinted toward grain gold. */
+const GRANARY_TINT = 0xe8c16a;
 
 export class GoodsSprites {
   private view: GoodsView = {
     items: [],
     store: [],
+    granary: [],
     marks: [],
     plans: [],
     shafts: [],
@@ -51,13 +54,12 @@ export class GoodsSprites {
     const here = <T extends { z: number }>(list: readonly T[]) =>
       list.filter((s) => s.z === this.z);
     // Under the people (depth 8), store tiles first, then what lies on them, then the marks.
-    const layers: [string, { x: number; y: number }[], number][] = [
+    // The granary's tiles are the store's art, tinted (GRANARY_TINT) so the two read apart.
+    type Layer = [string, { x: number; y: number }[], number, number?];
+    const layers: Layer[] = [
       ['zone.stockpile', here(this.view.store), 5],
-      ...here(this.view.items).map((i): [string, { x: number; y: number }[], number] => [
-        i.frame,
-        [i],
-        6,
-      ]),
+      ['zone.stockpile', here(this.view.granary), 5, GRANARY_TINT],
+      ...here(this.view.items).map((i): Layer => [i.frame, [i], 6]),
       ['mark.fell', here(this.view.marks), 7],
     ];
     const key = JSON.stringify([this.z, layers]);
@@ -66,15 +68,16 @@ export class GoodsSprites {
     for (const s of this.shown) s.destroy();
     this.shown = [];
     const frames = this.scene.textures.get(ITEMS);
-    for (const [frame, spots, depth] of layers) {
+    for (const [frame, spots, depth, tint] of layers) {
       if (!frames.has(frame)) continue;
-      for (const { x, y } of spots)
-        this.shown.push(
-          this.scene.add
-            .image(x * TILE, y * TILE, ITEMS, frame)
-            .setOrigin(0)
-            .setDepth(depth),
-        );
+      for (const { x, y } of spots) {
+        const image = this.scene.add
+          .image(x * TILE, y * TILE, ITEMS, frame)
+          .setOrigin(0)
+          .setDepth(depth);
+        if (tint !== undefined) image.setTint(tint);
+        this.shown.push(image);
+      }
     }
   }
 }

@@ -5,7 +5,10 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { allLines, createSim, createWorld, needOf, step, submitCommand, whyOf } from '../index.ts';
-import { homeless, housesOf, roomAt } from './index.ts';
+import { itemsAt, layItem } from '../goods/index.ts';
+import { freeTile } from '../goods/store.ts';
+import { homeless, housesOf, plansOf, rectOf, roomAt } from './index.ts';
+import { inRect } from './site.ts';
 
 const sim = createSim(content);
 const DAY = 1440;
@@ -35,6 +38,51 @@ describe('houses', () => {
     const moved = lines(world!, 'people.movedRoom').find((e) => e.actors[0] === own.actors[0]);
     expect(moved).toBeDefined();
     expect(needOf(world!, own.actors[0]!, 'privacy')!['low']).toBe(0);
+  });
+
+  it('says once why a crowded house gets no room when no side has clear ground, water and the store being in the way (anvil)', () => {
+    const w = createWorld(sim, 'anvil');
+    step(w, sim, 16 * DAY);
+    const blocked = lines(w, 'build.growBlocked');
+    expect(blocked.length).toBeGreaterThan(0);
+    expect(blocked.length).toBeLessThanOrEqual(2);
+    expect(blocked[0]!.causes.length).toBeGreaterThan(0);
+  });
+
+  it('carries goods lying where a room goes aside, then builds the room there', () => {
+    const world = createWorld(sim, 'ledger/1');
+    // Just as the cottage's last part stands, before it is counted built and grows a room.
+    const done = () => {
+      const h = housesOf(world).find((o) => !o['of']);
+      const mine = plansOf(world).filter((p) => p['house'] === h?.id);
+      return !!mine.length && mine.every((p) => p['state'] === 'built');
+    };
+    while (!done() && world.tick < 9 * DAY) step(world, sim, 1);
+    const house = firstHouse(world);
+    expect(done()).toBe(true);
+    // Felled logs lie on every tile round the house, as on a cleared forest site.
+    const [x0, y0] = [house['x'] as number, house['y'] as number];
+    for (let y = y0 - 6; y < y0 + (house['h'] as number) + 6; y += 1)
+      for (let x = x0 - 6; x < x0 + (house['w'] as number) + 6; x += 1)
+        if (
+          !itemsAt(world, x, y, 0).length &&
+          !inRect(rectOf(house), x, y) &&
+          freeTile(world, content, x, y)
+        )
+          layItem(world, { kind: 'logs', count: 1, x, y, z: 0, made: 0 });
+    step(world, sim, 4 * DAY);
+    expect(lines(world, 'build.growBlocked')).toHaveLength(0);
+    const room = housesOf(world).find((h) => h['of'] === house.id)!;
+    expect(room).toBeDefined();
+    const aside = lines(world, 'build.goodsAside').find((e) =>
+      e.causes.includes(room['line'] as number),
+    )!;
+    expect(aside.data['where']).toBe("the cottage's new room");
+    // The part waits for its tile to clear, then stands: the room is built with no goods in it.
+    expect(room['state']).toBe('built');
+    const r = rectOf(room);
+    for (let y = r.y; y < r.y + r.h; y += 1)
+      for (let x = r.x; x < r.x + r.w; x += 1) expect(itemsAt(world, x, y, 0)).toHaveLength(0);
   });
 
   for (const seed of SEEDS) {

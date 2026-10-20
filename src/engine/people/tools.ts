@@ -1,14 +1,26 @@
 // Tools in use (Bundle 3, V-088, V-041): nobody is handed a tool. Taking up work a tool serves, a
 // person with none of that kind takes the best free one in the store; every minute of that work is
 // counted per kind (a week's worth, decayed at midnight) and wears the tool they hold; at dawn the
-// person who has worked a kind most takes a better free tool from the store, their old one going
-// back. A tool at no wear left breaks. The work's minutes are divided by the tool's speed.
+// person who has worked a kind most takes a better free tool from the store, then the next most, each
+// whose own tool is beaten by one; the old one goes to whoever holds the worst of the kind (and
+// works it), else back. Hours are each person's own. A tool at no wear left breaks. The work's minutes are divided by the tool's speed.
 import { clockAt, TICKS_PER_DAY, type EngineContent, type EntityRow } from '../core/index.ts';
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
-import { freeTools, heldBy, HELD, restOf, speedOf, toolOf, wornAsk } from '../goods/index.ts';
+import {
+  betterTool,
+  freeTools,
+  heldBy,
+  HELD,
+  isWorn,
+  restOf,
+  speedOf,
+  toolOf,
+  toolsChanged,
+  wornAsk,
+} from '../goods/index.ts';
+import { hoursOf } from '../law/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { dayOf } from './day.ts';
 import { people, spotOf } from './spots.ts';
 
 export const TOOL_TABLES: Schemas = {
@@ -68,23 +80,70 @@ const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 /** A tool put back is kept with the cart again. */
 function putBack(ctx: SystemContext, item: EntityRow): void {
   Object.assign(item, { owner: 0, state: '', ...restOf(ctx.world, ctx.content) });
+  toolsChanged(ctx.world);
 }
 
-/** `p` takes the tool `item`, handing back the one of its kind they hold (if any). */
-export function giveTool(ctx: SystemContext, item: EntityRow, p: EntityRow, why: string): void {
+/** What a tool's line cites: the line that made it, else (a tool with none) its holder's arrival. */
+const causesOf = (item: EntityRow, p: EntityRow): number[] =>
+  [item['made'] as number, p['arrived'] as number].filter((l) => l > 0).slice(0, 1);
+
+type Heir = { person: EntityRow; theirs: EntityRow | undefined };
+
+/** Who a tool just put down goes to: among those who work its kind, the one whose held tool of it
+ * is worst (none is worse than any) and beaten by it; most minutes first among equals. */
+function heirOf(ctx: SystemContext, old: EntityRow, giver: number, kind: string): Heir | undefined {
+  let heir: Heir | undefined;
+  for (const row of mostUsed(ctx, kind)) {
+    const person = people(ctx.world).find((q) => q.id === row['person']);
+    if (!person || person.id === giver) continue;
+    const theirs = bestHeld(ctx, person.id, kind);
+    if (theirs && !betterTool(ctx.content, old, theirs)) continue;
+    if (!heir || (heir.theirs && (!theirs || betterTool(ctx.content, heir.theirs, theirs))))
+      heir = { person, theirs };
+  }
+  return heir;
+}
+
+/** `p` takes the tool `item`, handing back the one of its kind they hold (if any); with `down`,
+ * that old one goes to whoever holds the worst of the kind, if it is better than theirs. */
+export function giveTool(
+  ctx: SystemContext,
+  item: EntityRow,
+  p: EntityRow,
+  why: string,
+  down = false,
+): void {
   const { content } = ctx;
   const kind = toolOf(content, item)!.kind;
   const old = bestHeld(ctx, p.id, kind);
-  ctx.emit('tool.taken', {
-    causes: [item['made'] as number].filter((l) => l > 0),
+  const heir = old && down ? heirOf(ctx, old, p.id, kind) : undefined;
+  const line = ctx.emit('tool.taken', {
+    causes: causesOf(item, p),
     actors: [p.id],
     data: {
       ...{ name: p['name'] as string, what: nameOf(content, item), why },
-      back: old ? ` ${cap(nameOf(content, old))} went back to the cart.` : '',
+      back: old && !heir ? ` ${cap(nameOf(content, old))} went back to the cart.` : '',
     },
   });
   Object.assign(item, { owner: p.id, state: 'held', ...HELD });
-  if (old) putBack(ctx, old);
+  toolsChanged(ctx.world);
+  if (!old) return;
+  if (!heir) return putBack(ctx, old);
+  const { person, theirs } = heir;
+  ctx.emit('tool.handedDown', {
+    causes: [line],
+    actors: [p.id, person.id],
+    data: {
+      ...{ name: p['name'] as string, to: person['name'] as string },
+      what: nameOf(content, old).replace(/^an? /, 'their '),
+      why: theirs
+        ? `whose ${nameOf(content, theirs).replace(/^an? /, '')} was ${isWorn(content, theirs) ? 'worn' : 'the poorer'}`
+        : `who had no ${content.tools.kinds.find((k) => k.id === kind)!.name}`,
+      back: theirs ? ` ${cap(nameOf(content, theirs))} went back to the cart.` : '',
+    },
+  });
+  Object.assign(old, { owner: person.id });
+  if (theirs) putBack(ctx, theirs);
 }
 
 /** A person starting work a tool serves who holds none of that kind takes the best free one
@@ -121,7 +180,7 @@ export function worked(ctx: SystemContext, p: EntityRow, use: string): void {
   if (!tool['worn']) wornLine(ctx, p, tool);
   if ((tool['wear'] as number) > 0) return;
   ctx.emit('tool.broke', {
-    causes: [tool['made'] as number].filter((l) => l > 0),
+    causes: causesOf(tool, p),
     actors: [p.id],
     data: {
       name: p['name'] as string,
@@ -130,6 +189,7 @@ export function worked(ctx: SystemContext, p: EntityRow, use: string): void {
     },
   });
   removeEntity(world, 'item', tool.id);
+  toolsChanged(world);
 }
 
 /** Once, when a held tool wears under its worn line: the better one it asks for and its ingots,
@@ -142,7 +202,7 @@ function wornLine(ctx: SystemContext, p: EntityRow, tool: EntityRow): void {
   const kind = content.tools.kinds.find((k) => k.id === t.tool!.kind)!;
   const ingot = content.items.find((i) => i.id === next.ingot)?.name ?? next.ingot;
   tool['worn'] = ctx.emit('tool.worn', {
-    causes: [tool['made'] as number].filter((l) => l > 0),
+    causes: causesOf(tool, p),
     actors: [p.id],
     data: {
       ...{ name: p['name'] as string, what: t.name, better: next.name, kind: kind.name },
@@ -169,8 +229,9 @@ export function mostUsed(ctx: SystemContext, kind: string): EntityRow[] {
     );
 }
 
-/** Each minute: at midnight the week's counts decay; at dawn the person who works each kind
- * most takes a better free tool of it, if the store has one. */
+/** Each minute: at midnight the week's counts decay; at the hour work starts for someone (their
+ * own hours, the law's or the custom), each of them who works a kind, most first, takes the best
+ * free tool of it if it beats theirs, the store permitting. */
 export function toolsDaily(ctx: SystemContext): void {
   const { world, content } = ctx;
   if (world.tick % TICKS_PER_DAY === 0)
@@ -179,15 +240,16 @@ export function toolsDaily(ctx: SystemContext): void {
         ((r['minutes'] as number) * (content.tools.week - 1)) / content.tools.week,
       );
   const c = clockAt(world.tick, content.calendar);
-  if (c.minute !== 0 || c.hour !== dayOf(world, content).workFrom) return;
+  if (c.minute !== 0) return;
   for (const kind of content.tools.kinds) {
-    const top = mostUsed(ctx, kind.id)[0];
-    const p = top && people(world).find((q) => q.id === top['person']);
-    const free = freeTools(world, content, kind.id)[0];
-    if (!p || !free) continue;
-    const mine = bestHeld(ctx, p.id, kind.id);
-    if (!mine || speedOf(content, free) > speedOf(content, mine))
-      giveTool(ctx, free, p, `nobody works with the ${kind.name} as much`);
+    for (const row of mostUsed(ctx, kind.id)) {
+      const p = people(world).find((q) => q.id === row['person']);
+      if (!p || hoursOf(world, content, p.id).workFrom !== c.hour) continue;
+      const free = freeTools(world, content, kind.id)[0];
+      const mine = bestHeld(ctx, p.id, kind.id);
+      if (free && (!mine || betterTool(content, free, mine)))
+        giveTool(ctx, free, p, `a better ${kind.name} lay at the cart`, true);
+    }
   }
 }
 

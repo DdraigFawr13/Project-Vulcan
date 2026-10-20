@@ -64,6 +64,26 @@ describe('shaft views', () => {
     expect(tileView(w, next[0]!.x, next[0]!.y, 0, lineOf)!.shaft!.back).toBe(false);
   });
 
+  it('offers no Send back once a miner has taken up sinking', () => {
+    const w = createWorld(sim, 'smoke');
+    submitCommand(w, {
+      tick: w.tick + 1,
+      kind: 'setStock',
+      data: { good: 'iron-ingot', level: 'some' },
+    });
+    for (let n = 0; n < 12 * 48; n += 1) {
+      step(w, sim, 30);
+      const miner = (w.entities['person'] ?? []).find((p) => p['task'] === 'sink');
+      if (!miner) continue;
+      const row = shaftsOf(w).find((s) => s.id === miner['plan'])!;
+      const page = tileView(w, row['x'] as number, row['y'] as number, 0, lineOf)!.shaft!;
+      expect(page.here).toBeDefined();
+      expect(page.back).toBe(false);
+      return;
+    }
+    throw new Error('no miner took up sinking');
+  });
+
   it('says what the miners are doing in words, never a raw key', () => {
     const w = createWorld(sim, 'smoke');
     submitCommand(w, {

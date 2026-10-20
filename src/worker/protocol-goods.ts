@@ -14,6 +14,8 @@ export interface Spot3 {
 export interface GoodsView {
   items: (Spot3 & { frame: string })[];
   store: Spot3[];
+  /** The tiles of each field's granary (P4.7 review), drawn like the store, tinted. */
+  granary: Spot3[];
   marks: Spot3[];
   /** Parts planned or to come down (P3.1), for the map's faint plan layer; built ones are in
    * the chunks' `built`. */
@@ -42,6 +44,8 @@ export interface StockView {
   levels: { id: string; word: string; count: number }[];
   /** What the good is for, from content, shown under its plate. */
   note?: string;
+  /** An ingot plate's line: what that metal is waiting on now. */
+  status?: string;
 }
 
 /** A tile page for the smelter, the charcoal clamp or the smithy (Bundle 3): words from the engine. */

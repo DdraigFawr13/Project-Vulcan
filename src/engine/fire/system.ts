@@ -9,8 +9,8 @@ import { FIRE_TABLES, firesOf, fuelOf, pieceOfFire, placeOf, timeWords } from '.
 function runFires(ctx: SystemContext): void {
   const { world, content } = ctx;
   const hour = clockAt(world.tick, content.calendar).hour;
-  // Dawn is when the colony's work starts (people/day.ts keeps it once the player changes it).
-  const dawn = world.systems['people']?.['workFrom'] ?? content.work.hours.from;
+  // Dawn is when the colony's work starts (content's `work.hours`).
+  const dawn = content.work.hours.from;
   for (const f of firesOf(world)) {
     if (!f['lit']) continue;
     const piece = pieceOfFire(world, f);

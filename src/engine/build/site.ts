@@ -75,11 +75,11 @@ export function groundOf(world: WorldState): Ground {
 }
 
 /** What a footprint tile holds for building: `no`, a tree to fell first, or open ground (a bush
- * or herbs there is cleared when the part is built). */
+ * or herbs there is cleared when the part is built; goods lying there are carried aside first,
+ * clearing.ts). */
 function tileFit(
   world: WorldState,
   content: EngineContent,
-  ground: Ground,
   x: number,
   y: number,
 ): 'no' | 'tree' | 'ok' {
@@ -88,7 +88,6 @@ function tileFit(
   const i = y * map.width + x;
   const kind = content.terrain.kinds[map.tiles[i]!]!;
   if (!kind.buildable || kind.water || kind.solid || map.built[i]) return 'no';
-  if (ground.items.has(i)) return 'no';
   const f = map.features[i]! ? content.features[map.features[i]! - 1]! : undefined;
   if (f && (f.kind === 'tree' || f.kind === 'log')) return 'tree';
   if (f && f.kind !== 'bush' && f.kind !== 'herb') return 'no';
@@ -128,7 +127,7 @@ export function scoreRect(
   for (const [x, y] of tilesOf(r)) {
     const i = y * map.width + x;
     if (!mine.some((h) => inRect(rectOf(h), x, y))) {
-      const fit = tileFit(world, content, ground, x, y);
+      const fit = tileFit(world, content, x, y);
       if (fit === 'no') return undefined;
       if (fit === 'tree') trees.push(i);
     }
@@ -289,8 +288,7 @@ function affords(
  * that can be finished. The walls are of the MOST PLENTIFUL material (stock plus what lies
  * within `reach`) among those that can finish a house of that size; ties keep content order
  * (Morgan, 2026-10-19, amending V-096). With material for none, the smallest with ground for it
- * and the most plentiful wall material, ties to the last in content order (its plans wait for
- * material). `why` says which. Undefined when no ground near the green fits any size. */
+ * and the most plentiful wall material, ties to the first (its plans wait for material). `why` says which. Undefined when no ground near the green fits any size. */
 export function chooseHouse(
   world: WorldState,
   content: EngineContent,
@@ -310,24 +308,24 @@ export function chooseHouse(
     affords(world, content, partsOf(content, o.site, o.site.door, w), true);
   const able = sited.filter((o) => walls.some((w) => fits(o, w)));
   const pick = able.findLast((o) => o.size.sleeps <= sleepers) ?? able[0];
+  // The most plentiful wall material: what a part has is the least of its material and its
+  // `also` goods (wattle and daub takes clay and logs). Ties keep content order.
+  const have = (w: PartDef) =>
+    Math.min(
+      withinReach(world, content, w.material, true),
+      ...(w.also ? [withinReach(world, content, w.also.material, true)] : []),
+    );
+  const mostOf = (from: readonly PartDef[]) =>
+    from.reduce((best, w) => (have(w) > have(best) ? w : best));
   if (!pick) {
-    // The most plentiful material, ties to the last in content order (not clay, which only miners
-    // will dig, while wood stands about).
-    const have = (w: PartDef) => withinReach(world, content, w.material, true);
-    const wall = walls.reduce((best, w) => (have(w) >= have(best) ? w : best));
+    const wall = mostOf(walls);
     return {
       ...sited[0]!,
       wall,
-      why: `${word(wall)} walls, with too little material yet for all of it`,
+      why: `${word(wall)} walls, with too little material yet for all of it, so it waits for more`,
     };
   }
-  let wall = walls[0]!;
-  let most = -1;
-  for (const w of walls) {
-    if (!fits(pick, w)) continue;
-    const have = withinReach(world, content, w.material, true);
-    if (have > most) [wall, most] = [w, have];
-  }
+  const wall = mostOf(walls.filter((w) => fits(pick, w)));
   const good = content.work.stock.find((s) => s.good === wall.material)?.name ?? wall.material;
   return {
     ...pick,

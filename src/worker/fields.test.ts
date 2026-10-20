@@ -55,7 +55,8 @@ describe('field views', () => {
       for (const p of walkersOf(w)) doing.add(p.now.text);
       for (const f of goodsOf(w).fields) frames.add(f.frame);
     }
-    for (let day = 0; day < 130; day += 1) {
+    // Until a field is sown and its page read (check:full budget).
+    for (let day = 0; day < 130 && !page; day += 1) {
       step(w, sim, DAY);
       for (const f of goodsOf(w).fields) frames.add(f.frame);
       const field = fieldsOf(w).find((r) => r['state'] === 'sown');

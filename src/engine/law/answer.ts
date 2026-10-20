@@ -78,23 +78,15 @@ export function answerAll(ctx: SystemContext, law: string, s: LawSettingDef, cau
 }
 
 /** Answers again for whoever holds a memory that weighs on `s` and was not weighed yet. A changed
- * answer is a line; the same one only refreshes what weighed. */
+ * answer is a line; the same one keeps its reasons, which match that line, and only notes what
+ * was weighed. */
 export function reweigh(ctx: SystemContext, law: string, s: LawSettingDef): void {
   for (const row of answersOf(ctx, law)) {
     const p = alive(ctx).find((q) => q.id === row['person']);
     if (!p) continue;
     const w = weigh(ctx.world, ctx.content, p.id, s);
     if (w.mems === row['mems']) continue;
-    if (w.answer !== row['answer']) {
-      record(ctx, law, s, p, w, [], row);
-      continue;
-    }
-    Object.assign(row, {
-      will: w.will,
-      pro: w.for.join('|'),
-      con: w.against.join('|'),
-      cites: w.cites,
-      mems: w.mems,
-    });
+    if (w.answer !== row['answer']) record(ctx, law, s, p, w, [], row);
+    else row['mems'] = w.mems;
   }
 }

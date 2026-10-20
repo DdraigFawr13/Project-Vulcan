@@ -79,8 +79,12 @@ describe('metal', () => {
     const mixed = lines(w, 'metal.mixed');
     // At least one mix; miners may dig more ore for the rest of the plate meanwhile.
     expect(mixed.length).toBeGreaterThan(0);
-    // The bronze remembers its ore, its smelting and its mixing.
-    const bronze = itemsOf(w).find((i) => i['kind'] === 'bronze-ingot')!;
+    // The bronze remembers its ore, its smelting and its mixing, as an ingot or, once the smith
+    // fetched it from where it lay and made a tool of it, on that tool.
+    const bronze = itemsOf(w).find(
+      (i) =>
+        i['trail'] && (i['kind'] === 'bronze-ingot' || String(i['kind']).startsWith('bronze-')),
+    )!;
     const steps = trailOf(bronze);
     expect(
       steps

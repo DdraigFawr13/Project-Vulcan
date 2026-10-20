@@ -8,6 +8,7 @@ import type { System } from '../sim/index.ts';
 import { GOODS_TABLES, itemsOf, layItem, stackSize } from './stacks.ts';
 import { layTool, restOf } from './tools.ts';
 import { markCommands, MARK_TABLES } from './marks.ts';
+import { GRANARY_TABLES } from './granary.ts';
 import { dryAt, setStock, setUpStock, setUpStore, STORE_TABLES } from './store.ts';
 
 /** Open tiles joined to the camp, nearest first in rings, that hold no item yet. */
@@ -41,6 +42,7 @@ export const goodsSystem: System = {
     'goods.unloaded',
     'goods.storeSet',
     'goods.storeGrew',
+    'goods.granaryGrew',
     'goods.stockSet',
     'goods.stockRaised',
     'goods.storeMarked',
@@ -49,7 +51,7 @@ export const goodsSystem: System = {
   // The line where the last food was eaten (food.ts), which hunger cites.
   initialState: { foodGone: 0 },
   refs: ['foodGone'],
-  tables: { ...GOODS_TABLES, ...STORE_TABLES, ...MARK_TABLES },
+  tables: { ...GOODS_TABLES, ...STORE_TABLES, ...GRANARY_TABLES, ...MARK_TABLES },
   commands: {
     setStock: (ctx, command, cause) => setStock(ctx, command.data, cause),
     markFell: (ctx, command, cause) => markCommands.markFell(ctx, command.data, cause),

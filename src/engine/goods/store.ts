@@ -32,6 +32,9 @@ export function freeTile(world: WorldState, content: EngineContent, x: number, y
   if (x < 0 || y < 0 || x >= map.width || y >= map.height) return false;
   if (!dryAt(content, map, y * map.width + x)) return false;
   if (itemsAt(world, x, y, 0).length || inStore(world, x, y, 0)) return false;
+  // Nor on a granary tile (granary.ts).
+  if ((world.entities['granary'] ?? []).some((g) => g['x'] === x && g['y'] === y && g['z'] === 0))
+    return false;
   // Not where a part is planned or built (the build system's `plan` table, P3.1).
   if ((world.entities['plan'] ?? []).some((p) => p['x'] === x && p['y'] === y && p['z'] === 0))
     return false;
@@ -109,11 +112,12 @@ export function growStore(ctx: SystemContext, cause: number): Spot | undefined {
   return best;
 }
 
-/** Where `count` of `kind` can go in the store: a matching stack with room, else an empty tile,
- * nearest `from`; undefined when it is full for this load. */
-export function slotFor(
+/** Where `count` of `kind` can go among `tiles` (the store's, or a granary's): a matching stack
+ * with room, else an empty tile, nearest `from`; undefined when they are full for this load. */
+export function slotAmong(
   world: WorldState,
   content: EngineContent,
+  tiles: readonly EntityRow[],
   kind: string,
   count: number,
   from: Spot,
@@ -121,7 +125,7 @@ export function slotFor(
   const size = stackSize(content, kind);
   let best: Spot | undefined;
   let far = Infinity;
-  for (const s of storeOf(world)) {
+  for (const s of tiles) {
     const spot = { x: s['x'] as number, y: s['y'] as number, z: s['z'] as number };
     const here = itemsAt(world, spot.x, spot.y, spot.z);
     const fits = here.length
@@ -137,6 +141,15 @@ export function slotFor(
   }
   return best;
 }
+
+/** Where `count` of `kind` can go in the store; undefined when it is full for this load. */
+export const slotFor = (
+  world: WorldState,
+  content: EngineContent,
+  kind: string,
+  count: number,
+  from: Spot,
+): Spot | undefined => slotAmong(world, content, storeOf(world), kind, count, from);
 
 /** Each item kind's `good` (items.json), worked out once per content: `haveOf` is hot. */
 const goodCache = new WeakMap<EngineContent, Map<string, string | undefined>>();

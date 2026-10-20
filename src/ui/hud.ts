@@ -238,6 +238,7 @@ export class Hud {
         kind === 'work' ||
           kind === 'build' ||
           kind === 'laws' ||
+          kind === 'dawn' ||
           kind === 'stock' ||
           kind === 'region' ||
           kind === 'saves',

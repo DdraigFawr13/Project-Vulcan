@@ -2,36 +2,48 @@
 // the store grows when a load finds no room. Split out of jobs.ts, which calls it.
 import type { EntityRow } from '../core/index.ts';
 import {
+  granaryGrowSpot,
+  granaryOf,
+  granarySlot,
+  growGranary,
   growSpot,
   growStore,
+  inGranary,
   inStore,
   itemsAt,
   itemsOf,
+  keepable,
   layItem,
   mergeTrails,
   slotFor,
-  stackSize,
+  storedEnough,
   takeFrom,
   trailOf,
   trailText,
-  wantOf,
 } from '../goods/index.ts';
-import { canReach } from '../paths/index.ts';
+import { planTiles } from '../build/index.ts';
+import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { busy, same, spotOf } from './spots.ts';
+import { busy, layAround, same, spotOf } from './spots.ts';
 import { tallyAdd } from './tally.ts';
 import { walkTo } from './walk.ts';
 
 /** The tick before which they do not look for work again after finding none. */
 export const LOOK_AGAIN = 30;
 
-/** Carrying: to the store with what they hold; the store grows when the load finds no room. */
+/** Carrying: to the store with what they hold; the store grows when the load finds no room. Food
+ * and seed the store already holds enough of go to a granary instead (goods/granary.ts). */
 export function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void {
   const { world, content } = ctx;
   const kind = load['kind'] as string;
   const count = load['count'] as number;
   const here = spotOf(p);
-  const slot = slotFor(world, content, kind, count, here) ?? growStore(ctx, load['made'] as number);
+  const made = load['made'] as number;
+  const slot =
+    keepable(content, kind) && granaryOf(world).length && storedEnough(world, content)(load)
+      ? (granarySlot(world, content, kind, count, here) ?? growGranary(ctx, here, made))
+      : (slotFor(world, content, kind, count, here) ?? growStore(ctx, made));
+  if (!slot && aside(ctx, p, load, here)) return;
   if (!slot) {
     // Nowhere to put it: set it down here and look for work again later.
     Object.assign(load, { ...here, holder: 0 });
@@ -58,6 +70,26 @@ export function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void
   p['job'] = '';
 }
 
+/** Goods lying where a house or room is planned (build/clearing.ts) that the store has no room
+ * for are set down on the nearest free tile outside every plan; true when all of it was. */
+function aside(ctx: SystemContext, p: EntityRow, load: EntityRow, here: Spot): boolean {
+  if (here.z !== 0 || !planTiles(ctx.world).has(here.y * ctx.world.map.width + here.x))
+    return false;
+  const count = load['count'] as number;
+  const laid = layAround(
+    ctx,
+    load['kind'] as string,
+    count,
+    here,
+    load['made'] as number,
+    load['trail'] as string,
+  );
+  if (!laid) return false;
+  takeFrom(ctx.world, load, laid);
+  p['job'] = '';
+  return laid === count;
+}
+
 /** Picks up what lies on their tile: all of it, or a load. */
 export function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
   const load = ctx.content.work.haul.load;
@@ -81,27 +113,6 @@ export function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void 
   carried['holder'] = p.id;
 }
 
-/** Whether the store already holds what a Stock plate asks of this item's kind (at least a
- * stack): then the rest stays where it lies until it is used or wanted, so the logs of a cleared
- * house site cannot fill the store (seen on anvil: 760 logs, no room left for ore). Builders
- * fetch from where it lies. Kinds with no plate of their own are always carried. */
-function storedEnough(ctx: SystemContext): (i: EntityRow) => boolean {
-  const { world, content } = ctx;
-  const stored = new Map<string, number>();
-  for (const i of itemsOf(world)) {
-    if (i['holder'] || !inStore(world, i['x'] as number, i['y'] as number, i['z'] as number))
-      continue;
-    const kind = i['kind'] as string;
-    stored.set(kind, (stored.get(kind) ?? 0) + (i['count'] as number));
-  }
-  return (i) => {
-    const kind = i['kind'] as string;
-    if (!content.work.stock.some((s) => s.good === kind)) return false;
-    const keep = Math.max(wantOf(world, content, kind), stackSize(content, kind));
-    return (stored.get(kind) ?? 0) >= keep;
-  };
-}
-
 /** Something lying outside the store that should be carried in, nearest them. */
 function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const { world, content } = ctx;
@@ -123,12 +134,28 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
       fits.set(key, !!slotFor(world, content, i['kind'] as string, i['count'] as number, from));
     return fits.get(key)!;
   };
-  const enough = storedEnough(ctx);
+  // Food and seed the store holds enough of go to a granary: a slot there, or room to grow.
+  let growable: boolean | undefined;
+  const keeps = (i: EntityRow) => {
+    if (!keepable(content, i['kind'] as string) || !granaryOf(world).length) return false;
+    if (inGranary(world, i['x'] as number, i['y'] as number, i['z'] as number)) return false;
+    growable ??= granaryGrowSpot(world, content, from) !== undefined;
+    return (
+      growable ||
+      granarySlot(world, content, i['kind'] as string, i['count'] as number, from) !== undefined
+    );
+  };
+  const enough = storedEnough(world, content);
+  // Goods on a planned house's tiles are carried off whatever the Stock level (clearing.ts).
+  const clearing = planTiles(world);
   for (const i of itemsOf(world)) {
-    if (i['holder'] || !kinds.includes(i['kind'] as string) || taken.has(i.id)) continue;
+    if (i['holder'] || taken.has(i.id)) continue;
     const at = spotOf(i);
+    const marked = at.z === 0 && clearing.has(at.y * world.map.width + at.x);
+    if (!marked && !kinds.includes(i['kind'] as string)) continue;
     const d = Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y));
-    if (d >= far || inStore(world, at.x, at.y, at.z) || enough(i) || !room(i)) continue;
+    if (d >= far || inStore(world, at.x, at.y, at.z)) continue;
+    if (!marked && (enough(i) ? !keeps(i) : !room(i))) continue;
     if (canReach(content, world.map, from, at)) [best, far] = [i, d];
   }
   return best;

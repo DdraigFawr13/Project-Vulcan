@@ -64,12 +64,12 @@ function stepsOf(item: EntityRow): ItemStep[] {
     if (s.s === 'mined') {
       const ore = `${itemName(k) || 'ore'}, mined${who}`;
       const known = s.x !== undefined && s.y !== undefined && s.who !== '';
-      const place = s.z ? `level ${s.z}` : 'the surface';
+      const place = s.z ? `${s.z} level${s.z > 1 ? 's' : ''} down` : 'on the surface';
       out.push(
         known
           ? {
               depth: base + 1,
-              text: `${ore} on ${place} at `,
+              text: `${ore}, ${place}, at `,
               tile: { x: s.x!, y: s.y!, z: s.z ?? 0, label: `tile ${s.x}, ${s.y}` },
               after: when && `, ${when}`,
             }

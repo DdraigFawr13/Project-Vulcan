@@ -28,6 +28,7 @@ export function stockRows(
     const head = el('p');
     head.append(el('b', {}, cap(s.name)), `: ${haveLine(s)}`);
     block.append(head, levels);
+    if (s.status) block.append(el('p', { class: 'aside', 'data-status': '' }, s.status));
     if (s.note) block.append(el('p', { class: 'aside', 'data-note': '' }, s.note));
     // Foraging's good says when the bushes bear (P2.9, V-040), from content.
     const { good, months } = content.work.forage;
@@ -52,6 +53,9 @@ export function fillStock(body: HTMLElement, stock: readonly StockView[]): void 
   for (const s of stock) {
     const head = body.querySelector(`[data-testid="stock-${s.good}"] > p`);
     if (head?.lastChild) head.lastChild.textContent = `: ${haveLine(s)}`;
+    // The metal line moves as the work does.
+    const status = body.querySelector(`[data-testid="stock-${s.good}"] > [data-status]`);
+    if (status && s.status && status.textContent !== s.status) status.textContent = s.status;
     // An ore count in a plate's note moves as miners haul.
     const note = body.querySelector(`[data-testid="stock-${s.good}"] > [data-note]`);
     if (note && s.note && note.textContent !== s.note) note.textContent = s.note;

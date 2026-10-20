@@ -40,7 +40,8 @@ describe('test marks', () => {
     expect(storeOf(world)).toHaveLength(tiles + 1);
     const refused = world.log.filter((e) => e.type === 'command.refused');
     expect(refused.map((e) => e.data['kind'])).toEqual(['markFell', 'markStore']);
-    step(world, sim, 1440);
+    // Two days: walking is half the Phase 4 speed (Morgan, Phase 4 review).
+    step(world, sim, 2 * 1440);
     expect(world.log.some((e) => e.type === 'work.tookUpMarked')).toBe(true);
     expect(marksOf(world)).toHaveLength(0);
     expect(isTree(world, content, tree)).toBe(false);

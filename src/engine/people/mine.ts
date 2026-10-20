@@ -17,6 +17,20 @@ import { nameOf, practiseMining, start, stop, takenBy, type Kind, type Task } fr
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
 import { goBeside, layAround, people, spotOf } from './spots.ts';
 
+/** The tiles of each metal's vein on each level, found once: a vein tile is only ever mined away
+ * (never grown), so a cached tile that no longer holds the vein is dropped as it is met. */
+const veinTiles = new WeakMap<object, Map<number, number[]>>();
+function tilesOf(layer: { features: ArrayLike<number> }, f: number): number[] {
+  let byMetal = veinTiles.get(layer);
+  if (!byMetal) veinTiles.set(layer, (byMetal = new Map()));
+  let tiles = byMetal.get(f);
+  if (!tiles) {
+    byMetal.set(f, (tiles = []));
+    for (let i = 0; i < layer.features.length; i += 1) if (layer.features[i] === f) tiles.push(i);
+  }
+  return tiles;
+}
+
 /** The nearest vein tile of `metal` someone can get beside (`veinOpen`), as a packed node. */
 function veinFor(ctx: SystemContext, p: EntityRow, metal: string): number | undefined {
   const { world, content } = ctx;
@@ -30,8 +44,11 @@ function veinFor(ctx: SystemContext, p: EntityRow, metal: string): number | unde
   const reach = reachFrom(content, map, here);
   let best: number | undefined;
   let score = Infinity;
-  for (let i = 0; i < layer.features.length; i += 1) {
-    if (layer.features[i] !== f || taken.has(pack(map, { x: 0, y: 0, z }) + i)) continue;
+  const tiles = tilesOf(layer, f);
+  for (let k = tiles.length - 1; k >= 0; k -= 1)
+    if (layer.features[tiles[k]!] !== f) tiles.splice(k, 1);
+  for (const i of tiles) {
+    if (taken.has(pack(map, { x: 0, y: 0, z }) + i)) continue;
     const [x, y] = [i % map.width, Math.floor(i / map.width)];
     const d = Math.max(Math.abs(x - here.x), Math.abs(y - here.y)) * 1000000 + i;
     if (d < score && veinOpen(world, content, reach, f, i))

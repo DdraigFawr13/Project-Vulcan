@@ -67,7 +67,7 @@ export function tileShaft(
       ...(who && {
         here: `${who['name'] as string}, ${s['depth'] ? 'sinking' : 'starting'} the shaft`,
       }),
-      back: s['state'] === 'planned' && !s['depth'] && !s['sentBack'],
+      back: s['state'] === 'planned' && !s['depth'] && !s['sentBack'] && !who,
       ...(placed && { placed: lineOf(placed) }),
     },
   };

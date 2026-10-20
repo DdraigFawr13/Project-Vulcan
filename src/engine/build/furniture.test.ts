@@ -47,8 +47,8 @@ const firstMade = (w: World) =>
 describe('carpentry and furniture', () => {
   it('makes better furniture the better the carpenter (same seed, same first roll)', () => {
     const [low, high] = [crafters('ledger', 2), crafters('ledger', 8)];
-    step(low, sim, 4 * DAY);
-    step(high, sim, 4 * DAY);
+    step(low, sim, 6 * DAY);
+    step(high, sim, 6 * DAY);
     const [a, b] = [firstMade(low), firstMade(high)];
     // The bench comes first, and it is the same draw of the craft stream in both worlds.
     expect([a['kind'], b['kind']]).toEqual(['bench', 'bench']);
@@ -175,15 +175,7 @@ describe('carpentry and furniture', () => {
   }
 
   it('keeps carpentry an indirect lever: a Work sheet row after Building, no command to place or assign', () => {
-    const levers = [
-      'setStock',
-      'setPriority',
-      'setDay',
-      'setLaw',
-      'setBuild',
-      'sendBack',
-      'sendBackShaft',
-    ];
+    const levers = ['setStock', 'setPriority', 'setLaw', 'setBuild', 'sendBack', 'sendBackShaft'];
     const tools = [
       'placeBuilding',
       'deconstruct',

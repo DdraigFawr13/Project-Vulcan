@@ -184,6 +184,8 @@ export interface TileView {
   goods?: { text: string; made?: LedgerLine; item?: number }[];
   /** Part of the store, with the line that set the tile up. */
   store?: { made?: LedgerLine };
+  /** Part of a field's granary (P4.7 review), with the line that laid it out or grew it. */
+  granary?: { made?: LedgerLine };
   /** Test mode (`?debug`): a tree is marked here, a tree could be, or the store could take it. */
   marked?: true;
   tree?: true;

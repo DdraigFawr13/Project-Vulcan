@@ -1,10 +1,10 @@
 // Smithing (Bundle 3, V-041, V-088): nobody orders a tool. Someone who has done tool work in the
 // last week and has no tool of that kind, or one worse than the best metal with ingots in the
-// store could make (a better material, whatever the quality), is a want; the smith makes the want
+// colony could make (a better material, whatever the quality), is a want; the smith makes the want
 // of whoever does that work most first, one smith at a time. A free person able to smith, with a
-// forge standing, goes to the store (ingots and charcoal are reached there), then works at the
-// forge `minutes × 2 × skilled ÷ (skilled + level)`; when the tool is finished the inputs leave
-// the store and the tool lies with the cart. Its quality is their smithing level plus a roll of up
+// forge standing, fetches the ingots and charcoal from wherever they lie (as smelting does) and
+// carries them, then works at the forge `minutes × 2 × skilled ÷ (skilled + level)`; when the
+// tool is finished the carried inputs are used up and the tool lies with the cart. Its quality is their smithing level plus a roll of up
 // to `roll` from the `craft` stream, worded as furniture is. Wants never pull ingots: with none
 // to be had, or with no charcoal, one alert says what is lacking. Open wants also count towards
 // the charcoal the clamp burns (`toolCharcoal`).
@@ -12,25 +12,25 @@ import { streamFor, type EntityRow } from '../core/index.ts';
 import { piecesOf, qualityOf } from '../build/index.ts';
 import {
   freeTools,
-  inStore,
-  itemsOf,
+  haveOf,
+  ingotWant,
   layTool,
+  memoTools,
   mergeTrails,
   restOf,
   speedOf,
-  takeFrom,
   trailOf,
   trailText,
   withStep,
   type Step,
 } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { fetchKind, reachableOf, useHeld } from './fetch.ts';
 import { firstFine } from './fine.ts';
 import { practise } from './learn.ts';
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
-import { canStandBeside, goBeside, people, same, skillOf, spotOf } from './spots.ts';
+import { canStandBeside, goBeside, people, skillOf, spotOf } from './spots.ts';
 import { giveTool, heldMaterial, heldSpeed, materialSpeed, mostUsed } from './tools.ts';
-import { walkTo } from './walk.ts';
 
 const JOB = 'smith';
 
@@ -38,30 +38,14 @@ const JOB = 'smith';
 const jobOf = (ctx: SystemContext) => ctx.content.jobs.find((j) => j.id === ctx.content.tools.job)!;
 const forgeOf = (ctx: SystemContext) => piecesOf(ctx.world, jobOf(ctx).workplace ?? '')[0];
 
-/** Free ingots/charcoal of an item kind lying in the store, nearest first. */
-function stacks(ctx: SystemContext, kind: string, from?: { x: number; y: number }): EntityRow[] {
-  const at = from ?? restOf(ctx.world, ctx.content);
-  const dist = (i: EntityRow) =>
-    Math.max(Math.abs((i['x'] as number) - at.x), Math.abs((i['y'] as number) - at.y));
-  return itemsOf(ctx.world)
-    .filter(
-      (i) =>
-        i['kind'] === kind &&
-        !i['holder'] &&
-        inStore(ctx.world, i['x'] as number, i['y'] as number, i['z'] as number),
-    )
-    .sort((a, b) => dist(a) - dist(b) || a.id - b.id);
-}
-const count = (list: EntityRow[]): number => list.reduce((n, i) => n + (i['count'] as number), 0);
-
 export interface ToolWant {
   person: EntityRow;
   kind: string;
-  /** The material to make it in: the best with ingots in the store; undefined when none. */
+  /** The material to make it in: the best with ingots held; undefined when none. */
   material?: string;
 }
 
-/** The best material a tool of `kind` can be made of now from the ingots the store holds
+/** The best material a tool of `kind` can be made of now from the ingots the colony holds
  * (charcoal is burned for it, not required to be on hand). */
 function makeable(ctx: SystemContext, kind: string): string | undefined {
   const { content } = ctx;
@@ -69,14 +53,18 @@ function makeable(ctx: SystemContext, kind: string): string | undefined {
   return [...content.tools.materials]
     .filter((m) => m.ingot)
     .sort((a, b) => b.speed - a.speed)
-    .find((m) => count(stacks(ctx, m.ingot!)) >= k.ingots)?.id;
+    .find((m) => haveOf(ctx.world, content, m.ingot!) >= k.ingots)?.id;
 }
 
 /** Who wants a tool now, whoever works longest at the kind first; ties by kind order, person id.
- * A want is no tool of the kind held or free, or only a lower material than the best the store's
+ * A want is no tool of the kind held or free, or only a lower material than the best the colony's
  * ingots could make (a poor tool of that material is not made again). Those being made now are
- * left out unless `all`. */
-export function toolWants(ctx: SystemContext, all = false): ToolWant[] {
+ * left out unless `all`. Worked out once until the tick, a line or a tool changes (every person
+ * asks each minute). */
+export const toolWants = (ctx: SystemContext, all = false): ToolWant[] =>
+  memoTools(ctx.world, ctx.content, all ? 'wants:all' : 'wants', () => wantsNow(ctx, all));
+
+function wantsNow(ctx: SystemContext, all: boolean): ToolWant[] {
   const { world, content } = ctx;
   const making = people(world)
     .filter((q) => q['job'] === JOB)
@@ -129,6 +117,19 @@ function ingotWords(ctx: SystemContext): { metals: string; plates: string } {
   };
 }
 
+/** What the colony is doing about missing ingots: if an ingot want for a tool metal is open
+ * (worn tools put one there by themselves), the miners and smelter are on it; else the plate. */
+function ingotFix(ctx: SystemContext): string {
+  const { world, content } = ctx;
+  const open = content.tools.materials.some((m) => {
+    const r = content.metal.recipes.find((x) => x.makes === m.ingot);
+    return !!r && ingotWant(world, content, r.id) > 0;
+  });
+  return open
+    ? 'the smelter is making some'
+    : `raise the ${ingotWords(ctx).plates} plate to have one made`;
+}
+
 /** Says once, until it changes, what a tool want lacks: `key` is the state that holds the line. */
 function lacking(
   ctx: SystemContext,
@@ -163,32 +164,35 @@ export function takeUpSmithing(ctx: SystemContext, p: EntityRow): boolean {
   const forge = forgeOf(ctx);
   if (!forge) return false;
   const wants = toolWants(ctx);
-  const want = wants.find((w) => w.material);
+  const made = wants.filter((w) => w.material);
   if (!wants.length) Object.assign(state, { noIngots: 0, noCharcoal: 0 });
-  if (!want) {
+  if (people(world).some((q) => q.id !== p.id && q['job'] === JOB)) return false;
+  const fuel = content.tools.charcoal;
+  const kindOf = (w: ToolWant) => content.tools.kinds.find((t) => t.id === w.kind)!;
+  const ingotOf = (w: ToolWant) => content.tools.materials.find((t) => t.id === w.material)!.ingot!;
+  // The first want, in order, whose ingots and charcoal can be fetched from wherever they lie.
+  const want = made.find(
+    (w) =>
+      reachableOf(ctx, p, ingotOf(w)) >= kindOf(w).ingots &&
+      reachableOf(ctx, p, fuel) >= kindOf(w).charcoal,
+  );
+  if (!made.length) {
     state['noCharcoal'] = 0;
-    const { metals, plates } = ingotWords(ctx);
     if (wants[0])
-      lacking(
-        ctx,
-        'noIngots',
-        forge,
-        wants[0],
-        `${metals} ingots`,
-        `raise the ${plates} plate to have one made`,
-      );
+      lacking(ctx, 'noIngots', forge, wants[0], `${ingotWords(ctx).metals} ingots`, ingotFix(ctx));
     return false;
   }
   state['noIngots'] = 0;
-  const k = content.tools.kinds.find((t) => t.id === want.kind)!;
-  if (count(stacks(ctx, content.tools.charcoal)) < k.charcoal) {
+  if (!want) {
     // The clamp burns charcoal for open wants (charcoal.ts); this says it is being waited for.
-    const name = content.items.find((i) => i.id === content.tools.charcoal)!.name;
-    lacking(ctx, 'noCharcoal', forge, want, name, `the clamp must burn some`);
+    if (reachableOf(ctx, p, fuel) < kindOf(made[0]!).charcoal) {
+      const name = content.items.find((i) => i.id === fuel)!.name;
+      lacking(ctx, 'noCharcoal', forge, made[0]!, name, `the clamp must burn some`);
+    }
     return false;
   }
   state['noCharcoal'] = 0;
-  if (people(world).some((q) => q.id !== p.id && q['job'] === JOB)) return false;
+  const k = kindOf(want);
   if (outranked(ctx, p, job, () => true)) return false;
   if (!canStandBeside(ctx, p, forge['x'] as number, forge['y'] as number)) return false;
   const m = content.tools.materials.find((t) => t.id === want.material)!;
@@ -226,14 +230,16 @@ export function smithing(ctx: SystemContext, p: EntityRow): boolean {
   const m = content.tools.materials.find((t) => t.id === materialId);
   const target = people(world).find((q) => q.id === p['plan']);
   if (!forge || !k || !m?.ingot || !target || target['status'] !== 'alive') return stop(p);
-  const at = spotOf(p);
-  // First to the store, where the ingots and charcoal are reached.
-  if ((p['target'] as number) === -1) {
-    const ingots = stacks(ctx, m.ingot, at)[0];
-    if (!ingots) return stop(p);
-    if (!same(spotOf(ingots), at)) return walkTo(ctx, p, spotOf(ingots)) || stop(p);
-    p['target'] = -2;
+  // First fetch the ingots and charcoal from wherever they lie, and carry them.
+  for (const [kind, need] of [
+    [m.ingot, k.ingots],
+    [content.tools.charcoal, k.charcoal],
+  ] as const) {
+    const got = fetchKind(ctx, p, kind, need);
+    if (got === 'none') return stop(p);
+    if (got === 'walking') return true;
   }
+  const at = spotOf(p);
   const [fx, fy] = [forge['x'] as number, forge['y'] as number];
   const beside = at.z === 0 && Math.abs(at.x - fx) + Math.abs(at.y - fy) === 1;
   if (!beside) return goBeside(ctx, p, fx, fy) || stop(p);
@@ -245,23 +251,14 @@ export function smithing(ctx: SystemContext, p: EntityRow): boolean {
   p['work'] = (p['work'] as number) - 1;
   practise(ctx, p, skillName(ctx), p['took'] as number);
   if ((p['work'] as number) > 0) return true;
-  // The tool is finished: only now do its ingots and charcoal leave the store.
-  const ingots = stacks(ctx, m.ingot, at);
-  const charcoal = stacks(ctx, content.tools.charcoal, at);
-  if (count(ingots) < k.ingots || count(charcoal) < k.charcoal) return stop(p);
+  // The tool is finished: the ingots and charcoal carried are used up.
   const most = content.metal.trail.most;
   const trails: Step[][] = [];
-  for (const [list, n] of [
-    [ingots, k.ingots],
-    [charcoal, k.charcoal],
-  ] as const) {
-    let left = n;
-    for (const s of list) {
-      if (left <= 0) break;
-      trails.push(trailOf(s));
-      left -= takeFrom(world, s, left);
-    }
-  }
+  for (const [kind, n] of [
+    [m.ingot, k.ingots],
+    [content.tools.charcoal, k.charcoal],
+  ] as const)
+    for (const used of useHeld(ctx, p, kind, n)) trails.push(trailOf(used));
   const step: Step = { s: 'made', who: p['name'] as string, tick: world.tick };
   const trail = trailText(withStep(mergeTrails(trails, most), step, most));
   made(ctx, p, target, { kind: k.id, material: m.id, level, trail });

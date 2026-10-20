@@ -1,7 +1,7 @@
 {
 "scale":10000,"again":1000,
 "needs":[
-{"id":"food","name":"Food","fall":400,"low":3000,"seek":4500,"lowWord":"Hungry","okWord":"Fed","weight":3},
+{"id":"food","name":"Food","fall":400,"low":3000,"seek":5200,"lowWord":"Hungry","okWord":"Fed","weight":3},
 {"id":"rest","name":"Rest","fall":300,"low":3000,"seek":2500,"lowWord":"Tired","okWord":"Rested","weight":2},
 {"id":"warmth","name":"Warmth","fall":0,"low":3000,"seek":0,"lowWord":"Cold","okWord":"Warm","weight":2,"quiet":true},
 {"id":"recreation","name":"Recreation","fall":150,"low":3000,"seek":3500,"lowWord":"Bored","okWord":"Relaxed","weight":1},
@@ -17,7 +17,7 @@
 "eat":{"preserved":6000,"berries":1500,"fish":4000,"game":4000,"grain":3000,"turnips":2500,"seed":2000,"meal":8000},
 "lastResort":["seed"],
 "mood":[{"word":"Content","at":6000},{"word":"Steady","at":4000},{"word":"Low","at":2000},{"word":"Miserable","at":0}],
-"cart":{"kind":"cart","goods":[{"kind":"preserved","count":480},{"kind":"seed","count":80}],"bedroll":"bedroll","cloak":"cloak"},
+"cart":{"kind":"cart","goods":[{"kind":"preserved","count":640},{"kind":"seed","count":80}],"bedroll":"bedroll","cloak":"cloak"},
 "memory":{"weight":100},
 "warmthLine":{"traits":{"hardy":-600},"memories":{"cold-night":300,"slept-rough":200}},
 "cloak":{"warmth":4,"wear":1,"last":2700},
