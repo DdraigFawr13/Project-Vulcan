@@ -6,7 +6,7 @@ The phase is split in two halves that each go live with a playtest (V-107). This
 
 ## Status
 
-- [ ] Spec approved by Morgan
+- [x] Spec approved by Morgan, 2026-10-20 (PR #67)
 - [ ] Bundle 1, injury and death: P5.6, P5.8
 - [ ] Bundle 2, the wild valley: P5.4a, tracks
 - [ ] Bundle 3, flocks: P5.4b, hay
