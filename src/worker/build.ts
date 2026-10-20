@@ -30,6 +30,7 @@ import {
   type WorldState,
 } from '../engine/index.ts';
 import { buildFields } from './fields.ts';
+import { burialRow, sickBeds, word } from './places.ts';
 import { roomWarmth } from './fires.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { BuildRow, BuildView, SmithyRow } from './protocol-build.ts';
@@ -103,11 +104,13 @@ export function buildView(world: WorldState): BuildView {
   const level = buildWantOf(world, content).level;
   const state = world.systems['build'] ?? {};
   const smithy = smithyRow(world);
+  const burial = burialRow(world);
   return {
     green: { x: green.x, y: green.y },
     want: { level, word: content.work.priority.words[level - 1] ?? '' },
     ...buildFields(world),
     ...(smithy && { smithy }),
+    ...(burial && { burial }),
     need: needOf(world),
     noGround: !!state['noGround'] && homeless(world, content).length > 0,
     houses: housesOf(world)
@@ -168,18 +171,23 @@ export function tileHouse(
       why: h['why'] as string,
       back: canSendBack(world, h),
       roof: planned ? `${def.roof}, laid with the walls` : `${def.roof} (not drawn)`,
+      ...(h['sick'] ? { sick: word('sickTitle') } : {}),
       ...(sited && { sited: lineOf(sited) }),
     },
     ...(room && {
       room: {
         name: roomWords(world, room, name),
         tiles: room.tiles.length,
-        role: room.role?.name ?? `none yet: a bed makes it a ${bed.name}`,
+        role: h['sick']
+          ? word('sickRole')
+          : (room.role?.name ?? `none yet: a bed makes it a ${bed.name}`),
         beauty: `${room.beauty}, ${room.look}`,
         impressiveness: `${room.impressiveness} of ${def.top}`,
-        beds: room.beds
-          ? `${room.beds}${room.crowded ? ', crowded' : ''}`
-          : `none yet${open ? `: ${open > 1 ? `the ${open} carry their bedrolls` : 'one carries their bedroll'} in at dusk` : ''}`,
+        beds: h['sick']
+          ? sickBeds(world, h)
+          : room.beds
+            ? `${room.beds}${room.crowded ? ', crowded' : ''}`
+            : `none yet${open ? `: ${open > 1 ? `the ${open} carry their bedrolls` : 'one carries their bedroll'} in at dusk` : ''}`,
         warmth: roomWarmth(world, x, y),
       },
     }),

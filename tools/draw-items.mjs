@@ -9,6 +9,7 @@ import { surface } from './draw-items-surface.mjs';
 import { readPalette } from './draw-tiles-base.mjs';
 import { noise } from './draw-nature.mjs';
 import { cropItems } from './draw-items-crops.mjs';
+import { burialItems } from './draw-items-burial.mjs';
 
 const S = 32;
 
@@ -347,6 +348,7 @@ export function drawItems(p = readPalette()) {
   frames['zone.stockpile'] = zone;
 
   Object.assign(frames, cropItems(p));
+  Object.assign(frames, burialItems(p));
 
   icon('cart', (s) => {
     // Handcart, top-down three-quarter: two shafts toward the viewer, bed, load and two wheels.

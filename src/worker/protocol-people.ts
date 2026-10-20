@@ -15,6 +15,27 @@ export interface NeedView {
   feeds?: string;
 }
 
+/** One person's Health tab (P5.6, P5.8), all in words from content `health.words`. A person never hurt
+ * has none. */
+export interface HealthView {
+  /** A red "+" on the strip while hurt; a "†" and a greyed face once dead. */
+  badge?: 'hurt' | 'dead';
+  /** Buried: they leave the strip. */
+  buried?: true;
+  text: string;
+  /** Blood as a per cent, the warning line (they faint under it) and the word for it. */
+  blood: { share: number; line: number; word: string; low: boolean };
+  /** The six parts: bleeding, healing, lasting or none. */
+  parts: { id: string; name: string; status: string }[];
+  /** Open wounds (the dead's closed ones), each with the line it was taken on for "why?". */
+  wounds: { title: string; status: string; cause: string; why: number }[];
+  marks: { title: string; effect: string; story: string; why: number }[];
+  /** What an open deep wound may leave, while there is no mark yet. */
+  hint?: string;
+  /** The death line, for the dead. */
+  death?: number;
+}
+
 /** Where a person stands this tick (P2.3), sent with every snapshot so the screen can walk them,
  * with their mood, needs and what they are doing (P2.2) for the person panel. */
 export interface WalkerView {
@@ -41,6 +62,10 @@ export interface WalkerView {
     word: string;
     declined?: number;
   }[];
+  /** Lying on the ground (P5.6, P5.8): `down` (hurt), `dead` (unburied) or `buried` (not drawn);
+   * `carried` when someone carries them, so they are drawn over the carrier. */
+  lying?: 'down' | 'dead' | 'buried';
+  carried?: true;
   /** The tools they hold, each with its hours left (V-088); owned like a bed, no lever. */
   tools: { id: number; kind: string; text: string }[];
   /** The cloak they wear and how worn it is, in words (V-092); none without one. */
@@ -50,6 +75,8 @@ export interface WalkerView {
   memories: { text: string; mood: number; days: number; why: number; lean?: string }[];
   /** Their answer to the work-hours law (P4.8); none while the law is Customary. */
   law?: AnswerView;
+  /** Hurt, healed or dead (P5.6, P5.8); none for someone never hurt. */
+  health?: HealthView;
   /** Their warmth warning line, 0 to 100, and why it is where it is (V-046), in words. */
   warmLine: { line: number; usual: number; text: string };
 }

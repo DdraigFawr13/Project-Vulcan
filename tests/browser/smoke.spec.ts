@@ -197,18 +197,22 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(page.getByTestId('level')).toHaveText('−1');
   await expect(page.getByTestId('unreached')).toBeVisible();
   await page.keyboard.press('<');
-  // A shaft cannot go down through a tree or water, so tap around the centre for open ground.
+  // A shaft cannot go down through a tree or water, so tap around the centre for open ground. A tap
+  // on someone standing there opens their sheet instead (where they stand depends on how far the
+  // valley ran, which varies with the machine's speed: CI, PR #70), so that spot is passed over.
   const canvas = page.getByTestId('game').locator('canvas');
   const box = (await canvas.boundingBox())!;
   for (const [dx, dy] of [0, 40, -40, 80, -80].flatMap((dx) =>
     [0, 40, -40].map((dy) => [dx, dy]),
   )) {
     await canvas.click({ position: { x: box.width / 2 + dx!, y: box.height / 2 + dy! } });
-    await expect(panel).toContainText('ground');
-    await expect(panel.getByTestId('test-mode')).toBeVisible();
+    await expect(panel).toContainText(/ground|Doing now/);
     const text = await panel.innerText();
+    if (/Doing now/.test(text)) continue;
     if (!/on it|water/.test(text)) break;
   }
+  await expect(panel).toContainText('ground');
+  await expect(panel.getByTestId('test-mode')).toBeVisible();
   // Stairs on a phone, ordered while paused: the order applies at once (Morgan's playtest), so the
   // sheet shows the stairs with a way down before time runs, and follows it (it covers the level
   // buttons). The bar says test mode is on.
@@ -289,10 +293,14 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
     `${carpentrySides}`,
   ).toBe(true);
   // P4.7: Farming and Cooking come from content with the same steppers.
-  await panel.locator('.prio.head[data-heading="Food"] .fold').click();
+  // A heading over one row (Food, Care) is a label with no stepper or fold; its row is always shown.
+  await expect(panel.locator('.prio.head[data-heading="Food"] button')).toHaveCount(0);
+  await expect(panel.locator('.prio.head[data-heading="Care"] button')).toHaveCount(0);
+  await expect(panel.getByTestId('care-note')).toContainText('Binding a bleeding wound');
   for (const [job, name] of [
     ['farm', 'Farming'],
     ['cook', 'Cooking'],
+    ['heal', 'Healing'],
   ] as const)
     await expect(panel.locator(`.prio[data-job="${job}"]`)).toContainText(name);
   // P3.6: Tending is its own row beside Felling and Hauling, with the same four-step priority.

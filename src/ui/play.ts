@@ -55,7 +55,11 @@ export class Play {
         });
         const face = el('span', { class: 'face' });
         face.append(portrait(p, 40 / 32, true));
-        slot.append(face, el('span', { class: 'pname' }, p.name.split(' ')[0]!));
+        slot.append(
+          face,
+          el('span', { class: 'hbadge', 'aria-hidden': 'true', hidden: '' }),
+          el('span', { class: 'pname' }, p.name.split(' ')[0]!),
+        );
         this.faces.set(p.id, slot);
         return slot;
       }),
@@ -73,7 +77,18 @@ export class Play {
       if (!slot) continue;
       slot.classList.toggle('low', w.mood.low && w.mood.share >= 20);
       slot.classList.toggle('bad', w.mood.low && w.mood.share < 20);
-      slot.setAttribute('aria-label', `${slot.dataset['name'] ?? ''}, ${w.mood.word}`);
+      // Hurt: a red "+"; dead until buried: a greyed face and a "†"; the buried leave (P5.6, P5.8).
+      const badge = w.health?.badge;
+      slot.hidden = !!w.health?.buried;
+      slot.classList.toggle('hurt', badge === 'hurt');
+      slot.classList.toggle('dead', badge === 'dead');
+      const mark = slot.querySelector<HTMLElement>('.hbadge');
+      if (mark) {
+        mark.hidden = !badge;
+        mark.textContent = badge === 'dead' ? '†' : '+';
+      }
+      const state = badge === 'dead' ? 'dead' : badge === 'hurt' ? 'hurt' : w.mood.word;
+      slot.setAttribute('aria-label', `${slot.dataset['name'] ?? ''}, ${state}`);
     }
   }
 

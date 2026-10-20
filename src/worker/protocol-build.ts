@@ -16,6 +16,8 @@ export interface HouseView {
   roof: string;
   /** The line that sited it; its "why?" leads to the need. */
   sited?: LedgerLine;
+  /** A sickroom (P5.6): its page's title, "Sickroom". */
+  sick?: string;
 }
 
 /** A room as the engine works it out (P3.3), each value in words. */
@@ -89,6 +91,34 @@ export interface SmithyRow {
   };
 }
 
+/** The burial ground on the Build sheet (P5.8, V-041): where it lies from the green, its size, why
+ * the colony chose it, and whether it can still be sent back (once, before the first grave). */
+export interface BurialRow {
+  id: number;
+  dir: string;
+  w: number;
+  h: number;
+  why: string;
+  back: boolean;
+  sent: boolean;
+  /** Graves dug so far. */
+  graves: number;
+}
+
+/** A grave or burial-ground tile page (P5.8): the person and a line about them, the rows and the
+ * lines behind them, each with its label. Nothing on it is a lever (V-041). */
+export interface PlaceView {
+  /** "Grave" or "Burial ground". */
+  name: string;
+  /** The aside under the title. */
+  sub: string;
+  /** "Gwallog of Dalig", and one line about them. */
+  who?: string;
+  about?: string;
+  rows: [string, string][];
+  lines: { label: string; line: LedgerLine }[];
+}
+
 /** A tile's field (P4.7): each value in words from the engine's answers, for the tile page. */
 export interface FieldView {
   id: number;
@@ -125,6 +155,8 @@ export interface BuildView {
   fields: FieldRow[];
   /** Present once the first ingot lies in the store, or a smithy is planned. */
   smithy?: SmithyRow;
+  /** The burial ground, once the colony has laid one out (P5.8). */
+  burial?: BurialRow;
   green: { x: number; y: number };
   want: { level: number; word: string };
   /** "5 people sleep under the open sky", or "none now". */

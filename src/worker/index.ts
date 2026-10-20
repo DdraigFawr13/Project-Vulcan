@@ -4,8 +4,10 @@ export { TICKS_PER_SECOND } from './protocol.ts';
 export type {
   BuildRow,
   BuildView,
+  BurialRow,
   HouseView,
   PieceView,
+  PlaceView,
   PlanView,
   RoomView,
   ShaftView,
@@ -19,6 +21,7 @@ export type {
   LedgerLine,
   NeedView,
   PersonView,
+  HealthView,
   WalkerView,
   RegionView,
   Speed,
