@@ -3,7 +3,8 @@
 // heated room for two hours is above the warmth warning line. A fire out of firewood goes out with
 // a line that leads back to the empty Firewood plate; every lever stays indirect (V-041).
 import { describe, expect, it } from 'vitest';
-import { content } from '../../content/index.ts';
+import { content as game } from '../../content/index.ts';
+import { withoutAccidents } from '../index.ts';
 import {
   addEntity,
   allLines,
@@ -22,6 +23,9 @@ import {
   whyOf,
 } from '../index.ts';
 import { firesOf } from './index.ts';
+
+// Accidents (P5.6) are left out: this tests fires, not injury (health.test.ts does).
+const content = withoutAccidents(game);
 
 // Every month at -12 degrees: a winter that never lets up.
 const winter = {

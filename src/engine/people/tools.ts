@@ -18,6 +18,7 @@ import {
   toolsChanged,
   wornAsk,
 } from '../goods/index.ts';
+import { markPercent } from '../health/index.ts';
 import { hoursOf } from '../law/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -158,10 +159,19 @@ function equip(ctx: SystemContext, p: EntityRow, use: string): void {
   if (item) giveTool(ctx, item, p, `they had no ${kind.name} for this work`);
 }
 
-/** Minutes of work of a kind a person with this tool does, which become fewer as it is faster. */
+/** Minutes of work of a kind a person with this tool does, which become fewer as it is faster,
+ * and more with a lasting mark that slows their work (P5.6: a maimed arm, a stiff back). */
 export function scaled(ctx: SystemContext, p: EntityRow, use: string, minutes: number): number {
   equip(ctx, p, use);
-  return Math.max(1, Math.ceil((minutes * 100) / toolPercent(ctx, p.id, use)));
+  const marked = markPercent(ctx.world, ctx.content, p.id, 'work');
+  return Math.max(1, Math.ceil((minutes * 100 * 100) / (toolPercent(ctx, p.id, use) * marked)));
+}
+
+/** Whether the best tool `person` holds for this work is worn (P5.6: a worn tool is riskier). */
+export function wornHeld(ctx: SystemContext, person: number, use: string): boolean {
+  const kind = kindServing(ctx.content, use);
+  const tool = kind && bestHeld(ctx, person, kind.id);
+  return !!tool && isWorn(ctx.content, tool);
 }
 
 /** One minute of work with a kind of tool: counted for "who does it most", and wearing the tool

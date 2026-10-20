@@ -1,12 +1,16 @@
 // P2.2: a week on three seeds keeps every need above its warning line, the band eats from the
 // cart and sleeps on its bedrolls or, once made, in beds (P3.4), and a need that goes low writes a line citing what explains it.
 import { describe, expect, it } from 'vitest';
-import { content } from '../../content/index.ts';
+import { content as game } from '../../content/index.ts';
+import { withoutAccidents } from '../index.ts';
 import { removeEntity } from '../entity/index.ts';
 import { itemsOf } from '../goods/index.ts';
 import { createSim, createWorld, step, submitCommand } from '../index.ts';
 import { bedOwnedBy } from '../build/index.ts';
 import { moodOf, needOf } from './index.ts';
+
+// Accidents (P5.6) are left out: this tests needs, not injury (health.test.ts does).
+const content = withoutAccidents(game);
 
 const sim = createSim(content);
 const rations = (world: ReturnType<typeof createWorld>): number =>

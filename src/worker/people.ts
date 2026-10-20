@@ -23,6 +23,7 @@ import {
   type WorldState,
 } from '../engine/index.ts';
 import { feedsOf } from './comfort.ts';
+import { careNow } from './health.ts';
 import { hearthDoing, tendDoing } from './fires.ts';
 import { carpentryDoing } from './furniture.ts';
 import { lawOfWalker, leanWords } from './law.ts';
@@ -83,6 +84,11 @@ export function peopleOf(world: WorldState): PersonView[] {
 /** What a person is doing, in words (P2.2). */
 function doingOf(p: EntityRow): string {
   const walking = (p['path'] as number[]).length > 0;
+  if (p['doing'] === 'hurt') return 'Lying hurt';
+  if (p['doing'] === 'work' && p['job'] === 'carry') return 'Carrying the hurt';
+  if (p['doing'] === 'work' && ['bind', 'dress', 'feed'].includes(p['job'] as string))
+    return 'Tending the hurt';
+  if (p['doing'] === 'work' && p['job'] === 'bury') return 'Burying the dead';
   if (p['doing'] === 'sleep') return walking ? 'Going to bed' : 'Sleeping';
   if (p['doing'] === 'eat') return walking ? 'Going to eat' : 'Eating';
   if (p['doing'] === 'relax') return 'Taking it easy';
@@ -110,6 +116,8 @@ export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   const say = (key: string, vars: Record<string, string> = {}): string =>
     (words[key] ?? '').replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? '');
   const doing = p['doing'] as string;
+  const care = careNow(world, p, say);
+  if (care) return { text: care };
   if (doing === 'sleep') return { text: say(walking ? 'goSleep' : 'sleep') };
   if (doing === 'eat') return { text: say(walking ? 'goEat' : 'eat') };
   if (doing === 'relax') return { text: say('relax') };

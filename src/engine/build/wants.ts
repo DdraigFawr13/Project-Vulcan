@@ -41,6 +41,7 @@ export function roomsOf(world: WorldState, content: EngineContent): RoomRow[] {
 
 /** "cottage", or "cottage's second room" for a room added to it. */
 export function roomName(world: WorldState, content: EngineContent, h: EntityRow): string {
+  if (h['sick']) return 'sickroom';
   const main = mainOf(world, h);
   const name = sizeOf(content, main).name;
   return h['of']
@@ -165,6 +166,8 @@ export function siteFor(
 
 /** What a room lacks, in the order of its role's wants: counts include pieces still planned. */
 export function lacks(world: WorldState, content: EngineContent, rr: RoomRow) {
+  // The sickroom's wants are its beds alone (spareBed).
+  if (rr.h['sick']) return [];
   const def = content.buildings.rooms.wants.find((w) => w.role === rr.room.role?.id);
   const inside = new Set(rr.room.tiles);
   const width = world.map.width;
@@ -183,19 +186,26 @@ export function lacks(world: WorldState, content: EngineContent, rr: RoomRow) {
 
 /** A room added for privacy (grow.ts) has no sleeper yet, so no role and no wants: it lacks one
  * bed while someone in its house is crowded, for them to move to (claim.ts). */
-function spareBed(world: WorldState, rr: RoomRow): Omit<Want, 'rr' | 'at'> | undefined {
+function spareBed(
+  world: WorldState,
+  content: EngineContent,
+  rr: RoomRow,
+): Omit<Want, 'rr' | 'at'> | undefined {
   const { room, h } = rr;
-  if (!h['of'] || room.sleepers) return undefined;
-  // One bed, counting one still planned.
   const inside = new Set(room.tiles);
   const width = world.map.width;
-  const planned = furnitureOf(world).some(
+  // Beds here, counting those still planned.
+  const beds = furnitureOf(world).filter(
     (f) =>
       f['kind'] === 'bed' &&
       f['z'] === 0 &&
       inside.has((f['y'] as number) * width + (f['x'] as number)),
-  );
-  if (planned) return undefined;
+  ).length;
+  // The sickroom (P5.6) wants its `health.sickroom.beds`.
+  const need = content.health.sickroom.beds;
+  if (h['sick']) return beds < need ? { kind: 'bed', have: beds, need } : undefined;
+  if (!h['of'] || room.sleepers) return undefined;
+  if (beds) return undefined;
   return crowdedIn(world, mainOf(world, h)).length ? { kind: 'bed', have: 0, need: 1 } : undefined;
 }
 
@@ -207,7 +217,7 @@ export function nextWant(world: WorldState, content: EngineContent): Want | unde
   for (const rr of rooms) {
     const l =
       lacks(world, content, rr).find((w) => w.kind === 'bed' && w.have < w.need) ??
-      spareBed(world, rr);
+      spareBed(world, content, rr);
     if (!l || (bed && l.need - l.have <= bed.need - bed.have)) continue;
     const at = siteFor(world, content, rr, 'bed');
     if (at) bed = { ...l, rr, at };

@@ -3,9 +3,10 @@
 // their own bed or bedroll if they can get to it, take their leisure in the evening or when bored, and
 // otherwise stroll near the camp. What they are doing is the `doing` field, which the needs
 // system reads each hour; none of it is a ledger line until a need crosses its warning line.
-import { clockAt, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
-import { eatFrom, itemsAt, itemsOf } from '../goods/index.ts';
-import { addMemory, changeNeed, crossed, needOf } from '../needs/index.ts';
+import { clockAt, type EntityRow } from '../core/index.ts';
+import { itemsAt, itemsOf } from '../goods/index.ts';
+import { armOut } from '../health/index.ts';
+import { needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { hoursOf } from '../law/index.ts';
 import { bedOwnedBy } from '../build/index.ts';
@@ -14,14 +15,15 @@ import { claimBed } from './claim.ts';
 import { carryBed, movesIn } from './home.ts';
 import { working } from './jobs.ts';
 import { spotOf } from './spots.ts';
-import { tallyAdd } from './tally.ts';
+import { cooked, eat } from './eat.ts';
+import { danger } from './care.ts';
 import { walkTo, wander } from './walk.ts';
 import { tendInEvening } from './tend.ts';
 import { warming } from './warm.ts';
 
 export const MIND_FIELDS = {
-  /** `eat`, `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `warm` (warm.ts), `relax` or ''
-   * (idle). */
+  /** `eat`, `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `warm` (warm.ts), `hurt` (lying
+   * hurt, care.ts), `relax` or '' (idle). */
   doing: 'text',
   /** The tick before which they do not look for food again after finding none they can reach. */
   retry: 'int',
@@ -41,9 +43,6 @@ const valueOf = (ctx: SystemContext, p: EntityRow, need: string): number =>
 
 const seekOf = (ctx: SystemContext, need: string): number =>
   ctx.content.life.needs.find((n) => n.id === need)?.seek ?? 0;
-
-const cooked = (ctx: SystemContext, i: EntityRow): boolean =>
-  !!ctx.content.items.find((d) => d.id === i['kind'])?.cooked;
 
 /** Food of last resort (seed grain, P4.7) is eaten only when `desperate`. */
 const edible = (ctx: SystemContext, kind: string, desperate: boolean): boolean =>
@@ -83,34 +82,6 @@ function goEat(ctx: SystemContext, p: EntityRow, desperate: boolean): boolean {
   return walkTo(ctx, p, { x: best['x'] as number, y: best['y'] as number, z: best['z'] as number });
 }
 
-/** A hungry band ate seed (P4.7, V-089): one line a person a day, citing their hunger. */
-function saySeed(ctx: SystemContext, p: EntityRow, food: EntityRow): void {
-  const day = Math.floor(ctx.world.tick / TICKS_PER_DAY) + 1;
-  if (p['seeded'] === day) return;
-  p['seeded'] = day;
-  ctx.emit('goods.ateSeed', {
-    causes: [food['line'] as number].filter((l) => l > 0),
-    actors: [p.id],
-    data: { name: p['name'] as string },
-  });
-}
-
-/** Eats one of the stack they stand on. */
-function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
-  const def = ctx.content.life.needs.find((n) => n.id === 'food');
-  const row = needOf(ctx.world, p.id, 'food');
-  if (!def || !row) return;
-  const gives = ctx.content.life.eat[item['kind'] as string] ?? 0;
-  const [made, wasCooked] = [item['made'] as number, cooked(ctx, item)];
-  if (ctx.content.life.lastResort.includes(item['kind'] as string)) saySeed(ctx, p, row);
-  eatFrom(ctx, item, p);
-  // A cooked meal is remembered (V-090): `ate-well`, citing the batch's line.
-  if (wasCooked) addMemory(ctx, p.id, 'ate-well', made);
-  tallyAdd(ctx, 'eaten', 1);
-  changeNeed(ctx.content, row, gives);
-  crossed(ctx, p, row, def);
-}
-
 /** Lies down: on their own laid-out bedroll when there is a way to it, else where they stand;
  * first carrying it into a house that has room (home.ts). */
 function goToBed(ctx: SystemContext, p: EntityRow, night: boolean): void {
@@ -133,6 +104,8 @@ function goToBed(ctx: SystemContext, p: EntityRow, night: boolean): void {
 export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   const { world, content } = ctx;
   const life = content.life;
+  // Danger comes first (P5.6): lying hurt, carrying the hurt, binding a bleeding wound.
+  if (danger(ctx, p)) return;
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'moveBed') {
     if (!walking) carryBed(ctx, p);
@@ -167,7 +140,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     goToBed(ctx, p, night);
     return;
   }
-  const hours = hour >= day.workFrom && hour < day.workTo;
+  // An open deep arm wound stops work with that hand until it heals (P5.6).
+  const hours = hour >= day.workFrom && hour < day.workTo && !armOut(world, content, p.id);
   if (working(ctx, p, hours)) {
     p['doing'] = 'work';
     return;
