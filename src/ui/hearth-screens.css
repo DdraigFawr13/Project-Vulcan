@@ -489,6 +489,19 @@
   border-top: 1px solid var(--rule);
   font-size: 15px;
 }
+.prow.animal b {
+  flex: 0 0 8em;
+  font: 700 14px/1.2 var(--name);
+  color: var(--ink-soft);
+}
+.prow.animal span {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 0;
+}
+.kept h3 {
+  margin: 12px 0 2px;
+}
 @media (min-width: 720px) {
   .arrival .cards {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

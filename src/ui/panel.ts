@@ -3,9 +3,10 @@
 // it; it computes no game rule (GAME-02).
 import type { SaveMeta } from '../persist/index.ts';
 import type { ClockView, LedgerLine, RegionView, StockView, TileView } from '../worker/index.ts';
+import type { LeftoversView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
-import { fillStock, stockRows } from './stock.ts';
+import { drawStock } from './stock.ts';
 import { testMode } from './testmode.ts';
 import { landFacts } from './landrows.ts';
 import { placeHead, placeTitle } from './placerows.ts';
@@ -26,6 +27,7 @@ export type PanelKind =
   | 'build'
   | 'laws'
   | 'item'
+  | 'animal'
   | 'alerts'
   | 'dawn';
 
@@ -73,6 +75,8 @@ export class Panel {
   private readonly debug: boolean;
   /** The Stock sheet's last view, so it is redrawn only when it changes. */
   private stock = '';
+  private leftovers: LeftoversView = { items: [], game: 0, fish: 0 };
+  private latest: readonly StockView[] = [];
 
   constructor(parent: HTMLElement, actions: PanelActions, debug = false) {
     this.actions = actions;
@@ -101,7 +105,6 @@ export class Panel {
     this.root.hidden = true;
   }
 
-  /** The tile inspector; `depth` levels lie below the surface. */
   /** The tile's record, its ways up and down, and the test levers. `notice` is what became of the
    * last dig order here: a line saying it waits for time to run, or the ledger line refusing it. */
   showTile(tile: TileView, depth: number, notice?: string | LedgerLine): void {
@@ -208,22 +211,19 @@ export class Panel {
   }
 
   /** The Stock sheet (P2.4): how much of each good the colony keeps, a level button for each. */
-  showStock(stock: readonly StockView[]): void {
+  showStock(): void {
     this.open('stock', 'Stock');
     this.stock = '';
-    this.setStock(stock);
+    this.setStock(this.latest);
   }
 
   /** Each snapshot's stock; an open Stock sheet is redrawn only when a level has changed, and
    * the counts hauling moves are filled in place. */
-  setStock(stock: readonly StockView[]): void {
+  setStock(stock: readonly StockView[], leftovers = this.leftovers): void {
+    [this.latest, this.leftovers] = [stock, leftovers];
     if (this.shown !== 'stock') return;
-    const key = JSON.stringify(stock.map((s) => [s.good, s.level, s.want, s.levels]));
-    if (key === this.stock) return fillStock(this.body, stock);
-    this.stock = key;
-    this.body.replaceChildren(
-      ...stockRows(stock, (good, level) => this.actions.setStock(good, level)),
-    );
+    const set = (good: string, level: string) => this.actions.setStock(good, level);
+    this.stock = drawStock(this.body, this.stock, stock, leftovers, set);
   }
 
   /** A sheet drawn elsewhere (the person, Work and Alerts sheets): its title and its rows. */

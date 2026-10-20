@@ -25,6 +25,7 @@ import { STATION_TABLES } from './station.ts';
 import { planBench } from './wants.ts';
 import { planSmithy, SMITHY_TABLES, sendBackSmithy } from './smithy.ts';
 import { BURIAL_TABLES, planBurial, sendBackBurial } from './burial.ts';
+import { MIDDEN_TABLES, planMidden } from './midden.ts';
 import { planSickroom } from './sickroom.ts';
 
 function refuse(ctx: SystemContext, kind: string, reason: string, cause: number): void {
@@ -141,7 +142,7 @@ export const buildSystem: System = {
     ...['field.ripe', 'field.frostKilled', 'field.noSeed', 'field.sown', 'field.leftToGrass'],
     'field.granaryLaid',
     ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
-    ...['build.sickroom', 'build.burialSited', 'build.burialSentBack'],
+    ...['build.sickroom', 'build.burialSited', 'build.burialSentBack', 'build.middenSited'],
   ],
   // `nobody`: the line saying nobody is able to build, while that holds; `green`: the green's
   // tile index plus one; `need`: the line saying people sleep in the open, while they do;
@@ -163,6 +164,7 @@ export const buildSystem: System = {
     ...SMITHY_TABLES,
     ...STATION_TABLES,
     ...BURIAL_TABLES,
+    ...MIDDEN_TABLES,
   },
   commands: {
     placeBuilding: (ctx, command, cause) => placeBuilding(ctx, command.data, cause),
@@ -201,6 +203,8 @@ export const buildSystem: System = {
     // P5.6, P5.8: a sickroom once enough lie hurt; a burial ground at the first death.
     planSickroom(ctx, green);
     planBurial(ctx, green);
+    // P5.4a: a midden at the first offal.
+    planMidden(ctx, green);
     checkBuilders(ctx);
   },
 };

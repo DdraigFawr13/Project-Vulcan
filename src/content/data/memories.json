@@ -53,5 +53,8 @@
   {"id":"grumbled-long","mood":-4,"decayDays":3,"text":"Worked the long days against their will"},
   {"id":"grumbled-short","mood":-4,"decayDays":3,"text":"Kept the short days against their will"},
 {"id":"grief-band","mood":-8,"decayDays":10,"text":"Lost {about}"},
-{"id":"saw-body","mood":-6,"decayDays":3,"text":"Saw {about}'s body"}
+{"id":"saw-tracks","mood":-3,"decayDays":2,"text":"Saw wolf tracks near the town"},
+  {"id":"stood-together","mood":5,"decayDays":10,"text":"Stood against the pack side by side"},
+  {"id":"saw-attack","mood":-8,"decayDays":7,"text":"Saw the pack go for {about}"},
+  {"id":"saw-body","mood":-6,"decayDays":3,"text":"Saw {about}'s body"}
 ]

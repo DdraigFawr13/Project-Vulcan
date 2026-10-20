@@ -30,7 +30,9 @@ export const HEALTH_SCHEMAS = {
     ),
     // `name` ("broken {part}") and `a` ("a {severity} break to {their} {part}"); `minor` the
     // words for a wound that does not bleed (a light one: "a bruise to her arm").
-    wounds: list(obj({ id, name: text, a: text, minor: opt(obj({ name: text, a: text })) })),
+    wounds: list(
+      obj({ id, name: text, a: text, fester: opt(pair), minor: opt(obj({ name: text, a: text })) }),
+    ),
     // Each hour of `work` (a person's job, `mine:<task>` for mining) carries `perHour` in
     // `chance.per`, times skilled ÷ (skilled + level), times `worn` per cent with a worn tool.
     // `where` names the place in lines ("the shaft"), `at` its word ("in", "at").

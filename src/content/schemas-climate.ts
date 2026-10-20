@@ -27,6 +27,10 @@ export const CLIMATE_SCHEMAS = {
     // Freezing degree-days a still-water tile needs to freeze, by depth; warm days thaw at
     // `thaw` times; the count stops at `cap`; `over` is the share of lake water that is "frozen over".
     // The count lives in a tile's low 7 bits (weather.ts), so none of them may pass 127.
+    // Snow (V-122): a wet day lays it on tiles at or below 0 degrees C; a day at `snowMelt` or
+    // above takes it off; it counts as lying when `snowShare` of the open ground has it.
+    snowMelt: num(),
+    snowShare: share,
     ice: obj({ shallow: iceDays, deep: iceDays, thaw: count, cap: iceDays, over: share }),
   }),
 };

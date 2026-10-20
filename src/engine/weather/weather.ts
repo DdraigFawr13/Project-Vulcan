@@ -6,6 +6,8 @@
 import { clockAt, WATER, type EngineContent, type MapState } from '../core/index.ts';
 import { raiseChunk } from '../map/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
+import { settleSnow } from './snow.ts';
+import { tileTemperature } from './temperature.ts';
 
 const LAKE = WATER.indexOf('lake');
 /** `map.ice` keeps the freezing degree-days in its low 7 bits and whether the tile is frozen in
@@ -15,17 +17,6 @@ const COUNT = 0x7f;
 
 /** Whether surface tile `i` is frozen over. */
 export const isFrozen = (map: MapState, i: number): boolean => (map.ice[i]! & FROZEN) !== 0;
-
-/** The temperature (whole degrees C) at surface tile `i` when the valley floor is at `floorTemp`. */
-export function tileTemperature(
-  content: EngineContent,
-  map: MapState,
-  floorTemp: number,
-  i: number,
-): number {
-  const above = Math.max(0, map.elevation[i]! - map.floor);
-  return Math.round(floorTemp - (content.terrain.generator.elevation.lapse * above) / 1000);
-}
 
 /** The words for a spell of weather kind `kind` (an index into content.weather) at `temp`. */
 export function weatherWords(content: EngineContent, kind: number, temp: number): string {
@@ -115,15 +106,21 @@ export const weatherSystem: System = {
     'weather.thawed',
     'weather.iceSpread',
     'weather.iceShrank',
+    'weather.snowSettled',
+    'weather.snowMelted',
   ],
-  initialState: { kind: 0, temp: 0, wet: 0, spell: 0, frozen: 0, over: 0 },
-  refs: ['spell'],
+  initialState: {
+    ...{ kind: 0, temp: 0, wet: 0, spell: 0, frozen: 0, over: 0 },
+    ...{ snowTiles: 0, snowing: 0, snowLine: 0 },
+  },
+  refs: ['spell', 'snowLine'],
   init(ctx) {
     drawDay(ctx, true);
     spellLine(ctx);
   },
   run(ctx) {
     if (drawDay(ctx, false)) spellLine(ctx);
+    settleSnow(ctx);
     const { state } = ctx;
     const before = state['frozen']!;
     const { frozen, lakes, flips } = freeze(ctx);

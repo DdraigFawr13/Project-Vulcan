@@ -149,6 +149,35 @@ export const LIFE_SCHEMAS = {
     // Farming (P4.7): the jobs.json job, minutes to sow or reap one tile at skill `skilled`
     // (longer below, shorter above).
     farm: obj({ job: ref('jobs'), sow: count, reap: count, skilled: count }),
+    // Hunting (P5.4a): see WorkDef.hunt.
+    hunt: obj({
+      job: ref('jobs'),
+      crew: count,
+      from: num({ min: 1, max: 100 }),
+      near: count,
+      every: num({ min: 1 }),
+      chance: count,
+      perLevel: count,
+      most: count,
+      snare: obj({ species: list(str()), every: num({ min: 1 }) }),
+      follow: obj({ hours: count, ahead: count }),
+      pack: obj({ level: count }),
+    }),
+    // Fishing: see WorkDef.fish.
+    fish: obj({
+      job: ref('jobs'),
+      crew: count,
+      from: num({ min: 1, max: 100 }),
+      every: num({ min: 1 }),
+      chance: count,
+      perLevel: count,
+      most: count,
+      count: num({ min: 1 }),
+      water: list(str()),
+      reach: count,
+    }),
+    // The midden (V-072): see WorkDef.midden.
+    midden: obj({ past: count, apart: count, walk: num({ min: 1 }) }),
     // Fire (P3.6, V-042 to V-048): a fire gives `heat` degrees at its own tile and `fall` fewer
     // for each tile away, over its closed room or, in the open, out to `radius` tiles. Each fuel
     // is an item: one piece burns `minutes` lit; banked, a fire gives `banked.heat` and burns
@@ -186,7 +215,7 @@ export const LIFE_SCHEMAS = {
     // work answers, `{what}` the load carried.
     doing: map(text),
     // Carrying to the store: most a person carries at once, and which kinds are carried in.
-    haul: obj({ load: num({ min: 1 }), kinds: list(ref('items')) }),
+    haul: obj({ load: num({ min: 1 }), kinds: list(ref('items')), midden: list(ref('items')) }),
     // The store the band sets up by the cart: its first size and the most tiles it grows to.
     store: obj({ width: num({ min: 1 }), height: num({ min: 1 }), most: count }),
     // The colony's day as it starts (P2.5, a lever since): work is taken up from `from` o'clock

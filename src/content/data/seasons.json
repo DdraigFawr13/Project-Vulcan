@@ -9,5 +9,7 @@
 {"weather":"dry","shift":2,"wet":0,"words":[{"below":0,"words":"Clear and bitter cold"},{"below":20,"words":"Clear skies"},{"below":99,"words":"Hot and dry"}]},
 {"weather":"harsh","shift":-7,"wet":0.5,"words":[{"below":-5,"words":"A blizzard blows"},{"below":1,"words":"A hard frost sets in"},{"below":99,"words":"Gales and cold rain"}]}
 ],
+"snowMelt":3,
+"snowShare":0.1,
 "ice": {"shallow":10,"deep":40,"thaw":2,"cap":120,"over":0.9}
 }

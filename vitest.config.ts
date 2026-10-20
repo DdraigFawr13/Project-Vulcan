@@ -11,6 +11,8 @@ const slowFiles = [
   'src/engine/build/furniture.test.ts',
   'src/engine/build/houses.test.ts',
   'src/engine/fire/fire.test.ts',
+  'src/engine/wild/wild.test.ts',
+  'src/engine/people/wild.test.ts',
   'src/engine/map/map.test.ts',
   'src/engine/mine/mine.test.ts',
   'src/engine/needs/winter.test.ts',

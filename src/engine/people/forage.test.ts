@@ -28,14 +28,17 @@ function shortOfFood(w: World): World {
 }
 const foraging = (w: World) =>
   allLines(w).filter((e) => e.type === 'work.tookUp' && e.data['work'] === 'foraging');
+const gathering = (w: World) =>
+  allLines(w).filter((e) => e.type === 'work.tookUpHunting' || e.type === 'work.tookUpFishing');
 
 describe('foraging', () => {
   for (const seed of SEEDS) {
-    it(`takes up foraging within a day when the cart is low on ${seed}`, () => {
+    it(`goes after food within a day when the cart is low on ${seed}`, () => {
       const world = shortOfFood(createWorld(sim, seed));
       step(world, sim, DAY);
       expect(world.commandLog).toHaveLength(0);
-      const first = foraging(world)[0]!;
+      // Hunting and fishing come before foraging (P5.4a); any of the three answers the plate.
+      const first = [...foraging(world), ...gathering(world)].sort((a, b) => a.id - b.id)[0]!;
       expect(first.data['good']).toBe('food');
       expect(allLines(world).find((e) => e.id === first.causes[0])?.type).toBe('goods.stockSet');
     });

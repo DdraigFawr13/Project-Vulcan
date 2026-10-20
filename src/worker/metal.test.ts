@@ -152,7 +152,10 @@ describe('the metal screens', () => {
       expect(drawn.map((i) => i.frame)).toEqual(['cart']);
       const listed = tileGoods(world, x, y, z, nobody).goods!.map((g) => g.text);
       expect(listed).toContain('handcart');
-      expect(listed.filter((t) => t.startsWith('stone '))).toHaveLength(12);
+      // Three of each tool kind (axes, picks, hoes, hammers and, since P5.4a, spears).
+      expect(listed.filter((t) => t.startsWith('stone '))).toHaveLength(
+        content.tools.kinds.length * content.tools.cart,
+      );
     }
   });
 });

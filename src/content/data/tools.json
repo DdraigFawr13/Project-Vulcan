@@ -4,6 +4,7 @@
 {"id":"axe","name":"axe","serves":["fell","split"],"ingots":2,"charcoal":1,"minutes":180},
 {"id":"pick","name":"pick","serves":["mine","quarry"],"ingots":2,"charcoal":1,"minutes":180},
 {"id":"hoe","name":"hoe","serves":["farm"],"ingots":1,"charcoal":1,"minutes":120},
+{"id":"spear","name":"spear","serves":["hunt"],"ingots":1,"charcoal":1,"minutes":120},
 {"id":"hammer","name":"hammer","serves":["build","carpentry"],"ingots":1,"charcoal":1,"minutes":120}],
 "materials":[
 {"id":"stone","name":"stone","speed":100,"life":3600},

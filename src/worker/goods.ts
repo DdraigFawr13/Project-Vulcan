@@ -12,6 +12,7 @@ import {
   itemsOf,
   loadOf,
   marksOf,
+  middensOf,
   nextNeed,
   partOf,
   planAt,
@@ -78,6 +79,7 @@ export function goodsOf(world: WorldState): GoodsView {
     work: [...workBars(world), ...jobBars(world)],
     fields: fieldFrames(world),
     shafts: shaftPlans(world),
+    middens: middensOf(world).map(({ x, y, z }) => ({ x, y, z })),
     ...burialGoods(world),
   };
 }

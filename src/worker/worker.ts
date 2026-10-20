@@ -42,6 +42,7 @@ import { miningShown } from './mine.ts';
 import { peopleOf, walkersOf } from './people.ts';
 import { withLying } from './places.ts';
 import { clockView, placeWords, tileView, weatherOf } from './views.ts';
+import { animalFeed, animalPage, leftoversView } from './wild.ts';
 
 /** How often the worker wakes (ms). Timing comes from the clock, not from this interval. */
 const WAKE_MS = 10;
@@ -60,6 +61,8 @@ let pace = createPace(performance.now());
 let sent: number[][] = [];
 /** The Build view last sent, as JSON; empty until the first snapshot. */
 let sentBuild = '';
+/** The animals go out only when one has moved. */
+const animals = animalFeed();
 /** Ledger lines written since the last snapshot, collected as they are written: sealing trims
  * the log's front, so a long run could otherwise seal lines before they were posted. */
 let unposted: SimEvent[] = [];
@@ -149,6 +152,7 @@ function snapshot(w: WorldState): void {
   const key = JSON.stringify(now);
   const build = key === sentBuild ? undefined : now;
   sentBuild = key;
+  const moved = animals.next(w);
   if (unposted.length) {
     post({ type: 'events', batch: unposted.map(lineOf) });
     unposted = [];
@@ -164,7 +168,7 @@ function snapshot(w: WorldState): void {
         const i = cy * across + cx;
         if (seen[i] === layer.chunkVersions[i]) continue;
         seen[i] = layer.chunkVersions[i]!;
-        chunks.push(chunkTiles(w.map, cx, cy, z));
+        chunks.push(chunkTiles(w.map, cx, cy, z, w.tick));
       }
   }
   post(
@@ -183,13 +187,18 @@ function snapshot(w: WorldState): void {
       aura: w.map.auraSpots.map(({ school, x, y, z, strength }) => ({ school, x, y, z, strength })),
       timing: timing.view,
       walkers: withLying(w, walkersOf(w)),
+      ...(moved && { animals: moved }),
+      leftovers: leftoversView(w),
       goods: goodsOf(w),
       stock: stockView(w),
       mining: miningShown(w),
       ...(build && { build }),
       ...(yesterday && { yesterday }),
     },
-    chunks.flatMap((c) => [c.tiles.buffer, c.features.buffer, c.snow.buffer, c.ice.buffer]),
+    chunks.flatMap((c) => [
+      ...[c.tiles.buffer, c.features.buffer, c.snow.buffer, c.ice.buffer],
+      ...[c.snowLie.buffer, c.printKind.buffer, c.printAge.buffer, c.printDir.buffer],
+    ]),
   );
 }
 
@@ -199,6 +208,7 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
   world = w;
   sent = [];
   sentBuild = '';
+  animals.reset();
   unposted = [...w.log];
   pace = createPace(performance.now());
   run(0); // hands over any sealed days the world arrived with (never ticks: the pace is fresh)
@@ -351,6 +361,9 @@ function handle(message: ToWorker): void {
       return;
     case 'item':
       if (world) post({ type: 'item', item: itemView(world, message.id, lineOf) });
+      return;
+    case 'animal':
+      if (world) post({ type: 'animalPage', page: animalPage(world, message.id, lineOf) });
       return;
     case 'why':
       if (world)

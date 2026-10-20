@@ -20,6 +20,8 @@ export interface SeasonsDef {
     wet: number;
     words: readonly { below: number; words: string }[];
   }[];
+  snowMelt: number;
+  snowShare: number;
   ice: { shallow: number; deep: number; thaw: number; cap: number; over: number };
 }
 

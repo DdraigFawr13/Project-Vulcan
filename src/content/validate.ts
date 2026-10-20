@@ -54,6 +54,7 @@ export function validateContent(files: Files): string[] {
     index(target, target, files[target]);
   const part = (file: string, key: string): unknown =>
     (files[file] as Record<string, unknown> | undefined)?.[key];
+  index('wild-prints', 'wild.prints', part('wild', 'prints'));
   index('biomes', 'biomes.biomes', part('biomes', 'biomes'));
   index('faiths', 'faiths.defs', part('faiths', 'defs'));
   index('terrain', 'terrain.kinds', part('terrain', 'kinds'));
@@ -79,6 +80,7 @@ export function validateContent(files: Files): string[] {
       ...checkHouse(files),
       ...checkCrops(files),
       ...checkHaul(files),
+      ...checkWild(files),
     );
   errors.push(...checkBand(files));
   return errors;
@@ -255,4 +257,31 @@ function checkHaul(files: Files): string[] {
         ]
       : [],
   );
+}
+
+// The wild valley (src/engine/wild): every month it names is a calendar month, a species has art
+// kinds and a habitat, there is a predator to fall back on and a default word for any ground.
+function checkWild(files: Files): string[] {
+  const w = files['wild'] as {
+    species: { id: string; kinds: string[]; habitat: unknown[]; breed: { months: string[] } }[];
+    predators: unknown[];
+    winter: string[];
+    pack: { returns: { month: string } };
+    where: Record<string, string>;
+  };
+  const months = (files['calendar'] as { monthNames: string[] }).monthNames;
+  const errors: string[] = [];
+  const month = (m: string, at: string) => {
+    if (!months.includes(m)) errors.push(`wild.${at}: "${m}" is no month`);
+  };
+  w.winter.forEach((m, k) => month(m, `winter[${k}]`));
+  month(w.pack.returns.month, 'pack.returns.month');
+  for (const s of w.species) {
+    s.breed.months.forEach((m, k) => month(m, `species[${s.id}].breed.months[${k}]`));
+    if (!s.kinds.length) errors.push(`wild.species[${s.id}].kinds: none`);
+    if (!s.habitat.length) errors.push(`wild.species[${s.id}].habitat: none`);
+  }
+  if (!w.predators.length) errors.push('wild.predators: none');
+  if (!w.where['default']) errors.push('wild.where: no default');
+  return errors;
 }

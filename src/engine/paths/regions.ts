@@ -56,15 +56,38 @@ export function regionsOf(content: EngineContent, map: MapState): Regions {
     }
     for (let c = 0; c < chunks; c += 1)
       if (r.seen[z]![c] !== layer.chunkVersions[c]) {
-        label(content, map, r, z, c % across, Math.floor(c / across));
+        const [cx, cy] = [c % across, Math.floor(c / across)];
+        // A version raised for something that is not walking (a print, lying snow) relabels nothing.
+        const same = r.seen[z]![c] !== -1 && sameWalk(content, map, r, z, cx, cy);
+        if (!same) {
+          label(content, map, r, z, cx, cy);
+          changed = true;
+        }
         r.seen[z]![c] = layer.chunkVersions[c]!;
-        changed = true;
       }
   }
   // Frozen water changes walking without a new tile kind; the weather raises the chunk's
   // version when ice comes or goes, so it is caught above.
   if (changed) link(content, map, r);
   return r;
+}
+
+/** Whether every tile of a chunk walks as it did when the chunk was last labelled. */
+function sameWalk(
+  content: EngineContent,
+  map: MapState,
+  r: Regions,
+  z: number,
+  cx: number,
+  cy: number,
+): boolean {
+  const walk = r.walk[z]!;
+  const y1 = Math.min(map.height, (cy + 1) * CHUNK);
+  const x1 = Math.min(map.width, (cx + 1) * CHUNK);
+  for (let y = cy * CHUNK; y < y1; y += 1)
+    for (let x = cx * CHUNK; x < x1; x += 1)
+      if (walk[y * map.width + x] !== walkAt(content, map, z, y * map.width + x)) return false;
+  return true;
 }
 
 /** Labels one chunk's regions with 4-way flood fills in reading order. */

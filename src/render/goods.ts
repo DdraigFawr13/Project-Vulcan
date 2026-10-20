@@ -23,6 +23,7 @@ export class GoodsSprites {
     fires: [],
     work: [],
     fields: [],
+    middens: [],
   };
   private shown: Phaser.GameObjects.Image[] = [];
   private key = '';

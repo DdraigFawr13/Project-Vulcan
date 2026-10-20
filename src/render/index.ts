@@ -2,6 +2,7 @@
 // small handle to feed it snapshots and drive the camera.
 import Phaser from 'phaser';
 import type {
+  AnimalView,
   AuraView,
   BuildView,
   ChunkView,
@@ -21,6 +22,7 @@ import { GoodsSprites } from './goods.ts';
 import { GreenSprites } from './green.ts';
 import { PeopleSprites } from './people.ts';
 import { WorkBars } from './progress.ts';
+import { WildSprites } from './wild.ts';
 import { TILE, ValleyScene, type Hover } from './scene.ts';
 
 export type { Hover } from './scene.ts';
@@ -43,6 +45,10 @@ export interface Renderer {
   setPeople(people: readonly PersonView[]): void;
   /** The person standing on a tile of the level on screen, if any. */
   personAt(x: number, y: number): PersonView | undefined;
+  /** Draws the live animals (the snapshot's `animals`, when sent) on the surface (Bundle 2). */
+  setAnimals(animals: readonly AnimalView[]): void;
+  /** The animal standing on a tile of the surface, if any: its id. */
+  animalAt(x: number, y: number): number | undefined;
   /** Moves the people to where the latest snapshot stands them (P2.3); they glide there. */
   movePeople(walkers: readonly WalkerView[]): void;
   /** Draws the store, the items lying about and test marks (P2.4), the plans (P3.1) and the
@@ -90,16 +96,35 @@ export function startRenderer(
   const green = new GreenSprites(game, scene);
   const light = new Firelight(game, scene);
   const bars = new WorkBars(game, scene);
+  const wild = new WildSprites(game, scene);
+  // The smoke has no handle on the renderer: this event centres the view on an animal and writes
+  // where it stands on screen (canvas px) to `data-animal-at`.
+  parent.addEventListener('vulcan:find-animal', (e) => {
+    const kind = (e as CustomEvent<string | undefined>).detail;
+    const first = wild.first(kind);
+    if (!first) return;
+    scene.controls?.lookAt(first.x, first.y);
+    delete parent.dataset['animalAt'];
+    // The camera's view is brought up to date as a frame is drawn.
+    game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+      const at = wild.first(kind) ?? first;
+      const cam = scene.cameras.main;
+      const px = [(at.x - cam.worldView.x) * cam.zoom, (at.y - cam.worldView.y) * cam.zoom];
+      parent.dataset['animalAt'] = px.map(Math.round).join(',');
+    });
+  });
   return {
     setMapSize: (width, height, on) => {
       scene.setMapSize(width, height, on);
       build.setMapSize(width, height);
       fields.setMapSize(width);
       light.setMapSize(width, height);
+      wild.setMapSize(width, height);
     },
     applyChunks: (chunks) => {
       scene.applyChunks(chunks);
       build.applyChunks(chunks);
+      wild.applyChunks(chunks);
     },
     setAura: (spots) => scene.setAura(spots),
     zoomStep: (direction) => scene.zoomStep(direction),
@@ -117,10 +142,16 @@ export function startRenderer(
       green.setLevel(z);
       light.setLevel(z);
       bars.setLevel(z);
+      wild.setLevel(z);
     },
     setPeople: (list) => people.set(list),
     personAt: (x, y) => people.at(x, y),
     movePeople: (walkers) => people.move(walkers),
+    setAnimals: (list) => {
+      wild.set(list);
+      parent.dataset['animals'] = String(list.length);
+    },
+    animalAt: (x, y) => wild.at(x, y),
     setGoods: (view, sky) => {
       goods.set(view);
       build.setPlans(view.plans);
@@ -130,6 +161,7 @@ export function startRenderer(
       furniture.set(view.furniture);
       light.set(view.fires, sky.clock);
       bars.set(view.work, sky.skipping ? 3 : sky.speed);
+      wild.setMiddens(view.middens);
     },
     setBuild: (view) => green.set(view),
     mark: (tile) => scene.mark(tile),

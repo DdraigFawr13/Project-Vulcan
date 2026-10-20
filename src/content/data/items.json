@@ -47,10 +47,17 @@
   {"id":"stone-pick","name":"stone pick","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"pick","material":"stone"}},
   {"id":"bronze-pick","name":"bronze pick","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"pick","material":"bronze"}},
   {"id":"iron-pick","name":"iron pick","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"pick","material":"iron"}},
+  {"id":"stone-spear","name":"stone spear","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"spear","material":"stone"}},
+  {"id":"bronze-spear","name":"bronze spear","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"spear","material":"bronze"}},
+  {"id":"iron-spear","name":"iron spear","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"spear","material":"iron"}},
   {"id":"stone-hoe","name":"stone hoe","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hoe","material":"stone"}},
   {"id":"bronze-hoe","name":"bronze hoe","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hoe","material":"bronze"}},
   {"id":"iron-hoe","name":"iron hoe","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hoe","material":"iron"}},
   {"id":"stone-hammer","name":"stone hammer","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hammer","material":"stone"}},
   {"id":"bronze-hammer","name":"bronze hammer","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hammer","material":"bronze"}},
-  {"id":"iron-hammer","name":"iron hammer","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hammer","material":"iron"}}
+  {"id":"iron-hammer","name":"iron hammer","good":"tools","per":0.02,"kind":"tool","tool":{"kind":"hammer","material":"iron"}},
+  {"id":"hide","name":"hides","good":"hides","per":0.01,"kind":"material"},
+  {"id":"bone","name":"bone","good":"bone","per":0.005,"kind":"material"},
+  {"id":"fat","name":"fat","good":"fat","per":0.005,"kind":"material"},
+  {"id":"offal","name":"offal","good":"offal","per":0.005,"kind":"waste"}
 ]

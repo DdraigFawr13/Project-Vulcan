@@ -23,6 +23,8 @@ import { rollTally, TALLY_START } from './tally.ts';
 import { stepAlong, WALK_FIELDS } from './walk.ts';
 import { risk } from './accident.ts';
 import { careMinute } from './care.ts';
+import { attacksMinute, syncLures } from './fight.ts';
+import { tracksMinute } from './hunt.ts';
 
 const ATTRIBUTES = [
   'strength',
@@ -161,12 +163,21 @@ export const peopleSystem: System = {
     ...['mine.sank', 'mine.dug', 'mine.veinMined', 'mine.clayDug', 'mine.noLadder'],
     ...['health.hurt', 'health.found', 'health.missed', 'health.carried', 'health.bound'],
     'work.tookUpBurial',
+    ...['work.tookUpHunting', 'work.tookUpFishing', 'work.followedTracks', 'work.trackingPack'],
+    ...['wild.tracksFound', 'wild.sighted', 'wild.attacked', 'wild.killed'],
+    ...['wild.predatorWounded', 'wild.predatorKilled', 'wild.packDrewOff'],
   ],
   tables: PEOPLE_TABLES,
-  refs: ['noIngots', 'noCharcoal'],
+  refs: ['noIngots', 'noCharcoal', 'tracksLine', 'sighted'],
   // Yesterday's tally (tally.ts) lives in the state too, and `idle`: the signature of the rooms
   // when carpentry last found nothing to make (carpentry.ts).
-  initialState: { ...TALLY_START, idle: 0, noIngots: 0, noCharcoal: 0 },
+  // P5.4a: `tracksDay` the game day of the last `wild.tracksFound` and `tracksLine` it; `sighted`
+  // the last `wild.sighted` line and `sightedAt` its tick; `lured` the middens the pack was told of;
+  // `fished` the fish caught.
+  initialState: {
+    ...{ ...TALLY_START, idle: 0, noIngots: 0, noCharcoal: 0 },
+    ...{ tracksDay: 0, tracksLine: 0, sighted: 0, sightedAt: 0, lured: 0, fished: 0 },
+  },
   commands: {
     setPriority: (ctx, command, cause) => setPriority(ctx, command.data, cause),
   },
@@ -225,8 +236,11 @@ export const peopleSystem: System = {
     for (const p of ctx.world.entities['person'] ?? []) {
       if (p['status'] !== 'alive') continue;
       stepAlong(ctx, p);
+      tracksMinute(ctx, p);
       think(ctx, p, hour);
       risk(ctx, p);
     }
+    syncLures(ctx);
+    attacksMinute(ctx);
   },
 };

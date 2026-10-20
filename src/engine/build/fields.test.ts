@@ -17,10 +17,13 @@ import {
   submitCommand,
   TEST_TOOLS,
   whyOf,
+  withoutWild,
 } from '../index.ts';
 import { fieldsOf, ringOf } from './index.ts';
 
-const sim = createSim(content);
+// Hunting and fishing (P5.4a) would put fish and game in the granary beside the harvest this
+// file follows, so the wild valley is kept out of the colony's way.
+const sim = createSim(withoutWild(content));
 const DAY = 1440;
 const SEEDS = ['ledger', 'tallow', 'anvil'];
 type World = ReturnType<typeof createWorld>;

@@ -21,6 +21,7 @@ import { tileHouse } from './build.ts';
 import { tileField } from './fields.ts';
 import { tileGoods } from './goods.ts';
 import { tileShaft } from './mine.ts';
+import { tileWild } from './wild.ts';
 import { tilePlace } from './places.ts';
 import type { ClockView, LedgerLine, TileView } from './protocol.ts';
 
@@ -124,6 +125,7 @@ export function tileView(
     ...(z === 0 && tileHouse(w, x, y, lineOf)),
     ...(z === 0 && tileField(w, x, y, lineOf)),
     ...(z === 0 && tileShaft(w, x, y, lineOf)),
+    ...(z === 0 && tileWild(w, i)),
     ...(z === 0 && tilePlace(w, x, y, lineOf)),
   };
   // Unknown ground below is named only as unknown, with a vein glinting through (V-030).

@@ -21,7 +21,7 @@ import {
   trailOf,
   trailText,
 } from '../goods/index.ts';
-import { planTiles } from '../build/index.ts';
+import { middensOf, planTiles } from '../build/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { busy, layAround, same, spotOf } from './spots.ts';
@@ -39,6 +39,7 @@ export function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void
   const count = load['count'] as number;
   const here = spotOf(p);
   const made = load['made'] as number;
+  if (content.work.haul.midden.includes(kind)) return deliverWaste(ctx, p, load, here);
   const slot =
     keepable(content, kind) && granaryOf(world).length && storedEnough(world, content)(load)
       ? (granarySlot(world, content, kind, count, here) ?? growGranary(ctx, here, made))
@@ -68,6 +69,22 @@ export function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void
     takeFrom(world, load, count);
   } else Object.assign(load, { ...here, holder: 0 });
   p['job'] = '';
+}
+
+/** Waste (offal) goes to the midden, where it is used up with no line (P5.4a, V-072). */
+function deliverWaste(ctx: SystemContext, p: EntityRow, load: EntityRow, here: Spot): void {
+  const { world } = ctx;
+  const midden = middensOf(world)[0];
+  const at = midden && { x: midden.x, y: midden.y, z: 0 };
+  if (at && same(at, here)) {
+    takeFrom(world, load, load['count'] as number);
+    p['job'] = '';
+    return;
+  }
+  if (at && walkTo(ctx, p, at)) return;
+  Object.assign(load, { ...here, holder: 0 });
+  p['job'] = '';
+  p['next'] = world.tick + LOOK_AGAIN;
 }
 
 /** Goods lying where a house or room is planned (build/clearing.ts) that the store has no room
@@ -117,6 +134,8 @@ export function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void 
 function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const { world, content } = ctx;
   const kinds = content.work.haul.kinds;
+  const waste = content.work.haul.midden;
+  const midden = middensOf(world)[0];
   const taken = busy(world, p, 'haul');
   const from = spotOf(p);
   let best: EntityRow | undefined;
@@ -152,10 +171,13 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
     if (i['holder'] || taken.has(i.id)) continue;
     const at = spotOf(i);
     const marked = at.z === 0 && clearing.has(at.y * world.map.width + at.x);
-    if (!marked && !kinds.includes(i['kind'] as string)) continue;
+    // Offal is carried to the midden and nowhere else; a midden sited, and not already on it.
+    const dirt = waste.includes(i['kind'] as string);
+    if (dirt && (!midden || (at.x === midden.x && at.y === midden.y))) continue;
+    if (!marked && !dirt && !kinds.includes(i['kind'] as string)) continue;
     const d = Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y));
     if (d >= far || inStore(world, at.x, at.y, at.z)) continue;
-    if (!marked && (enough(i) ? !keeps(i) : !room(i))) continue;
+    if (!marked && !dirt && (enough(i) ? !keeps(i) : !room(i))) continue;
     if (canReach(content, world.map, from, at)) [best, far] = [i, d];
   }
   return best;

@@ -32,6 +32,8 @@ export interface GoodsView {
   fields: { frame: string; tiles: number[] }[];
   /** Shaft plans (planned or being sunk) on the surface, for the map's faint plan layer. */
   shafts: (Spot3 & { state: string })[];
+  /** Middens the colony sited (Bundle 2), drawn as `site.midden`. */
+  middens: Spot3[];
   /** Graves (P5.8): dug until the day's end, then filled, with a marker or not; surface only. */
   graves: (Spot3 & { dug: boolean; marker: boolean })[];
   /** The burial ground's rectangle, for its hurdle edge. */

@@ -15,6 +15,9 @@ export function landFacts(tile: TileView): string[][] {
       ? [['temperature', `${tile.temperature} °C`]]
       : []),
     ...(tile.ice ? [['ice', tile.ice]] : []),
+    ...(tile.prints ? [['prints', tile.prints]] : []),
+    ...(tile.fade ? [['fade', tile.fade]] : []),
+    ...(tile.snowLies ? [['snow', tile.snowLies]] : []),
     ...(tile.aura ? [['aura', tile.aura]] : []),
     ...(tile.water ? [['water', tile.water]] : []),
     ...(tile.drinkable !== undefined ? [['drinkable', tile.drinkable ? 'yes' : 'no']] : []),

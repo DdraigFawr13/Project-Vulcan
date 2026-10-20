@@ -10,6 +10,8 @@ import type { HoursView, LawView } from './protocol-law.ts';
 export type { AnswerView, HoursView, LawView } from './protocol-law.ts';
 import type { WalkerView } from './protocol-people.ts';
 export type { HealthView, NeedView, WalkerView } from './protocol-people.ts';
+import type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
+export type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 import type {
   BuildView,
   FieldView,
@@ -57,7 +59,9 @@ export type ToWorker =
   /** "why?": a ledger line's causes back to the world's first line. */
   | { type: 'why'; id: number }
   /** The item page (P4.6): one tool or ingot stack and where it came from. */
-  | { type: 'item'; id: number };
+  | { type: 'item'; id: number }
+  /** The herd or pack page of an animal tapped on the map (Bundle 2). */
+  | { type: 'animal'; id: number };
 
 /** The clock as the page shows it; the worker computes it from the tick and the content calendar. */
 export interface ClockView {
@@ -92,6 +96,13 @@ export interface ChunkView {
   known: Uint8Array;
   /** Surface only: 0, or 1 + the features index of the ore vein stained below (V-087). */
   stains: Uint8Array;
+  /** Surface only (Bundle 2): 1 where snow lies on the ground. */
+  snowLie: Uint8Array;
+  /** Surface only: 0, or 1 + an index into content `wild.prints` for the print on the tile. */
+  printKind: Uint8Array;
+  /** Hours since the print was laid (0 to 255), and the way its maker went (0 n to 7 nw). */
+  printAge: Uint8Array;
+  printDir: Uint8Array;
 }
 
 /** Today's weather in the valley, for the top bar. */
@@ -205,6 +216,12 @@ export interface TileView {
   works?: WorksView;
   /** The shaft plan on this tile (Bundle 2). */
   shaft?: ShaftView;
+  /** Prints lying here (Bundle 2): "paw prints, about 3 hours old, heading south-east", and how
+   * long before they are gone. */
+  prints?: string;
+  fade?: string;
+  /** Snow lies on the tile, with the rule that takes it off. */
+  snowLies?: string;
   /** A grave or a burial-ground tile (P5.8). */
   place?: PlaceView;
 }
@@ -331,6 +348,10 @@ export type FromWorker =
       timing: TimingView;
       /** Everyone's place now (P2.3). */
       walkers: WalkerView[];
+      /** The live animals on the surface, only when one has moved since the last snapshot. */
+      animals?: AnimalView[];
+      /** The Stock sheet's Leftovers block and the game and fish counted as food. */
+      leftovers: LeftoversView;
       /** Items, the store and marks (P2.4). */
       goods: GoodsView;
       stock: StockView[];
@@ -353,6 +374,8 @@ export type FromWorker =
   | { type: 'inspected'; tile: TileView | undefined }
   /** The item page for an `item` request; none when the item is gone. */
   | { type: 'item'; item: ItemView | undefined }
+  /** The animal page for an `animal` request; none when the animal is gone. */
+  | { type: 'animalPage'; page: AnimalPage | undefined }
   /** The causes of line `id`, nearest first, each with its depth (1 is a direct cause). */
   | { type: 'causes'; id: number; lines: (LedgerLine & { depth: number })[] }
   /** The region of a plain seed and its valleys on offer, before any world begins. */

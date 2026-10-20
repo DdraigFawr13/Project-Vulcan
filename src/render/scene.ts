@@ -8,7 +8,7 @@ import { glowTiles } from './aura-art.ts';
 import { CameraControls } from './camera.ts';
 import { storeChunk, type LevelArrays } from './chunk-store.ts';
 import { frameIndex, groundFrame, TILE, variantOf } from './frames.ts';
-import { BUILDINGS, ITEMS, PEOPLE } from './sheets.ts';
+import { BUILDINGS, ITEMS, PEOPLE, WILD } from './sheets.ts';
 import { StainLayer } from './stains.ts';
 import { waterPicture } from './water-art.ts';
 
@@ -89,7 +89,7 @@ export class ValleyScene extends Phaser.Scene {
   }
 
   preload(): void {
-    for (const sheet of [...GROUND_SHEETS, NATURE, PEOPLE, ITEMS, BUILDINGS])
+    for (const sheet of [...GROUND_SHEETS, NATURE, PEOPLE, ITEMS, BUILDINGS, WILD])
       this.load.atlas(sheet, `art/${sheet}.png`, `art/${sheet}.json`);
   }
 

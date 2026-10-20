@@ -7,7 +7,6 @@ import {
   type FromWorker,
   type PersonView,
   type Speed,
-  type StockView,
   type TileView,
   type ToWorker,
 } from '../worker/index.ts';
@@ -47,8 +46,6 @@ let stopped = false;
 let frame = 0;
 let shown: TileView | undefined;
 const orders = new Orders((message) => send(message));
-/** The colony's stock levels as of the last snapshot, for the Stock sheet (P2.4). */
-let stock: readonly StockView[] = [];
 /** The starting or loading screen is up until the next snapshot; other screens wait for a click. */
 let covering = true;
 /** The running world's valley and people, and whether the band has just arrived (P2.1). */
@@ -72,6 +69,8 @@ const renderer = startRenderer(parent, {
   onHover: (tile) => hud.showTile(tile),
   onSelect: (tile) => {
     const person = renderer.personAt(tile.x, tile.y);
+    const animal = person ? undefined : renderer.animalAt(tile.x, tile.y);
+    if (animal !== undefined) return send({ type: 'animal', id: animal });
     if (!person) return send({ type: 'inspect', ...tile, z: level });
     sheets.showPerson(person);
     renderer.mark(tile);
@@ -171,7 +170,7 @@ function openPanel(kind: PanelButton): void {
   renderer.mark(undefined);
   if (kind === 'ledger') panel.showLedger(saves.ledger);
   else if (kind === 'region') send({ type: 'region' });
-  else if (kind === 'stock') panel.showStock(stock);
+  else if (kind === 'stock') panel.showStock();
   else if (kind !== 'saves') sheets.open(kind);
   else void saves.showList();
   hud.showPanel(kind);
@@ -217,14 +216,14 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       reached = message.reached;
       renderer.applyChunks(message.chunks);
       renderer.movePeople(message.walkers);
+      if (message.animals) renderer.setAnimals(message.animals);
       // A skip ends paused in the worker; the bar's speed follows it.
       if (skipping && !message.skipping) speed = message.speed;
       skipping = message.skipping;
       sheets.snapshot(message);
       renderer.setGoods(message.goods, message);
       if (message.build) renderer.setBuild(message.build);
-      stock = message.stock;
-      panel.setStock(stock);
+      panel.setStock(message.stock, message.leftovers);
       renderer.setAura(message.aura);
       hud.showLevel(level, depth, reached);
       hud.fps = Math.round(renderer.fps());
@@ -265,6 +264,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
         hud.showPanel(undefined);
       }
     } else if (message.type === 'item') sheets.showItem(message.item);
+    else if (message.type === 'animalPage') sheets.showAnimal(message.page);
     else if (message.type === 'picker') {
       hud.hideScreen();
       picker.show(message);

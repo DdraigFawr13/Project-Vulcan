@@ -12,7 +12,7 @@ import {
 } from '../engine/index.ts';
 
 /** Raised when a save's format version changes; older saves need not load before launch. */
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /** One saved game (docs/ARCHITECTURE.md "Save"). The command log and ledger live in `state`;
  * `seed` and `tick` repeat `state`'s as a header readable without walking the world, and
@@ -97,6 +97,10 @@ export function checkSave(
     layer(map['rock'], Uint8Array, map['tiles'].length) &&
     layer(map['aura'], Uint8Array, map['tiles'].length) &&
     layer(map['ice'], Uint8Array, map['tiles'].length) &&
+    layer(map['snowLie'], Uint8Array, map['tiles'].length) &&
+    layer(map['printKind'], Uint8Array, map['tiles'].length) &&
+    layer(map['printAt'], Int32Array, map['tiles'].length) &&
+    layer(map['printDir'], Uint8Array, map['tiles'].length) &&
     layer(map['built'], Uint8Array, map['tiles'].length) &&
     layer(map['stains'], Uint8Array, map['tiles'].length) &&
     Number.isSafeInteger(map['floor']) &&
