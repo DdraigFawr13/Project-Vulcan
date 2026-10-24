@@ -45,7 +45,7 @@ Content entries for each part and material; walls block paths and doors pass the
 
 A Build sheet (under ⋯) with one row per building kind and 1 to 4 steppers; the green where the cart stopped (V-050); colonists site a house on flat dry ground near the green, pick its size from content (V-051) and show a faint plan with a reason; Send back once. Mock-up: UI. Done when: asking for a house, with no tile chosen, gives a sited plan with a reason line on every seed, and the same seed gives the same site.
 
-- Reading list: `docs/DECISIONS.md`; `docs/UI_STYLE.md`; `src/engine/map/MODULE.md`; `src/engine/region/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/DECISIONS.md`; `docs/UI_STYLE.md`; `src/engine/map/MODULE.md`; `src/ui/MODULE.md`
 
 ### P3.3 Room detection
 
