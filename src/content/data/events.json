@@ -56,6 +56,8 @@
 {"id":"work.tookUpMucking","importance":1,"template":"{name} took up carrying muck to the field at {x}, {y}: its poorest ground."},
 {"id":"field.rests","importance":2,"template":"The field at {x}, {y} rests this sowing window: its soil is worn to {soil}."},
 {"id":"field.soil","importance":1,"template":"The soil of the field at {x}, {y} {what}: fertility {from} to {to}."},
+{"id":"field.blight","importance":3,"template":"Blight took the {crop} at {x}, {y}: {wet} wet days in {span}{again}.{early}","notable":{}},
+{"id":"work.tookUpWatering","importance":1,"template":"{name} took up watering the {crop} at {x}, {y}: the dry spell parches its far rows."},
 {"id":"field.muckReady","importance":2,"template":"The fold and the midden give {loads} loads of muck for the fields."},
 {"id":"work.tookUpReaping","importance":1,"template":"{name} took up reaping {crop} at {x}, {y}."},
 {"id":"field.harvested","importance":2,"template":"The {crop} at {x}, {y} is in: {count} {what}, {kept} of it kept as seed."},

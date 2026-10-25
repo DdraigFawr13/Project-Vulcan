@@ -16,6 +16,7 @@ import { marksOf, raiseStock } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { tileTemperature } from '../weather/index.ts';
+import { clearBlight } from './blight.ts';
 import { chooseField } from './fieldsite.ts';
 import { courseNow, meanSoil } from './fieldsoil.ts';
 import { dirFrom, FIELD_KIND, wantOf } from './houses.ts';
@@ -32,7 +33,9 @@ export const FIELD_TABLES: Schemas = {
    * seed); `reapers` the people who reaped it; `noSeed` the season (year * 4 + season) the
    * no-seed alert was last said; `at` the tile its lines name (its first tile when sited);
    * `course` its place in the rotation (fieldsoil.ts); `prev` the last two crops it bore,
-   * `rested` the month (year * months + month + 1) its rest was last said. */
+   * `rested` the month (year * months + month + 1) its rest was last said; `blight` the tiles
+   * blighted, `dry` the dry days each tile has lost (parallel to `tiles`), `watered` the tiles
+   * watered today, `cut` the per cent grown when it was cut early (blight.ts). */
   field: {
     crop: 'text',
     state: 'text',
@@ -53,6 +56,10 @@ export const FIELD_TABLES: Schemas = {
     course: 'int',
     prev: 'text',
     rested: 'int',
+    blight: 'ints',
+    dry: 'ints',
+    watered: 'ints',
+    cut: 'count',
   },
 };
 
@@ -185,7 +192,7 @@ export function planFields(ctx: SystemContext, green: Spot, causes: number[], se
   addEntity(world, 'field', {
     ...{ crop: '', state: 'plan', tiles: site.tiles, done: [], sown: 0, line, last: line },
     ...{ took: 0, why, sent, leave: 0, got: 0, kept: 0, reapers: [], noSeed: 0 },
-    ...{ course: 0, prev: '', rested: 0 },
+    ...{ course: 0, prev: '', rested: 0, ...clearBlight() },
     at: site.tiles[0]!,
   });
   raiseStock(ctx, content.buildings.field.seed, content.buildings.field.name.toLowerCase(), line);

@@ -15,7 +15,7 @@ import {
   finishSowing,
   courseNow,
   sowNow,
-  yieldAt,
+  tileYield,
 } from '../build/index.ts';
 import { haveOf, isTree, itemsOf, layItem, takeFrom, wantOf } from '../goods/index.ts';
 import { reachFrom } from '../paths/index.ts';
@@ -26,6 +26,7 @@ import { canMuck, mucking } from './muck.ts';
 import { scaled, worked } from './tools.ts';
 import { able, outranked, priorityLine } from './priority.ts';
 import { besideReachable, busy, goBeside, layAround, same, skillOf, spotOf } from './spots.ts';
+import { canWater, watering } from './water-fields.ts';
 import { walkTo } from './walk.ts';
 
 const monthOf = (ctx: SystemContext): string =>
@@ -33,7 +34,7 @@ const monthOf = (ctx: SystemContext): string =>
 
 interface Task {
   field: EntityRow;
-  mode: 'sow' | 'reap' | 'muck';
+  mode: 'sow' | 'reap' | 'muck' | 'water';
 }
 
 const skillName = (content: EngineContent): string =>
@@ -70,6 +71,9 @@ function taskFor(ctx: SystemContext, p: EntityRow): (Task & { tile: number }) | 
       const tile = nextTile(ctx, p, f, 'sow');
       if (tile !== undefined) return { field: f, mode: 'sow', tile };
     }
+  // A dry spell's parched rows are watered before muck is carried.
+  const parched = fields.find((f) => f['state'] === 'sown' && canWater(ctx, p, f));
+  if (parched) return { field: parched, mode: 'water', tile: -1 };
   // Muck after the sowing: the poorest fallow field first is the first that has ground for it.
   const bare = fields.find((f) => canMuck(ctx, p, f));
   return bare ? { field: bare, mode: 'muck', tile: -1 } : undefined;
@@ -85,12 +89,15 @@ export function takeUpFarming(ctx: SystemContext, p: EntityRow): boolean {
   if (!task) return false;
   const { field: f, mode } = task;
   const crop =
-    mode === 'reap'
+    mode === 'reap' || mode === 'water'
       ? cropOf(content, f['crop'] as string)
       : mode === 'sow'
         ? sowNow(world, content, f)
         : undefined;
-  const line = { reap: 'work.tookUpReaping', sow: 'work.tookUpSowing', muck: 'work.tookUpMucking' };
+  const line = {
+    ...{ reap: 'work.tookUpReaping', sow: 'work.tookUpSowing', muck: 'work.tookUpMucking' },
+    water: 'work.tookUpWatering',
+  };
   p['took'] = ctx.emit(line[mode], {
     causes: [
       ...[f['last'] as number, priorityLine(world, p.id, job)].filter(
@@ -101,9 +108,10 @@ export function takeUpFarming(ctx: SystemContext, p: EntityRow): boolean {
     data: { name: p['name'] as string, crop: crop?.name ?? '', ...fieldPlace(world, f) },
   });
   p['job'] = 'farm';
-  p['task'] = mode === 'muck' ? 'muck' : '';
+  p['task'] = mode === 'muck' || mode === 'water' ? mode : '';
   p['plan'] = f.id;
   p['target'] = -1;
+  p['pail'] = 0;
   return farming(ctx, p);
 }
 
@@ -113,6 +121,7 @@ function stop(p: EntityRow): false {
   p['task'] = '';
   p['plan'] = 0;
   p['target'] = -1;
+  p['pail'] = 0;
   return false;
 }
 
@@ -151,6 +160,7 @@ export function farming(ctx: SystemContext, p: EntityRow): boolean {
   const map = world.map;
   const f = fieldsOf(world).find((r) => r.id === p['plan']);
   if (p['task'] === 'muck') return (f && mucking(ctx, p, f)) || stop(p);
+  if (p['task'] === 'water') return (f && watering(ctx, p, f)) || stop(p);
   const state = f?.['state'];
   const mode: Task['mode'] | undefined =
     state === 'ripe'
@@ -217,7 +227,7 @@ function reapTile(ctx: SystemContext, p: EntityRow, f: EntityRow, tile: number):
     wantOf(world, content, content.buildings.field.seed) -
       haveOf(world, content, content.buildings.field.seed),
   );
-  const yielded = yieldAt(world, content, crop.yield, tile);
+  const yielded = tileYield(world, content, f, crop.yield, tile);
   const seed = Math.min(yielded, short);
   const made = p['took'] as number;
   const kept = seed ? layAround(ctx, content.buildings.field.seed, seed, at, made) : 0;

@@ -42,4 +42,23 @@ export interface FieldDef {
     winter: { month: string; gain: number };
     muck: { month: string; gain: number; midden: number; fold: number };
   };
+  /** Blight (V-130): a sown field with `start` wet days or more in the last `span` days has a
+   * 1 in `oneIn` chance a day (1 in `repeatIn` if its crop grew there last year) of blight on one
+   * tile; on a wet day while `spreadAt` wet days or more it spreads to each neighbouring field
+   * tile at `spread` per cent, to at most `most` per cent of the field. Blighted tiles yield
+   * nothing; a crop `early` per cent grown or more is cut at once, yielding its grown share. */
+  blight: {
+    span: number;
+    start: number;
+    spreadAt: number;
+    oneIn: number;
+    repeatIn: number;
+    spread: number;
+    most: number;
+    early: number;
+  };
+  /** Dry spells (V-130): each day of weather `weather`, tiles of a sown field more than `near`
+   * tiles from drinkable water lose `loss` per cent of yield (to `cap`) unless watered that day;
+   * a farmer waters `tiles` tiles a trip, `minutes` a tile. */
+  dry: { weather: string; near: number; loss: number; cap: number; tiles: number; minutes: number };
 }

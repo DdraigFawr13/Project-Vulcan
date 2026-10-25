@@ -40,6 +40,25 @@ export const TOWN_SCHEMAS = {
       winter: obj({ month: text, gain: count }),
       muck: obj({ month: text, gain: count, midden: count, fold: count }),
     }),
+    // Blight and dry spells (V-130): see core/fielddef.ts.
+    blight: obj({
+      span: num({ min: 1, max: 30 }),
+      start: num({ min: 1 }),
+      spreadAt: num({ min: 1 }),
+      oneIn: num({ min: 1 }),
+      repeatIn: num({ min: 1 }),
+      spread: num({ min: 0, max: 100 }),
+      most: num({ min: 1, max: 100 }),
+      early: num({ min: 1, max: 100 }),
+    }),
+    dry: obj({
+      weather: text,
+      near: count,
+      loss: count,
+      cap: num({ min: 0, max: 100 }),
+      tiles: num({ min: 1 }),
+      minutes: num({ min: 1 }),
+    }),
   }),
   // P5.10 (V-054, V-124): the Roads row (start level `start`). One stretch at a time of `part`,
   // planned once the store holds its material spare: on the way between two of the colony's

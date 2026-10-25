@@ -139,6 +139,7 @@ export const peopleSystem: System = {
       'work.tookUpSowing',
       'work.tookUpReaping',
       'work.tookUpMucking',
+      'work.tookUpWatering',
       'field.harvested',
       'farm.harvestHome',
     ],

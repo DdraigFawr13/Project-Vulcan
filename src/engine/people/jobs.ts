@@ -79,6 +79,8 @@ export const JOB_FIELDS = {
   hay: 'count',
   herdId: 'int',
   sat: 'count',
+  /** Watering (Bundle 2): the tiles' worth of water carried, 0 while fetching. */
+  pail: 'count',
 } as const;
 
 /** Work that takes a feature off the map for what it yields: felling (logs) and quarrying (P3.1,
