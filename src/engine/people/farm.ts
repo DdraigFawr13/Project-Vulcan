@@ -98,15 +98,20 @@ export function takeUpFarming(ctx: SystemContext, p: EntityRow): boolean {
     ...{ reap: 'work.tookUpReaping', sow: 'work.tookUpSowing', muck: 'work.tookUpMucking' },
     water: 'work.tookUpWatering',
   };
-  p['took'] = ctx.emit(line[mode], {
-    causes: [
-      ...[f['last'] as number, priorityLine(world, p.id, job)].filter(
-        (l): l is number => l !== undefined && l > 0,
-      ),
-    ],
-    actors: [p.id],
-    data: { name: p['name'] as string, crop: crop?.name ?? '', ...fieldPlace(world, f) },
-  });
+  // Watering is said once a field a dry spell; later turns cite that line (V-036).
+  const said = mode === 'water' ? (f['wline'] as number) : 0;
+  p['took'] =
+    said ||
+    ctx.emit(line[mode], {
+      causes: [
+        ...[f['last'] as number, priorityLine(world, p.id, job)].filter(
+          (l): l is number => l !== undefined && l > 0,
+        ),
+      ],
+      actors: [p.id],
+      data: { name: p['name'] as string, crop: crop?.name ?? '', ...fieldPlace(world, f) },
+    });
+  if (mode === 'water') f['wline'] = p['took'] as number;
   p['job'] = 'farm';
   p['task'] = mode === 'muck' || mode === 'water' ? mode : '';
   p['plan'] = f.id;

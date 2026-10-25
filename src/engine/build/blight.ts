@@ -133,6 +133,8 @@ export function tickBlight(ctx: SystemContext, fields: EntityRow[]): void {
     }
   for (const f of fields) f['watered'] = [];
   state['wasDry'] = dryToday(world, content) ? 1 : 0;
+  // A dry spell's watering is said once a field (`wline`); the next spell says it again.
+  if (!state['wasDry']) for (const f of fields) f['wline'] = 0;
   const { span, start, spreadAt, oneIn, repeatIn } = content.buildings.field.blight;
   state['wetBits'] =
     (((state['wetBits'] ?? 0) << 1) | (world.systems['weather']?.['wet'] ? 1 : 0)) &

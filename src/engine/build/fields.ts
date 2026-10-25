@@ -60,6 +60,7 @@ export const FIELD_TABLES: Schemas = {
     dry: 'ints',
     watered: 'ints',
     cut: 'count',
+    wline: 'event',
   },
 };
 
