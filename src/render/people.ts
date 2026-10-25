@@ -4,6 +4,7 @@
 // with their two walk frames, then stand. The glide is a picture choice, never game state.
 import Phaser from 'phaser';
 import type { PersonView, WalkerView } from '../worker/index.ts';
+import type { Spot } from './finder.ts';
 import { PEOPLE } from './sheets.ts';
 
 const TILE = 32;
@@ -102,6 +103,24 @@ export class PeopleSprites {
     return this.people.find(
       (p) => p.x === x && p.y === y && p.z === this.z && this.lying.get(p.id)?.lying !== 'buried',
     );
+  }
+
+  /** Where a person stands now (their tile and level), for the camera to find them. */
+  place(id: number): { x: number; y: number; z: number } | undefined {
+    const p = this.people.find((q) => q.id === id);
+    return p && this.lying.get(id)?.lying !== 'buried' ? { x: p.x, y: p.y, z: p.z } : undefined;
+  }
+
+  /** Everyone drawn on the level on screen, at the middle of the tile their sprite is at now. */
+  spots(): Spot[] {
+    return [...this.shown.values()]
+      .filter((s) => s.box.visible)
+      .map((s) => ({
+        id: s.view.id,
+        name: s.view.name,
+        x: s.box.x - LIFT_X - s.off.x + TILE / 2,
+        y: s.box.y - LIFT_Y - s.off.y + TILE / 2,
+      }));
   }
 
   private draw(): void {

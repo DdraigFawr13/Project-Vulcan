@@ -40,6 +40,12 @@ export interface SheetDeps {
   opened(kind?: string): void;
   /** Draws everyone on the map: as the world begins or loads, and when someone comes or goes. */
   drawPeople(people: readonly PersonView[]): void;
+  /** The camera finds a person (and their level); the view only, never an order (V-015). */
+  find(id: number): void;
+  /** Rings the person whose sheet is open on the map, pulsing once if `pulse`; or no one. */
+  follow(id: number | undefined, pulse: boolean): void;
+  /** Rings and names everyone on the map, or stops. */
+  names(on: boolean): void;
 }
 
 export class Sheets {
@@ -55,6 +61,8 @@ export class Sheets {
   private itemOpen: { id: number; key: string; asked: boolean } | undefined;
   /** A world just began or loaded; its first batch of lines is not news. */
   private loaded = false;
+  /** The person whose sheet is open. */
+  private selected: number | undefined;
   private readonly play: Play;
   private readonly work: WorkSheet;
   private readonly build: BuildSheet;
@@ -97,6 +105,8 @@ export class Sheets {
     this.dawn = new Dawn(deps.panel, deps.lines);
     this.play = new Play(deps.bar, {
       person: (p) => this.showPerson(p),
+      find: (p) => deps.find(p.id),
+      names: (on) => deps.names(on),
       alerts: () => this.showAlerts(),
     });
   }
@@ -119,7 +129,7 @@ export class Sheets {
 
   showPerson(p: PersonView): void {
     this.person.show(p);
-    this.play.select(p.id);
+    this.select(p.id);
     this.deps.opened();
   }
 
@@ -147,7 +157,7 @@ export class Sheets {
       look: (x, y, z) => this.deps.show(x, y, z, true),
     });
     panel.showView('item', item.name, rows);
-    this.play.select(undefined);
+    this.select(undefined);
     this.deps.opened();
   }
 
@@ -156,7 +166,7 @@ export class Sheets {
     const { panel } = this.deps;
     const rows = page ? animalRows(page, (line) => panel.lineRow(line)) : goneRows();
     panel.showView('animal', page?.title ?? 'Animal', rows);
-    this.play.select(undefined);
+    this.select(undefined);
     this.deps.opened();
   }
 
@@ -177,7 +187,7 @@ export class Sheets {
       return this.refreshLaws(true);
     }
     this.dawn.show();
-    this.play.select(undefined);
+    this.select(undefined);
   }
 
   showAlerts(): void {
@@ -203,13 +213,20 @@ export class Sheets {
       'Nothing notable yet. Skip ahead stops on lines like these.',
     );
     this.deps.panel.showView('alerts', 'Alerts', rows.length ? rows : [none]);
-    this.play.select(undefined);
+    this.select(undefined);
     this.deps.opened();
+  }
+
+  /** The strip and the map ring the person whose sheet is open; a newly opened one pulses. */
+  private select(id: number | undefined): void {
+    this.play.select(id);
+    this.deps.follow(id, id !== this.selected);
+    this.selected = id;
   }
 
   /** The panel closed. */
   closed(): void {
-    this.play.select(undefined);
+    this.select(undefined);
   }
 
   snapshot(message: Extract<FromWorker, { type: 'snapshot' }>): void {
@@ -261,7 +278,7 @@ export class Sheets {
       'Work',
       this.work.rows(this.people, this.walkers, this.day, this.settingName()),
     );
-    this.play.select(undefined);
+    this.select(undefined);
   }
 
   /** The law's current setting in words, for the Work sheet's "Set by the work-hours law". */
@@ -278,7 +295,7 @@ export class Sheets {
     if (key === this.lawKey) return;
     this.lawKey = key;
     this.deps.panel.showView('laws', 'Laws', this.laws.rows(view));
-    this.play.select(undefined);
+    this.select(undefined);
   }
 
   /** Redraws an open Build sheet when what it shows has changed (or `open`s it). */
@@ -289,6 +306,6 @@ export class Sheets {
     if (key === this.buildKey) return;
     this.buildKey = key;
     this.deps.panel.showView('build', 'Build', this.build.rows(view));
-    this.play.select(undefined);
+    this.select(undefined);
   }
 }

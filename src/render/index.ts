@@ -22,6 +22,7 @@ import { GoodsSprites } from './goods.ts';
 import { GreenSprites } from './green.ts';
 import { PeopleSprites } from './people.ts';
 import { WorkBars } from './progress.ts';
+import { Finder } from './finder.ts';
 import { WildSprites } from './wild.ts';
 import { WearLayer } from './wear.ts';
 import { TILE, ValleyScene, type Hover } from './scene.ts';
@@ -42,6 +43,15 @@ export interface Renderer {
   setTopInset(px: number): void;
   /** Shows level `z`: 0 the surface, 1 to 4 below. */
   setLevel(z: number): void;
+  /** Finds a person: where they stand now (tile and level), or undefined if not drawn at all. */
+  placeOf(id: number): { x: number; y: number; z: number } | undefined;
+  /** Centres the view on a tile between the bar and a sheet covering the bottom `below` px,
+   * coming in to 1x if zoomed farther out; moves the camera only. */
+  focus(x: number, y: number, below: number): void;
+  /** Rings a person at their feet as they walk, pulsing once if `pulse`; undefined takes it off. */
+  follow(id: number | undefined, pulse?: boolean): void;
+  /** Rings and names everyone on the level on screen, or stops. */
+  showNames(on: boolean): void;
   /** Draws the people on the level on screen (P2.1). */
   setPeople(people: readonly PersonView[]): void;
   /** The person standing on a tile of the level on screen, if any. */
@@ -99,6 +109,7 @@ export function startRenderer(
   const bars = new WorkBars(game, scene);
   const wild = new WildSprites(game, scene);
   const wear = new WearLayer(game, scene);
+  const finder = new Finder(game, scene, () => people.spots());
   // The smoke has no handle on the renderer: this event centres the view on an animal and writes
   // where it stands on screen (canvas px) to `data-animal-at`.
   parent.addEventListener('vulcan:find-animal', (e) => {
@@ -149,6 +160,26 @@ export function startRenderer(
       wild.setLevel(z);
       wear.setLevel(z);
     },
+    placeOf: (id) => people.place(id),
+    focus: (x, y, below) => scene.controls?.focus((x + 0.5) * TILE, (y + 0.5) * TILE, below),
+    follow: (id, pulse) => {
+      finder.follow(id, pulse);
+      // For the find check: where the person stands on screen (canvas px) once the view is drawn.
+      delete parent.dataset['found'];
+      if (id !== undefined)
+        game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+          const at = people.spots().find((s) => s.id === id);
+          const cam = scene.cameras.main;
+          if (at)
+            parent.dataset['found'] = [
+              (at.x - cam.worldView.x) * cam.zoom,
+              (at.y - cam.worldView.y) * cam.zoom,
+            ]
+              .map(Math.round)
+              .join(',');
+        });
+    },
+    showNames: (on) => finder.showNames(on),
     setPeople: (list) => people.set(list),
     personAt: (x, y) => people.at(x, y),
     movePeople: (walkers) => people.move(walkers),
