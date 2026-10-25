@@ -58,7 +58,7 @@ describe('work priorities', () => {
     step(world, sim, 6 * 24 * HOUR);
     const rose = world.log.filter((e) => e.type === 'skill.rose');
     expect(rose.length).toBeGreaterThan(0);
-    expect(whyOf(world, rose[0]!.id)[0]?.event.type).toBe('work.tookUp');
+    expect(whyOf(world, rose[0]!.id)[0]?.event.type).toMatch(/^work\.tookUp/);
     for (const s of world.entities['skill'] ?? [])
       expect(s['level'] as number).toBeLessThanOrEqual(s['potential'] as number);
   });

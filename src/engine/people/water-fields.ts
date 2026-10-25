@@ -1,12 +1,12 @@
 // Watering the fields in a dry spell (Phase 5B Bundle 2, V-130): a farmer with no reaping or
 // sowing takes up watering a sown field whose far tiles are parched (build blight.ts `thirsty`).
-// They fetch water standing beside the nearest drinkable, unfrozen tile, then carry it to the
+// They fetch water standing beside the nearest drinkable, unfrozen tile or well, then carry it to the
 // thirsty tiles nearest them, `dry.tiles` a trip, `dry.minutes` a tile (shorter with skill); a
 // watered tile loses nothing that day. One line when taken up (people/farm.ts), none a trip.
 // The person's `task` is `water`; `pail` is the tiles' worth of water carried (0 while fetching),
 // `target` the water tile while fetching and the tile to water while carrying.
 import type { EntityRow } from '../core/index.ts';
-import { thirsty } from '../build/index.ts';
+import { thirsty, wellsOf } from '../build/index.ts';
 import { reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { isFrozen } from '../weather/index.ts';
@@ -18,11 +18,12 @@ const near = (p: EntityRow, x: number, y: number): boolean =>
   (p['z'] as number) === 0 &&
   Math.abs((p['x'] as number) - x) + Math.abs((p['y'] as number) - y) === 1;
 
-/** The places water is drawn from: unfrozen drinkable surface tiles. This is the one place a
- * well will be added to (the water slice). */
+/** The places water is drawn from: unfrozen drinkable surface tiles and a standing well. */
 export function isWaterSpot(ctx: SystemContext, tile: number): boolean {
   const { world, content } = ctx;
-  return !!content.terrain.kinds[world.map.tiles[tile]!]!.drinkable && !isFrozen(world.map, tile);
+  const width = world.map.width;
+  if (content.terrain.kinds[world.map.tiles[tile]!]!.drinkable) return !isFrozen(world.map, tile);
+  return wellsOf(world).some((w) => (w['y'] as number) * width + (w['x'] as number) === tile);
 }
 
 /** The water tile nearest (x, y) (rings outwards, tile order within a ring) that someone who can

@@ -2,8 +2,16 @@
 // pasture outside the town ring while wild sheep graze the valley, plans its hurdles with their
 // two gates, and says when they stand; the Pasture row and one send-back are the only levers.
 import { describe, expect, it } from 'vitest';
-import { content } from '../../content/index.ts';
-import { allLines, createSim, createWorld, greenOf, step, submitCommand } from '../index.ts';
+import { content as game } from '../../content/index.ts';
+import {
+  allLines,
+  createSim,
+  createWorld,
+  greenOf,
+  step,
+  submitCommand,
+  withoutAccidents,
+} from '../index.ts';
 import { canReach } from '../paths/index.ts';
 import {
   foldTiles,
@@ -17,6 +25,8 @@ import {
   ringOf,
 } from './index.ts';
 
+// Without accidents: someone laid up in the open would hold the pasture back (it waits for roofs).
+const content = withoutAccidents(game);
 const sim = createSim(content);
 const DAY = 1440;
 // anvil/1 has two wild sheep herds (measured); the pasture is sited on day 4 and built on day 9.
