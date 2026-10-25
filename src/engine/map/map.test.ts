@@ -98,10 +98,10 @@ describe('surface map', () => {
     // Only the start differs: the land is the same valley.
     expect(again.map.tiles).toEqual(first.map.tiles);
   });
-  // Seen 2026-10-25 (flint/1, flint/3): a green in a clearing walled in by trees, so the band had
+  // Seen 2026-10-25 (Morgan's ledger-1/1; flint/1, flint/3 in a sweep): a green in a clearing walled in by trees, so the band had
   // no room for its store and no way out to work, and stood idle. The ground they can walk to on
   // arrival, past no tree, must hold the land the start asks for.
-  it.each(['flint/1', 'flint/3'])(
+  it.each(['ledger-1/1', 'flint/1', 'flint/3'])(
     'valley %s starts on ground the band can walk out from',
     (seed) => {
       const { map } = createWorld(mapOnly, seed);
