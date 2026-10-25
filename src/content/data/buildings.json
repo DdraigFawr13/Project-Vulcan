@@ -27,9 +27,14 @@
 "smithy":{"name":"Smithy","start":2,"depth":3,"length":4,"near":20,"floor":"floor-stone","pieces":["forge","anvil","tub"]},
 "town":{"ring":16,"step":4,"most":32},
 "granary":{"width":3,"height":2,"most":12},
-"field":{"name":"Fields","seed":"seed","weigh":{"fertility":2,"water":4,"near":100,"tries":40},"start":2,"perMouth":6,"reach":45,"water":8,"good":40,"least":6,"crops":[
-{"id":"barley","name":"barley","item":"grain","sow":["Thawmonth","Seedmonth"],"days":84,"yield":100,"frost":-1},
-{"id":"turnips","name":"turnips","item":"turnips","sow":["Highsun","Goldmonth"],"days":56,"yield":100,"frost":-1}
+"field":{"name":"Fields","seed":"seed","weigh":{"fertility":2,"water":4,"near":100,"tries":40},"start":2,"perMouth":6,"reach":45,"water":8,"good":40,"least":6,"soil":{"base":50,"most":120,"rest":30,"winter":{"month":"Firstfrost","gain":6},"muck":{"month":"Leaffall","gain":8,"midden":6,"fold":1}},
+"rotation":["barley","turnips","beans","cabbages","oats","beans"],
+"crops":[
+{"id":"barley","name":"barley","item":"grain","sow":["Thawmonth","Seedmonth"],"days":84,"yield":100,"frost":-1,"draw":12},
+{"id":"turnips","name":"turnips","item":"turnips","sow":["Highsun","Goldmonth"],"days":56,"yield":100,"frost":-1,"draw":6},
+{"id":"oats","name":"oats","item":"oats","sow":["Thawmonth","Seedmonth"],"days":84,"yield":90,"frost":-3,"draw":10},
+{"id":"beans","name":"beans","item":"beans","sow":["Seedmonth","Bloommonth","Highsun","Goldmonth"],"days":70,"yield":80,"frost":-1,"draw":-10},
+{"id":"cabbages","name":"cabbages","item":"cabbages","sow":["Highsun","Goldmonth"],"days":70,"yield":110,"frost":-4,"draw":8}
 ]},
 "rooms":{"hearthBelow":0,"most":120,"roof":"thatch","perSize":3,"top":100,"crowd":{"tiles":2,"beauty":-2},"bare":-1,
 "floors":{"floor-wood":0,"floor-stone":1},

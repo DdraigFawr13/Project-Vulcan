@@ -45,7 +45,7 @@ const valueOf = (ctx: SystemContext, p: EntityRow, need: string): number =>
 const seekOf = (ctx: SystemContext, need: string): number =>
   ctx.content.life.needs.find((n) => n.id === need)?.seek ?? 0;
 
-/** Food of last resort (seed grain, P4.7) is eaten only when `desperate`. */
+/** Food of last resort (seed grain, P4.7) is eaten only when `desperate`: Food at `life.seedAt`. */
 const edible = (ctx: SystemContext, kind: string, desperate: boolean): boolean =>
   ctx.content.life.eat[kind] !== undefined &&
   (desperate || !ctx.content.life.lastResort.includes(kind));
@@ -112,10 +112,9 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     if (!walking) carryBed(ctx, p);
     return;
   }
-  const low = life.needs.find((n) => n.id === 'food')?.low ?? 0;
   if (p['doing'] === 'eat') {
     if (walking) return;
-    const item = foodHere(ctx, p, valueOf(ctx, p, 'food') < low);
+    const item = foodHere(ctx, p, valueOf(ctx, p, 'food') <= life.seedAt);
     if (item) eat(ctx, p, item);
     p['doing'] = '';
   }
@@ -124,7 +123,7 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   const seek = taming ? content.flock.tame.back : seekOf(ctx, 'food');
   if (valueOf(ctx, p, 'food') < seek && world.tick >= (p['retry'] as number)) {
     // Seed grain only when under the warning line with nothing else to reach (P4.7).
-    if (goEat(ctx, p, false) || (valueOf(ctx, p, 'food') < low && goEat(ctx, p, true))) {
+    if (goEat(ctx, p, false) || (valueOf(ctx, p, 'food') <= life.seedAt && goEat(ctx, p, true))) {
       p['doing'] = 'eat';
       return;
     }

@@ -65,6 +65,8 @@ export const LIFE_SCHEMAS = {
     // Foods eaten only when a person is under the food warning line and no other can be reached
     // (P4.7: seed grain).
     lastResort: list(ref('items')),
+    // They eat it only with Food at or under `seedAt`.
+    seedAt: count,
     // Mood words, highest first: the first whose `at` the mood reaches.
     mood: list(obj({ word: text, at: count })),
     // The band's handcart and what it carries; each person also brings a `bedroll`.
@@ -151,7 +153,7 @@ export const LIFE_SCHEMAS = {
     }),
     // Farming (P4.7): the jobs.json job, minutes to sow or reap one tile at skill `skilled`
     // (longer below, shorter above).
-    farm: obj({ job: ref('jobs'), sow: count, reap: count, skilled: count }),
+    farm: obj({ job: ref('jobs'), sow: count, reap: count, muck: count, skilled: count }),
     // Hunting (P5.4a): see WorkDef.hunt.
     hunt: obj({
       job: ref('jobs'),
@@ -320,28 +322,6 @@ export const LIFE_SCHEMAS = {
       pieces: texts,
     }),
     ...TOWN_SCHEMAS,
-    field: obj({
-      name: text,
-      seed: ref('items'),
-      weigh: obj({ fertility: count, water: count, near: count, tries: num({ min: 1 }) }),
-      start: num({ min: 1, max: 4 }),
-      perMouth: num({ min: 1 }),
-      reach: num({ min: 1 }),
-      water: count,
-      good: count,
-      least: num({ min: 1 }),
-      crops: list(
-        obj({
-          id,
-          name: text,
-          item: ref('items'),
-          sow: list(text),
-          days: num({ min: 1 }),
-          yield: num({ min: 1 }),
-          frost: num(),
-        }),
-      ),
-    }),
     // P3.3: rooms are worked out when asked. Impressiveness is the room's tiles over `perSize`
     // plus its beauty, out of `top`; beauty is the floors' average (`bare` where none is
     // built), less `crowd.beauty` when there is a bed for fewer than `crowd.tiles` tiles. The

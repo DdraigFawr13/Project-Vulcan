@@ -241,7 +241,13 @@ function checkHouse(files: Files): string[] {
 
 // A crop's sowing months are calendar months, and every crop has one (P4.7).
 function checkCrops(files: Files): string[] {
-  const b = files['buildings'] as { field: { crops: { id: string; sow: string[] }[] } };
+  const b = files['buildings'] as {
+    field: {
+      crops: { id: string; sow: string[] }[];
+      rotation: string[];
+      soil: { winter: { month: string }; muck: { month: string } };
+    };
+  };
   const months = (files['calendar'] as { monthNames: string[] }).monthNames;
   const errors: string[] = [];
   for (const crop of b.field.crops) {
@@ -249,6 +255,11 @@ function checkCrops(files: Files): string[] {
     for (const m of crop.sow)
       if (!months.includes(m)) errors.push(`buildings.field.crops[${crop.id}]: "${m}" is no month`);
   }
+  for (const id of b.field.rotation)
+    if (!b.field.crops.some((c) => c.id === id))
+      errors.push(`buildings.field.rotation: "${id}" is no crop`);
+  for (const m of [b.field.soil.winter.month, b.field.soil.muck.month])
+    if (!months.includes(m)) errors.push(`buildings.field.soil: "${m}" is no month`);
   return errors;
 }
 

@@ -147,6 +147,7 @@ export const buildSystem: System = {
     ...['town.ringWidened', 'field.needed', 'field.noGround', 'field.sited', 'field.sentBack'],
     ...['field.ripe', 'field.frostKilled', 'field.noSeed', 'field.sown', 'field.leftToGrass'],
     'field.granaryLaid',
+    ...['field.rests', 'field.soil', 'field.muckReady'],
     ...['pasture.needed', 'pasture.sited', 'pasture.sentBack', 'pasture.noGround', 'pasture.built'],
     ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
     ...['build.sickroom', 'build.burialSited', 'build.burialSentBack', 'build.middenSited'],
@@ -167,6 +168,8 @@ export const buildSystem: System = {
     homeTried: 0,
     // P5.10: the tick the colony last looked for a stretch of road to lay.
     roadTried: 0,
+    // Phase 5B Bundle 2: the game day (1 + its index) the soil was last worked, and the loads of muck left.
+    ...{ soilDay: 0, muck: 0 },
   },
   refs: [
     ...['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround', 'smithyNoGround'],

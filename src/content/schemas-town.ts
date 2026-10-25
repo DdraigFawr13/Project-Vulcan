@@ -1,13 +1,46 @@
-// Shapes of the town's ground: the ring, the granary and the roads (`buildings`, spread into
+// Shapes of the town's ground: the ring, the granary, fields and the roads (`buildings`, spread into
 // schemas-life.ts), and walking and footfall (`terrain`, spread into schemas-world.ts).
 import { list, num, obj, ref } from './schema';
-import { text, texts } from './schema-fields';
+import { count, id, text, texts } from './schema-fields';
 
 export const TOWN_SCHEMAS = {
   town: obj({ ring: num({ min: 1 }), step: num({ min: 1 }), most: num({ min: 1 }) }),
   // The granary the band lays out beside a field once it is reaped: `width` by `height` tiles at
   // first, growing to `most` tiles when full. It keeps the harvest the store's Food plate leaves.
   granary: obj({ width: num({ min: 1 }), height: num({ min: 1 }), most: num({ min: 1 }) }),
+  // Fields (P4.7, V-089; see core/fielddef.ts for what each dial does).
+  field: obj({
+    name: text,
+    seed: ref('items'),
+    weigh: obj({ fertility: count, water: count, near: count, tries: num({ min: 1 }) }),
+    start: num({ min: 1, max: 4 }),
+    perMouth: num({ min: 1 }),
+    reach: num({ min: 1 }),
+    water: count,
+    good: count,
+    least: num({ min: 1 }),
+    crops: list(
+      obj({
+        id,
+        name: text,
+        item: ref('items'),
+        sow: list(text),
+        days: num({ min: 1 }),
+        yield: num({ min: 1 }),
+        frost: num(),
+        draw: num({ min: -100, max: 100 }),
+      }),
+    ),
+    // Phase 5B Bundle 2 (V-130): see core/fielddef.ts.
+    rotation: list(text),
+    soil: obj({
+      base: count,
+      most: num({ min: 1 }),
+      rest: count,
+      winter: obj({ month: text, gain: count }),
+      muck: obj({ month: text, gain: count, midden: count, fold: count }),
+    }),
+  }),
   // P5.10 (V-054, V-124): the Roads row (start level `start`). One stretch at a time of `part`,
   // planned once the store holds its material spare: on the way between two of the colony's
   // places (up to `places` of them) with the most wear not yet under road, its run of at most

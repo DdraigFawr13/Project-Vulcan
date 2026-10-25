@@ -25,6 +25,7 @@ import {
 } from './fields.ts';
 import { layOutGranary } from './granary.ts';
 import { ringOf } from './ring.ts';
+import { drawSoil, tickSoil } from './soillife.ts';
 
 const list = (items: readonly string[]): string =>
   items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
@@ -80,6 +81,7 @@ export function finishReaping(ctx: SystemContext, f: EntityRow, cause: number): 
   // The harvest-home supper is eaten in the hall (P5.14).
   feastInHall(ctx, home);
   layOutGranary(ctx, f, harvested);
+  drawSoil(ctx, f, crop.id, harvested);
   Object.assign(f, { state: 'fallow', crop: '', done: [], reapers: [], got: 0, kept: 0 });
   f['last'] = harvested;
   if (f['leave']) leaveField(ctx, f, harvested);
@@ -126,6 +128,7 @@ function clearFor(ctx: SystemContext, f: EntityRow, seed: number): void {
 export function tickFields(ctx: SystemContext): void {
   const { world, content } = ctx;
   const weather = world.systems['weather'];
+  tickSoil(ctx, fieldsOf(world));
   for (const f of [...fieldsOf(world)]) {
     const state = f['state'] as string;
     if (state === 'sown') {
