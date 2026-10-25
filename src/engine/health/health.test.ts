@@ -11,6 +11,7 @@ import {
   withoutAccidents,
   type WorldState,
 } from '../index.ts';
+import { layItem } from '../goods/index.ts';
 import { memoriesOf } from '../needs/index.ts';
 import { bodyOf, dailyChance, openWounds } from './index.ts';
 
@@ -120,6 +121,19 @@ describe('health', () => {
     const world = createWorld(sim, 'smoke');
     step(world, sim, DAY / 2);
     const p = people(world)[1]!;
+    // Their home goes to the partner they shared it with; their laid bedroll is taken up.
+    const partner = people(world)[2]!;
+    p['partner'] = partner.id;
+    const home = world.entities['house']!.find((x) => !x['of'])!;
+    home['owner'] = p.id;
+    layItem(
+      world,
+      { kind: game.life.cart.bedroll, count: 1, x: 1, y: 1, z: 0, made: 0 },
+      {
+        owner: p.id,
+        state: 'laid',
+      },
+    );
     send(world, 'hurt', { person: p.id, part: 'left-arm', severity: 'deep' });
     step(world, sim, 1);
     const w = openWounds(world, p.id)[0]!;
@@ -128,6 +142,9 @@ describe('health', () => {
     step(world, sim, 60);
     expect(p['status']).toBe('dead');
     expect(lines(world, 'health.died')[0]!.data['cause']).toMatch(/left arm/);
+    expect(home['owner']).toBe(partner.id);
+    const rolls = world.entities['item']!.filter((i) => i['kind'] === game.life.cart.bedroll);
+    expect(rolls.some((i) => i['owner'] === p.id && i['state'] === 'laid')).toBe(false);
   });
 
   it('adds a sickroom to the first cottage once two lie hurt at once', () => {

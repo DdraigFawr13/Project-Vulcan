@@ -4,11 +4,12 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { allLines, createSim, createWorld, step } from '../index.ts';
+import { addEntity } from '../entity/index.ts';
 import { itemsAt, layItem, storeOf } from '../goods/index.ts';
 import { tread, wearStage } from '../map/index.ts';
 import { fadeWear } from '../map/wear.ts';
 import { findPath, pack, stepCost } from '../paths/index.ts';
-import { greenOf, housesOf, plansOf, roadsOf } from './index.ts';
+import { fieldTiles, greenOf, housesOf, liveFields, plansOf, roadsOf } from './index.ts';
 
 const sim = createSim(content);
 const DAY = 1440;
@@ -31,7 +32,7 @@ describe('worn paths and roads', () => {
     expect(map.worn[i]).toBe(0);
   });
 
-  it('lays a road on the worn way from the green to the cottage, named, and it walks faster', () => {
+  it('lays a road on the most worn way from the green, off taken ground, named, and it walks faster', () => {
     const w = createWorld(sim, 'ledger/1');
     const map = w.map;
     // Until the first cottage stands and no other plan waits.
@@ -50,6 +51,17 @@ describe('worn paths and roads', () => {
     })!;
     // Feet have worn the way, and stone lies spare in the store.
     for (const n of way) map.wear[n] = 400;
+    // The way to the field is worn too, with a midden on it (taken ground, with stations and
+    // burial grounds): the road is laid on the longer way, but never on the midden.
+    const plot = fieldTiles(liveFields(w)[0]!)[0]!;
+    const toField = findPath(content, map, green, {
+      x: plot % map.width,
+      y: Math.floor(plot / map.width),
+      z: 0,
+    })!;
+    for (const n of toField) map.wear[n] = 400;
+    const midden = toField[4]!;
+    addEntity(w, 'midden', { x: midden % map.width, y: Math.floor(midden / map.width), line: 0 });
     const free = storeOf(w).find((s) => !itemsAt(w, s['x'] as number, s['y'] as number, 0).length)!;
     layItem(w, {
       kind: 'stone',
@@ -67,6 +79,7 @@ describe('worn paths and roads', () => {
     expect(lines(w, 'build.roadPlanned')).toHaveLength(1);
     const tiles = road!['tiles'] as number[];
     expect(tiles.length).toBeGreaterThanOrEqual(content.buildings.roads.shortest);
+    expect(tiles).not.toContain(midden);
     while (road!['state'] !== 'built' && w.tick < 60 * DAY) step(w, sim, 60);
     expect(road!['state']).toBe('built');
     expect(lines(w, 'build.roadLaid')[0]!.causes).toContain(road!['line']);

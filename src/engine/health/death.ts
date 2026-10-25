@@ -87,6 +87,16 @@ export function die(ctx: SystemContext, p: EntityRow, cause: string, causes: num
   toolsChanged(world);
   const bed = bedOwnedBy(world, p.id);
   if (bed) bed['owner'] = 0;
+  // Their laid bedroll is taken up (it no longer counts a sleeper), and their home (P5.14) goes
+  // to the partner who shared it, else stands free for anyone.
+  for (const i of itemsOf(world))
+    if (i['owner'] === p.id && i['kind'] === content.life.cart.bedroll && i['state'] === 'laid')
+      Object.assign(i, { owner: 0, state: '' });
+  const partner = (world.entities['person'] ?? []).find(
+    (q) => q.id === p['partner'] && q['status'] === 'alive',
+  );
+  for (const h of world.entities['house'] ?? [])
+    if (h['owner'] === p.id) h['owner'] = partner?.id ?? 0;
   for (const w of openWounds(world, p.id)) w['state'] = 'closed';
   const m = content.health.mourn;
   for (const q of alive(world)) {
