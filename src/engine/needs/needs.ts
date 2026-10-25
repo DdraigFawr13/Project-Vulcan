@@ -166,7 +166,9 @@ function hourOf(
   }
   if (id === 'recreation' && p['doing'] === 'relax')
     return life.relax.gain + (company(world, content, p) ? life.relax.company : 0);
-  return -fall;
+  // Thirst falls slowly through the night (`asleepFall`, P5.2).
+  const slow = life.needs.find((n) => n.id === id)?.asleepFall;
+  return -(slow !== undefined && asleep(p) ? slow : fall);
 }
 
 /** What explains a need going low: the weather spell for cold, the room's building for beauty

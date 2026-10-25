@@ -15,6 +15,7 @@ export interface NeedDef {
   weight: number;
   /** Its warning line is notable once a person a day (V-092). */
   quiet?: boolean;
+  asleepFall?: number; // falls this much an hour asleep, not `fall`
 }
 
 export interface LifeDef {
@@ -254,6 +255,7 @@ export interface BuildingsDef {
   town: { ring: number; step: number; most: number };
   /** The granary beside a reaped field: its size and the most tiles it grows to (goods/granary.ts). */
   granary: { width: number; height: number; most: number };
+  well: { kind: string; walk: number; days: number; from: number; near: number };
   field: FieldDef;
   rooms: RoomsDef;
   furniture: FurnitureDef;
@@ -316,6 +318,7 @@ export interface FurnitureKind {
    * material, where it stands. */
   job?: string;
   material?: string;
+  also?: { material: string; cost: number };
 }
 
 /** Fire and fuel (work.json `fire`, P3.6). */

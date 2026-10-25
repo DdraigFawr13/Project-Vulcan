@@ -8,6 +8,16 @@ export const TOWN_SCHEMAS = {
   // The granary the band lays out beside a field once it is reaped: `width` by `height` tiles at
   // first, growing to `most` tiles when full. It keeps the harvest the store's Food plate leaves.
   granary: obj({ width: num({ min: 1 }), height: num({ min: 1 }), most: num({ min: 1 }) }),
+  // P5.2 (V-131): the well. Over the last `days` days, once `from` have passed, a mean of more than
+  // `walk` minutes a person a day spent walking to drink (or the water most drunk from frozen)
+  // plans one well of furniture kind `kind` within `near` tiles of the first hearth.
+  well: obj({
+    kind: text,
+    walk: num({ min: 1 }),
+    days: num({ min: 1 }),
+    from: num({ min: 1 }),
+    near: num({ min: 1 }),
+  }),
   // P5.10 (V-054, V-124): the Roads row (start level `start`). One stretch at a time of `part`,
   // planned once the store holds its material spare: on the way between two of the colony's
   // places (up to `places` of them) with the most wear not yet under road, its run of at most

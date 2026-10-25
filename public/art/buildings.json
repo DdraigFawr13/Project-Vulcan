@@ -2760,7 +2760,7 @@
         "h": 32
       }
     },
-    "pasture.cocks": {
+    "furn.well": {
       "frame": {
         "x": 273,
         "y": 341,
@@ -2780,7 +2780,7 @@
         "h": 32
       }
     },
-    "pasture.meadow": {
+    "pasture.cocks": {
       "frame": {
         "x": 307,
         "y": 341,
@@ -2800,7 +2800,7 @@
         "h": 32
       }
     },
-    "pasture.rick.1": {
+    "pasture.meadow": {
       "frame": {
         "x": 341,
         "y": 341,
@@ -2820,7 +2820,7 @@
         "h": 32
       }
     },
-    "pasture.rick.2": {
+    "pasture.rick.1": {
       "frame": {
         "x": 375,
         "y": 341,
@@ -2840,7 +2840,7 @@
         "h": 32
       }
     },
-    "pasture.rick.3": {
+    "pasture.rick.2": {
       "frame": {
         "x": 409,
         "y": 341,
@@ -2860,7 +2860,7 @@
         "h": 32
       }
     },
-    "pasture.stubble": {
+    "pasture.rick.3": {
       "frame": {
         "x": 1,
         "y": 375,
@@ -2880,7 +2880,7 @@
         "h": 32
       }
     },
-    "pasture.swath": {
+    "pasture.stubble": {
       "frame": {
         "x": 35,
         "y": 375,
@@ -2900,9 +2900,29 @@
         "h": 32
       }
     },
-    "pasture.tuft": {
+    "pasture.swath": {
       "frame": {
         "x": 69,
+        "y": 375,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "pasture.tuft": {
+      "frame": {
+        "x": 103,
         "y": 375,
         "w": 32,
         "h": 32
@@ -3065,6 +3085,7 @@
       "furn.smelter",
       "furn.table",
       "furn.tub",
+      "furn.well",
       "pasture.cocks",
       "pasture.meadow",
       "pasture.rick.1",

@@ -23,6 +23,7 @@ import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
 import { planHomes } from './homes.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
 import { planCampfire, planRoomHearths } from './hearths.ts';
+import { planWell, WELL_TABLES } from './well.ts';
 import { planStations } from './metalsite.ts';
 import { STATION_TABLES } from './station.ts';
 import { planBench } from './wants.ts';
@@ -183,6 +184,7 @@ export const buildSystem: System = {
     ...BURIAL_TABLES,
     ...MIDDEN_TABLES,
     ...ROAD_TABLES,
+    ...WELL_TABLES,
   },
   commands: {
     placeBuilding: (ctx, command, cause) => placeBuilding(ctx, command.data, cause),
@@ -223,6 +225,7 @@ export const buildSystem: System = {
     planBench(ctx);
     planSmithy(ctx, green);
     planRoomHearths(ctx);
+    planWell(ctx, green);
     planStations(ctx, green);
     // P5.6, P5.8: a sickroom once enough lie hurt; a burial ground at the first death.
     planSickroom(ctx, green);

@@ -17,13 +17,14 @@ import { working } from './jobs.ts';
 import { spotOf } from './spots.ts';
 import { cooked, eat } from './eat.ts';
 import { danger } from './care.ts';
+import { drinking } from './drink.ts';
 import { walkTo, wander } from './walk.ts';
 import { tendInEvening } from './tend.ts';
 import { warming } from './warm.ts';
 import { lateUntil, watching } from './watch.ts';
 
 export const MIND_FIELDS = {
-  /** `eat`, `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `warm` (warm.ts), `hurt` (lying
+  /** `eat`, `drink` (drink.ts), `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `warm` (warm.ts), `hurt` (lying
    * hurt, care.ts), `flee` or `stand` (a predator in sight, flee.ts), `relax` or '' (idle). */
   doing: 'text',
   /** The tick before which they do not look for food again after finding none they can reach. */
@@ -130,6 +131,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     }
     p['retry'] = world.tick + RETRY;
   }
+  // Thirst next (P5.2): to the nearest water or the well, to drink to full.
+  if (drinking(ctx, p)) return;
   const day = hoursOf(world, content, p.id);
   const night = hour >= day.sleepFrom || hour < day.workFrom;
   const rest = valueOf(ctx, p, 'rest');

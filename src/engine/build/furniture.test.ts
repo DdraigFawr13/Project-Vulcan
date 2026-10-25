@@ -30,7 +30,8 @@ const content = withoutAccidents(game);
 
 const sim = createSim(content);
 const DAY = 1440;
-const SEEDS = ['ledger', 'tallow', 'anvil'];
+// 'anvil' became 'quarry' with P5.2: drinking shifted its timing and left its first room full of beds.
+const SEEDS = ['ledger', 'tallow', 'quarry'];
 type World = ReturnType<typeof createWorld>;
 const people = (w: World) => w.entities['person'] ?? [];
 

@@ -62,7 +62,12 @@ describe('worn paths and roads', () => {
     for (const n of toField) map.wear[n] = 400;
     const midden = toField[4]!;
     addEntity(w, 'midden', { x: midden % map.width, y: Math.floor(midden / map.width), line: 0 });
-    const free = storeOf(w).find((s) => !itemsAt(w, s['x'] as number, s['y'] as number, 0).length)!;
+    // A store tile with nothing on it, else (a full store) one holding no stone.
+    const free =
+      storeOf(w).find((s) => !itemsAt(w, s['x'] as number, s['y'] as number, 0).length) ??
+      storeOf(w).find((s) =>
+        itemsAt(w, s['x'] as number, s['y'] as number, 0).every((i) => i['kind'] !== 'stone'),
+      )!;
     layItem(w, {
       kind: 'stone',
       count: 40,

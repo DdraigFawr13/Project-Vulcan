@@ -93,6 +93,8 @@
 {"id":"work.tookUpHearth","importance":1,"template":"{name} took up building a {kind} for the {room}: {why}."},
 {"id":"fire.noFloor","importance":2,"template":"{name} is cold in the {room}, and no floor there is free for a hearth.","notable":{}},
 {"id":"fire.plannedCold","importance":2,"template":"{name} is cold in the {room}: the colony plans a hearth there."},
+{"id":"build.wellNeeded","importance":2,"template":"The colony plans a well on the green: {why}."},
+{"id":"build.wellBuilt","importance":2,"template":"{name} built the well on the green: the water is near now."},
 {"id":"fire.planned","importance":2,"template":"The colony plans a {what} {where}: {why}."},
 {"id":"fire.built","importance":2,"template":"{name} laid {what} {where}."},
 {"id":"fire.lit","importance":2,"template":"{name} lit the fire {where}: {why}."},

@@ -8,7 +8,9 @@ import { streamFor, type EntityRow, type FurnitureKind } from '../core/index.ts'
 import {
   anyBench,
   benchOf,
+  buildWell,
   furnitureKind,
+  furnitureLacks,
   furnitureOf,
   HEARTH,
   houseAt,
@@ -16,6 +18,7 @@ import {
   qualityOf,
   roomName,
   wantSignature,
+  WELL,
   type Want,
 } from '../build/index.ts';
 import { addEntity } from '../entity/index.ts';
@@ -197,14 +200,15 @@ export function furnishing(ctx: SystemContext, p: EntityRow): boolean {
   const piece = furnitureOf(world).find((f) => f.id === p['plan']);
   if (!piece || piece['state'] === 'built') return stop(p);
   const kind = furnitureKind(content, piece);
-  const material = kind.material ?? def.material;
+  const lack = furnitureLacks(content, kind, piece['have'] as number);
+  const material = lack.material;
   // The bench and a hearth are made where they stand; everything else is made at the bench.
   const at = piece['kind'] === 'bench' || kind.job ? piece : benchOf(world);
   if (!at) return stop(p);
   const [x, y] = [at['x'] as number, at['y'] as number];
   const here = spotOf(p);
   const beside = here.z === 0 && Math.abs(here.x - x) + Math.abs(here.y - y) === 1;
-  const need = kind.cost - (piece['have'] as number);
+  const need = lack.need;
   const load = loadOf(world, p.id);
   if (load && (need <= 0 || load['kind'] !== material)) return stop(p);
   if (load) {
@@ -233,6 +237,7 @@ export function furnishing(ctx: SystemContext, p: EntityRow): boolean {
   practise(ctx, p, trade(ctx, kind), p['took'] as number);
   if ((piece['work'] as number) > 0) return true;
   if (kind.id === HEARTH) layHearth(ctx, p, piece);
+  else if (kind.id === WELL) buildWell(ctx, p, piece);
   else if (kind.job) setStation(ctx, p, piece);
   else finish(ctx, p, piece, level);
   stop(p);

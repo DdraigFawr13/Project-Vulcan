@@ -77,7 +77,8 @@ describe('fields', () => {
   }
 
   // The granary test below goes on from this test's world, after its harvest (check:full budget).
-  const harvestWorld = createWorld(sim, SEEDS[0]!);
+  // 'tallow': on 'ledger' drinking (P5.2) lays the granary before the first reaping, citing the ripening.
+  const harvestWorld = createWorld(sim, SEEDS[1]!);
   it('sows in spring, reaps when ripe, and brings grain and seed to the store', () => {
     const world = harvestWorld;
     const stored = (kind: string) =>

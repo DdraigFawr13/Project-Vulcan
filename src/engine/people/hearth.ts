@@ -3,7 +3,7 @@
 // up the nearest planned hearth they can fetch stone for and works it where it stands, through the
 // same making flow as furniture (carpentry.ts `furnishing`), with the job word `hearth` on them.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { furnitureKind, furnitureOf, HEARTH } from '../build/index.ts';
+import { furnitureKind, furnitureLacks, furnitureOf, HEARTH, WELL } from '../build/index.ts';
 import { firesOf, pieceOfFire, placeOf, reachOf } from '../fire/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
@@ -34,8 +34,8 @@ function openHearths(ctx: SystemContext, p: EntityRow): EntityRow[] {
 /** The hearth `p` would make: the nearest whose stone is in hand or can be reached. */
 function choose(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   return openHearths(ctx, p).find((f) => {
-    const kind = furnitureKind(ctx.content, f);
-    return (f['have'] as number) >= kind.cost || !!stackOf(ctx, p, kind.material!);
+    const lack = furnitureLacks(ctx.content, furnitureKind(ctx.content, f), f['have'] as number);
+    return lack.need === 0 || !!stackOf(ctx, p, lack.material);
   });
 }
 
@@ -59,7 +59,11 @@ export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
               : furnitureKind(ctx.content, stuck).name,
           x: stuck['x'] as number,
           y: stuck['y'] as number,
-          good: furnitureKind(ctx.content, stuck).material!,
+          good: furnitureLacks(
+            ctx.content,
+            furnitureKind(ctx.content, stuck),
+            stuck['have'] as number,
+          ).material,
         },
       });
     return false;
@@ -69,6 +73,7 @@ export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
   // A smithy's forge, anvil block or tub is made the same way, for the smithy.
   const station = content.buildings.smithy.pieces.includes(kind.id);
   const smithy = content.buildings.smithy.name.toLowerCase();
+  const well = kind.id === WELL;
   p['took'] = ctx.emit('work.tookUpHearth', {
     causes: [piece['line'] as number, priorityLine(world, p.id, job)].filter(
       (l): l is number => !!l,
@@ -76,13 +81,15 @@ export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
     actors: [p.id],
     data: {
       name: p['name'] as string,
-      kind: station || here.indoors ? kind.name : 'campfire',
-      room: station ? smithy : here.room,
+      kind: station || here.indoors || well ? kind.name : 'campfire',
+      room: station ? smithy : well ? 'green' : here.room,
       why: station
         ? `the ${smithy} has none`
-        : here.indoors
-          ? 'it has no hearth'
-          : 'the band has no fire',
+        : well
+          ? 'the water is far'
+          : here.indoors
+            ? 'it has no hearth'
+            : 'the band has no fire',
     },
   });
   p['job'] = 'hearth';
