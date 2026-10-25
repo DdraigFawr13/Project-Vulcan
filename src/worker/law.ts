@@ -29,7 +29,7 @@ function at(tick: number): string {
 const words = (s: unknown): string[] => (typeof s === 'string' && s ? s.split('|') : []);
 
 /** One person's answer in words: "Hrakmar refuses the long days and keeps the customary hours." */
-function answerView(world: WorldState, a: EntityRow): AnswerView | undefined {
+export function answerView(world: WorldState, a: EntityRow): AnswerView | undefined {
   const p = (world.entities['person'] ?? []).find((q) => q.id === a['person']);
   if (!p) return undefined;
   const s = settingOf(world, content, a['law'] as string);
@@ -66,7 +66,7 @@ function answerView(world: WorldState, a: EntityRow): AnswerView | undefined {
 }
 
 /** The Laws page: the work-hours law, this season's hours and everyone's answer, refusals first. */
-export function lawView(world: WorldState): LawView {
+export function lawView(world: WorldState): Omit<LawView, 'strangers'> {
   const def = lawDef(content, WORK_HOURS)!;
   const s = settingOf(world, content, def.id);
   const row = (world.entities['law'] ?? []).find((r) => r['law'] === def.id);

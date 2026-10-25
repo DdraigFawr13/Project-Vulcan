@@ -32,6 +32,7 @@ import { lawOfWalker, leanWords } from './law.ts';
 import { personTools } from './items.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 import { jobShown } from './jobrows.ts';
+import { homeOf, strangerOf } from './strangers.ts';
 
 const nameOf = (list: readonly { id: string; name: string }[], id: string): string =>
   list.find((x) => x.id === id)?.name ?? id;
@@ -42,7 +43,7 @@ export function peopleOf(world: WorldState): PersonView[] {
   const skills = world.entities['skill'] ?? [];
   const traits = world.entities['trait'] ?? [];
   const { band } = content;
-  return (world.entities['person'] ?? []).map((p) => {
+  return shown(world).map((p) => {
     const own = band.skills.flatMap((id) => {
       const row = skills.find((s) => s['person'] === p.id && s['skill'] === id);
       if (!row) return [];
@@ -79,9 +80,27 @@ export function peopleOf(world: WorldState): PersonView[] {
       y: p['y'] as number,
       z: p['z'] as number,
       arrived: p['arrived'] as number,
+      status: p['status'] as string,
     };
   });
 }
+
+/** Everyone, again, when anyone came, stayed or left since the last call; else none. */
+export function peopleFeed() {
+  let sent = '';
+  return {
+    next(world: WorldState): PersonView[] | undefined {
+      const who = JSON.stringify((world.entities['person'] ?? []).map((p) => [p.id, p['status']]));
+      if (who === sent) return undefined;
+      sent = who;
+      return peopleOf(world);
+    },
+  };
+}
+
+/** Everyone the page shows: the colony and strangers coming or waiting, not those who left. */
+const shown = (world: WorldState): EntityRow[] =>
+  (world.entities['person'] ?? []).filter((p) => p['status'] !== 'gone');
 
 /** What a person is doing, in words (P2.2). */
 function doingOf(p: EntityRow): string {
@@ -229,7 +248,7 @@ function barsOf(world: WorldState, p: EntityRow): { mood: NeedView; needs: NeedV
 
 /** Where everyone stands this tick (P2.3), with their needs (P2.2), for every snapshot. */
 export const walkersOf = (world: WorldState): WalkerView[] =>
-  (world.entities['person'] ?? []).map((p) => ({
+  shown(world).map((p) => ({
     id: p.id,
     x: p['x'] as number,
     y: p['y'] as number,
@@ -243,6 +262,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     ...lawOfWalker(world, p),
     tools: personTools(world, p.id),
     skills: skillsOf(world, p),
+    ...withHome(homeOf(world, p), strangerOf(world, p)),
     // Rows appear once their station exists (V-071).
     work: content.work.priority.jobs
       .filter((job) => jobShown(world, job))
@@ -260,6 +280,11 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
         };
       }),
   }));
+
+const withHome = (home: WalkerView['home'], stranger: WalkerView['stranger']) => ({
+  ...(home && { home }),
+  ...(stranger && { stranger }),
+});
 
 /** The cloak a person wears and how worn it is (V-092): "Wool cloak, worn 30%, warmer outdoors". */
 function wearingOf(world: WorldState, p: EntityRow): { wearing?: string } {

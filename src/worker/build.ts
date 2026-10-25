@@ -23,6 +23,8 @@ import {
   sendBackBlock,
   sizeOf,
   smithiesOf,
+  householdOf,
+  whoseOf,
   type EntityRow,
   type Room,
   type SimEvent,
@@ -33,15 +35,21 @@ import { buildFields } from './fields.ts';
 import { burialRow, sickBeds, word } from './places.ts';
 import { roomWarmth } from './fires.ts';
 import { pastureRow } from './flock.ts';
+import { homeRows, homesRow } from './strangers.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { BuildRow, BuildView, SmithyRow } from './protocol-build.ts';
 
 const itemName = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 
-/** "cottage", or "cottage's second room" for a room added to it. */
+/** "cottage", "Gwallog's home" or "hall" (P5.14), or "cottage's second room" for a room added. */
 function nameOf(world: WorldState, h: EntityRow): string {
   const main = mainOf(world, h);
-  const name = sizeOf(content, main).name;
+  const owner = main['owner'] as number;
+  const name = main['hall']
+    ? 'hall'
+    : owner
+      ? `${whoseOf(world, householdOf(world, owner))} home`
+      : sizeOf(content, main).name;
   return h['of'] ? `${name}'s ${nthOf(rowsOf(world, main).indexOf(h))} room` : name;
 }
 
@@ -107,6 +115,7 @@ export function buildView(world: WorldState): BuildView {
   const smithy = smithyRow(world);
   const burial = burialRow(world);
   const pasture = pastureRow(world);
+  const homes = homesRow(world);
   return {
     green: { x: green.x, y: green.y },
     want: { level, word: content.work.priority.words[level - 1] ?? '' },
@@ -114,6 +123,7 @@ export function buildView(world: WorldState): BuildView {
     ...(smithy && { smithy }),
     ...(burial && { burial }),
     ...(pasture && { pasture }),
+    ...(homes && { homes }),
     need: needOf(world),
     noGround: !!state['noGround'] && homeless(world, content).length > 0,
     houses: housesOf(world)
@@ -176,6 +186,7 @@ export function tileHouse(
       roof: planned ? `${def.roof}, laid with the walls` : `${def.roof} (not drawn)`,
       ...(h['sick'] ? { sick: word('sickTitle') } : {}),
       ...(sited && { sited: lineOf(sited) }),
+      ...homeRows(world, mainOf(world, h), lineOf),
     },
     ...(room && {
       room: {

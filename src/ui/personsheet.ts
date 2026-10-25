@@ -1,11 +1,31 @@
 // A person's sheet (P2.6) in tabs: Needs (mood and needs, live), Health (P5.6, P5.8), Skills (each with its practice
 // towards the next level), Work (their priorities, as on the Work sheet) and Ledger (the lines
 // about them). It shows what the snapshot says; nothing here decides a rule (GAME-02).
-import type { LedgerLine, PersonView, WalkerView } from '../worker/index.ts';
+import type { LedgerLine, PersonView, StrangerView, WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import type { Panel } from './panel.ts';
 import { fillBlood, healthBody, healthKey } from './healthtab.ts';
 import { fillNeed, needRow, skillRows, whoLine } from './person.ts';
+
+/** A stranger's page (P5.9): who, rows with "why?", and that nothing here takes them in. */
+function strangerRows(s: StrangerView): HTMLElement[] {
+  const rows = s.rows.map((r) => {
+    const row = el('div', { class: 'prow' });
+    const text = el('span', {}, r.text);
+    if (r.why)
+      text.append(
+        ' ',
+        el('button', { type: 'button', class: 'why', 'data-why': String(r.why) }, 'why?'),
+      );
+    row.append(el('b', {}, r.name), text);
+    return row;
+  });
+  return [
+    el('p', { class: 'pwho', 'data-testid': 'stranger' }, s.who),
+    ...rows,
+    el('p', { class: 'aside' }, s.foot),
+  ];
+}
 
 export type PersonTab = 'needs' | 'health' | 'skills' | 'work' | 'ledger';
 const TABS: readonly [PersonTab, string][] = [
@@ -38,6 +58,8 @@ export class PersonSheet {
   private blood: HTMLElement | undefined;
   /** The Needs tab's Wearing and Memories sections, filled in place each snapshot. */
   private extra = el('div', { class: 'wearmem', 'data-testid': 'wear-memories' });
+  /** A stranger's page is up (P5.9): it is redrawn as a whole, and as tabs once they stay. */
+  private strangerShown = false;
   /** What the open tab last showed, so it is redrawn only when that changes. */
   private drawn = '';
 
@@ -65,6 +87,11 @@ export class PersonSheet {
   setWalkers(walkers: readonly WalkerView[]): void {
     this.walkers = walkers;
     if (this.id === undefined) return;
+    // A stranger's page (P5.9), redrawn when it changes, and the tabs once they stay.
+    if (this.walker()?.stranger || this.strangerShown) {
+      if (this.key() !== this.drawn) this.draw();
+      return;
+    }
     this.fillNow();
     if (this.tab === 'needs') this.fillNeeds();
     else if (this.key() !== this.drawn) this.draw();
@@ -87,7 +114,7 @@ export class PersonSheet {
    * with its hours left, a button to its page; owned like a bed, so no lever); the text is the
    * worker's, redrawn only when it changes. */
   private fillExtra(w: WalkerView): void {
-    const shown = JSON.stringify([w.wearing, w.memories, w.tools, w.law, w.warmLine]);
+    const shown = JSON.stringify([w.wearing, w.memories, w.tools, w.law, w.warmLine, w.home]);
     if (this.extra.dataset['shown'] === shown) return;
     this.extra.dataset['shown'] = shown;
     const memories = w.memories.length
@@ -116,7 +143,16 @@ export class PersonSheet {
         el('button', { type: 'button', class: 'why', 'data-why': String(w.law.why) }, 'why?'),
       );
     }
+    const home = el('p', { 'data-testid': 'home' });
+    if (w.home) {
+      home.append(el('b', {}, 'Home'), `: ${w.home.text} `);
+      if (w.home.why !== undefined)
+        home.append(
+          el('button', { type: 'button', class: 'why', 'data-why': String(w.home.why) }, 'why?'),
+        );
+    }
     this.extra.replaceChildren(
+      ...(w.home ? [home] : []),
       el('h3', {}, 'The law'),
       law,
       el('h3', {}, 'Warmth line'),
@@ -179,6 +215,7 @@ export class PersonSheet {
 
   private key(): string {
     const w = this.walker();
+    if (w?.stranger) return `S:${JSON.stringify(w.stranger)}`;
     // Levels only: practice moves every few minutes of work, and each redraw replaces the tabs.
     if (this.tab === 'health') return healthKey(w?.health);
     if (this.tab === 'skills') return JSON.stringify(w?.skills.map((s) => s.level));
@@ -191,6 +228,12 @@ export class PersonSheet {
   private draw(): void {
     const p = this.p!;
     const w = this.walker();
+    this.strangerShown = !!w?.stranger;
+    if (w?.stranger) {
+      this.drawn = this.key();
+      this.panel.showView('person', `${p.name} of ${p.home}`, strangerRows(w.stranger));
+      return;
+    }
     const tabs = el('div', { class: 'tabs', role: 'tablist' });
     for (const [tab, label] of TABS) {
       const b = el(

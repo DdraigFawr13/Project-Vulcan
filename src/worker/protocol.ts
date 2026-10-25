@@ -7,9 +7,9 @@ import type { SaveFile } from './save.ts';
 import type { GoodsView, ItemView, StockView, WorksView } from './protocol-goods.ts';
 export type { GoodsView, ItemView, Spot3, StockView } from './protocol-goods.ts';
 import type { HoursView, LawView } from './protocol-law.ts';
-export type { AnswerView, HoursView, LawView } from './protocol-law.ts';
+export type { AnswerView, HoursView, LawView, StrangersLawView } from './protocol-law.ts';
 import type { WalkerView } from './protocol-people.ts';
-export type { HealthView, NeedView, WalkerView } from './protocol-people.ts';
+export type { HealthView, NeedView, StrangerView, WalkerView } from './protocol-people.ts';
 import type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 export type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 import type {
@@ -299,8 +299,10 @@ export interface PersonView {
   x: number;
   y: number;
   z: number;
-  /** The `people.arrived` line. */
+  /** The `people.arrived` line, or a stranger's `people.strangerCame`. */
   arrived: number;
+  /** `alive`, `stranger` (at or walking to or from the green, P5.9) or `dead`. */
+  status: string;
 }
 
 export type FromWorker =
@@ -361,6 +363,8 @@ export type FromWorker =
       mining: boolean;
       /** The Build sheet's view (P3.7), when changed. */
       build?: BuildView;
+      /** Everyone again, when someone came, stayed or left (P5.9). */
+      people?: PersonView[];
       /** The day before's tally for the dawn page (P2.9); none on the first day. */
       yesterday?: YesterdayView;
     }
