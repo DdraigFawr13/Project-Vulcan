@@ -3,7 +3,7 @@
 // with whole-number costs and ties broken by node number, so a search always gives one answer.
 import type { EngineContent, MapState } from '../core/index.ts';
 import { downAt, pack, type Node, type Spot } from './grid.ts';
-import { octile, regionsOf, type Regions } from './regions.ts';
+import { anyCheap, octile, regionsOf, type Regions } from './regions.ts';
 
 /** A binary heap of nodes by cost, ties by node number. */
 class Heap {
@@ -159,13 +159,17 @@ function tiles(
   const s = scratchOf(map);
   const gx = (goal % n) % w;
   const gy = Math.floor((goal % n) / w);
+  // With roads about, the estimate counts every step as a road step, so it never overshoots
+  // and the way found is still the cheapest (P5.10).
+  const least = anyCheap(r) ? walking.road : 10;
   const h = (node: number): number => {
     const i = node % n;
     const dx = Math.abs((i % w) - gx);
     const dy = Math.abs(Math.floor(i / w) - gy);
-    return (
-      walking.straight * Math.max(dx, dy) + (walking.diagonal - walking.straight) * Math.min(dx, dy)
-    );
+    const plain =
+      walking.straight * Math.max(dx, dy) +
+      (walking.diagonal - walking.straight) * Math.min(dx, dy);
+    return Math.floor((plain * least) / 10);
   };
   const open = (z: number, i: number): number => {
     const id = r.labels[z]?.[i] ?? -1;
@@ -203,7 +207,7 @@ function tiles(
         const walk = open(z, ny * w + nx);
         if (!walk) continue;
         if (dx && dy && (!open(z, y * w + nx) || !open(z, ny * w + x))) continue;
-        const step = (dx && dy ? walking.diagonal : walking.straight) * walk;
+        const step = Math.floor(((dx && dy ? walking.diagonal : walking.straight) * walk) / 10);
         visit(node + dy * w + dx, node, here + step, heap);
       }
     const down = downAt(content, map, z, i);

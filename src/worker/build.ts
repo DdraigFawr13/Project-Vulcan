@@ -38,6 +38,7 @@ import { pastureRow } from './flock.ts';
 import { homeRows, homesRow } from './strangers.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { BuildRow, BuildView, SmithyRow } from './protocol-build.ts';
+import { roadsRow } from './roads.ts';
 
 const itemName = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 
@@ -124,6 +125,7 @@ export function buildView(world: WorldState): BuildView {
     ...(burial && { burial }),
     ...(pasture && { pasture }),
     ...(homes && { homes }),
+    roads: roadsRow(world),
     need: needOf(world),
     noGround: !!state['noGround'] && homeless(world, content).length > 0,
     houses: housesOf(world)

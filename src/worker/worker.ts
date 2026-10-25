@@ -201,6 +201,7 @@ function snapshot(w: WorldState): void {
     chunks.flatMap((c) => [
       ...[c.tiles.buffer, c.features.buffer, c.snow.buffer, c.ice.buffer],
       ...[c.snowLie.buffer, c.printKind.buffer, c.printAge.buffer, c.printDir.buffer],
+      c.worn.buffer,
     ]),
   );
 }

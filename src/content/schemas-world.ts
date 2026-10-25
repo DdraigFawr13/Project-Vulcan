@@ -1,6 +1,7 @@
 // Shapes of the world, magic-tier, creature and item files in src/content/data.
 import { any, bool, list, map, num, obj, oneOf, opt, range, ref, str } from './schema';
 import { attribute, count, id, share, text, texts } from './schema-fields';
+import { WALK_SCHEMAS } from './schemas-town';
 
 export const WORLD_SCHEMAS = {
   calendar: obj({
@@ -387,14 +388,6 @@ export const WORLD_SCHEMAS = {
         walk: opt(num({ min: 1 })),
       }),
     ),
-    // P2.3: stride per tick and step costs, in tenths of a straight step (src/engine/paths).
-    walking: obj({
-      speed: num({ min: 1 }),
-      straight: num({ min: 1 }),
-      diagonal: num({ min: 1 }),
-      stairs: num({ min: 1 }),
-      shaft: num({ min: 1 }),
-      ice: num({ min: 1 }),
-    }),
+    ...WALK_SCHEMAS,
   }),
 };

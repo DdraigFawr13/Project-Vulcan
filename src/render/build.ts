@@ -128,7 +128,7 @@ export class BuildSprites {
     for (const [i, s] of tiles) {
       const [x, y] = [i % this.width, Math.floor(i / this.width)];
       const { kind } = s.part;
-      if (kind === 'floor' || kind === 'stair') {
+      if (kind === 'floor' || kind === 'stair' || kind === 'road') {
         this.put(x, y, s.part.art, s, 4);
         continue;
       }

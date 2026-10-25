@@ -7,6 +7,7 @@
 import type { EngineContent, EntityRow } from '../core/index.ts';
 import {
   blockedByGoods,
+  buildWantOf,
   finishPlan,
   nextNeed,
   planPart,
@@ -90,11 +91,17 @@ function standing(ctx: SystemContext, plan: EntityRow): boolean {
 }
 
 /** The plan `p` would take up: the nearest free one (ties by plan) that has its material, or
- * whose material they can reach, with no tree left on it, and that they can get beside. */
+ * whose material they can reach, with no tree left on it, and that they can get beside. Road
+ * plans (P5.10) rank by the Roads row against the Houses row for every other plan, so at 4,
+ * last, roads wait behind the rest. */
 function choosePlan(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const { world, content } = ctx;
   const others = taken(ctx, p);
   const from = spotOf(p);
+  const roadPart = content.buildings.roads.part;
+  const roads = buildWantOf(world, content, 'road').level;
+  const rest = buildWantOf(world, content).level;
+  const rank = (r: EntityRow): number => (r['part'] === roadPart ? roads : rest);
   const open = plansOf(world)
     .filter(
       (r) =>
@@ -112,7 +119,7 @@ function choosePlan(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
       );
       return [d, r] as const;
     })
-    .sort((a, b) => a[0] - b[0] || a[1].id - b[1].id);
+    .sort((a, b) => rank(a[1]) - rank(b[1]) || a[0] - b[0] || a[1].id - b[1].id);
   for (const [, r] of open) {
     if (nextNeed(content, r) && !materialFor(ctx, p, r)) continue;
     if (besideReachable(ctx, p, r)) return r;

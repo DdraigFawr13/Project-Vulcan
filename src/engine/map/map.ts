@@ -9,13 +9,14 @@ import { findGreens, greenWords } from './green.ts';
 import { digCommands } from './levels.ts';
 import { chunksAcross, chunksDown } from './tiles.ts';
 import { makeLevel } from './underground.ts';
+import { fadeWear } from './wear.ts';
 import { layGround } from './terrain.ts';
 import { BEACH, carveWater, MARSH, SCREE, SPRING } from './water.ts';
 
 /** Lays out the map in `init` (generation belongs there, not in a cadence); it never runs on load. */
 export const mapSystem: System = {
   id: 'map',
-  every: 'day', // a cadence is required; the surface has no daily work yet
+  every: 'day', // each day footfall fades (P5.10, wear.ts)
   stream: 'worldgen',
   emits: [
     'map.formed',
@@ -31,6 +32,9 @@ export const mapSystem: System = {
     'map.digRefused',
   ],
   commands: digCommands,
+  run(ctx) {
+    fadeWear(ctx.content, ctx.world.map);
+  },
   // `look` is 1 when the player sent the band's first green back on arrival (the world is then
   // made again with it set); `next` is 1 when there is a second choice to send it back for.
   initialState: { look: 0, next: 0 },
@@ -84,6 +88,8 @@ export const mapSystem: System = {
     map.printKind = new Uint8Array(width * height);
     map.printAt = new Int32Array(width * height);
     map.printDir = new Uint8Array(width * height);
+    map.wear = new Uint16Array(width * height);
+    map.worn = new Uint8Array(width * height);
     map.built = new Uint8Array(width * height);
     map.chunkVersions = new Array<number>(chunksAcross(map) * chunksDown(map)).fill(1);
     // The levels below are made only when first reached (levels.ts).

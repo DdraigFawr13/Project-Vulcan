@@ -31,7 +31,7 @@ A ledger policy (moves and routine ticks are not lines); the ledger kept as the 
 
 Title screen with Continue and New game. Five colonists (V-016) from race and culture content: attributes, skills with fixed potential, traits, names; an arrival screen; the `sprites-people` sheet. Mock-up: UI. Done when: ten seeds give ten distinct bands, each with someone able to build and cook.
 
-- Reading list: `docs/DECISIONS.md` V-016; `docs/ART.md` row P2.1; `src/content/MODULE.md`; `src/ui/MODULE.md`; `src/render/MODULE.md`
+- Reading list: `docs/DECISIONS.md` V-016; `docs/ART.md` row P2.1; `src/ui/MODULE.md`; `src/render/MODULE.md`
 
 ### P2.2 Needs and basic mood
 

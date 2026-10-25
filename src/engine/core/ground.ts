@@ -41,6 +41,27 @@ export interface WalkingDef {
   shaft: number;
   /** The `walk` of frozen lake water, which can be crossed while it holds. */
   ice: number;
+  /** P5.10: a step on a road, in tenths of the step on plain ground. */
+  road: number;
+}
+
+/** P5.10 footfall (src/content/schemas-town.ts has the meaning of each dial; map/wear.ts). */
+export interface WearDef {
+  fade: number;
+  stages: readonly number[];
+  words: readonly string[];
+  kinds: readonly string[];
+}
+
+/** P5.10 the Roads row (src/content/schemas-town.ts has the meaning of each dial). */
+export interface RoadsDef {
+  name: string;
+  start: number;
+  part: string;
+  stretch: number;
+  least: number;
+  shortest: number;
+  places: number;
 }
 
 /** The levels below (src/content/schemas-world.ts has the meaning of each dial). */

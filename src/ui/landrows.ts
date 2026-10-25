@@ -18,6 +18,8 @@ export function landFacts(tile: TileView): string[][] {
     ...(tile.prints ? [['prints', tile.prints]] : []),
     ...(tile.fade ? [['fade', tile.fade]] : []),
     ...(tile.snowLies ? [['snow', tile.snowLies]] : []),
+    ...(tile.worn ? [['worn', tile.worn]] : []),
+    ...(tile.road ? [['road', tile.road]] : []),
     ...(tile.aura ? [['aura', tile.aura]] : []),
     ...(tile.water ? [['water', tile.water]] : []),
     ...(tile.drinkable !== undefined ? [['drinkable', tile.drinkable ? 'yes' : 'no']] : []),

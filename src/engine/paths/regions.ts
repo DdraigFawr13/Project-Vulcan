@@ -7,7 +7,7 @@
 // made, so a loaded world searches exactly as the running one did.
 import type { EngineContent, MapState } from '../core/index.ts';
 import { CHUNK, chunksAcross, chunksDown, layerOf } from '../map/index.ts';
-import { downAt, walkAt } from './grid.ts';
+import { costAt, downAt } from './grid.ts';
 
 /** Up to 128 regions fit in a 16 by 16 chunk (a checkerboard), so 256 ids a chunk is enough. */
 const PER_CHUNK = 256;
@@ -26,8 +26,12 @@ export interface Regions {
   /** Per level: each tile's region id, -1 where nothing can walk. */
   labels: Int32Array[];
   regions: Map<number, Region>;
-  /** Per level: each tile's walking multiplier when the labels were made (0 never walked). */
+  /** Per level: each tile's cost (`costAt`, tenths of a plain step) when the labels were made
+   * (0 never walked). */
   walk: Uint8Array[];
+  /** Per level and chunk: how many of its tiles cost less than plain ground (roads, P5.10), so a
+   * search knows whether its estimate must allow for them. */
+  cheap: Int32Array[];
   /** Per level: the chunk versions the labels were made from. */
   seen: Int32Array[];
 }
@@ -40,7 +44,7 @@ const levels = (map: MapState): number => 1 + map.levels.length;
 export function regionsOf(content: EngineContent, map: MapState): Regions {
   let r = cache.get(map);
   if (!r) {
-    r = { labels: [], walk: [], regions: new Map(), seen: [] };
+    r = { labels: [], walk: [], cheap: [], regions: new Map(), seen: [] };
     cache.set(map, r);
   }
   const across = chunksAcross(map);
@@ -53,6 +57,7 @@ export function regionsOf(content: EngineContent, map: MapState): Regions {
       r.labels[z] = new Int32Array(map.width * map.height).fill(-1);
       r.walk[z] = new Uint8Array(map.width * map.height);
       r.seen[z] = new Int32Array(chunks).fill(-1);
+      r.cheap[z] = new Int32Array(chunks);
     }
     for (let c = 0; c < chunks; c += 1)
       if (r.seen[z]![c] !== layer.chunkVersions[c]) {
@@ -86,7 +91,7 @@ function sameWalk(
   const x1 = Math.min(map.width, (cx + 1) * CHUNK);
   for (let y = cy * CHUNK; y < y1; y += 1)
     for (let x = cx * CHUNK; x < x1; x += 1)
-      if (walk[y * map.width + x] !== walkAt(content, map, z, y * map.width + x)) return false;
+      if (walk[y * map.width + x] !== costAt(content, map, z, y * map.width + x)) return false;
   return true;
 }
 
@@ -108,11 +113,14 @@ function label(
   const base = (z * chunksAcross(map) * chunksDown(map) + cy * chunksAcross(map) + cx) * PER_CHUNK;
   for (let id = base; id < base + PER_CHUNK; id += 1) r.regions.delete(id);
   const walk = r.walk[z]!;
+  let cheap = 0;
   for (let y = y0; y < y1; y += 1)
     for (let x = x0; x < x1; x += 1) {
       labels[y * w + x] = -1;
-      walk[y * w + x] = walkAt(content, map, z, y * w + x);
+      walk[y * w + x] = costAt(content, map, z, y * w + x);
+      if (walk[y * w + x]! && walk[y * w + x]! < 10) cheap += 1;
     }
+  r.cheap[z]![cy * chunksAcross(map) + cx] = cheap;
   let next = 0;
   const stack: number[] = [];
   for (let y = y0; y < y1; y += 1)
@@ -144,6 +152,9 @@ function label(
       }
     }
 }
+
+/** Whether any tile of the map costs less than plain ground (a road). */
+export const anyCheap = (r: Regions): boolean => r.cheap.some((c) => c?.some((n) => n > 0));
 
 /** Distance in tenths of a straight step between two tiles of a level, corners counted. */
 export function octile(map: MapState, a: number, b: number): number {

@@ -23,6 +23,7 @@ import { GreenSprites } from './green.ts';
 import { PeopleSprites } from './people.ts';
 import { WorkBars } from './progress.ts';
 import { WildSprites } from './wild.ts';
+import { WearLayer } from './wear.ts';
 import { TILE, ValleyScene, type Hover } from './scene.ts';
 
 export type { Hover } from './scene.ts';
@@ -97,6 +98,7 @@ export function startRenderer(
   const light = new Firelight(game, scene);
   const bars = new WorkBars(game, scene);
   const wild = new WildSprites(game, scene);
+  const wear = new WearLayer(game, scene);
   // The smoke has no handle on the renderer: this event centres the view on an animal and writes
   // where it stands on screen (canvas px) to `data-animal-at`.
   parent.addEventListener('vulcan:find-animal', (e) => {
@@ -120,11 +122,13 @@ export function startRenderer(
       fields.setMapSize(width);
       light.setMapSize(width, height);
       wild.setMapSize(width, height);
+      wear.setMapSize(width, height);
     },
     applyChunks: (chunks) => {
       scene.applyChunks(chunks);
       build.applyChunks(chunks);
       wild.applyChunks(chunks);
+      wear.applyChunks(chunks);
     },
     setAura: (spots) => scene.setAura(spots),
     zoomStep: (direction) => scene.zoomStep(direction),
@@ -143,6 +147,7 @@ export function startRenderer(
       light.setLevel(z);
       bars.setLevel(z);
       wild.setLevel(z);
+      wear.setLevel(z);
     },
     setPeople: (list) => people.set(list),
     personAt: (x, y) => people.at(x, y),

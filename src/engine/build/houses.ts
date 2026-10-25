@@ -66,10 +66,19 @@ export const HOUSE_KIND = 'house';
 export const FIELD_KIND = 'field';
 export const SMITHY_KIND = 'smithy';
 export const PASTURE_KIND = 'pasture';
+export const ROAD_KIND = 'road';
 const sheetDef = (content: EngineContent, kind: string) =>
   kind === PASTURE_KIND
     ? content.flock.pasture
-    : content.buildings[kind === FIELD_KIND ? 'field' : kind === SMITHY_KIND ? 'smithy' : 'house'];
+    : content.buildings[
+        kind === FIELD_KIND
+          ? 'field'
+          : kind === SMITHY_KIND
+            ? 'smithy'
+            : kind === ROAD_KIND
+              ? 'roads'
+              : 'house'
+      ];
 
 /** The size (or added room) a house row is. */
 export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>
@@ -109,9 +118,9 @@ export function setBuild(
   const { world, content } = ctx;
   const level = data['level'] as number;
   const levels = content.work.priority.words.length;
-  const kind = data['kind'];
+  const kind = data['kind'] as string;
   if (
-    (kind !== HOUSE_KIND && kind !== FIELD_KIND && kind !== SMITHY_KIND && kind !== PASTURE_KIND) ||
+    ![HOUSE_KIND, FIELD_KIND, SMITHY_KIND, PASTURE_KIND, ROAD_KIND].includes(kind) ||
     !Number.isSafeInteger(level) ||
     level < 1 ||
     level > levels

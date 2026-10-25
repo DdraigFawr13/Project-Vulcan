@@ -1,6 +1,7 @@
 {
 "surface": {"width":150,"height":150,"ground":"grass"},
-"walking": {"speed":5,"straight":10,"diagonal":14,"stairs":30,"shaft":60,"ice":2},
+"walking": {"speed":5,"straight":10,"diagonal":14,"stairs":30,"shaft":60,"ice":2,"road":7},
+"wear": {"fade":6,"stages":[64,192,448],"words":["thin","worn","a bare track"],"kinds":["grass","dry-grass","forest-floor","needles","tundra"]},
 "generator": {
 "climates": [
 {"id":"temperate","name":"temperate","weight":7,"temperature":[9,14],"rainfall":[520,900]},
