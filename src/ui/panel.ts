@@ -94,6 +94,14 @@ export class Panel {
   }
 
   /** Which view is open, if any. */
+  /** Screen px the sheet covers at the bottom of the view: a phone's sheet, else 0. */
+  below(): number {
+    const r = this.root.getBoundingClientRect();
+    return !this.root.hidden && r.bottom >= innerHeight - 2 && r.width > innerWidth * 0.8
+      ? innerHeight - r.top
+      : 0;
+  }
+
   get kind(): PanelKind | undefined {
     return this.shown;
   }

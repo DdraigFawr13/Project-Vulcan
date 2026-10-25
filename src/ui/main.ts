@@ -11,6 +11,7 @@ import {
   type ToWorker,
 } from '../worker/index.ts';
 import { showArrival } from './arrival.ts';
+import { finding } from './finding.ts';
 import { gameKey } from './keys.ts';
 import { Hud, type PanelButton } from './hud.ts';
 import { Orders } from './orders.ts';
@@ -24,7 +25,6 @@ import { OLD_SAVE, Title } from './title.ts';
 const parent = document.getElementById('game');
 const hudRoot = document.getElementById('hud');
 if (!parent || !hudRoot) throw new Error('index.html is missing #game or #hud');
-
 const params = new URLSearchParams(location.search);
 const seed = params.get('seed') ?? 'ledger-1';
 const site = params.get('site');
@@ -132,6 +132,7 @@ const sheets = new Sheets({
   },
   opened: (kind) => hud.showPanel(kind),
   drawPeople: (list) => renderer.setPeople(list),
+  ...finding(renderer, panel, (z) => setLevel(z, true)),
 });
 const picker = new Picker(hudRoot, {
   settle: (chosen) => {
@@ -275,9 +276,8 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
           'Region',
           'This world began from a plain seed, before regions, so it has no region map.',
         );
-    } else if (message.type === 'causes') {
-      panel.showCauses(message.id, message.lines);
-    } else if (message.type === 'loadRefused' && !ready) {
+    } else if (message.type === 'causes') panel.showCauses(message.id, message.lines);
+    else if (message.type === 'loadRefused' && !ready) {
       // The save to continue from no longer loads (another version): the title offers New game
       // alone and says why; a reloaded valley begins afresh instead.
       saves.loading = false;

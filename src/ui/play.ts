@@ -1,6 +1,7 @@
 // The play screen's people and alerts (P2.6): a portrait strip under the bar, each face in an
 // iron frame with a mood ring, and the alert line: the newest notable line with a count of those
-// not yet read. A face opens that person's sheet; the alert line opens the Alerts sheet, whose
+// not yet read. A face opens that person's sheet and finds them on the map; the Names button at
+// the strip's end names everyone on the map (a view aid, never an order). The alert line opens the Alerts sheet, whose
 // Show moves the camera to where it happened, never a person (V-015). Notable is the worker's
 // word (content `events`), never worked out here (GAME-02).
 import type { LedgerLine, PersonView, WalkerView } from '../worker/index.ts';
@@ -12,6 +13,10 @@ const ALERTS = 100;
 
 export interface PlayActions {
   person(p: PersonView): void;
+  /** A face was tapped: the camera finds that person. */
+  find(p: PersonView): void;
+  /** The names button: ring and name everyone on the map, or stop. */
+  names(on: boolean): void;
   alerts(): void;
 }
 
@@ -22,6 +27,12 @@ export class Play {
     class: 'alertplate',
     'data-testid': 'alert',
     hidden: '',
+  });
+  private readonly names = el('button', {
+    type: 'button',
+    class: 'namesbtn',
+    'data-testid': 'names',
+    'aria-pressed': 'false',
   });
   private readonly faces = new Map<number, HTMLElement>();
   private people: readonly PersonView[] = [];
@@ -35,7 +46,16 @@ export class Play {
         (e.target as HTMLElement).closest<HTMLElement>('[data-person]')?.dataset['person'],
       );
       const p = this.people.find((x) => x.id === id);
-      if (p) actions.person(p);
+      if (!p) return;
+      actions.person(p);
+      actions.find(p);
+    });
+    this.names.textContent = 'Names';
+    this.names.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const on = this.names.getAttribute('aria-pressed') !== 'true';
+      this.names.setAttribute('aria-pressed', String(on));
+      actions.names(on);
     });
     bar.append(this.strip, this.plate);
   }
@@ -65,6 +85,7 @@ export class Play {
         this.faces.set(p.id, slot);
         return slot;
       }),
+      this.names,
     );
     this.strip.hidden = !faces.length;
     if (keep) return;

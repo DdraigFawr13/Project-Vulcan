@@ -14,6 +14,8 @@ const BUTTON_STEP = 1.5;
 const WHEEL_RATE = 0.0015;
 /** How quickly a button glide closes on its target: the share of the gap left after 100 ms. */
 const GLIDE_LEFT = 0.1;
+/** Finding someone comes in at least this close (Morgan, 2026-10-25). */
+const FIND_ZOOM = 1;
 const PAN_SPEED = 900; // screen px per second for keys
 const DRAG_THRESHOLD = 6; // px a press moves before it counts as a drag, not a tap
 
@@ -113,6 +115,17 @@ export class CameraControls {
   lookAt(x: number, y: number): void {
     this.target = undefined;
     this.camera.centerOn(x, y - this.top / 2 / this.zoom);
+  }
+
+  /** Finds a person at map point (x, y): zoomed out past FIND_ZOOM it comes in that far, then
+   * centres them between the bar and a sheet covering the bottom `below` screen px. */
+  focus(x: number, y: number, below: number): void {
+    if (this.zoom < FIND_ZOOM) {
+      this.zoom = this.clamp(FIND_ZOOM);
+      this.applyZoom();
+    }
+    this.target = undefined;
+    this.camera.centerOn(x, y + (below - this.top) / 2 / this.zoom);
   }
 
   /** Glides one step in (1) or out (-1) about the middle of the screen. */
