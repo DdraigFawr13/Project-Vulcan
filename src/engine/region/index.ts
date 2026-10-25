@@ -9,3 +9,4 @@ export type {
   RegionValley,
 } from './region.ts';
 export { regionSystem, siteOf, valleyOf } from './system.ts';
+export { neighboursOf, type Neighbour, type Reason } from './record.ts';

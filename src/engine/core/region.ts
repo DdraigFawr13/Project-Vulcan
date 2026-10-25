@@ -10,6 +10,8 @@ export interface CultureDef {
   name: string;
   raceId: string;
   government: string;
+  /** What the people value, 0 to 10 (`kin` weighs on strangers, P5.9). */
+  values: Readonly<Record<string, number>>;
   religion: { name: string };
   preferredBiomes: readonly string[];
   /** river, heights, plains, forest, deposit, aura, coast. */

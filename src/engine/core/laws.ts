@@ -13,8 +13,11 @@ export interface LawSettingDef {
   days: string;
   ask: number;
   hours?: Hours;
-  winter: Hours;
-  winterLean: number;
+  /** Hours in winter, and how winter leans on it: for a law of hours. */
+  winter?: Hours;
+  winterLean?: number;
+  /** For the Strangers law (P5.9): the reason kinds a split band lets in. */
+  lets?: readonly string[];
   /** The memory a refusal leaves on those who see it, and the one a grumbler keeps. */
   saw?: string;
   grumbled?: string;

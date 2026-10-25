@@ -20,7 +20,8 @@ import { livePastures, onPastureGround } from './pasturerows.ts';
 import { greenOf, ringOf } from './ring.ts';
 
 /** The tiles for a granary beside field `f`: a block touching its edge, every tile free ground
- * outside the town ring and no field's, nearest the green (tile order breaks ties). */
+ * (or holding food it keeps) outside the town ring and no field's, nearest the green (tile order
+ * breaks ties). */
 export function siteGranary(
   ctx: SystemContext,
   f: EntityRow,
@@ -32,6 +33,8 @@ export function siteGranary(
   const ring = ringOf(world, content);
   const fields = new Set(liveFields(world).flatMap((r) => tilesOf(r)));
   const pastures = livePastures(world);
+  // The harvest lying by the field, beyond the plate, is what the granary is for: it may stand on it.
+  const keeps = (i: EntityRow) => !i['holder'] && keepable(content, i['kind'] as string);
   const xs = tilesOf(f).map((i) => i % map.width);
   const ys = tilesOf(f).map((i) => Math.floor(i / map.width));
   const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
@@ -57,7 +60,7 @@ export function siteGranary(
     for (let y = b.y; y < b.y + b.h && fits; y += 1)
       for (let x = b.x; x < b.x + b.w && fits; x += 1)
         fits =
-          freeTile(world, content, x, y) &&
+          freeTile(world, content, x, y, keeps) &&
           !fields.has(y * map.width + x) &&
           !pastures.some((p) => onPastureGround(p, map.width, x, y)) &&
           Math.max(Math.abs(x - green.x), Math.abs(y - green.y)) > ring;

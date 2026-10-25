@@ -1,0 +1,42 @@
+{
+"home":{"after":84,"toward":2,"work":{"farming":"field","mining":"shaft","stoneworking":"shaft","smithing":"smithy"}},
+"draw":{"base":30,"food":[{"days":120,"rate":100},{"days":60,"rate":60},{"days":0,"rate":20}],"noBed":50,"name":10,"winter":30,"eat":4,"hour":7,"first":{"month":"Leaffall","day":9}},
+"couple":33,
+"animal":20,
+"animals":["sheep","goat"],
+"years":30,
+"wait":40,
+"reasons":{
+"famine":"hunger","bad_harvest":"hunger","cold_years_began":"hunger","dry_years_began":"hunger",
+"plague":"sickness","fever":"sickness","pox":"sickness",
+"feud_struck":"feud","feud_inherited":"feud","feud_began":"feud","vengeance_raid":"feud",
+"war_declared":"war","battle":"war","border_clash":"war","site_razed":"war","site_conquered":"war","civ_raid":"war","plunder_raid":"war",
+"migration":"move","notable_exiled":"move"
+},
+"kinds":[
+{"id":"hunger","name":"hunger","words":"has gone hungry","need":true},
+{"id":"sickness","name":"sickness","words":"is sick","need":true},
+{"id":"feud","name":"a feud","words":"is torn by a feud","need":true},
+{"id":"war","name":"war","words":"has seen war","need":true},
+{"id":"move","name":"a people on the move","words":"is on the move","need":false},
+{"id":"wander","name":"wandering","words":"is quiet","need":false}
+],
+"weigh":{"start":1,"same":2,"other":-1,"kin":7,"kinFirst":-1,"sick":-2,"devout":1,"lasts":1,"short":-2,"greedy":-1,"harvest":"Highsun","traits":{"sociable":1,"solitary":-1},"memories":{"turned-away":1}},
+"dissent":-12,
+"road":{"count":4},
+"law":"strangers",
+"memories":{"turned":"turned-away","refused":"refused-strangers","feast":"feasted"},
+"words":{
+"who":"A stranger {where} · {race} of the {culture}, {age}",
+"atGreen":"at the green","onWay":"on the way","goingBack":"going back",
+"from":"{place}, a {culture} village {days} days {dir}",
+"came":"{place} {words}.",
+"coming":"walking in from the {dir} to the green",
+"waiting":"waiting at the green while the band talks it over",
+"going":"going back {dir}, the way {they} came",
+"foot":"The band decides whether to take {them} in, under the Strangers law on the Laws page. Nothing here takes {them} in or sends {them} away.",
+"lawAside":"When a stranger comes, each person speaks for or against them. If everyone agrees, that stands. If the band is split, the law decides: {settings}.",
+"homeWant":"Every adult or couple wants a home of their own after a season under a shared roof. The want adds a house to the Build sheet; the Houses row sets how hard the colony works at it.",
+"homeNext":"Whoever has waited longest goes first; a couple before someone alone."
+}
+}

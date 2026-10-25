@@ -38,6 +38,7 @@ const fixtureContent: EngineContent = {
   races: content.races,
   names: content.names,
   band: content.band,
+  strangers: content.strangers,
   health: content.health,
   traits: content.traits,
   abilities: content.abilities,

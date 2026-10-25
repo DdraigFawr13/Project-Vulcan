@@ -4,15 +4,17 @@
 import {
   clockAt,
   streamFor,
+  TICKS_PER_DAY,
   type EngineContent,
   type MapState,
   type WorldState,
 } from '../core/index.ts';
-import { addEntity, type Schemas } from '../entity/index.ts';
+import type { Schemas } from '../entity/index.ts';
 import { valleyOf } from '../region/index.ts';
 import type { System } from '../sim/index.ts';
 import { drawBand, type Home } from './band.ts';
-import { drawSmithing, SMITHING } from './smithing.ts';
+import { drawSmithing } from './smithing.ts';
+import { addPerson, ATTRIBUTES, NEWCOMER_FIELDS } from './row.ts';
 import { FORAGE_TABLES } from './forage.ts';
 import { JOB_FIELDS } from './jobs.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
@@ -26,16 +28,6 @@ import { careMinute } from './care.ts';
 import { attacksMinute, syncLures } from './fight.ts';
 import { tracksMinute } from './hunt.ts';
 import { herdWatch } from './herd.ts';
-
-const ATTRIBUTES = [
-  'strength',
-  'agility',
-  'endurance',
-  'intellect',
-  'willpower',
-  'perception',
-  'charisma',
-];
 
 export const PEOPLE_TABLES: Schemas = {
   person: {
@@ -58,9 +50,11 @@ export const PEOPLE_TABLES: Schemas = {
     x: 'int',
     y: 'int',
     z: 'int',
-    /** `alive` for now; a person who dies keeps their row so old lines can still name them. */
+    /** `alive`; `stranger` while a newcomer waits on the band's word, `gone` once turned away
+     * (P5.9); a person who dies keeps their row so old lines can still name them. */
     status: 'text',
     arrived: 'event',
+    ...NEWCOMER_FIELDS,
     ...WALK_FIELDS,
     ...MIND_FIELDS,
     ...JOB_FIELDS,
@@ -142,6 +136,7 @@ export const peopleSystem: System = {
     'work.declined',
     'skill.rose',
     ...['work.tookUpSowing', 'work.tookUpReaping', 'field.harvested', 'farm.harvestHome'],
+    ...['hall.feast', 'people.movedHome'],
     ...['field.granaryLaid', 'goods.granaryGrew'],
     'goods.ateSeed',
     ...['work.tookUpStation', 'metal.smelterBuilt', 'work.tookUpCharcoal', 'metal.clampLit'],
@@ -203,29 +198,12 @@ export const peopleSystem: System = {
     const year = clockAt(world.tick, content.calendar).year;
     const spots = standingSpots(world.map, content, band.length);
     band.forEach((p, k) => {
-      const id = addEntity(world, 'person', {
-        ...{ name: p.name, sex: p.sex, race: p.race, culture: p.culture },
-        ...{ home: p.home.name, homeDays: p.home.days, homeDir: p.home.dir, born: year - p.age },
-        ...Object.fromEntries(ATTRIBUTES.map((a) => [a, p.attributes[a] ?? 0])),
-        ...{ trade: p.trade, hair: p.hair, hairColour: p.hairColour, clothes: p.clothes },
-        ...{ x: spots[k]![0], y: spots[k]![1], z: 0, status: 'alive', arrived },
-        ...{
-          path: [],
-          stride: 0,
-          rest: 30 + 15 * k,
-          doing: '',
-          retry: 0,
-          bedTo: 0,
-          chill: 0,
-          seeded: 0,
-        },
-        ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0, make: '' },
-        ...{ making: '', fine: 0, task: '', what: '', hay: 0, herdId: 0, sat: 0 },
+      const at = { x: spots[k]![0], y: spots[k]![1], status: 'alive', arrived };
+      // The band wants homes of their own after a season under a shared roof (P5.14).
+      const wantsFrom = world.tick + content.strangers.home.after * TICKS_PER_DAY;
+      addPerson(world, content, p, { ...at, born: year - p.age, rest: 30 + 15 * k }, smithing[k]!, {
+        wantsFrom,
       });
-      for (const skill of content.band.skills)
-        addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0 });
-      addEntity(world, 'skill', { person: id, skill: SMITHING, ...smithing[k]!, xp: 0 });
-      for (const trait of p.traits) addEntity(world, 'trait', { person: id, trait });
     });
   },
   run(ctx) {
