@@ -28,6 +28,8 @@
 "town":{"ring":16,"step":4,"most":32},
 "granary":{"width":3,"height":2,"most":12},
 "field":{"name":"Fields","seed":"seed","weigh":{"fertility":2,"water":4,"near":100,"tries":40},"start":2,"perMouth":6,"reach":45,"water":8,"good":40,"least":6,"soil":{"base":50,"most":120,"rest":30,"winter":{"month":"Firstfrost","gain":6},"muck":{"month":"Leaffall","gain":8,"midden":6,"fold":1}},
+"blight":{"span":14,"start":9,"spreadAt":7,"oneIn":20,"repeatIn":10,"spread":15,"most":25,"early":80},
+"dry":{"weather":"dry","near":2,"loss":1,"cap":20,"tiles":4,"minutes":3},
 "rotation":["barley","turnips","beans","cabbages","oats","beans"],
 "crops":[
 {"id":"barley","name":"barley","item":"grain","sow":["Thawmonth","Seedmonth"],"days":84,"yield":100,"frost":-1,"draw":12},

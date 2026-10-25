@@ -246,6 +246,8 @@ function checkCrops(files: Files): string[] {
       crops: { id: string; sow: string[] }[];
       rotation: string[];
       soil: { winter: { month: string }; muck: { month: string } };
+      blight: { span: number; start: number; spreadAt: number };
+      dry: { weather: string };
     };
   };
   const months = (files['calendar'] as { monthNames: string[] }).monthNames;
@@ -260,6 +262,12 @@ function checkCrops(files: Files): string[] {
       errors.push(`buildings.field.rotation: "${id}" is no crop`);
   for (const m of [b.field.soil.winter.month, b.field.soil.muck.month])
     if (!months.includes(m)) errors.push(`buildings.field.soil: "${m}" is no month`);
+  const { blight, dry } = b.field;
+  if (blight.start > blight.span || blight.spreadAt > blight.span)
+    errors.push('buildings.field.blight: start and spreadAt are wet days within the span');
+  const kinds = (files['weather'] as { id: string }[]).map((w) => w.id);
+  if (!kinds.includes(dry.weather))
+    errors.push(`buildings.field.dry: "${dry.weather}" is no weather`);
   return errors;
 }
 
