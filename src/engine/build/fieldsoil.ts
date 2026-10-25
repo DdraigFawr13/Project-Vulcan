@@ -25,10 +25,14 @@ export function yieldAt(
  * window is missed; `at` is the course index sown (the field's course becomes the one after). */
 export function courseNow(content: EngineContent, f: EntityRow, month: string) {
   const { rotation, crops } = content.buildings.field;
+  const names = content.calendar.monthNames;
+  const now = names.indexOf(month);
   for (const k of [0, 1]) {
     const at = ((f['course'] as number) + k) % rotation.length;
     const crop = crops.find((c) => c.id === rotation[at]);
     if (crop?.sow.includes(month)) return { crop, at };
+    // The course's window is still to come this year: wait for it rather than skip it.
+    if (crop?.sow.some((m) => names.indexOf(m) > now)) return undefined;
   }
   return undefined;
 }

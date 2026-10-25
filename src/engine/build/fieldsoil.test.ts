@@ -73,7 +73,9 @@ describe('field rotation', () => {
     expect(crop(0, 'Highsun')).toMatchObject({ crop: { id: 'turnips' }, at: 1 });
     // Oats (course 4) missed in Highsun: beans (course 5), and the field then wraps to barley.
     expect(crop(4, 'Highsun')).toMatchObject({ crop: { id: 'beans' }, at: 5 });
-    expect(crop(5, 'Thawmonth')).toMatchObject({ crop: { id: 'barley' }, at: 0 });
+    // A window still to come is waited for, not skipped: turnips after an early barley harvest.
+    expect(crop(1, 'Bloommonth')).toBeUndefined();
+    expect(crop(5, 'Thawmonth')).toBeUndefined();
     // Two windows missed in a row: nothing this month.
     expect(crop(2, 'Thawmonth')).toBeUndefined();
   });
