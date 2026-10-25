@@ -31,8 +31,9 @@ export const LIFE_SCHEMAS = {
         lowWord: text,
         okWord: text,
         weight: num({ min: 1 }),
-        // A cold-style need whose warning line is notable only once a person a day (V-092).
+        // `quiet`: warning line notable once a person a day (V-092); `asleepFall`: fall asleep.
         quiet: opt(bool()),
+        asleepFall: opt(count),
       }),
     ),
     // Each need's value when the band arrives, in the order of `needs`.
@@ -348,11 +349,10 @@ export const LIFE_SCHEMAS = {
         }),
       ),
     }),
-    // P3.4: furniture is made at a bench by the `job`, of `material`, one piece for `cost`. A
-    // piece takes `minutes` at crafting 0, shorter at `skilled` over (`skilled` + level); its
-    // quality score is the maker's crafting level plus a roll of up to `roll` either way from the
-    // `stream`, worded by the first `quality` (highest first) whose `at` it reaches, with that
-    // beauty. `place` says where a maker sets it: wall, middle, beside table or bed foot.
+    // P3.4: furniture is made at a bench by the `job`, of `material`, one piece for `cost`, in
+    // `minutes` at crafting 0 (shorter at `skilled` over (`skilled` + level)); its quality is the
+    // maker's crafting level plus a `roll` from the `stream`, worded by the first `quality` it
+    // reaches. P3.6: a kind's own `job` and `material` (a hearth), then `also` (a well).
     furniture: obj({
       job: ref('jobs'),
       skilled: num({ min: 1 }),
@@ -369,9 +369,9 @@ export const LIFE_SCHEMAS = {
           beds: count,
           seats: count,
           place: oneOf('wall', 'middle', 'beside table', 'bed foot', 'centre'),
-          // P3.6: a kind made by another job, of another material, where it stands (a hearth).
           job: opt(ref('jobs')),
           material: opt(ref('items')),
+          also: opt(obj({ material: ref('items'), cost: num({ min: 1 }) })),
         }),
       ),
       quality: list(obj({ id, word: text, at: num(), beauty: num() })),

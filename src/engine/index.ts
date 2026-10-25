@@ -75,6 +75,8 @@ export {
   roomsOf,
   rowsOf,
   sizeOf,
+  waterSpots,
+  wellsOf,
   ingotInStore,
   sendBackBlock,
   smithiesOf,

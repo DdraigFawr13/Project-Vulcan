@@ -17,6 +17,7 @@ import { drawSmithing } from './smithing.ts';
 import { addPerson, ATTRIBUTES, NEWCOMER_FIELDS } from './row.ts';
 import { FORAGE_TABLES } from './forage.ts';
 import { JOB_FIELDS } from './jobs.ts';
+import { DRINK_FIELDS } from './drink.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
 import { markUsed } from './hearth.ts';
 import { PRIORITY_TABLES, setPriority } from './priority.ts';
@@ -57,6 +58,7 @@ export const PEOPLE_TABLES: Schemas = {
     ...NEWCOMER_FIELDS,
     ...WALK_FIELDS,
     ...MIND_FIELDS,
+    ...DRINK_FIELDS,
     ...JOB_FIELDS,
   },
   /** `xp`: minutes practised towards the next level (P2.5, learn.ts). */

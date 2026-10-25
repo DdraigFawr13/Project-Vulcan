@@ -6,9 +6,10 @@
 {"id":"warmth","name":"Warmth","fall":0,"low":3000,"seek":0,"lowWord":"Cold","okWord":"Warm","weight":2,"quiet":true},
 {"id":"recreation","name":"Recreation","fall":150,"low":3000,"seek":3500,"lowWord":"Bored","okWord":"Relaxed","weight":1},
 {"id":"beauty","name":"Beauty","fall":0,"low":3000,"seek":0,"lowWord":"Gloomy","okWord":"Fine","weight":1},
-{"id":"privacy","name":"Privacy","fall":0,"low":3000,"seek":0,"lowWord":"Crowded","okWord":"Settled","weight":1}
+{"id":"privacy","name":"Privacy","fall":0,"low":3000,"seek":0,"lowWord":"Crowded","okWord":"Settled","weight":1},
+{"id":"water","name":"Water","fall":300,"asleepFall":100,"low":3000,"seek":5500,"lowWord":"Thirsty","okWord":"Quenched","weight":1}
 ],
-"start":[8000,9000,9000,8000,6000,8000],
+"start":[8000,9000,9000,8000,6000,8000,9000],
 "beauty":{"neutral":6000,"perPoint":1000,"rate":250,"outdoors":50},
 "privacy":{"gain":600,"perOther":100},
 "sleep":{"bed":1600,"bedroll":1200,"ground":700,"from":22,"to":6,"wake":9500},

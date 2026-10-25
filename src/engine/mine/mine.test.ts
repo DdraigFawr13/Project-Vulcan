@@ -234,7 +234,7 @@ describe('mining', () => {
           const { x, y, z, made } = item as Record<string, number>;
           layItem(world, { kind: 'logs', count: 1, x: x!, y: y!, z: z!, made: made! });
         }
-    for (let m = 0; m < DAY / 10 && !linesOf(world, 'mine.sank').length; m += 1)
+    for (let m = 0; m < (3 * DAY) / 10 && !linesOf(world, 'mine.sank').length; m += 1)
       step(world, sim, 10);
     expect(linesOf(world, 'mine.sank')[0]?.data['ladder']).toBe(' with 2 logs for a ladder');
   });

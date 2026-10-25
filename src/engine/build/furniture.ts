@@ -61,3 +61,14 @@ export const pieceAt = (world: WorldState, x: number, y: number): EntityRow | un
 /** The built bed that is `owner`'s, if they have one. */
 export const bedOwnedBy = (world: WorldState, owner: number): EntityRow | undefined =>
   piecesOf(world, 'bed').find((f) => f['owner'] === owner);
+
+/** What a piece of `kind` still lacks with `have` brought: the material to fetch next and how much
+ * of it (a kind with `also` takes its first material, then the second, counted in one `have`). */
+export function furnitureLacks(content: EngineContent, kind: FurnitureKind, have: number) {
+  if (!kind.also || have < kind.cost)
+    return {
+      material: kind.material ?? content.buildings.furniture.material,
+      need: Math.max(0, kind.cost - have),
+    };
+  return { material: kind.also.material, need: Math.max(0, kind.cost + kind.also.cost - have) };
+}

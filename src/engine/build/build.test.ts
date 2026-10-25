@@ -122,7 +122,7 @@ describe('building', () => {
     const [inside] = block.splice(4, 1);
     submitCommand(world, { tick: world.tick + 1, kind: 'markStore', data: inside! });
     place(world, 'wall-stone', block);
-    step(world, sim, 5 * DAY);
+    step(world, sim, 9 * DAY);
     const index = content.buildings.parts.findIndex((p) => p.id === 'wall-stone') + 1;
     const built = block.filter((t) => world.map.built[t.y * world.map.width + t.x] === index);
     expect(built).toHaveLength(7);

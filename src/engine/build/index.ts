@@ -43,6 +43,7 @@ export {
   anyBench,
   bedOwnedBy,
   benchOf,
+  furnitureLacks,
   furnitureOf,
   FURNITURE_TABLES,
   kindOf as furnitureKind,
@@ -61,6 +62,7 @@ export {
   type Want,
 } from './wants.ts';
 export { HEARTH } from './hearths.ts';
+export { buildWell, noteDrink, planWell, WELL, WELL_TABLES, wellsOf, waterSpots } from './well.ts';
 export {
   cropNow,
   sowNow,
