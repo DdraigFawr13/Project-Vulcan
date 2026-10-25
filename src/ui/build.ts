@@ -8,7 +8,7 @@ import type { BuildRow, BuildView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { stepper, WORDS } from './stepper.ts';
 
-type BuildKind = 'house' | 'field' | 'smithy' | 'pasture';
+type BuildKind = 'house' | 'field' | 'smithy' | 'pasture' | 'road';
 
 export interface BuildActions {
   setBuild(kind: BuildKind, level: number): void;
@@ -42,6 +42,7 @@ export class BuildSheet {
   private fieldLevel: number | undefined;
   private smithyLevel: number | undefined;
   private pastureLevel: number | undefined;
+  private roadLevel: number | undefined;
   private backPasture = false;
   private backSmithy = false;
   private backBurial = false;
@@ -61,6 +62,7 @@ export class BuildSheet {
       this.fieldLevel,
       this.smithyLevel,
       this.pastureLevel,
+      this.roadLevel,
       this.backSmithy,
       this.backBurial,
       this.backPasture,
@@ -78,6 +80,7 @@ export class BuildSheet {
         if (kind === 'house') this.level = next;
         else if (kind === 'smithy') this.smithyLevel = next;
         else if (kind === 'pasture') this.pastureLevel = next;
+        else if (kind === 'road') this.roadLevel = next;
         else this.fieldLevel = next;
         this.actions.setBuild(kind, next);
         this.actions.refresh();
@@ -159,6 +162,7 @@ export class BuildSheet {
     if (view.homes) rows.push(el('p', { class: 'aside' }, view.homes.note));
     if (view.smithy) rows.push(...this.smithyRows(view.smithy));
     if (view.burial) rows.push(...this.burialRows(view.burial));
+    rows.push(...this.roadRows(view.roads));
     rows.push(
       el(
         'p',
@@ -166,6 +170,35 @@ export class BuildSheet {
         'A plan can be sent back once; colonists then choose another site.',
       ),
     );
+    return rows;
+  }
+
+  /** The Roads row (P5.10): its level, the most worn way not yet laid, the stone a stretch
+   * takes, the stretch being laid with why, and the latest laid. No Send back: a road only
+   * follows feet (Morgan, 2026-10-25). No tile (V-041). */
+  private roadRows(view: BuildView['roads']): HTMLElement[] {
+    const rows = [this.levelRow('road', 'Roads', this.roadLevel ?? view.want.level)];
+    const need = view.worn ? `Most worn way not yet laid: ${view.worn}. ` : '';
+    rows.push(el('p', { 'data-testid': 'build-road-need' }, `${need}${view.stone}`));
+    const line = (r: BuildView['roads']['roads'][number], words: string): HTMLElement => {
+      const p = el('p', { 'data-testid': 'build-road' });
+      p.append(`Road, ${r.tiles} tiles: `, el('b', {}, `${r.from} to ${r.to}`), `. ${words}`);
+      return p;
+    };
+    for (const r of view.roads.filter((r) => r.state === 'plan'))
+      rows.push(
+        line(r, `Laying, ${r.done} of ${r.tiles} tiles.`),
+        el('p', { class: 'aside' }, `Why here: ${r.why}.`),
+      );
+    const laid = view.roads.filter((r) => r.state === 'built');
+    for (const r of laid.slice(-2)) rows.push(line(r, 'Laid.'));
+    if (laid.length > 2) {
+      const tiles = laid.reduce((n, r) => n + r.tiles, 0);
+      rows.push(
+        el('p', { class: 'muted' }, `${laid.length} stretches laid in all, ${tiles} tiles.`),
+      );
+    }
+    if (!view.roads.length) rows.push(el('p', { class: 'muted' }, 'No road is planned.'));
     return rows;
   }
 
@@ -294,6 +327,7 @@ export class BuildSheet {
     if (!view.smithy?.plan?.back) this.backSmithy = false;
     if (!view.burial?.back) this.backBurial = false;
     if (this.pastureLevel === view.pasture?.want.level) this.pastureLevel = undefined;
+    if (this.roadLevel === view.roads.want.level) this.roadLevel = undefined;
     if (!view.pasture?.plan?.back) this.backPasture = false;
     for (const id of this.backFields)
       if (!view.fields.some((f) => f.id === id && f.back)) this.backFields.delete(id);

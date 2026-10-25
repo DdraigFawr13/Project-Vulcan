@@ -2,9 +2,11 @@
 // stride covers its cost, so shallow water and marsh slow them. A way blocked since it was found
 // (a tree that fell across it, ice that thawed) is found again from where they stand. Someone
 // with nothing to do strolls to a tile near the camp and stands a while; P2.2 and P2.4 give them
-// reasons to go somewhere instead. Steps are state, never ledger lines (V-036).
+// reasons to go somewhere instead. Steps are state, never ledger lines (V-036); since P5.10 each
+// step onto open surface ground wears it (map `tread`).
 import type { EntityRow } from '../core/index.ts';
 import { markPercent } from '../health/index.ts';
+import { tread } from '../map/index.ts';
 import { findPath, pack, stepCost, unpack, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
@@ -30,6 +32,12 @@ export function walkTo(ctx: SystemContext, p: EntityRow, to: Spot): boolean {
   p['path'] = path ?? [];
   p['stride'] = 0;
   return path !== undefined;
+}
+
+/** Whether surface tile `i` has a built part other than a road on it. */
+function floored(ctx: SystemContext, i: number): boolean {
+  const built = ctx.world.map.built[i]!;
+  return !!built && ctx.content.buildings.parts[built - 1]?.kind !== 'road';
 }
 
 /** One minute of walking for one person: steps taken while the stride covers them. */
@@ -58,6 +66,9 @@ export function stepAlong(ctx: SystemContext, p: EntityRow): void {
     p['x'] = next.x;
     p['y'] = next.y;
     p['z'] = next.z;
+    // Footfall wears open ground (P5.10); a floor, door or level below keeps no count.
+    const i = next.y * map.width + next.x;
+    if (next.z === 0 && !floored(ctx, i)) tread(ctx.content, map, i);
   }
   p['stride'] = path.length ? stride : 0;
 }

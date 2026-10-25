@@ -217,12 +217,14 @@ function checkBand(files: Files): string[] {
   return errors;
 }
 
-// A house names parts of the right kind (src/engine/build), and room floors are floor parts.
+// A house names parts of the right kind (src/engine/build), room floors are floor parts and the
+// Roads row lays a road part (P5.10).
 function checkHouse(files: Files): string[] {
   const b = files['buildings'] as {
     parts: { id: string; kind: string }[];
     house: { walls: string[]; door: string; floor: string };
     rooms: { floors: Record<string, number> };
+    roads: { part: string };
   };
   const kindOf = (id: string) => b.parts.find((p) => p.id === id)?.kind;
   const errors: string[] = [];
@@ -233,6 +235,7 @@ function checkHouse(files: Files): string[] {
   want(b.house.door, 'door', 'house.door');
   want(b.house.floor, 'floor', 'house.floor');
   for (const f of Object.keys(b.rooms.floors)) want(f, 'floor', `rooms.floors.${f}`);
+  want(b.roads.part, 'road', 'roads.part');
   return errors;
 }
 

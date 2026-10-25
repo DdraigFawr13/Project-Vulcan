@@ -7,6 +7,7 @@
 {"id":"wall-wood","name":"wood wall","kind":"wall","material":"logs","cost":4,"minutes":45,"art":"build.wall-wood"},
 {"id":"wall-daub","name":"wattle and daub wall","kind":"wall","material":"clay","cost":3,"also":{"material":"logs","cost":1},"minutes":40,"art":"build.wall-daub"},
 {"id":"floor-stone","name":"stone floor","kind":"floor","material":"stone","cost":2,"minutes":30,"art":"build.floor-stone"},
+{"id":"road-stone","name":"stone road","kind":"road","material":"stone","cost":2,"minutes":30,"art":"build.road-stone"},
 {"id":"floor-wood","name":"wood floor","kind":"floor","material":"logs","cost":2,"minutes":20,"art":"build.floor-wood"},
 {"id":"door-wood","name":"wooden door","kind":"door","material":"logs","cost":4,"minutes":40,"art":"build.door-wood"},
 {"id":"door-stone","name":"stone doorway","kind":"door","material":"stone","cost":5,"minutes":60,"art":"build.door-stone"},
@@ -22,6 +23,7 @@
 {"id":"longhouse","name":"longhouse","w":8,"h":6,"sleeps":8}
 ],
 "stage":{"id":"room","name":"room","w":5,"h":4,"sleeps":2},"private":4},
+"roads":{"name":"Roads","start":4,"part":"road-stone","stretch":10,"least":192,"shortest":3,"places":12},
 "smithy":{"name":"Smithy","start":2,"depth":3,"length":4,"near":20,"floor":"floor-stone","pieces":["forge","anvil","tub"]},
 "town":{"ring":16,"step":4,"most":32},
 "granary":{"width":3,"height":2,"most":12},

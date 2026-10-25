@@ -103,6 +103,8 @@ export interface ChunkView {
   /** Hours since the print was laid (0 to 255), and the way its maker went (0 n to 7 nw). */
   printAge: Uint8Array;
   printDir: Uint8Array;
+  /** Surface only (P5.10): how worn the ground is, 0 to the number of wear stages. */
+  worn: Uint8Array;
 }
 
 /** Today's weather in the valley, for the top bar. */
@@ -222,6 +224,11 @@ export interface TileView {
   fade?: string;
   /** Snow lies on the tile, with the rule that takes it off. */
   snowLies?: string;
+  /** Worn ground (P5.10): "a bare track, walked about 9 times a day". */
+  worn?: string;
+  /** The road the tile is part of: "the green to the field, laid Day 12 of Highsun", or while
+   * planned "being laid; why here: the most worn stretch of the way from ...". */
+  road?: string;
   /** A grave or a burial-ground tile (P5.8). */
   place?: PlaceView;
   /** The page of the pasture, fold, hay meadow or rick this tile is part of (Bundle 3). */

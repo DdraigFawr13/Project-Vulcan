@@ -160,6 +160,8 @@
 {"id":"wild.predatorWounded","importance":2,"template":"The {species} {where} was wounded by {name}'s blow and limped off."},
 {"id":"wild.predatorKilled","importance":2,"template":"{who} killed {a} {species} {where}."},
 {"id":"wild.packDrewOff","importance":2,"template":"{name} drew off to the den."},
+{"id":"build.roadPlanned","importance":2,"template":"The colony will lay a stone road on the way from {from} to {to}: {tiles} tiles, walked about {walks} times a day."},
+{"id":"build.roadLaid","importance":2,"template":"The road from {from} to {to} is laid: {tiles} tiles of stone."},
 {"id":"build.middenSited","importance":2,"template":"The colony sited a midden past the town ring, {far} tiles {dir} of the green, away from the houses, fields and water: the offal of kills is carried there."},
 {"id":"wild.killed","importance":1,"template":"{who} killed {a} {species} {where}."},
 {"id":"work.tookUpSmithing","importance":1,"template":"{name} took up smithing {what} for {who}: {why}."},

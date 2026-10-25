@@ -127,3 +127,4 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-121 | The first cottage becomes the hall once the band has moved out (proposal P1). |
 | V-122 | Tracks on snow and mud fade over a day; a hunter crossing fresh ones follows them (proposal P2). |
 | V-123 | 5A looks (taste board https://claude.ai/artifact/7QMHTRi5A9UFqYcWuk9xuF): worn grass, stone roads, unmarked predators, fading prints, wattle folds, wooden grave markers, a body figure. |
+| V-124 | Worn paths and roads (Morgan, P5.10 mock-up https://claude.ai/artifact/WqKbNscnYuNaMXABMrXEbq, 2026-10-25): only people wear ground, a 64th fades daily; only roads walk faster (0.7); a road goes on the busiest way between two places, its most worn run of up to 10 tiles; no Send back for roads (differs from V-049). |

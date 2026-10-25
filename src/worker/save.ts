@@ -101,6 +101,8 @@ export function checkSave(
     layer(map['printKind'], Uint8Array, map['tiles'].length) &&
     layer(map['printAt'], Int32Array, map['tiles'].length) &&
     layer(map['printDir'], Uint8Array, map['tiles'].length) &&
+    layer(map['wear'], Uint16Array, map['tiles'].length) &&
+    layer(map['worn'], Uint8Array, map['tiles'].length) &&
     layer(map['built'], Uint8Array, map['tiles'].length) &&
     layer(map['stains'], Uint8Array, map['tiles'].length) &&
     Number.isSafeInteger(map['floor']) &&
@@ -210,7 +212,7 @@ const weatherSound = (state: unknown, kinds: number): boolean =>
 // A generator layer: a typed array of the map's length (structured clones keep the type).
 const layer = (
   value: unknown,
-  type: typeof Int16Array | typeof Int32Array | typeof Uint8Array,
+  type: typeof Int16Array | typeof Int32Array | typeof Uint8Array | typeof Uint16Array,
   length: number,
 ) => value instanceof type && value.length === length;
 

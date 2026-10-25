@@ -30,6 +30,8 @@ const slowFiles = [
   'src/engine/people/strangers.test.ts',
   // The same words on the page's side (P5.9, P5.14): one run of 180 days on anvil.
   'src/worker/strangers.test.ts',
+  // Worn paths and roads (P5.10): a run to the first cottage, then a road laid.
+  'src/engine/build/roads.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).

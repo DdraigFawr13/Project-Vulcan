@@ -148,6 +148,28 @@ export interface FieldView {
   sited?: LedgerLine;
 }
 
+/** The Roads row of the Build sheet (P5.10): its level, the next stretch the colony has found
+ * while the store lacks its stone, the stone a stretch takes, and each stretch planned or laid. */
+export interface RoadsRow {
+  want: { level: number; word: string };
+  /** "the green to the pasture, walked about 6 times a day". */
+  worn?: string;
+  /** "A stretch of up to 10 tiles takes 20 stone; 26 in store." */
+  stone: string;
+  roads: {
+    id: number;
+    from: string;
+    to: string;
+    tiles: number;
+    /** `plan` while being laid, `built` once laid. */
+    state: string;
+    /** Tiles laid so far. */
+    done: number;
+    /** "the most worn stretch of the way from the green to the field, walked about 8 times a day". */
+    why: string;
+  }[];
+}
+
 /** The Build sheet (P3.7): the Houses level, the need, the green and every house and room; since
  * P4.7 also the Fields level, its need in tiles and every field. */
 export interface BuildView {
@@ -164,6 +186,8 @@ export interface BuildView {
   burial?: BurialRow;
   /** Present while wild sheep or goats live in the valley, or a pasture is planned or built. */
   pasture?: PastureRow;
+  /** The Roads row (P5.10). */
+  roads: RoadsRow;
   green: { x: number; y: number };
   want: { level: number; word: string };
   /** "5 people sleep under the open sky", or "none now". */

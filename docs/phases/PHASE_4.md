@@ -48,7 +48,7 @@ Surface stains above ore veins; the shaft sited from the want; tunnelling, rubbl
 
 Charcoal clamp and smelter sited at the edge, the smithy by the river and the smith's house (V-053); ingots of copper, tin and iron, bronze mixed from ingots; tools with quality from smithing skill and wear; stone tools at the start; the item page walks an axe back to its ore tile; a notable line for a maker's first fine piece. Mock-up: UI (charcoal output per log goes in its engine table). Done when: bronze needs copper and tin ingots in the store, a fine pick mines measurably faster than a poor one, and an axe's page walks back to the ore tile it came from.
 
-- Reading list: `docs/ART.md`; `src/engine/goods/MODULE.md`; `src/engine/build/MODULE.md`; `src/engine/people/MODULE.md`; `src/engine/log/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/ART.md`; `src/engine/goods/MODULE.md`; `src/engine/build/MODULE.md`; `src/engine/people/MODULE.md`; `src/ui/MODULE.md`
 
 ### Bundle 4: P4.8 People slice
 

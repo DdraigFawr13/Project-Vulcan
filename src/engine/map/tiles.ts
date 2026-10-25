@@ -24,7 +24,8 @@ export function layerOf(map: MapState, z: number): MapState | LevelState | undef
 /** The ground, features, snow and ice of chunk (cx, cy) on level `z`, row by row; edge chunks
  * are narrower or shorter. Below the surface there is no snow or ice. `snowLie` is the weather's
  * lying snow; `printKind` (0, or 1 + a `wild.prints` index), `printAge` (hours since, up to 255 at
- * `tick`) and `printDir` (0 to 7) the animals' prints that `printHours` has not yet taken. */
+ * `tick`) and `printDir` (0 to 7) the animals' prints that `printHours` has not yet taken; `worn`
+ * the stage the ground's wear has reached (P5.10). */
 export function chunkTiles(
   map: MapState,
   cx: number,
@@ -45,6 +46,7 @@ export function chunkTiles(
   printKind: Uint8Array;
   printAge: Uint8Array;
   printDir: Uint8Array;
+  worn: Uint8Array;
   built: Uint8Array;
   known: Uint8Array;
   stains: Uint8Array;
@@ -63,6 +65,7 @@ export function chunkTiles(
   const printKind = new Uint8Array(w * h);
   const printAge = new Uint8Array(w * h);
   const printDir = new Uint8Array(w * h);
+  const worn = new Uint8Array(w * h);
   const built = new Uint8Array(w * h);
   const known = new Uint8Array(w * h);
   const stains = new Uint8Array(w * h);
@@ -82,13 +85,14 @@ export function chunkTiles(
         );
         printDir[row * w + col] = map.printDir[from]!;
       }
+      if (z === 0) worn[row * w + col] = map.worn[from]!;
       if (z === 0) built[row * w + col] = map.built[from]!;
       if (z === 0) stains[row * w + col] = map.stains[from]!;
       known[row * w + col] = z === 0 ? 1 : (layer as LevelState).known[from]!;
     }
   return {
     ...{ x, y, z, w, h, tiles, features, snow, ice, snowLie },
-    ...{ printKind, printAge, printDir, built, known, stains },
+    ...{ printKind, printAge, printDir, worn, built, known, stains },
   };
 }
 

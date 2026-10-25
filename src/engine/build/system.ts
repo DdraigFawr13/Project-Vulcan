@@ -30,6 +30,7 @@ import { planSmithy, SMITHY_TABLES, sendBackSmithy } from './smithy.ts';
 import { BURIAL_TABLES, planBurial, sendBackBurial } from './burial.ts';
 import { MIDDEN_TABLES, planMidden } from './midden.ts';
 import { planSickroom } from './sickroom.ts';
+import { finishRoads, planRoads, ROAD_TABLES } from './roads.ts';
 
 function refuse(ctx: SystemContext, kind: string, reason: string, cause: number): void {
   ctx.emit('command.refused', { causes: [cause], data: { kind, reason } });
@@ -149,6 +150,7 @@ export const buildSystem: System = {
     ...['pasture.needed', 'pasture.sited', 'pasture.sentBack', 'pasture.noGround', 'pasture.built'],
     ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
     ...['build.sickroom', 'build.burialSited', 'build.burialSentBack', 'build.middenSited'],
+    ...['build.roadPlanned', 'build.roadLaid'],
   ],
   // `nobody`: the line saying nobody is able to build, while that holds; `green`: the green's
   // tile index plus one; `need`: the line saying people sleep in the open, while they do;
@@ -163,6 +165,8 @@ export const buildSystem: System = {
     ...{ pastureNeed: 0, pastureNoGround: 0, pastureTried: 0 },
     // P5.14: the tick a home last found no ground, to look again a day later.
     homeTried: 0,
+    // P5.10: the tick the colony last looked for a stretch of road to lay.
+    roadTried: 0,
   },
   refs: [
     ...['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround', 'smithyNoGround'],
@@ -178,6 +182,7 @@ export const buildSystem: System = {
     ...STATION_TABLES,
     ...BURIAL_TABLES,
     ...MIDDEN_TABLES,
+    ...ROAD_TABLES,
   },
   commands: {
     placeBuilding: (ctx, command, cause) => placeBuilding(ctx, command.data, cause),
@@ -224,6 +229,9 @@ export const buildSystem: System = {
     planBurial(ctx, green);
     // P5.4a: a midden at the first offal.
     planMidden(ctx, green);
+    // P5.10: a road on the most worn way, as stone allows.
+    finishRoads(ctx);
+    planRoads(ctx, green);
     checkBuilders(ctx);
   },
 };

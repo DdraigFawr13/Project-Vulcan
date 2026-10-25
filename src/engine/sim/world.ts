@@ -102,6 +102,8 @@ export function createWorld(sim: Sim, seed: string, look = 0): WorldState {
       printKind: new Uint8Array(0),
       printAt: new Int32Array(0),
       printDir: new Uint8Array(0),
+      wear: new Uint16Array(0),
+      worn: new Uint8Array(0),
       built: new Uint8Array(0),
       stains: new Uint8Array(0),
       levels: [],

@@ -2,7 +2,7 @@
 // arrays), so the worker can post it, P0.5 can save it and tests can compare it.
 import type { PeopleDefs } from './people.ts';
 import type { AuraDials, AuraSpot, SeasonsDef, WeatherDef } from './climate.ts';
-import type { FeatureDef, UndergroundDials, WalkingDef } from './ground.ts';
+import type { FeatureDef, UndergroundDials, WalkingDef, WearDef } from './ground.ts';
 import type { BuildingsDef, ItemDef, JobDef, LifeDef, MemoryDef, WorkDef } from './life.ts';
 import type { RngState } from './rng.ts';
 import type { CultureDef, NamesDef, RegionDef } from './region.ts';
@@ -172,6 +172,11 @@ export interface MapState {
   printKind: Uint8Array;
   printAt: Int32Array;
   printDir: Uint8Array;
+  /** Footfall on each surface tile (P5.10, V-054): a step onto it adds one, each dawn takes
+   * a share away (terrain `wear`); and the stage it has reached, 0 to `wear.stages.length`,
+   * kept beside it so a chunk is sent again only when a stage changes. */
+  wear: Uint16Array;
+  worn: Uint8Array;
   /** Built on each surface tile (P3.1): 0, or 1 + a `buildings.parts` index; a stair is a tile kind. */
   built: Uint8Array;
   /** Surface only: 0, or 1 + the features index of the stained vein below the tile (the
@@ -333,6 +338,8 @@ export interface TerrainDef {
   }[];
   /** P2.3: how people walk (src/engine/paths). */
   walking: WalkingDef;
+  /** P5.10: footfall and worn ground (src/engine/map/wear.ts). */
+  wear: WearDef;
 }
 
 /** The forked biome table (src/content/data/biomes.json); only the fields the map reads. */

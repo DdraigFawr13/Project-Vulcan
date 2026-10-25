@@ -13,6 +13,7 @@ export {
   nthOf,
   rowsOf,
   sizeOf,
+  ROAD_KIND,
   wantOf as buildWantOf,
 } from './houses.ts';
 export { bedSpot, builtHome, homeFor, householdOf, othersHome, sleepsIn } from './beds.ts';
@@ -85,3 +86,4 @@ export {
 } from './pasturerows.ts';
 export { PASTURE_KIND, planPasture } from './pasture.ts';
 export { wildHerds } from './pasturesite.ts';
+export { nextRoad, placesOf, roadAt, roadsOf, ROAD_TABLES } from './roads.ts';

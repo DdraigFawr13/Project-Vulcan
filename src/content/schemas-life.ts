@@ -3,6 +3,7 @@
 // from 0 to `scale`; rates are per game hour.
 import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, id, text, texts } from './schema-fields';
+import { TOWN_SCHEMAS } from './schemas-town';
 
 // A house size or stage: a footprint of walls round a floor, and how many it sleeps.
 const size = obj({
@@ -265,7 +266,7 @@ export const LIFE_SCHEMAS = {
       obj({
         id,
         name: text,
-        kind: oneOf('wall', 'floor', 'door', 'stair'),
+        kind: oneOf('wall', 'floor', 'door', 'stair', 'road'),
         material: ref('items'),
         cost: num({ min: 1 }),
         // A second material brought after the first (wattle and daub: clay, then logs).
@@ -316,10 +317,7 @@ export const LIFE_SCHEMAS = {
       floor: text,
       pieces: texts,
     }),
-    town: obj({ ring: num({ min: 1 }), step: num({ min: 1 }), most: num({ min: 1 }) }),
-    // The granary the band lays out beside a field once it is reaped: `width` by `height` tiles at
-    // first, growing to `most` tiles when full. It keeps the harvest the store's Food plate leaves.
-    granary: obj({ width: num({ min: 1 }), height: num({ min: 1 }), most: num({ min: 1 }) }),
+    ...TOWN_SCHEMAS,
     field: obj({
       name: text,
       seed: ref('items'),

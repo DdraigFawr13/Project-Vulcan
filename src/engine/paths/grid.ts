@@ -72,6 +72,18 @@ export function walkAt(content: EngineContent, map: MapState, z: number, i: numb
   return walk;
 }
 
+/** What standing on tile `i` of level `z` costs now, in tenths of a step on plain ground: its
+ * walking multiplier times 10, or `walking.road` on a road (P5.10, V-054); 0 when it cannot be
+ * stood on. Searches and steps cost by this; `walkAt` stays the plain multiplier. */
+export function costAt(content: EngineContent, map: MapState, z: number, i: number): number {
+  const walk = walkAt(content, map, z, i);
+  if (!walk) return 0;
+  const built = z === 0 ? (map.built[i] ?? 0) : 0;
+  if (built && content.buildings.parts[built - 1]?.kind === 'road')
+    return content.terrain.walking.road;
+  return walk * 10;
+}
+
 /** The cost of climbing from `i` on level `z` to the same place on `z + 1`: 0 when there is no
  * way down there (stairs or a shaft above meeting stairs or a shaft below). */
 export function downAt(content: EngineContent, map: MapState, z: number, i: number): number {
@@ -100,13 +112,13 @@ export function stepCost(content: EngineContent, map: MapState, from: Node, to: 
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   if (a.z !== b.z || Math.abs(dx) > 1 || Math.abs(dy) > 1) return 0;
-  const walk = walkAt(content, map, b.z, b.y * w + b.x);
-  if (!walk || !walkAt(content, map, a.z, a.y * w + a.x)) return 0;
+  const cost = costAt(content, map, b.z, b.y * w + b.x);
+  if (!cost || !walkAt(content, map, a.z, a.y * w + a.x)) return 0;
   const walking = content.terrain.walking;
   if (dx && dy) {
     if (!walkAt(content, map, a.z, a.y * w + b.x) || !walkAt(content, map, a.z, b.y * w + a.x))
       return 0;
-    return walking.diagonal * walk;
+    return Math.floor((walking.diagonal * cost) / 10);
   }
-  return walking.straight * walk;
+  return Math.floor((walking.straight * cost) / 10);
 }
