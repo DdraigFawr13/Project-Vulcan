@@ -9,7 +9,7 @@ The phase is split in two halves that each go live with a playtest (V-107). This
 - [x] Spec approved by Morgan, 2026-10-20 (PR #67)
 - [x] Bundle 1, injury and death: P5.6, P5.8
 - [x] Bundle 2, the wild valley: P5.4a, tracks
-- [ ] Bundle 3, flocks: P5.4b, hay
+- [x] Bundle 3, flocks: P5.4b, hay
 - [ ] Bundle 4, strangers and homes: P5.9, P5.14, the hall
 - [ ] Bundle 5, worn paths and roads: P5.10
 - [ ] 5A balance and review

@@ -224,6 +224,8 @@ export interface TileView {
   snowLies?: string;
   /** A grave or a burial-ground tile (P5.8). */
   place?: PlaceView;
+  /** The page of the pasture, fold, hay meadow or rick this tile is part of (Bundle 3). */
+  pasture?: AnimalPage;
 }
 
 /** Yesterday's tally (P2.9): the date, logs felled, items carried into the store, berries

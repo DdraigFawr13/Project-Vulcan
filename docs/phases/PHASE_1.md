@@ -52,7 +52,7 @@ The valley among named neighbouring sites from content cultures; site picker bef
 
 The Story Generator's world and history engine, used as a package with an adapter from Vulcan's content (V-031), replaces P1.5's lighter generator behind the merged region map, site picker and Region button, which stay as they are. Mock-up: engine (ten seeds' regions: names, cultures, distances, a history line per neighbour). Done when: ten seeds give ten distinct, named neighbourhoods drawn from their Story Generator worlds, and the same seed gives the same world.
 
-- Reading list: `docs/DECISIONS.md` V-031; `src/content/MODULE.md`; `src/worker/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/DECISIONS.md` V-031; `src/worker/MODULE.md`; `src/ui/MODULE.md`
 
 ## Phase review fixes
 

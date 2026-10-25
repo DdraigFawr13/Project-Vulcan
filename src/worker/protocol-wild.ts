@@ -1,6 +1,7 @@
 // The wire shapes of the wild valley (Phase 5A Bundle 2), split from protocol.ts: the animals the
 // map draws, the page an animal opens, and the leftovers the Stock sheet counts.
 import type { LedgerLine } from './protocol.ts';
+import type { FlockPlate } from './protocol-flock.ts';
 
 /** A live animal on the surface, sent when any of them moves (like the walkers, V-110). */
 export interface AnimalView {
@@ -32,4 +33,6 @@ export interface LeftoversView {
   items: { item: string; name: string; have: number }[];
   game: number;
   fish: number;
+  /** The tame flock and its hay, once a pasture stands (Bundle 3). */
+  flock?: FlockPlate;
 }

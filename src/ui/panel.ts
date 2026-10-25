@@ -2,16 +2,23 @@
 // list, and the sheets drawn elsewhere (person, Work, Alerts). Shows what the worker and the save store hand
 // it; it computes no game rule (GAME-02).
 import type { SaveMeta } from '../persist/index.ts';
-import type { ClockView, LedgerLine, RegionView, StockView, TileView } from '../worker/index.ts';
-import type { LeftoversView } from '../worker/index.ts';
+import type {
+  ClockView,
+  LedgerLine,
+  LeftoversView,
+  RegionView,
+  StockView,
+  TileView,
+} from '../worker/index.ts';
 import { el } from './dom.ts';
-import { raceLegend, regionMap, siteWords } from './regionmap.ts';
+import { regionRows } from './regionmap.ts';
 import { drawStock } from './stock.ts';
 import { testMode } from './testmode.ts';
 import { landFacts } from './landrows.ts';
 import { placeHead, placeTitle } from './placerows.ts';
 import { shaftBack, shaftTitle } from './shaftrows.ts';
-import { standingFacts, standingLines } from './tilerows.ts';
+import { STAIN_NOTE, standingFacts, standingLines } from './tilerows.ts';
+import { animalRows } from './animalsheet.ts';
 import { worksDoing } from './worksrows.ts';
 import { versionLine } from './version.ts';
 import { testTools, type TestOrder } from './testtools.ts';
@@ -55,10 +62,6 @@ export interface PanelActions {
   go(tile: TileView, z: number): void;
   close(): void;
 }
-
-/** What a stain on the ground means (taste board pick, V-087); the colours are content. */
-const STAIN_NOTE =
-  'Stains show where ore lies below: green for copper, grey for tin, rust for iron. Miners dig where a wanted metal’s stain is; you set what is wanted on the Stock sheet.';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const when = (c: ClockView) => `${pad(c.hour)}:${pad(c.minute)}, Day ${c.day} of ${c.monthName}`;
@@ -108,6 +111,13 @@ export class Panel {
   /** The tile's record, its ways up and down, and the test levers. `notice` is what became of the
    * last dig order here: a line saying it waits for time to run, or the ledger line refusing it. */
   showTile(tile: TileView, depth: number, notice?: string | LedgerLine): void {
+    // A pasture, fold, hay meadow or rick tile opens that page (Bundle 3), read-only.
+    if (tile.pasture)
+      return this.showView(
+        'tile',
+        tile.pasture.title,
+        animalRows(tile.pasture, (l) => this.lineRow(l)),
+      );
     const where = tile.z === 0 ? '' : ` · ${tile.z} level${tile.z > 1 ? 's' : ''} down`;
     this.open(
       'tile',
@@ -179,35 +189,8 @@ export class Panel {
 
   /** The region map, read-only, with the settled valley marked; a tapped site shows who lives there. */
   showRegion(region: RegionView, site: number): void {
-    const valley = region.valleys[site - 1];
     this.open('region', 'Region');
-    const note = el('p', { class: 'note' }, 'Tap a settlement to see who lives there.');
-    const map = regionMap(region, {
-      selected: site,
-      onlySelected: true,
-      onSite: (s) => (note.textContent = siteWords(s)),
-    });
-    const near = el('ul');
-    for (const n of valley?.near ?? [])
-      near.append(el('li', {}, `${n.name}, ${n.culture} ${n.kind}, ${n.days} days ${n.dir}`));
-    this.body.replaceChildren(
-      el(
-        'p',
-        {},
-        valley
-          ? `Your valley: ${valley.name}${valley.range ? `, under ${valley.range}` : ''}.`
-          : '',
-      ),
-      map,
-      raceLegend(region),
-      note,
-      near,
-      el(
-        'p',
-        { class: 'muted' },
-        'No dealings with the neighbours yet: raids come in Phase 8, trade and travel in Phase 9.',
-      ),
-    );
+    this.body.replaceChildren(...regionRows(region, site));
   }
 
   /** The Stock sheet (P2.4): how much of each good the colony keeps, a level button for each. */
@@ -355,12 +338,13 @@ export class Panel {
   }
 
   private open(kind: PanelKind, title: string): void {
-    // A new sheet starts at its top; one redrawn in place keeps its place.
-    if (this.root.hidden || this.shown !== kind || this.title.textContent !== title)
-      this.root.scrollTop = 0;
+    // A new sheet starts at its top; one redrawn in place keeps its place. A hidden sheet cannot
+    // scroll, so it is shown first.
+    const top = this.root.hidden || this.shown !== kind || this.title.textContent !== title;
     this.shown = kind;
     this.title.textContent = title;
     this.root.hidden = false;
+    if (top) this.root.scrollTop = 0;
   }
 
   /** A ledger line: its number, when, its text and "why?" when it has causes. */

@@ -26,6 +26,7 @@ import {
   type WorldState,
 } from '../engine/index.ts';
 import { fieldFrames } from './fields.ts';
+import { pastureFrames } from './flock.ts';
 import { fireGoods, workBars } from './fires.ts';
 import { jobBars } from './jobbars.ts';
 import { metalStatus } from './metalstatus.ts';
@@ -77,7 +78,7 @@ export function goodsOf(world: WorldState): GoodsView {
     furniture: [...furnitureGoods(world), ...stationGoods(world)],
     fires: fireGoods(world),
     work: [...workBars(world), ...jobBars(world)],
-    fields: fieldFrames(world),
+    fields: [...fieldFrames(world), ...pastureFrames(world)],
     shafts: shaftPlans(world),
     middens: middensOf(world).map(({ x, y, z }) => ({ x, y, z })),
     ...burialGoods(world),
