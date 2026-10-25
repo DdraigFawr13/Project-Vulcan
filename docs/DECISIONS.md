@@ -131,3 +131,14 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-125 | Watch fire (Bundle 6 mock-up, 2026-10-25): via the Herding row; 4 nights after a pack sign, 6 firewood a night, watcher sleeps to 13:00; pack keeps 8 tiles off. |
 | V-126 | A pack 20+ days without a kill breaks into a dark shut fold. |
 | V-127 | Newcomers bring their home's skill at 9-12. Herbs: a plate, 1 per 3 days on a fresh deep wound halves festering. |
+| V-128 | 5B (workshop https://claude.ai/artifact/Nd7XxGcKqCBT47eStZJc4k, Morgan 2026-10-25, all recommended): bundles stores, larder (P5.1, P5.2), kitchen and keeping (P5.3, P5.12), mill (P5.11), loom (P5.5), lamp (P5.13), sickness (P5.7); brewing moves to P6.12. |
+| V-129 | Stores by kind (Morgan, 2026-10-25): granary, larder, wood yard, stone and ore yard, later wool and hide; each sited from need between where its goods are gathered and used; home store keeps the rest; no Stores row; stacks double. |
+| V-130 | Fields: tile fertility drawn by grain, restored by beans, fallow or muck; rotation from content; oats, beans, cabbages, flax; blight after wet weeks, worse on a repeated crop. |
+| V-131 | Drinking is an errand (river, pond, well); a well from need on the green; well water for fields in dry spells. |
+| V-132 | Food spoils by place, warmth and keeping; recipes, meals plain/good/fine by cook skill; curer (smoke; salt from a seam or trade), cooper, potter (pots, bricks). |
+| V-133 | Quern, then a mill from need on the river, idle when frozen; its wheel only grinds; oven beside it. Harvest home is a meal in the hall (grows V-093). |
+| V-134 | Clothes: everyday and outer, worth by maker's skill; weaver, tanner, tailor; Clothes plate. |
+| V-135 | Day length by month; outdoor work stops at dusk; indoor trades need candles, a hearth lights dimly; chandler (tallow, wax, soap), beekeeper; Candles plate. |
+| V-136 | Sickness from colony conditions (water, spoiled food, chill, wounds, shared rooms, strangers); soap cuts it; healer medicines and surgery by skill and tool; herb garden from need. |
+| V-137 | check:full under 120 s; 5B spec in PHASE_5B.md; a reading list naming DECISIONS rows counts only those rows. |
+| V-138 | 5B looks (taste board https://claude.ai/artifact/7uVoR2f6Sp6mbRdGAvaB9c, Morgan 2026-10-25): food stores walled, wood/stone/ore in open yards (hurdle, drystone); blight browns outward; stone well with windlass and roof; mill walls by V-096; a candlelit room glows. |

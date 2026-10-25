@@ -61,7 +61,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-25** Budgets: the checks as in VR-67, CI under 5 minutes. A change that breaks a budget removes or merges tests before it adds more. When a new test covers an old one, delete the old one.
 - **VR-26** Each bug fix adds one regression test at the level where the bug lived, and no more.
 - **VR-27** While iterating, run only the related tests; the quick check before each push (VER-02), the full one before ready (VR-67).
-- **VR-67** Two check tiers (Morgan, 2026-10-19; the check had reached 63 to 70 s). `npm run check`, under 40 s, leaves out the slow colony-run test files listed in `vitest.config.ts`; run it on every push. `npm run check:full`, under 75 s, runs every file; run it and the browser smoke once each before marking ready, and CI runs it. A test that steps a colony for weeks goes on the slow list.
+- **VR-67** Two check tiers (Morgan, 2026-10-19; the check had reached 63 to 70 s). `npm run check`, under 40 s, leaves out the slow colony-run test files listed in `vitest.config.ts`; run it on every push. `npm run check:full`, under 120 s (raised from 75 s, Morgan, 2026-10-25, V-137), runs every file; run it and the browser smoke once each before marking ready, and CI runs it. A test that steps a colony for weeks goes on the slow list.
 - **VR-63** A browser-smoke locator names the exact row it means by its label (the Food need, not the first `.need`), never the first match of a class or button name (LESSONS "test" x2).
 
 ## 8. Design rules for this game
