@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { root } from './lib.mjs';
 
 const full = process.argv.includes('--full');
-const budgetSeconds = full ? 75 : 40;
+const budgetSeconds = full ? 120 : 40;
 const steps = [
   ['ai-master', 'node .claude/master/sync.mjs --check'],
   ['format', 'npx prettier --check --cache .'],

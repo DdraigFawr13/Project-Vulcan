@@ -2,7 +2,7 @@
 
 Goal: a colony that feeds, clothes and mends itself, and grows by taking in strangers. Entry: Phase 4 done and live (2026-10-20). Plan source: the project file `vulcan/plan/phases/PHASE_5.md`. Design workshop round 1: https://claude.ai/artifact/JaA6PDXSCXvbMXWKErK7wv; taste board: https://claude.ai/artifact/7QMHTRi5A9UFqYcWuk9xuF (decisions V-107 to V-123). Control stays indirect (V-041): colonists choose whom to hunt, where to graze, bury and build, whom to carry and when to flee.
 
-The phase is split in two halves that each go live with a playtest (V-107). This spec covers 5A. 5B (P5.1 farming, P5.2 wells, P5.3 cooking, P5.5 cloth, P5.7 disease, P5.11 mill, P5.12 keeping food, P5.13 light) gets its own question round while 5A builds, and is added here before its first bundle.
+The phase is split in two halves that each go live with a playtest (V-107). This spec covers 5A. 5B (P5.1, P5.2, P5.3, P5.5, P5.7, P5.11 to P5.13) is specced in `PHASE_5B.md`.
 
 ## Status
 
@@ -14,7 +14,7 @@ The phase is split in two halves that each go live with a playtest (V-107). This
 - [x] Bundle 5, worn paths and roads: P5.10 (V-124)
 - [x] 5A balance and review (table in CHANGELOG)
 - [x] Bundle 6: watch fire, home skills, herbs (V-125-127)
-- [ ] 5B question round, spec section, bundles, review
+- [x] 5B question round (V-128); 5B goes on in `PHASE_5B.md`
 
 Irrigation is parked; P5.2 is wells only (V-108).
 

@@ -45,7 +45,7 @@ Content entries for each part and material; walls block paths and doors pass the
 
 A Build sheet (under ⋯) with one row per building kind and 1 to 4 steppers; the green where the cart stopped (V-050); colonists site a house on flat dry ground near the green, pick its size from content (V-051) and show a faint plan with a reason; Send back once. Mock-up: UI. Done when: asking for a house, with no tile chosen, gives a sited plan with a reason line on every seed, and the same seed gives the same site.
 
-- Reading list: `docs/DECISIONS.md`; `docs/UI_STYLE.md`; `src/engine/map/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/DECISIONS.md` V-049 V-050 V-051 V-052 V-053 V-055; `docs/UI_STYLE.md`; `src/engine/map/MODULE.md`; `src/ui/MODULE.md`
 
 ### P3.3 Room detection
 
@@ -75,7 +75,7 @@ Beauty and privacy needs; colonists claim beds and rooms. Mock-up: engine. Done 
 
 The ring hearth (V-042 to V-048): Tend row, Firewood plate, banked fires, idle rooms burn down, fuel as content, firelight at night. Mock-up: engine. Done when: a heated room in winter keeps the warmth need above its warning line, in a three-seed table.
 
-- Reading list: `docs/DECISIONS.md`; `src/engine/weather/MODULE.md`; `src/engine/needs/MODULE.md`; `src/render/MODULE.md`
+- Reading list: `docs/DECISIONS.md` V-043 V-044 V-045 V-046; `src/engine/weather/MODULE.md`; `src/engine/needs/MODULE.md`; `src/render/MODULE.md`
 
 ## Phase done (playtest)
 

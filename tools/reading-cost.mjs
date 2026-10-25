@@ -1,6 +1,8 @@
 // Sums the size of each milestone's reading list in the phase specs and fails over budget
 // (PLAN.md §6). A list is a line starting "Reading list:" with backticked repo paths; an
-// #anchor counts the whole file. Every list also pays for the files all sessions read first.
+// #anchor counts the whole file. DECISIONS.md followed by row ids (V-129) counts only those rows,
+// since sessions grep rows and never read it whole. Every list also pays for the files all
+// sessions read first.
 // Fails on a milestone with no list, a missing doc, or a list over budget.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -13,6 +15,21 @@ export const base = [
   'docs/AGENT_BRIEF.md',
   'docs/CODEMAP.md',
 ];
+
+const DECISIONS = 'docs/DECISIONS.md';
+
+/** One `;`-separated part of a list: its files' sizes, or only the named DECISIONS rows. */
+function partBytes(part) {
+  const files = [...part.matchAll(/`([^`]+)`/g)].map((m) => m[1].split('#')[0]);
+  const ids = [...part.matchAll(/\bV-\d+\b/g)].map((m) => m[0]);
+  return files.reduce((sum, f) => {
+    if (f !== DECISIONS || !ids.length) return sum + (size(path.join(root, f)) ?? 0);
+    const rows = readFileSync(path.join(root, f), 'utf8')
+      .split('\n')
+      .filter((row) => ids.some((id) => row.startsWith(`| ${id} |`)));
+    return sum + rows.reduce((n, row) => n + Buffer.byteLength(row) + 1, 0);
+  }, 0);
+}
 
 export function readingCosts(specs) {
   const baseBytes = base.reduce((sum, f) => sum + (size(path.join(root, f)) ?? 0), 0);
@@ -29,7 +46,7 @@ export function readingCosts(specs) {
       if (!/^\s*[-*]?\s*Reading list:/i.test(line)) continue;
       const files = [...line.matchAll(/`([^`]+)`/g)].map((m) => m[1].split('#')[0]);
       const missing = files.filter((f) => size(path.join(root, f)) === null);
-      const bytes = files.reduce((sum, f) => sum + (size(path.join(root, f)) ?? 0), baseBytes);
+      const bytes = line.split(';').reduce((sum, part) => sum + partBytes(part), baseBytes);
       rows.push({ spec: rel(spec), milestone, bytes, missing });
     }
     if (milestone && !rows.some((r) => r.milestone === milestone)) unlisted.push(milestone);
