@@ -5,7 +5,7 @@ import { dirFrom, greenOf } from '../build/index.ts';
 import { walkAt } from '../paths/index.ts';
 import { valleyOf } from '../region/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { animalsOf, herdsOf } from './wild.ts';
+import { animalsOf, wildHerdsOf } from './wild.ts';
 
 /** Open ground an animal may stand on: walkable, and never water (frozen or not). */
 export const openAt = (content: EngineContent, map: MapState, i: number): boolean =>
@@ -59,7 +59,7 @@ export function whereWords(
 
 /** Live animals of each game species, by species id. */
 export function gameCounts(world: WorldState): Map<string, number> {
-  const species = new Map(herdsOf(world).map((h) => [h.id, h['species'] as string]));
+  const species = new Map(wildHerdsOf(world).map((h) => [h.id, h['species'] as string]));
   const counts = new Map<string, number>();
   for (const a of animalsOf(world)) {
     const s = species.get(a['herd'] as number);

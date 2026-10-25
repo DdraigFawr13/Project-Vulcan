@@ -8,7 +8,12 @@ import { greenOf, ringOf } from '../build/index.ts';
 import { allLines, createSim, createWorld, step, submitCommand, whyOf } from '../index.ts';
 import { haveOf, itemsOf, layItem, storeOf, trailOf } from '../goods/index.ts';
 
-const sim = createSim(content);
+// No pasture (Bundle 3): its hurdles and felling would share the builders this test times.
+const noFlock = {
+  ...content,
+  flock: { ...content.flock, tame: { ...content.flock.tame, species: [] } },
+};
+const sim = createSim(noFlock);
 const DAY = 1440;
 type World = ReturnType<typeof createWorld>;
 const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === type);
@@ -99,7 +104,7 @@ describe('metal', () => {
   it('says once that the smelter waits when no charcoal can be had', () => {
     // A clamp that wants more logs than the colony will ever hold: charcoal is never made.
     const none = createSim({
-      ...content,
+      ...noFlock,
       metal: { ...content.metal, clamp: { ...content.metal.clamp, logs: 9999 } },
     });
     const w = withOre([['copper-ore', 6]], none);

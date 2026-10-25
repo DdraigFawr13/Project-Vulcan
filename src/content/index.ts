@@ -14,6 +14,7 @@ import diseases from './data/diseases.json';
 import dragons from './data/dragons.json';
 import events from './data/events.json';
 import faiths from './data/faiths.json';
+import flock from './data/flock.json';
 import features from './data/features.json';
 import greatWorks from './data/great-works.json';
 import health from './data/health.json';
@@ -63,6 +64,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   dragons,
   events,
   faiths,
+  flock,
   features,
   'great-works': greatWorks,
   health,

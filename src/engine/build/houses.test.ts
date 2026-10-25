@@ -69,7 +69,7 @@ describe('houses', () => {
           !inRect(rectOf(house), x, y) &&
           freeTile(world, content, x, y)
         )
-          layItem(world, { kind: 'logs', count: 1, x, y, z: 0, made: 0 });
+          layItem(world, { kind: 'logs', count: 1, x, y, z: 0, made: house['line'] as number });
     step(world, sim, 4 * DAY);
     expect(lines(world, 'build.growBlocked')).toHaveLength(0);
     const room = housesOf(world).find((h) => h['of'] === house.id)!;

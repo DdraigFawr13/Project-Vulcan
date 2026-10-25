@@ -35,6 +35,7 @@ import { furnishing, takeUpCarpentry } from './carpentry.ts';
 import { farming, takeUpFarming } from './farm.ts';
 import { fishing, takeUpFishing } from './fish.ts';
 import { endHunt, hunting, takeUpHunting } from './hunt.ts';
+import { herding, takeUpHerding } from './herd.ts';
 import { foraging, takeUpForaging } from './forage.ts';
 import { practise } from './learn.ts';
 import { smelting, takeUpSmelting } from './smelt.ts';
@@ -50,7 +51,7 @@ import { walkTo } from './walk.ts';
 const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
+  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
    * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
@@ -73,6 +74,11 @@ export const JOB_FIELDS = {
    * first fine-or-better piece (V-093), 0 until they make one. */
   making: 'text',
   fine: 'event',
+  /** Herding: the hay carried to the rick, and the wild herd being tamed with the minutes sat
+   * near it so far (a different herd starts again). */
+  hay: 'count',
+  herdId: 'int',
+  sat: 'count',
 } as const;
 
 /** Work that takes a feature off the map for what it yields: felling (logs) and quarrying (P3.1,
@@ -199,6 +205,8 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
     endHunt(p);
     p['path'] = [];
   }
+  // Herding's dusk and dawn jobs come before whatever else a free herder is at (herd.ts).
+  if (herding(ctx, p, hours)) return true;
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
   if (p['job'] === 'build' && hours && building(ctx, p)) return true;
@@ -350,6 +358,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   hunt: takeUpHunting,
   fish: takeUpFishing,
   farm: takeUpFarming,
+  herd: takeUpHerding,
   build: (ctx, p) =>
     takeUpBurial(ctx, p) ||
     takeUpMarked(ctx, p, true) ||

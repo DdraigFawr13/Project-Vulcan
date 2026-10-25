@@ -13,6 +13,7 @@ import { furnitureOf } from './furniture.ts';
 import { partOf, plansOf } from './plans.ts';
 import { stationTiles } from './station.ts';
 import { ringOf } from './ring.ts';
+import { pastureTiles } from './pasturerows.ts';
 
 /** Whether (x, y) is on the rectangle's edge, where its walls and door stand. */
 export const onEdge = (r: Rect, x: number, y: number): boolean =>
@@ -54,6 +55,10 @@ export function groundOf(world: WorldState): Ground {
     ...(world.entities['field'] ?? [])
       .filter((f) => f['state'] !== 'sent')
       .flatMap((f) => f['tiles'] as number[]),
+    // Pastures planned or standing (P5.4b): the rectangle, the meadow and the rick.
+    ...(world.entities['pasture'] ?? [])
+      .filter((p) => p['state'] !== 'sent')
+      .flatMap((p) => pastureTiles(p, width)),
     // A piece standing outside every house, the campfire (P3.6); those in a room are its own.
     ...furnitureOf(world)
       .filter(

@@ -3,6 +3,7 @@
 {"id":"deer","name":"red deer","plural":"deer","kinds":["hind","hind","hind","stag"],"print":"hoof","meat":36,"leftovers":[{"item":"hide","count":1},{"item":"bone","count":2},{"item":"fat","count":1}],"flee":10,"perGame":1,"size":[6,9],"habitat":[{"biome":"temperate-forest","weight":100},{"biome":"taiga","weight":100},{"biome":"grassland","weight":15,"edge":3}],"perHerd":5500,"cap":16,"breed":{"months":["Bloommonth"],"rate":0.18}},
 {"id":"boar","name":"wild boar","plural":"boar","kinds":["boar"],"print":"hoof","meat":28,"leftovers":[{"item":"hide","count":1},{"item":"bone","count":2},{"item":"fat","count":2}],"flee":6,"perGame":1,"size":[4,6],"habitat":[{"biome":"temperate-forest","weight":100}],"perHerd":3500,"cap":10,"breed":{"months":["Highsun"],"rate":0.3}},
 {"id":"goat","name":"mountain goat","plural":"goats","kinds":["goat"],"print":"hoof","meat":14,"leftovers":[{"item":"hide","count":1},{"item":"bone","count":1},{"item":"fat","count":1}],"flee":10,"perGame":1,"size":[5,7],"habitat":[{"biome":"alpine","weight":100}],"ground":["gravel"],"foot":8,"perHerd":3000,"cap":12,"breed":{"months":["Bloommonth"],"rate":0.18}},
+{"id":"sheep","name":"wild sheep","plural":"wild sheep","kinds":["ewe","ewe","ram"],"print":"hoof","meat":18,"leftovers":[{"item":"hide","count":1},{"item":"bone","count":2},{"item":"fat","count":1}],"flee":8,"perGame":2,"size":[6,8],"habitat":[{"biome":"grassland","weight":100},{"biome":"alpine","weight":40}],"perHerd":7000,"cap":12,"breed":{"months":["Bloommonth"],"rate":0.3}},
 {"id":"hare","name":"hare","plural":"hares","kinds":["hare"],"print":"hare","meat":1,"leftovers":[],"flee":5,"perGame":6,"size":[3,5],"habitat":[{"biome":"grassland","weight":100}],"perHerd":4600,"cap":40,"breed":{"months":["Thawmonth","Seedmonth","Bloommonth","Highsun","Goldmonth","Harvestmonth"],"rate":0.4}}
 ],
 "predators": [
@@ -44,7 +45,7 @@
 "returns": {"month":"Thawmonth","chance":0.5},
 "why": {"harsh":"the hard frost keeps the herds low in the wider range","winter":"the winter keeps the herds low in the wider range","other":"the herds are thin in the wider range"},
 "left": {"dead":"the last of them is dead","few":"too few were left to hold the range"},
-"where": {"edge":"the edge of the town","midden":"the midden"}
+"where": {"edge":"the edge of the town","midden":"the midden","flock":"the flock left out in the pasture"}
 },
 "folk": {
 "sight": {"day":8,"night":4},

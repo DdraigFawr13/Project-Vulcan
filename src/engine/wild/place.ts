@@ -41,7 +41,7 @@ export function placeWild(ctx: SystemContext): void {
       const size = rng.between(sp.size[0]!, sp.size[1]!);
       const herd = addEntity(world, 'herd', {
         ...{ species: sp.id, x, y, radius: content.wild.place.radius, start: size },
-        ...{ line: world.begunEvent, taken: 0, lost: 0, byPack: 0, bySnow: 0, low: 0 },
+        ...{ line: world.begunEvent, taken: 0, lost: 0, byPack: 0, bySnow: 0, low: 0, kept: 0 },
       });
       for (let k = 0; k < size; k += 1)
         spawn(ctx, rng, { herd, pack: 0, kind: sp.kinds[k % sp.kinds.length]!, x, y }, reach);
@@ -123,6 +123,7 @@ function spawn(
   addEntity(world, 'animal', {
     ...{ herd: a.herd, pack: a.pack, kind: a.kind, x, y, z: 0, path: [], stride: 0 },
     ...{ facing: rng.chance(0.5) ? 'e' : 'w', state: '', until: 0, hurt: 0 },
+    ...{ sex: '', born: 0, young: 0, tamedBy: 0, cull: 0, shorn: 0, dies: 0 },
   });
 }
 

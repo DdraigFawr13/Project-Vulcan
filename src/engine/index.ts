@@ -3,6 +3,7 @@
 import { buildSystem } from './build/index.ts';
 import { calendarSystem } from './calendar/index.ts';
 import { fireSystem } from './fire/index.ts';
+import { flockSystem } from './flock/index.ts';
 import { goodsSystem } from './goods/index.ts';
 import { healthSystem } from './health/index.ts';
 import { mapSystem } from './map/index.ts';
@@ -153,17 +154,46 @@ export { makeRegion, regionSystem, siteOf, valleyOf } from './region/index.ts';
 export type { Region, RegionNeighbour, RegionSite, RegionValley } from './region/index.ts';
 export { isFrozen, tileTemperature, weatherSystem, weatherWords } from './weather/index.ts';
 export {
+  addToRick,
+  animalWord,
+  butcher,
+  canTame,
+  flockOf,
+  flocksOf,
+  flockSystem,
+  FLOCK_TABLES,
+  foldFlock,
+  headOf,
+  keptOf,
+  kindDef,
+  marked,
+  mowable,
+  mowTile,
+  noteLeftOut,
+  openFlock,
+  readySwaths,
+  shear,
+  shearable,
+  takeHay,
+  takeIn,
+  tameTargets,
+} from './flock/index.ts';
+export {
   animalsOf,
   herdOf,
   herdsOf,
+  wildHerdsOf,
+  feedPack,
   huntable,
   killAnimal,
   markAttack,
+  packArrival,
   packOf,
   predatorsNear,
   printsAt,
   setLures,
   spareCount,
+  tameAnimal,
   WILD_TABLES,
   wildSystem,
   withoutWild,
@@ -207,6 +237,7 @@ export const SYSTEMS: readonly System[] = [
   calendarSystem,
   weatherSystem,
   wildSystem,
+  flockSystem,
 ];
 
 /** A simulation over `content` with the game's systems, or the given ones (tests add fixtures). */

@@ -71,3 +71,16 @@ export { finishReaping, finishSowing } from './fieldlife.ts';
 export { ringOf } from './ring.ts';
 export { sizeOfStation, stationAt, stationOf, stationsOf, STATION_TABLES } from './station.ts';
 export { ingotInStore, sendBackBlock, smithiesOf } from './smithy.ts';
+export {
+  foldRect,
+  foldTiles,
+  grazingTiles,
+  hurdleTiles,
+  livePastures,
+  meadowTiles,
+  onPastureGround,
+  PASTURE_TABLES,
+  pasturesOf,
+} from './pasturerows.ts';
+export { PASTURE_KIND, planPasture } from './pasture.ts';
+export { wildHerds } from './pasturesite.ts';

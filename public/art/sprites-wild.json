@@ -100,7 +100,7 @@
         "h": 32
       }
     },
-    "animal.boar.dead": {
+    "animal.billy.dead": {
       "frame": {
         "x": 171,
         "y": 1,
@@ -120,7 +120,7 @@
         "h": 32
       }
     },
-    "animal.boar.e.0": {
+    "animal.billy.e.0": {
       "frame": {
         "x": 205,
         "y": 1,
@@ -140,7 +140,7 @@
         "h": 32
       }
     },
-    "animal.boar.e.1": {
+    "animal.billy.e.1": {
       "frame": {
         "x": 239,
         "y": 1,
@@ -160,9 +160,109 @@
         "h": 32
       }
     },
-    "animal.boar.w.0": {
+    "animal.billy.w.0": {
+      "frame": {
+        "x": 273,
+        "y": 1,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.billy.w.1": {
+      "frame": {
+        "x": 307,
+        "y": 1,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.boar.dead": {
       "frame": {
         "x": 1,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.boar.e.0": {
+      "frame": {
+        "x": 35,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.boar.e.1": {
+      "frame": {
+        "x": 69,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.boar.w.0": {
+      "frame": {
+        "x": 103,
         "y": 35,
         "w": 32,
         "h": 32
@@ -182,7 +282,107 @@
     },
     "animal.boar.w.1": {
       "frame": {
-        "x": 35,
+        "x": 137,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.ewe.dead": {
+      "frame": {
+        "x": 171,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.ewe.e.0": {
+      "frame": {
+        "x": 205,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.ewe.e.1": {
+      "frame": {
+        "x": 239,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.ewe.w.0": {
+      "frame": {
+        "x": 273,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.ewe.w.1": {
+      "frame": {
+        "x": 307,
         "y": 35,
         "w": 32,
         "h": 32
@@ -202,8 +402,8 @@
     },
     "animal.goat.dead": {
       "frame": {
-        "x": 69,
-        "y": 35,
+        "x": 1,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -222,8 +422,8 @@
     },
     "animal.goat.e.0": {
       "frame": {
-        "x": 103,
-        "y": 35,
+        "x": 35,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -242,8 +442,8 @@
     },
     "animal.goat.e.1": {
       "frame": {
-        "x": 137,
-        "y": 35,
+        "x": 69,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -262,8 +462,8 @@
     },
     "animal.goat.w.0": {
       "frame": {
-        "x": 171,
-        "y": 35,
+        "x": 103,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -282,8 +482,8 @@
     },
     "animal.goat.w.1": {
       "frame": {
-        "x": 205,
-        "y": 35,
+        "x": 137,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -302,8 +502,8 @@
     },
     "animal.hare.dead": {
       "frame": {
-        "x": 239,
-        "y": 35,
+        "x": 171,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -322,7 +522,7 @@
     },
     "animal.hare.e.0": {
       "frame": {
-        "x": 1,
+        "x": 205,
         "y": 69,
         "w": 32,
         "h": 32
@@ -342,7 +542,7 @@
     },
     "animal.hare.e.1": {
       "frame": {
-        "x": 35,
+        "x": 239,
         "y": 69,
         "w": 32,
         "h": 32
@@ -362,7 +562,7 @@
     },
     "animal.hare.w.0": {
       "frame": {
-        "x": 69,
+        "x": 273,
         "y": 69,
         "w": 32,
         "h": 32
@@ -382,7 +582,7 @@
     },
     "animal.hare.w.1": {
       "frame": {
-        "x": 103,
+        "x": 307,
         "y": 69,
         "w": 32,
         "h": 32
@@ -402,8 +602,8 @@
     },
     "animal.hind.dead": {
       "frame": {
-        "x": 137,
-        "y": 69,
+        "x": 1,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -422,8 +622,8 @@
     },
     "animal.hind.e.0": {
       "frame": {
-        "x": 171,
-        "y": 69,
+        "x": 35,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -442,8 +642,8 @@
     },
     "animal.hind.e.1": {
       "frame": {
-        "x": 205,
-        "y": 69,
+        "x": 69,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -462,8 +662,8 @@
     },
     "animal.hind.w.0": {
       "frame": {
-        "x": 239,
-        "y": 69,
+        "x": 103,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -482,8 +682,408 @@
     },
     "animal.hind.w.1": {
       "frame": {
-        "x": 1,
+        "x": 137,
         "y": 103,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.kid.dead": {
+      "frame": {
+        "x": 171,
+        "y": 103,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.kid.e.0": {
+      "frame": {
+        "x": 205,
+        "y": 103,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.kid.e.1": {
+      "frame": {
+        "x": 239,
+        "y": 103,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.kid.w.0": {
+      "frame": {
+        "x": 273,
+        "y": 103,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.kid.w.1": {
+      "frame": {
+        "x": 307,
+        "y": 103,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.lamb.dead": {
+      "frame": {
+        "x": 1,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.lamb.e.0": {
+      "frame": {
+        "x": 35,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.lamb.e.1": {
+      "frame": {
+        "x": 69,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.lamb.w.0": {
+      "frame": {
+        "x": 103,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.lamb.w.1": {
+      "frame": {
+        "x": 137,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.nanny.dead": {
+      "frame": {
+        "x": 171,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.nanny.e.0": {
+      "frame": {
+        "x": 205,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.nanny.e.1": {
+      "frame": {
+        "x": 239,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.nanny.w.0": {
+      "frame": {
+        "x": 273,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.nanny.w.1": {
+      "frame": {
+        "x": 307,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.ram.dead": {
+      "frame": {
+        "x": 1,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.ram.e.0": {
+      "frame": {
+        "x": 35,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.ram.e.1": {
+      "frame": {
+        "x": 69,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.ram.w.0": {
+      "frame": {
+        "x": 103,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "animal.ram.w.1": {
+      "frame": {
+        "x": 137,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -502,8 +1102,8 @@
     },
     "animal.stag.dead": {
       "frame": {
-        "x": 35,
-        "y": 103,
+        "x": 171,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -522,8 +1122,8 @@
     },
     "animal.stag.e.0": {
       "frame": {
-        "x": 69,
-        "y": 103,
+        "x": 205,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -542,8 +1142,8 @@
     },
     "animal.stag.e.1": {
       "frame": {
-        "x": 103,
-        "y": 103,
+        "x": 239,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -562,8 +1162,8 @@
     },
     "animal.stag.w.0": {
       "frame": {
-        "x": 137,
-        "y": 103,
+        "x": 273,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -582,8 +1182,8 @@
     },
     "animal.stag.w.1": {
       "frame": {
-        "x": 171,
-        "y": 103,
+        "x": 307,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -602,8 +1202,8 @@
     },
     "animal.wolf.dead": {
       "frame": {
-        "x": 205,
-        "y": 103,
+        "x": 1,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -622,8 +1222,8 @@
     },
     "animal.wolf.e.0": {
       "frame": {
-        "x": 239,
-        "y": 103,
+        "x": 35,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -642,8 +1242,8 @@
     },
     "animal.wolf.e.1": {
       "frame": {
-        "x": 1,
-        "y": 137,
+        "x": 69,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -662,8 +1262,8 @@
     },
     "animal.wolf.w.0": {
       "frame": {
-        "x": 35,
-        "y": 137,
+        "x": 103,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -682,8 +1282,8 @@
     },
     "animal.wolf.w.1": {
       "frame": {
-        "x": 69,
-        "y": 137,
+        "x": 137,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -702,8 +1302,8 @@
     },
     "print.hare.e": {
       "frame": {
-        "x": 103,
-        "y": 137,
+        "x": 171,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -722,8 +1322,8 @@
     },
     "print.hare.n": {
       "frame": {
-        "x": 137,
-        "y": 137,
+        "x": 205,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -742,8 +1342,8 @@
     },
     "print.hare.ne": {
       "frame": {
-        "x": 171,
-        "y": 137,
+        "x": 239,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -762,8 +1362,8 @@
     },
     "print.hare.nw": {
       "frame": {
-        "x": 205,
-        "y": 137,
+        "x": 273,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -782,8 +1382,8 @@
     },
     "print.hare.s": {
       "frame": {
-        "x": 239,
-        "y": 137,
+        "x": 307,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -803,7 +1403,7 @@
     "print.hare.se": {
       "frame": {
         "x": 1,
-        "y": 171,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -823,7 +1423,7 @@
     "print.hare.sw": {
       "frame": {
         "x": 35,
-        "y": 171,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -843,7 +1443,7 @@
     "print.hare.w": {
       "frame": {
         "x": 69,
-        "y": 171,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -863,7 +1463,7 @@
     "print.hoof.e": {
       "frame": {
         "x": 103,
-        "y": 171,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -883,7 +1483,7 @@
     "print.hoof.n": {
       "frame": {
         "x": 137,
-        "y": 171,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -903,7 +1503,7 @@
     "print.hoof.ne": {
       "frame": {
         "x": 171,
-        "y": 171,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -923,7 +1523,7 @@
     "print.hoof.nw": {
       "frame": {
         "x": 205,
-        "y": 171,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -943,7 +1543,7 @@
     "print.hoof.s": {
       "frame": {
         "x": 239,
-        "y": 171,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -962,8 +1562,8 @@
     },
     "print.hoof.se": {
       "frame": {
-        "x": 1,
-        "y": 205,
+        "x": 273,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -982,8 +1582,8 @@
     },
     "print.hoof.sw": {
       "frame": {
-        "x": 35,
-        "y": 205,
+        "x": 307,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1002,8 +1602,8 @@
     },
     "print.hoof.w": {
       "frame": {
-        "x": 69,
-        "y": 205,
+        "x": 1,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1022,8 +1622,8 @@
     },
     "print.paw.e": {
       "frame": {
-        "x": 103,
-        "y": 205,
+        "x": 35,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1042,8 +1642,8 @@
     },
     "print.paw.n": {
       "frame": {
-        "x": 137,
-        "y": 205,
+        "x": 69,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1062,8 +1662,8 @@
     },
     "print.paw.ne": {
       "frame": {
-        "x": 171,
-        "y": 205,
+        "x": 103,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1082,8 +1682,8 @@
     },
     "print.paw.nw": {
       "frame": {
-        "x": 205,
-        "y": 205,
+        "x": 137,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1102,8 +1702,8 @@
     },
     "print.paw.s": {
       "frame": {
-        "x": 239,
-        "y": 205,
+        "x": 171,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1122,8 +1722,8 @@
     },
     "print.paw.se": {
       "frame": {
-        "x": 1,
-        "y": 239,
+        "x": 205,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1142,8 +1742,8 @@
     },
     "print.paw.sw": {
       "frame": {
-        "x": 35,
-        "y": 239,
+        "x": 239,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1162,8 +1762,8 @@
     },
     "print.paw.w": {
       "frame": {
-        "x": 69,
-        "y": 239,
+        "x": 273,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1182,8 +1782,8 @@
     },
     "site.midden": {
       "frame": {
-        "x": 103,
-        "y": 239,
+        "x": 307,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1205,18 +1805,28 @@
     "tile": 32,
     "margin": 1,
     "spacing": 2,
-    "columns": 8,
+    "columns": 10,
     "order": [
       "animal.bear.dead",
       "animal.bear.e.0",
       "animal.bear.e.1",
       "animal.bear.w.0",
       "animal.bear.w.1",
+      "animal.billy.dead",
+      "animal.billy.e.0",
+      "animal.billy.e.1",
+      "animal.billy.w.0",
+      "animal.billy.w.1",
       "animal.boar.dead",
       "animal.boar.e.0",
       "animal.boar.e.1",
       "animal.boar.w.0",
       "animal.boar.w.1",
+      "animal.ewe.dead",
+      "animal.ewe.e.0",
+      "animal.ewe.e.1",
+      "animal.ewe.w.0",
+      "animal.ewe.w.1",
       "animal.goat.dead",
       "animal.goat.e.0",
       "animal.goat.e.1",
@@ -1232,6 +1842,26 @@
       "animal.hind.e.1",
       "animal.hind.w.0",
       "animal.hind.w.1",
+      "animal.kid.dead",
+      "animal.kid.e.0",
+      "animal.kid.e.1",
+      "animal.kid.w.0",
+      "animal.kid.w.1",
+      "animal.lamb.dead",
+      "animal.lamb.e.0",
+      "animal.lamb.e.1",
+      "animal.lamb.w.0",
+      "animal.lamb.w.1",
+      "animal.nanny.dead",
+      "animal.nanny.e.0",
+      "animal.nanny.e.1",
+      "animal.nanny.w.0",
+      "animal.nanny.w.1",
+      "animal.ram.dead",
+      "animal.ram.e.0",
+      "animal.ram.e.1",
+      "animal.ram.w.0",
+      "animal.ram.w.1",
       "animal.stag.dead",
       "animal.stag.e.0",
       "animal.stag.e.1",
@@ -1271,8 +1901,8 @@
   },
   "meta": {
     "size": {
-      "w": 272,
-      "h": 272
+      "w": 340,
+      "h": 306
     },
     "scale": "1",
     "image": "sprites-wild.png"

@@ -9,7 +9,8 @@ export const WILD_TABLES: Schemas = {
   /** A herd of game on a home range: `x`, `y` and `radius` are the range's centre and reach; `start`
    * its starting size; `line` its latest line (the cause of the next one about it); `taken` what
    * people took this year, `lost` what the pack and the snow took (`byPack` and `bySnow` split it);
-   * `low` the `wild.herdLow` line while the herd is below `wild.low` per cent of its start. */
+   * `low` the `wild.herdLow` line while the herd is below `wild.low` per cent of its start;
+   * `kept` the pasture's id for a tame flock's herd (the wild system leaves it alone), else 0. */
   herd: {
     species: 'text',
     x: 'int',
@@ -22,10 +23,14 @@ export const WILD_TABLES: Schemas = {
     byPack: 'count',
     bySnow: 'count',
     low: 'event',
+    kept: 'entity',
   },
   /** One animal. `herd` is its herd (0 for the pack's), `pack` the pack's id (0 for game); `kind`
    * the art kind; `path` the tiles it will step to (map indices); `stride` 0 or 1, flipped each
-   * step; `facing` `e` or `w`; `state` `''` or `flee`, until tick `until`. */
+   * step; `facing` `e` or `w`; `state` `''` or `flee`, until tick `until`. The rest is for kept
+   * animals (src/engine/flock): `sex` `f`/`m`, `born` the tick (0 for a grown one tamed), `young`
+   * 1 until grown, `tamedBy` the person, `cull` the tick it was marked to cull (0 for none),
+   * `shorn` the year last shorn plus one, `dies` the tick a weak young one dies (0 for none). */
   animal: {
     herd: 'entity',
     pack: 'entity',
@@ -40,6 +45,13 @@ export const WILD_TABLES: Schemas = {
     until: 'int',
     /** Blows taken from people (a predator dies at `folk.hits`). */
     hurt: 'count',
+    sex: 'text',
+    born: 'int',
+    young: 'count',
+    tamedBy: 'entity',
+    cull: 'int',
+    shorn: 'count',
+    dies: 'int',
   },
   /** The valley's one pack (`size` 0 once it has left). `hunger` is days since its last meal,
    * `lastKill` the tick of it, `line` its latest line, `attacked` the line of its last attack on a
@@ -98,12 +110,16 @@ export const speciesOf = (content: EngineContent, id: string): SpeciesDef =>
 /** Hunters leave each herd this many (content `wild.spare`). */
 export const spareCount = (content: EngineContent): number => content.wild.spare;
 
-/** Herds with more animals than hunters spare, the largest first (ties by id). */
+/** The herds that run wild (a tame flock's herd has `kept` set). */
+export const wildHerdsOf = (world: WorldState): EntityRow[] =>
+  herdsOf(world).filter((h) => !h['kept']);
+
+/** Herds with more animals than hunters spare, the largest first (ties by id); never a kept one. */
 export function huntable(world: WorldState, content: EngineContent): EntityRow[] {
   const size = new Map<number, number>();
   for (const a of animalsOf(world))
     size.set(a['herd'] as number, (size.get(a['herd'] as number) ?? 0) + 1);
-  return herdsOf(world)
+  return wildHerdsOf(world)
     .filter((h) => (size.get(h.id) ?? 0) > spareCount(content))
     .sort((a, b) => (size.get(b.id) ?? 0) - (size.get(a.id) ?? 0) || a.id - b.id);
 }

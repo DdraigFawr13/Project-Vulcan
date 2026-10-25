@@ -9,14 +9,15 @@ export {
   markAttack,
   packOf,
   predatorsNear,
-  speciesOf,
   spareCount,
+  speciesOf,
   WILD_TABLES,
+  wildHerdsOf,
 } from './wild.ts';
-export { killAnimal } from './kill.ts';
+export { killAnimal, tameAnimal } from './kill.ts';
 export { scareHerd, woundPredator } from './fight.ts';
 export { approach } from './move.ts';
 export { printsAt } from './prints.ts';
 export { whenWord } from './ground.ts';
-export { drawOff, setLures } from './visit.ts';
+export { drawOff, feedPack, packArrival, setLures, type Lure } from './visit.ts';
 export { withoutWild } from './calm.ts';

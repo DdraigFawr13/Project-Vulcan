@@ -3,35 +3,78 @@
 // goods side lays with `setLures`), else the town ring's edge, at most every `visitEvery` days;
 // it goes home at dawn. The first of them to arrive writes `wild.packAtEdge`. Attacks on people
 // are the people's side (`markAttack`).
-import { TICKS_PER_DAY } from '../core/index.ts';
+import { TICKS_PER_DAY, type EngineContent, type WorldState } from '../core/index.ts';
 import { greenOf, ringOf } from '../build/index.ts';
 import { findPath } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { distance, openNear, whenWord } from './ground.ts';
 import { animalsOf, packOf } from './wild.ts';
 
-/** Where the goods side says the pack would go instead of the ring's edge (state `lures` and
- * `lure1`...: map indices plus one); an empty list, the default, clears them. */
-export function setLures(ctx: SystemContext, tiles: readonly number[]): void {
-  const state = ctx.world.systems['wild']!;
-  for (let k = 1; k <= (state['lures'] ?? 0); k += 1) delete state[`lure${k}`];
-  tiles.forEach((t, k) => (state[`lure${k + 1}`] = t + 1));
-  state['lures'] = tiles.length;
+/** A tile the pack may be drawn to, ranked: the lowest rank is chosen, then the nearest to the den.
+ * `where` is a word of `wild.pack.where` (`midden`, `flock`). */
+export interface Lure {
+  tile: number;
+  where: string;
+  rank: number;
 }
 
-/** The tile the pack walks to and how a line names it: the lure nearest the den, else the ring's edge. */
-function target(ctx: SystemContext, den: { x: number; y: number }): { i: number; where: string } {
-  const { world, content, state } = ctx;
+/** State keys of one source's list: `lure_<from>_n` its length, then `lure_<from>_<k>` (tile plus
+ * one), `lurew_<from>_<k>` (index of the word) and `lurer_<from>_<k>` (rank), k from 1. */
+const LURE_N = /^lure_(.+)_n$/;
+
+/** Replaces `from`'s lures (the goods side's midden pieces, the flock left out) with `lures`; an
+ * empty list takes them away. Sources are kept apart, so one never clears another's. */
+export function setLures(ctx: SystemContext, from: string, lures: readonly Lure[]): void {
+  const { content } = ctx;
+  const state = ctx.world.systems['wild']!;
+  for (let k = 1; k <= (state[`lure_${from}_n`] ?? 0); k += 1)
+    for (const p of ['lure_', 'lurew_', 'lurer_']) delete state[`${p}${from}_${k}`];
+  const words = Object.keys(content.wild.pack.where);
+  if (lures.some((l) => !words.includes(l.where)))
+    throw new Error('A lure names an unknown place.');
+  lures.forEach((l, k) => {
+    state[`lure_${from}_${k + 1}`] = l.tile + 1;
+    state[`lurew_${from}_${k + 1}`] = words.indexOf(l.where);
+    state[`lurer_${from}_${k + 1}`] = l.rank;
+  });
+  if (lures.length) state[`lure_${from}_n`] = lures.length;
+  else delete state[`lure_${from}_n`];
+}
+
+/** Every lure of every source, in the order of the source's name. */
+function luresOf(ctx: SystemContext): Lure[] {
+  const { content } = ctx;
+  const state = ctx.world.systems['wild']!;
+  const words = Object.keys(content.wild.pack.where);
+  const out: Lure[] = [];
+  const sources = Object.keys(state)
+    .flatMap((k) => LURE_N.exec(k)?.[1] ?? [])
+    .sort();
+  for (const from of sources)
+    for (let k = 1; k <= state[`lure_${from}_n`]!; k += 1)
+      out.push({
+        tile: state[`lure_${from}_${k}`]! - 1,
+        where: words[state[`lurew_${from}_${k}`]!]!,
+        rank: state[`lurer_${from}_${k}`]!,
+      });
+  return out;
+}
+
+/** The tile the pack walks to and how a line names it: the lowest-ranked lure, the nearest the den
+ * of those, else the ring's edge. */
+function target(
+  ctx: SystemContext,
+  den: { x: number; y: number },
+): { i: number; where: string; lure: boolean } {
+  const { world, content } = ctx;
   const map = world.map;
-  const words = content.wild.pack.where;
-  let best = -1;
+  let best: Lure | undefined;
   let far = Infinity;
-  for (let k = 1; k <= (state['lures'] ?? 0); k += 1) {
-    const t = state[`lure${k}`]! - 1;
-    const d = distance(den.x, den.y, t % map.width, Math.floor(t / map.width));
-    if (d < far) [best, far] = [t, d];
+  for (const l of luresOf(ctx)) {
+    const d = distance(den.x, den.y, l.tile % map.width, Math.floor(l.tile / map.width));
+    if (!best || l.rank < best.rank || (l.rank === best.rank && d < far)) [best, far] = [l, d];
   }
-  if (best >= 0) return { i: best, where: words.midden };
+  if (best) return { i: best.tile, where: best.where, lure: true };
   // The ring's edge on the line from the green to the den.
   const green = greenOf(world);
   const [dx, dy] = [den.x - green.x, den.y - green.y];
@@ -39,7 +82,7 @@ function target(ctx: SystemContext, den: { x: number; y: number }): { i: number;
   const ring = Math.min(ringOf(world, content), m);
   const [x, y] = [green.x + Math.trunc((dx * ring) / m), green.y + Math.trunc((dy * ring) / m)];
   const at = openNear(content, map, x, y, 6) ?? green.y * map.width + green.x;
-  return { i: at, where: words.edge };
+  return { i: at, where: 'edge', lure: false };
 }
 
 /** Sends every pack animal to a free open tile near `goal`, each by its own way. */
@@ -87,9 +130,16 @@ export function visitOnHour(ctx: SystemContext): void {
       visitAt: world.tick,
       shown: 0,
     });
-    sendAll(ctx, target(ctx, den).i);
+    const goal = target(ctx, den);
+    // The goal is kept for the night: lures may come and go before the pack gets there.
+    const words = Object.keys(dials.where);
+    Object.assign(ctx.state, { goal: goal.i + 1, goalW: words.indexOf(goal.where) });
+    ctx.state['goalLure'] = goal.lure ? 1 : 0;
+    ctx.state['reached'] = 0;
+    sendAll(ctx, goal.i);
   } else if (hour === dials.night.to && pack['visiting']) {
     pack['visiting'] = 0;
+    Object.assign(ctx.state, { goal: 0, reached: 0 });
     sendAll(ctx, den.y * world.map.width + den.x);
   }
 }
@@ -99,6 +149,7 @@ export function drawOff(ctx: SystemContext, cause: number): void {
   const pack = packOf(ctx.world);
   if (!pack) return;
   pack['visiting'] = 0;
+  Object.assign(ctx.state, { goal: 0, reached: 0 });
   sendAll(ctx, (pack['denY'] as number) * ctx.world.map.width + (pack['denX'] as number));
   pack['line'] = ctx.emit('wild.packDrewOff', {
     causes: [cause],
@@ -106,19 +157,49 @@ export function drawOff(ctx: SystemContext, cause: number): void {
   });
 }
 
+/** The word a line uses for the visit's goal. */
+const phrases = (content: EngineContent): Record<string, string> => content.wild.pack.where;
+
+const goalWord = (ctx: SystemContext): string =>
+  Object.keys(ctx.content.wild.pack.where)[ctx.state['goalW'] ?? 0]!;
+
+/** The lure the pack reached on this visit ({tile, where}; `where` the words a line uses for it), set
+ * when its first animal arrives and gone at dawn or once the pack has fed; else undefined. */
+export function packArrival(
+  world: WorldState,
+  content: EngineContent,
+): { tile: number; where: string } | undefined {
+  const state = world.systems['wild']!;
+  if (!state['reached'] || !state['goalLure'] || !state['goal']) return undefined;
+  const word = Object.keys(content.wild.pack.where)[state['goalW']!]!;
+  return { tile: state['goal'] - 1, where: phrases(content)[word]! };
+}
+
+/** The pack has eaten (a flock's lamb, say), because of the line `cause`: its hunger is gone and
+ * it goes home, ending the visit as dawn does. */
+export function feedPack(ctx: SystemContext, cause: number): void {
+  const { world } = ctx;
+  const pack = packOf(world);
+  if (!pack) return;
+  Object.assign(pack, { hunger: 0, lastKill: world.tick, visiting: 0 });
+  if (cause) pack['line'] = cause;
+  Object.assign(ctx.state, { goal: 0, reached: 0 });
+  sendAll(ctx, (pack['denY'] as number) * world.map.width + (pack['denX'] as number));
+}
+
 /** The first pack animal has reached the edge (or the midden): the line, once a visit. */
 export function arrived(ctx: SystemContext): void {
   const pack = packOf(ctx.world);
   if (!pack || pack['shown']) return;
-  const den = { x: pack['denX'] as number, y: pack['denY'] as number };
   const line = ctx.emit('wild.packAtEdge', {
     causes: [(pack['hungryLine'] as number) || (pack['line'] as number)],
     data: {
       name: pack['name'] as string,
-      where: target(ctx, den).where,
+      where: phrases(ctx.content)[goalWord(ctx)]!,
       when: whenWord(ctx),
       days: pack['hunger'] as number,
     },
   });
+  ctx.state['reached'] = 1;
   Object.assign(pack, { shown: 1, line });
 }

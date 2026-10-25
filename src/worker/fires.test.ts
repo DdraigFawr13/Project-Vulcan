@@ -37,6 +37,7 @@ describe('fire views', () => {
     const words = new Set<string>();
     const arts = new Set<string>();
     const bars: Record<string, number[]> = {};
+    const starts: Record<string, number> = {};
     for (let minute = 0; minute < 6 * 1440; minute += 1) {
       step(w, sim, 1);
       if (minute % 3) continue;
@@ -46,8 +47,14 @@ describe('fire views', () => {
         expect(b.total).toBeGreaterThan(0);
         expect(b.done).toBeGreaterThanOrEqual(0);
         expect(b.done).toBeLessThanOrEqual(b.total);
-        const key = `${b.x},${b.y},${b.total}`;
-        (bars[key] ??= []).push(b.done);
+        // A tile's next bar of the same total (a hearth's making after the floor's laying, or a
+        // person's job there) starts again from near nothing (under a tenth): a new run. Any other
+        // drop stays in the run and fails the check below.
+        const tile = `${b.x},${b.y},${b.total}`;
+        const last = bars[`${tile},${starts[tile] ?? 0}`]?.at(-1);
+        if (last !== undefined && b.done < last && b.done * 10 < b.total)
+          starts[tile] = (starts[tile] ?? 0) + 1;
+        (bars[`${tile},${starts[tile] ?? 0}`] ??= []).push(b.done);
       }
       if (minute % 30 === 0) for (const p of walkersOf(w)) words.add(p.now.text);
     }

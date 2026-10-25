@@ -1,5 +1,6 @@
 [
   {"id":"farm","name":"Farming","worker":"farmer","skill":"farming","requirements":{},"workplace":"field","action":"farm","serves":"food","tools":true,"perWorkplace":4,"likedBy":["steady"]},
+  {"id":"herd","name":"Herding","worker":"herder","skill":"farming","requirements":{},"workplace":"pasture","action":"herd","serves":"food","perWorkplace":2,"likedBy":["steady"]},
   {"id":"forage","name":"Foraging","worker":"forager","skill":"foraging","requirements":{},"workplace":"wild","outputs":{"berries":0.7},"pool":"berries","serves":"food","likedBy":["restless"]},
   {"id":"fish","name":"Fishing","worker":"fisher","skill":"fishing","requirements":{},"workplace":"water","outputs":{"fish":0.95},"pool":"fish","serves":"food","likedBy":["solitary"]},
   {"id":"hunt","risk":0.002,"name":"Hunting","worker":"hunter","skill":"hunting","requirements":{"agility":8,"perception":8},"workplace":"wild","outputs":{"game":0.85},"pool":"game","serves":"food","heavy":true,"likedBy":["restless"]},

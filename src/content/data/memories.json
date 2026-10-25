@@ -1,4 +1,6 @@
 [
+  {"id":"culled-raised","mood":-2,"decayDays":3,"text":"Butchered one of the flock I raised"},
+  {"id":"lost-to-wolves","mood":-4,"decayDays":5,"text":"Wolves took one of the flock"},
   {"id":"went-hungry","mood":-8,"decayDays":4,"text":"Went to bed hungry"},
   {"id":"slept-rough","mood":-5,"decayDays":3,"text":"Slept without a roof"},
   {"id":"ate-together","mood":3,"decayDays":2,"text":"Ate with the household"},
