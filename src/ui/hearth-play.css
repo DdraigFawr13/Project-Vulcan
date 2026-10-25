@@ -520,3 +520,11 @@ table.grid th small {
 .hurtrow button {
   min-height: 44px;
 }
+
+/* The Names button at the strip's end (Morgan, 2026-10-25): an iron plate like the bar's, lit while
+   the names show. */
+#hud button.namesbtn {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  height: var(--tap);
+}
