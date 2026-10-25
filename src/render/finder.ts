@@ -1,12 +1,12 @@
 // Finding people (Morgan, 2026-10-25): a view aid, never an order (V-015). The person whose sheet
-// is open wears an ember ring that walks with them, with a pulse as it goes on; Names rings
+// is open wears an ember ring under their feet that walks with them, with a pulse as it goes on; Names rings
 // everyone on the level on screen in ember too and writes their first name over their head. Both
 // follow the drawn sprites, so they glide with them. View state only.
 import Phaser from 'phaser';
 
 const TILE = 32;
-/** Over the people (8) and the night (8.6), so a ring reads after dark too. */
-const RING_DEPTH = 8.7;
+/** Under the people (8) and over the lying (7.9); the pulse and names over the night (8.6). */
+const RING_DEPTH = 7.8;
 const PULSE_DEPTH = 8.7;
 const NAME_DEPTH = 9.6;
 /** The pulse: two waves widening from the feet, over this many ms. */
@@ -77,17 +77,18 @@ export class Finder {
     for (const s of this.spots()) {
       const mine = s.id === this.followed;
       if (!mine && !this.all) continue;
-      // A ring round the whole person, like the ember ring round a chosen face on the strip: an
-      // ember band between two dark edges, so it reads on grass, snow and stone alike.
-      const [cx, cy, r] = [s.x, s.y - TILE * 0.15, TILE * 0.8];
-      rings.lineStyle(7, dark, 0.85).strokeCircle(cx, cy, r);
-      rings.lineStyle(3, ember, 1).strokeCircle(cx, cy, r);
+      // An ember ring under the feet (Morgan's pick), on the tile's lower part, with a dark edge
+      // to read on snow.
+      const [cx, cy] = [s.x, s.y + TILE * 0.32];
+      const line = Math.max(2, 2.5 / zoom);
+      rings.lineStyle(line + 2 / zoom, dark, 0.7).strokeEllipse(cx, cy, TILE * 1.1, TILE * 0.5);
+      rings.lineStyle(line, ember, 1).strokeEllipse(cx, cy, TILE * 1.1, TILE * 0.5);
       if (mine && this.age < PULSE_MS)
         for (let w = 0; w < WAVES; w += 1) {
           const t = (this.age / PULSE_MS) * WAVES - w;
           if (t < 0 || t > 1) continue;
-          const wave = TILE * (0.8 + 2.2 * t);
-          pulse.lineStyle(Math.max(3, 4 / zoom), ember, 1 - t).strokeCircle(cx, cy, wave);
+          const wave = TILE * (0.6 + 2.4 * t);
+          pulse.lineStyle(Math.max(3, 4 / zoom), ember, 1 - t).strokeCircle(s.x, s.y, wave);
         }
       if (this.all) {
         named.add(s.id);
