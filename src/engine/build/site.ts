@@ -59,6 +59,17 @@ export function groundOf(world: WorldState): Ground {
     ...(world.entities['pasture'] ?? [])
       .filter((p) => p['state'] !== 'sent')
       .flatMap((p) => pastureTiles(p, width)),
+    // A burial ground's rectangle (P5.8) and the midden (P5.4a): no house, field or road on them.
+    ...(world.entities['burial'] ?? [])
+      .filter((b) => b['state'] === 'laid')
+      .flatMap((b) => {
+        const out: number[] = [];
+        for (let y = b['y'] as number; y < (b['y'] as number) + (b['h'] as number); y += 1)
+          for (let x = b['x'] as number; x < (b['x'] as number) + (b['w'] as number); x += 1)
+            out.push(y * width + x);
+        return out;
+      }),
+    ...(world.entities['midden'] ?? []).map(at),
     // A piece standing outside every house, the campfire (P3.6); those in a room are its own.
     ...furnitureOf(world)
       .filter(

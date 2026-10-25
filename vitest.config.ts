@@ -1,3 +1,4 @@
+import { availableParallelism } from 'node:os';
 import { defineConfig } from 'vitest/config';
 
 // Year-long and month-long colony runs (RULES.md VR-67). The quick `npm run check` leaves these
@@ -28,10 +29,14 @@ const slowFiles = [
   'src/engine/health/health.test.ts',
   // Strangers and homes (P5.9, P5.14): three runs of two to three weeks on a valley seed.
   'src/engine/people/strangers.test.ts',
-  // The same words on the page's side (P5.9, P5.14): one run of 180 days on anvil.
+  // The same words on the page's side (P5.9, P5.14): one run of about 25 days on anvil/1.
   'src/worker/strangers.test.ts',
   // Worn paths and roads (P5.10): a run to the first cottage, then a road laid.
   'src/engine/build/roads.test.ts',
+  // The 5A review: each held the quick tier past its 40 s (12.7 s of tool and smithy runs, 11.8 s
+  // laying out every seed's levels).
+  'src/engine/people/tools.test.ts',
+  'src/engine/map/levels.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).
@@ -41,6 +46,10 @@ export default defineConfig({
     exclude: process.env.VULCAN_TESTS === 'quick' ? slowFiles : [],
     environment: 'node',
     slowTestThreshold: 2000,
+    // One worker a core. Vitest's default leaves one core for itself, which on CI's two-core
+    // runner ran every file one after another (the 5A review: 238 s on two cores, 148 s with two
+    // workers). Tests step the simulation on one thread, so the main thread sits idle.
+    maxWorkers: availableParallelism(),
     // Colony tests step days of the full simulation; with fires (P3.6) the longest take 5 to 6 s
     // under load, so the 5 s default timed them out. Slow tests are still flagged at 2 s (VR-46).
     testTimeout: 15000,

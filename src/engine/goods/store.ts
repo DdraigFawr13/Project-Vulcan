@@ -142,11 +142,18 @@ export function slotAmong(
   from: Spot,
 ): Spot | undefined {
   const size = stackSize(content, kind);
+  // The stacks on each of `tiles`, in one pass over the items (this is hot: every load asks).
+  const key = (x: number, y: number, z: number) => (z * world.map.height + y) * world.map.width + x;
+  const on = new Map<number, EntityRow[]>();
+  for (const s of tiles) on.set(key(s['x'] as number, s['y'] as number, s['z'] as number), []);
+  for (const i of itemsOf(world))
+    if (!i['holder'] && (i['x'] as number) >= 0)
+      on.get(key(i['x'] as number, i['y'] as number, i['z'] as number))?.push(i);
   let best: Spot | undefined;
   let far = Infinity;
   for (const s of tiles) {
     const spot = { x: s['x'] as number, y: s['y'] as number, z: s['z'] as number };
-    const here = itemsAt(world, spot.x, spot.y, spot.z);
+    const here = on.get(key(spot.x, spot.y, spot.z))!;
     const fits = here.length
       ? here.length === 1 &&
         here[0]!['kind'] === kind &&

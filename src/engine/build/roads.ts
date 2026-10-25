@@ -21,7 +21,7 @@ import type { Schemas } from '../entity/index.ts';
 import { burialGround } from './burial.ts';
 import { liveFields, tilesOf } from './fields.ts';
 import { whoseOf } from './homes.ts';
-import { housesOf } from './site.ts';
+import { groundOf, housesOf } from './site.ts';
 import { ROAD_KIND, sizeOf, wantOf } from './houses.ts';
 import { livePastures, onPastureGround } from './pasturerows.ts';
 import { partOf, planAt, planPart, plansOf, stillNeeded } from './plans.ts';
@@ -102,8 +102,14 @@ export function placesOf(world: WorldState, content: EngineContent, green: Spot)
 }
 
 /** Whether surface tile `i` could take a road now: open, buildable dry ground with nothing on
- * or planned on it, off fields, pastures, the store and granaries, worn to `least`. */
-function roadable(ctx: SystemContext, fields: Set<number>, i: number): boolean {
+ * or planned on it, off fields, pastures, the store and granaries, worn to `least`. `taken` is
+ * siting's view (site.ts `groundOf`): stations, the campfire, burial grounds and the midden. */
+function roadable(
+  ctx: SystemContext,
+  fields: Set<number>,
+  taken: ReadonlySet<number>,
+  i: number,
+): boolean {
   const { world, content } = ctx;
   const map = world.map;
   const kind = content.terrain.kinds[map.tiles[i]!]!;
@@ -115,6 +121,7 @@ function roadable(ctx: SystemContext, fields: Set<number>, i: number): boolean {
     !map.built[i] &&
     !map.features[i] &&
     !fields.has(i) &&
+    !taken.has(i) &&
     !planAt(world, x, y) &&
     !inStore(world, x, y, 0) &&
     !inGranary(world, x, y, 0) &&
@@ -135,10 +142,11 @@ function choose(ctx: SystemContext, green: Spot): Pick | undefined {
   const map = world.map;
   const dial = content.buildings.roads;
   const fields = new Set(liveFields(world).flatMap(tilesOf));
+  const taken = groundOf(world).taken;
   const places = placesOf(world, content, green);
   const ok = new Map<number, boolean>();
   const fits = (i: number): boolean => {
-    if (!ok.has(i)) ok.set(i, roadable(ctx, fields, i));
+    if (!ok.has(i)) ok.set(i, roadable(ctx, fields, taken, i));
     return ok.get(i)!;
   };
   let best: Pick | undefined;

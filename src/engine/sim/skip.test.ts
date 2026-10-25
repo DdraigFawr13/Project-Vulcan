@@ -12,13 +12,25 @@ import {
   toNdjson,
   whyOf,
 } from '../index.ts';
+import { removeEntity } from '../entity/index.ts';
+import { itemsOf } from '../goods/index.ts';
 
 const sim = createSim(content);
 const DAY = 1440;
+type World = ReturnType<typeof createWorld>;
+/** The cart's rations cut to two stacks, so the food runs out in days rather than weeks (the
+ * 5A review: the full cart ran this test near its 15 s limit). */
+function shortOfFood(w: World): World {
+  for (const i of itemsOf(w)
+    .filter((x) => x['kind'] === 'preserved')
+    .slice(2))
+    removeEntity(w, 'item', i.id);
+  return w;
+}
 
 describe('skip ahead', () => {
   it('stops on each notable line, with the ledger of an unskipped run', () => {
-    const skipped = createWorld(sim, 'ledger');
+    const skipped = shortOfFood(createWorld(sim, 'ledger'));
     const start = skipped.tick;
     const lever = {
       tick: skipped.tick + 2 * DAY,
@@ -49,7 +61,7 @@ describe('skip ahead', () => {
     expect(stops[0]).toBe('build.sited');
     expect(stops.at(-1)).toBe('goods.foodGone');
 
-    const run = createWorld(sim, 'ledger');
+    const run = shortOfFood(createWorld(sim, 'ledger'));
     submitCommand(run, lever);
     submitCommand(run, fast);
     while (run.tick < skipped.tick) step(run, sim, Math.min(100, skipped.tick - run.tick));

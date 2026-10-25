@@ -155,14 +155,19 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   };
   // Food and seed the store holds enough of go to a granary: a slot there, or room to grow.
   let growable: boolean | undefined;
+  const slots = new Map<string, boolean>();
   const keeps = (i: EntityRow) => {
     if (!keepable(content, i['kind'] as string) || !granaryOf(world).length) return false;
     if (inGranary(world, i['x'] as number, i['y'] as number, i['z'] as number)) return false;
     growable ??= granaryGrowSpot(world, content, from) !== undefined;
-    return (
-      growable ||
-      granarySlot(world, content, i['kind'] as string, i['count'] as number, from) !== undefined
-    );
+    if (growable) return true;
+    const key = `${i['kind']}:${i['count']}`;
+    if (!slots.has(key))
+      slots.set(
+        key,
+        granarySlot(world, content, i['kind'] as string, i['count'] as number, from) !== undefined,
+      );
+    return slots.get(key)!;
   };
   const enough = storedEnough(world, content);
   // Goods on a planned house's tiles are carried off whatever the Stock level (clearing.ts).

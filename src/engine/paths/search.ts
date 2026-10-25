@@ -160,16 +160,16 @@ function tiles(
   const gx = (goal % n) % w;
   const gy = Math.floor((goal % n) / w);
   // With roads about, the estimate counts every step as a road step, so it never overshoots
-  // and the way found is still the cheapest (P5.10).
+  // and the way found is still the cheapest (P5.10). Each step is floored as `stepCost` floors
+  // it: flooring the sum instead overshot on long diagonals (9.8 a step against a real 9).
   const least = anyCheap(r) ? walking.road : 10;
+  const side = Math.floor((walking.straight * least) / 10);
+  const corner = Math.floor((walking.diagonal * least) / 10);
   const h = (node: number): number => {
     const i = node % n;
     const dx = Math.abs((i % w) - gx);
     const dy = Math.abs(Math.floor(i / w) - gy);
-    const plain =
-      walking.straight * Math.max(dx, dy) +
-      (walking.diagonal - walking.straight) * Math.min(dx, dy);
-    return Math.floor((plain * least) / 10);
+    return side * Math.max(dx, dy) + (corner - side) * Math.min(dx, dy);
   };
   const open = (z: number, i: number): number => {
     const id = r.labels[z]?.[i] ?? -1;

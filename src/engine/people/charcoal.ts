@@ -27,9 +27,17 @@ const skillName = (ctx: SystemContext): string =>
 const wanted = (ctx: SystemContext): number =>
   charcoalNeeded(ctx.world, ctx.content) + toolCharcoal(ctx);
 
+/** Whether the charcoal had is short of what is wanted. */
+const shortOf = (ctx: SystemContext): boolean =>
+  haveOf(ctx.world, ctx.content, ctx.content.metal.clamp.item) < wanted(ctx);
+
 /** What `p` would do at the clamp: open it once it has burned down, else stack and light it while
  * charcoal is short and the logs can be reached. */
-function choose(ctx: SystemContext, p: EntityRow): 'open' | 'stack' | undefined {
+function choose(
+  ctx: SystemContext,
+  p: EntityRow,
+  short: () => boolean,
+): 'open' | 'stack' | undefined {
   const { world, content } = ctx;
   const def = content.metal.clamp;
   const clamp = stationOf(world, 'clamp');
@@ -40,7 +48,7 @@ function choose(ctx: SystemContext, p: EntityRow): 'open' | 'stack' | undefined 
       canStandBeside(ctx, p, clamp['x'] as number, clamp['y'] as number)
       ? 'open'
       : undefined;
-  if (haveOf(world, content, def.item) >= wanted(ctx)) return undefined;
+  if (!short()) return undefined;
   if (!canStandBeside(ctx, p, clamp['x'] as number, clamp['y'] as number)) return undefined;
   return reachableOf(ctx, p, def.wood) >= def.logs ? 'stack' : undefined;
 }
@@ -54,8 +62,11 @@ export function takeUpCharcoal(ctx: SystemContext, p: EntityRow): boolean {
     declineIfUnable(ctx, p, def.job);
     return false;
   }
-  if (outranked(ctx, p, def.job, (q) => choose(ctx, q) !== undefined)) return false;
-  const task = choose(ctx, p);
+  // Whether charcoal is short is the same for everyone asked here: worked out once, if asked.
+  let isShort: boolean | undefined;
+  const short = () => (isShort ??= shortOf(ctx));
+  if (outranked(ctx, p, def.job, (q) => choose(ctx, q, short) !== undefined)) return false;
+  const task = choose(ctx, p, short);
   if (!task) return false;
   const clamp = stationOf(world, 'clamp')!;
   const have = haveOf(world, content, def.item);
