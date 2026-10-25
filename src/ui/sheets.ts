@@ -38,6 +38,8 @@ export interface SheetDeps {
   /** A sheet opened from the strip, the alert line or another sheet: the bar shows no panel
    * button pressed, or only `kind`'s. */
   opened(kind?: string): void;
+  /** Draws everyone on the map: as the world begins or loads, and when someone comes or goes. */
+  drawPeople(people: readonly PersonView[]): void;
 }
 
 export class Sheets {
@@ -104,7 +106,15 @@ export class Sheets {
     this.people = people;
     this.loaded = true;
     this.dawn.reset();
+    this.deps.drawPeople(people);
     this.play.setPeople(people);
+  }
+
+  /** Someone came, stayed or left (P5.9): the strip follows, the alerts stay. */
+  updatePeople(people: readonly PersonView[]): void {
+    this.people = people;
+    this.deps.drawPeople(people);
+    this.play.setPeople(people, true);
   }
 
   showPerson(p: PersonView): void {
@@ -205,6 +215,7 @@ export class Sheets {
   snapshot(message: Extract<FromWorker, { type: 'snapshot' }>): void {
     const { panel } = this.deps;
     const { walkers, day, law } = message;
+    if (message.people) this.updatePeople(message.people);
     this.walkers = walkers;
     this.day = day;
     this.lawView = law;

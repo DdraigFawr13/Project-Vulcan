@@ -19,3 +19,9 @@ Detail kept out of the module contracts, which are on milestone reading lists wi
 ## Tests
 
 `src/engine/people/strangers.test.ts` (slow tier): a welcome couple stays, its arrival citing the draw, and every household ends in its own home with the hall open; an agreeing band turns a stranger away whatever the law; a split goes by Closed and Open door, everyone answering it.
+
+## Screens (V-041: no lever names a stranger, a tile or a bed)
+
+- Worker `strangers.ts` words a stranger's page (`WalkerView.stranger`), each Home line (`WalkerView.home`), the Strangers law (`LawView.strangers`, via `lawsOf`), the Build sheet's homes (`BuildView.homes`) and a home's or the hall's tile rows (`HouseView.rows`, `lines`). Words are content `strangers.words`.
+- The snapshot carries `people` again whenever anyone comes, stays or leaves (`peopleFeed`); the gone are dropped from people and walkers.
+- UI: the Laws sheet folds Work hours to one line above the Strangers law (settings, the band's last word, answers); a stranger's sheet is a page with no tabs and no lever; the strip shows no strangers; the Needs tab opens with Home.

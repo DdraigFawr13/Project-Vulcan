@@ -40,12 +40,14 @@ export class Play {
     bar.append(this.strip, this.plate);
   }
 
-  /** The band, as the world began or loaded: a face for each. */
-  setPeople(people: readonly PersonView[]): void {
+  /** The colony, as the world began or loaded: a face for each, not for strangers (P5.9), who
+   * are on the map and open from there. `keep` holds the alerts when someone came or left. */
+  setPeople(people: readonly PersonView[], keep = false): void {
     this.people = people;
     this.faces.clear();
+    const faces = people.filter((p) => p.status !== 'stranger');
     this.strip.replaceChildren(
-      ...people.map((p) => {
+      ...faces.map((p) => {
         const slot = el('button', {
           type: 'button',
           class: 'pslot',
@@ -64,7 +66,8 @@ export class Play {
         return slot;
       }),
     );
-    this.strip.hidden = !people.length;
+    this.strip.hidden = !faces.length;
+    if (keep) return;
     this.list = [];
     this.unread = 0;
     this.showPlate();

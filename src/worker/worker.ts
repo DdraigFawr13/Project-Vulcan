@@ -10,7 +10,6 @@ import {
   createWorld,
   lawHours,
   entityOf,
-  greenOf as greenTile,
   layerOf,
   makeRegion,
   renderEvent,
@@ -36,12 +35,12 @@ import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave, saveOf } from './save.ts';
 import { buildView } from './build.ts';
 import { goodsOf, stockView } from './goods.ts';
-import { lawView } from './law.ts';
+import { lawsOf } from './strangers.ts';
 import { itemView } from './items.ts';
 import { miningShown } from './mine.ts';
-import { peopleOf, walkersOf } from './people.ts';
+import { peopleFeed, peopleOf, walkersOf } from './people.ts';
 import { withLying } from './places.ts';
-import { clockView, placeWords, tileView, weatherOf } from './views.ts';
+import { clockView, greenOf, placeWords, tileView, weatherOf } from './views.ts';
 import { animalFeed, animalPage, leftoversView } from './wild.ts';
 
 /** How often the worker wakes (ms). Timing comes from the clock, not from this interval. */
@@ -61,6 +60,8 @@ let pace = createPace(performance.now());
 let sent: number[][] = [];
 /** The Build view last sent, as JSON; empty until the first snapshot. */
 let sentBuild = '';
+/** Everyone goes out again when someone comes, stays or leaves (P5.9). */
+const peopleSent = peopleFeed();
 /** The animals go out only when one has moved. */
 const animals = animalFeed();
 /** Ledger lines written since the last snapshot, collected as they are written: sealing trims
@@ -152,6 +153,7 @@ function snapshot(w: WorldState): void {
   const key = JSON.stringify(now);
   const build = key === sentBuild ? undefined : now;
   sentBuild = key;
+  const people = peopleSent.next(w);
   const moved = animals.next(w);
   if (unposted.length) {
     post({ type: 'events', batch: unposted.map(lineOf) });
@@ -179,7 +181,7 @@ function snapshot(w: WorldState): void {
       speed: pace.speed,
       skipping: pace.skip,
       day: lawHours(w, content),
-      law: lawView(w),
+      law: lawsOf(w),
       clock: clockView(w.tick),
       chunks,
       reached: w.map.levels.map((level) => level !== null),
@@ -193,6 +195,7 @@ function snapshot(w: WorldState): void {
       stock: stockView(w),
       mining: miningShown(w),
       ...(build && { build }),
+      ...(people && { people }),
       ...(yesterday && { yesterday }),
     },
     chunks.flatMap((c) => [
@@ -208,6 +211,7 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
   world = w;
   sent = [];
   sentBuild = '';
+  peopleSent.next(w);
   animals.reset();
   unposted = [...w.log];
   pace = createPace(performance.now());
@@ -224,20 +228,8 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
     place: (w.entities['colony']?.[0]?.['name'] as string | undefined) ?? w.seed,
     fresh: w.tick === START_TICK,
     people: peopleOf(w),
-    ...greenOf(w),
+    ...greenOf(w, sim.templates),
   });
-}
-
-/** The line saying where the band stopped the cart, and whether it may still be sent back. */
-function greenOf(w: WorldState): {
-  green?: { text: string; again: boolean; x: number; y: number };
-} {
-  const line = w.log.find((e) => e.type === 'map.green' || e.type === 'map.greenAgain');
-  if (!line) return {};
-  const map = w.systems['map'] ?? {};
-  const again = w.tick === START_TICK && !map['look'] && !!map['next'];
-  const { x, y } = greenTile(w);
-  return { green: { text: renderEvent(line, sim.templates), again, x, y } };
 }
 
 /** Rolls the region of a plain seed and makes each valley's world, to offer them in the picker. */
@@ -299,7 +291,8 @@ function handle(message: ToWorker): void {
       return;
     case 'lookAgain':
       // Only on arrival and only once: the same seed made again with the band's second choice.
-      if (world && greenOf(world).green?.again) adopt(createWorld(sim, world.seed, 1), 'seed');
+      if (world && greenOf(world, sim.templates).green?.again)
+        adopt(createWorld(sim, world.seed, 1), 'seed');
       return;
     case 'jump': {
       // A time jump is a test tool: a page not in test mode gets nothing (V-041).

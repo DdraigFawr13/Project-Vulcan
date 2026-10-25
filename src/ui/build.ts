@@ -140,6 +140,10 @@ export class BuildSheet {
       ...(view.pasture ? this.pastureRows(view.pasture) : []),
       houses,
       el('p', { 'data-testid': 'build-need' }, `Need: ${view.need}.`),
+      // Homes of their own (P5.14): whose want the plans meet, and who comes next.
+      ...(view.homes
+        ? [el('p', { 'data-testid': 'build-homes' }, `Homes: ${view.homes.need}`)]
+        : []),
     ];
     if (view.noGround)
       rows.push(
@@ -151,6 +155,8 @@ export class BuildSheet {
     for (const h of view.houses.filter((h) => h.state === 'built')) {
       rows.push(planLine(h));
     }
+    if (view.homes?.next) rows.push(el('p', { class: 'aside' }, view.homes.next));
+    if (view.homes) rows.push(el('p', { class: 'aside' }, view.homes.note));
     if (view.smithy) rows.push(...this.smithyRows(view.smithy));
     if (view.burial) rows.push(...this.burialRows(view.burial));
     rows.push(
