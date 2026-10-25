@@ -144,7 +144,9 @@ export function countsAround(
 /**
  * Counts within `radius` of (x, y), as `countsAround` does, but only what the settlers can reach:
  * open ground joined to (x, y) by steps along rows and columns that never cross rock, plus the rock
- * faces that ground touches. So a range across the square cannot hide land behind it.
+ * faces that ground touches. So a range across the square cannot hide land behind it. Buildable
+ * land counts only where they can walk to it on arrival, past no tree, boulder or deep water: a
+ * spot hemmed in by a thicket would have no room for the store and no way out to work.
  */
 export function reachableAround(
   content: EngineContent,
@@ -156,17 +158,20 @@ export function reachableAround(
 ): (x: number, y: number) => StartCounts {
   const uses = tileUses(content, tiles, features);
   const rock = tiles.map((t) => content.terrain.kinds[t]!.stone === true);
-  return (x, y) => {
+  // As the paths read it (paths/grid.ts walkAt): no rock, solid or deep water, no blocking feature.
+  const walk = tiles.map((t, i) => {
+    const kind = content.terrain.kinds[t]!;
+    const f = features[i]! > 0 ? content.features[features[i]! - 1] : undefined;
+    return !kind.stone && !kind.solid && kind.water !== 'deep' && !f?.blocks;
+  });
+  // The tiles joined to (x, y) within the square through tiles `open` lets, and the rock faces met.
+  const flood = (x: number, y: number, open: readonly boolean[]) => {
     const seen = new Set<number>();
     const faces = new Set<number>();
-    const out = { buildable: 0, wood: 0, stone: 0 };
     const queue = [y * width + x];
     seen.add(queue[0]!);
     for (let k = 0; k < queue.length; k += 1) {
       const i = queue[k]!;
-      if (uses.buildable[i]) out.buildable += 1;
-      if (uses.wood[i]) out.wood += 1;
-      if (uses.stone[i]) out.stone += 1;
       const tx = i % width;
       const ty = Math.floor(i / width);
       for (const [dx, dy] of STEPS) {
@@ -176,13 +181,24 @@ export function reachableAround(
         if (Math.abs(nx - x) > radius || Math.abs(ny - y) > radius) continue;
         const n = ny * width + nx;
         if (rock[n]) faces.add(n);
-        else if (!seen.has(n)) {
+        else if (!seen.has(n) && open[n]) {
           seen.add(n);
           queue.push(n);
         }
       }
     }
+    return { queue, faces };
+  };
+  const notRock = rock.map((r) => !r);
+  return (x, y) => {
+    const out = { buildable: 0, wood: 0, stone: 0 };
+    const { queue, faces } = flood(x, y, notRock);
+    for (const i of queue) {
+      if (uses.wood[i]) out.wood += 1;
+      if (uses.stone[i]) out.stone += 1;
+    }
     out.stone += faces.size;
+    for (const i of flood(x, y, walk).queue) if (uses.buildable[i]) out.buildable += 1;
     return out;
   };
 }
