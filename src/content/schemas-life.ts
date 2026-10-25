@@ -146,6 +146,8 @@ export const LIFE_SCHEMAS = {
       reach: count,
       regrowDays: count,
       months: list(text),
+      // Herbs (Bundle 6): gathered by the same foragers, after food, into the `good`'s plate.
+      herbs: obj({ good: str(), months: list(text), regrowDays: count }),
     }),
     // Farming (P4.7): the jobs.json job, minutes to sow or reap one tile at skill `skilled`
     // (longer below, shorter above).

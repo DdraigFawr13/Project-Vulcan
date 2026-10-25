@@ -81,7 +81,21 @@ export const FLOCK_SCHEMAS = {
       item: ref('items'),
     }),
     fold: obj({ before: count, minutes: num({ min: 1 }), open: count, wait: count }),
+    // The watch fire (Bundle 6): kept `nights` nights after a sign of the pack, burning `firewood`
+    // pieces a night, lit in `light` minutes; the watcher sleeps until `wake` o'clock. A pack
+    // `breakIn` days without a kill breaks into a dark fold, and keeps `reach` tiles from a lit one.
+    watch: obj({
+      nights: num({ min: 1 }),
+      firewood: num({ min: 1 }),
+      light: num({ min: 1 }),
+      wake: num({ min: 0, max: 23 }),
+      breakIn: num({ min: 1 }),
+      reach: num({ min: 1 }),
+    }),
     move: obj({ every: num({ min: 1 }), wander: num({ min: 1 }) }),
+    // Why a watch was kept (by the sign's line type, else `default`) or not (`nobody`, `firewood`).
+    watchWhy: map(text),
+    watchNote: text,
     memories: obj({ cull: str(), taken: str() }),
     why: map(text),
   }),

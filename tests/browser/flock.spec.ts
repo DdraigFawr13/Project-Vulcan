@@ -41,5 +41,6 @@ test('the Pasture and Herding rows are levers, and a laid-out pasture names its 
   // Herding sits under the Land heading, folded until opened.
   await panel.getByRole('button', { name: '▸ Land' }).click();
   await expect(panel.locator('.prio[data-job="herd"]')).toBeVisible();
+  await expect(panel.getByTestId('watch-note')).toContainText('Herding also keeps watch');
   expect(errors).toEqual([]);
 });

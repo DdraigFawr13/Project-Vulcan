@@ -7,7 +7,7 @@ import { findPath, stepCost } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { distance, openAt } from './ground.ts';
 import { dirOf, leavePrint } from './prints.ts';
-import { arrived } from './visit.ts';
+import { arrived, checkWards } from './visit.ts';
 import { animalsOf, herdsOf, packRow, speciesOf } from './wild.ts';
 
 const printCache = new WeakMap<EngineContent, Map<string, string>>();
@@ -150,6 +150,7 @@ function trot(ctx: SystemContext): void {
     if (path.length) going += 1;
   }
   state['trot'] = going;
+  checkWards(ctx);
 }
 
 /** The resting walk: a frightened animal runs, a walking one takes its next step, a resting one

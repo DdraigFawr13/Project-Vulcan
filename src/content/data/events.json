@@ -143,6 +143,11 @@
 {"id":"flock.onGrass","importance":1,"template":"The flock grazes again."},
 {"id":"flock.starved","importance":2,"template":"{a} {kind} starved: the rick is empty.","notable":{}},
 {"id":"flock.leftOut","importance":2,"template":"Nobody shut the flock in the fold at dusk: {why}."},
+{"id":"flock.watchLit","importance":2,"template":"{name} lit a watch fire at the fold gate and sat up with the flock: {why}."},
+{"id":"flock.watchEnded","importance":1,"template":"{name} let the watch fire die at first light and went to bed, to sleep until {wake}."},
+{"id":"flock.noWatch","importance":2,"template":"Nobody kept watch at the fold tonight: {why}.","notable":{}},
+{"id":"flock.brokeIn","importance":2,"template":"{name} broke through the hurdles of the dark fold in the night and took {a} {kind}.","notable":{}},
+{"id":"wild.packWarded","importance":2,"template":"{name} came down {when} toward the fold, saw the watch fire and drew off to the den.","notable":{}},
 {"id":"flock.taken","importance":2,"template":"{name} took {a} {kind} from the flock left out in the night.","notable":{}},
 {"id":"wild.packNamed","importance":2,"template":"{name} has come to {where}: {what}, denned {den}."},
 {"id":"wild.herdLow","importance":2,"template":"The {species} {where} are down to {now} of {start}: the band took {taken} this year, the pack {pack}, and {snow} died in the snow."},
@@ -207,5 +212,8 @@
 {"id":"people.movedHome","importance":2,"template":"{name} moved into {whose} home, a {size}."},
 {"id":"build.hall","importance":3,"template":"The first {size} is now the hall: {name}, the last of the band, moved into their own home. Newcomers will sleep here until their homes are up.","notable":{}},
 {"id":"hall.feast","importance":2,"template":"The harvest-home supper in the hall: {count} ate there and will remember the feast."},
-{"id":"hall.mourned","importance":1,"template":"The mourners gathered in the hall after {name}'s burial."}
+{"id":"hall.mourned","importance":1,"template":"The mourners gathered in the hall after {name}'s burial."},
+{"id":"work.tookUpHerbs","importance":2,"template":"{name} took up {work}: herbs are below what the colony keeps ({have} of {want})."},
+{"id":"health.herbed","importance":2,"template":"{healer} dressed {name}'s {wound} with herbs: {left} left in the store."},
+{"id":"health.noHerbs","importance":2,"template":"{healer} dressed {name}'s {wound} without herbs: the store has none."}
 ]

@@ -30,6 +30,7 @@ import { practise } from './learn.ts';
 import { able, declineIfUnable, levelOf, outranked } from './priority.ts';
 import { canStandBeside, goBeside, people } from './spots.ts';
 import { scaled } from './tools.ts';
+import { watchMinute } from './watch.ts';
 
 type Duty = 'fold' | 'unfold';
 
@@ -300,6 +301,7 @@ export function herdWatch(ctx: SystemContext): void {
   const { world, content } = ctx;
   const flocks = flocksOf(world);
   if (!flocks.length) return;
+  watchMinute(ctx);
   if (world.tick % 1440 === content.wild.pack.night.from * 60) leftOut(ctx);
   const seen = ctx.state['taken'] ?? 0;
   const fresh = flocks.filter((f) => (f['takenLine'] as number) > seen);

@@ -19,5 +19,13 @@ export { scareHerd, woundPredator } from './fight.ts';
 export { approach } from './move.ts';
 export { printsAt } from './prints.ts';
 export { whenWord } from './ground.ts';
-export { drawOff, feedPack, packArrival, setLures, type Lure } from './visit.ts';
+export {
+  drawOff,
+  feedPack,
+  packArrival,
+  setLures,
+  setWards,
+  type Lure,
+  type Ward,
+} from './visit.ts';
 export { withoutWild } from './calm.ts';

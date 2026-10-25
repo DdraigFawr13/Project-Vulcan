@@ -45,7 +45,7 @@
 "returns": {"month":"Thawmonth","chance":0.5},
 "why": {"harsh":"the hard frost keeps the herds low in the wider range","winter":"the winter keeps the herds low in the wider range","other":"the herds are thin in the wider range"},
 "left": {"dead":"the last of them is dead","few":"too few were left to hold the range"},
-"where": {"edge":"the edge of the town","midden":"the midden","flock":"the flock left out in the pasture"}
+"where": {"edge":"the edge of the town","midden":"the midden","flock":"the flock left out in the pasture","fold":"the fold"}
 },
 "folk": {
 "sight": {"day":8,"night":4},

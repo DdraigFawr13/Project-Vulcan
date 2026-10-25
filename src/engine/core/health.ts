@@ -56,6 +56,9 @@ export interface HealthDef {
   upAt: number;
   heal: { bed: number; undressed: number; up: number; rough: number; dressEvery: number };
   fester: { days: number; fever: number; dies: number };
+  /** Herb dressings (Bundle 6): `item` taken from the store, once per `every` days for a wound
+   * younger than `days`; it then festers `fester` per cent as often. */
+  herbs: { item: string; every: number; days: number; fester: number };
   marks: readonly MarkDef[];
   care: {
     job: string;

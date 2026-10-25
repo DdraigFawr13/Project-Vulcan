@@ -128,3 +128,6 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-122 | Tracks on snow and mud fade over a day; a hunter crossing fresh ones follows them (proposal P2). |
 | V-123 | 5A looks (taste board https://claude.ai/artifact/7QMHTRi5A9UFqYcWuk9xuF): worn grass, stone roads, unmarked predators, fading prints, wattle folds, wooden grave markers, a body figure. |
 | V-124 | Worn paths and roads (Morgan, P5.10 mock-up https://claude.ai/artifact/WqKbNscnYuNaMXABMrXEbq, 2026-10-25): only people wear ground, a 64th fades daily; only roads walk faster (0.7); a road goes on the busiest way between two places, its most worn run of up to 10 tiles; no Send back for roads (differs from V-049). |
+| V-125 | Watch fire (Bundle 6 mock-up, 2026-10-25): via the Herding row; 4 nights after a pack sign, 6 firewood a night, watcher sleeps to 13:00; pack keeps 8 tiles off. |
+| V-126 | A pack 20+ days without a kill breaks into a dark shut fold. |
+| V-127 | Newcomers bring their home's skill at 9-12. Herbs: a plate, 1 per 3 days on a fresh deep wound halves festering. |

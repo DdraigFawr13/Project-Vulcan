@@ -294,8 +294,8 @@ export interface PersonView {
   home: string;
   homeDays: number;
   homeDir: string;
-  /** The trade's skill name. */
-  trade: string;
+  trade: string; // the trade's skill name
+  known: string; // the skill their home is known for, '' if none
   skills: { id: string; name: string; level: number; potential: number }[];
   /** Their three best skills, best first. */
   best: { id: string; name: string; level: number; potential: number }[];
@@ -306,8 +306,7 @@ export interface PersonView {
   x: number;
   y: number;
   z: number;
-  /** The `people.arrived` line, or a stranger's `people.strangerCame`. */
-  arrived: number;
+  arrived: number; // the `people.arrived` line, or a stranger's `people.strangerCame`
   /** `alive`, `stranger` (at or walking to or from the green, P5.9) or `dead`. */
   status: string;
 }

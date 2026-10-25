@@ -42,8 +42,18 @@ export interface StrangersDef {
     short: number;
     greedy: number;
     harvest: string;
+    skill: number;
     traits: Readonly<Record<string, number>>;
     memories: Readonly<Record<string, number>>;
+  };
+  /** The skill a home is known for (see schemas-strangers.ts). */
+  known: {
+    kinds: Readonly<Record<string, string>>;
+    prefs: Readonly<Record<string, string>>;
+    level: readonly number[];
+    reach: number;
+    nouns: Readonly<Record<string, string>>;
+    why: Readonly<Record<string, string>>;
   };
   dissent: number;
   road: { count: number };

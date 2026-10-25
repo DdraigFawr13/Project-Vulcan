@@ -10,7 +10,8 @@ export const HEALTH_TABLES: Schemas = {
   /** `part`, `kind` (a `wounds` id) and `severity` from content; `bleed` 0 none, 1 slow, 2 fast,
    * now; `mortal` 1 for a wound that bleeds fast whatever is done; `bound` 0 not yet, 1 roughly
    * (by whoever found them), 2 by a healer; `dressed` the tick a healer last dressed it and
-   * `healer` who; `progress` hundredths of an hour healed; `fester` 0 never, 1 fevered, 2 the
+   * `healer` who; `herbed` the tick herbs last dressed it and `herbless` the tick a dressing
+   * wanted herbs and found none (0 never); `progress` hundredths of an hour healed; `fester` 0 never, 1 fevered, 2 the
    * fever broke, and `feverEnd` the tick it breaks; `line` the hurt line and `care` the last
    * line of care (found, carried, bound); `fevered` the festering line; `state` `open`,
    * `healed` or `closed` (at death); `at` the tick it was taken; `where` and `place` ("shaft",
@@ -24,6 +25,8 @@ export const HEALTH_TABLES: Schemas = {
     mortal: 'count',
     bound: 'count',
     dressed: 'int',
+    herbed: 'int',
+    herbless: 'int',
     healer: 'entity',
     progress: 'count',
     fester: 'count',
@@ -210,6 +213,7 @@ export function wound(
   const id = addEntity(world, 'wound', {
     ...{ person: p.id, part: w.part, kind: w.kind, severity: w.severity, bleed: sev.bleed },
     ...{ mortal: mortal ? 1 : 0, bound: 0, dressed: 0, healer: 0, progress: 0, fester: 0 },
+    ...{ herbed: 0, herbless: 0 },
     ...{ feverEnd: 0, line: 0, care: 0, fevered: 0, state: 'open', at: world.tick },
     ...{ where: w.where, place: w.place },
   });
@@ -232,3 +236,8 @@ export function wound(
   if (down) body['down'] = 1;
   return row;
 }
+
+/** Dressed with herbs within the last `herbs.every` days (content `herbs`). */
+export const herbedNow = (world: WorldState, content: EngineContent, w: EntityRow): boolean =>
+  (w['herbed'] as number) > 0 &&
+  world.tick - (w['herbed'] as number) < content.health.herbs.every * 1440;

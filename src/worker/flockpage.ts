@@ -154,6 +154,7 @@ function pageOf(
         ['Feeding', feeding(flock)],
         ['Hay in the rick', hay + thaw],
         ['Shut in', shutIn(flock)],
+        ['Watch', watchRow(world, flock)],
         herd,
       ],
     };
@@ -211,6 +212,20 @@ const shutIn = (flock: EntityRow | undefined): string =>
     : flock?.['outLine']
       ? 'out tonight: nobody shut it in'
       : 'at dusk by whoever puts Herding highest';
+
+/** Tonight's watch (Bundle 6): who sits up by the fire at the gate, since when and why, from the
+ * `flock.watchLit` line; else who will on a night after the pack comes near. */
+function watchRow(world: WorldState, flock: EntityRow | undefined): string {
+  const lit = flock?.['watch'] ? recordOf(world, flock['watch'] as number) : undefined;
+  if (lit && 'data' in lit) {
+    const data = lit.data as Record<string, unknown>;
+    const c = clockAt(lit.tick, content.calendar);
+    const hhmm = `${String(c.hour).padStart(2, '0')}:${String(c.minute).padStart(2, '0')}`;
+    return `${String(data['name'])}, by a fire at the gate since ${hhmm}: ${String(data['why'])}. ${def.watch.firewood} firewood for the night.`;
+  }
+  if (flock?.['watchBy']) return 'going to the gate to light the watch fire';
+  return `none tonight; on the ${def.watch.nights} nights after the pack comes near, whoever puts Herding highest sits up by a fire`;
+}
 
 /** "18 mown and drying, 2 cocks made": the meadow's tiles by what they are now. */
 function meadowCounts(flock: EntityRow | undefined, p: EntityRow): string {

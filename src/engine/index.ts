@@ -95,6 +95,7 @@ export {
   bodiesOf,
   bodyOf,
   healthSystem,
+  herbedNow,
   isDown,
   markPercent,
   openWounds,

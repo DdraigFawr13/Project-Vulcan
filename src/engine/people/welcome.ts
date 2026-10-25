@@ -46,6 +46,11 @@ export function storeLasts(world: WorldState, content: EngineContent, coming: nu
   );
 }
 
+const skillOf = (world: WorldState, person: number, skill: string): number =>
+  ((world.entities['skill'] ?? []).find((r) => r['person'] === person && r['skill'] === skill)?.[
+    'level'
+  ] as number | undefined) ?? 0;
+
 /** Colonist `q`'s word on stranger `s` (with `coming` people in all) and why. */
 export function stanceOf(
   world: WorldState,
@@ -70,6 +75,12 @@ export function stanceOf(
     .map((t) => t['trait'] as string);
   const name = (t: string) => content.traits.find((d) => d.id === t)?.name ?? t;
   if (kind?.need && traits.includes('devout')) parts.push([w.devout, 'devout, toward one in need']);
+  const kn = s['known'] as string;
+  if (kn && !alive(world).some((c) => skillOf(world, c.id, kn) >= content.band.able)) {
+    const noun = content.strangers.known.nouns[kn] ?? kn;
+    const skill = content.abilities.find((a) => a.id === kn)?.name ?? kn;
+    parts.push([w.skill, `${noun}, and nobody here is able in ${skill.toLowerCase()}`]);
+  }
   const month = w.harvest;
   if (lasts) parts.push([w.lasts, `food to last to ${month}`]);
   else {

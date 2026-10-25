@@ -25,6 +25,9 @@ export const NEWCOMER_FIELDS = {
   reason: 'text',
   sent: 'event',
   brings: 'text',
+  /** The skill their home is known for and the key that says why (strangers.json `known`). */
+  known: 'text',
+  knownWhy: 'text',
   /** While a stranger: the tick the band will have spoken by, -1 once turned away; else 0. */
   waits: 'int',
   /** The tick from which they want a home of their own (P5.14), and the line that said so. */
@@ -50,7 +53,16 @@ export function addPerson(
     ...{ path: [], stride: 0, rest: at.rest, doing: '', retry: 0, bedTo: 0, chill: 0, seeded: 0 },
     ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0, make: '' },
     ...{ making: '', fine: 0, task: '', what: '', hay: 0, herdId: 0, sat: 0 },
-    ...{ partner: 0, stranger: 0, reason: '', sent: 0, brings: '', waits: 0 },
+    ...{
+      partner: 0,
+      stranger: 0,
+      reason: '',
+      sent: 0,
+      brings: '',
+      known: '',
+      knownWhy: '',
+      waits: 0,
+    },
     ...{ wantsFrom: 0, wants: 0, ...extra },
   });
   for (const skill of content.band.skills)

@@ -13,9 +13,10 @@ The phase is split in two halves that each go live with a playtest (V-107). This
 - [x] Bundle 4, strangers and homes: P5.9, P5.14, the hall
 - [x] Bundle 5, worn paths and roads: P5.10 (V-124)
 - [x] 5A balance and review (table in CHANGELOG)
+- [x] Bundle 6: watch fire, home skills, herbs (V-125-127)
 - [ ] 5B question round, spec section, bundles, review
 
-Irrigation channels are parked; P5.2 is wells only (V-108).
+Irrigation is parked; P5.2 is wells only (V-108).
 
 Taste board picks bind every 5A mock-up (V-123): worn grass, grey stone roads, unmarked predators, fading prints, wattle folds, mounds with wooden markers, a six-part body figure.
 
@@ -34,7 +35,7 @@ Lever list (V-041): normal levers add the Strangers law; the Build sheet gains P
 
 ## Milestones
 
-Order: bundles 1 to 5, then the 5A balance and review. Bundles grep `docs/DECISIONS.md` for the rows they cite. A bundle estimated over 1,200 lines splits into an engine PR and a screen PR (VR-58).
+Order: bundles 1 to 5, then the 5A balance and review. A bundle estimated over 1,200 lines splits into an engine PR and a screen PR (VR-58).
 
 ### Bundle 1: P5.6 Health and P5.8 Deaths and graves
 

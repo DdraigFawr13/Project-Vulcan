@@ -20,6 +20,7 @@ import { danger } from './care.ts';
 import { walkTo, wander } from './walk.ts';
 import { tendInEvening } from './tend.ts';
 import { warming } from './warm.ts';
+import { lateUntil, watching } from './watch.ts';
 
 export const MIND_FIELDS = {
   /** `eat`, `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `warm` (warm.ts), `hurt` (lying
@@ -134,12 +135,16 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   const rest = valueOf(ctx, p, 'rest');
   // Below its warning line, warmth beats sleep as it beats work (P3.6, V-046; phase review: a
   // room built in a hard winter was slept in cold until its hearth stood).
+  // The watch fire (Bundle 6): sat up by the fold from dusk to first light, by its warmth.
+  if (watching(ctx, p)) return;
   if (warming(ctx, p)) return;
+  // After a night's watch they sleep late (`flock.watch.wake`).
+  const late = world.tick < lateUntil(ctx, p);
   if (p['doing'] === 'sleep') {
-    if (night || rest < life.sleep.wake) return;
+    if (night || late || rest < life.sleep.wake) return;
     p['doing'] = '';
   }
-  if (night || rest < seekOf(ctx, 'rest')) {
+  if (night || late || rest < seekOf(ctx, 'rest')) {
     goToBed(ctx, p, night);
     return;
   }

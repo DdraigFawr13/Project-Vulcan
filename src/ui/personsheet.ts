@@ -270,7 +270,7 @@ export class PersonSheet {
             ),
           );
       return [
-        el('p', {}, `Trade: ${p.trade}`),
+        el('p', {}, `Trade: ${p.trade}${p.known === p.trade ? ` · brought from ${p.home}` : ''}`),
         skillRows(skills, true),
         practice,
         el('p', { class: 'aside' }, 'Skills rise with use, up to the mark each person can reach.'),

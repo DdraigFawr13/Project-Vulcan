@@ -255,7 +255,7 @@ function denNear(w: WorldState, cx: number, cy: number): [number, number] {
 describe('a flock out at night with a hungry pack', () => {
   /** A world an hour before dusk (the pack's `night.from`) with a flock of four, the pack hungry
    * and its den a few tiles off. */
-  function night(folded: boolean) {
+  function night(folded: boolean, hunger = 14) {
     const { w, flock, pasture } = pastureWorld();
     addKept(
       w,
@@ -267,7 +267,7 @@ describe('a flock out at night with a hungry pack', () => {
     const p = w.entities['pasture']!.find((q) => q.id === pasture)!;
     const [dx, dy] = denNear(w, (p['x'] as number) + 5, (p['y'] as number) + 5);
     const pack = packOf(w)!;
-    Object.assign(pack, { hunger: 14, hungryLine: pack['line'], denX: dx, denY: dy });
+    Object.assign(pack, { hunger, hungryLine: pack['line'], denX: dx, denY: dy });
     for (const a of animalsOf(w).filter((a) => a['pack']))
       Object.assign(a, { x: dx, y: dy, path: [] });
     // Nobody herds (the people side would otherwise fold it: people herd.test.ts).
@@ -290,11 +290,21 @@ describe('a flock out at night with a hungry pack', () => {
     expect(pack['visiting']).toBe(0);
   });
 
-  it('never takes from a folded flock', () => {
+  it('never takes from a folded flock while the pack is not starving', () => {
     const { w, flock, pack } = night(true);
     expect(lines(w, 'flock.taken')).toHaveLength(0);
     expect(lines(w, 'flock.leftOut')).toHaveLength(0);
     expect(headOf(w, flock)).toBe(4);
     expect(pack['hunger']).toBe(14);
+  });
+
+  it('breaks into a dark fold once the pack has gone `watch.breakIn` days without a kill', () => {
+    const { w, flock, pack } = night(true, content.flock.watch.breakIn + 2);
+    const broke = lines(w, 'flock.brokeIn');
+    expect(broke).toHaveLength(1);
+    expect(broke[0]!.causes[0]).toBe(pack['hungryLine']);
+    expect(lines(w, 'flock.taken')).toHaveLength(0);
+    expect(headOf(w, flock)).toBe(3);
+    expect(pack['hunger']).toBe(0);
   });
 });

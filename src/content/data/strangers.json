@@ -21,7 +21,8 @@
 {"id":"move","name":"a people on the move","words":"is on the move","need":false},
 {"id":"wander","name":"wandering","words":"is quiet","need":false}
 ],
-"weigh":{"start":1,"same":2,"other":-1,"kin":7,"kinFirst":-1,"sick":-2,"devout":1,"lasts":1,"short":-2,"greedy":-1,"harvest":"Highsun","traits":{"sociable":1,"solitary":-1},"memories":{"turned-away":1}},
+"weigh":{"start":1,"same":2,"other":-1,"kin":7,"kinFirst":-1,"sick":-2,"devout":1,"lasts":1,"short":-2,"greedy":-1,"harvest":"Highsun","skill":2,"traits":{"sociable":1,"solitary":-1},"memories":{"turned-away":1}},
+"known":{"kinds":{"mine":"mining","hold":"stoneworking","port":"fishing","temple":"herbalism","fortress":"fighting"},"prefs":{"deposit":"mining","heights":"stoneworking","river":"fishing","coast":"fishing","forest":"woodcutting","plains":"farming","aura":"herbalism"},"level":[9,12],"reach":3,"nouns":{"mining":"a miner","stoneworking":"a mason","fishing":"a fisher","herbalism":"a healer","fighting":"a fighter","woodcutting":"a woodcutter","farming":"a farmer"},"why":{"mine":"{place} is a mine, and most there dig","hold":"{place} is a hold, cut from the rock","port":"{place} is a port, and lives by the sea","temple":"{place} is a temple, and those who keep it tend the sick","fortress":"{place} is a fortress, and its people are fighters","deposit":"the {people} dig where the ore is","heights":"the {people} build in stone on the heights","river":"the {people} live by the river","coast":"the {people} live by the sea","forest":"the {people} live in the forest","plains":"the {people} farm the plains","aura":"the {people} know the plants of the aura places"}},
 "dissent":-12,
 "road":{"count":4},
 "law":"strangers",

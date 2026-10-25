@@ -11,6 +11,9 @@
 "hay": {"months":["Highsun","Goldmonth"],"perTile":16,"mow":15,"carry":8,"dry":3,"spoil":0.2,"plan":112,"thaw":"Thawmonth"},
 "cull": {"month":"Mistmonth","minutes":60,"ramsPer":10,"item":"meat"},
 "fold": {"before":120,"minutes":10,"open":20,"wait":15},
+"watch": {"nights":4,"firewood":6,"light":15,"wake":13,"breakIn":20,"reach":8},
+"watchNote":"Herding also keeps watch: on the nights after the pack has come near, the herder who puts Herding highest sits up by a fire at the fold and sleeps late the next day.",
+"watchWhy": {"wild.packAtEdge":"the pack came down to the town in the night","wild.packWarded":"the pack came toward the fold in the night","flock.taken":"the pack took from the flock","flock.brokeIn":"the pack broke into the fold","wild.tracksFound":"fresh wolf tracks were found near the town","default":"the pack has been near","nobody":"nobody who herds is fit to sit up","firewood":"the store has {have} firewood, and a night's watch burns {need}"},
 "move": {"every":10,"wander":30},
 "memories": {"cull":"culled-raised","taken":"lost-to-wolves"},
 "why": {"abed":"{who} was abed","warming":"{who} was warming by a fire","eating":"{who} was eating","toFold":"{who} was on the way to the fold","busy":"{who} was busy with {work}","noWay":"{who} found no way to the fold","none":"nobody herds"}

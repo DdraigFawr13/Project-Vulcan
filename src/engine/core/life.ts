@@ -149,6 +149,8 @@ export interface WorkDef {
     reach: number;
     regrowDays: number;
     months: readonly string[];
+    /** Herb clumps (Bundle 6): the plate's good, the months they grow, days to grow back. */
+    herbs: { good: string; months: readonly string[]; regrowDays: number };
   };
   /** Farming (P4.7): minutes to sow or reap a tile at skill `skilled`. */
   farm: { job: string; sow: number; reap: number; skilled: number };

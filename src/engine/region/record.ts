@@ -18,6 +18,8 @@ export interface Neighbour {
   culture: string;
   days: number;
   dir: string;
+  /** The site's kind in the world: hamlet, village, town, city, fortress, hold, mine, temple, port. */
+  kind: string;
   /** Its reasons, in content `kinds` order; none for a quiet place. */
   reasons: Reason[];
 }
@@ -53,7 +55,7 @@ export function neighboursOf(seed: string, content: EngineContent): Neighbour[] 
     const reasons = def.kinds
       .filter((k) => best.has(k.id))
       .map((k) => ({ kind: k.id, line: told.renderEvent(best.get(k.id)!) }));
-    return [{ name: n.name, culture: culture.id, days: n.days, dir: n.dir, reasons }];
+    return [{ name: n.name, culture: culture.id, days: n.days, dir: n.dir, kind: n.kind, reasons }];
   });
   cache.set(seed, out);
   return out;

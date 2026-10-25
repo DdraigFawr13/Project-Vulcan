@@ -64,7 +64,23 @@ export interface FlockDef {
    * minutes after dawn (`night.to`) it is let out; `minutes` the work; `wait` the minutes the
    * best-placed herder has to take it before any free herder may. */
   fold: { before: number; minutes: number; open: number; wait: number };
+  /** The watch fire (Bundle 6): kept `nights` nights after a sign of the pack, `firewood` pieces a
+   * night, `light` minutes to lay and light; the watcher sleeps until `wake` o'clock. A pack
+   * `breakIn` days without a kill breaks into a dark fold and keeps `reach` tiles from a lit one. */
+  watch: {
+    nights: number;
+    firewood: number;
+    light: number;
+    wake: number;
+    breakIn: number;
+    reach: number;
+  };
   move: { every: number; wander: number };
+  /** Why a watch was kept, by the sign line's type (else `default`), or why not: `nobody`,
+   * `firewood` ({have}, {need}). */
+  watchWhy: Readonly<Record<string, string>>;
+  /** The Work sheet's aside under the Herding row. */
+  watchNote: string;
   memories: { cull: string; taken: string };
   /** Why nobody folded the flock: `abed`, `warming`, `eating`, `toFold`, `busy` ({who}, {work}),
    * `noWay` and `none`. */

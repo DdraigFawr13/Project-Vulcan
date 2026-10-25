@@ -94,6 +94,9 @@ export class WorkSheet {
       ...(walkers[0]?.work.some((j) => j.job === content.buildings.furniture.job)
         ? [el('p', { class: 'aside' }, makesNote())]
         : []),
+      ...(walkers[0]?.work.some((j) => j.job === content.flock.job)
+        ? [el('p', { class: 'aside', 'data-testid': 'watch-note' }, content.flock.watchNote)]
+        : []),
       el('p', { class: 'aside' }, 'Other kinds of work join this list when the band can do them.'),
       el(
         'p',

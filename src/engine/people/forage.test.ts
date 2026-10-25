@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { removeEntity } from '../entity/index.ts';
-import { itemsOf, storeOf } from '../goods/index.ts';
+import { itemsOf, stockOf, storeOf } from '../goods/index.ts';
 import { ripe } from './forage.ts';
 import { allLines, createSim, createWorld, step, yesterdayOf } from '../index.ts';
 
@@ -88,6 +88,25 @@ describe('foraging', () => {
       if (before !== undefined) expect(e.tick - before).toBeGreaterThanOrEqual(28 * DAY);
       last.set(key, e.tick);
     }
+  });
+
+  it('gathers herbs in a herb month while the plate is unmet, and they reach the store', () => {
+    const world = createWorld(sim, 'ledger/1');
+    // Food is not wanted, so the foragers turn to the herbs plate (some: 12), which is empty.
+    stockOf(world, 'food')!['level'] = 'none';
+    const month = content.calendar.monthNames.indexOf('Highsun');
+    world.tick = month * content.calendar.daysPerMonth * DAY + 6 * 60;
+    step(world, sim, 6 * DAY);
+    const took = allLines(world).filter((e) => e.type === 'work.tookUpHerbs');
+    expect(took.length).toBeGreaterThan(0);
+    expect(took[0]!.data['good']).toBe('herbs');
+    expect(
+      allLines(world).some((e) => e.type === 'work.picked' && e.data['what'] === 'herbs'),
+    ).toBe(true);
+    const stored = itemsOf(world)
+      .filter((i) => i['kind'] === 'herbs' && !i['holder'])
+      .filter((i) => storeOf(world).some((s) => s['x'] === i['x'] && s['y'] === i['y']));
+    expect(stored.reduce((n, i) => n + (i['count'] as number), 0)).toBeGreaterThan(0);
   });
 
   it("counts yesterday's work the way the day's lines do", () => {

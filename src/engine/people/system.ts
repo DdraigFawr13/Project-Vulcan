@@ -162,9 +162,10 @@ export const peopleSystem: System = {
     ...['work.tookUpHunting', 'work.tookUpFishing', 'work.followedTracks', 'work.trackingPack'],
     ...['wild.tracksFound', 'wild.sighted', 'wild.attacked', 'wild.killed'],
     ...['wild.predatorWounded', 'wild.predatorKilled', 'wild.packDrewOff'],
+    ...['flock.watchLit', 'flock.watchEnded', 'flock.noWatch'],
   ],
   tables: PEOPLE_TABLES,
-  refs: ['noIngots', 'noCharcoal', 'tracksLine', 'sighted'],
+  refs: ['noIngots', 'noCharcoal', 'tracksLine', 'sighted', 'signLine'],
   // Yesterday's tally (tally.ts) lives in the state too, and `idle`: the signature of the rooms
   // when carpentry last found nothing to make (carpentry.ts).
   // P5.4a: `tracksDay` the game day of the last `wild.tracksFound` and `tracksLine` it; `sighted`

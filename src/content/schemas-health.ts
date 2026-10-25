@@ -63,6 +63,7 @@ export const HEALTH_SCHEMAS = {
     }),
     // Festering can start in a wound's first `days`; fever lasts `fever` days and kills `dies`.
     fester: obj({ days: num({ min: 1 }), fever: num({ min: 1 }), dies: count }),
+    herbs: obj({ item: text, every: num({ min: 1 }), days: num({ min: 1 }), fester: count }),
     marks: list(
       obj({
         id,
