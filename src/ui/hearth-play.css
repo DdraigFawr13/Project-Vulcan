@@ -352,6 +352,28 @@ table.grid td {
   font-size: 14px;
   color: var(--ink-soft);
 }
+/* P5.9: the work-hours law folds to one line; the band's last word on a stranger. */
+.lawfold {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lawfold h3 {
+  margin: 0;
+}
+.lawfold span {
+  flex: 1;
+  color: var(--ink-soft);
+}
+#hud .lawfold .fold {
+  min-width: var(--tap);
+  min-height: var(--tap);
+}
+.verdict {
+  border-left: 3px solid var(--rubric);
+  padding-left: 8px;
+  margin: 8px 0;
+}
 .mem {
   display: flex;
   gap: 6px;

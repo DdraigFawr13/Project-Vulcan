@@ -12,7 +12,7 @@ export type {
   RoomView,
   ShaftView,
 } from './protocol-build.ts';
-export type { AnswerView, HoursView, LawView } from './protocol-law.ts';
+export type { AnswerView, HoursView, LawView, StrangersLawView } from './protocol-law.ts';
 export type {
   AuraView,
   ChunkView,
@@ -22,6 +22,7 @@ export type {
   NeedView,
   PersonView,
   HealthView,
+  StrangerView,
   WalkerView,
   RegionView,
   Speed,

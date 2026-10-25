@@ -38,6 +38,8 @@ export function planFacts(tile: TileView): [string, string][] {
       ['impressiveness', room.impressiveness],
     );
   if (house) rows.push(['roof', house.roof]);
+  // A home's household and beds, or the hall's role, beds, feasts and mourning (P5.14).
+  for (const r of house?.rows ?? []) rows.push([r.name.toLowerCase(), r.text]);
   if (room) {
     rows.push(['beds', room.beds], ['warmth', room.warmth]);
   }
@@ -61,5 +63,8 @@ export function planLines(tile: TileView): [LedgerLine, string][] {
         ] as [LedgerLine, string][])
       : []),
     ...(plan.built ? ([[plan.built, 'Built · ']] as [LedgerLine, string][]) : []),
+    ...(house?.lines ?? [])
+      .filter((l) => l.id !== plan.built?.id)
+      .map((l): [LedgerLine, string] => [l, '']),
   ];
 }

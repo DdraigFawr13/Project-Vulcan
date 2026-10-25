@@ -41,4 +41,23 @@ export interface LawView {
   since: string;
   why: number;
   answers: AnswerView[];
+  /** The Strangers law (P5.9), below the work-hours law. */
+  strangers: StrangersLawView;
+}
+
+/** The Strangers law (P5.9, V-117): its setting, what each does, the band's last word on a
+ * stranger and, when a split went to the law, everyone's answer, grumbles first. */
+export interface StrangersLawView {
+  id: string;
+  name: string;
+  setting: string;
+  settings: { id: string; name: string }[];
+  /** How the band and the law decide, each setting in words. */
+  about: string;
+  /** "Those in need, the custom since the colony began." or "Set to Closed at …". */
+  since: string;
+  why: number;
+  /** "Durza of Kraghthar, 9 Leaffall: 2 for, 3 against. Split, so the law decided: …" */
+  verdict?: { text: string; why: number };
+  answers: AnswerView[];
 }

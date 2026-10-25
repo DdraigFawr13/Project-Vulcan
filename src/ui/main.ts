@@ -131,6 +131,7 @@ const sheets = new Sheets({
     renderer.mark({ x, y });
   },
   opened: (kind) => hud.showPanel(kind),
+  drawPeople: (list) => renderer.setPeople(list),
 });
 const picker = new Picker(hudRoot, {
   settle: (chosen) => {
@@ -198,7 +199,6 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       people = message.people;
       green = message.green;
       arriving = message.from === 'seed' && message.fresh && people.length > 0;
-      renderer.setPeople(people);
       sheets.setPeople(people);
       // A loaded world starts paused, like a new one.
       speed = 0;

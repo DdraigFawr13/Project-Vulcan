@@ -79,4 +79,16 @@ export interface WalkerView {
   health?: HealthView;
   /** Their warmth warning line, 0 to 100, and why it is where it is (V-046), in words. */
   warmLine: { line: number; usual: number; text: string };
+  /** Where they sleep and whether they want a home of their own (P5.14), in words. */
+  home?: { text: string; why?: number };
+  /** A stranger's page while the band speaks or they walk away (P5.9); none for the colony. */
+  stranger?: StrangerView;
+}
+
+/** A stranger's page (P5.9): who and from where, why they came, what they bring, what now. */
+export interface StrangerView {
+  /** "A stranger at the green · orc of the Ghor, 31" */
+  who: string;
+  rows: { name: string; text: string; why?: number }[];
+  foot: string;
 }

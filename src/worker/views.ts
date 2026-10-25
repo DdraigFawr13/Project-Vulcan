@@ -7,9 +7,12 @@ import {
   chunksAcross,
   clockAt,
   feltAt,
+  greenOf as greenTile,
   isFrozen,
   layerOf,
   recordOf,
+  renderEvent,
+  START_TICK,
   type MapState,
   type SimEvent,
   type Stub,
@@ -204,3 +207,16 @@ export function placeWords(map: MapState, x: number, y: number, z: number): stri
   return `${far} tiles ${[ns, ew].filter(Boolean).join('-')} of the camp${below}`;
 }
 const NEAR = 6;
+
+/** The line saying where the band stopped the cart, and whether it may still be sent back. */
+export function greenOf(
+  w: WorldState,
+  templates: Parameters<typeof renderEvent>[1],
+): { green?: { text: string; again: boolean; x: number; y: number } } {
+  const line = w.log.find((e) => e.type === 'map.green' || e.type === 'map.greenAgain');
+  if (!line) return {};
+  const map = w.systems['map'] ?? {};
+  const again = w.tick === START_TICK && !map['look'] && !!map['next'];
+  const { x, y } = greenTile(w);
+  return { green: { text: renderEvent(line, templates), again, x, y } };
+}

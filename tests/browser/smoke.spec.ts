@@ -423,6 +423,8 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('open-laws').click();
   await expect(panel).toContainText('Work hours');
+  // Folded to one line beside the Strangers law (P5.9) until opened.
+  await panel.getByRole('button', { name: 'Show the work hours law' }).click();
   const settings = panel.getByRole('group', { name: 'Work hours law' }).getByRole('button');
   expect(await settings.count()).toBeGreaterThanOrEqual(3);
   for (const b of await settings.all())

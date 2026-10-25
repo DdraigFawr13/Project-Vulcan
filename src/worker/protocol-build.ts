@@ -19,6 +19,10 @@ export interface HouseView {
   sited?: LedgerLine;
   /** A sickroom (P5.6): its page's title, "Sickroom". */
   sick?: string;
+  /** A home's or the hall's rows (P5.14): household, beds, feasts, mourning. */
+  rows?: { name: string; text: string; why?: number }[];
+  /** The home's or the hall's lines, newest first: built, moved in, became the hall, feasts. */
+  lines?: LedgerLine[];
 }
 
 /** A room as the engine works it out (P3.3), each value in words. */
@@ -167,6 +171,9 @@ export interface BuildView {
   /** No ground near the green fits a house. */
   noGround: boolean;
   houses: BuildRow[];
+  /** Homes of their own (P5.14): who still wants one and who has theirs, who comes next, and how
+   * the want works; none until anyone wants a home. */
+  homes?: { need: string; next: string; note: string };
 }
 
 /** A tile of a part (P3.1, P3.2): what it is, how far it has got, who is on it and why. */
