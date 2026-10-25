@@ -19,7 +19,7 @@ export const flockSystem: System = {
     ...['flock.tamed', 'flock.full', 'flock.lambed', 'flock.youngDied', 'flock.grown'],
     ...['flock.shorn', 'flock.mowing', 'flock.haySpoiled', 'flock.rick', 'flock.cullSet'],
     ...['flock.cullEarly', 'flock.butchered', 'flock.onHay', 'flock.onGrass'],
-    ...['flock.starved', 'flock.leftOut', 'flock.taken'],
+    ...['flock.starved', 'flock.leftOut', 'flock.taken', 'flock.brokeIn'],
   ],
   // `wetPrev`, `wetNow`: the weather's wet flag for yesterday and today (a dry night is both dry);
   // `lured`: how many pack lures the flocks set last minute (pack.ts).
@@ -45,7 +45,7 @@ function hourly(ctx: Parameters<NonNullable<System['run']>>[0]): void {
     addEntity(world, 'flock', {
       ...{ pasture: p.id, hay: 0, swaths: [], swathHay: [], swathDry: [], mown: [], mowDay: 0 },
       ...{ mowLog: 0, spoiled: 0, folded: 0, outLine: 0, takenAt: 0, takenLine: 0, onHay: 0 },
-      ...{ cullLine: 0, full: 0, line: p['last'] as number, births: [] },
+      ...{ cullLine: 0, full: 0, line: p['last'] as number, births: [], watch: 0, watchPiece: 0 },
       year: clockAt(world.tick, content.calendar).year,
     });
   const hour = clockAt(world.tick, content.calendar).hour;

@@ -8,6 +8,7 @@ export {
   bodiesOf,
   bodyOf,
   HEALTH_TABLES,
+  herbedNow,
   isDown,
   keepsDown,
   markPercent,

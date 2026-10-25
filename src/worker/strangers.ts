@@ -44,6 +44,26 @@ function dayOf(tick: number): string {
   return `${c.day} ${content.calendar.monthNames[c.month]!}`;
 }
 
+/** The "Known for" row: why their home gives the skill they bring, and how well they have it. */
+function knownRow(world: WorldState, p: EntityRow, culture: string): StrangerView['rows'] {
+  const [id, key] = [p['known'] as string, p['knownWhy'] as string];
+  const row = (world.entities['skill'] ?? []).find(
+    (s) => s['person'] === p.id && s['skill'] === id,
+  );
+  const why = content.strangers.known.why[key];
+  if (!row || !why) return [];
+  const noun = (content.strangers.known.nouns[id] ?? id).replace(/^an? /, '');
+  const [level, potential] = [row['level'] as number, row['potential'] as number];
+  const sentence = cap(why.replace('{place}', p['home'] as string).replace('{people}', culture));
+  const skill = nameOf(content.abilities, id).toLowerCase();
+  return [
+    {
+      name: 'Known for',
+      text: `${sentence}. ${p['name'] as string} brings ${skill} ${level} (can reach ${potential}), ${noun}’s skill.`,
+    },
+  ];
+}
+
 /** A stranger's page while they come, wait or walk away; none for anyone of the colony. */
 export function strangerOf(world: WorldState, p: EntityRow): StrangerView | undefined {
   if (p['status'] !== 'stranger') return undefined;
@@ -89,6 +109,7 @@ export function strangerOf(world: WorldState, p: EntityRow): StrangerView | unde
         text: say('came', { place: p['home'] as string, words: kind?.words ?? '' }),
         why: p['sent'] as number,
       },
+      ...knownRow(world, p, culture),
       { name: `${cap(they)} brings`, text: skills.join(', ') || 'no skill to speak of' },
       ...(traits.length ? [{ name: 'Traits', text: traits.join(', ') }] : []),
       ...(leads ? [{ name: `${cap(they)} leads`, text: `a ${leads.femaleName}` }] : []),

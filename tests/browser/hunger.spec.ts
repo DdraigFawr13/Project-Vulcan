@@ -37,8 +37,6 @@ test('a hungry colonist\'s Food "why?" names the line that ate the last of the f
       timeout: 30_000,
     });
   };
-  await page.locator('.pslot').first().click();
-  await panel.getByRole('button', { name: 'Needs' }).click();
   // Only the Food row's "why?" (VR-63): the "Doing now" line (P2.9) and another low need, such as
   // sleeping in the open before the house stands (P3.7), have their own, which matched first.
   const hungry = panel
@@ -53,7 +51,15 @@ test('a hungry colonist\'s Food "why?" names the line that ate the last of the f
   for (let skips = 0; skips < 60 && !foodGone.test(await alertText(page)); skips++)
     await skipOnce();
   expect(await alertText(page)).toMatch(foodGone);
-  for (let skips = 0; skips < 10 && (await hungry.count()) === 0; skips++) await skipOnce();
+  // Then the first "is hungry" line, and that person's sheet: who gets hungry first depends on
+  // who ate when, so the check follows the alert rather than a fixed face.
+  const isHungry = /(\S+) is hungry/;
+  for (let skips = 0; skips < 10 && !isHungry.test(await alertText(page)); skips++)
+    await skipOnce();
+  const who = isHungry.exec(await alertText(page))?.[1] ?? '';
+  expect(who).not.toBe('');
+  await page.locator(`.pslot[data-name^="${who}"]`).click();
+  await panel.getByRole('button', { name: 'Needs' }).click();
   await hungry.first().click({ timeout: 5000 });
   await expect(panel.getByTestId('chain')).toContainText("ate the last of the band's food");
   expect(errors).toEqual([]);

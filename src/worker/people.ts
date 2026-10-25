@@ -62,6 +62,7 @@ export function peopleOf(world: WorldState): PersonView[] {
       homeDir: p['homeDir'] as string,
       trade: nameOf(content.abilities, p['trade'] as string),
       skills: own,
+      known: p['known'] ? nameOf(content.abilities, p['known'] as string) : '',
       // Best first: by level, then potential; the list order breaks ties (the trade's rule).
       best: [...own].sort((a, b) => b.level - a.level || b.potential - a.potential).slice(0, 3),
       able: band.must.filter((m) => own.some((s) => s.id === m && s.level >= band.able)),
@@ -126,6 +127,7 @@ function doingOf(p: EntityRow): string {
   if (p['doing'] === 'work' && p['job'] === 'tend')
     return walking ? 'Going to a fire' : 'Tending a fire';
   if (p['doing'] === 'warm') return 'Warming up';
+  if (p['doing'] === 'watch') return walking ? 'Going to the fold' : 'Keeping watch';
   if (p['doing'] === 'work') return walking ? 'Carrying to the store' : 'Hauling';
   return walking ? 'Strolling' : 'Idle';
 }
@@ -146,6 +148,7 @@ export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   if (doing === 'eat') return { text: say(walking ? 'goEat' : 'eat') };
   if (doing === 'relax') return { text: say('relax') };
   if (doing === 'warm') return { text: say('warm') };
+  if (doing === 'watch') return { text: say(walking ? 'goWatch' : 'watch') };
   if (doing !== 'work') return { text: say(walking ? 'stroll' : 'idle') };
   const job = p['job'] as string;
   const took = p['took'] as number;
@@ -198,15 +201,23 @@ export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
     return { text: say(task === 'sink' ? 'shaft' : task, vars), ...why };
   }
   if (job === 'fell' || job === 'forage' || job === 'quarry') {
+    const tile = p['target'] as number;
+    const feature = job === 'forage' && tile >= 0 ? world.map.features[tile] : 0;
+    const herbs = !!feature && content.features[feature - 1]?.kind === 'herb';
     const good =
       job === 'fell'
         ? content.work.stock[0]?.good
         : job === 'quarry'
           ? content.work.quarry.good
-          : content.work.forage.good;
+          : herbs
+            ? content.work.forage.herbs.good
+            : content.work.forage.good;
     const def = content.work.stock.find((s) => s.good === good);
     const level = (good && stockOf(world, good)?.['level']) as string | undefined;
-    return { text: say(job, { good: def?.name ?? good ?? '', level: level ?? '' }), ...why };
+    return {
+      text: say(herbs ? 'forageHerbs' : job, { good: def?.name ?? good ?? '', level: level ?? '' }),
+      ...why,
+    };
   }
   const items = itemsOf(world);
   const item = loadOf(world, p.id) ?? items.find((i) => i.id === (p['target'] as number));

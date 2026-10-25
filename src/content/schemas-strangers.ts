@@ -1,7 +1,7 @@
 // Shape of Vulcan's strangers file (src/content/data/strangers.json, Phase 5 Bundle 4, P5.9 and
 // P5.14): when people want homes of their own, what draws strangers, why they come and how the
 // band weighs them. Rates are percents, days game days, minutes game minutes.
-import { bool, list, map, num, obj, ref, str } from './schema';
+import { bool, list, map, num, obj, range, ref, str } from './schema';
 import { count, id, text, texts } from './schema-fields';
 
 const percent = num({ min: 0, max: 100 });
@@ -53,8 +53,21 @@ export const STRANGERS_SCHEMAS = {
       short: num(),
       greedy: num(),
       harvest: text,
+      skill: num(),
       traits: map(num(), 'traits'),
       memories: map(num(), 'memories'),
+    }),
+    // The skill a newcomer's home is known for: by the site's `kinds` (mine, hold, port...), else
+    // by the first of its culture's site `prefs`. They bring it at a `level` (inclusive range) with
+    // a potential at least `reach` above; `nouns` name who has it, `why` says why the place gives
+    // it ({place} or {people} filled in). `weigh.skill` speaks for them when nobody is able.
+    known: obj({
+      kinds: map(ref('abilities')),
+      prefs: map(ref('abilities')),
+      level: range(),
+      reach: count,
+      nouns: map(text, 'abilities'),
+      why: map(text),
     }),
     // A colonist whose word the law overrode answers it with `dissent` less willingness.
     dissent: num(),

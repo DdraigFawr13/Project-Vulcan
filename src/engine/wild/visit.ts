@@ -203,3 +203,55 @@ export function arrived(ctx: SystemContext): void {
   ctx.state['reached'] = 1;
   Object.assign(pack, { shown: 1, line });
 }
+
+/** A lit watch fire (Bundle 6) the pack keeps `reach` tiles from: its tile and the line that lit it. */
+export interface Ward {
+  tile: number;
+  reach: number;
+  line: number;
+}
+
+/** Replaces the watch fires the pack keeps clear of (the people side's, lit at the fold); an empty
+ * list takes them away. State keys `ward_n`, then `ward_<k>` (tile plus one), `wardr_<k>` (reach)
+ * and `wardl_<k>` (line), k from 1. */
+export function setWards(ctx: SystemContext, wards: readonly Ward[]): void {
+  const state = ctx.world.systems['wild']!;
+  for (let k = 1; k <= (state['ward_n'] ?? 0); k += 1)
+    for (const p of ['ward_', 'wardr_', 'wardl_']) delete state[`${p}${k}`];
+  wards.forEach((w, k) => {
+    state[`ward_${k + 1}`] = w.tile + 1;
+    state[`wardr_${k + 1}`] = w.reach;
+    state[`wardl_${k + 1}`] = w.line;
+  });
+  if (wards.length) state['ward_n'] = wards.length;
+  else delete state['ward_n'];
+}
+
+/** During a visit, a pack animal within reach of a lit watch fire turns the whole pack for home:
+ * `wild.packWarded`, citing the fire's line and the pack's hunger. */
+export function checkWards(ctx: SystemContext): void {
+  const { world } = ctx;
+  const state = world.systems['wild']!;
+  const n = state['ward_n'] ?? 0;
+  const pack = packOf(world);
+  if (!n || !pack?.['visiting']) return;
+  const w = world.map.width;
+  for (let k = 1; k <= n; k += 1) {
+    const tile = state[`ward_${k}`]! - 1;
+    const [x, y] = [tile % w, Math.floor(tile / w)];
+    const near = animalsOf(world).some(
+      (a) =>
+        a['pack'] && distance(a['x'] as number, a['y'] as number, x, y) <= state[`wardr_${k}`]!,
+    );
+    if (!near) continue;
+    // `shown`: this visit has its line, so the people side counts it as a sign of the pack.
+    Object.assign(pack, { visiting: 0, shown: 1 });
+    Object.assign(ctx.state, { goal: 0, reached: 0 });
+    sendAll(ctx, (pack['denY'] as number) * w + (pack['denX'] as number));
+    pack['line'] = ctx.emit('wild.packWarded', {
+      causes: [state[`wardl_${k}`]!, (pack['hungryLine'] as number) || 0].filter((c) => c > 0),
+      data: { name: pack['name'] as string, when: whenWord(ctx) },
+    });
+    return;
+  }
+}

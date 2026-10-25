@@ -35,12 +35,18 @@ function luring(ctx: SystemContext): boolean {
   return now >= from || now < night.to * 60;
 }
 
-/** Keeps the pack's lures to the flocks that are out: unfolded, with animals, by night. A lure is
- * set from the folding time, so one still unfolded at dusk is what the pack is sent to. */
+/** Whether the pack is hungry enough to be drawn to a shut fold (Bundle 6). It breaks into one
+ * only while no watch fire burns there; a lit one turns it away first (wild `setWards`). */
+const breaksIn = (ctx: SystemContext): boolean =>
+  ((packOf(ctx.world)?.['hunger'] as number) ?? 0) >= ctx.content.flock.watch.breakIn;
+
+/** Keeps the pack's lures to the flocks that are out (unfolded, with animals, by night) and, for a
+ * pack starved `watch.breakIn` days, to dark folds. A lure is set from the folding time, so one
+ * still unfolded at dusk is what the pack is sent to. */
 export function syncLures(ctx: SystemContext): void {
   const { world } = ctx;
   const out = luring(ctx)
-    ? flocksOf(world).filter((f) => !f['folded'] && headOf(world, f) > 0)
+    ? flocksOf(world).filter((f) => (!f['folded'] || breaksIn(ctx)) && headOf(world, f) > 0)
     : [];
   // `lured`: how many lures this system set last; none then and none now is nothing to do.
   if (!out.length && !ctx.state['lured']) return;
@@ -48,11 +54,12 @@ export function syncLures(ctx: SystemContext): void {
   setLures(
     ctx,
     'flock',
-    out.map((f) => ({ tile: lureTile(world, f), where: 'flock', rank: 0 })),
+    out.map((f) => ({ tile: lureTile(world, f), where: f['folded'] ? 'fold' : 'flock', rank: 0 })),
   );
 }
 
-/** The pack has reached a flock that is out: it takes the animal nearest, once a night. */
+/** The pack has reached a flock that is out, or a dark fold it breaks into: it takes the animal
+ * nearest, once a night. */
 export function packTakes(ctx: SystemContext): void {
   const { world, content } = ctx;
   const pack = packOf(world);
@@ -60,7 +67,9 @@ export function packTakes(ctx: SystemContext): void {
   if (!pack || !arrival) return;
   const w = world.map.width;
   for (const flock of flocksOf(world)) {
-    if (flock['folded'] || !flock['outLine'] || lureTile(world, flock) !== arrival.tile) continue;
+    const broke = !!flock['folded'];
+    if (broke ? !breaksIn(ctx) || flock['watch'] : !flock['outLine']) continue;
+    if (lureTile(world, flock) !== arrival.tile) continue;
     if ((flock['takenAt'] as number) > (pack['visitAt'] as number)) continue;
     const prey = keptOf(world, flock)
       .map(
@@ -76,11 +85,11 @@ export function packTakes(ctx: SystemContext): void {
       .sort((a, b) => a[1] - b[1] || a[0].id - b[0].id)[0]?.[0];
     if (!prey) continue;
     const word = animalWord(content, prey);
-    const line = ctx.emit('flock.taken', {
+    const line = ctx.emit(broke ? 'flock.brokeIn' : 'flock.taken', {
       causes: [
         (pack['hungryLine'] as number) || (pack['line'] as number),
-        flock['outLine'] as number,
-      ],
+        broke ? (flock['line'] as number) : (flock['outLine'] as number),
+      ].filter((c) => c > 0),
       data: { name: pack['name'] as string, a: articleOf(word), kind: word },
     });
     removeEntity(world, 'animal', prey.id);

@@ -5,6 +5,7 @@ import { content } from '../content/index.ts';
 import {
   bodyOf,
   clockAt,
+  herbedNow,
   isDown,
   markPercent,
   openWounds,
@@ -90,7 +91,12 @@ function statusOf(world: WorldState, p: EntityRow, w: EntityRow): string {
     const due =
       world.tick > next ? say('overdue') : say('nextDressing', { next: stamp(world, next) });
     const head = say('bound', { healer, time: stamp(world, w['dressed'] as number) });
-    return head + due + mends + fever;
+    const herbs = herbedNow(world, content, w)
+      ? say('herbed')
+      : (w['herbless'] as number) > (w['herbed'] as number)
+        ? say('noHerbs')
+        : '';
+    return head + herbs + due + mends + fever;
   }
   return mends.trimStart() + fever;
 }

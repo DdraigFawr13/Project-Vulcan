@@ -10,7 +10,7 @@ import { isWinter } from '../law/index.ts';
 import { neighboursOf, type Neighbour } from '../region/index.ts';
 import type { RngStream } from '../core/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
-import { drawStranger } from './band.ts';
+import { bringKnown, drawStranger, knownOf } from './band.ts';
 import { addPerson } from './row.ts';
 import { drawSmithing } from './smithing.ts';
 import { stepAlong } from './walk.ts';
@@ -87,6 +87,8 @@ function come(ctx: SystemContext, rng: RngStream, near: readonly Neighbour[]): v
   const group = couple
     ? [a, drawStranger(rng, content, home, [...taken, a.name], a.sex === 'f' ? 'm' : 'f')]
     : [a];
+  const known = knownOf(content, n.kind, n.culture);
+  if (known) for (const p of group) bringKnown(rng, content, p, known.skill);
   const brings = rng.int(100) < s.animal ? rng.pick(s.animals) : '';
   const smith = drawSmithing(rng, content, group);
   const year = clockAt(world.tick, content.calendar).year;
@@ -97,7 +99,10 @@ function come(ctx: SystemContext, rng: RngStream, near: readonly Neighbour[]): v
       p,
       { ...spot, status: 'stranger', arrived: drawn, born: year - p.age, rest: 0 },
       smith[k]!,
-      { reason: reason.kind, sent: record || drawn, brings: k === 0 ? brings : '' },
+      {
+        ...{ reason: reason.kind, sent: record || drawn, brings: k === 0 ? brings : '' },
+        ...{ known: known?.skill ?? '', knownWhy: known?.key ?? '' },
+      },
     ),
   );
   const rows = ids.map((id) => people(world).find((p) => p.id === id)!);

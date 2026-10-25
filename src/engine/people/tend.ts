@@ -11,6 +11,7 @@ import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { furnitureOf } from '../build/index.ts';
 import { fireOf, firesOf, fuelOf, pieceOfFire, placeOf } from '../fire/index.ts';
 import { occupied } from './hearth.ts';
+import { isWatchFire } from './watch.ts';
 import {
   haveOf,
   inStore,
@@ -100,7 +101,7 @@ function pick(ctx: SystemContext, p: EntityRow, cold = false): Pick | undefined 
   );
   const fires = firesOf(world)
     .map((f) => ({ f, piece: pieceOfFire(world, f) }))
-    .filter(({ piece }) => !on.has(piece.id))
+    .filter(({ piece }) => !on.has(piece.id) && !isWatchFire(world, piece))
     .sort((a, b) => cheb(from, spotOf(a.piece)) - cheb(from, spotOf(b.piece)) || a.f.id - b.f.id);
   const recent = (f: EntityRow) => world.tick - (f['used'] as number) < t.idle;
   // A fire is lit or fed only where its tile is under the hearth line without one (V-068).

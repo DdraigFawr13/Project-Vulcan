@@ -8,6 +8,7 @@ import { content } from '../../content/index.ts';
 import { allLines, createSim, createWorld, step, submitCommand, whyOf } from '../index.ts';
 import { hallOf, homeFor, householdOf, sleepsIn } from '../build/index.ts';
 import { memoriesOf } from '../needs/index.ts';
+import { stanceOf } from './welcome.ts';
 
 const DAY = 1440;
 const SEED = 'anvil/1';
@@ -101,5 +102,41 @@ describe('strangers and homes', () => {
         expect(lines(w, 'people.strangerStays')[0]!.data['why']).toContain('Open door');
       }
     }
+  });
+
+  it('a newcomer brings the skill their home is known for, and the band weighs it', () => {
+    const c = tuned({});
+    const known = c.strangers.known;
+    for (const seed of ['anvil/1', 'anvil/2', 'anvil/3', 'anvil/4', 'anvil/5', 'anvil/6']) {
+      const sim = createSim(c);
+      const w = createWorld(sim, seed);
+      let lead: (typeof w.entities)['person'][number] | undefined;
+      for (let h = 0; h < 20 * 24 && !lead; h += 1) {
+        step(w, sim, 60);
+        lead = people(w, 'stranger').find((p) => p['known']);
+      }
+      if (!lead) continue;
+      const skill = lead['known'] as string;
+      const rows = (w.entities['skill'] ?? []).filter((r) => r['person'] === lead!.id);
+      const mine = rows.find((r) => r['skill'] === skill)!;
+      const level = mine['level'] as number;
+      expect(level).toBeGreaterThanOrEqual(known.level[0]!);
+      expect(level).toBeLessThanOrEqual(known.level[1]!);
+      expect(mine['potential'] as number).toBeGreaterThanOrEqual(level + known.reach);
+      // Nobody able in it: the band hears the skill; someone able, and it is not mentioned.
+      const band = people(w, 'alive');
+      const mark = (n: number) =>
+        (w.entities['skill'] ?? [])
+          .filter((r) => r['skill'] === skill && band.some((q) => q.id === r['person']))
+          .forEach((r, k) => (r['level'] = k === 0 ? n : 0));
+      const says = () =>
+        stanceOf(w, c, band[0]!, lead!, true).pros.some((x) => /nobody here/.test(x));
+      mark(c.band.able - 1);
+      expect(says()).toBe(true);
+      mark(c.band.able);
+      expect(says()).toBe(false);
+      return;
+    }
+    throw new Error('no seed gave a newcomer from a place known for a skill');
   });
 });

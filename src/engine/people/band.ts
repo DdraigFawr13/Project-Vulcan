@@ -187,3 +187,23 @@ export function drawStranger(
     p = drawPerson(rng, content, [home]);
   return p;
 }
+
+/** The skill a place is known for and the key that says why: its site kind's, else its culture's
+ * first site preference's (strangers.json `known`); none for a place with neither. */
+export function knownOf(content: EngineContent, kind: string, culture: string) {
+  const k = content.strangers.known;
+  const pref = content.cultures.find((c) => c.id === culture)?.sitePreferences[0] ?? '';
+  const key = k.kinds[kind] ? kind : k.prefs[pref] ? pref : '';
+  return key ? { skill: (k.kinds[kind] ?? k.prefs[pref])!, key } : undefined;
+}
+
+/** Raises a newcomer to the skill their home is known for: a level drawn in `known.level`, a
+ * potential at least `known.reach` above it, and the trade it makes them (if nothing is higher). */
+export function bringKnown(rng: RngStream, content: EngineContent, p: Person, skill: string): void {
+  const s = p.skills[skill];
+  if (!s) return;
+  const { level, reach } = content.strangers.known;
+  s.level = rng.between(level[0]!, level[1]!);
+  s.potential = Math.max(s.potential, s.level + reach);
+  p.trade = tradeOf(content.band, p.skills);
+}

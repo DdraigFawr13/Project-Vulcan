@@ -1,9 +1,11 @@
 // Nursing (P5.6, V-114), the Healing row of the Work sheet. In work hours a free, able person
 // who puts Healing high enough to reach it takes up dressing: a deep or grave wound not dressed
 // for `heal.dressEvery` hours, or one only roughly bound (which they bind properly: a line).
-// Dressing is daily work, not a line. Feeding the hurt is feed.ts.
+// Dressing is daily work, not a line, except a wound's first dressing with herbs (one herb from
+// the store, `health.herbs`) and the first that wanted herbs and found none. Feeding the hurt is feed.ts.
 import type { EntityRow, WorldState } from '../core/index.ts';
-import { bodyOf, openWounds, severityOf } from '../health/index.ts';
+import { bodyOf, openWounds, severityOf, woundName } from '../health/index.ts';
+import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bindWounds } from './care.ts';
@@ -67,6 +69,39 @@ const stop = (p: EntityRow): false => {
   return false;
 };
 
+/** A dressing may use one herb on a young wound not herbed within `herbs.every` days: taken from
+ * the store when it has one, else the wound is marked herbless. A line the first time each. */
+function herbDress(ctx: SystemContext, h: EntityRow, p: EntityRow, w: EntityRow): void {
+  const { world, content } = ctx;
+  const herbs = content.health.herbs;
+  const day = 1440;
+  if (world.tick - (w['at'] as number) >= herbs.days * day) return;
+  if ((w['herbed'] as number) > 0 && world.tick - (w['herbed'] as number) < herbs.every * day)
+    return;
+  const stacks = itemsOf(world).filter(
+    (i) =>
+      i['kind'] === herbs.item &&
+      !i['holder'] &&
+      inStore(world, i['x'] as number, i['y'] as number, i['z'] as number),
+  );
+  const data = {
+    healer: h['name'] as string,
+    name: p['name'] as string,
+    wound: woundName(content, w),
+  };
+  const causes = [w['care'] as number].filter((c) => c > 0);
+  if (!stacks.length) {
+    if (!w['herbless']) ctx.emit('health.noHerbs', { causes, actors: [h.id, p.id], data });
+    w['herbless'] = world.tick;
+    return;
+  }
+  takeFrom(world, stacks[0]!, 1);
+  const left = stacks.reduce((n, i) => n + (i['count'] as number), 0) - 1;
+  if (!w['herbed'])
+    ctx.emit('health.herbed', { causes, actors: [h.id, p.id], data: { ...data, left } });
+  w['herbed'] = world.tick;
+}
+
 /** One minute of dressing; false when it ended. */
 export function dressing(ctx: SystemContext, h: EntityRow): boolean {
   const { world, content } = ctx;
@@ -86,7 +121,10 @@ export function dressing(ctx: SystemContext, h: EntityRow): boolean {
   if ((h['work'] as number) > 0) return true;
   const rough = wounds.filter((w) => (w['bound'] as number) < 2);
   if (rough.length) bindWounds(ctx, h, p, rough);
-  for (const w of wounds) Object.assign(w, { dressed: world.tick, healer: h.id });
+  for (const w of wounds) {
+    Object.assign(w, { dressed: world.tick, healer: h.id });
+    herbDress(ctx, h, p, w);
+  }
   stop(h);
   return true;
 }

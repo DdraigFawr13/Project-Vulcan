@@ -17,6 +17,7 @@ import {
   partDef,
   personOf,
   pronouns,
+  herbedNow,
   severityOf,
   stopFor,
   woundName,
@@ -48,7 +49,7 @@ const lying = (p: EntityRow): boolean =>
   p['doing'] === 'hurt' || (p['doing'] === 'sleep' && !(p['path'] as number[]).length);
 
 /** Dressed by a healer within `heal.dressEvery` hours. */
-const dressed = (ctx: SystemContext, w: EntityRow): boolean =>
+const dressed = (ctx: Pick<SystemContext, 'world' | 'content'>, w: EntityRow): boolean =>
   w['bound'] === 2 &&
   ctx.world.tick - (w['dressed'] as number) < ctx.content.health.heal.dressEvery * 60;
 
@@ -99,6 +100,18 @@ function bleed(ctx: SystemContext, p: EntityRow, wounds: EntityRow[]): boolean {
   return true;
 }
 
+/** The per cent chance a wound festers over its first days: the kind's own chances, else the
+ * severity's, [with care, without]; `herbs.fester` per cent of it while herbed. */
+export function festerChance(ctx: Pick<SystemContext, 'world' | 'content'>, w: EntityRow): number {
+  const { world, content } = ctx;
+  // A kind of wound may have its own chances (a bite festers more), for deep and grave ones.
+  const own = content.health.wounds.find((d) => d.id === w['kind'])?.fester;
+  const base = (own ?? severityOf(content, w).fester)?.[dressed(ctx, w) ? 0 : 1] ?? 0;
+  return herbedNow(world, content, w)
+    ? Math.floor((base * content.health.herbs.fester) / 100)
+    : base;
+}
+
 /** Festering in a wound's first days, and the fever it brings; true when the fever killed. */
 function fester(ctx: SystemContext, p: EntityRow, w: EntityRow): boolean {
   const { world, content } = ctx;
@@ -108,9 +121,7 @@ function fester(ctx: SystemContext, p: EntityRow, w: EntityRow): boolean {
   // Once a day, at the hour of the wound.
   if (age <= 0 || age % TICKS_PER_DAY >= 60) return false;
   if (w['fester'] === 0 && sev.fester && age <= f.days * TICKS_PER_DAY) {
-    // A kind of wound may have its own chances (a bite festers more), for deep and grave ones.
-    const own = content.health.wounds.find((d) => d.id === w['kind'])?.fester;
-    const total = (own ?? sev.fester)[dressed(ctx, w) ? 0 : 1]!;
+    const total = festerChance(ctx, w);
     if (!roll(ctx, dailyChance(total, f.days))) return false;
     w['fester'] = 1;
     w['feverEnd'] = world.tick + f.fever * TICKS_PER_DAY;
