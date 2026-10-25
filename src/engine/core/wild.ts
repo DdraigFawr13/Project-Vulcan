@@ -93,7 +93,7 @@ export interface WildDef {
     returns: { month: string; chance: number };
     why: { harsh: string; winter: string; other: string };
     left: { dead: string; few: string };
-    where: { edge: string; midden: string };
+    where: { edge: string; midden: string; flock: string };
   };
   where: Readonly<Record<string, string>>;
   /** The people's side (flee, fight, attack, tracks): distances are tiles, chances per cent. */

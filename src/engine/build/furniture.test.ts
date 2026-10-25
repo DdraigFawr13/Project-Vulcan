@@ -146,27 +146,33 @@ describe('carpentry and furniture', () => {
     const bed = bedOwnedBy(w, p.id);
     return bed && roomAt(w, content, bed['x'] as number, bed['y'] as number);
   };
-  const barracks: { seed: string; w: ReturnType<typeof createWorld> }[] = [];
+  // A barracks sleeper may move to a room of their own during the week after (V-078): the seed
+  // must still have one sharing then, so the search looks a week on before it picks a seed.
+  const barracks: {
+    seed: string;
+    w: ReturnType<typeof createWorld>;
+    alone: EntityRow[];
+    still: EntityRow[];
+  }[] = [];
   for (const seed of ['ledger', 'anvil', 'gwerin', 'tallow', 'smoke', 'kiln', 'marsh']) {
     if (barracks.length === 2) break;
     const w = createWorld(sim, seed);
     step(w, sim, 10 * DAY);
     const alone = people(w).filter((p) => roomOf(w, p)?.sleepers === 1).length;
     const shared = people(w).filter((p) => (roomOf(w, p)?.sleepers ?? 0) >= 3).length;
-    if (alone >= 1 && shared >= 3 && alone + shared === people(w).length)
-      barracks.push({ seed, w });
+    if (!(alone >= 1 && shared >= 3 && alone + shared === people(w).length)) continue;
+    const lone = people(w).filter((p) => roomOf(w, p)!.sleepers === 1);
+    const sharing = people(w).filter((p) => roomOf(w, p)!.sleepers >= 3);
+    step(w, sim, 7 * DAY);
+    const still = sharing.filter((p) => roomOf(w, p)!.sleepers >= 3);
+    if (still.length >= 1) barracks.push({ seed, w, alone: lone, still });
   }
   it('finds two seeds where some sleep alone and the rest in a barracks', () => {
     expect(barracks).toHaveLength(2);
   });
-  for (const { seed, w } of barracks) {
+  for (const { seed, w, alone, still } of barracks) {
     it(`lets a colonist alone in an owned bedroom end a week in a better mood than the barracks on ${seed}`, () => {
-      const alone = people(w).filter((p) => roomOf(w, p)!.sleepers === 1);
-      const shared = people(w).filter((p) => roomOf(w, p)!.sleepers >= 3);
-      step(w, sim, 7 * DAY);
-      // A barracks sleeper may move to a room of their own during the week (V-078): compare
-      // those still sharing with those alone all week.
-      const still = shared.filter((p) => roomOf(w, p)!.sleepers >= 3);
+      // Compare those still sharing at the week's end with those alone all week.
       expect(still.length, seed).toBeGreaterThanOrEqual(1);
       const mood = (p: (typeof alone)[number]) => moodOf(w, p.id)!['value'] as number;
       const mean = still.reduce((n, p) => n + mood(p), 0) / still.length;

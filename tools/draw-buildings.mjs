@@ -13,6 +13,7 @@ import { isMain, root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
 import { readPalette } from './draw-tiles-base.mjs';
 import { noise } from './draw-nature.mjs';
+import { drawPasture } from './draw-pasture.mjs';
 
 const S = 32;
 // The band: 11 px wide, from 11 to 21 (about a third of the tile).
@@ -285,7 +286,7 @@ export function drawBuildings(p = readPalette()) {
 if (isMain(import.meta.url)) {
   const out = path.join(root, 'art/src/buildings');
   mkdirSync(out, { recursive: true });
-  const frames = drawBuildings();
+  const frames = { ...drawBuildings(), ...drawPasture() };
   for (const [name, img] of Object.entries(frames))
     writeFileSync(path.join(out, `${name}.png`), encodePng(img));
   console.log(`buildings: drew ${Object.keys(frames).length} frames into ${out}`);

@@ -9,12 +9,13 @@ import type { SystemContext } from '../sim/index.ts';
 import { gameWords, valleyGame, valleyName, whereWords } from './ground.ts';
 import { settlePack } from './place.ts';
 import { sweepPrints } from './prints.ts';
-import { animalsOf, herdsOf, membersOf, packRow, speciesOf } from './wild.ts';
+import { animalsOf, herdsOf, membersOf, packRow, speciesOf, wildHerdsOf } from './wild.ts';
 
 /** Writes `wild.herdLow` the first time a herd is at or under `wild.low` per cent of its start,
  * citing its latest cause, and forgets it once the herd has recovered. */
 export function checkLow(ctx: SystemContext, herd: EntityRow): void {
   const { world, content } = ctx;
+  if (herd['kept']) return;
   const now = membersOf(world, herd.id).length;
   const low = now * 100 <= (herd['start'] as number) * content.wild.low;
   if (!low) {
@@ -43,7 +44,7 @@ function snowLoss(ctx: SystemContext): void {
   const rng = ctx.rng();
   const map = world.map;
   const weather = world.systems['weather'];
-  for (const herd of herdsOf(world)) {
+  for (const herd of wildHerdsOf(world)) {
     const sp = speciesOf(content, herd['species'] as string);
     const members = membersOf(world, herd.id);
     const chance = (content.wild.snowLoss * members.length) / sp.cap;
@@ -67,7 +68,7 @@ function monthly(ctx: SystemContext, month: string): void {
   const { world, content } = ctx;
   const rng = ctx.rng();
   const winter = content.wild.winter.includes(month);
-  for (const herd of herdsOf(world)) {
+  for (const herd of wildHerdsOf(world)) {
     const sp = speciesOf(content, herd['species'] as string);
     const members = membersOf(world, herd.id);
     if (!members.length) continue;
@@ -92,6 +93,7 @@ function monthly(ctx: SystemContext, month: string): void {
           until: 0,
           hurt: 0,
         },
+        ...{ sex: '', born: 0, young: 0, tamedBy: 0, cull: 0, shorn: 0, dies: 0 },
       });
     }
     if (gain) checkLow(ctx, herd);
@@ -153,7 +155,7 @@ function packDay(ctx: SystemContext, month: string, first: boolean): void {
 function packKill(ctx: SystemContext, row: EntityRow): boolean {
   const { world, content } = ctx;
   const rng = ctx.rng();
-  const sizes = herdsOf(world).map((h) => [h, membersOf(world, h.id)] as const);
+  const sizes = wildHerdsOf(world).map((h) => [h, membersOf(world, h.id)] as const);
   const herds = sizes.filter(([, m]) => m.length).sort((a, b) => b[1].length - a[1].length);
   if (!herds.length) return false;
   const [herd, members] = herds[0]!;

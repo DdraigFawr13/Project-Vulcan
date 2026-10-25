@@ -175,6 +175,7 @@ function walk(ctx: SystemContext, folk: readonly (readonly [number, number])[]):
     const [x, y] = [a['x'] as number, a['y'] as number];
     const info = herds.get(a['herd'] as number);
     const herd = info?.row;
+    if (herd?.['kept']) continue;
     if (info?.near.length) {
       const near = nearest(info.near, x, y);
       if (near && distance(x, y, near.at[0], near.at[1]) <= info.flee) {

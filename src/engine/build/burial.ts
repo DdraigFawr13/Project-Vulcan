@@ -10,6 +10,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { liveFields, tilesOf } from './fields.ts';
 import { dirFrom } from './houses.ts';
+import { livePastures, onPastureGround } from './pasturerows.ts';
 import { ringOf } from './ring.ts';
 import { inRect, type Rect } from './site.ts';
 
@@ -77,6 +78,7 @@ function siteBurial(ctx: SystemContext, green: Spot): Rect | undefined {
   const { w, h } = content.health.burial;
   const ring = ringOf(world, content);
   const fields = new Set(liveFields(world).flatMap((f) => tilesOf(f)));
+  const pastures = livePastures(world);
   const sent = burialsOf(world)
     .filter((b) => b['state'] === 'sent')
     .map(rect);
@@ -101,6 +103,7 @@ function siteBurial(ctx: SystemContext, green: Spot): Rect | undefined {
           Math.max(Math.abs(x - green.x), Math.abs(y - green.y)) > ring &&
           freeTile(world, content, x, y) &&
           !fields.has(y * map.width + x) &&
+          !pastures.some((p) => onPastureGround(p, map.width, x, y)) &&
           !map.features[y * map.width + x] &&
           ![-1, 0, 1].some((ox) => [-1, 0, 1].some((oy) => wet(x + ox, y + oy)));
     if (fits) return r;

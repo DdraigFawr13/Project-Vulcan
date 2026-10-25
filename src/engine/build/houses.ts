@@ -69,6 +69,11 @@ export const HOUSE_TABLES: Schemas = {
 export const HOUSE_KIND = 'house';
 export const FIELD_KIND = 'field';
 export const SMITHY_KIND = 'smithy';
+export const PASTURE_KIND = 'pasture';
+const sheetDef = (content: EngineContent, kind: string) =>
+  kind === PASTURE_KIND
+    ? content.flock.pasture
+    : content.buildings[kind === FIELD_KIND ? 'field' : kind === SMITHY_KIND ? 'smithy' : 'house'];
 
 /** The size (or added room) a house row is. */
 export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>
@@ -82,6 +87,7 @@ export function houseName(world: WorldState, content: EngineContent, id: number)
   if (h) return sizeOf(content, mainOf(world, h)).name;
   // Trees on a field's site are cleared the same way (P4.7), and on a smithy's (P4.9).
   if ((world.entities['smithy'] ?? []).some((f) => f.id === id)) return 'smithy';
+  if ((world.entities['pasture'] ?? []).some((f) => f.id === id)) return 'pasture';
   return (world.entities['field'] ?? []).some((f) => f.id === id) ? 'field' : '';
 }
 
@@ -110,12 +116,7 @@ export function wantOf(
   const row = (world.entities['want'] ?? []).find((r) => r['kind'] === kind);
   return row
     ? { level: row['level'] as number, line: row['line'] as number }
-    : {
-        level:
-          content.buildings[
-            kind === FIELD_KIND ? 'field' : kind === SMITHY_KIND ? 'smithy' : 'house'
-          ].start,
-      };
+    : { level: sheetDef(content, kind).start };
 }
 
 /** The `setBuild {kind, level}` lever (V-049): how much the colony wants a kind of building. */
@@ -129,7 +130,7 @@ export function setBuild(
   const levels = content.work.priority.words.length;
   const kind = data['kind'];
   if (
-    (kind !== HOUSE_KIND && kind !== FIELD_KIND && kind !== SMITHY_KIND) ||
+    (kind !== HOUSE_KIND && kind !== FIELD_KIND && kind !== SMITHY_KIND && kind !== PASTURE_KIND) ||
     !Number.isSafeInteger(level) ||
     level < 1 ||
     level > levels
@@ -141,9 +142,7 @@ export function setBuild(
     return;
   }
   if (wantOf(world, content, kind).level === level) return;
-  const name =
-    content.buildings[kind === FIELD_KIND ? 'field' : kind === SMITHY_KIND ? 'smithy' : 'house']
-      .name;
+  const name = sheetDef(content, kind).name;
   const line = ctx.emit('build.wantSet', {
     causes: [cause],
     data: { kind: name, word: content.work.priority.words[level - 1]! },

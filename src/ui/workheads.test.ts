@@ -27,7 +27,7 @@ describe('Work sheet headings', () => {
       ['Wild', ['hunt', 'fish']],
       ['Stone', ['mine', 'quarry']],
       ['Wood', ['fell', 'carpentry']],
-      ['Land', ['farm', 'forage']],
+      ['Land', ['farm', 'herd', 'forage']],
       ['Food', ['cook']],
       ['Metal', ['charcoal', 'smelt', 'smith']],
       ['Care', ['heal']],

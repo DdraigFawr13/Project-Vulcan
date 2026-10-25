@@ -27,8 +27,8 @@ export const wildSystem: System = {
     'wild.predatorKilled',
     'wild.packDrewOff',
   ],
-  // `open`: open ground tiles (for snow cover); `fleeing`: animals running; `trot`: pack animals on a way; `lures`: see visit.ts.
-  initialState: { open: 0, fleeing: 0, trot: 0, lures: 0 },
+  // `open`: open ground tiles (for snow cover); `fleeing`: animals running; `trot`: pack animals on a way; `lure_*`, `goal*` and `reached`: see visit.ts.
+  initialState: { open: 0, fleeing: 0, trot: 0 },
   tables: WILD_TABLES,
   init: placeWild,
   run(ctx) {

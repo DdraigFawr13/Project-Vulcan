@@ -57,7 +57,8 @@ export function syncLures(ctx: SystemContext): void {
   state['lured'] = middens.length;
   setLures(
     ctx,
-    middens.map((m) => m.y * world.map.width + m.x),
+    'midden',
+    middens.map((m) => ({ tile: m.y * world.map.width + m.x, where: 'midden', rank: 1 })),
   );
 }
 

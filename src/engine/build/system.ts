@@ -16,6 +16,8 @@ import { FURNITURE_TABLES } from './furniture.ts';
 import { tickFields, markLeaving } from './fieldlife.ts';
 import { tickGranaries } from './granary.ts';
 import { FIELD_TABLES, planFields, sendBackField } from './fields.ts';
+import { PASTURE_TABLES } from './pasturerows.ts';
+import { finishPastures, planPasture, sendBackPasture } from './pasture.ts';
 import { finishHouses, growHouses } from './grow.ts';
 import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
@@ -141,6 +143,7 @@ export const buildSystem: System = {
     ...['town.ringWidened', 'field.needed', 'field.noGround', 'field.sited', 'field.sentBack'],
     ...['field.ripe', 'field.frostKilled', 'field.noSeed', 'field.sown', 'field.leftToGrass'],
     'field.granaryLaid',
+    ...['pasture.needed', 'pasture.sited', 'pasture.sentBack', 'pasture.noGround', 'pasture.built'],
     ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
     ...['build.sickroom', 'build.burialSited', 'build.burialSentBack', 'build.middenSited'],
   ],
@@ -154,13 +157,18 @@ export const buildSystem: System = {
   initialState: {
     ...{ nobody: 0, green: 0, need: 0, noGround: 0, tried: 0, ring: 0, ringLine: 0 },
     ...{ fieldNeed: 0, fieldNoGround: 0, fieldTried: 0, smithyNoGround: 0, smithyTried: 0 },
+    ...{ pastureNeed: 0, pastureNoGround: 0, pastureTried: 0 },
   },
-  refs: ['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround', 'smithyNoGround'],
+  refs: [
+    ...['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround', 'smithyNoGround'],
+    ...['pastureNeed', 'pastureNoGround'],
+  ],
   tables: {
     ...BUILD_TABLES,
     ...HOUSE_TABLES,
     ...FURNITURE_TABLES,
     ...FIELD_TABLES,
+    ...PASTURE_TABLES,
     ...SMITHY_TABLES,
     ...STATION_TABLES,
     ...BURIAL_TABLES,
@@ -171,13 +179,15 @@ export const buildSystem: System = {
     deconstruct: (ctx, command, cause) => deconstruct(ctx, command.data, cause),
     setBuild: (ctx, command, cause) => setBuild(ctx, command.data, cause),
     sendBack: (ctx, command, cause) =>
-      command.data['burial'] !== undefined
-        ? sendBackBurial(ctx, command.data, cause, greenOf(ctx.world))
-        : command.data['smithy'] !== undefined
-          ? sendBackSmithy(ctx, command.data, cause, greenOf(ctx.world))
-          : command.data['field'] !== undefined
-            ? sendBackField(ctx, command.data, cause, greenOf(ctx.world))
-            : sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
+      command.data['pasture'] !== undefined
+        ? sendBackPasture(ctx, command.data, cause, greenOf(ctx.world))
+        : command.data['burial'] !== undefined
+          ? sendBackBurial(ctx, command.data, cause, greenOf(ctx.world))
+          : command.data['smithy'] !== undefined
+            ? sendBackSmithy(ctx, command.data, cause, greenOf(ctx.world))
+            : command.data['field'] !== undefined
+              ? sendBackField(ctx, command.data, cause, greenOf(ctx.world))
+              : sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
   },
   init(ctx) {
     const { world, content, state } = ctx;
@@ -196,6 +206,8 @@ export const buildSystem: System = {
     tickFields(ctx);
     tickGranaries(ctx);
     planFields(ctx, green, []);
+    finishPastures(ctx);
+    planPasture(ctx, green, []);
     planBench(ctx);
     planSmithy(ctx, green);
     planRoomHearths(ctx);

@@ -10,6 +10,8 @@
 {"id":"floor-wood","name":"wood floor","kind":"floor","material":"logs","cost":2,"minutes":20,"art":"build.floor-wood"},
 {"id":"door-wood","name":"wooden door","kind":"door","material":"logs","cost":4,"minutes":40,"art":"build.door-wood"},
 {"id":"door-stone","name":"stone doorway","kind":"door","material":"stone","cost":5,"minutes":60,"art":"build.door-stone"},
+{"id":"hurdle","name":"hurdle","kind":"wall","material":"logs","cost":1,"minutes":20,"art":"build.hurdle"},
+{"id":"gate-hurdle","name":"hurdle gate","kind":"door","material":"logs","cost":1,"minutes":20,"art":"build.gate-hurdle"},
 {"id":"stair-stone","name":"stone stair down","kind":"stair","material":"stone","cost":10,"minutes":120,"art":"build.stair-stone"},
 {"id":"stair-wood","name":"wooden stair down","kind":"stair","material":"logs","cost":6,"minutes":90,"art":"build.stair-wood"}
 ],

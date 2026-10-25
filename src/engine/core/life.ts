@@ -347,6 +347,8 @@ export interface JobDef {
   skill?: string;
   /** The piece or station the work is done at (a furniture kind or a station kind). */
   workplace?: string;
+  /** How many may work one workplace at once (herding: one flock). */
+  perWorkplace?: number;
   requirements: Readonly<Record<string, number>>;
 }
 

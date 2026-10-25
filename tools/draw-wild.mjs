@@ -12,6 +12,7 @@ import { isMain, root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
 import { readPalette } from './draw-tiles-base.mjs';
 import { surface } from './draw-items-surface.mjs';
+import { flockSprites } from './draw-flock.mjs';
 import { wildPrints, wildMidden, wildItems } from './draw-wild-marks.mjs';
 
 const S = 32;
@@ -269,7 +270,7 @@ export function wildSprites(p = readPalette()) {
 if (isMain(import.meta.url)) {
   const p = readPalette();
   const sheets = {
-    'sprites-wild': { ...wildSprites(p), ...wildPrints(p), ...wildMidden(p) },
+    'sprites-wild': { ...wildSprites(p), ...flockSprites(p), ...wildPrints(p), ...wildMidden(p) },
     items: wildItems(p),
   };
   for (const [sheet, frames] of Object.entries(sheets)) {

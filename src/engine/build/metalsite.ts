@@ -17,6 +17,7 @@ import {
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { openGround } from './hearths.ts';
+import { livePastures, onPastureGround } from './pasturerows.ts';
 import { ringOf } from './ring.ts';
 import { sizeOfStation, stationOf } from './station.ts';
 
@@ -61,6 +62,8 @@ function freeBlock(world: WorldState, content: EngineContent, x: number, y: numb
       const i = (y + dy) * world.map.width + x + dx;
       if (!openGround(world, content, x + dx, y + dy)) return false;
       if (fields.some((f) => (f['tiles'] as number[]).includes(i))) return false;
+      if (livePastures(world).some((p) => onPastureGround(p, world.map.width, x + dx, y + dy)))
+        return false;
     }
   return true;
 }

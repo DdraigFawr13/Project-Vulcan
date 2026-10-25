@@ -110,7 +110,7 @@ export const WILD_SCHEMAS = {
       returns: obj({ month: text, chance: share }),
       why: obj({ harsh: text, winter: text, other: text }),
       left: obj({ dead: text, few: text }),
-      where: obj({ edge: text, midden: text }),
+      where: obj({ edge: text, midden: text, flock: text }),
     }),
     // Words for a herd's ground by biome id, with a `default`.
     where: map(text),

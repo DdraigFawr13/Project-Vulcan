@@ -81,6 +81,7 @@ export function validateContent(files: Files): string[] {
       ...checkCrops(files),
       ...checkHaul(files),
       ...checkWild(files),
+      ...checkFlock(files),
     );
   errors.push(...checkBand(files));
   return errors;
@@ -283,5 +284,49 @@ function checkWild(files: Files): string[] {
   }
   if (!w.predators.length) errors.push('wild.predators: none');
   if (!w.where['default']) errors.push('wild.where: no default');
+  return errors;
+}
+
+// The flock (src/engine/flock): every month it names is a calendar month, every species it tames
+// is a wild species with its kind words, and the pasture's parts are built parts.
+function checkFlock(files: Files): string[] {
+  const f = files['flock'] as {
+    pasture: { hurdle: string; gate: string };
+    tame: { species: string[]; young: string[]; months: string[] };
+    kinds: { species: string }[];
+    lambing: { month: string; grown: string };
+    shear: { month: string };
+    hay: { months: string[]; thaw: string };
+    cull: { month: string };
+    memories: Record<string, string>;
+    why: Record<string, string>;
+  };
+  const months = (files['calendar'] as { monthNames: string[] }).monthNames;
+  const species = (files['wild'] as { species: { id: string }[] }).species.map((s) => s.id);
+  const parts = (files['buildings'] as { parts: { id: string }[] }).parts.map((p) => p.id);
+  const memories = (files['memories'] as { id: string }[]).map((m) => m.id);
+  const errors: string[] = [];
+  const month = (m: string, at: string) => {
+    if (!months.includes(m)) errors.push(`flock.${at}: "${m}" is no month`);
+  };
+  f.tame.young.forEach((m, k) => month(m, `tame.young[${k}]`));
+  f.tame.months.forEach((m, k) => month(m, `tame.months[${k}]`));
+  f.hay.months.forEach((m, k) => month(m, `hay.months[${k}]`));
+  month(f.lambing.month, 'lambing.month');
+  month(f.lambing.grown, 'lambing.grown');
+  month(f.shear.month, 'shear.month');
+  month(f.hay.thaw, 'hay.thaw');
+  month(f.cull.month, 'cull.month');
+  for (const s of f.tame.species) {
+    if (!species.includes(s)) errors.push(`flock.tame.species: "${s}" is no wild species`);
+    if (!f.kinds.some((k) => k.species === s)) errors.push(`flock.kinds: none for "${s}"`);
+  }
+  for (const p of [f.pasture.hurdle, f.pasture.gate])
+    if (!parts.includes(p)) errors.push(`flock.pasture: "${p}" is no part`);
+  for (const [k, m] of Object.entries(f.memories))
+    if (!memories.includes(m)) errors.push(`flock.memories.${k}: "${m}" is no memory`);
+  // The reasons the people side gives for a flock left out (people herd.ts).
+  for (const k of ['abed', 'warming', 'eating', 'toFold', 'busy', 'noWay', 'none'])
+    if (!f.why[k]) errors.push(`flock.why: no "${k}"`);
   return errors;
 }

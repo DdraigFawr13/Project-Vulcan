@@ -26,6 +26,7 @@ import { feedsOf } from './comfort.ts';
 import { careNow } from './health.ts';
 import { deadNow, healthOf } from './healthview.ts';
 import { hearthDoing, tendDoing } from './fires.ts';
+import { herdDoing } from './herd.ts';
 import { carpentryDoing } from './furniture.ts';
 import { lawOfWalker, leanWords } from './law.ts';
 import { personTools } from './items.ts';
@@ -162,6 +163,10 @@ export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
     const seed = loadOf(world, p.id)?.['kind'] === content.buildings.field.seed;
     const key = f?.['state'] === 'ripe' ? 'reap' : seed ? 'sow' : 'fetchSeed';
     return { text: say(key, { crop: crop?.name ?? '' }), ...why };
+  }
+  if (job === 'herd') {
+    const { key, vars } = herdDoing(world, p);
+    return { text: say(key, vars), ...why };
   }
   if (job === 'hearth') return { text: say('hearth', hearthDoing(world, p)), ...why };
   if (job === 'mine') {

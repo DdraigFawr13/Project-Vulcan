@@ -118,7 +118,10 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     if (item) eat(ctx, p, item);
     p['doing'] = '';
   }
-  if (valueOf(ctx, p, 'food') < seekOf(ctx, 'food') && world.tick >= (p['retry'] as number)) {
+  // A tamer sits far from the store, so goes back sooner (flock.json `tame.back`, herdtask.ts).
+  const taming = p['job'] === content.flock.job && p['task'] === 'tame';
+  const seek = taming ? content.flock.tame.back : seekOf(ctx, 'food');
+  if (valueOf(ctx, p, 'food') < seek && world.tick >= (p['retry'] as number)) {
     // Seed grain only when under the warning line with nothing else to reach (P4.7).
     if (goEat(ctx, p, false) || (valueOf(ctx, p, 'food') < low && goEat(ctx, p, true))) {
       p['doing'] = 'eat';

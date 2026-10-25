@@ -25,6 +25,7 @@ import { risk } from './accident.ts';
 import { careMinute } from './care.ts';
 import { attacksMinute, syncLures } from './fight.ts';
 import { tracksMinute } from './hunt.ts';
+import { herdWatch } from './herd.ts';
 
 const ATTRIBUTES = [
   'strength',
@@ -176,7 +177,7 @@ export const peopleSystem: System = {
   // `fished` the fish caught.
   initialState: {
     ...{ ...TALLY_START, idle: 0, noIngots: 0, noCharcoal: 0 },
-    ...{ tracksDay: 0, tracksLine: 0, sighted: 0, sightedAt: 0, lured: 0, fished: 0 },
+    ...{ tracksDay: 0, tracksLine: 0, sighted: 0, sightedAt: 0, lured: 0, fished: 0, taken: 0 },
   },
   commands: {
     setPriority: (ctx, command, cause) => setPriority(ctx, command.data, cause),
@@ -219,7 +220,7 @@ export const peopleSystem: System = {
           seeded: 0,
         },
         ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0, make: '' },
-        ...{ making: '', fine: 0, task: '', what: '' },
+        ...{ making: '', fine: 0, task: '', what: '', hay: 0, herdId: 0, sat: 0 },
       });
       for (const skill of content.band.skills)
         addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0 });
@@ -233,6 +234,7 @@ export const peopleSystem: System = {
     toolsDaily(ctx);
     const hour = hourNow(ctx);
     careMinute(ctx);
+    herdWatch(ctx);
     for (const p of ctx.world.entities['person'] ?? []) {
       if (p['status'] !== 'alive') continue;
       stepAlong(ctx, p);

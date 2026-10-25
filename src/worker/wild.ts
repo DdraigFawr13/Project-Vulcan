@@ -8,7 +8,7 @@ import {
   entityOf,
   greenOf,
   haveOf,
-  herdsOf,
+  wildHerdsOf,
   packOf,
   printsAt,
   recordOf,
@@ -213,7 +213,7 @@ function packPage(world: WorldState, id: number, animal: EntityRow, lineOf: Line
 
 /** "4 deer and 9 hares", or "none". */
 function gameLine(world: WorldState): string {
-  const species = new Map(herdsOf(world).map((h) => [h.id, h['species'] as string]));
+  const species = new Map(wildHerdsOf(world).map((h) => [h.id, h['species'] as string]));
   const counts = new Map<string, number>();
   for (const a of animalsOf(world)) {
     const s = species.get(a['herd'] as number);

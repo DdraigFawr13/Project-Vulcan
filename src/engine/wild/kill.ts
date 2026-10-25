@@ -44,7 +44,9 @@ const ringTiles = ([x, y]: [number, number], r: number): [number, number][] => {
  * `byPerson` (a person's id, 0 for none) kills `animal`, because of the line `cause` (0 for none).
  * Writes `wild.killed`, removes the animal, lays its game, leftovers and offal where it fell, adds
  * to its herd's `taken` and returns the line's id. `type` is the line's event (a predator killed
- * in a fight is `wild.predatorKilled`).
+ * in a fight is `wild.predatorKilled`). `item` is laid instead of `game` (a butchered flock animal
+ * lays meat). A kept animal (a flock's) writes no line: the flock's own line, `cause`, is the one
+ * the goods cite, and is what is returned.
  */
 export function killAnimal(
   ctx: SystemContext,
@@ -52,6 +54,7 @@ export function killAnimal(
   byPerson: number,
   cause: number,
   type = 'wild.killed',
+  item = 'game',
 ): number {
   const { world, content } = ctx;
   const herd = herdOf(world, animal['herd'] as number);
@@ -61,24 +64,47 @@ export function killAnimal(
   const [x, y] = [animal['x'] as number, animal['y'] as number];
   const person = byPerson ? world.entities['person']?.find((p) => p.id === byPerson) : undefined;
   const causes = [cause, herd?.['line'] as number | undefined].filter((c): c is number => !!c);
-  const line = ctx.emit(type, {
-    actors: byPerson ? [byPerson] : [],
-    causes,
-    data: {
-      who: (person?.['name'] as string | undefined) ?? 'Someone',
-      a: 'a',
-      species: def.name,
-      where: whereWords(world, content, x, y),
-    },
-  });
+  const line = herd?.['kept']
+    ? cause
+    : ctx.emit(type, {
+        actors: byPerson ? [byPerson] : [],
+        causes,
+        data: {
+          who: (person?.['name'] as string | undefined) ?? 'Someone',
+          a: 'a',
+          species: def.name,
+          where: whereWords(world, content, x, y),
+        },
+      });
   removeEntity(world, 'animal', animal.id);
-  if (def.meat) layStacks(ctx, 'game', def.meat, [x, y], line);
+  if (def.meat) layStacks(ctx, item, def.meat, [x, y], line);
   for (const l of def.leftovers) layStacks(ctx, l.item, l.count, [x, y], line);
   layStacks(ctx, 'offal', 1, [x, y], line);
   if (herd) {
-    if (byPerson) herd['taken'] = (herd['taken'] as number) + 1;
+    if (byPerson && !herd['kept']) herd['taken'] = (herd['taken'] as number) + 1;
     herd['line'] = line;
     checkLow(ctx, herd);
   }
   return line;
+}
+
+/**
+ * A wild animal joins a kept herd (the flock's): it leaves its wild herd, which counts it as taken
+ * and, with `line` (the flock's line about it), takes that as its latest; `fields` (kind, sex, young,
+ * born, tamedBy) are applied and its way and fright are cleared. Returns the wild herd it left.
+ */
+export function tameAnimal(
+  ctx: SystemContext,
+  animal: EntityRow,
+  keptHerd: number,
+  fields: Readonly<Record<string, number | string>>,
+  line = 0,
+): EntityRow | undefined {
+  const wild = herdOf(ctx.world, animal['herd'] as number);
+  Object.assign(animal, { herd: keptHerd, path: [], state: '', until: 0 }, fields);
+  if (!wild) return undefined;
+  wild['taken'] = (wild['taken'] as number) + 1;
+  if (line) wild['line'] = line;
+  checkLow(ctx, wild);
+  return wild;
 }
