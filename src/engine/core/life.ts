@@ -1,6 +1,6 @@
 // What the needs, goods and people's daily round read from content: Vulcan's life file (P2.2)
 // and the forked items list. Need values run from 0 to `scale`; rates are per game hour.
-import type { RoadsDef } from './ground.ts';
+import type { RoadsDef, StoresDef } from './ground.ts';
 
 export interface NeedDef {
   id: string;
@@ -252,8 +252,8 @@ export interface BuildingsDef {
   /** P5.10: the Roads row and how a stretch is chosen (build/roads.ts). */
   roads: RoadsDef;
   town: { ring: number; step: number; most: number };
-  /** The granary beside a reaped field: its size and the most tiles it grows to (goods/granary.ts). */
-  granary: { width: number; height: number; most: number };
+  /** 5B Bundle 1 (V-129): stores by kind, sited from need (build/stores.ts). */
+  stores: StoresDef;
   field: FieldDef;
   rooms: RoomsDef;
   furniture: FurnitureDef;

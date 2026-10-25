@@ -3,6 +3,7 @@
 // the kind's stack size (life.json `stacks`); an item used up is removed (entity MODULE.md).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
+import { noteUse } from './trips.ts';
 
 export const GOODS_TABLES: Schemas = {
   item: {
@@ -78,9 +79,11 @@ export const loadOf = (world: WorldState, person: number): EntityRow | undefined
 export const cloakOf = (world: WorldState, person: number): EntityRow | undefined =>
   itemsOf(world).find((i) => i['holder'] === person && i['state'] === 'worn');
 
-/** Takes up to `count` from a stack; the stack goes when emptied. Returns how many were taken. */
+/** Takes up to `count` from a stack; the stack goes when emptied. Returns how many were taken. A
+ * carried load used up by someone not hauling it is a trip's end (trips.ts). */
 export function takeFrom(world: WorldState, item: EntityRow, count: number): number {
   const took = Math.min(count, item['count'] as number);
+  if (took > 0 && item['holder']) noteUse(world, item);
   item['count'] = (item['count'] as number) - took;
   if (item['count'] === 0) removeEntity(world, 'item', item.id);
   return took;

@@ -11,6 +11,7 @@
 {"id":"floor-wood","name":"wood floor","kind":"floor","material":"logs","cost":2,"minutes":20,"art":"build.floor-wood"},
 {"id":"door-wood","name":"wooden door","kind":"door","material":"logs","cost":4,"minutes":40,"art":"build.door-wood"},
 {"id":"door-stone","name":"stone doorway","kind":"door","material":"stone","cost":5,"minutes":60,"art":"build.door-stone"},
+{"id":"wall-drystone","name":"drystone wall","kind":"wall","material":"stone","cost":2,"minutes":30,"art":"build.wall-drystone"},
 {"id":"hurdle","name":"hurdle","kind":"wall","material":"logs","cost":1,"minutes":20,"art":"build.hurdle"},
 {"id":"gate-hurdle","name":"hurdle gate","kind":"door","material":"logs","cost":1,"minutes":20,"art":"build.gate-hurdle"},
 {"id":"stair-stone","name":"stone stair down","kind":"stair","material":"stone","cost":10,"minutes":120,"art":"build.stair-stone"},
@@ -26,7 +27,12 @@
 "roads":{"name":"Roads","start":4,"part":"road-stone","stretch":10,"least":192,"shortest":3,"places":12},
 "smithy":{"name":"Smithy","start":2,"depth":3,"length":4,"near":20,"floor":"floor-stone","pieces":["forge","anvil","tub"]},
 "town":{"ring":16,"step":4,"most":32},
-"granary":{"width":3,"height":2,"most":12},
+"stores":{"days":14,"save":8,"near":40,"eatenNear":12,"most":2,"apart":20,"tries":300,"kinds":[
+{"id":"granary","name":"granary","words":"grain and seed","goods":["grain","seed"],"w":6,"h":5,"door":"door-wood","floor":"floor-wood","from":"the reaping","to":"the hearths","eaten":true},
+{"id":"larder","name":"larder","words":"food","goods":["turnips","meat","game","fish","berries","preserved","meal"],"w":5,"h":4,"door":"door-wood","floor":"floor-wood","from":"where food comes in","to":"the hearths","eaten":true},
+{"id":"wood","name":"wood yard","words":"logs, firewood and charcoal","goods":["logs","firewood","charcoal"],"w":6,"h":5,"wall":"hurdle","door":"gate-hurdle","from":"the felling","to":"the hearths and the building"},
+{"id":"ore","name":"stone and ore yard","words":"stone and ore","goods":["stone","clay","ore","copper-ore","tin-ore","iron-ore","sulphur","copper-ingot","tin-ingot","iron-ingot","bronze-ingot"],"w":5,"h":4,"wall":"wall-drystone","from":"the quarry and the mine","to":"the smelter and the building"}
+]},
 "field":{"name":"Fields","seed":"seed","weigh":{"fertility":2,"water":4,"near":100,"tries":40},"start":2,"perMouth":6,"reach":45,"water":8,"good":40,"least":6,"crops":[
 {"id":"barley","name":"barley","item":"grain","sow":["Thawmonth","Seedmonth"],"days":84,"yield":100,"frost":-1},
 {"id":"turnips","name":"turnips","item":"turnips","sow":["Highsun","Goldmonth"],"days":56,"yield":100,"frost":-1}

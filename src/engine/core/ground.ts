@@ -102,3 +102,36 @@ export interface UndergroundDials {
   stairs: string;
   shaft: string;
 }
+
+/** A store kind (V-129): the goods it takes, its footprint and parts, and its line's words. */
+export interface StoreKindDef {
+  id: string;
+  name: string;
+  /** The goods in a line ("grain and seed"). */
+  words: string;
+  goods: readonly string[];
+  w: number;
+  h: number;
+  /** The edge's part; none: the house wall rule (the most plentiful wall material). */
+  wall?: string;
+  /** The way in; none: a gap in the edge. */
+  door?: string;
+  floor?: string;
+  from: string;
+  to: string;
+  /** Food: eating counts as using it at the home store. */
+  eaten?: boolean;
+}
+
+/** How stores by kind are sited (build/stores.ts, goods/trips.ts). */
+export interface StoresDef {
+  days: number;
+  save: number;
+  near: number;
+  /** How far from the green a store of an eaten kind may stand: food is eaten where it is kept. */
+  eatenNear: number;
+  most: number;
+  apart: number;
+  tries: number;
+  kinds: readonly StoreKindDef[];
+}

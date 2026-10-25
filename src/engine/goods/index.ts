@@ -10,24 +10,26 @@ export {
   stackSize,
   takeFrom,
 } from './stacks.ts';
+export { storedEnough } from './plates.ts';
 export {
-  addGranary,
-  granaryFor,
-  granaryGrowSpot,
-  granaryOf,
-  GRANARY_TABLES,
-  granarySlot,
-  growGranary,
-  inGranary,
-  keepable,
-  storedEnough,
-} from './granary.ts';
+  DEPOT_TABLES,
+  depotAt,
+  depotsFor,
+  depotsOf,
+  depotTiles,
+  insideDepot,
+  onDepot,
+  storeKindOf,
+} from './depots.ts';
+export { noteTrip, rollTrips, TRIP_CELL, TRIP_TABLES, tripsFor, tripsOf } from './trips.ts';
 export {
+  depotSlot,
   dryAt,
   freeTile,
   growSpot,
   growStore,
   haveOf,
+  inHomeStore,
   inStore,
   raiseStock,
   slotFor,

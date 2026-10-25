@@ -23,7 +23,6 @@ import {
   seasonKey,
   tilesOf,
 } from './fields.ts';
-import { layOutGranary } from './granary.ts';
 import { ringOf } from './ring.ts';
 
 const list = (items: readonly string[]): string =>
@@ -79,7 +78,6 @@ export function finishReaping(ctx: SystemContext, f: EntityRow, cause: number): 
   );
   // The harvest-home supper is eaten in the hall (P5.14).
   feastInHall(ctx, home);
-  layOutGranary(ctx, f, harvested);
   Object.assign(f, { state: 'fallow', crop: '', done: [], reapers: [], got: 0, kept: 0 });
   f['last'] = harvested;
   if (f['leave']) leaveField(ctx, f, harvested);

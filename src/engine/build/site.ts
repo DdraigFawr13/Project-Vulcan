@@ -3,7 +3,7 @@
 // drawn from a stream: metres of rise across it, plus tiles from the green, plus trees to fell.
 // The lowest wins and ties go in tile order, so the same seed gives the same town.
 import type { EngineContent, EntityRow, PartDef, SizeDef, WorldState } from '../core/index.ts';
-import { haveOf, itemsOf, storeOf } from '../goods/index.ts';
+import { depotsOf, haveOf, itemsOf, storeOf } from '../goods/index.ts';
 import { reachFrom, type Spot } from '../paths/index.ts';
 import { DUG_LEVEL, digsFor } from './dug.ts';
 import { inRect, isTreeAt, wayFrom, wayTo, type Rect, type Site, type Way } from './way.ts';
@@ -70,6 +70,14 @@ export function groundOf(world: WorldState): Ground {
         return out;
       }),
     ...(world.entities['midden'] ?? []).map(at),
+    // Stores of a kind, planned or built (5B Bundle 1): the whole footprint.
+    ...depotsOf(world).flatMap((d) => {
+      const out: number[] = [];
+      for (let y = d['y'] as number; y < (d['y'] as number) + (d['h'] as number); y += 1)
+        for (let x = d['x'] as number; x < (d['x'] as number) + (d['w'] as number); x += 1)
+          out.push(y * width + x);
+      return out;
+    }),
     // A piece standing outside every house, the campfire (P3.6); those in a room are its own.
     ...furnitureOf(world)
       .filter(
