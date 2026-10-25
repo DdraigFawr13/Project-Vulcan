@@ -10,7 +10,7 @@ import {
   type EntityRow,
   type WorldState,
 } from '../core/index.ts';
-import { bedOwnedBy, houseAt, mainOf, roomName } from '../build/index.ts';
+import { bedOwnedBy, houseAt, mainOf, mournInHall, roomName } from '../build/index.ts';
 import { itemsOf, restOf, toolsChanged } from '../goods/index.ts';
 import { addMemories, addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -158,6 +158,8 @@ export function buryAtDayEnd(ctx: SystemContext, hour: number): void {
       line,
       d.id,
     );
+    // Then they gather in the hall (P5.14).
+    mournInHall(ctx, line, d['name'] as string);
     Object.assign(g, { state: 'filled', buried: line });
     Object.assign(d, { status: 'buried', x: g['x'], y: g['y'], z: 0 });
     body['carrier'] = 0;

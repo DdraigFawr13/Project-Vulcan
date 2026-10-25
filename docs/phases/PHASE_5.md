@@ -40,7 +40,7 @@ Order: bundles 1 to 5, then the 5A balance and review. Bundles grep `docs/DECISI
 
 Six body parts, wounds, bleeding and healing; the priority ladder with its danger rung; carrying to bed; Heal row; sickroom from need; mining and tool accidents as the first causes; the health sheet; death causes, burial ground, graves, mourning. Mock-up: UI. Done when: a mining injury is carried to bed and treated, and a death is logged with its causes and buried.
 
-- Reading list: `docs/UI_STYLE.md`; `src/engine/needs/MODULE.md`; `src/engine/people/MODULE.md`; `src/engine/build/MODULE.md`; `src/engine/log/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/UI_STYLE.md`; `src/engine/needs/MODULE.md`; `src/engine/people/MODULE.md`; `src/engine/build/MODULE.md`; `src/ui/MODULE.md`
 
 ### Bundle 2: P5.4a The wild valley, with tracks
 

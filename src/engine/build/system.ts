@@ -20,6 +20,7 @@ import { PASTURE_TABLES } from './pasturerows.ts';
 import { finishPastures, planPasture, sendBackPasture } from './pasture.ts';
 import { finishHouses, growHouses } from './grow.ts';
 import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
+import { planHomes } from './homes.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
 import { planCampfire, planRoomHearths } from './hearths.ts';
 import { planStations } from './metalsite.ts';
@@ -103,6 +104,7 @@ function ableToBuild(content: EngineContent, p: EntityRow): boolean {
 function chooseAgain(ctx: SystemContext, h: EntityRow, line: number): void {
   const green = greenOf(ctx.world);
   if (h['of']) growHouses(ctx, green, 1, h['of'] as number);
+  else if (h['owner']) planHomes(ctx, green);
   else sitingHouse(ctx, green, () => planHouse(ctx, green, [line], 1));
 }
 
@@ -129,6 +131,7 @@ export const buildSystem: System = {
     'build.noGround',
     'build.sited',
     'build.sentBack',
+    ...['people.wantsHome', 'build.homeSited', 'build.hall'],
     'build.houseBuilt',
     'build.roomAdded',
     'build.grows',
@@ -158,6 +161,8 @@ export const buildSystem: System = {
     ...{ nobody: 0, green: 0, need: 0, noGround: 0, tried: 0, ring: 0, ringLine: 0 },
     ...{ fieldNeed: 0, fieldNoGround: 0, fieldTried: 0, smithyNoGround: 0, smithyTried: 0 },
     ...{ pastureNeed: 0, pastureNoGround: 0, pastureTried: 0 },
+    // P5.14: the tick a home last found no ground, to look again a day later.
+    homeTried: 0,
   },
   refs: [
     ...['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround', 'smithyNoGround'],
@@ -203,6 +208,8 @@ export const buildSystem: System = {
     finishHouses(ctx);
     // A house adds a room for the homeless before another house is sited ("cottage, then grow").
     if (!growHouses(ctx, green)) sitingHouse(ctx, green, () => planHouse(ctx, green, []));
+    // P5.14: homes of their own, and the hall.
+    planHomes(ctx, green);
     tickFields(ctx);
     tickGranaries(ctx);
     planFields(ctx, green, []);

@@ -77,9 +77,10 @@ export function lawView(world: WorldState): LawView {
   const hours = lawHours(world, content);
   const custom = customaryHours(world, content);
   const span = (from: number, to: number) => `${hh(from)} to ${hh(to)}`;
+  const winter = s.winter ?? content.work.hours;
   const about = s.hours
-    ? `${s.name}: work ${span(s.hours.from, s.hours.to)}, in winter ${span(s.winter.from, s.winter.to)}; bed at ${hh(hours.sleepFrom)}. Customary is ${span(custom.workFrom, custom.workTo)} now.`
-    : `Customary: work ${span(content.work.hours.from, content.work.hours.to)}, in winter ${span(s.winter.from, s.winter.to)}; bed at ${hh(hours.sleepFrom)}.`;
+    ? `${s.name}: work ${span(s.hours.from, s.hours.to)}, in winter ${span(winter.from, winter.to)}; bed at ${hh(hours.sleepFrom)}. Customary is ${span(custom.workFrom, custom.workTo)} now.`
+    : `Customary: work ${span(content.work.hours.from, content.work.hours.to)}, in winter ${span(winter.from, winter.to)}; bed at ${hh(hours.sleepFrom)}.`;
   const tick = row ? (row['changed'] as number) : undefined;
   return {
     id: def.id,

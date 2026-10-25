@@ -2,7 +2,6 @@
 export { buildSystem, greenOf } from './system.ts';
 export {
   bedsOf,
-  bedSpot,
   crowdedIn,
   dirFrom,
   homeless,
@@ -16,6 +15,8 @@ export {
   sizeOf,
   wantOf as buildWantOf,
 } from './houses.ts';
+export { bedSpot, builtHome, homeFor, householdOf, othersHome, sleepsIn } from './beds.ts';
+export { feastInHall, hallOf, mournInHall, whoseOf } from './homes.ts';
 export { roomAt, type Room } from './rooms.ts';
 export { atMidden, middensOf } from './midden.ts';
 export { burialGround, burialsOf, freePlots, gravesOf, inBurial } from './burial.ts';

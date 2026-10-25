@@ -11,7 +11,7 @@ export {
   kindDef,
   pastureOf,
 } from './flock.ts';
-export { canTame, foldFlock, openFlock, takeIn, tameTargets } from './tame.ts';
+export { bringIn, canTame, foldFlock, openFlock, takeIn, tameTargets } from './tame.ts';
 export { addToRick, mowable, mowTile, readySwaths, takeHay } from './hay.ts';
 export { butcher, marked, shear, shearable } from './cull.ts';
 export { noteLeftOut } from './pack.ts';

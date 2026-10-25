@@ -177,6 +177,7 @@ export function siteFor(
   size: { w: number; h: number },
   way: Way = wayFrom(world, content, green),
   ground: Ground = groundOf(world),
+  toward?: Spot,
 ): Site | undefined {
   const near = Math.max(content.buildings.house.near, ringOf(world, content));
   const width = world.map.width;
@@ -193,7 +194,10 @@ export function siteFor(
       if (path < 0) continue;
       const s = scoreRect(world, content, r, undefined, ground);
       if (!s) continue;
-      found.push({ site: { ...r, ...s, far: d, door }, score: s.rise + d + s.trees.length + path });
+      // A home leans toward its owner's work (P5.14, strangers.json `home.toward`).
+      const lean = toward ? Math.floor(far(toward, r) / content.strangers.home.toward) : 0;
+      const score = s.rise + d + s.trees.length + path + lean;
+      found.push({ site: { ...r, ...s, far: d, door }, score });
     }
   // Lowest score first, ties in tile order; the way in must not cross the site itself.
   found.sort((a, b) => a.score - b.score || a.site.y - b.site.y || a.site.x - b.site.x);
@@ -293,17 +297,19 @@ function affords(
  * that can be finished. The walls are of the MOST PLENTIFUL material (stock plus what lies
  * within `reach`) among those that can finish a house of that size; ties keep content order
  * (Morgan, 2026-10-19, amending V-096). With material for none, the smallest with ground for it
- * and the most plentiful wall material, ties to the first (its plans wait for material). `why` says which. Undefined when no ground near the green fits any size. */
+ * and the most plentiful wall material, ties to the first (its plans wait for material). `why` says which. Undefined when no ground near the green fits any size. A home is sited
+ * leaning `toward` its owner's work (P5.14). */
 export function chooseHouse(
   world: WorldState,
   content: EngineContent,
   green: Spot,
   sleepers: number,
+  toward?: Spot,
 ): { size: SizeDef; site: Site; wall: PartDef; why: string } | undefined {
   const way = wayFrom(world, content, green);
   const ground = groundOf(world);
   const sited = content.buildings.house.sizes.flatMap((size) => {
-    const site = siteFor(world, content, green, size, way, ground);
+    const site = siteFor(world, content, green, size, way, ground, toward);
     return site ? [{ size, site }] : [];
   });
   if (!sited.length) return undefined;
