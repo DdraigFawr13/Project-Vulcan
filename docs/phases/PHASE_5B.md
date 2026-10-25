@@ -4,7 +4,7 @@ Goal: a colony that feeds, clothes, lights and mends itself through the winters.
 
 ## Status
 
-- [ ] Spec approved by Morgan
+- [x] Spec approved by Morgan, 2026-10-25 (PR #83)
 - [ ] Bundle 1, stores by kind (V-129)
 - [ ] Bundle 2, the larder: P5.1, P5.2
 - [ ] Bundle 3, kitchen and keeping: P5.3, P5.12
@@ -37,7 +37,7 @@ Order: bundles 1 to 7, then the balance and review. A bundle over 1,200 lines sp
 
 Store kinds, siting from need, hauling to the nearest, doubled stacks, store lines. Mock-up: UI. Done when: the test above.
 
-- Reading list: `docs/DECISIONS.md` V-129; `src/engine/goods/MODULE.md`; `src/engine/build/MODULE.md`; `src/engine/people/MODULE.md`; `src/render/MODULE.md`
+- Reading list: `docs/DECISIONS.md` V-129 V-138; `src/engine/goods/MODULE.md`; `src/engine/build/MODULE.md`; `src/engine/people/MODULE.md`; `src/render/MODULE.md`
 
 ### Bundle 2: P5.1 fields, P5.2 the well
 

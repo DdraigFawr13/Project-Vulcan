@@ -141,3 +141,4 @@ Locked decisions, all made by Morgan in the planning thread on 2026-10-17 unless
 | V-135 | Day length by month; outdoor work stops at dusk; indoor trades need candles, a hearth lights dimly; chandler (tallow, wax, soap), beekeeper; Candles plate. |
 | V-136 | Sickness from colony conditions (water, spoiled food, chill, wounds, shared rooms, strangers); soap cuts it; healer medicines and surgery by skill and tool; herb garden from need. |
 | V-137 | check:full under 120 s; 5B spec in PHASE_5B.md; a reading list naming DECISIONS rows counts only those rows. |
+| V-138 | 5B looks (taste board https://claude.ai/artifact/7uVoR2f6Sp6mbRdGAvaB9c, Morgan 2026-10-25): food stores walled, wood/stone/ore in open yards (hurdle, drystone); blight browns outward; stone well with windlass and roof; mill walls by V-096; a candlelit room glows. |
