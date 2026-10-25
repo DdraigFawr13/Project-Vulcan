@@ -79,6 +79,11 @@ export {
   stationOf,
   stationsOf,
   type Room,
+  hallOf,
+  homeFor,
+  householdOf,
+  sleepsIn,
+  whoseOf,
 } from './build/index.ts';
 export { calendarSystem } from './calendar/index.ts';
 export {

@@ -49,6 +49,8 @@ export interface StrangersDef {
   road: { count: number };
   law: string;
   memories: { turned: string; refused: string; feast: string };
+  /** The pages' words, read by the worker. */
+  words: Readonly<Record<string, string>>;
 }
 
 export interface StrangersDefs {

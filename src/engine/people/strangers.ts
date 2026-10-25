@@ -188,8 +188,9 @@ export const strangersSystem: System = {
     ...['region.record', 'people.drawn', 'people.strangerCame', 'people.strangerStays'],
     ...['people.strangerTurnedAway', 'people.strangerFed', 'people.broughtAnimal', 'law.answered'],
   ],
-  // `first` 1 once the first stranger came; `stayed` how many stayed, the colony's name.
-  initialState: { first: 0, stayed: 0 },
+  // `first` 1 once the first stranger came; `stayed` how many stayed, the colony's name; `last`
+  // the line of the band's last word on a stranger.
+  initialState: { first: 0, stayed: 0, last: 0 },
   run(ctx) {
     drawMonth(ctx);
     strangersMinute(ctx);

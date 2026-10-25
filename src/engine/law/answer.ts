@@ -92,22 +92,28 @@ export function reweigh(ctx: SystemContext, law: string, s: LawSettingDef): void
 }
 
 /** `p` answers a law that asks nothing of the day, at one moment (the Strangers law, P5.9, when
- * it settles a split): their weighing of `s`, with `by` more and `word` for or against (by its
- * sign), replacing any earlier answer. A grumbler remembers it; returns the answer. */
+ * it settles a split): their weighing of `s`, with `by` more and the reasons of their own put
+ * first on each side, replacing any earlier answer. A grumbler remembers it; returns the answer. */
 export function answerNow(
   ctx: SystemContext,
   law: string,
   s: LawSettingDef,
   p: EntityRow,
-  shift: { by: number; word: string },
+  shift: { by: number; for: string[]; against: string[] },
   causes: number[],
 ): Weighed['answer'] {
   const w = weigh(ctx.world, ctx.content, p.id, s);
   const dial = ctx.content.laws.answer;
   const will = w.will + shift.by;
   const answer = will >= dial.obey ? 'obeys' : will >= dial.grumble ? 'grumbles' : 'refuses';
-  const side = shift.by < 0 ? 'against' : 'for';
-  const moved = { ...w, will, answer, [side]: [shift.word, ...w[side]] } as Weighed;
+  const join = (a: string[], b: string[]) => [...new Set([...a, ...b])];
+  const moved: Weighed = {
+    ...w,
+    will,
+    answer,
+    for: join(shift.for, w.for),
+    against: join(shift.against, w.against),
+  };
   // Each split is answered afresh: the answer is to this stranger, not a change of mind.
   const row = answersOf(ctx, law).find((a) => a['person'] === p.id);
   if (row) removeEntity(ctx.world, 'answer', row.id);

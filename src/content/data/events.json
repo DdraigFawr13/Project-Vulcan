@@ -195,7 +195,7 @@
 {"id":"build.burialSentBack","importance":2,"template":"The burial ground was sent back: the colony chooses again."},
 {"id":"region.record","importance":1,"template":"The region's record: {text}"},
 {"id":"people.drawn","importance":1,"template":"The colony has {spare}: {food} food in the store, {days} days for {mouths}.{beds}"},
-{"id":"people.strangerCame","importance":3,"template":"{names} of {place} came in from the {dir} to the green{bundle}: {place} {words}, and word reached it of {draw} here.","notable":{}},
+{"id":"people.strangerCame","importance":3,"template":"{names} came in from the {dir} to the green{bundle}: {place} {words}, and word reached it of {draw} here.","notable":{}},
 {"id":"people.strangerStays","importance":3,"template":"{names} {verb}. {spoke} {why} {where}","notable":{}},
 {"id":"people.strangerTurnedAway","importance":3,"template":"{names} {verb} turned away and went back {dir}. {spoke} {why}","notable":{}},
 {"id":"people.strangerFed","importance":1,"template":"{name} gave {them} {count} food for the road, having spoken for {them}."},

@@ -135,7 +135,6 @@ export function decide(ctx: SystemContext, lead: EntityRow, group: EntityRow[]):
   const kind = def.kinds.find((k) => k.id === reason);
   const stays = split ? (s.lets ?? []).includes(reason) : fors > 0 || !stances.length;
   const w = words(group);
-  const name = lead['name'] as string;
   const law = (world.entities['law'] ?? []).find((r) => r['law'] === def.law);
   const what = stays
     ? kind?.need
@@ -152,10 +151,18 @@ export function decide(ctx: SystemContext, lead: EntityRow, group: EntityRow[]):
       : `the first ${sizeOf(content, hall).name}`
     : 'the open';
   const causes = [lead['stranger'] as number, ...(split && law ? [law['line'] as number] : [])];
+  // Who spoke for, by id, and the counts: the Laws page's verdict (P5.9).
   const data = {
     names: namesOf(group),
     spoke: spokeLine(stances, w.them, stays),
     why,
+    fors,
+    against: stances.length - fors,
+    spokeFor: stances
+      .filter((x) => x.st.for)
+      .map((x) => x.q.id)
+      .join('|'),
+    split: split ? 1 : 0,
   };
   const line = stays
     ? ctx.emit('people.strangerStays', {
@@ -180,9 +187,8 @@ export function decide(ctx: SystemContext, lead: EntityRow, group: EntityRow[]):
   // A split is settled by the law: everyone answers it, those it overrode the less willing.
   if (split)
     for (const { q, st } of stances) {
-      const word = `spoke ${st.for ? 'for' : 'against'} ${name}`;
       const by = st.for === stays ? 0 : def.dissent;
-      const answer = answerNow(ctx, def.law, s, q, { by, word }, [line]);
+      const answer = answerNow(ctx, def.law, s, q, { by, for: st.pros, against: st.cons }, [line]);
       if (answer !== 'refuses') continue;
       addMemory(ctx, q.id, def.memories.refused, line);
       if (stays || !st.for) continue;
@@ -194,6 +200,7 @@ export function decide(ctx: SystemContext, lead: EntityRow, group: EntityRow[]):
           data: { name: q['name'] as string, them: w.them, count: took },
         });
     }
+  state['last'] = line;
   if (stays) {
     for (const p of group) admit(ctx, p, line);
     state['stayed'] = (state['stayed'] ?? 0) + group.length;

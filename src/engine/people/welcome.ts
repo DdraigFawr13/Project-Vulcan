@@ -16,6 +16,9 @@ export interface Stance {
   for: boolean;
   /** Their reasons, the strongest first. */
   words: string[];
+  /** Everything that weighed, each side the strongest first. */
+  pros: string[];
+  cons: string[];
 }
 
 const alive = (world: WorldState): EntityRow[] =>
@@ -80,9 +83,14 @@ export function stanceOf(
   }
   const sum = parts.reduce((n, [by]) => n + by, w.start);
   const yes = sum > 0;
-  const words = parts
-    .filter(([by]) => (yes ? by > 0 : by < 0))
-    .sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]))
-    .map(([, word]) => word);
-  return { for: yes, words: [...new Set(words)] };
+  const side = (pro: boolean) => [
+    ...new Set(
+      parts
+        .filter(([by]) => (pro ? by > 0 : by < 0))
+        .sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]))
+        .map(([, word]) => word),
+    ),
+  ];
+  const [pros, cons] = [side(true), side(false)];
+  return { for: yes, words: yes ? pros : cons, pros, cons };
 }

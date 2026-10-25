@@ -62,5 +62,7 @@ export const STRANGERS_SCHEMAS = {
     road: obj({ count: num({ min: 1 }) }),
     law: id,
     memories: obj({ turned: ref('memories'), refused: ref('memories'), feast: ref('memories') }),
+    // The pages' words (the worker's): a stranger's page, the Laws page and the Build sheet.
+    words: map(str()),
   }),
 };
