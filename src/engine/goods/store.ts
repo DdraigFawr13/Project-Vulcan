@@ -26,12 +26,19 @@ export const inStore = (world: WorldState, x: number, y: number, z: number): boo
 export const dryAt = (content: EngineContent, map: WorldState['map'], i: number): boolean =>
   walkAt(content, map, 0, i) > 0 && !content.terrain.kinds[map.tiles[i]!]!.water;
 
-/** Open ground joined to the camp with nothing lying on it and no store on it. */
-export function freeTile(world: WorldState, content: EngineContent, x: number, y: number): boolean {
+/** Open ground joined to the camp with nothing lying on it (but what `lying` lets) and no store
+ * on it. */
+export function freeTile(
+  world: WorldState,
+  content: EngineContent,
+  x: number,
+  y: number,
+  lying: (i: EntityRow) => boolean = () => false,
+): boolean {
   const map = world.map;
   if (x < 0 || y < 0 || x >= map.width || y >= map.height) return false;
   if (!dryAt(content, map, y * map.width + x)) return false;
-  if (itemsAt(world, x, y, 0).length || inStore(world, x, y, 0)) return false;
+  if (itemsAt(world, x, y, 0).some((i) => !lying(i)) || inStore(world, x, y, 0)) return false;
   // Nor on a granary tile (granary.ts).
   if ((world.entities['granary'] ?? []).some((g) => g['x'] === x && g['y'] === y && g['z'] === 0))
     return false;
