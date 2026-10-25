@@ -13,6 +13,7 @@ import {
   weatherSystem,
 } from '../index.ts';
 import { strandedWater, waterNearStart } from './checks.ts';
+import { walkAt } from '../paths/index.ts';
 import { reachableAround } from './features.ts';
 import { MAP_SEEDS } from './seeds.ts';
 
@@ -97,4 +98,31 @@ describe('surface map', () => {
     // Only the start differs: the land is the same valley.
     expect(again.map.tiles).toEqual(first.map.tiles);
   });
+  // Seen 2026-10-25 (flint/1, flint/3): a green in a clearing walled in by trees, so the band had
+  // no room for its store and no way out to work, and stood idle. The ground they can walk to on
+  // arrival, past no tree, must hold the land the start asks for.
+  it.each(['flint/1', 'flint/3'])(
+    'valley %s starts on ground the band can walk out from',
+    (seed) => {
+      const { map } = createWorld(mapOnly, seed);
+      const need = content.terrain.generator.start;
+      const start = map.startY * map.width + map.startX;
+      const seen = new Set([start]);
+      for (const i of seen) {
+        const [x, y] = [i % map.width, Math.floor(i / map.width)];
+        for (const [nx, ny] of [
+          [x + 1, y],
+          [x - 1, y],
+          [x, y + 1],
+          [x, y - 1],
+        ] as const) {
+          const n = ny * map.width + nx;
+          if (Math.max(Math.abs(nx - map.startX), Math.abs(ny - map.startY)) > need.radius)
+            continue;
+          if (!seen.has(n) && walkAt(content, map, 0, n) > 0) seen.add(n);
+        }
+      }
+      expect(seen.size).toBeGreaterThanOrEqual(need.buildable);
+    },
+  );
 });
