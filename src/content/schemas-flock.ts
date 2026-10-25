@@ -36,6 +36,8 @@ export const FLOCK_SCHEMAS = {
       session: num({ min: 1 }),
       reach: side,
       crew: count,
+      fed: num({ min: 0 }),
+      back: num({ min: 0 }),
     }),
     kinds: list(
       obj({

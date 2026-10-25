@@ -18,7 +18,7 @@ import {
 } from '../index.ts';
 import { flockSystem, headOf, keptOf, marked, tameTargets } from '../flock/index.ts';
 import { itemsOf } from '../goods/index.ts';
-import { memoriesOf } from '../needs/index.ts';
+import { memoriesOf, needOf } from '../needs/index.ts';
 import { walkAt } from '../paths/index.ts';
 import { animalsOf, herdsOf } from '../wild/index.ts';
 
@@ -175,6 +175,8 @@ describe('herding', () => {
     const herd = tameTargets(w, content, flock)[0]!;
     const sheep = animalsOf(w).find((s) => s['herd'] === herd.id)!;
     stand(w, a, (sheep['x'] as number) + 12, sheep['y'] as number);
+    // Fresh from a meal: a tamer sets out only well fed (`tame.fed`).
+    needOf(w, a.id, 'food')!['value'] = content.life.scale;
     clock(w, 2, 3, 8, 0);
     step(w, sim, content.flock.tame.youngMinutes + 400);
     const kept = keptOf(w, flock);
@@ -182,6 +184,28 @@ describe('herding', () => {
     expect(kept[0]).toMatchObject({ kind: 'lamb', young: 1, tamedBy: a.id });
     expect(lines(w, 'flock.tamed').length).toBe(headOf(w, flock));
     expect(herdsOf(w).some((h) => h['kept'] === flock['pasture'])).toBe(true);
+  });
+
+  it('sets out to tame only well fed, and comes back to eat sooner than the rest', () => {
+    const { w, flock } = pastureWorld();
+    const a = herder(w);
+    const herd = tameTargets(w, content, flock)[0]!;
+    const sheep = animalsOf(w).find((s) => s['herd'] === herd.id)!;
+    stand(w, a, (sheep['x'] as number) + 30, sheep['y'] as number);
+    const food = needOf(w, a.id, 'food')!;
+    food['value'] = content.flock.tame.fed - 1;
+    clock(w, 2, 3, 8, 0);
+    step(w, sim, 30);
+    expect(a['task']).not.toBe('tame');
+    // They took up other work meanwhile; fed, and free again, they go.
+    food['value'] = content.life.scale;
+    Object.assign(a, { job: '', task: '', target: -1, path: [], next: 0 });
+    step(w, sim, 30);
+    expect(a['task']).toBe('tame');
+    // Under `tame.back`, above everyone else's `seek`: off to eat.
+    food['value'] = content.flock.tame.back - 1;
+    step(w, sim, 2);
+    expect(a['doing']).toBe('eat');
   });
 
   it('carries dried hay to the rick and mows on a mowing day', () => {

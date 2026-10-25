@@ -13,6 +13,7 @@ import {
   takeIn,
   tameTargets,
 } from '../flock/index.ts';
+import { needOf } from '../needs/index.ts';
 import { animalsOf, herdOf, speciesOf } from '../wild/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
@@ -107,10 +108,15 @@ export function pickTask(ctx: SystemContext, p: EntityRow, flock: EntityRow): Pi
   const taming = people(world).filter(
     (q) => q.id !== p.id && q['job'] === 'herd' && q['task'] === 'tame' && q['plan'] === flock.id,
   ).length;
-  if (taming >= content.flock.tame.crew) return undefined;
+  if (taming >= content.flock.tame.crew || !fedToGo(ctx, p)) return undefined;
   const herd = canTame(world, content, flock) ? tameTargets(world, content, flock)[0] : undefined;
   return herd ? { task: 'tame', target: herd.id } : undefined;
 }
+
+/** Whether `p` has eaten enough to walk out to a wild herd (`tame.fed`). */
+const fedToGo = (ctx: SystemContext, p: EntityRow): boolean =>
+  ((needOf(ctx.world, p.id, 'food')?.['value'] as number) ?? ctx.content.life.scale) >=
+  ctx.content.flock.tame.fed;
 
 /** The wild animal of herd `herdId` nearest to `p`. */
 function nearestOf(world: WorldState, p: EntityRow, herdId: number): EntityRow | undefined {
@@ -156,7 +162,11 @@ export function tameStep(ctx: SystemContext, p: EntityRow, flock: EntityRow): bo
   if (!herd || !animal) return false;
   if (p['herdId'] !== herd.id) Object.assign(p, { herdId: herd.id, sat: 0 });
   const flee = speciesOf(content, herd['species'] as string).flee;
-  if (cheb(at(animal), spotOf(p)) > flee + 2) return approach(ctx, p, animal, flee);
+  if (cheb(at(animal), spotOf(p)) > flee + 2) {
+    // Setting out from afar (not following the herd about) wants a full belly.
+    const away = cheb(at(herd), spotOf(p)) > (herd['radius'] as number) + flee + 2;
+    return !(away && !fedToGo(ctx, p)) && approach(ctx, p, animal, flee);
+  }
   if ((p['work'] as number) <= 0) p['work'] = content.flock.tame.session;
   p['work'] = (p['work'] as number) - 1;
   p['sat'] = (p['sat'] as number) + 1;

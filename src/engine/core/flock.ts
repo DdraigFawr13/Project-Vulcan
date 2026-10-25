@@ -40,6 +40,11 @@ export interface FlockDef {
     reach: number;
     /** How many people may sit taming at once: patient work, one person's. */
     crew: number;
+    /** Herds sit far off: a tamer sets out only with Food at or over `fed`, and a sitting tamer
+     * goes back to eat under `back` (life.json's `seek` for everyone else), so the walk home ends
+     * above the warning line. */
+    fed: number;
+    back: number;
   };
   kinds: readonly FlockKindDef[];
   lambing: { month: string; chance: number; dies: number; diesWithin: number; grown: string };

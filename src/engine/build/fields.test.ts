@@ -22,8 +22,15 @@ import {
 import { fieldsOf, ringOf } from './index.ts';
 
 // Hunting and fishing (P5.4a) would put fish and game in the granary beside the harvest this
-// file follows, so the wild valley is kept out of the colony's way.
-const sim = createSim(withoutWild(content));
+// file follows, so the wild valley is kept out of the colony's way. So is the flock (Bundle 3):
+// its herders and hurdles share the hands the harvest needs, and whether a surplus reaches the
+// granary within the run then turns on a seed's luck.
+const sim = createSim(
+  withoutWild({
+    ...content,
+    flock: { ...content.flock, tame: { ...content.flock.tame, species: [] } },
+  }),
+);
 const DAY = 1440;
 const SEEDS = ['ledger', 'tallow', 'anvil'];
 type World = ReturnType<typeof createWorld>;
