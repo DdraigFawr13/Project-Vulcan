@@ -42,6 +42,9 @@ export function syncLures(ctx: SystemContext): void {
   const out = luring(ctx)
     ? flocksOf(world).filter((f) => !f['folded'] && headOf(world, f) > 0)
     : [];
+  // `lured`: how many lures this system set last; none then and none now is nothing to do.
+  if (!out.length && !ctx.state['lured']) return;
+  ctx.state['lured'] = out.length;
   setLures(
     ctx,
     'flock',

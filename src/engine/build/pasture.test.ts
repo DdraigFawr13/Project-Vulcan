@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { allLines, createSim, createWorld, greenOf, step, submitCommand } from '../index.ts';
+import { canReach } from '../paths/index.ts';
 import {
   foldTiles,
   grazingTiles,
@@ -114,6 +115,23 @@ describe('pasture', () => {
     expect(p['state']).toBe('built');
     expect(hurdles(world, p.id).every((q) => q['state'] === 'built')).toBe(true);
     expect(chain(world, built[0]!.id)).toContain('pasture.sited');
+    // Through the outer gate and the fold's gate, every grazing and fold tile can be walked to
+    // from the green (the outer gate opens onto grazing ground, never onto a fold wall).
+    const width = world.map.width;
+    const g = greenOf(world);
+    for (const i of [...grazingTiles(width, p), ...foldTiles(width, p)])
+      expect(
+        canReach(
+          content,
+          world.map,
+          { x: g.x, y: g.y, z: 0 },
+          {
+            x: i % width,
+            y: Math.floor(i / width),
+            z: 0,
+          },
+        ),
+      ).toBe(true);
   });
 
   it('takes the Pasture row and one send-back, then chooses again', () => {

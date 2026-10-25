@@ -138,7 +138,8 @@ describe('herding', () => {
       const rest = w.entities['need']!.find((n) => n['person'] === p.id && n['need'] === 'rest');
       rest!['value'] = 1;
     }
-    clock(w, 1, 8, 18, 0);
+    // From an hour before dusk (the pack's `night.from`), past it.
+    clock(w, 1, 8, content.wild.pack.night.from - 1, 0);
     step(w, sim, 70);
     expect(flock['folded']).toBe(0);
     const out = lines(w, 'flock.leftOut');

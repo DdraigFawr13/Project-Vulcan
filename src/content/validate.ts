@@ -299,6 +299,7 @@ function checkFlock(files: Files): string[] {
     hay: { months: string[]; thaw: string };
     cull: { month: string };
     memories: Record<string, string>;
+    why: Record<string, string>;
   };
   const months = (files['calendar'] as { monthNames: string[] }).monthNames;
   const species = (files['wild'] as { species: { id: string }[] }).species.map((s) => s.id);
@@ -324,5 +325,8 @@ function checkFlock(files: Files): string[] {
     if (!parts.includes(p)) errors.push(`flock.pasture: "${p}" is no part`);
   for (const [k, m] of Object.entries(f.memories))
     if (!memories.includes(m)) errors.push(`flock.memories.${k}: "${m}" is no memory`);
+  // The reasons the people side gives for a flock left out (people herd.ts).
+  for (const k of ['abed', 'warming', 'eating', 'toFold', 'busy', 'noWay', 'none'])
+    if (!f.why[k]) errors.push(`flock.why: no "${k}"`);
   return errors;
 }

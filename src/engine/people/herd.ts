@@ -28,7 +28,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { flockById, pickTask, skillName, strokeMinutes, tameStep, type Pick } from './herdtask.ts';
 import { practise } from './learn.ts';
 import { able, declineIfUnable, levelOf, outranked } from './priority.ts';
-import { goBeside, people } from './spots.ts';
+import { canStandBeside, goBeside, people } from './spots.ts';
 import { scaled } from './tools.ts';
 
 type Duty = 'fold' | 'unfold';
@@ -99,33 +99,49 @@ function herdersByRank(ctx: SystemContext): EntityRow[] {
     .sort((a, b) => levelOf(world, content, a.id, job) - levelOf(world, content, b.id, job));
 }
 
-/** The free herder who does `flock`'s duty: not eating, asleep, hurt or warming, not carrying a
- * load or a body, and not at work they rank above Herding. */
-function folderFor(ctx: SystemContext): EntityRow | undefined {
+/** Whether `q` is free for a duty: not eating, asleep, hurt or warming, not carrying a load or a
+ * body, and not at work they rank above Herding. */
+function freeFor(ctx: SystemContext, q: EntityRow): boolean {
   const { world, content } = ctx;
-  return herdersByRank(ctx).find(
-    (q) =>
-      !resting(q) &&
-      !loadOf(world, q.id) &&
-      q['job'] !== 'bury' &&
-      rankOf(ctx, q) >= levelOf(world, content, q.id, content.flock.job),
+  return (
+    !resting(q) &&
+    !loadOf(world, q.id) &&
+    q['job'] !== 'bury' &&
+    rankOf(ctx, q) >= levelOf(world, content, q.id, content.flock.job)
   );
 }
 
-/** Takes `duty` on `flock` for `p` if they are the one who should. */
+/** The free herder who puts Herding highest (ties in person order). */
+const folderFor = (ctx: SystemContext): EntityRow | undefined =>
+  herdersByRank(ctx).find((q) => freeFor(ctx, q));
+
+/** Minutes since `duty`'s time began today: `night.from` less `fold.before`, or `night.to` plus
+ * `fold.open`. */
+function sinceDuty(ctx: SystemContext, duty: Duty): number {
+  const { night } = ctx.content.wild.pack;
+  const { before, open } = ctx.content.flock.fold;
+  const start = duty === 'fold' ? night.from * 60 - before : night.to * 60 + open;
+  return (ctx.world.tick % 1440) - start + (ctx.world.tick % 1440 < start ? 1440 : 0);
+}
+
+/** Takes `duty` on `flock` for `p` if they should: the best-placed free herder, or after
+ * `fold.wait` minutes any free herder able for it; and only with a way to the fold's gate. */
 function startDuty(ctx: SystemContext, p: EntityRow): boolean {
-  const { world } = ctx;
+  const { world, content } = ctx;
+  if (!able(content, p, content.flock.job)) return false;
   for (const flock of flocksOf(world)) {
-    const duty = dutyOf(ctx, flock);
-    if (!duty) continue;
     const held = people(world).some(
       (q) =>
         q['job'] === 'herd' &&
         q['plan'] === flock.id &&
         (q['task'] === 'fold' || q['task'] === 'unfold'),
     );
-    if (held || folderFor(ctx)?.id !== p.id) continue;
+    const duty = !held && dutyOf(ctx, flock);
+    if (!duty) continue;
+    const late = sinceDuty(ctx, duty) >= content.flock.fold.wait;
+    if (late ? !freeFor(ctx, p) : folderFor(ctx)?.id !== p.id) continue;
     const gate = tileAt(world, pastureOf(world, flock)['foldGate'] as number);
+    if (!canStandBeside(ctx, p, gate.x, gate.y)) continue;
     p['path'] = [];
     Object.assign(p, { job: 'herd', task: duty, plan: flock.id, work: 0, took: flock['line'] });
     p['target'] = gate.y * world.map.width + gate.x;
@@ -161,10 +177,8 @@ function herdWork(ctx: SystemContext, p: EntityRow, hours: boolean): boolean {
   if ((p['path'] as number[]).length > 0) return true;
   if (duty) return dutyMinute(ctx, p, flock, task === 'fold');
   if (task === 'hay') return hayMinute(ctx, p, flock);
-  if (task === 'tame') {
-    if (!tameStep(ctx, p, flock)) stop(p);
-    return true;
-  }
+  // A sitting over, an animal taken in or no way to the herd: they look again later.
+  if (task === 'tame') return tameStep(ctx, p, flock) || stop(p);
   return stroke(ctx, p, flock, task);
 }
 
@@ -257,7 +271,13 @@ export function takeUpHerding(ctx: SystemContext, p: EntityRow): boolean {
     declineIfUnable(ctx, p, job);
     return false;
   }
+  const most = content.jobs.find((j) => j.id === job)?.perWorkplace ?? Infinity;
   for (const flock of flocksOf(world)) {
+    // At most `perWorkplace` (jobs.json) herders on a flock at once.
+    const on = people(world).filter(
+      (q) => q.id !== p.id && q['job'] === job && q['plan'] === flock.id,
+    ).length;
+    if (on >= most) continue;
     const pick: Pick | undefined = pickTask(ctx, p, flock);
     if (!pick) continue;
     if (outranked(ctx, p, job, (q) => pickTask(ctx, q, flock) !== undefined)) return false;
@@ -297,33 +317,42 @@ export function herdWatch(ctx: SystemContext): void {
   }
 }
 
-/** The reason the best-placed herder did not shut `flock` in, in `flock.json` `why`'s words. */
+/** The reason the folder (or the best-placed herder) did not shut `flock` in, in `flock.json` `why`'s words. */
 function leftOut(ctx: SystemContext): void {
   const { world, content } = ctx;
-  const why = (k: string): string => content.flock.why[k] ?? '';
   const best = herdersByRank(ctx)[0];
   for (const flock of flocksOf(world)) {
     if (flock['folded'] || !headOf(world, flock) || flock['outLine']) continue;
-    if (!best) {
-      noteLeftOut(ctx, flock, why('none'), 0);
-      continue;
-    }
-    const doing = best['doing'] as string;
-    const job = best['job'] as string;
-    const name = best['name'] as string;
-    const work =
-      best['job'] === 'herd'
-        ? 'the fold'
+    // Whoever took the duty and is not done, else the best-placed herder.
+    const who =
+      people(world).find(
+        (q) => q['job'] === 'herd' && q['task'] === 'fold' && q['plan'] === flock.id,
+      ) ?? best;
+    if (!who) noteLeftOut(ctx, flock, content.flock.why['none'] ?? '', 0);
+    else noteLeftOut(ctx, flock, reasonOf(ctx, who), who.id);
+  }
+}
+
+/** Why `q` was not at the fold: abed, warming, eating, on the way there, at other work (named
+ * by its Work sheet kind), or free with no way to the gate. */
+function reasonOf(ctx: SystemContext, q: EntityRow): string {
+  const { content } = ctx;
+  const doing = q['doing'] as string;
+  const job = q['job'] as string;
+  const key =
+    doing === 'sleep' || doing === 'hurt'
+      ? 'abed'
+      : doing === 'warm'
+        ? 'warming'
         : doing === 'eat'
           ? 'eating'
-          : (content.jobs.find((j) => j.id === (KIND[job] ?? job))?.name.toLowerCase() ??
-            'other work');
-    const reason =
-      doing === 'sleep' || doing === 'hurt'
-        ? why('abed').replace('{who}', name)
-        : doing === 'warm'
-          ? why('warming').replace('{who}', name)
-          : why('busy').replace('{who}', name).replace('{work}', work);
-    noteLeftOut(ctx, flock, reason, best.id);
-  }
+          : job === 'herd' && q['task'] === 'fold'
+            ? 'toFold'
+            : job === ''
+              ? 'noWay'
+              : 'busy';
+  const name = content.jobs.find((j) => j.id === (KIND[job] ?? job))?.name.toLowerCase() ?? job;
+  return (content.flock.why[key] ?? '')
+    .replace('{who}', q['name'] as string)
+    .replace('{work}', name);
 }

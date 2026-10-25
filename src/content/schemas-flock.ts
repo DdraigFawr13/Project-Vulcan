@@ -35,6 +35,7 @@ export const FLOCK_SCHEMAS = {
       adultMinutes: num({ min: 1 }),
       session: num({ min: 1 }),
       reach: side,
+      crew: count,
     }),
     kinds: list(
       obj({
@@ -77,7 +78,7 @@ export const FLOCK_SCHEMAS = {
       ramsPer: num({ min: 1 }),
       item: ref('items'),
     }),
-    fold: obj({ before: count, minutes: num({ min: 1 }), open: count }),
+    fold: obj({ before: count, minutes: num({ min: 1 }), open: count, wait: count }),
     move: obj({ every: num({ min: 1 }), wander: num({ min: 1 }) }),
     memories: obj({ cull: str(), taken: str() }),
     why: map(text),

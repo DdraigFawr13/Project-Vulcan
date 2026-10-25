@@ -68,8 +68,8 @@ function sideTiles(r: { x: number; y: number; w: number; h: number }, side: stri
   return out;
 }
 
-/** The outer gate's tile: the middle of the green-facing side, moved along it past any tile a
- * fold wall meets. */
+/** The outer gate's tile: the middle of the green-facing side, moved along it to the nearest tile
+ * that opens onto grazing ground (not onto the fold or the end of a fold wall). */
 function outerGate(row: EntityRow, green: Spot, width: number): number {
   const r = {
     x: row['x'] as number,
@@ -77,11 +77,16 @@ function outerGate(row: EntityRow, green: Spot, width: number): number {
     w: row['w'] as number,
     h: row['h'] as number,
   };
-  const tiles = sideTiles(r, facing(r, green));
+  const side = facing(r, green);
+  const tiles = sideTiles(r, side);
   const mid = Math.floor(tiles.length / 2);
-  // The middle tile, else the next along the side that no fold wall meets.
+  const [ix, iy] = { n: [0, 1], s: [0, -1], w: [1, 0], e: [-1, 0] }[side]!;
+  const f = foldRect(row);
+  const grazing = (x: number, y: number): boolean =>
+    !foldWall(row, x, y) && !(x >= f.x && y >= f.y && x < f.x + f.w && y < f.y + f.h);
+  // The middle tile, else the next along the side whose inner neighbour is grazing ground.
   const at = [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5].map((o) => tiles[mid + o]);
-  const [x, y] = at.find((t) => t && !foldWall(row, t[0]!, t[1]!)) ?? tiles[mid]!;
+  const [x, y] = at.find((t) => t && grazing(t[0]! + ix!, t[1]! + iy!)) ?? tiles[mid]!;
   return y! * width + x!;
 }
 

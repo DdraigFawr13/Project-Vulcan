@@ -1,7 +1,7 @@
 {
 "pasture": {"name":"Pasture","start":3,"holds":12,"w":11,"h":10,"fold":4,"meadow":{"w":12,"h":7},"reach":45,"water":8,"weigh":{"water":4,"herd":2,"near":100,"trees":25,"tries":40},"hurdle":"hurdle","gate":"gate-hurdle"},
 "job": "herd",
-"tame": {"species":["sheep","goat"],"young":["Bloommonth","Highsun"],"months":["Thawmonth","Seedmonth","Bloommonth","Highsun","Goldmonth","Harvestmonth","Leaffall","Mistmonth"],"youngMinutes":180,"adultMinutes":2400,"session":120,"reach":70},
+"tame": {"species":["sheep","goat"],"young":["Bloommonth","Highsun"],"months":["Thawmonth","Seedmonth","Bloommonth","Highsun","Goldmonth","Harvestmonth","Leaffall","Mistmonth"],"youngMinutes":180,"adultMinutes":2400,"session":120,"reach":70,"crew":1},
 "kinds": [
 {"species":"sheep","female":"ewe","male":"ram","young":"lamb","femaleName":"ewe","maleName":"ram","youngName":"lamb","fleece":true},
 {"species":"goat","female":"nanny","male":"billy","young":"kid","femaleName":"nanny goat","maleName":"billy goat","youngName":"kid","fleece":false}
@@ -10,8 +10,8 @@
 "shear": {"month":"Highsun","minutes":20,"item":"fleece","count":1},
 "hay": {"months":["Highsun","Goldmonth"],"perTile":16,"mow":15,"carry":8,"dry":3,"spoil":0.2,"plan":112,"thaw":"Thawmonth"},
 "cull": {"month":"Mistmonth","minutes":60,"ramsPer":10,"item":"meat"},
-"fold": {"before":60,"minutes":10,"open":20},
+"fold": {"before":120,"minutes":10,"open":20,"wait":15},
 "move": {"every":10,"wander":30},
 "memories": {"cull":"culled-raised","taken":"lost-to-wolves"},
-"why": {"abed":"{who} was abed","warming":"{who} was warming by a fire","busy":"{who} was at {work}","none":"nobody herds"}
+"why": {"abed":"{who} was abed","warming":"{who} was warming by a fire","eating":"{who} was eating","toFold":"{who} was on the way to the fold","busy":"{who} was busy with {work}","noWay":"{who} found no way to the fold","none":"nobody herds"}
 }

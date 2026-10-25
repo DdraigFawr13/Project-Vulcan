@@ -38,6 +38,8 @@ export interface FlockDef {
     adultMinutes: number;
     session: number;
     reach: number;
+    /** How many people may sit taming at once: patient work, one person's. */
+    crew: number;
   };
   kinds: readonly FlockKindDef[];
   lambing: { month: string; chance: number; dies: number; diesWithin: number; grown: string };
@@ -54,11 +56,13 @@ export interface FlockDef {
   };
   cull: { month: string; minutes: number; ramsPer: number; item: string };
   /** `before`: minutes before dusk (the pack's `night.from`) the flock is folded; `open`:
-   * minutes after dawn (`night.to`) it is let out; `minutes` the work. */
-  fold: { before: number; minutes: number; open: number };
+   * minutes after dawn (`night.to`) it is let out; `minutes` the work; `wait` the minutes the
+   * best-placed herder has to take it before any free herder may. */
+  fold: { before: number; minutes: number; open: number; wait: number };
   move: { every: number; wander: number };
   memories: { cull: string; taken: string };
-  /** Why nobody folded the flock: `abed`, `warming`, `busy` ({who}, {work}) and `none`. */
+  /** Why nobody folded the flock: `abed`, `warming`, `eating`, `toFold`, `busy` ({who}, {work}),
+   * `noWay` and `none`. */
   why: Readonly<Record<string, string>>;
 }
 

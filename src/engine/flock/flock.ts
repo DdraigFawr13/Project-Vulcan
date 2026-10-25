@@ -54,6 +54,8 @@ export const keptHerds = (world: WorldState, flock: EntityRow): EntityRow[] =>
 /** A flock's animal rows, by id. */
 export function keptOf(world: WorldState, flock: EntityRow): EntityRow[] {
   const herds = new Set(keptHerds(world, flock).map((h) => h.id));
+  // Asked every minute by the dusk work: no kept herd yet, no scan of the valley's animals.
+  if (!herds.size) return [];
   return animalsOf(world).filter((a) => herds.has(a['herd'] as number));
 }
 

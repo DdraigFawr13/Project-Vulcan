@@ -13,7 +13,7 @@ import {
   takeIn,
   tameTargets,
 } from '../flock/index.ts';
-import { animalsOf, speciesOf } from '../wild/index.ts';
+import { animalsOf, herdOf, speciesOf } from '../wild/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
 import { people, canStandBeside, skillOf, spotOf } from './spots.ts';
@@ -103,6 +103,11 @@ export function pickTask(ctx: SystemContext, p: EntityRow, flock: EntityRow): Pi
     (r) => tile(r.id),
   );
   if (meadow) return { task: 'mow', target: meadow.id };
+  // Taming is patient work: at most `tame.crew` sit at it on a flock at once.
+  const taming = people(world).filter(
+    (q) => q.id !== p.id && q['job'] === 'herd' && q['task'] === 'tame' && q['plan'] === flock.id,
+  ).length;
+  if (taming >= content.flock.tame.crew) return undefined;
   const herd = canTame(world, content, flock) ? tameTargets(world, content, flock)[0] : undefined;
   return herd ? { task: 'tame', target: herd.id } : undefined;
 }
@@ -140,8 +145,14 @@ function approach(ctx: SystemContext, p: EntityRow, animal: EntityRow, flee: num
  */
 export function tameStep(ctx: SystemContext, p: EntityRow, flock: EntityRow): boolean {
   const { world, content } = ctx;
-  const herd = tameTargets(world, content, flock).find((h) => h.id === p['target']);
-  const animal = herd && canTame(world, content, flock) && nearestOf(world, p, herd.id);
+  // Mid-sitting only the herd and its nearest animal are looked at again; the room, the month
+  // and the herd's spare animals at the start of each sitting and before the taking in.
+  const sitting = (p['work'] as number) > 0 && p['herdId'] === p['target'];
+  const herd = sitting
+    ? herdOf(world, p['target'] as number)
+    : tameTargets(world, content, flock).find((h) => h.id === p['target']);
+  const animal =
+    herd && (sitting || canTame(world, content, flock)) && nearestOf(world, p, herd.id);
   if (!herd || !animal) return false;
   if (p['herdId'] !== herd.id) Object.assign(p, { herdId: herd.id, sat: 0 });
   const flee = speciesOf(content, herd['species'] as string).flee;
@@ -151,6 +162,7 @@ export function tameStep(ctx: SystemContext, p: EntityRow, flock: EntityRow): bo
   p['sat'] = (p['sat'] as number) + 1;
   practise(ctx, p, skillName(content), p['took'] as number);
   if ((p['sat'] as number) >= tameNeed(world, content)) {
+    if (!canTame(world, content, flock)) return false;
     Object.assign(p, { sat: 0, herdId: 0 });
     takeIn(ctx, flock, animal, p.id, (p['took'] as number) || (flock['line'] as number));
     return false;

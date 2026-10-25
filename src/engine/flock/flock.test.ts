@@ -253,7 +253,8 @@ function denNear(w: WorldState, cx: number, cy: number): [number, number] {
 }
 
 describe('a flock out at night with a hungry pack', () => {
-  /** A world at 18:00 with a flock of four, the pack hungry and its den a few tiles off. */
+  /** A world an hour before dusk (the pack's `night.from`) with a flock of four, the pack hungry
+   * and its den a few tiles off. */
   function night(folded: boolean) {
     const { w, flock, pasture } = pastureWorld();
     addKept(
@@ -271,7 +272,7 @@ describe('a flock out at night with a hungry pack', () => {
       Object.assign(a, { x: dx, y: dy, path: [] });
     // Nobody herds (the people side would otherwise fold it: people herd.test.ts).
     for (const person of w.entities['person']!) person['status'] = 'dead';
-    w.tick = 7 * MONTH + 18 * 60;
+    w.tick = 7 * MONTH + (content.wild.pack.night.from - 1) * 60;
     step(w, sim, 4 * 60);
     return { w, flock, pack };
   }

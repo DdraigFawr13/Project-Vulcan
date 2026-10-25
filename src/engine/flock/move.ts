@@ -19,15 +19,13 @@ const NEIGHBOURS: readonly (readonly [number, number])[] = [
   ] as const),
 ];
 
+/** One step to a neighbouring tile, on the people's terms (`stepCost`): a ford the way crosses is
+ * waded, a hurdle is not passed, a gate is. False when the step cannot be taken now. */
 function stepTo(ctx: SystemContext, a: EntityRow, to: number): boolean {
   const { content, world } = ctx;
   const map = world.map;
   const [ox, oy] = [a['x'] as number, a['y'] as number];
-  if (
-    content.terrain.kinds[map.tiles[to]!]!.water ||
-    stepCost(content, map, oy * map.width + ox, to) === 0
-  )
-    return false;
+  if (stepCost(content, map, oy * map.width + ox, to) === 0) return false;
   const x = to % map.width;
   a['facing'] = x > ox ? 'e' : x < ox ? 'w' : a['facing']!;
   a['stride'] = 1 - (a['stride'] as number);

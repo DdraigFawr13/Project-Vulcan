@@ -21,8 +21,9 @@ export const flockSystem: System = {
     ...['flock.cullEarly', 'flock.butchered', 'flock.onHay', 'flock.onGrass'],
     ...['flock.starved', 'flock.leftOut', 'flock.taken'],
   ],
-  // `wetPrev`, `wetNow`: the weather's wet flag for yesterday and today (a dry night is both dry).
-  initialState: { wetPrev: 0, wetNow: 0 },
+  // `wetPrev`, `wetNow`: the weather's wet flag for yesterday and today (a dry night is both dry);
+  // `lured`: how many pack lures the flocks set last minute (pack.ts).
+  initialState: { wetPrev: 0, wetNow: 0, lured: 0 },
   tables: FLOCK_TABLES,
   run(ctx) {
     const { world } = ctx;
