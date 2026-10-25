@@ -10,7 +10,8 @@ import { clockAt, type EntityRow } from '../core/index.ts';
 import { dirFrom, greenOf, housesOf, houseName, rectOf, roomAt } from '../build/index.ts';
 import { heldBy, toolOf } from '../goods/index.ts';
 import { isDown, stopFor } from '../health/index.ts';
-import { addMemory } from '../needs/index.ts';
+import { hoursOf } from '../law/index.ts';
+import { addMemory, needOf } from '../needs/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { animalsOf, packOf, whenWord } from '../wild/index.ts';
@@ -208,9 +209,33 @@ function decide(ctx: SystemContext, group: readonly EntityRow[], seen: EntityRow
   for (const q of stands) addMemory(ctx, q.id, folk.memories.stood, line);
 }
 
+/** Whether it is `p`'s night by the hours they keep, or their rest is under `line` (mind.ts asks
+ * the same: the rest need's `seek` to lie down, `life.sleep.wake` to stay down). */
+function restTime(ctx: SystemContext, p: EntityRow, line: number): boolean {
+  const { world, content } = ctx;
+  const hour = clockAt(world.tick, content.calendar).hour;
+  const day = hoursOf(world, content, p.id);
+  const rest = (needOf(world, p.id, 'rest')?.['value'] as number | undefined) ?? content.life.scale;
+  return hour >= day.sleepFrom || hour < day.workFrom || rest < line;
+}
+
+const restSeek = (ctx: SystemContext): number =>
+  ctx.content.life.needs.find((n) => n.id === 'rest')?.seek ?? 0;
+
+/** Someone lying down in a shut room with a predator in sight stays in: they do not get up to go
+ * out for food, and once rested by day they wake to keep their flight. True when it took the
+ * minute. */
+function lyingLow(ctx: SystemContext, p: EntityRow): boolean {
+  if (p['doing'] !== 'sleep' || (p['path'] as number[]).length || !sheltered(ctx, p)) return false;
+  if (!seenBy(ctx, p).length) return false;
+  if (!restTime(ctx, p, ctx.content.life.sleep.wake)) p['doing'] = 'flee';
+  return true;
+}
+
 /** The predator rung for `p` this minute: true when it took the minute (standing or fleeing). */
 export function predatorRung(ctx: SystemContext, p: EntityRow): boolean {
   const out = predatorsOf(ctx).length > 0;
+  if (out && lyingLow(ctx, p)) return true;
   if (!out || !upAndAbout(ctx, p)) {
     if (!out && (p['doing'] === 'flee' || p['doing'] === 'stand')) p['doing'] = '';
     return false;
@@ -226,10 +251,22 @@ export function predatorRung(ctx: SystemContext, p: EntityRow): boolean {
   )[0]!;
   if (stance === 'stand') {
     p['path'] = [];
+    // Nobody stands guard through their night: at bedtime they make for a shut room like the rest.
+    if (!restTime(ctx, p, restSeek(ctx))) return true;
+    p['doing'] = 'flee';
+    if (!sheltered(ctx, p)) runFrom(ctx, p, spotOf(near));
     return true;
   }
   if (stance === 'flee') {
-    if (!(p['path'] as number[]).length && !sheltered(ctx, p)) runFrom(ctx, p, spotOf(near));
+    if (sheltered(ctx, p)) {
+      // Safe behind a shut door they stay in, and at their bedtime or tired they lie down where
+      // they are: a pack resting at the town's edge in sight of a house kept whoever had run
+      // there standing awake all night, every minute, missing sleep and meals.
+      p['path'] = [];
+      if (restTime(ctx, p, restSeek(ctx))) p['doing'] = 'sleep';
+      return true;
+    }
+    if (!(p['path'] as number[]).length) runFrom(ctx, p, spotOf(near));
     return true;
   }
   const group = people(ctx.world).filter(
