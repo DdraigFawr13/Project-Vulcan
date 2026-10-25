@@ -10,7 +10,7 @@ import { mapSystem } from './map/index.ts';
 import { mineSystem } from './mine/index.ts';
 import { needsSystem } from './needs/index.ts';
 import { lawSystem } from './law/index.ts';
-import { peopleSystem } from './people/index.ts';
+import { peopleSystem, strangersSystem } from './people/index.ts';
 import { regionSystem } from './region/index.ts';
 import { weatherSystem } from './weather/index.ts';
 import { wildSystem } from './wild/index.ts';
@@ -79,6 +79,11 @@ export {
   stationOf,
   stationsOf,
   type Room,
+  hallOf,
+  homeFor,
+  householdOf,
+  sleepsIn,
+  whoseOf,
 } from './build/index.ts';
 export { calendarSystem } from './calendar/index.ts';
 export {
@@ -236,6 +241,7 @@ export const SYSTEMS: readonly System[] = [
   regionSystem,
   mapSystem,
   peopleSystem,
+  strangersSystem,
   healthSystem,
   goodsSystem,
   buildSystem,

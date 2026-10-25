@@ -1,7 +1,7 @@
 // Shape of Vulcan's laws file (src/content/data/laws.json, P4.8, V-091): each law's settings and
 // what weighs on a person's answer to each. One setting is the custom (no `hours`): the colony's
 // own day, short in winter.
-import { list, map, num, obj, opt, ref } from './schema';
+import { list, map, num, obj, opt, ref, str } from './schema';
 import { count, id, text } from './schema-fields';
 
 const hours = obj({ from: num({ min: 1, max: 23 }), to: num({ min: 2, max: 24 }) });
@@ -37,8 +37,10 @@ export const LAWS_SCHEMAS = {
             days: text,
             ask: num(),
             hours: opt(hours),
-            winter: hours,
-            winterLean: num(),
+            winter: opt(hours),
+            winterLean: opt(num()),
+            // The Strangers law (P5.9): the reason kinds (strangers.json) a split band lets in.
+            lets: opt(list(str())),
             saw: opt(ref('memories')),
             grumbled: opt(ref('memories')),
             traits: map(num(), 'traits'),

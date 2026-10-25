@@ -135,6 +135,8 @@ export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: num
   let growing = false;
   for (const main of housesOf(world)) {
     if (main['of'] || main['state'] !== 'built' || (only && main.id !== only)) continue;
+    // A home (P5.14) is sized for its household and does not grow.
+    if (main['owner']) continue;
     const rows = rowsOf(world, main);
     if (rows.some((h) => h['state'] === 'plan')) {
       growing = true;

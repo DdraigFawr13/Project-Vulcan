@@ -26,6 +26,8 @@ const slowFiles = [
   'src/worker/fields.test.ts',
   // Injury and death (P5.6, P5.8): a 20-day run to the first cottage, and a burial.
   'src/engine/health/health.test.ts',
+  // Strangers and homes (P5.9, P5.14): three runs of two to three weeks on a valley seed.
+  'src/engine/people/strangers.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).

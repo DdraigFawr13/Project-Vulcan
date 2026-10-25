@@ -15,21 +15,13 @@ import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
 import { itemsOf, layItem, marksOf, raiseStock } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { bedOwnedBy, furnitureOf, piecesOf } from './furniture.ts';
+import { bedOwnedBy, piecesOf } from './furniture.ts';
 import { plansOf, refundOf } from './plans.ts';
 import { widenRing } from './ring.ts';
-import { roomAt } from './rooms.ts';
-import {
-  chooseHouse,
-  costOf,
-  housesOf,
-  inRect,
-  onEdge,
-  partsOf,
-  rectOf,
-  type Rect,
-  type Site,
-} from './site.ts';
+import { bedSpot, houseAt, mainOf, rowsOf } from './beds.ts';
+import { chooseHouse, costOf, housesOf, partsOf, type Rect, type Site } from './site.ts';
+
+export { houseAt, mainOf, rowsOf };
 import { sayGoodsAside } from './clearing.ts';
 
 export const HOUSE_TABLES: Schemas = {
@@ -41,7 +33,9 @@ export const HOUSE_TABLES: Schemas = {
    * last looked for where to add a room, and `full` 1 when no side of it had ground for one;
    * `wall` the id of the wall part it is built in (a room keeps its house's, V-097);
    * `cold` the line saying a cold room of it had no floor free for a hearth (phase review);
-   * `sick` 1 for a room added as the sickroom (P5.6), whose beds are the hurt's, nobody's own. */
+   * `sick` 1 for a room added as the sickroom (P5.6), whose beds are the hurt's, nobody's own;
+   * `owner` the person whose home it is (P5.14, beds.ts), 0 for the band's houses; `hall` the
+   * line the first house became the hall under (homes.ts). */
   house: {
     size: 'text',
     x: 'int',
@@ -61,6 +55,8 @@ export const HOUSE_TABLES: Schemas = {
     wall: 'text',
     cold: 'event',
     sick: 'count',
+    owner: 'entity',
+    hall: 'event',
   },
   /** The Build sheet's level for a kind of building (1 first to 4 last) and its order. */
   want: { kind: 'text', level: 'count', line: 'event' },
@@ -89,21 +85,6 @@ export function houseName(world: WorldState, content: EngineContent, id: number)
   if ((world.entities['smithy'] ?? []).some((f) => f.id === id)) return 'smithy';
   if ((world.entities['pasture'] ?? []).some((f) => f.id === id)) return 'pasture';
   return (world.entities['field'] ?? []).some((f) => f.id === id) ? 'field' : '';
-}
-
-/** The house a row belongs to: itself, or the house a room was added to. */
-export const mainOf = (world: WorldState, h: EntityRow): EntityRow =>
-  h['of'] ? (housesOf(world).find((o) => o.id === h['of']) ?? h) : h;
-
-/** The rows of a house: the house and the rooms added to it. */
-export const rowsOf = (world: WorldState, main: EntityRow): EntityRow[] =>
-  housesOf(world).filter((h) => (h.id === main.id || h['of'] === main.id) && h['state'] !== 'sent');
-
-/** The house row whose inside (within its walls) holds tile (x, y), standing or planned. */
-export function houseAt(world: WorldState, x: number, y: number): EntityRow | undefined {
-  return housesOf(world).find(
-    (h) => h['state'] !== 'sent' && inRect(rectOf(h), x, y) && !onEdge(rectOf(h), x, y),
-  );
 }
 
 /** The Build sheet's level for a kind of building (houses, or fields, P4.7), and the order that
@@ -208,47 +189,6 @@ export function bedsOf(world: WorldState, content: EngineContent, main: EntityRo
   return { sleepers, room: rows.reduce((n, h) => n + sizeOf(content, h).sleeps, 0) };
 }
 
-/** A free tile to lay a bedroll on inside a built house: a built floor with nothing on it, in
- * house and tile order. For a bedroll `leaving` a crowded room of a house (rooms.ts), only a
- * tile in another room of that house where one more bed would not crowd it. `reserved` tiles
- * (index) are where others are carrying their bedrolls, and count as laid. */
-export function bedSpot(
-  world: WorldState,
-  content: EngineContent,
-  leaving?: { x: number; y: number },
-  reserved: readonly number[] = [],
-): Spot | undefined {
-  const map = world.map;
-  const taken = new Set([
-    ...itemsOf(world)
-      .filter((i) => !i['holder'] && i['z'] === 0)
-      .map((i) => (i['y'] as number) * map.width + (i['x'] as number)),
-    ...furnitureOf(world)
-      .filter((f) => f['z'] === 0)
-      .map((f) => (f['y'] as number) * map.width + (f['x'] as number)),
-    ...reserved,
-  ]);
-  const from = leaving && houseAt(world, leaving.x, leaving.y);
-  const home = from && from['state'] === 'built' ? mainOf(world, from) : undefined;
-  const old = home && roomAt(world, content, leaving!.x, leaving!.y);
-  const crowd = content.buildings.rooms.crowd.tiles;
-  for (const h of home ? rowsOf(world, home) : housesOf(world)) {
-    if (h['state'] !== 'built' || h['sick']) continue;
-    const r = rectOf(h);
-    const room = roomAt(world, content, r.x + 1, r.y + 1);
-    if (home && (!room || room.tiles.includes(old?.tiles[0] ?? -1))) continue;
-    // Bedrolls laid in it, and those on their way there.
-    const coming = room ? reserved.filter((i) => room.tiles.includes(i)).length : 0;
-    if (room && (room.beds + coming + 1) * crowd > room.tiles.length) continue;
-    for (let y = r.y + 1; y < r.y + r.h - 1; y += 1)
-      for (let x = r.x + 1; x < r.x + r.w - 1; x += 1) {
-        const part = content.buildings.parts[map.built[y * map.width + x]! - 1];
-        if (part?.kind === 'floor' && !taken.has(y * map.width + x)) return { x, y, z: 0 };
-      }
-  }
-  return undefined;
-}
-
 /** Lays out a sited house (or added room) as plans: the house row, a plan a tile, trees in the
  * footprint marked to fell first, and stock raised for its materials. */
 export function placeHouse(
@@ -257,7 +197,13 @@ export function placeHouse(
   size: SizeDef,
   wall: PartDef,
   line: number,
-  extra: { why: string; of?: number; sent?: number; skip?: (x: number, y: number) => boolean },
+  extra: {
+    why: string;
+    of?: number;
+    sent?: number;
+    owner?: number;
+    skip?: (x: number, y: number) => boolean;
+  },
 ): number {
   const { world, content } = ctx;
   const map = world.map;
@@ -275,6 +221,8 @@ export function placeHouse(
       wall: wall.id,
       cold: 0,
       sick: 0,
+      owner: extra.owner ?? 0,
+      hall: 0,
     },
   });
   const parts = partsOf(content, site, site.door, wall, extra.skip);

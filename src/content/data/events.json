@@ -192,5 +192,18 @@
 {"id":"work.tookUpBurial","importance":2,"template":"{name} took up burying {dead}."},
 {"id":"build.sickroom","importance":2,"template":"{names} lay hurt at once, so the colony added a sickroom to the {size}.","notable":{}},
 {"id":"build.burialSited","importance":2,"template":"At {name}'s death the colony laid out a burial ground past the town ring, {far} tiles {dir} of the green: {width} by {height} tiles."},
-{"id":"build.burialSentBack","importance":2,"template":"The burial ground was sent back: the colony chooses again."}
+{"id":"build.burialSentBack","importance":2,"template":"The burial ground was sent back: the colony chooses again."},
+{"id":"region.record","importance":1,"template":"The region's record: {text}"},
+{"id":"people.drawn","importance":1,"template":"The colony has {spare}: {food} food in the store, {days} days for {mouths}.{beds}"},
+{"id":"people.strangerCame","importance":3,"template":"{names} came in from the {dir} to the green{bundle}: {place} {words}, and word reached it of {draw} here.","notable":{}},
+{"id":"people.strangerStays","importance":3,"template":"{names} {verb}. {spoke} {why} {where}","notable":{}},
+{"id":"people.strangerTurnedAway","importance":3,"template":"{names} {verb} turned away and went back {dir}. {spoke} {why}","notable":{}},
+{"id":"people.strangerFed","importance":1,"template":"{name} gave {them} {count} food for the road, having spoken for {them}."},
+{"id":"people.broughtAnimal","importance":2,"template":"{names} brought {a} {animal}{fate}."},
+{"id":"people.wantsHome","importance":1,"template":"{names} {want} a home of their own{since}."},
+{"id":"build.homeSited","importance":2,"template":"The colony plans {whose} home, a {size} {dir} of the green: {why}.","notable":{}},
+{"id":"people.movedHome","importance":2,"template":"{name} moved into {whose} home, a {size}."},
+{"id":"build.hall","importance":3,"template":"The first {size} is now the hall: {name}, the last of the band, moved into their own home. Newcomers will sleep here until their homes are up.","notable":{}},
+{"id":"hall.feast","importance":2,"template":"The harvest-home supper in the hall: {count} ate there and will remember the feast."},
+{"id":"hall.mourned","importance":1,"template":"The mourners gathered in the hall after {name}'s burial."}
 ]

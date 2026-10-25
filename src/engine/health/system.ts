@@ -48,6 +48,7 @@ export const healthSystem: System = {
   every: 'hour',
   stream: 'health',
   emits: [
+    'hall.mourned',
     'health.hurt',
     'health.festered',
     'health.feverBroke',

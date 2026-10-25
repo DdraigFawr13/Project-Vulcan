@@ -9,6 +9,7 @@ import { FLOCK_SCHEMAS } from './schemas-flock';
 import { METAL_SCHEMAS } from './schemas-metal';
 import { PEOPLE_SCHEMAS } from './schemas-people';
 import { REGION_SCHEMAS } from './schemas-region';
+import { STRANGERS_SCHEMAS } from './schemas-strangers';
 import { TOOLS_SCHEMAS } from './schemas-tools';
 import { WILD_SCHEMAS } from './schemas-wild';
 import { WORLD_SCHEMAS } from './schemas-world';
@@ -26,6 +27,7 @@ export const SCHEMAS = {
   ...TOOLS_SCHEMAS,
   ...WILD_SCHEMAS,
   ...FLOCK_SCHEMAS,
+  ...STRANGERS_SCHEMAS,
 };
 
 export type ContentFile = keyof typeof SCHEMAS;

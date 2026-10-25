@@ -3,7 +3,17 @@
 // lives on the bed), and their bedroll is carried to the store with the next load. Someone
 // crowded moves to a free bed in an empty room of their house (phase review).
 import type { EntityRow } from '../core/index.ts';
-import { bedOwnedBy, houseAt, mainOf, piecesOf, roomAt, roomName } from '../build/index.ts';
+import {
+  bedOwnedBy,
+  builtHome,
+  houseAt,
+  mainOf,
+  othersHome,
+  piecesOf,
+  roomAt,
+  roomName,
+  sizeOf,
+} from '../build/index.ts';
 import { itemsOf } from '../goods/index.ts';
 import { feltAt } from '../needs/index.ts';
 import { canReach } from '../paths/index.ts';
@@ -47,16 +57,46 @@ function moveForPrivacy(ctx: SystemContext, p: EntityRow, owned: EntityRow): voi
   });
 }
 
+/** Someone whose home stands takes a free bed there, leaving their old one free (P5.14). */
+function moveHome(
+  ctx: SystemContext,
+  p: EntityRow,
+  owned: EntityRow,
+  bed: EntityRow,
+  home: EntityRow,
+): void {
+  owned['owner'] = 0;
+  bed['owner'] = p.id;
+  home['moved'] = ctx.emit('people.movedHome', {
+    causes: [home['built'] as number, bed['made'] as number].filter((l) => l > 0),
+    actors: [p.id],
+    data: { name: p['name'] as string, whose: 'their own', size: sizeOf(ctx.content, home).name },
+  });
+}
+
 /** `p` takes a free bed if they have none and one can be reached; one line citing the bed made. */
 export function claimBed(ctx: SystemContext, p: EntityRow): void {
   const { world, content } = ctx;
   const owned = bedOwnedBy(world, p.id);
-  if (owned) return moveForPrivacy(ctx, p, owned);
-  // Nobody claims a sickroom bed: those are for the hurt (P5.6).
-  const free = piecesOf(world, 'bed').filter(
-    (b) =>
-      !b['owner'] && b['z'] === 0 && !houseAt(world, b['x'] as number, b['y'] as number)?.['sick'],
-  );
+  // Nobody claims a sickroom bed: those are for the hurt (P5.6). Nor a bed in someone else's
+  // home, and once theirs stands, one only there (P5.14).
+  const own = builtHome(world, p.id);
+  const free = piecesOf(world, 'bed').filter((b) => {
+    const h = houseAt(world, b['x'] as number, b['y'] as number);
+    const main = h && mainOf(world, h);
+    if (b['owner'] || b['z'] !== 0 || h?.['sick']) return false;
+    return own
+      ? main?.id === own.id && h!['state'] === 'built'
+      : !main || !othersHome(world, main, p.id);
+  });
+  if (owned) {
+    const at = houseAt(world, owned['x'] as number, owned['y'] as number);
+    if (own && (!at || mainOf(world, at).id !== own.id) && free.length) {
+      const bed = free.find((b) => canReach(content, world.map, spotOf(p), spotOf(b)));
+      if (bed) return moveHome(ctx, p, owned, bed, own);
+    }
+    return moveForPrivacy(ctx, p, owned);
+  }
   if (!free.length) return;
   const roll = itemsOf(world).find(
     (i) => i['owner'] === p.id && i['kind'] === content.life.cart.bedroll && i['state'] === 'laid',

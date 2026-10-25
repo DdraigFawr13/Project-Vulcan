@@ -45,14 +45,14 @@ export function isWinter(world: WorldState, content: EngineContent): boolean {
 export function customaryHours(world: WorldState, content: EngineContent): Hours {
   const sleepFrom = content.life.sleep.from;
   const custom = customOf(lawDef(content, WORK_HOURS)!);
-  const h = custom && isWinter(world, content) ? custom.winter : content.work.hours;
+  const h = (custom && isWinter(world, content) && custom.winter) || content.work.hours;
   return { workFrom: h.from, workTo: h.to, sleepFrom };
 }
 
 /** A setting's hours this season (the customary ones for the custom). */
 export function hoursFor(world: WorldState, content: EngineContent, s: LawSettingDef): Hours {
   if (!s.hours) return customaryHours(world, content);
-  const h = isWinter(world, content) ? s.winter : s.hours;
+  const h = (isWinter(world, content) && s.winter) || s.hours;
   const sleepFrom = customaryHours(world, content).sleepFrom;
   return { workFrom: h.from, workTo: Math.min(h.to, sleepFrom), sleepFrom };
 }

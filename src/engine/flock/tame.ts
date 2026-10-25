@@ -124,3 +124,19 @@ export function foldFlock(_ctx: SystemContext, flock: EntityRow, _byPerson: numb
 export function openFlock(_ctx: SystemContext, flock: EntityRow, _byPerson: number): void {
   flock['folded'] = 0;
 }
+
+/** A grown animal of `species` a newcomer brings (P5.9) joins the first flock at its fold; false
+ * when the colony has no flock yet. */
+export function bringIn(ctx: SystemContext, species: string, sex: string): boolean {
+  const { world, content } = ctx;
+  const flock = (world.entities['flock'] ?? [])[0];
+  const kd = content.flock.kinds.find((k) => k.species === species);
+  if (!flock || !kd) return false;
+  const f = foldRect(pastureOf(world, flock));
+  addEntity(world, 'animal', {
+    ...{ herd: keptHerdFor(ctx, flock, species), pack: 0, kind: sex === 'm' ? kd.male : kd.female },
+    ...{ x: f.x + 1, y: f.y + 1, z: 0, path: [], stride: 0, facing: 'e', state: '', until: 0 },
+    ...{ hurt: 0, sex, born: 0, young: 0, tamedBy: 0, cull: 0, shorn: 0, dies: 0 },
+  });
+  return true;
+}

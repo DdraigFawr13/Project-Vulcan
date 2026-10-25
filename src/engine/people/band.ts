@@ -172,3 +172,18 @@ export function drawBand(rng: RngStream, content: EngineContent, homes: readonly
   }
   return people;
 }
+
+/** A stranger from `home` (P5.9), drawn as one of the band is; `sex` when it must be that one
+ * (a couple's second), and a given name none of `taken` has. */
+export function drawStranger(
+  rng: RngStream,
+  content: EngineContent,
+  home: Home,
+  taken: readonly string[],
+  sex?: string,
+): Person {
+  let p = drawPerson(rng, content, [home]);
+  for (let k = 0; k < 20 && (taken.includes(p.name) || (sex && p.sex !== sex)); k += 1)
+    p = drawPerson(rng, content, [home]);
+  return p;
+}

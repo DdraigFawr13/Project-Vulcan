@@ -68,21 +68,24 @@ function moodValue(content: EngineContent, world: WorldState, person: number): n
 
 /** Gives each person their need rows and mood on arrival; the arrival line explains them. */
 export function seedNeeds(world: WorldState, content: EngineContent): void {
-  for (const p of rowsOf(world, 'person')) {
-    const line = p['arrived'] as number;
-    content.life.needs.forEach((def, k) =>
-      addEntity(world, 'need', {
-        person: p.id,
-        need: def.id,
-        value: content.life.start[k] ?? content.life.scale,
-        low: 0,
-        line,
-        noted: 0,
-      }),
-    );
-    const value = moodValue(content, world, p.id);
-    addEntity(world, 'mood', { person: p.id, value, word: wordFor(content, value), line });
-  }
+  for (const p of rowsOf(world, 'person')) seedPerson(world, content, p);
+}
+
+/** Needs at their arrival values, and a mood, for one person (a newcomer who stays, P5.9). */
+export function seedPerson(world: WorldState, content: EngineContent, p: EntityRow): void {
+  const line = p['arrived'] as number;
+  content.life.needs.forEach((def, k) =>
+    addEntity(world, 'need', {
+      person: p.id,
+      need: def.id,
+      value: content.life.start[k] ?? content.life.scale,
+      low: 0,
+      line,
+      noted: 0,
+    }),
+  );
+  const value = moodValue(content, world, p.id);
+  addEntity(world, 'mood', { person: p.id, value, word: wordFor(content, value), line });
 }
 
 // Lying hurt (P5.6) rests as sleep does.

@@ -11,6 +11,8 @@ import { anyBench, bedOwnedBy, furnitureOf } from './furniture.ts';
 import { HEARTH } from './hearths.ts';
 import { crowdedIn, mainOf, nthOf, rowsOf, sizeOf } from './houses.ts';
 import { roomAt, type Room } from './rooms.ts';
+import { householdOf } from './beds.ts';
+import { whoseOf } from './homes.ts';
 import { housesOf, rectOf } from './site.ts';
 
 export interface RoomRow {
@@ -43,7 +45,12 @@ export function roomsOf(world: WorldState, content: EngineContent): RoomRow[] {
 export function roomName(world: WorldState, content: EngineContent, h: EntityRow): string {
   if (h['sick']) return 'sickroom';
   const main = mainOf(world, h);
-  const name = sizeOf(content, main).name;
+  // The hall, and a home of one's own (P5.14).
+  const name = main['hall']
+    ? 'hall'
+    : main['owner']
+      ? `${whoseOf(world, householdOf(world, main['owner'] as number))} home`
+      : sizeOf(content, main).name;
   return h['of']
     ? `${name}'s ${nthOf(rowsOf(world, main).findIndex((o) => o.id === h.id))} room`
     : name;

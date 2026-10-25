@@ -11,6 +11,7 @@ import { haveOf, isTree, marksOf, stockOf } from '../goods/index.ts';
 import { addMemories } from '../needs/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { feastInHall } from './homes.ts';
 import {
   cropNow,
   cropOf,
@@ -76,6 +77,8 @@ export function finishReaping(ctx: SystemContext, f: EntityRow, cause: number): 
     'harvested',
     home,
   );
+  // The harvest-home supper is eaten in the hall (P5.14).
+  feastInHall(ctx, home);
   layOutGranary(ctx, f, harvested);
   Object.assign(f, { state: 'fallow', crop: '', done: [], reapers: [], got: 0, kept: 0 });
   f['last'] = harvested;
