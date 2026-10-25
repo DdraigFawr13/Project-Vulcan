@@ -35,6 +35,34 @@ function hurdlePixel(p, axis, along, a) {
   return undefined;
 }
 
+// A low drystone wall (5B Bundle 1, the stone and ore yard): the hurdle's band, laid as two
+// courses of stones 3 px high, each stone 5 px long with a 1 px joint, the courses offset, a lit
+// top edge and a shaded foot; no ink outline, so the grass shows round it.
+function drystonePixel(p, along, a) {
+  const course = a < 3 ? 0 : 1;
+  const row = a % 3;
+  const shift = course ? 3 : 0;
+  const k = Math.floor((along + shift) / 6);
+  if ((along + shift) % 6 === 5 || row === 2) return p['limestone joint'];
+  const tone = [p['limestone light'], p.limestone, p['limestone dark']][(k * 7 + course * 3) % 3];
+  if (a === 0) return p['limestone light'];
+  if (a === 4) return p['limestone dark'];
+  return tone;
+}
+
+function drystone(p, mask) {
+  const c = canvas();
+  for (let y = 0; y < S; y++)
+    for (let x = 0; x < S; x++) {
+      const axis = bandAxis(mask, x, y);
+      if (!axis) continue;
+      const along = axis === 'x' ? x : y;
+      const a = (axis === 'x' ? y : x) - B0;
+      c.put(x, y, drystonePixel(p, along, a));
+    }
+  return c.img;
+}
+
 function hurdle(p, mask, gate) {
   const c = canvas();
   for (let y = 0; y < S; y++)
@@ -180,6 +208,7 @@ function tuft(p) {
 export function drawPasture(p = readPalette()) {
   const frames = {};
   for (let mask = 0; mask < 16; mask++) frames[`build.hurdle.${mask}`] = hurdle(p, mask);
+  for (let mask = 0; mask < 16; mask++) frames[`build.wall-drystone.${mask}`] = drystone(p, mask);
   frames['build.gate-hurdle.h'] = hurdle(p, 10, 'h');
   frames['build.gate-hurdle.v'] = hurdle(p, 5, 'v');
   frames['pasture.meadow'] = meadowTile(p).img;

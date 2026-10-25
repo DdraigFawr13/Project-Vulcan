@@ -132,6 +132,7 @@ export class Panel {
       tile.works?.name ??
         (placeTitle(tile) || undefined) ??
         tile.field?.name ??
+        tile.store?.name ??
         (shaftTitle(tile) || `Tile ${tile.x}, ${tile.y}${where}`),
     );
     const facts = el('dl', { class: 'kv' });
@@ -142,7 +143,12 @@ export class Panel {
         ? []
         : landFacts(tile)),
       ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
-      ...(tile.store ? [['store', 'part of the colony store']] : []),
+      ...(tile.store
+        ? [
+            ['store', `${tile.store.name.toLowerCase()}: ${tile.store.takes}`],
+            ['holds', tile.store.holds],
+          ]
+        : []),
       ...standingFacts(tile),
       ...(tile.below && !tile.piece && !tile.works ? [['below', tile.below]] : []),
       ...(this.debug
@@ -188,8 +194,8 @@ export class Panel {
     for (const [line, label] of standingLines(tile)) this.body.append(this.lineRow(line, label));
     for (const g of tile.goods ?? [])
       if (g.made) this.body.append(this.lineRow(g.made, 'Made by · '));
-    if (tile.store?.made && !tile.goods)
-      this.body.append(this.lineRow(tile.store.made, 'Store · '));
+    if (tile.store?.made) this.body.append(this.lineRow(tile.store.made, 'Store · '));
+    if (tile.store?.built) this.body.append(this.lineRow(tile.store.built, 'Built · '));
     if (tile.piece || tile.works || tile.place) return;
     if (tile.changedBy) this.body.append(this.lineRow(tile.changedBy, 'Last changed · '));
     else this.body.append(el('p', { class: 'muted' }, 'The line that last changed it is gone.'));

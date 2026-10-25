@@ -27,6 +27,9 @@ const DAY = 1440;
 const base: Content = withoutAccidents({ ...game, tools: { ...game.tools, worn: 1 } });
 const SEEDS = ['anvil', 'smoke', 'tallow'];
 const ORE_SEEDS = ['anvil', 'smoke', 'tallow', 'ledger'];
+// The runs that need a shaft sunk in their first days. Since 5B Bundle 1 tallow's sinker takes the
+// shaft up on an evening and is felling a cleared site's trees the next morning.
+const SINK_SEED = 'smoke';
 
 const send = (world: WorldState, kind: string, data: Record<string, string | number>) =>
   submitCommand(world, { tick: world.tick + 1, kind, data });
@@ -52,7 +55,7 @@ function run(seed: string, days: number, content: Content = base, level = 'some'
 /** A world with the iron plate raised, run until someone has taken up sinking the first shaft. */
 function untilSinking() {
   const sim = createSim(base);
-  const world = createWorld(sim, 'tallow');
+  const world = createWorld(sim, SINK_SEED);
   send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
   const sinker = () =>
     (world.entities['person'] ?? []).some((q) => q['job'] === 'mine' && q['task'] === 'sink');
@@ -182,7 +185,7 @@ describe('mining', () => {
 
   it('spends a sunk shaft that opens no way to a vein, says so once and sites another', () => {
     const sim = createSim(base);
-    const world = createWorld(sim, 'tallow');
+    const world = createWorld(sim, SINK_SEED);
     send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
     // Hour by hour, so the vein is gone before anyone has mined it and iron is still short.
     for (let h = 0; h < 12 * 24 && shaftsOf(world)[0]?.['state'] !== 'done'; h += 1)
@@ -300,8 +303,8 @@ describe('mining', () => {
   });
 
   it('is deterministic: the same seed and lever give the same ledger', () => {
-    const a = run('tallow', 10).world;
-    const b = run('tallow', 10).world;
+    const a = run(SINK_SEED, 10).world;
+    const b = run(SINK_SEED, 10).world;
     expect(JSON.stringify(allLines(a))).toBe(JSON.stringify(allLines(b)));
     expect(linesOf(a, 'mine.sank').length).toBeGreaterThan(0);
   });

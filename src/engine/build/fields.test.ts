@@ -5,7 +5,7 @@
 // sheet's Fields level and one send-back; every command is a lever or a test-mode tool.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
-import { granaryOf, inGranary, inStore, itemsOf, wantOf } from '../goods/index.ts';
+import { inStore, itemsOf } from '../goods/index.ts';
 import { memoriesOf } from '../needs/index.ts';
 import {
   allLines,
@@ -21,10 +21,9 @@ import {
 } from '../index.ts';
 import { fieldsOf, ringOf } from './index.ts';
 
-// Hunting and fishing (P5.4a) would put fish and game in the granary beside the harvest this
-// file follows, so the wild valley is kept out of the colony's way. So is the flock (Bundle 3):
-// its herders and hurdles share the hands the harvest needs, and whether a surplus reaches the
-// granary within the run then turns on a seed's luck.
+// Hunting and fishing (P5.4a) would put fish and game in the store beside the harvest this file
+// follows, so the wild valley is kept out of the colony's way. So is the flock (Bundle 3): its
+// herders and hurdles share the hands the harvest needs.
 const sim = createSim(
   withoutWild({
     ...content,
@@ -76,7 +75,6 @@ describe('fields', () => {
     });
   }
 
-  // The granary test below goes on from this test's world, after its harvest (check:full budget).
   const harvestWorld = createWorld(sim, SEEDS[0]!);
   it('sows in spring, reaps when ripe, and brings grain and seed to the store', () => {
     const world = harvestWorld;
@@ -139,32 +137,6 @@ describe('fields', () => {
       ringOf(world, content) + 6,
     );
   });
-
-  it('puts the surplus of a reaped field beyond the Food plate on granary tiles', () => {
-    const world = harvestWorld;
-    const food = (where: (x: number, y: number) => boolean) =>
-      itemsOf(world)
-        .filter((i) => !i['holder'] && content.life.eat[i['kind'] as string] !== undefined)
-        .filter((i) => i['kind'] !== 'seed' && where(i['x'] as number, i['y'] as number))
-        .reduce((n, i) => n + (i['count'] as number), 0);
-    // Hour by hour until the first surplus is on granary tiles.
-    while (!food((x, y) => inGranary(world, x, y, 0)) && world.tick < 180 * DAY)
-      step(world, sim, 60);
-    const laid = lines(world, 'field.granaryLaid')[0]!;
-    expect(laid.data['where']).toMatch(/^the (barley|turnips) field$/);
-    expect(chain(world, laid.id)).toContain('field.harvested');
-    expect(granaryOf(world).length).toBeGreaterThanOrEqual(content.buildings.granary.width);
-    const plate = wantOf(world, content, 'food');
-    // The granary's tiles are not the home store, and it holds the surplus the store does not.
-    expect(
-      granaryOf(world).some((g) => inStore(world, g['x'] as number, g['y'] as number, 0)),
-    ).toBe(false);
-    // Food goes to a granary only while the store holds its plate (a meal or a load either side).
-    expect(food((x, y) => inStore(world, x, y, 0))).toBeGreaterThanOrEqual(
-      plate - content.work.haul.load,
-    );
-    expect(food((x, y) => inGranary(world, x, y, 0))).toBeGreaterThan(0);
-  }, 30000);
 
   it('loses a sown crop to frost and the line cites the weather spell', () => {
     const world = createWorld(sim, SEEDS[0]!);

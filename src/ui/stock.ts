@@ -31,6 +31,7 @@ export function stockRows(
     block.append(head, levels);
     if (s.status) block.append(el('p', { class: 'aside', 'data-status': '' }, s.status));
     if (s.note) block.append(el('p', { class: 'aside', 'data-note': '' }, s.note));
+    if (s.kept) block.append(el('p', { class: 'aside', 'data-kept': '' }, s.kept));
     // The food plate names the game and fish that count towards it (Bundle 2).
     if (s.good === 'food') {
       const aside = el('p', { class: 'aside', 'data-testid': 'food-mix' });
@@ -50,7 +51,7 @@ export function stockRows(
     return block;
   });
   return [
-    el('p', {}, 'How much the colony keeps in its store. Whoever is free and able does the work.'),
+    el('p', {}, 'How much the colony keeps in its stores. Whoever is free and able does the work.'),
     ...rows,
     ...(leftovers.flock ? [flockBlock(leftovers.flock)] : []),
     leftoverBlock(leftovers),

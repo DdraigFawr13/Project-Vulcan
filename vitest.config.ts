@@ -37,6 +37,8 @@ const slowFiles = [
   // laying out every seed's levels).
   'src/engine/people/tools.test.ts',
   'src/engine/map/levels.test.ts',
+  // Stores by kind (5B Bundle 1): a run to the first store built and filled.
+  'src/engine/build/stores.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).

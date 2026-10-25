@@ -21,5 +21,5 @@
 "memory":{"weight":100},
 "warmthLine":{"traits":{"hardy":-600},"memories":{"cold-night":300,"slept-rough":200}},
 "cloak":{"warmth":4,"wear":1,"last":2700},
-"stacks":{"preserved":50,"grain":50,"turnips":50,"seed":50,"logs":25,"stone":25,"default":25}
+"stacks":{"preserved":100,"grain":100,"turnips":100,"seed":100,"logs":50,"stone":50,"default":50}
 }

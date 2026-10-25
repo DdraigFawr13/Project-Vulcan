@@ -9,11 +9,12 @@
 // herb clump (feature kind `herb`), with `forage.herbs.regrowDays` of its own.
 import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
+import { fieldsOf } from '../build/index.ts';
 import { haveOf, stockOf, storeOf, wantOf } from '../goods/index.ts';
 import { reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
-import { able, outranked, priorityLine } from './priority.ts';
+import { able, levelOf, outranked, priorityLine } from './priority.ts';
 import { besideReachable, busy, goBeside, layAround, people, skillOf, spotOf } from './spots.ts';
 import { tallyAdd } from './tally.ts';
 
@@ -169,6 +170,16 @@ export function takeUpForaging(ctx: SystemContext, p: EntityRow): boolean {
   const map = world.map;
   const def = content.work.forage;
   if (!able(content, p, def.job)) return false;
+  // A ripe field is reaped before the bushes are picked, unless the Work sheet puts foraging
+  // higher (5B Bundle 1: on smoke the barley stood ripe for 110 days while the band, short of
+  // food, picked berries a handful at a time).
+  const farm = content.work.farm.job;
+  if (
+    able(content, p, farm) &&
+    levelOf(world, content, p.id, farm) <= levelOf(world, content, p.id, def.job) &&
+    fieldsOf(world).some((f) => f['state'] === 'ripe')
+  )
+    return false;
   for (const crop of CROPS) {
     if (!inSeason(world, content, crop)) continue;
     const short = foodShort(ctx, p, crop);

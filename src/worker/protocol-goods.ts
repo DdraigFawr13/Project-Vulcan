@@ -14,8 +14,6 @@ export interface Spot3 {
 export interface GoodsView {
   items: (Spot3 & { frame: string })[];
   store: Spot3[];
-  /** The tiles of each field's granary (P4.7 review), drawn like the store, tinted. */
-  granary: Spot3[];
   marks: Spot3[];
   /** Parts planned or to come down (P3.1), for the map's faint plan layer; built ones are in
    * the chunks' `built`. */
@@ -25,8 +23,9 @@ export interface GoodsView {
   /** Lit fires (P3.6) for the night's firelight: the glow's reach in tiles, dimmer when banked. */
   fires: (Spot3 & { radius: number; banked: boolean })[];
   /** Plans, parts and pieces someone is working now (P3.6): minutes done of the total, for the
-   * progress bar. Apart from the lists above so the map redraws only when those change. */
-  work: (Spot3 & { done: number; total: number })[];
+   * progress bar, and who works it when it is a person's job (two cooks may share a hearth).
+   * Apart from the lists above so the map redraws only when those change. */
+  work: (Spot3 & { done: number; total: number; by?: number })[];
   /** Field tiles (P4.7) grouped by the art frame they show (planned, sown, ripe, fallow), as
    * tile indices (y * width + x); level 0 only. */
   fields: { frame: string; tiles: number[] }[];
@@ -52,6 +51,8 @@ export interface StockView {
   note?: string;
   /** An ingot plate's line: what that metal is waiting on now. */
   status?: string;
+  /** Which stores keep the good (5B Bundle 1), e.g. "Kept in the wood yard (9 tiles)." */
+  kept?: string;
 }
 
 /** A tile page for the smelter, the charcoal clamp or the smithy (Bundle 3): words from the engine. */

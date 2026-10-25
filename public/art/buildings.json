@@ -1180,10 +1180,330 @@
         "h": 32
       }
     },
-    "build.wall-stone.0": {
+    "build.wall-drystone.0": {
       "frame": {
         "x": 239,
         "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.1": {
+      "frame": {
+        "x": 273,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.10": {
+      "frame": {
+        "x": 307,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.11": {
+      "frame": {
+        "x": 341,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.12": {
+      "frame": {
+        "x": 375,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.13": {
+      "frame": {
+        "x": 409,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.14": {
+      "frame": {
+        "x": 1,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.15": {
+      "frame": {
+        "x": 35,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.2": {
+      "frame": {
+        "x": 69,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.3": {
+      "frame": {
+        "x": 103,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.4": {
+      "frame": {
+        "x": 137,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.5": {
+      "frame": {
+        "x": 171,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.6": {
+      "frame": {
+        "x": 205,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.7": {
+      "frame": {
+        "x": 239,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.8": {
+      "frame": {
+        "x": 273,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-drystone.9": {
+      "frame": {
+        "x": 307,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "build.wall-stone.0": {
+      "frame": {
+        "x": 341,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -1202,8 +1522,8 @@
     },
     "build.wall-stone.1": {
       "frame": {
-        "x": 273,
-        "y": 137,
+        "x": 375,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -1222,8 +1542,8 @@
     },
     "build.wall-stone.10": {
       "frame": {
-        "x": 307,
-        "y": 137,
+        "x": 409,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -1242,8 +1562,8 @@
     },
     "build.wall-stone.11": {
       "frame": {
-        "x": 341,
-        "y": 137,
+        "x": 1,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1262,8 +1582,8 @@
     },
     "build.wall-stone.12": {
       "frame": {
-        "x": 375,
-        "y": 137,
+        "x": 35,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1282,8 +1602,8 @@
     },
     "build.wall-stone.13": {
       "frame": {
-        "x": 409,
-        "y": 137,
+        "x": 69,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1302,8 +1622,8 @@
     },
     "build.wall-stone.14": {
       "frame": {
-        "x": 1,
-        "y": 171,
+        "x": 103,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1322,8 +1642,8 @@
     },
     "build.wall-stone.15": {
       "frame": {
-        "x": 35,
-        "y": 171,
+        "x": 137,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1342,8 +1662,8 @@
     },
     "build.wall-stone.2": {
       "frame": {
-        "x": 69,
-        "y": 171,
+        "x": 171,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1362,8 +1682,8 @@
     },
     "build.wall-stone.3": {
       "frame": {
-        "x": 103,
-        "y": 171,
+        "x": 205,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1382,8 +1702,8 @@
     },
     "build.wall-stone.4": {
       "frame": {
-        "x": 137,
-        "y": 171,
+        "x": 239,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1402,8 +1722,8 @@
     },
     "build.wall-stone.5": {
       "frame": {
-        "x": 171,
-        "y": 171,
+        "x": 273,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1422,8 +1742,8 @@
     },
     "build.wall-stone.6": {
       "frame": {
-        "x": 205,
-        "y": 171,
+        "x": 307,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1442,8 +1762,8 @@
     },
     "build.wall-stone.7": {
       "frame": {
-        "x": 239,
-        "y": 171,
+        "x": 341,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1462,8 +1782,8 @@
     },
     "build.wall-stone.8": {
       "frame": {
-        "x": 273,
-        "y": 171,
+        "x": 375,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1482,8 +1802,8 @@
     },
     "build.wall-stone.9": {
       "frame": {
-        "x": 307,
-        "y": 171,
+        "x": 409,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1502,8 +1822,8 @@
     },
     "build.wall-wood.0": {
       "frame": {
-        "x": 341,
-        "y": 171,
+        "x": 1,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1522,8 +1842,8 @@
     },
     "build.wall-wood.1": {
       "frame": {
-        "x": 375,
-        "y": 171,
+        "x": 35,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1542,8 +1862,8 @@
     },
     "build.wall-wood.10": {
       "frame": {
-        "x": 409,
-        "y": 171,
+        "x": 69,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1562,8 +1882,8 @@
     },
     "build.wall-wood.11": {
       "frame": {
-        "x": 1,
-        "y": 205,
+        "x": 103,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1582,8 +1902,8 @@
     },
     "build.wall-wood.12": {
       "frame": {
-        "x": 35,
-        "y": 205,
+        "x": 137,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1602,8 +1922,8 @@
     },
     "build.wall-wood.13": {
       "frame": {
-        "x": 69,
-        "y": 205,
+        "x": 171,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1622,8 +1942,8 @@
     },
     "build.wall-wood.14": {
       "frame": {
-        "x": 103,
-        "y": 205,
+        "x": 205,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1642,8 +1962,8 @@
     },
     "build.wall-wood.15": {
       "frame": {
-        "x": 137,
-        "y": 205,
+        "x": 239,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1662,8 +1982,8 @@
     },
     "build.wall-wood.2": {
       "frame": {
-        "x": 171,
-        "y": 205,
+        "x": 273,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1682,8 +2002,8 @@
     },
     "build.wall-wood.3": {
       "frame": {
-        "x": 205,
-        "y": 205,
+        "x": 307,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1702,8 +2022,8 @@
     },
     "build.wall-wood.4": {
       "frame": {
-        "x": 239,
-        "y": 205,
+        "x": 341,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1722,8 +2042,8 @@
     },
     "build.wall-wood.5": {
       "frame": {
-        "x": 273,
-        "y": 205,
+        "x": 375,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1742,8 +2062,8 @@
     },
     "build.wall-wood.6": {
       "frame": {
-        "x": 307,
-        "y": 205,
+        "x": 409,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1762,8 +2082,8 @@
     },
     "build.wall-wood.7": {
       "frame": {
-        "x": 341,
-        "y": 205,
+        "x": 1,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1782,8 +2102,8 @@
     },
     "build.wall-wood.8": {
       "frame": {
-        "x": 375,
-        "y": 205,
+        "x": 35,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1802,8 +2122,8 @@
     },
     "build.wall-wood.9": {
       "frame": {
-        "x": 409,
-        "y": 205,
+        "x": 69,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1822,8 +2142,8 @@
     },
     "field.fallow": {
       "frame": {
-        "x": 1,
-        "y": 239,
+        "x": 103,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1842,8 +2162,8 @@
     },
     "field.plan": {
       "frame": {
-        "x": 35,
-        "y": 239,
+        "x": 137,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1862,8 +2182,8 @@
     },
     "field.ripe.barley": {
       "frame": {
-        "x": 69,
-        "y": 239,
+        "x": 171,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1882,8 +2202,8 @@
     },
     "field.ripe.turnips": {
       "frame": {
-        "x": 103,
-        "y": 239,
+        "x": 205,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1902,8 +2222,8 @@
     },
     "field.sown": {
       "frame": {
-        "x": 137,
-        "y": 239,
+        "x": 239,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1922,8 +2242,8 @@
     },
     "furn.anvil": {
       "frame": {
-        "x": 171,
-        "y": 239,
+        "x": 273,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1942,8 +2262,8 @@
     },
     "furn.bed.h": {
       "frame": {
-        "x": 205,
-        "y": 239,
+        "x": 307,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1962,8 +2282,8 @@
     },
     "furn.bed.v": {
       "frame": {
-        "x": 239,
-        "y": 239,
+        "x": 341,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -1982,8 +2302,8 @@
     },
     "furn.bench": {
       "frame": {
-        "x": 273,
-        "y": 239,
+        "x": 375,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -2002,8 +2322,8 @@
     },
     "furn.chair.e": {
       "frame": {
-        "x": 307,
-        "y": 239,
+        "x": 409,
+        "y": 273,
         "w": 32,
         "h": 32
       },
@@ -2022,8 +2342,8 @@
     },
     "furn.chair.n": {
       "frame": {
-        "x": 341,
-        "y": 239,
+        "x": 1,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2042,8 +2362,8 @@
     },
     "furn.chair.s": {
       "frame": {
-        "x": 375,
-        "y": 239,
+        "x": 35,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2062,8 +2382,8 @@
     },
     "furn.chair.w": {
       "frame": {
-        "x": 409,
-        "y": 239,
+        "x": 69,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2082,8 +2402,8 @@
     },
     "furn.chest": {
       "frame": {
-        "x": 1,
-        "y": 273,
+        "x": 103,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2102,8 +2422,8 @@
     },
     "furn.clamp.lit.ne": {
       "frame": {
-        "x": 35,
-        "y": 273,
+        "x": 137,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2122,8 +2442,8 @@
     },
     "furn.clamp.lit.ne.1": {
       "frame": {
-        "x": 69,
-        "y": 273,
+        "x": 171,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2142,8 +2462,8 @@
     },
     "furn.clamp.lit.ne.2": {
       "frame": {
-        "x": 103,
-        "y": 273,
+        "x": 205,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2162,8 +2482,8 @@
     },
     "furn.clamp.lit.ne.3": {
       "frame": {
-        "x": 137,
-        "y": 273,
+        "x": 239,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2182,8 +2502,8 @@
     },
     "furn.clamp.lit.nw": {
       "frame": {
-        "x": 171,
-        "y": 273,
+        "x": 273,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2202,8 +2522,8 @@
     },
     "furn.clamp.lit.nw.1": {
       "frame": {
-        "x": 205,
-        "y": 273,
+        "x": 307,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2222,8 +2542,8 @@
     },
     "furn.clamp.lit.nw.2": {
       "frame": {
-        "x": 239,
-        "y": 273,
+        "x": 341,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2242,8 +2562,8 @@
     },
     "furn.clamp.lit.nw.3": {
       "frame": {
-        "x": 273,
-        "y": 273,
+        "x": 375,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2262,8 +2582,8 @@
     },
     "furn.clamp.lit.se": {
       "frame": {
-        "x": 307,
-        "y": 273,
+        "x": 409,
+        "y": 307,
         "w": 32,
         "h": 32
       },
@@ -2282,8 +2602,8 @@
     },
     "furn.clamp.lit.se.1": {
       "frame": {
-        "x": 341,
-        "y": 273,
+        "x": 1,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2302,8 +2622,8 @@
     },
     "furn.clamp.lit.se.2": {
       "frame": {
-        "x": 375,
-        "y": 273,
+        "x": 35,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2322,8 +2642,8 @@
     },
     "furn.clamp.lit.se.3": {
       "frame": {
-        "x": 409,
-        "y": 273,
+        "x": 69,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2342,8 +2662,8 @@
     },
     "furn.clamp.lit.sw": {
       "frame": {
-        "x": 1,
-        "y": 307,
+        "x": 103,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2362,8 +2682,8 @@
     },
     "furn.clamp.lit.sw.1": {
       "frame": {
-        "x": 35,
-        "y": 307,
+        "x": 137,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2382,8 +2702,8 @@
     },
     "furn.clamp.lit.sw.2": {
       "frame": {
-        "x": 69,
-        "y": 307,
+        "x": 171,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2402,8 +2722,8 @@
     },
     "furn.clamp.lit.sw.3": {
       "frame": {
-        "x": 103,
-        "y": 307,
+        "x": 205,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2422,8 +2742,8 @@
     },
     "furn.clamp.ne": {
       "frame": {
-        "x": 137,
-        "y": 307,
+        "x": 239,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2442,8 +2762,8 @@
     },
     "furn.clamp.nw": {
       "frame": {
-        "x": 171,
-        "y": 307,
+        "x": 273,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2462,8 +2782,8 @@
     },
     "furn.clamp.se": {
       "frame": {
-        "x": 205,
-        "y": 307,
+        "x": 307,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2482,8 +2802,8 @@
     },
     "furn.clamp.sw": {
       "frame": {
-        "x": 239,
-        "y": 307,
+        "x": 341,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2502,8 +2822,8 @@
     },
     "furn.forge": {
       "frame": {
-        "x": 273,
-        "y": 307,
+        "x": 375,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2522,8 +2842,8 @@
     },
     "furn.hearth": {
       "frame": {
-        "x": 307,
-        "y": 307,
+        "x": 409,
+        "y": 341,
         "w": 32,
         "h": 32
       },
@@ -2542,8 +2862,8 @@
     },
     "furn.hearth.banked": {
       "frame": {
-        "x": 341,
-        "y": 307,
+        "x": 1,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2562,8 +2882,8 @@
     },
     "furn.hearth.lit.1": {
       "frame": {
-        "x": 375,
-        "y": 307,
+        "x": 35,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2582,8 +2902,8 @@
     },
     "furn.hearth.lit.2": {
       "frame": {
-        "x": 409,
-        "y": 307,
+        "x": 69,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2602,8 +2922,8 @@
     },
     "furn.hearth.lit.3": {
       "frame": {
-        "x": 1,
-        "y": 341,
+        "x": 103,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2622,8 +2942,8 @@
     },
     "furn.shelf.e": {
       "frame": {
-        "x": 35,
-        "y": 341,
+        "x": 137,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2642,8 +2962,8 @@
     },
     "furn.shelf.n": {
       "frame": {
-        "x": 69,
-        "y": 341,
+        "x": 171,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2662,8 +2982,8 @@
     },
     "furn.shelf.s": {
       "frame": {
-        "x": 103,
-        "y": 341,
+        "x": 205,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2682,8 +3002,8 @@
     },
     "furn.shelf.w": {
       "frame": {
-        "x": 137,
-        "y": 341,
+        "x": 239,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2702,8 +3022,8 @@
     },
     "furn.smelter": {
       "frame": {
-        "x": 171,
-        "y": 341,
+        "x": 273,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2722,8 +3042,8 @@
     },
     "furn.table": {
       "frame": {
-        "x": 205,
-        "y": 341,
+        "x": 307,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2742,8 +3062,8 @@
     },
     "furn.tub": {
       "frame": {
-        "x": 239,
-        "y": 341,
+        "x": 341,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2762,8 +3082,8 @@
     },
     "pasture.cocks": {
       "frame": {
-        "x": 273,
-        "y": 341,
+        "x": 375,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2782,8 +3102,8 @@
     },
     "pasture.meadow": {
       "frame": {
-        "x": 307,
-        "y": 341,
+        "x": 409,
+        "y": 375,
         "w": 32,
         "h": 32
       },
@@ -2802,8 +3122,8 @@
     },
     "pasture.rick.1": {
       "frame": {
-        "x": 341,
-        "y": 341,
+        "x": 1,
+        "y": 409,
         "w": 32,
         "h": 32
       },
@@ -2822,8 +3142,8 @@
     },
     "pasture.rick.2": {
       "frame": {
-        "x": 375,
-        "y": 341,
+        "x": 35,
+        "y": 409,
         "w": 32,
         "h": 32
       },
@@ -2842,8 +3162,8 @@
     },
     "pasture.rick.3": {
       "frame": {
-        "x": 409,
-        "y": 341,
+        "x": 69,
+        "y": 409,
         "w": 32,
         "h": 32
       },
@@ -2862,8 +3182,8 @@
     },
     "pasture.stubble": {
       "frame": {
-        "x": 1,
-        "y": 375,
+        "x": 103,
+        "y": 409,
         "w": 32,
         "h": 32
       },
@@ -2882,8 +3202,8 @@
     },
     "pasture.swath": {
       "frame": {
-        "x": 35,
-        "y": 375,
+        "x": 137,
+        "y": 409,
         "w": 32,
         "h": 32
       },
@@ -2902,8 +3222,8 @@
     },
     "pasture.tuft": {
       "frame": {
-        "x": 69,
-        "y": 375,
+        "x": 171,
+        "y": 409,
         "w": 32,
         "h": 32
       },
@@ -2986,6 +3306,22 @@
       "build.wall-daub.7",
       "build.wall-daub.8",
       "build.wall-daub.9",
+      "build.wall-drystone.0",
+      "build.wall-drystone.1",
+      "build.wall-drystone.10",
+      "build.wall-drystone.11",
+      "build.wall-drystone.12",
+      "build.wall-drystone.13",
+      "build.wall-drystone.14",
+      "build.wall-drystone.15",
+      "build.wall-drystone.2",
+      "build.wall-drystone.3",
+      "build.wall-drystone.4",
+      "build.wall-drystone.5",
+      "build.wall-drystone.6",
+      "build.wall-drystone.7",
+      "build.wall-drystone.8",
+      "build.wall-drystone.9",
       "build.wall-stone.0",
       "build.wall-stone.1",
       "build.wall-stone.10",
@@ -3078,7 +3414,7 @@
   "meta": {
     "size": {
       "w": 442,
-      "h": 408
+      "h": 442
     },
     "scale": "1",
     "image": "buildings.png"

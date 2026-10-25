@@ -6,6 +6,7 @@ import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { canReach, reachFrom, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { depotAt, depotsFor, depotsOf, depotTiles, onDepot } from './depots.ts';
 import { itemsAt, itemsOf, stackSize } from './stacks.ts';
 
 export const STORE_TABLES: Schemas = {
@@ -19,8 +20,13 @@ const rows = (world: WorldState, kind: string): EntityRow[] => world.entities[ki
 
 export const storeOf = (world: WorldState): EntityRow[] => rows(world, 'store');
 
-export const inStore = (world: WorldState, x: number, y: number, z: number): boolean =>
+/** Whether the tile is the home store's. */
+export const inHomeStore = (world: WorldState, x: number, y: number, z: number): boolean =>
   storeOf(world).some((s) => s['x'] === x && s['y'] === y && s['z'] === z);
+
+/** Whether the tile is a store tile: the home store's, or inside a built store of a kind. */
+export const inStore = (world: WorldState, x: number, y: number, z: number): boolean =>
+  inHomeStore(world, x, y, z) || !!depotAt(world, x, y, z);
 
 /** Dry ground a person can stand on: no rock, no blocking feature and no water, deep or shallow. */
 export const dryAt = (content: EngineContent, map: WorldState['map'], i: number): boolean =>
@@ -39,9 +45,8 @@ export function freeTile(
   if (x < 0 || y < 0 || x >= map.width || y >= map.height) return false;
   if (!dryAt(content, map, y * map.width + x)) return false;
   if (itemsAt(world, x, y, 0).some((i) => !lying(i)) || inStore(world, x, y, 0)) return false;
-  // Nor on a granary tile (granary.ts).
-  if ((world.entities['granary'] ?? []).some((g) => g['x'] === x && g['y'] === y && g['z'] === 0))
-    return false;
+  // Nor on a store of a kind, planned or built (depots.ts).
+  if (depotsOf(world).some((d) => onDepot(d, x, y))) return false;
   // Not where a part is planned or built (the build system's `plan` table, P3.1).
   if ((world.entities['plan'] ?? []).some((p) => p['x'] === x && p['y'] === y && p['z'] === 0))
     return false;
@@ -131,7 +136,7 @@ export function growStore(ctx: SystemContext, cause: number): Spot | undefined {
   return best;
 }
 
-/** Where `count` of `kind` can go among `tiles` (the store's, or a granary's): a matching stack
+/** Where `count` of `kind` can go among `tiles` (the home store's, or a store of a kind's): a matching stack
  * with room, else an empty tile, nearest `from`; undefined when they are full for this load. */
 export function slotAmong(
   world: WorldState,
@@ -168,14 +173,40 @@ export function slotAmong(
   return best;
 }
 
-/** Where `count` of `kind` can go in the store; undefined when it is full for this load. */
+/** Where `count` of `kind` can go in a store of its kind, nearest `from`; undefined when there is
+ * none or they are full for this load. */
+export const depotSlot = (
+  world: WorldState,
+  content: EngineContent,
+  kind: string,
+  count: number,
+  from: Spot,
+): Spot | undefined => {
+  // The nearest store of the kind first: a matching stack in a far one does not draw the load.
+  const near = (d: EntityRow) =>
+    Math.max(
+      Math.abs((d['x'] as number) + ((d['w'] as number) >> 1) - from.x),
+      Math.abs((d['y'] as number) + ((d['h'] as number) >> 1) - from.y),
+    );
+  const depots = [...depotsFor(world, content, kind)].sort((a, b) => near(a) - near(b));
+  for (const d of depots) {
+    const slot = slotAmong(world, content, depotTiles(d), kind, count, from);
+    if (slot) return slot;
+  }
+  return undefined;
+};
+
+/** Where `count` of `kind` can go: the nearest store of its kind with room, else the home store;
+ * undefined when the home store is full for this load. */
 export const slotFor = (
   world: WorldState,
   content: EngineContent,
   kind: string,
   count: number,
   from: Spot,
-): Spot | undefined => slotAmong(world, content, storeOf(world), kind, count, from);
+): Spot | undefined =>
+  depotSlot(world, content, kind, count, from) ??
+  slotAmong(world, content, storeOf(world), kind, count, from);
 
 /** Each item kind's `good` (items.json), worked out once per content: `haveOf` is hot. */
 const goodCache = new WeakMap<EngineContent, Map<string, string | undefined>>();

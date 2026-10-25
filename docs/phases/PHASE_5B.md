@@ -5,7 +5,7 @@ Goal: a colony that feeds, clothes, lights and mends itself through the winters.
 ## Status
 
 - [x] Spec approved by Morgan, 2026-10-25 (PR #83)
-- [ ] Bundle 1, stores by kind (V-129)
+- [x] Bundle 1, stores by kind (V-129), 2026-10-25
 - [ ] Bundle 2, the larder: P5.1, P5.2
 - [ ] Bundle 3, kitchen and keeping: P5.3, P5.12
 - [ ] Bundle 4, mill and bakery: P5.11, harvest home

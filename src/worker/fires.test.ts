@@ -50,7 +50,8 @@ describe('fire views', () => {
         // A tile's next bar of the same total (a hearth's making after the floor's laying, or a
         // person's job there) starts again from near nothing (under a tenth): a new run. Any other
         // drop stays in the run and fails the check below.
-        const tile = `${b.x},${b.y},${b.total}`;
+        // Per worker: two cooks may share a hearth, each with a bar of their own.
+        const tile = `${b.x},${b.y},${b.total},${b.by ?? 0}`;
         const last = bars[`${tile},${starts[tile] ?? 0}`]?.at(-1);
         if (last !== undefined && b.done < last && b.done * 10 < b.total)
           starts[tile] = (starts[tile] ?? 0) + 1;
