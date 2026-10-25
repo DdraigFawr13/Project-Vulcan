@@ -7,12 +7,9 @@ import { content } from '../../content/index.ts';
 import { removeEntity } from '../entity/index.ts';
 import { itemsOf, storeOf } from '../goods/index.ts';
 import { ripe } from './forage.ts';
-import { allLines, createSim, createWorld, step, withoutWild, yesterdayOf } from '../index.ts';
+import { allLines, createSim, createWorld, step, yesterdayOf } from '../index.ts';
 
 const sim = createSim(content);
-// The first month's claim predates the wolves (P5.4a): the pack's visit to the town's edge keeps a
-// person sheltering from their supper by chance of where they stand, so it is kept away here.
-const calm = createSim(withoutWild(content));
 const DAY = 1440;
 const SEEDS = ['ledger/1', 'anvil/2', 'tallow/3'];
 type World = ReturnType<typeof createWorld>;
@@ -47,10 +44,10 @@ describe('foraging', () => {
     });
 
     it(`stocks berries unordered and keeps the band fed to day 35 on ${seed}`, () => {
-      const world = createWorld(calm, seed);
+      const world = createWorld(sim, seed);
       let stored = 0;
       for (let day = 1; day <= 35; day += 1) {
-        step(world, calm, DAY);
+        step(world, sim, DAY);
         stored = Math.max(stored, berriesStored(world));
       }
       expect(world.commandLog).toHaveLength(0);

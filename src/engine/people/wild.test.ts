@@ -18,7 +18,7 @@ import {
   type SystemContext,
   type WorldState,
 } from '../index.ts';
-import { memoriesOf } from '../needs/index.ts';
+import { memoriesOf, needOf } from '../needs/index.ts';
 import { animalsOf, herdsOf, packOf, spareCount } from '../wild/index.ts';
 
 const sim = createSim(content);
@@ -221,6 +221,37 @@ describe('a wolf in sight', () => {
     expect(chain).toContain('wild.packHungry');
     expect(pack['attacked']).toBe(attacked[0]!.id);
     expect(lines(w, 'wild.packDrewOff')[0]!.causes).toEqual([attacked[0]!.id]);
+  });
+
+  it('lets someone sheltering from a wolf at the door sleep the night indoors', () => {
+    // A wolf held three tiles outside a closed house from dusk to dawn, someone inside, short of
+    // their supper: they stay in every minute and lie down at bedtime instead of standing awake.
+    // The bold one who stood above goes in at bedtime too (their stance carries over).
+    const pack = packOf(w)!;
+    pack['hunger'] = 0;
+    while (hourOf(w) !== 20) step(w, sim, 60);
+    const house = housesOf(w).find((h) =>
+      roomAt(w, content, (h['x'] as number) + 1, (h['y'] as number) + 1),
+    )!;
+    const inside = { x: (house['x'] as number) + 1, y: (house['y'] as number) + 1, z: 0 };
+    const outside = { x: (house['x'] as number) - 3, y: inside.y, z: 0 };
+    expect(walkAt(content, w.map, 0, outside.y * w.map.width + outside.x)).toBe(1);
+    const [p, ...rest] = people(w) as [EntityRow, ...EntityRow[]];
+    for (const q of rest) place(q, greenOf(w));
+    place(p, inside);
+    needOf(w, p.id, 'food')!['value'] = 4400;
+    const wolf = wolves[0]!;
+    let out = 0;
+    let slept = 0;
+    for (let m = 0; m < 10 * 60; m += 1) {
+      place(wolf, outside);
+      step(w, sim, 1);
+      if (!roomAt(w, content, p['x'] as number, p['y'] as number)) out += 1;
+      if (p['doing'] === 'sleep') slept += 1;
+    }
+    expect(out).toBe(0);
+    expect(slept).toBeGreaterThan(6 * 60);
+    expect(needOf(w, p.id, 'rest')!['value']).toBeGreaterThanOrEqual(content.life.sleep.wake);
   });
 });
 
