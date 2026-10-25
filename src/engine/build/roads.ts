@@ -13,7 +13,7 @@ import {
   type WorldState,
 } from '../core/index.ts';
 import { addEntity, removeEntity } from '../entity/index.ts';
-import { haveOf, inGranary, inStore } from '../goods/index.ts';
+import { depotsOf, haveOf, inStore, onDepot } from '../goods/index.ts';
 import { walksADay } from '../map/index.ts';
 import { findPath, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -124,7 +124,7 @@ function roadable(
     !taken.has(i) &&
     !planAt(world, x, y) &&
     !inStore(world, x, y, 0) &&
-    !inGranary(world, x, y, 0) &&
+    !depotsOf(world).some((d) => onDepot(d, x, y)) &&
     !livePastures(world).some((p) => onPastureGround(p, map.width, x, y))
   );
 }

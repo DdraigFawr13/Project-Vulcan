@@ -14,7 +14,7 @@ import type { System, SystemContext } from '../sim/index.ts';
 import { greenOf } from './ring.ts';
 import { FURNITURE_TABLES } from './furniture.ts';
 import { tickFields, markLeaving } from './fieldlife.ts';
-import { tickGranaries } from './granary.ts';
+import { finishStores, planStores } from './stores.ts';
 import { FIELD_TABLES, planFields, sendBackField } from './fields.ts';
 import { PASTURE_TABLES } from './pasturerows.ts';
 import { finishPastures, planPasture, sendBackPasture } from './pasture.ts';
@@ -147,8 +147,8 @@ export const buildSystem: System = {
     'metal.clampPlanned',
     ...['town.ringWidened', 'field.needed', 'field.noGround', 'field.sited', 'field.sentBack'],
     ...['field.ripe', 'field.frostKilled', 'field.noSeed', 'field.sown', 'field.leftToGrass'],
-    'field.granaryLaid',
     ...['field.rests', 'field.soil', 'field.muckReady', 'field.blight'],
+    ...['build.storeSited', 'build.storeBuilt'],
     ...['pasture.needed', 'pasture.sited', 'pasture.sentBack', 'pasture.noGround', 'pasture.built'],
     ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
     ...['build.sickroom', 'build.burialSited', 'build.burialSentBack', 'build.middenSited'],
@@ -165,6 +165,9 @@ export const buildSystem: System = {
     ...{ nobody: 0, green: 0, need: 0, noGround: 0, tried: 0, ring: 0, ringLine: 0 },
     ...{ fieldNeed: 0, fieldNoGround: 0, fieldTried: 0, smithyNoGround: 0, smithyTried: 0 },
     ...{ pastureNeed: 0, pastureNoGround: 0, pastureTried: 0 },
+    // 5B Bundle 1: the tick stores were first and last looked at (stores.ts).
+    storeFrom: 0,
+    storeTried: 0,
     // P5.14: the tick a home last found no ground, to look again a day later.
     homeTried: 0,
     // P5.10: the tick the colony last looked for a stretch of road to lay.
@@ -223,8 +226,10 @@ export const buildSystem: System = {
     // P5.14: homes of their own, and the hall.
     planHomes(ctx, green);
     tickFields(ctx);
-    tickGranaries(ctx);
     planFields(ctx, green, []);
+    // 5B Bundle 1: stores by kind from need.
+    finishStores(ctx);
+    planStores(ctx, green);
     finishPastures(ctx);
     planPasture(ctx, green, []);
     planBench(ctx);

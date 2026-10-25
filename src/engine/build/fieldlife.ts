@@ -23,7 +23,6 @@ import {
   seasonKey,
   tilesOf,
 } from './fields.ts';
-import { layOutGranary } from './granary.ts';
 import { ringOf } from './ring.ts';
 import { clearBlight, tickBlight } from './blight.ts';
 import { drawSoil, tickSoil } from './soillife.ts';
@@ -82,7 +81,6 @@ export function finishReaping(ctx: SystemContext, f: EntityRow, cause: number): 
   );
   // The harvest-home supper is eaten in the hall (P5.14).
   feastInHall(ctx, home);
-  layOutGranary(ctx, f, harvested);
   drawSoil(ctx, f, crop.id, harvested);
   Object.assign(f, { state: 'fallow', crop: '', done: [], reapers: [], got: 0, kept: 0 });
   Object.assign(f, clearBlight());

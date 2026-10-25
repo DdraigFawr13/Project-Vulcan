@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { allLines, createSim, createWorld, step } from '../index.ts';
 import { addEntity } from '../entity/index.ts';
-import { itemsAt, layItem, storeOf } from '../goods/index.ts';
+import { growSpot, itemsAt, layItem, storeOf } from '../goods/index.ts';
 import { tread, wearStage } from '../map/index.ts';
 import { fadeWear } from '../map/wear.ts';
 import { findPath, pack, stepCost } from '../paths/index.ts';
@@ -62,17 +62,20 @@ describe('worn paths and roads', () => {
     for (const n of toField) map.wear[n] = 400;
     const midden = toField[4]!;
     addEntity(w, 'midden', { x: midden % map.width, y: Math.floor(midden / map.width), line: 0 });
-    // A store tile with nothing on it, else (a full store) one holding no stone.
-    const free =
-      storeOf(w).find((s) => !itemsAt(w, s['x'] as number, s['y'] as number, 0).length) ??
-      storeOf(w).find((s) =>
-        itemsAt(w, s['x'] as number, s['y'] as number, 0).every((i) => i['kind'] !== 'stone'),
-      )!;
+    // A free store tile, or one the store grows by (stacks hold twice as much since 5B Bundle 1,
+    // so the store may be full and small).
+    let free: { x: number; y: number } | undefined = storeOf(w)
+      .map((s) => ({ x: s['x'] as number, y: s['y'] as number }))
+      .find((s) => !itemsAt(w, s.x, s.y, 0).length);
+    if (!free) {
+      free = growSpot(w, content)!;
+      addEntity(w, 'store', { ...free, z: 0, made: 0 });
+    }
     layItem(w, {
       kind: 'stone',
       count: 40,
-      x: free['x'] as number,
-      y: free['y'] as number,
+      x: free.x,
+      y: free.y,
       z: 0,
       made: 0,
     });

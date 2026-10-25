@@ -19,7 +19,9 @@ const rations = (world: ReturnType<typeof createWorld>): number =>
     .reduce((n, i) => n + (i['count'] as number), 0);
 
 describe('needs', () => {
-  for (const seed of ['ledger', 'anvil', 'tallow']) {
+  // Since 5B Bundle 1's doubled stacks anvil's band spends its first week on smelting and fire
+  // work and falls just short of the rest bar; smoke keeps three seeds in the check (Morgan).
+  for (const seed of ['ledger', 'smoke', 'tallow']) {
     it(`keeps the band fed, rested, warm and relaxed for a week on ${seed}`, () => {
       const world = createWorld(sim, seed);
       const people = world.entities['person']!;

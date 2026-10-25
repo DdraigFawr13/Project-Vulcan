@@ -7,7 +7,7 @@
 // go in tile order, so the same seed gives the same pasture. The geometry (fold corner, gates,
 // meadow and rick) is worked out here and stored in the pasture row (pasturerows.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { granaryOf } from '../goods/index.ts';
+import { depotsOf } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import { burialsOf } from './burial.ts';
 import { foldRect, foldWall, onPastureGround, pastureTiles, pasturesOf } from './pasturerows.ts';
@@ -208,7 +208,10 @@ export function choosePasture(
     for (let y = r.y - 1; y <= r.y + r.h; y += 1)
       for (let x = r.x - 1; x <= r.x + r.w; x += 1) shut.add(y * width + x);
   }
-  for (const g of granaryOf(world)) shut.add((g['y'] as number) * width + (g['x'] as number));
+  for (const d of depotsOf(world))
+    for (let y = (d['y'] as number) - 1; y <= (d['y'] as number) + (d['h'] as number); y += 1)
+      for (let x = (d['x'] as number) - 1; x <= (d['x'] as number) + (d['w'] as number); x += 1)
+        shut.add(y * width + x);
   const smithies = smithiesOf(world).map(rectOf);
   const burials = burialsOf(world).map(rectOf);
   const sent = pasturesOf(world).filter((p) => p['state'] === 'sent');

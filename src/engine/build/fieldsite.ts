@@ -7,7 +7,7 @@
 import type { EngineContent, WorldState } from '../core/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import { groundOf, housesOf, rectOf, type Ground } from './site.ts';
-import { granaryOf } from '../goods/index.ts';
+import { depotsOf } from '../goods/index.ts';
 import { ringOf } from './ring.ts';
 
 export interface FieldSite {
@@ -91,14 +91,17 @@ export function chooseField(
   const def = content.buildings.field;
   const ring = ringOf(world, content);
   const ground: Ground = groundOf(world);
-  // Tiles on or beside a house (or its plan) are left alone; so is a granary.
+  // Tiles on or beside a house (or its plan) are left alone; so are those on or beside a store.
   const houses = new Set<number>();
   for (const h of housesOf(world).filter((r) => r['state'] !== 'sent')) {
     const r = rectOf(h);
     for (let y = r.y - 1; y <= r.y + r.h; y += 1)
       for (let x = r.x - 1; x <= r.x + r.w; x += 1) houses.add(y * map.width + x);
   }
-  for (const g of granaryOf(world)) houses.add((g['y'] as number) * map.width + (g['x'] as number));
+  for (const d of depotsOf(world))
+    for (let y = (d['y'] as number) - 1; y <= (d['y'] as number) + (d['h'] as number); y += 1)
+      for (let x = (d['x'] as number) - 1; x <= (d['x'] as number) + (d['w'] as number); x += 1)
+        houses.add(y * map.width + x);
   const far = (i: number) =>
     Math.max(Math.abs((i % map.width) - green.x), Math.abs(Math.floor(i / map.width) - green.y));
   /** `no`, a tree to fell first, or open good soil, for a tile that may be field. */

@@ -146,7 +146,6 @@ export const peopleSystem: System = {
       'farm.harvestHome',
     ],
     ...['hall.feast', 'people.movedHome'],
-    ...['field.granaryLaid', 'goods.granaryGrew'],
     'goods.ateSeed',
     ...['work.tookUpStation', 'metal.smelterBuilt', 'work.tookUpCharcoal', 'metal.clampLit'],
     ...[

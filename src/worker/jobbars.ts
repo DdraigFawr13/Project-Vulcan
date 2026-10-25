@@ -78,7 +78,7 @@ export function jobBars(world: WorldState): Bars {
     memory.set(p.id, { sig, total, last: left });
     const path = (p['path'] as number[] | undefined)?.length ?? 0;
     if (p['doing'] === 'work' && !path && left < total)
-      bars.push({ ...spot, done: total - left, total });
+      bars.push({ ...spot, done: total - left, total, by: p.id });
   }
   for (const id of memory.keys()) if (!live.has(id)) memory.delete(id);
   return bars;

@@ -5,7 +5,6 @@ import { content } from '../content/index.ts';
 import {
   freeTile,
   haveOf,
-  granaryOf,
   inStore,
   isTree,
   itemsAt,
@@ -35,6 +34,7 @@ import { burialGoods } from './places.ts';
 import { furnitureGoods, tilePiece } from './furniture.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
+import { keptNote, storeTile } from './stores.ts';
 import { stationGoods, tileWorks } from './works.ts';
 
 const nameOf = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
@@ -65,7 +65,6 @@ export function goodsOf(world: WorldState): GoodsView {
       .filter((i) => !i['holder'] && i['state'] !== 'held' && !inCart(i))
       .map((i) => ({ ...at(i), frame: frameOf(i['kind'] as string, i['state'] as string) })),
     store: storeOf(world).map(at),
-    granary: granaryOf(world).map(at),
     marks: marksOf(world).map((m) => ({ x: m['x'] as number, y: m['y'] as number, z: 0 })),
     plans: plansOf(world)
       .filter((p) => p['state'] !== 'built')
@@ -85,12 +84,19 @@ export function goodsOf(world: WorldState): GoodsView {
   };
 }
 
+/** Which stores keep a plate's good, when any do. */
+const keptOf = (world: WorldState, good: string): { kept?: string } => {
+  const kept = keptNote(world, good);
+  return kept ? { kept } : {};
+};
+
 const recipeOf = (good: string): string | undefined =>
   content.metal.recipes.find((r) => r.makes === good)?.id;
 
 /** The stock lever, one row per good in work.json. */
 export const stockView = (world: WorldState): StockView[] =>
   content.work.stock.map((def) => ({
+    ...keptOf(world, def.good),
     good: def.good,
     name: def.name,
     have: haveOf(world, content, def.good),
@@ -125,16 +131,12 @@ export function tileGoods(
       ...((def?.tool || def?.good === 'metal') && { item: i.id }),
     };
   });
-  const tile = storeOf(world).find((s) => s['x'] === x && s['y'] === y && s['z'] === z);
-  const store = tile && line(tile['made']);
-  const bin = granaryOf(world).find((g) => g['x'] === x && g['y'] === y && g['z'] === z);
-  const binned = bin && line(bin['made']);
+  const store = storeTile(world, x, y, z, line);
   const surface = z === 0;
   const i = y * world.map.width + x;
   return {
     ...(goods.length && { goods }),
-    ...(tile && { store: { ...(store && { made: store }) } }),
-    ...(bin && { granary: { ...(binned && { made: binned }) } }),
+    ...(store && { store }),
     ...(surface && marksOf(world).some((m) => m['x'] === x && m['y'] === y) && { marked: true }),
     ...(surface && isTree(world, content, i) && { tree: true }),
     ...(surface && !inStore(world, x, y, 0) && freeTile(world, content, x, y) && { open: true }),

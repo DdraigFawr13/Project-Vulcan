@@ -196,10 +196,9 @@ export interface TileView {
   changedBy?: LedgerLine;
   /** What lies on the tile (P2.4), e.g. "logs × 25", each with the line that made or brought it. */
   goods?: { text: string; made?: LedgerLine; item?: number }[];
-  /** Part of the store, with the line that set the tile up. */
-  store?: { made?: LedgerLine };
-  /** Part of a field's granary (P4.7 review), with the line that laid it out or grew it. */
-  granary?: { made?: LedgerLine };
+  /** Part of a store (the home store or a store of a kind, 5B Bundle 1): its name, what it takes,
+   * how full it is, and the lines that set it up (or sited it) and built it. */
+  store?: { name: string; takes: string; holds: string; made?: LedgerLine; built?: LedgerLine };
   /** Test mode (`?debug`): a tree is marked here, a tree could be, or the store could take it. */
   marked?: true;
   tree?: true;

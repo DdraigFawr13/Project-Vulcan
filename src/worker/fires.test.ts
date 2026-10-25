@@ -43,19 +43,15 @@ describe('fire views', () => {
       if (minute % 3) continue;
       const goods = goodsOf(w);
       for (const f of goods.furniture) arts.add(f.art);
-      // Two cooks at one hearth share a tile and a total: each keeps its own run, told apart by
-      // the order of their progress.
-      const same = new Map<string, number>();
-      for (const b of [...goods.work].sort((a, c) => a.done - c.done)) {
+      for (const b of goods.work) {
         expect(b.total).toBeGreaterThan(0);
         expect(b.done).toBeGreaterThanOrEqual(0);
         expect(b.done).toBeLessThanOrEqual(b.total);
         // A tile's next bar of the same total (a hearth's making after the floor's laying, or a
         // person's job there) starts again from near nothing (under a tenth): a new run. Any other
         // drop stays in the run and fails the check below.
-        const at = `${b.x},${b.y},${b.total}`;
-        same.set(at, (same.get(at) ?? 0) + 1);
-        const tile = `${at},${same.get(at)}`;
+        // Per worker: two cooks may share a hearth, each with a bar of their own.
+        const tile = `${b.x},${b.y},${b.total},${b.by ?? 0}`;
         const last = bars[`${tile},${starts[tile] ?? 0}`]?.at(-1);
         if (last !== undefined && b.done < last && b.done * 10 < b.total)
           starts[tile] = (starts[tile] ?? 0) + 1;
