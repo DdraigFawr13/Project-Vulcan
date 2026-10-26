@@ -1,7 +1,7 @@
 {
 "stock":[{"good":"logs","name":"wood","levels":[{"id":"none","word":"no","count":0},{"id":"some","word":"some","count":50},{"id":"plenty","word":"plenty of","count":200}],"start":"some"},
 {"good":"stone","name":"stone","levels":[{"id":"none","word":"no","count":0},{"id":"some","word":"some","count":50},{"id":"plenty","word":"plenty of","count":200}],"start":"none","note":"Rock dug out of tunnels comes up as stone."},
-{"good":"candles","name":"candles","levels":[{"id":"none","word":"no","count":0},{"id":"some","word":"a few","count":10},{"id":"plenty","word":"plenty of","count":30}],"start":"some","note":"Tallow and wax candles both count. Candles light the finer trades' rooms after dusk."},
+{"good":"candles","name":"candles","levels":[{"id":"none","word":"no","count":0},{"id":"some","word":"a few","count":10},{"id":"plenty","word":"plenty of","count":30}],"start":"some","note":"Tallow and wax candles both count. Candles light the finer trades' rooms after dusk. {candles}"},
 {"good":"firewood","name":"firewood","levels":[{"id":"none","word":"no","count":0},{"id":"some","word":"some","count":20},{"id":"plenty","word":"plenty of","count":60}],"start":"some"},
 {"good":"seed","name":"seed","levels":[{"id":"none","word":"no","count":0},{"id":"some","word":"some","count":100},{"id":"plenty","word":"plenty of","count":200}],"start":"some","note":"Each harvest keeps this much back for sowing; a hungry band may still eat it."},
 {"good":"food","name":"food","levels":[{"id":"none","word":"no","count":0},{"id":"some","word":"some","count":50},{"id":"plenty","word":"plenty of","count":400}],"start":"plenty","note":"Food counts meals, grain, oats, beans, cabbages, turnips, berries, fish and honey. Seed is kept apart."},

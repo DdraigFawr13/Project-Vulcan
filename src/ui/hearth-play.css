@@ -214,7 +214,7 @@
 }
 .day {
   display: grid;
-  grid-template-columns: repeat(24, 1fr);
+  grid-template-columns: repeat(96, 1fr);
   height: 22px;
   border: 1px solid var(--ink-soft);
 }
@@ -228,6 +228,10 @@
 .day .w,
 .legend .w {
   background: var(--oak);
+}
+.day .l,
+.legend .l {
+  background: repeating-linear-gradient(135deg, var(--oak) 0 2px, var(--track) 2px 4px);
 }
 .day .f,
 .legend .f {

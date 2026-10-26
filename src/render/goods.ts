@@ -1,11 +1,13 @@
 // Goods on the map (P2.4): the store's tiles, the items lying about and, in test mode, the marks
-// on trees, all from the `items` sheet. Each snapshot carries them; the layer is redrawn only
+// on trees and the bee skeps (planned ones faint), all from the `items` sheet. Each snapshot carries them; the layer is redrawn only
 // when what lies on the level on screen has changed.
 import Phaser from 'phaser';
 import type { GoodsView } from '../worker/index.ts';
 import { ITEMS } from './sheets.ts';
 
 const TILE = 32;
+/** A planned skep is drawn faint, like the other plans. */
+const PLAN_ALPHA = 0.5;
 
 export class GoodsSprites {
   private view: GoodsView = {
@@ -18,6 +20,8 @@ export class GoodsSprites {
     burial: [],
     furniture: [],
     fires: [],
+    lit: [],
+    skeps: [],
     work: [],
     fields: [],
     middens: [],
@@ -54,10 +58,17 @@ export class GoodsSprites {
     const here = <T extends { z: number }>(list: readonly T[]) =>
       list.filter((s) => s.z === this.z);
     // Under the people (depth 8), store tiles first, then what lies on them, then the marks.
-    type Layer = [string, { x: number; y: number }[], number, number?];
+    type Layer = [string, { x: number; y: number }[], number, (number | undefined)?, number?];
     const layers: Layer[] = [
       ['zone.stockpile', here(this.view.store), 5],
       ...here(this.view.items).map((i): Layer => [i.frame, [i], 6]),
+      ...(['plan', 'empty', 'bees'] as const).map((state): Layer => [
+        `skep.${state}`,
+        here(this.view.skeps.filter((s) => s.state === state)),
+        6,
+        undefined,
+        state === 'plan' ? PLAN_ALPHA : 1,
+      ]),
       ['mark.fell', here(this.view.marks), 7],
     ];
     const key = JSON.stringify([this.z, layers]);
@@ -66,7 +77,7 @@ export class GoodsSprites {
     for (const s of this.shown) s.destroy();
     this.shown = [];
     const frames = this.scene.textures.get(ITEMS);
-    for (const [frame, spots, depth, tint] of layers) {
+    for (const [frame, spots, depth, tint, alpha] of layers) {
       if (!frames.has(frame)) continue;
       for (const { x, y } of spots) {
         const image = this.scene.add
@@ -74,6 +85,7 @@ export class GoodsSprites {
           .setOrigin(0)
           .setDepth(depth);
         if (tint !== undefined) image.setTint(tint);
+        if (alpha !== undefined) image.setAlpha(alpha);
         this.shown.push(image);
       }
     }

@@ -34,6 +34,7 @@ import {
 import { buildFields } from './fields.ts';
 import { burialRow, sickBeds, word } from './places.ts';
 import { roomWarmth } from './fires.ts';
+import { roomLight } from './lampview.ts';
 import { pastureRow } from './flock.ts';
 import { homeRows, homesRow } from './strangers.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
@@ -205,6 +206,7 @@ export function tileHouse(
             ? `${room.beds}${room.crowded ? ', crowded' : ''}`
             : `none yet${open ? `: ${open > 1 ? `the ${open} carry their bedrolls` : 'one carries their bedroll'} in at dusk` : ''}`,
         warmth: roomWarmth(world, x, y),
+        light: roomLight(world, x, y),
       },
     }),
   };
