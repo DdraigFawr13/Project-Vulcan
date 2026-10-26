@@ -35,7 +35,7 @@ export function pieceFacts(tile: TileView): [string, string][] {
     rows.push(['room', `${room.name}, ${room.tiles} tiles inside`], ['role', room.role]);
   if (piece.privacy) rows.push(['privacy', piece.privacy]);
   if (room && built && piece.fire) rows.push(['room', `${room.name}, ${room.tiles} tiles inside`]);
-  if (room && built && piece.fire) rows.push(['warmth', room.warmth]);
+  if (room && built && piece.fire) rows.push(['warmth', room.warmth], ['light', room.light]);
   rows.push(['paths', 'does not block the way']);
   // On the smithy's page the piece adds only what and who made it; the page says the rest.
   return tile.works

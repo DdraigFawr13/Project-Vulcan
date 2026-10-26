@@ -195,7 +195,7 @@ export function startRenderer(
       shafts.set(view.shafts);
       burial.set(view);
       furniture.set(view.furniture);
-      light.set(view.fires, sky.clock);
+      light.set(view.fires, view.lit, sky.clock);
       bars.set(view.work, sky.skipping ? 3 : sky.speed);
       wild.setMiddens(view.middens);
     },

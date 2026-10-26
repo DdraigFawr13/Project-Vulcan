@@ -14,6 +14,7 @@ import {
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
+import { sunOf } from './lampview.ts';
 import type { AnswerView, LawView, WalkerView } from './protocol.ts';
 
 const ORDER = ['refuses', 'grumbles', 'obeys'];
@@ -74,8 +75,9 @@ export function lawView(world: WorldState): Omit<LawView, 'strangers'> {
     .filter((a) => a['law'] === def.id)
     .flatMap((a) => answerView(world, a) ?? [])
     .sort((a, b) => ORDER.indexOf(a.answer) - ORDER.indexOf(b.answer) || a.person - b.person);
-  const hours = lawHours(world, content);
-  const custom = customaryHours(world, content);
+  const sun = sunOf(world.tick);
+  const hours = { ...lawHours(world, content), ...sun };
+  const custom = { ...customaryHours(world, content), ...sun };
   const span = (from: number, to: number) => `${hh(from)} to ${hh(to)}`;
   const winter = s.winter ?? content.work.hours;
   const about = s.hours

@@ -13,7 +13,8 @@ export const FIRE_TABLES: Schemas = {
   /** `piece`: the hearth (a furniture row); `lit`: 1 while it burns; `fuel`: minutes of fuel
    * left; `kind`: the fuel (work.json `fire.fuels`), '' before any; `banked`: 1 while it burns
    * low; `used`: the tick someone was last in its room or reach; `line`: its last line (built,
-   * lit, banked, tended), which the next one cites. */
+   * lit, banked, tended), which the next one cites; `ash`: minutes burned into its ash pit,
+   * a whole ash each `lamp.ash.every`, at most `keep` (system.ts; the soap-maker takes it). */
   fire: {
     piece: 'entity',
     lit: 'count',
@@ -22,6 +23,7 @@ export const FIRE_TABLES: Schemas = {
     banked: 'count',
     used: 'int',
     line: 'event',
+    ash: 'count',
   },
 };
 
@@ -40,7 +42,7 @@ export const fuelOf = (content: EngineContent, id: string) =>
 /** A new, unlit fire for a hearth just built; `cause` is the line that built it. */
 export function createFire(ctx: SystemContext, piece: EntityRow, cause: number): void {
   addEntity(ctx.world, 'fire', {
-    ...{ piece: piece.id, lit: 0, fuel: 0, kind: '', banked: 0 },
+    ...{ piece: piece.id, lit: 0, fuel: 0, kind: '', banked: 0, ash: 0 },
     ...{ used: ctx.world.tick, line: cause },
   });
 }
@@ -132,4 +134,30 @@ export function layHearth(ctx: SystemContext, p: EntityRow, piece: EntityRow): v
     waited: 0,
   });
   createFire(ctx, piece, made);
+}
+
+/** Whole ash in the hearths' pits (V-135). */
+export const ashIn = (world: WorldState, content: EngineContent): number =>
+  firesOf(world).reduce((n, f) => n + Math.floor((f['ash'] as number) / content.lamp.ash.every), 0);
+
+/** Takes `n` ash from the pits, the hearth `first` (a piece id) before the others; false, taking
+ * none, when they hold less. */
+export function takeAsh(
+  world: WorldState,
+  content: EngineContent,
+  n: number,
+  first: number,
+): boolean {
+  const every = content.lamp.ash.every;
+  if (ashIn(world, content) < n) return false;
+  const fires = [...firesOf(world)].sort(
+    (a, b) => +(b['piece'] === first) - +(a['piece'] === first),
+  );
+  let left = n;
+  for (const f of fires) {
+    const take = Math.min(left, Math.floor((f['ash'] as number) / every));
+    f['ash'] = (f['ash'] as number) - take * every;
+    left -= take;
+  }
+  return true;
 }

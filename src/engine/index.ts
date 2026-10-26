@@ -1,9 +1,11 @@
 // The engine's one public surface. The engine is pure: same seed, content and commands, same
 // ledger, tick for tick (DECISIONS V-002, V-006). The worker is the only place it is run.
+import { beesSystem } from './bees/index.ts';
 import { buildSystem } from './build/index.ts';
 import { calendarSystem } from './calendar/index.ts';
 import { fireSystem } from './fire/index.ts';
 import { flockSystem } from './flock/index.ts';
+import { lampSystem } from './lamp/index.ts';
 export { barrelsAt, floorsOf, potsAt, rateOf } from './keep/index.ts';
 import { keepSystem } from './keep/index.ts';
 import { goodsSystem } from './goods/index.ts';
@@ -119,7 +121,9 @@ export {
   woundWords,
 } from './health/index.ts';
 export { SHAFT_STATES } from './mine/index.ts';
-export { fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
+export { ashIn, fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
+export { daylightAt, litRooms } from './lamp/index.ts';
+export { skepsOf } from './bees/index.ts';
 export { shaftFor, shaftsOf } from './mine/index.ts';
 export {
   freeTile,
@@ -268,12 +272,14 @@ export const SYSTEMS: readonly System[] = [
   buildSystem,
   mineSystem,
   fireSystem,
+  lampSystem,
   needsSystem,
   lawSystem,
   calendarSystem,
   weatherSystem,
   wildSystem,
   flockSystem,
+  beesSystem,
   keepSystem,
 ];
 

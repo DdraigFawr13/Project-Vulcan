@@ -4,8 +4,8 @@
 "laws":[
 {"id":"work-hours","name":"Work hours","law":"work-hours law","start":"customary","settings":[
 {"id":"short","name":"Short days","days":"the short days","ask":5,"hours":{"from":8,"to":16},"winter":{"from":9,"to":15},"winterLean":0,"saw":"saw-refused-short","grumbled":"grumbled-short","traits":{"restless":-12,"greedy":-10,"steady":5,"cheerful":5,"hardy":3},"memories":{"went-hungry":-8,"short-meals":-8,"short-meals-hard":-12,"saw-refused-short":-6}},
-{"id":"customary","name":"Customary","days":"the customary hours","ask":0,"winter":{"from":8,"to":16},"winterLean":0,"traits":{},"memories":{}},
-{"id":"long","name":"Long days","days":"the long days","ask":15,"hours":{"from":5,"to":20},"winter":{"from":7,"to":18},"winterLean":-8,"saw":"saw-refused-long","grumbled":"grumbled-long","traits":{"hardy":10,"restless":8,"steady":5,"cheerful":5,"greedy":-4,"melancholic":-8,"hot-tempered":-10},"memories":{"went-hungry":-10,"short-meals":-8,"short-meals-hard":-15,"cold-night":-6,"slept-rough":-6,"ate-well":3,"harvested":8,"saw-refused-long":-6}}
+{"id":"customary","name":"Customary","days":"the customary hours","ask":0,"winterLean":0,"traits":{},"memories":{}},
+{"id":"long","name":"Long days","days":"the long days","ask":15,"hours":{"from":5,"to":20},"winter":{"from":6,"to":20},"winterLean":-8,"saw":"saw-refused-long","grumbled":"grumbled-long","traits":{"hardy":10,"restless":8,"steady":5,"cheerful":5,"greedy":-4,"melancholic":-8,"hot-tempered":-10},"memories":{"went-hungry":-10,"short-meals":-8,"short-meals-hard":-15,"cold-night":-6,"slept-rough":-6,"ate-well":3,"harvested":8,"saw-refused-long":-6}}
 ]},
 {"id":"strangers","name":"Strangers","law":"Strangers law","start":"need","settings":[
 {"id":"open","name":"Open door","days":"the Strangers law","ask":5,"lets":["hunger","sickness","feud","war","move","wander"],"grumbled":"grumbled-strangers","traits":{"sociable":8,"devout":4,"solitary":-8,"greedy":-10},"memories":{"went-hungry":-8,"short-meals":-8,"short-meals-hard":-12}},

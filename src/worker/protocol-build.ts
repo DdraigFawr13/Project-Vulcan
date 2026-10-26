@@ -35,6 +35,8 @@ export interface RoomView {
   beds: string;
   /** "Warm, 14 °C · no hearth" (P3.6): the felt temperature at the tile and the room's hearth. */
   warmth: string;
+  /** "Candlelit · 2 h of candle left", "Hearthlight", "Daylight" or "Dark after dusk" (P5.13). */
+  light: string;
 }
 
 /** A house or a room added to one, for the Build sheet and the map (P3.7, P3.8). */

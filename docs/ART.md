@@ -19,6 +19,7 @@ Flat-shaded pixel art in the muted palette, readable at 32 px, nothing drawn bef
 | P5.2 | `buildings` | `furn.well`, by `tools/draw-well.mjs` |
 | P5.11 | `buildings`, `items` | mill pieces, `furn.wheel.*`, bread, flour: `tools/draw-mill.mjs` |
 | P5.1 | `buildings`, `items` | `field.ripe.<oats\|beans\|cabbages>`, `field.blight`, `item.oats`, `item.beans`, `item.cabbages` |
+| P5.13 | `items` | `item.<candle|wax-candle|wax|honey|soap|ash>`, `skep.<plan|empty|bees>`, by `tools/draw-lamp.mjs` |
 | 5B B5 | `items`, `buildings` | garments, cloth, `furn.loom`, `furn.pits`, `field.ripe.flax` (`draw-clothes`, `draw-loom`) |
 | Phase 5 onward | later | sickbed, creatures, dragon, fire, caravan |
 

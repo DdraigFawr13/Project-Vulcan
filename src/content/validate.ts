@@ -2,6 +2,7 @@
 // each spell stays inside the caps of its power tier. Returns one line per problem.
 import { check, type RefTarget, type RefUse } from './schema';
 import { SCHEMAS } from './schemas';
+import { checkBees } from './validate-lamp';
 
 type Files = Readonly<Record<string, unknown>>;
 
@@ -80,9 +81,11 @@ export function validateContent(files: Files): string[] {
       ...checkHouse(files),
       ...checkCrops(files),
       ...checkHaul(files),
+      ...checkLamp(files),
       ...checkWild(files),
       ...checkFlock(files),
       ...checkStrangers(files),
+      ...checkBees(files),
     );
   errors.push(...checkBand(files));
   return errors;
@@ -281,6 +284,14 @@ function checkHaul(files: Files): string[] {
         ]
       : [],
   );
+}
+
+// The chandler's job (lamp.json) is a job in jobs.json (V-135).
+function checkLamp(files: Files): string[] {
+  const job = (files['lamp'] as { chandler: { job: string } }).chandler.job;
+  return (files['jobs'] as { id: string }[]).some((j) => j.id === job)
+    ? []
+    : [`lamp.chandler.job: "${job}" is not in jobs`];
 }
 
 // The wild valley (src/engine/wild): every month it names is a calendar month, a species has art

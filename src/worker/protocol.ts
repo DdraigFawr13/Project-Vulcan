@@ -71,6 +71,8 @@ export interface ClockView {
   hour: number;
   minute: number;
   season: string;
+  dawn: number; // today's first light and dusk in hours (P5.13), for the night's shade
+  dusk: number;
 }
 
 /** One changed 16 by 16 chunk: its origin, level, size and terrain indices, row by row
