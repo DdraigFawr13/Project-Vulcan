@@ -75,6 +75,9 @@ export interface ItemDef {
   good: string;
   /** A cooked dish (items.json): eaten in preference to raw food (work.cook). */
   cooked?: boolean;
+  /** Food's loss a 28-day month or a day, as a share (keep spoil.ts, P5.12). */
+  spoilPerMonth?: number;
+  spoilPerDay?: number;
   /** An ingot names the ore it is smelted from (Bundle 3). */
   ore?: string;
   /** A tool: its kind (tools.json) and material. */
@@ -209,9 +212,32 @@ export interface WorkDef {
     headings: readonly { name: string; jobs: readonly string[] }[];
   };
   learn: { start: number; perLevel: number };
+  /** Keeping food (P5.12, V-132): spoiling by place, warmth and keeping (content `work.keep`). */
+  keep: {
+    place: { open: number; store: number; house: number; walled: number; below: number };
+    warmth: readonly { under: number; times: number }[];
+    below: number;
+    week: number;
+    haulFirst: number;
+    haulBonus: number;
+    words: { open: string; home: string };
+  };
   cook: {
     job: string;
     meal: string;
+    /** Recipes best first (P5.3): a batch's worth of a `main` food and `sideCount` of a `side`. */
+    recipes: readonly {
+      id: string;
+      item: string;
+      main: readonly string[];
+      side: readonly string[];
+      sideCount: number;
+    }[];
+    /** Grades best first: a batch reaching `at` (cooking level plus the roll) leaves `memory`. */
+    grades: readonly { id: string; at: number; memory: string }[];
+    roll: number;
+    stream: string;
+    fineMemory: string;
     fuel: string;
     from: readonly string[];
     /** A batch's food value over the raw food's it is made from. */

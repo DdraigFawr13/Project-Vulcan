@@ -16,8 +16,9 @@ describe('furniture views', () => {
     const world = createWorld(sim, 'ledger/1');
     const seen = new Set<string>();
     let bed: ReturnType<typeof piecesOf>[number] | undefined;
-    for (let day = 0; day < 20 && !(bed && bed['owner']); day += 1) {
-      step(world, sim, DAY / 2);
+    // Looked at each hour (each half day missed the carpenter once cooks took a hand, 5B Bundle 3).
+    for (let hour = 0; hour < 20 * 24 && !(bed && bed['owner']); hour += 1) {
+      step(world, sim, DAY / 24);
       for (const w of walkersOf(world)) seen.add(w.now.text);
       bed = piecesOf(world, 'bed')[0];
     }
