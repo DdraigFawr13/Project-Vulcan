@@ -1,6 +1,6 @@
 # build
 
-Plans and built parts (P3.1, P3.2): walls, floors, doors, stairs; the houses, rooms and works the colony sites itself.
+Plans and built parts (P3.1, P3.2): walls, floors, doors, stairs; the houses, rooms and works the colony sites.
 
 - **The midden (P5.4a, V-072):** `midden.ts`, table `midden` (x, y, line). Hourly, once an item of a `work.haul.midden` kind (offal) lies about, the colony sites a one-tile midden `work.midden.past` tiles past the town ring, the nearest such tile to the green on flat dry ground (walking at most `walk`) that is not within `apart` tiles of a house, a field or water, reachable from the green (`build.middenSited`, citing the offal's making line). Sited once, never sent back. `middensOf(world)` returns `[{x, y, z, line}]` for the screens and haulers; `atMidden(world, x, y)`. The pack is told of it by the people system (`setLures`).
 - **Public API:** `index.ts` (furniture: `piecesOf`, `furnitureOf`, `bedOwnedBy`, `benchOf`, `qualityOf`, `nextWant`, `roomName`, `wantSignature`, `siteFor`): `buildSystem`, `BUILD_TABLES`, `plansOf(world)`, `planAt(world, x, y, z = 0)`, `partOf(content, id)`, `planPart(content, plan)`, `stillNeeded(content, plan)`, `nextNeed(content, plan)`, `refundOf(content, plan)` (what taking it down gives back, per item), `finishPlan(ctx, plan, cause)`, `takeDownPlan(ctx, plan, cause)`; for siting by other modules (the skeps, P5.13): `groundOf(world)` (the tiles with something on them), `inRect`.

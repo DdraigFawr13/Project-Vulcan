@@ -64,7 +64,11 @@ function whyHere(world: WorldState, s: EntityRow): string {
 }
 
 /** The person at a kind of work and what they are doing now, in the Work sheet's words. */
-function doingOf(world: WorldState, jobs: string[], station?: EntityRow): WorksView['doing'] {
+export function doingOf(
+  world: WorldState,
+  jobs: string[],
+  station?: EntityRow,
+): WorksView['doing'] {
   const p = (world.entities['person'] ?? []).find(
     (q) =>
       jobs.includes(q['job'] as string) &&
@@ -87,10 +91,10 @@ const recipesText = (): string =>
     })
     .join('; ');
 
-type LineOf = (e: SimEvent | Stub) => LedgerLine;
+export type LineOf = (e: SimEvent | Stub) => LedgerLine;
 
 /** The page's labelled lines, those that still exist, once each. */
-function linesOf(
+export function linesOf(
   world: WorldState,
   lineOf: LineOf,
   pairs: [string, unknown][],

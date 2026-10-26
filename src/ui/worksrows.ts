@@ -38,3 +38,14 @@ export function worksDoing(tile: TileView, open: (item: number) => void): HTMLEl
   }
   return out;
 }
+
+/** The mill's one Send back (5B Bundle 4), while nothing on it is built: the colony chooses again. */
+export function worksBack(tile: TileView, sendBack: (id: number) => void): HTMLElement[] {
+  const id = tile.works?.back;
+  if (id === undefined) return [];
+  const button = el('button', { type: 'button', 'data-testid': 'send-back-mill' }, 'Send back');
+  button.addEventListener('click', () => sendBack(id));
+  const row = el('div', { class: 'row' });
+  row.append(button);
+  return [row];
+}

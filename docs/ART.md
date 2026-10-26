@@ -17,9 +17,10 @@ Flat-shaded pixel art in the muted palette, readable at 32 px, nothing drawn bef
 | P5.4a | `sprites-wild`, `items` | wolf, bear, stag, hind, boar, goat and hare (`animal.<kind>.<e\|w>.<0\|1>`, `animal.<kind>.dead`), tracks (`print.<paw\|hoof\|hare>.<n\|ne\|e\|se\|s\|sw\|w\|nw>`, opaque, faded by the page), `site.midden`; `item.hide`, `item.bone`, `item.fat`, `item.<stone\|bronze\|iron>-spear`, by `tools/draw-wild.mjs` |
 | P5.10 | `tiles-world`, `buildings` | worn ground in three stages (`wear.<1-3>.<1\|2>`, taste board pick A) and the stone road `build.road-stone`, by `tools/draw-roads.mjs` |
 | P5.2 | `buildings` | `furn.well`, by `tools/draw-well.mjs` |
+| P5.11 | `buildings`, `items` | mill pieces, `furn.wheel.*`, bread, flour: `tools/draw-mill.mjs` |
 | P5.1 | `buildings`, `items` | `field.ripe.<oats\|beans\|cabbages>`, `field.blight`, `item.oats`, `item.beans`, `item.cabbages` |
 | P5.13 | `items` | `item.<candle|wax-candle|wax|honey|soap|ash>`, `skep.<plan|empty|bees>`, by `tools/draw-lamp.mjs` |
-| Phase 5 onward | later | animals, crops, sickbed, loom, creatures, dragon, fire, caravan |
+| Phase 5 onward | later | sickbed, loom, creatures, dragon, fire, caravan |
 
 Layout: `art/src/<sheet>/<name>.png` packed by `tools/pack-sheet` into `public/art/<sheet>.png` and `<sheet>.json`. Naming: `<category>.<name>[.<variant>][.<facing>][.<frame>]`, for example `tile.grass.2`, `wall.stone.n-e`, `person.dwarf.s.1`, `item.ingot.bronze`. Content refers to art only by name. The final art (V-034: AI-made images Morgan picks from, cleaned to the palette) replaces files in `art/src` with the same names and sizes; the packer rebuilds and nothing else changes. Every asset's source and licence go in `art/PROVENANCE.md` (SAFE-05).
 

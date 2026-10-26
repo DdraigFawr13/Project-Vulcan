@@ -14,6 +14,10 @@
 
 Streams and the river count frost like lakes, with their own dials (`seasons.ice.stream`, `ice.river`); springs never freeze. When half the river's tiles are frozen, `weather.riverFrozen` (once), then `weather.riverThawed` when none are. A mill's wheel stands while its own tile is frozen.
 
+## Screens
+
+The Work sheet's Mill heading (Milling, Baking) and the Stock sheet's Flour plate come from content. `src/worker/mill.ts` draws the wheel on its water tile (turning, or hung with ice while frozen) and gives the mill's tile page, inside its walls or on the wheel: what it is, state, why here, built of, wheel, where grinding goes on, the oven, who is at the work, its lines, and Send back while nothing on it is built (`src/ui/worksrows.ts` `worksBack`, command `sendBack {mill}`). Art: `tools/draw-mill.mjs`.
+
 ## Tests
 
-`src/engine/build/mill.test.ts` (slow tier, one anvil run of about 200 days): quern and mill unordered, the wheel in running water beside a side, one send-back then refusal, the harvest home citing the year's last harvest with everyone there, the mill grinding and an oven planned, and a frozen wheel sending grinding back to the quern. `src/engine/map/map.test.ts`: water freezes in a year on every seed, never a spring.
+`src/engine/build/mill.test.ts` (slow tier, one anvil run of about 200 days): quern and mill unordered, the wheel in running water beside a side, one send-back then refusal, the harvest home citing the year's last harvest with everyone there, the mill grinding and an oven planned, and a frozen wheel sending grinding back to the quern. `src/worker/mill.test.ts`: the wheel's art planned, turning and iced, and the page's Send back. `tests/browser/mill.spec.ts`: the Mill heading and the Flour plate on a phone. `src/engine/map/map.test.ts`: water freezes in a year on every seed, never a spring.
