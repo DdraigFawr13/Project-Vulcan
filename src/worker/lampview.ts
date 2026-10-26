@@ -6,6 +6,7 @@ import {
   daylightAt,
   fireOf,
   furnitureOf,
+  ashIn,
   haveOf,
   inStore,
   itemsOf,
@@ -82,7 +83,13 @@ export function candleNote(world: WorldState): string {
     parts.filter(([n]) => n).map(([n, w]) => `${n} ${w}`);
   const store = list(stored);
   const makeMore = list(
-    from.map((f) => [haveOf(world, content, f), name(f).toLowerCase()] as const),
+    from.map(
+      (f) =>
+        [
+          haveOf(world, content, f) + (f === content.lamp.ash.item ? ashIn(world, content) : 0),
+          name(f).toLowerCase(),
+        ] as const,
+    ),
   );
   const lines = [
     `${store.length ? `${store.join(' and ')} in store` : 'No candles in store'}${kept ? `, ${kept} with the cart` : ''}.`,

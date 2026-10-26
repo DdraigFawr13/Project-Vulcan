@@ -118,7 +118,7 @@ export {
   woundWords,
 } from './health/index.ts';
 export { SHAFT_STATES } from './mine/index.ts';
-export { fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
+export { ashIn, fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
 export { daylightAt, litRooms } from './lamp/index.ts';
 export { skepsOf } from './bees/index.ts';
 export { shaftFor, shaftsOf } from './mine/index.ts';

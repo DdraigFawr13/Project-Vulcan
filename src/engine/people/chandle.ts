@@ -5,11 +5,11 @@
 // band's kept with the cart too) plus those being made are under the Candles plate. They fetch
 // the recipe's first input from the store, carry it to the nearest lit hearth (one in a room
 // first), work `minutes × 2 × skilled ÷ (skilled + level)` beside it, draw any other input from
-// the store as the batch is made and lay the result around the hearth for haulers. Taking up and
+// the store (ash from the hearths' pits) as the batch is made and lay the result around the hearth for haulers. Taking up and
 // each batch are lines; trips are not. `p.make` holds the recipe id.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { furnitureOf } from '../build/index.ts';
-import { fireOf, firesOf, pieceOfFire, placeOf } from '../fire/index.ts';
+import { ashIn, fireOf, firesOf, pieceOfFire, placeOf, takeAsh } from '../fire/index.ts';
 import { inStore, itemsOf, layItem, loadOf, stockOf, takeFrom, wantOf } from '../goods/index.ts';
 import { canReach, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -65,10 +65,13 @@ function stacksOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow[] {
   });
 }
 
+/** What the store holds of `kind` for `p`, and ash in the hearths' pits. */
+const heldFor = (ctx: SystemContext, p: EntityRow, kind: string): number =>
+  stacksOf(ctx, p, kind).reduce((s, i) => s + (i['count'] as number), 0) +
+  (kind === ctx.content.lamp.ash.item ? ashIn(ctx.world, ctx.content) : 0);
+
 const inputsLeft = (ctx: SystemContext, p: EntityRow, r: Recipe): boolean =>
-  Object.entries(r.from).every(
-    ([kind, n]) => stacksOf(ctx, p, kind).reduce((s, i) => s + (i['count'] as number), 0) >= n,
-  );
+  Object.entries(r.from).every(([kind, n]) => heldFor(ctx, p, kind) >= n);
 
 /** The recipe wanted now, and why, for `p`: others' batches under way count as made. */
 function wanted(ctx: SystemContext, p: EntityRow): { recipe: Recipe; why: string } | undefined {
@@ -219,14 +222,14 @@ export function chandling(ctx: SystemContext, p: EntityRow): boolean {
   p['work'] = (p['work'] as number) - 1;
   practise(ctx, p, skillName(content), p['took'] as number);
   if ((p['work'] as number) > 0) return true;
-  // The other inputs come from the store now; if they have gone, the batch is not made.
+  // The other inputs come now, ash from the hearths' pits (this one first) and the rest from the
+  // store; if they have gone, the batch is not made.
   const rest = entries.slice(1);
-  const drawn = rest.map(([kind, n]) => ({ n, stack: stacksOf(ctx, p, kind), kind }));
-  if (drawn.some((d) => d.stack.reduce((s, i) => s + (i['count'] as number), 0) < d.n))
-    return stop(p);
-  for (const d of drawn) {
-    let left = d.n;
-    for (const i of d.stack) left -= takeFrom(world, i, left);
+  if (rest.some(([kind, n]) => heldFor(ctx, p, kind) < n)) return stop(p);
+  for (const [kind, n] of rest) {
+    if (kind === content.lamp.ash.item && takeAsh(world, content, n, piece.id)) continue;
+    let left = n;
+    for (const i of stacksOf(ctx, p, kind)) left -= takeFrom(world, i, left);
   }
   const [made, count] = Object.entries(recipe.makes)[0]!;
   const line = ctx.emit('lamp.dipped', {

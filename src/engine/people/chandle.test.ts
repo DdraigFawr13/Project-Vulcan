@@ -1,9 +1,10 @@
-// V-135: with a lit hearth, fat in the store and the Candles plate short, someone takes up
-// candlemaking unordered and tallow candles appear, the line citing the taking up; a fire that
-// burns `ash.every` minutes leaves ash beside it; soap cuts a wound's chance to fester.
+// V-135: with a lit hearth, fat in the store, the Candles plate short and Candlemaking first on
+// the Work sheet, someone takes up candlemaking (no order) and tallow candles appear, the line
+// citing the taking up; a fire that burns gathers ash in its pit; soap cuts a wound's festering.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
-import { allLines, createSim, createWorld, itemsOf, step, whyOf } from '../index.ts';
+import { allLines, createSim, createWorld, itemsOf, step, submitCommand } from '../index.ts';
+import { people } from './spots.ts';
 import { firesOf } from '../fire/index.ts';
 import { layItem, stockOf, storeOf } from '../goods/index.ts';
 
@@ -20,8 +21,15 @@ const count = (w: ReturnType<typeof createWorld>, kind: string): number =>
     .reduce((n, i) => n + (i['count'] as number), 0);
 
 describe('the chandler', () => {
-  it('dips candles from fat at a lit fire unordered, citing the taking up', () => {
+  it('dips candles from fat at a lit fire once the Work sheet puts it first, citing the taking up', () => {
     const w = createWorld(sim, 'ledger');
+    // The lever is the Work sheet's row (indirect): nobody is told to make a candle.
+    for (const p of people(w))
+      submitCommand(w, {
+        tick: w.tick + 1,
+        kind: 'setPriority',
+        data: { person: p.id, job: 'chandle', level: 1 },
+      });
     const at = storeOf(w).find(
       (s) => !itemsOf(w).some((i) => i['x'] === s['x'] && i['y'] === s['y']),
     )!;
@@ -36,14 +44,15 @@ describe('the chandler', () => {
     stockOf(w, 'candles')!['level'] = 'plenty';
     const before = count(w, 'candle');
     step(w, sim, 12 * DAY);
-    expect(w.commandLog).toHaveLength(0);
+    expect(w.commandLog.every((c) => c.kind === 'setPriority')).toBe(true);
     const took = allLines(w).filter((e) => e.type === 'lamp.tookUp');
     const dipped = allLines(w).filter((e) => e.type === 'lamp.dipped');
     expect(took.length).toBeGreaterThan(0);
     expect(dipped.length).toBeGreaterThan(0);
     expect(String(took[0]!.data['why'])).toMatch(/^candles are short: \d+ of 30$/);
     expect(dipped[0]!.data).toMatchObject({ count: 12, what: 'tallow candles', from: '1 fat' });
-    expect(whyOf(w, dipped[0]!.id).map((c) => c.event.type)).toContain('lamp.tookUp');
+    // Read through the causes (the run is long enough for the start of the ledger to be sealed).
+    expect(took.map((e) => e.id)).toContain(dipped[0]!.causes[0]);
     expect(count(w, 'candle')).toBeGreaterThan(before);
   });
 
@@ -66,14 +75,14 @@ describe('the chandler', () => {
     expect(count(w, 'soap')).toBeGreaterThanOrEqual(2);
   });
 
-  it('leaves one ash beside a hearth for every `ash.every` minutes it burns', () => {
+  it("gathers ash in a burning hearth's pit, up to `ash.keep`, for the soap", () => {
     const w = createWorld(sim, 'ledger');
-    step(w, sim, 4 * DAY);
+    step(w, sim, 8 * DAY);
+    const { every, keep } = content.lamp.ash;
     const fires = firesOf(w);
-    expect(fires.length).toBeGreaterThan(0);
-    const burned = Math.floor(count(w, 'ash') * content.lamp.ash.every);
-    expect(burned).toBeGreaterThan(0);
-    // Whole ash laid, less than one more owing on each fire.
-    expect(fires.every((f) => (f['ash'] as number) < content.lamp.ash.every)).toBe(true);
+    expect(fires.some((f) => (f['ash'] as number) >= every)).toBe(true);
+    expect(fires.every((f) => (f['ash'] as number) <= keep * every)).toBe(true);
+    // None of it lies about for haulers.
+    expect(count(w, content.lamp.ash.item)).toBe(0);
   });
 });

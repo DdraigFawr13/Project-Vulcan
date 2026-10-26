@@ -14,8 +14,8 @@ export interface LampDef {
   /** The candles the band brings, kept with the cart. */
   cart: { item: string; count: number };
   chandler: ChandlerDef;
-  /** A lit fire leaves one ash `item` beside its hearth each `every` minutes it burns, while the
-   * colony holds fewer than `keep` (more is scattered). */
+  /** A lit fire gathers one ash `item` in its hearth's pit each `every` minutes it burns, up to
+   * `keep`. */
   ash: { item: string; every: number; keep: number };
   bees: BeesDef;
 }
