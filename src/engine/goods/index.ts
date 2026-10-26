@@ -2,7 +2,17 @@
 export { goodsSystem } from './system.ts';
 export { GOODS_TABLES, itemsAt, itemsOf, layItem, loadOf, stackSize, takeFrom } from './stacks.ts';
 export { storedEnough } from './plates.ts';
-export { garmentOf, leftOf, lifeOf, putOn, sparesOf, wornIn, wornOf, worthFor } from './clothes.ts';
+export {
+  garmentOf,
+  leftOf,
+  lifeOf,
+  putOn,
+  shortOf,
+  sparesOf,
+  wornIn,
+  wornOf,
+  worthFor,
+} from './clothes.ts';
 export {
   DEPOT_TABLES,
   depotAt,

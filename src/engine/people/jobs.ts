@@ -24,7 +24,8 @@ import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
 import { burying, takeUpBurial } from './burial.ts';
-import { changing, takeUpChange } from './change.ts';
+import { takeUpChange } from './change.ts';
+import { TRADE_TAKE_UP, tradeWork } from './trades.ts';
 import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
@@ -49,7 +50,7 @@ import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
 /** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
-const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
+const HOLDS = ['station', 'charcoal', 'smelt', 'smith', 'weave', 'tailor', 'tan'];
 
 export const JOB_FIELDS = {
   /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
@@ -212,7 +213,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (herding(ctx, p, hours)) return true;
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
-  if (p['job'] === 'change' && hours && changing(ctx, p)) return true;
+  if (hours && tradeWork(ctx, p)) return true;
   if (p['job'] === 'build' && hours && building(ctx, p)) return true;
   if (p['job'] === 'mine' && hours && mining(ctx, p)) return true;
   if (p['job'] === 'farm' && hours && farming(ctx, p)) return true;
@@ -378,6 +379,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   smelt: takeUpSmelting,
   smith: takeUpSmithing,
   heal: takeUpNursing,
+  ...TRADE_TAKE_UP,
 };
 
 const jobSkill = (content: EngineContent, g: Gather): string =>

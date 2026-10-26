@@ -18,6 +18,7 @@
 "tailor":{"job":"tailor","skilled":10,"roll":2},
 "weave":{"job":"weave","skilled":10,"recipes":[{"makes":"wool","out":1,"from":[{"kind":"fleece","count":1}],"minutes":480},{"makes":"linen","out":1,"from":[{"kind":"flax","count":10}],"minutes":480}]},
 "loom":{"piece":"loom"},
+"flax":{"crop":"flax","instead":"beans"},
 "tan":{"job":"tan","skilled":10,"hide":"hide","leather":{"makes":"leather","bark":"logs","days":28,"minutes":60},"fur":{"makes":"fur","minutes":180}},
 "pits":{"name":"tan pits","w":4,"h":3,"pits":3,"material":"logs","cost":4,"minutes":240,"water":12,"start":1}
 }

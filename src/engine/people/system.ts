@@ -146,6 +146,13 @@ export const peopleSystem: System = {
       'farm.harvestHome',
     ],
     ...['hall.feast', 'people.movedHome'],
+    ...[
+      'people.changed',
+      'work.tookUpWeaving',
+      'loom.wove',
+      'work.tookUpTailoring',
+      'clothes.made',
+    ],
     'goods.ateSeed',
     ...['work.tookUpStation', 'metal.smelterBuilt', 'work.tookUpCharcoal', 'metal.clampLit'],
     ...[

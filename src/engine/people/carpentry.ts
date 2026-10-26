@@ -87,6 +87,7 @@ function choose(ctx: SystemContext, p: EntityRow): { piece?: EntityRow; want?: W
 
 /** Why a want is made, in the words of its taking-up line. */
 function whyOf(w: Want, name: string): string {
+  if (w.why) return w.why;
   const { room } = w.rr;
   if (w.kind === 'bed')
     return `it has ${plural(room.sleepers, 'sleeper')} and ${plural(room.bedPieces, 'bed')}`;

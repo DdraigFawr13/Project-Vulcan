@@ -8,7 +8,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { busy, same, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
 
-/** How many of `kind` `p` holds (not the cloak they wear). */
+/** How many of `kind` `p` holds (not the clothes they wear). */
 export const heldOf = (ctx: SystemContext, p: EntityRow, kind: string): number =>
   itemsOf(ctx.world)
     .filter((i) => i['holder'] === p.id && i['kind'] === kind && i['state'] !== 'worn')
@@ -17,7 +17,9 @@ export const heldOf = (ctx: SystemContext, p: EntityRow, kind: string): number =
 /** The free stacks of `kind` `p` can reach, nearest first (ties by id) and not taken by another's job. */
 function stacksOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow[] {
   const { world, content } = ctx;
-  const taken = new Set(['charcoal', 'smelt', 'smith'].flatMap((j) => [...busy(world, p, j)]));
+  const taken = new Set(
+    ['charcoal', 'smelt', 'smith', 'weave', 'tailor', 'tan'].flatMap((j) => [...busy(world, p, j)]),
+  );
   const from = spotOf(p);
   const far = (i: EntityRow) =>
     Math.max(Math.abs((i['x'] as number) - from.x), Math.abs((i['y'] as number) - from.y));

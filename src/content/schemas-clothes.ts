@@ -52,6 +52,9 @@ export const CLOTHES_SCHEMAS = {
     }),
     // The loom: a furniture piece (buildings.json `furniture.kinds`) a carpenter makes from need.
     loom: obj({ piece: str() }),
+    // Flax (a buildings.json field crop) is sown in place of the `instead` course while linen is
+    // short: the everyday clothes wanted are more than wool and linen to hand, or growing, can make.
+    flax: obj({ crop: str(), instead: str() }),
     // The tanner: a `hide` lies `days` in the pits with one `bark` (a log) and takes `minutes` to
     // lay in and again to take out as leather; curing one for a hide coat takes `fur.minutes`.
     tan: obj({

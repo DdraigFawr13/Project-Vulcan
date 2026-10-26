@@ -39,6 +39,7 @@ export interface ClothesDef {
     }[];
   };
   loom: { piece: string };
+  flax: { crop: string; instead: string };
   tan: {
     job: string;
     skilled: number;
