@@ -1,5 +1,6 @@
 // What the needs, goods and people's daily round read from content: Vulcan's life file (P2.2)
 // and the forked items list. Need values run from 0 to `scale`; rates are per game hour.
+import type { MillDef } from './mill.ts';
 import type { FieldDef } from './fielddef.ts';
 import type { RoadsDef, StoresDef } from './ground.ts';
 
@@ -279,12 +280,11 @@ export interface BuildingsDef {
     floor: string;
     pieces: readonly string[];
   };
-  /** P5.10: the Roads row and how a stretch is chosen (build/roads.ts). */
-  roads: RoadsDef;
+  roads: RoadsDef; // P5.10: the Roads row and how a stretch is chosen (build/roads.ts)
   town: { ring: number; step: number; most: number };
-  /** 5B Bundle 1 (V-129): stores by kind, sited from need (build/stores.ts). */
-  stores: StoresDef;
+  stores: StoresDef; // 5B Bundle 1 (V-129): stores by kind, sited from need (build/stores.ts)
   well: { kind: string; walk: number; days: number; from: number; near: number };
+  mill: MillDef; // 5B Bundle 4 (V-133): the quern, the mill and baking (core/mill.ts)
   field: FieldDef;
   rooms: RoomsDef;
   furniture: FurnitureDef;

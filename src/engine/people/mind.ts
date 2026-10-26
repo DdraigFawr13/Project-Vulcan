@@ -22,6 +22,7 @@ import { drinking } from './drink.ts';
 import { walkTo, wander } from './walk.ts';
 import { tendInEvening } from './tend.ts';
 import { warming } from './warm.ts';
+import { feasting } from './feast.ts';
 import { lateUntil, watching } from './watch.ts';
 
 export const MIND_FIELDS = {
@@ -134,6 +135,14 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     if (item) eat(ctx, p, item);
     p['doing'] = '';
   }
+  // The harvest-home supper (5B Bundle 4) is the evening's meal: after work, unless starving, it
+  // comes before eating alone, the jobs that run on past work and the evening's leisure.
+  const day = hoursOf(world, content, p.id);
+  const evening = hour >= day.workTo && hour < day.sleepFrom;
+  if (evening && valueOf(ctx, p, 'food') > life.seedAt && feasting(ctx, p)) {
+    p['doing'] = 'feast';
+    return;
+  }
   // A tamer sits far from the store, so goes back sooner (flock.json `tame.back`, herdtask.ts).
   const taming = p['job'] === content.flock.job && p['task'] === 'tame';
   const seek = taming ? content.flock.tame.back : seekOf(ctx, 'food');
@@ -147,7 +156,6 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   }
   // Thirst next (P5.2): to the nearest water or the well, to drink to full.
   if (drinking(ctx, p)) return;
-  const day = hoursOf(world, content, p.id);
   const night = hour >= day.sleepFrom || hour < day.workFrom;
   const rest = valueOf(ctx, p, 'rest');
   // Below its warning line, warmth beats sleep as it beats work (P3.6, V-046; phase review: a

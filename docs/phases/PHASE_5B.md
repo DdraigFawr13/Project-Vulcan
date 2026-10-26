@@ -57,7 +57,7 @@ Recipes and meal worth; spoilage by place, warmth and keeping; cellar; curer, co
 
 Quern, mill and wheel, oven, miller and baker; the feast in the hall. Mock-up: UI. Done when: the frozen-river table.
 
-- Reading list: `docs/DECISIONS.md` V-085 V-133; `src/engine/build/MODULE.md`; `src/engine/people/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/DECISIONS.md` V-085 V-133 V-150; `docs/MILL_AND_FEAST.md`; `src/engine/build/MODULE.md`; `src/engine/people/MODULE.md`; `src/ui/MODULE.md`
 
 ### Bundle 5: P5.5 the loom
 

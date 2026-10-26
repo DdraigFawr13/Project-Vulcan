@@ -29,10 +29,11 @@
 "town":{"ring":16,"step":4,"most":32},
 "stores":{"days":14,"save":8,"near":40,"eatenNear":12,"most":2,"apart":20,"tries":300,"kinds":[
 {"id":"granary","name":"granary","words":"grain, oats, beans and seed","goods":["grain","oats","beans","seed"],"w":6,"h":5,"door":"door-wood","floor":"floor-wood","from":"the reaping","to":"the hearths","eaten":true},
-{"id":"larder","name":"larder","words":"food","goods":["turnips","cabbages","meat","game","fish","berries","preserved","meal","stew","pottage"],"w":5,"h":4,"door":"door-wood","floor":"floor-wood","from":"where food comes in","to":"the hearths","eaten":true},
+{"id":"larder","name":"larder","words":"food","goods":["turnips","cabbages","meat","game","fish","berries","preserved","meal","stew","pottage","bread","flour"],"w":5,"h":4,"door":"door-wood","floor":"floor-wood","from":"where food comes in","to":"the hearths","eaten":true},
 {"id":"wood","name":"wood yard","words":"logs, firewood and charcoal","goods":["logs","firewood","charcoal"],"w":6,"h":5,"wall":"hurdle","door":"gate-hurdle","from":"the felling","to":"the hearths and the building"},
 {"id":"ore","name":"stone and ore yard","words":"stone and ore","goods":["stone","clay","ore","copper-ore","tin-ore","iron-ore","sulphur","copper-ingot","tin-ingot","iron-ingot","bronze-ingot"],"w":5,"h":4,"wall":"wall-drystone","from":"the quarry and the mine","to":"the smelter and the building"}
 ]},
+"mill":{"job":"mill","from":["grain","oats"],"flour":"flour","quern":{"kind":"quern","rate":4,"batch":2,"most":90},"wheel":{"rate":30,"batch":15},"want":45,"days":14,"w":4,"h":4,"near":40,"tries":300,"door":"door-wood","floor":"floor-wood","stones":"millstones","bake":{"job":"bake","bread":"bread","fuel":"firewood","perPerson":1,"skilled":10,"hearth":{"batch":4,"minutes":45},"oven":{"kind":"oven","batch":12,"minutes":60,"days":7}}},
 "well":{"kind":"well","walk":120,"days":7,"from":3,"near":6},
 "field":{"name":"Fields","seed":"seed","weigh":{"fertility":2,"water":4,"near":100,"tries":40},"start":2,"perMouth":6,"reach":45,"water":8,"good":40,"least":6,"soil":{"base":50,"most":120,"rest":30,"winter":{"month":"Firstfrost","gain":6},"muck":{"month":"Leaffall","gain":8,"midden":6,"fold":1}},
 "blight":{"span":14,"start":9,"spreadAt":7,"oneIn":20,"repeatIn":10,"spread":15,"most":25,"early":80},
@@ -59,6 +60,9 @@
 {"id":"anvil","name":"anvil block","cost":3,"minutes":60,"art":"furn.anvil","beds":0,"seats":0,"place":"centre","job":"build","material":"stone"},
 {"id":"tub","name":"quench tub","cost":6,"minutes":60,"art":"furn.tub","beds":0,"seats":0,"place":"centre","job":"build","material":"logs"},
 {"id":"well","name":"well","cost":12,"minutes":240,"art":"furn.well","beds":0,"seats":0,"place":"centre","job":"build","material":"stone","also":{"material":"logs","cost":6}},
+{"id":"quern","name":"quern","cost":2,"minutes":60,"art":"furn.quern","beds":0,"seats":0,"place":"wall","job":"build","material":"stone"},
+{"id":"millstones","name":"millstones","cost":6,"minutes":180,"art":"furn.millstones","beds":0,"seats":0,"place":"centre","job":"build","material":"stone"},
+{"id":"oven","name":"oven","cost":10,"minutes":180,"art":"furn.oven","beds":0,"seats":0,"place":"centre","job":"build","material":"stone"},
 {"id":"bench","name":"bench","cost":3,"minutes":120,"art":"furn.bench","beds":0,"seats":0,"place":"wall"},
 {"id":"bed","name":"bed","cost":4,"minutes":90,"art":"furn.bed","beds":1,"seats":0,"place":"wall"},
 {"id":"table","name":"table","cost":3,"minutes":75,"art":"furn.table","beds":0,"seats":0,"place":"middle"},

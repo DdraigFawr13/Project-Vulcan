@@ -204,9 +204,9 @@ export function planStores(ctx: SystemContext, green: Spot): void {
 }
 
 /** The store's parts as plans: its edge, the door (or a gap), the floor inside. */
-function placeEdge(
+export function placeEdge(
   ctx: SystemContext,
-  kind: StoreKindDef,
+  kind: Pick<StoreKindDef, 'name' | 'wall' | 'door' | 'floor'>,
   rect: Rect,
   door: Spot,
   id: number,

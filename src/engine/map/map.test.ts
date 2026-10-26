@@ -58,7 +58,7 @@ describe('surface map', () => {
       );
     }
   });
-  it.each(MAP_SEEDS)('seed %s freezes still water in a year, never a spring', (seed) => {
+  it.each(MAP_SEEDS)('seed %s freezes water in a year, never a spring', (seed) => {
     const world = createWorld(weatherSim, seed);
     let mostFrozen = 0;
     for (let day = 0; day < 336; day += 1) {
@@ -66,11 +66,13 @@ describe('surface map', () => {
       mostFrozen = Math.max(mostFrozen, world.systems['weather']!['frozen']!);
     }
     expect(mostFrozen).toBeGreaterThan(0);
-    // Only lake tiles ever count frost, so a spring's count stays 0 all year.
+    // Springs never count frost (V-150 lets streams and the river freeze), so their count stays 0.
     const spring = WATER.indexOf('spring');
     expect(world.map.ice.some((c, i) => c > 0 && world.map.water[i] === spring)).toBe(false);
     // A tile that froze or thawed cites the day's ice line, so the inspector can say since when.
-    const ice = new Set(['weather.iceFormed', 'weather.frozenOver', 'weather.iceSpread']);
+    const ice = new Set([
+      ...['weather.iceFormed', 'weather.frozenOver', 'weather.iceSpread', 'weather.riverFrozen'],
+    ]);
     const froze = [...world.map.ice].flatMap((c, i) =>
       c & 0x80 ? [world.map.tileCauses[i]!] : [],
     );

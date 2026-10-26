@@ -24,6 +24,8 @@ import { planHomes } from './homes.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
 import { planCampfire, planRoomHearths } from './hearths.ts';
 import { planWell, WELL_TABLES } from './well.ts';
+import { MILL_TABLES, planMilling, sendBackMill } from './mill.ts';
+import { FEAST_TABLES } from './feast.ts';
 import { planStations } from './metalsite.ts';
 import { STATION_TABLES } from './station.ts';
 import { planBench } from './wants.ts';
@@ -153,6 +155,8 @@ export const buildSystem: System = {
     ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
     ...['build.sickroom', 'build.burialSited', 'build.burialSentBack', 'build.middenSited'],
     ...['build.roadPlanned', 'build.roadLaid'],
+    ...['build.quernPlanned', 'build.millNeeded', 'build.millBuilt', 'build.millSentBack'],
+    ...['build.ovenPlanned', 'mill.stood', 'mill.turns'],
   ],
   // `nobody`: the line saying nobody is able to build, while that holds; `green`: the green's
   // tile index plus one; `need`: the line saying people sleep in the open, while they do;
@@ -193,6 +197,8 @@ export const buildSystem: System = {
     ...MIDDEN_TABLES,
     ...ROAD_TABLES,
     ...WELL_TABLES,
+    ...MILL_TABLES,
+    ...FEAST_TABLES,
   },
   commands: {
     placeBuilding: (ctx, command, cause) => placeBuilding(ctx, command.data, cause),
@@ -201,13 +207,15 @@ export const buildSystem: System = {
     sendBack: (ctx, command, cause) =>
       command.data['pasture'] !== undefined
         ? sendBackPasture(ctx, command.data, cause, greenOf(ctx.world))
-        : command.data['burial'] !== undefined
-          ? sendBackBurial(ctx, command.data, cause, greenOf(ctx.world))
-          : command.data['smithy'] !== undefined
-            ? sendBackSmithy(ctx, command.data, cause, greenOf(ctx.world))
-            : command.data['field'] !== undefined
-              ? sendBackField(ctx, command.data, cause, greenOf(ctx.world))
-              : sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
+        : command.data['mill'] !== undefined
+          ? sendBackMill(ctx, command.data, cause, greenOf(ctx.world))
+          : command.data['burial'] !== undefined
+            ? sendBackBurial(ctx, command.data, cause, greenOf(ctx.world))
+            : command.data['smithy'] !== undefined
+              ? sendBackSmithy(ctx, command.data, cause, greenOf(ctx.world))
+              : command.data['field'] !== undefined
+                ? sendBackField(ctx, command.data, cause, greenOf(ctx.world))
+                : sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
   },
   init(ctx) {
     const { world, content, state } = ctx;
@@ -236,6 +244,7 @@ export const buildSystem: System = {
     planSmithy(ctx, green);
     planRoomHearths(ctx);
     planWell(ctx, green);
+    planMilling(ctx, green);
     planStations(ctx, green);
     // P5.6, P5.8: a sickroom once enough lie hurt; a burial ground at the first death.
     planSickroom(ctx, green);
