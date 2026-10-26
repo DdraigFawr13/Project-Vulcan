@@ -15,8 +15,11 @@ import { eat } from './eat.ts';
 import { people, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
 
-/** Minutes before bed when the supper is eaten by whoever has come. */
+/** Minutes before bed when the supper is eaten by whoever has come, unless someone is still on
+ * the way; then it waits for them until `HARD_STOP` minutes after bed, and eats with whoever is
+ * there. */
 const LAST_CALL = 15;
+export const HARD_STOP = 60;
 
 /** Where the supper is: the hall's floor tiles, else the tiles round the first hearth. */
 function placeOfFeast(ctx: SystemContext): { tiles: number[]; words: string } | undefined {
@@ -105,10 +108,18 @@ export function feasting(ctx: SystemContext, p: EntityRow): boolean {
       (q) => q['status'] === 'alive' && !isDown(world, q.id) && q['doing'] !== 'sleep',
     );
     const all = coming.every((q) => (feast['there'] as number[]).includes(q.id));
-    // Those still at work or on their way get until the last call, a quarter hour before bed.
+    // Those still at work get until the last call, a quarter hour before bed; anyone already
+    // walking to it is waited for, until an hour past bed at the latest.
     const clock = clockAt(world.tick, ctx.content.calendar);
     const bed = hoursOf(world, ctx.content, p.id).sleepFrom * 60;
-    if (all || clock.hour * 60 + clock.minute >= bed - LAST_CALL)
+    const now = clock.hour * 60 + clock.minute;
+    const walking = coming.some(
+      (q) =>
+        q['doing'] === 'feast' &&
+        (q['path'] as number[]).length > 0 &&
+        !(feast['there'] as number[]).includes(q.id),
+    );
+    if (all || (now >= bed - LAST_CALL && !walking) || now >= Math.min(bed + HARD_STOP, 1439))
       eatTogether(ctx, feast, place.words);
     p['path'] = [];
     return true;

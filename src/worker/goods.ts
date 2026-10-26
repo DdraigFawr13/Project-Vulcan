@@ -40,6 +40,7 @@ import { burialGoods } from './places.ts';
 import { furnitureGoods, tilePiece } from './furniture.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
+import { candleNote, litGoods } from './lampview.ts';
 import { keptNote, storeTile } from './stores.ts';
 import { stationGoods, tileWorks } from './works.ts';
 import { millGoods, tileMill } from './mill.ts';
@@ -57,13 +58,13 @@ export function goodsOf(world: WorldState): GoodsView {
     y: r['y'] as number,
     z: r['z'] as number,
   });
-  // Free tools are kept with the cart, on its tile (restOf): they ride in it, so the map draws the
-  // cart alone there and the inspector lists them.
+  // Free tools and the band's candles are kept with the cart, on its tile (restOf): they ride in
+  // it, so the map draws the cart alone there and the inspector lists them.
   const cart = itemsOf(world).find((i) => i['kind'] === content.life.cart.kind);
   const inCart = (i: { [k: string]: unknown }) =>
     !!cart &&
     i !== cart &&
-    !!content.items.find((x) => x.id === i['kind'])?.tool &&
+    (!!content.items.find((x) => x.id === i['kind'])?.tool || i['state'] === 'kept') &&
     i['x'] === cart['x'] &&
     i['y'] === cart['y'] &&
     i['z'] === cart['z'];
@@ -83,9 +84,11 @@ export function goodsOf(world: WorldState): GoodsView {
       })),
     furniture: [...furnitureGoods(world), ...stationGoods(world), ...millGoods(world)],
     fires: fireGoods(world),
+    lit: litGoods(world),
     work: [...workBars(world), ...jobBars(world)],
     fields: [...fieldFrames(world), ...pastureFrames(world)],
     shafts: shaftPlans(world),
+    skeps: (world.entities['skep'] ?? []).map((s) => ({ ...at(s), state: s['state'] as string })),
     middens: middensOf(world).map(({ x, y, z }) => ({ x, y, z })),
     ...burialGoods(world),
   };
@@ -110,7 +113,9 @@ export const stockView = (world: WorldState): StockView[] =>
     want: wantOf(world, content, def.good),
     level: (stockOf(world, def.good)?.['level'] as string) ?? def.start,
     levels: def.levels.map((l) => ({ id: l.id, word: l.word, count: l.count })),
-    ...(def.note && { note: stockNote(world, def.good, def.note) }),
+    ...(def.note && {
+      note: stockNote(world, def.good, def.note).replace('{candles}', candleNote(world)),
+    }),
     ...(def.good === content.clothes.good && { clothes: clothesPlate(world) }),
     ...(recipeOf(def.good) && { status: metalStatus(world, content, recipeOf(def.good)!) }),
   }));

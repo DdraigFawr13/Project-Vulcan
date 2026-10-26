@@ -11,7 +11,9 @@ import {
   whyOf,
   type WorldState,
 } from '../index.ts';
+import { inStore, itemsOf, layItem } from '../goods/index.ts';
 import { withoutAccidents } from './index.ts';
+import { homesOf, soapCut } from './soap.ts';
 import { bodyOf, boutOf } from './index.ts';
 import { dyingChance, illsOf } from './sick.ts';
 
@@ -95,6 +97,27 @@ describe('sickness', () => {
     expect(String(griped.data['how'])).toMatch(/that was turning, hungry/);
     expect(griped.causes.length).toBe(1);
     expect(bodyOf(world, griped.actors[0]!)?.['down'] ?? 0).toBe(0);
+  });
+
+  it('takes a piece of soap a week for each home, and catching drops while it lasts', () => {
+    const sim = createSim(calm);
+    // Tallow's first home is up on day 4.
+    const world = createWorld(sim, 'tallow');
+    const WEEK = 7 * DAY;
+    step(world, sim, 5 * DAY);
+    const homes = homesOf(world);
+    expect(homes.size).toBeGreaterThan(0);
+    const at = itemsOf(world).find(
+      (i) => !i['holder'] && inStore(world, i['x'] as number, i['y'] as number, i['z'] as number),
+    )!;
+    const [x, y, z] = [at['x'] as number, at['y'] as number, at['z'] as number];
+    layItem(world, { kind: 'soap', count: homes.size, x, y, z, made: 0 });
+    step(world, sim, WEEK - (world.tick % WEEK) + 60);
+    expect(soapCut(world)).toBe(h.sick.soap.cut);
+    expect(lines(world, 'health.soap')).toHaveLength(1);
+    step(world, sim, WEEK);
+    expect(soapCut(world)).toBe(0);
+    expect(lines(world, 'health.noSoap').at(-1)?.data['homes']).toBe(homes.size);
   });
 
   it('brings the chill on a day cold through, and gives it to whoever shares the room', () => {

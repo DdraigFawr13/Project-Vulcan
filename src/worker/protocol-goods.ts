@@ -23,6 +23,8 @@ export interface GoodsView {
   furniture: (Spot3 & { art: string; facing: string; plan: boolean })[];
   /** Lit fires (P3.6) for the night's firelight: the glow's reach in tiles, dimmer when banked. */
   fires: (Spot3 & { radius: number; banked: boolean })[];
+  /** Rooms with a candle burning this minute (P5.13): the box round their tiles, for the glow. */
+  lit: { x: number; y: number; w: number; h: number }[];
   /** Plans, parts and pieces someone is working now (P3.6): minutes done of the total, for the
    * progress bar, and who works it when it is a person's job (two cooks may share a hearth).
    * Apart from the lists above so the map redraws only when those change. */
@@ -32,6 +34,8 @@ export interface GoodsView {
   fields: { frame: string; tiles: number[] }[];
   /** Shaft plans (planned or being sunk) on the surface, for the map's faint plan layer. */
   shafts: (Spot3 & { state: string })[];
+  /** Bee skeps (P5.13): planned (`plan`), `empty` or with `bees`; drawn as `skep.<state>`. */
+  skeps: (Spot3 & { state: string })[];
   /** Middens the colony sited (Bundle 2), drawn as `site.midden`. */
   middens: Spot3[];
   /** Graves (P5.8): dug until the day's end, then filled, with a marker or not; surface only. */

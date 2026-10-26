@@ -109,7 +109,8 @@ describe('smithing and the band', () => {
     const unloaded = lines(w, 'goods.unloaded')[0]!;
     for (const kind of content.tools.kinds) {
       const free = freeTools(w, content, kind.id);
-      expect(free).toHaveLength(content.tools.cart);
+      // The cart brings `tools.cart` of each kind, unless the kind says otherwise (the kit: none).
+      expect(free).toHaveLength(kind.cart ?? content.tools.cart);
       for (const t of free) {
         expect(t['kind']).toBe(`stone-${kind.id}`);
         expect(t['made']).toBe(unloaded.id);

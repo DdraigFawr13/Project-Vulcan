@@ -8,6 +8,7 @@ import { itemsAt, itemsOf } from '../goods/index.ts';
 import { armOut } from '../health/index.ts';
 import { needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { isDark } from '../lamp/index.ts';
 import { hoursOf } from '../law/index.ts';
 import { bedOwnedBy } from '../build/index.ts';
 import { bankFire } from '../fire/index.ts';
@@ -22,7 +23,7 @@ import { drinking } from './drink.ts';
 import { walkTo, wander } from './walk.ts';
 import { tendInEvening } from './tend.ts';
 import { warming } from './warm.ts';
-import { feasting } from './feast.ts';
+import { feasting, HARD_STOP } from './feast.ts';
 import { lateUntil, watching } from './watch.ts';
 
 export const MIND_FIELDS = {
@@ -129,19 +130,24 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     if (!walking) carryBed(ctx, p);
     return;
   }
+  // The harvest-home supper (5B Bundle 4) is the evening's meal: after work, unless starving, it
+  // comes before eating alone (even on the way to it), the jobs that run on past work and the
+  // evening's leisure.
+  const day = hoursOf(world, content, p.id);
+  // Someone already on their way to it is waited for past bedtime, up to the supper's hard stop.
+  const waited = p['doing'] === 'feast' ? HARD_STOP : 0;
+  const minute = hour * 60 + (world.tick % 60);
+  const evening = hour >= day.workTo && minute < day.sleepFrom * 60 + waited;
+  if (evening && valueOf(ctx, p, 'food') > life.seedAt && feasting(ctx, p)) {
+    p['doing'] = 'feast';
+    return;
+  }
+  // Out walking to eat alone when the supper is called, they turn for the supper instead (above).
   if (p['doing'] === 'eat') {
     if (walking) return;
     const item = foodHere(ctx, p, valueOf(ctx, p, 'food') <= life.seedAt);
     if (item) eat(ctx, p, item);
     p['doing'] = '';
-  }
-  // The harvest-home supper (5B Bundle 4) is the evening's meal: after work, unless starving, it
-  // comes before eating alone, the jobs that run on past work and the evening's leisure.
-  const day = hoursOf(world, content, p.id);
-  const evening = hour >= day.workTo && hour < day.sleepFrom;
-  if (evening && valueOf(ctx, p, 'food') > life.seedAt && feasting(ctx, p)) {
-    p['doing'] = 'feast';
-    return;
   }
   // A tamer sits far from the store, so goes back sooner (flock.json `tame.back`, herdtask.ts).
   const taming = p['job'] === content.flock.job && p['task'] === 'tame';
@@ -183,7 +189,11 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     p['doing'] = 'work';
     return;
   }
-  const leisure = hour >= day.workTo || valueOf(ctx, p, 'recreation') < seekOf(ctx, 'recreation');
+  // After dusk, with no work the dark allows, the rest of the working day is free time (P5.13).
+  const leisure =
+    hour >= day.workTo ||
+    isDark(content, world.tick) ||
+    valueOf(ctx, p, 'recreation') < seekOf(ctx, 'recreation');
   p['doing'] = leisure ? 'relax' : '';
   wander(ctx, p);
 }

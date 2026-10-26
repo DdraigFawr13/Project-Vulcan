@@ -96,6 +96,8 @@ export interface SickDef {
   /** Raw food losing this many per 1000 a day where it lies is turning: eaten hungry, it may
    * give a griping belly. */
   turning: number;
+  /** Soap in the homes (soap.ts) cuts catching `ills`, and roommates', by `cut` per cent. */
+  soap: { ills: readonly string[]; cut: number };
 }
 
 /** The healer's kit (P5.7): stitching wound kinds `stitch`, setting `set`; each cuts festering

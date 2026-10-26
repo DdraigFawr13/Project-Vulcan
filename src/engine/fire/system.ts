@@ -23,7 +23,11 @@ function runFires(ctx: SystemContext): void {
     }
     const fuel = fuelOf(content, f['kind'] as string);
     const rate = f['banked'] && fuel ? fuel.banked.rate : 1;
-    f['fuel'] = Math.max(0, (f['fuel'] as number) - Math.floor(60 / rate));
+    const burned = Math.min(f['fuel'] as number, Math.floor(60 / rate));
+    f['fuel'] = (f['fuel'] as number) - burned;
+    // Ash (V-135): the hearth's pit gathers the minutes burned, up to `keep` ash's worth.
+    const { every, keep } = content.lamp.ash;
+    f['ash'] = Math.min(keep * every, (f['ash'] as number) + burned);
     if (f['fuel']) continue;
     // Out: the empty Firewood plate when the colony wants none, else the last tend.
     const item = fuel?.item ?? '';

@@ -26,7 +26,7 @@ export { courseNow, meanSoil, yieldAt } from './fieldsoil.ts';
 export { farFromWater, thirsty, tileYield, wetDays } from './blight.ts';
 export { mucky, muckLeft, poorestTile, spreadMuck, takeLoad } from './soillife.ts';
 export { burialGround, burialsOf, freePlots, gravesOf, inBurial } from './burial.ts';
-export { housesOf, rectOf, type Rect } from './site.ts';
+export { groundOf, housesOf, inRect, rectOf, type Rect } from './site.ts';
 export { blockedByGoods, planTiles } from './clearing.ts';
 export { digsFor } from './dug.ts';
 export {

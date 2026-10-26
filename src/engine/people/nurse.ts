@@ -4,7 +4,7 @@
 // Dressing is daily work, not a line, except a wound's first dressing with herbs (one herb from
 // the store, `health.herbs`) and the first that wanted herbs and found none. Feeding the hurt is feed.ts.
 import type { EntityRow, WorldState } from '../core/index.ts';
-import { bodyOf, openWounds, severityOf, woundName } from '../health/index.ts';
+import { bodyOf, openWounds, severityOf, woundName, woundsOf } from '../health/index.ts';
 import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -119,6 +119,26 @@ export function nursing(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   return job === 'dress' ? dressing(ctx, p) : dosing(ctx, p);
 }
 
+/** A dressing washes a wound not yet washed when the store has soap (V-135). A piece of soap does
+ * `soap.washes` washings, counted from the wounds washed so far (`washed` set), so a new piece is
+ * cut from the store at the first washing and each `washes`th after it, and nothing else is kept. */
+function wash(ctx: SystemContext, w: EntityRow): void {
+  const { world, content } = ctx;
+  const soap = content.lamp.chandler.soap;
+  if (w['washed']) return;
+  if (woundsOf(world).filter((x) => x['washed']).length % soap.washes === 0) {
+    const stack = itemsOf(world).find(
+      (i) =>
+        i['kind'] === soap.item &&
+        !i['holder'] &&
+        inStore(world, i['x'] as number, i['y'] as number, i['z'] as number),
+    );
+    if (!stack) return;
+    takeFrom(world, stack, 1);
+  }
+  w['washed'] = world.tick;
+}
+
 /** One minute of dressing; false when it ended. */
 function dressing(ctx: SystemContext, h: EntityRow): boolean {
   const { world, content } = ctx;
@@ -141,6 +161,7 @@ function dressing(ctx: SystemContext, h: EntityRow): boolean {
   if (rough.length) bindWounds(ctx, h, p, rough);
   for (const w of wounds) {
     Object.assign(w, { dressed: world.tick, healer: h.id });
+    wash(ctx, w);
     herbDress(ctx, h, p, w);
   }
   sew(ctx, h, p, wounds);

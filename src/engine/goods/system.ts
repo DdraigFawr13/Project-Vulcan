@@ -111,5 +111,13 @@ export const goodsSystem: System = {
         layTool(world, content, restOf(world, content), {
           ...{ kind: kind.id, material: stone, quality: 'plain', made },
         });
+    // The band's candles (P5.13) are kept with the cart too, burned from there till they are gone.
+    const candles = content.lamp.cart;
+    if (candles.count)
+      layItem(
+        world,
+        { kind: candles.item, count: candles.count, ...restOf(world, content), made },
+        { state: 'kept' },
+      );
   },
 };

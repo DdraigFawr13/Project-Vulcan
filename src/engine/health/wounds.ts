@@ -11,7 +11,7 @@ export const HEALTH_TABLES: Schemas = {
    * now; `mortal` 1 for a wound that bleeds fast whatever is done; `bound` 0 not yet, 1 roughly
    * (by whoever found them), 2 by a healer; `dressed` the tick a healer last dressed it and
    * `healer` who; `herbed` the tick herbs last dressed it and `herbless` the tick a dressing
-   * wanted herbs and found none (0 never); `progress` hundredths of an hour healed; `fester` 0 never, 1 fevered, 2 the
+   * wanted herbs and found none (0 never); `washed` the tick a healer first washed it with soap (0 never); `progress` hundredths of an hour healed; `fester` 0 never, 1 fevered, 2 the
    * fever broke, and `feverEnd` the tick it breaks; `line` the hurt line and `care` the last
    * line of care (found, carried, bound); `fevered` the festering line; `state` `open`,
    * `healed` or `closed` (at death); `at` the tick it was taken; `where` and `place` ("shaft",
@@ -27,6 +27,7 @@ export const HEALTH_TABLES: Schemas = {
     bound: 'count',
     dressed: 'int',
     herbed: 'int',
+    washed: 'int',
     herbless: 'int',
     healer: 'entity',
     progress: 'count',
@@ -218,7 +219,7 @@ export function wound(
   const id = addEntity(world, 'wound', {
     ...{ person: p.id, part: w.part, kind: w.kind, severity: w.severity, bleed: sev.bleed },
     ...{ mortal: mortal ? 1 : 0, bound: 0, dressed: 0, healer: 0, progress: 0, fester: 0 },
-    ...{ herbed: 0, herbless: 0 },
+    ...{ herbed: 0, herbless: 0, washed: 0 },
     ...{ feverEnd: 0, line: 0, care: 0, fevered: 0, state: 'open', at: world.tick },
     ...{ where: w.where, place: w.place, sewn: 0, sewnBy: 0 },
   });

@@ -85,5 +85,11 @@
   {"id":"hide-coat","name":"hide coat","good":"clothes","per":1,"kind":"gear"},
   {"id":"bone","name":"bone","good":"bone","per":0.005,"kind":"material"},
   {"id":"fat","name":"fat","good":"fat","per":0.005,"kind":"material"},
-  {"id":"offal","name":"offal","good":"offal","per":0.005,"kind":"waste"}
+  {"id":"offal","name":"offal","good":"offal","per":0.005,"kind":"waste"},
+  {"id":"candle","name":"tallow candles","good":"candles","per":0.002,"kind":"material"},
+  {"id":"wax-candle","name":"wax candles","good":"candles","per":0.002,"kind":"material"},
+  {"id":"wax","name":"beeswax","good":"wax","per":0.005,"kind":"material"},
+  {"id":"honey","name":"honey","good":"food","per":0.002976190476190476,"kind":"food","spoilPerMonth":0},
+  {"id":"soap","name":"soap","good":"soap","per":0.005,"kind":"material"},
+  {"id":"ash","name":"wood ash","good":"ash","per":0.005,"kind":"material"}
 ]

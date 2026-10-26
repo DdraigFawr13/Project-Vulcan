@@ -13,6 +13,7 @@ import { addEntity, type Schemas } from '../entity/index.ts';
 import { needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { die } from './death.ts';
+import { soapCut, soapWeek } from './soap.ts';
 import { bodyOf, ensureBody, pronouns, stopFor } from './wounds.ts';
 
 export const SICK_TABLES: Schemas = {
@@ -99,7 +100,9 @@ export function expose(
   const { world, content } = ctx;
   const def = illDef(content, id);
   if (!def || guarded(ctx, p.id, def)) return undefined;
-  if (!opts.sure && ctx.rng().int(content.health.sick.per) >= def.catch) return undefined;
+  const soap = content.health.sick.soap;
+  const odds = soap.ills.includes(id) ? (def.catch * (100 - soapCut(world))) / 100 : def.catch;
+  if (!opts.sure && ctx.rng().int(content.health.sick.per) >= odds) return undefined;
   const shows = world.tick + (opts.shows ?? def.shows) * TICKS_PER_DAY;
   const row = addEntity(world, 'ill', {
     ...{ person: p.id, ill: def.id, state: 'coming', caught: world.tick, shows, ends: 0 },
@@ -217,7 +220,8 @@ function spreadNight(ctx: SystemContext): void {
     for (const q of people) {
       if (q.id === p.id || (q['z'] as number) > 0) continue;
       if (!tiles.has((q['y'] as number) * width + (q['x'] as number))) continue;
-      if (ctx.rng().int(content.health.sick.per) >= def.spread) continue;
+      if (ctx.rng().int(content.health.sick.per) >= (def.spread * (100 - soapCut(world))) / 100)
+        continue;
       expose(ctx, q, def.id, `shares ${p['name']}'s room`, [r['line'] as number], {
         sure: true,
         from: p.id,
@@ -229,6 +233,7 @@ function spreadNight(ctx: SystemContext): void {
 /** One hour of sickness for everyone. */
 export function sickHour(ctx: SystemContext): void {
   const { world, content } = ctx;
+  soapWeek(ctx);
   for (const p of world.entities['person'] ?? [])
     if (p['status'] === 'alive' && (p['z'] as number) === 0) countCold(ctx, p);
   for (const r of illsOf(world)) {

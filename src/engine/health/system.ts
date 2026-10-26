@@ -8,6 +8,7 @@ import type { System, SystemContext } from '../sim/index.ts';
 import { buryAtDayEnd, unburiedHour } from './death.ts';
 import { healHour } from './heal.ts';
 import { expose, illDef, sickHour, SICK_TABLES } from './sick.ts';
+import { SOAP_TABLES } from './soap.ts';
 import { HEALTH_TABLES, partDef, wound } from './wounds.ts';
 
 /** `hurt {person, part, severity}` (test mode): a cut there, as if it had happened. */
@@ -85,7 +86,7 @@ export const healthSystem: System = {
     'health.grave',
     'health.passed',
   ],
-  tables: { ...HEALTH_TABLES, ...SICK_TABLES },
+  tables: { ...HEALTH_TABLES, ...SICK_TABLES, ...SOAP_TABLES },
   commands: {
     hurt: (ctx, command, cause) => hurt(ctx, command.data, cause),
     sicken: (ctx, command, cause) => sicken(ctx, command.data, cause),

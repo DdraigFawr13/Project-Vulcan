@@ -5,6 +5,9 @@ export interface HoursView {
   workFrom: number;
   workTo: number;
   sleepFrom: number;
+  /** Today's first light and dusk in hours, decimals (P5.13), for the strip's lit hours. */
+  dawn: number;
+  dusk: number;
 }
 
 /** A person's answer to a law (P4.8, V-091): obeys, grumbles or refuses, with the reason. */
