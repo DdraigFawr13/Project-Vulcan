@@ -3060,7 +3060,7 @@
         "h": 32
       }
     },
-    "furn.pits": {
+    "furn.millstones": {
       "frame": {
         "x": 443,
         "y": 341,
@@ -3080,7 +3080,7 @@
         "h": 32
       }
     },
-    "furn.shelf.e": {
+    "furn.oven": {
       "frame": {
         "x": 1,
         "y": 375,
@@ -3100,7 +3100,7 @@
         "h": 32
       }
     },
-    "furn.shelf.n": {
+    "furn.pits": {
       "frame": {
         "x": 35,
         "y": 375,
@@ -3120,7 +3120,7 @@
         "h": 32
       }
     },
-    "furn.shelf.s": {
+    "furn.quern": {
       "frame": {
         "x": 69,
         "y": 375,
@@ -3140,7 +3140,7 @@
         "h": 32
       }
     },
-    "furn.shelf.w": {
+    "furn.shelf.e": {
       "frame": {
         "x": 103,
         "y": 375,
@@ -3160,7 +3160,7 @@
         "h": 32
       }
     },
-    "furn.smelter": {
+    "furn.shelf.n": {
       "frame": {
         "x": 137,
         "y": 375,
@@ -3180,7 +3180,7 @@
         "h": 32
       }
     },
-    "furn.table": {
+    "furn.shelf.s": {
       "frame": {
         "x": 171,
         "y": 375,
@@ -3200,7 +3200,7 @@
         "h": 32
       }
     },
-    "furn.tub": {
+    "furn.shelf.w": {
       "frame": {
         "x": 205,
         "y": 375,
@@ -3220,7 +3220,7 @@
         "h": 32
       }
     },
-    "furn.well": {
+    "furn.smelter": {
       "frame": {
         "x": 239,
         "y": 375,
@@ -3240,7 +3240,7 @@
         "h": 32
       }
     },
-    "pasture.cocks": {
+    "furn.table": {
       "frame": {
         "x": 273,
         "y": 375,
@@ -3260,7 +3260,7 @@
         "h": 32
       }
     },
-    "pasture.meadow": {
+    "furn.tub": {
       "frame": {
         "x": 307,
         "y": 375,
@@ -3280,7 +3280,7 @@
         "h": 32
       }
     },
-    "pasture.rick.1": {
+    "furn.well": {
       "frame": {
         "x": 341,
         "y": 375,
@@ -3300,7 +3300,7 @@
         "h": 32
       }
     },
-    "pasture.rick.2": {
+    "furn.wheel.1": {
       "frame": {
         "x": 375,
         "y": 375,
@@ -3320,7 +3320,7 @@
         "h": 32
       }
     },
-    "pasture.rick.3": {
+    "furn.wheel.2": {
       "frame": {
         "x": 409,
         "y": 375,
@@ -3340,7 +3340,7 @@
         "h": 32
       }
     },
-    "pasture.stubble": {
+    "furn.wheel.3": {
       "frame": {
         "x": 443,
         "y": 375,
@@ -3360,7 +3360,7 @@
         "h": 32
       }
     },
-    "pasture.swath": {
+    "furn.wheel.ice": {
       "frame": {
         "x": 1,
         "y": 409,
@@ -3380,9 +3380,149 @@
         "h": 32
       }
     },
-    "pasture.tuft": {
+    "pasture.cocks": {
       "frame": {
         "x": 35,
+        "y": 409,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "pasture.meadow": {
+      "frame": {
+        "x": 69,
+        "y": 409,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "pasture.rick.1": {
+      "frame": {
+        "x": 103,
+        "y": 409,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "pasture.rick.2": {
+      "frame": {
+        "x": 137,
+        "y": 409,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "pasture.rick.3": {
+      "frame": {
+        "x": 171,
+        "y": 409,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "pasture.stubble": {
+      "frame": {
+        "x": 205,
+        "y": 409,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "pasture.swath": {
+      "frame": {
+        "x": 239,
+        "y": 409,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "pasture.tuft": {
+      "frame": {
+        "x": 273,
         "y": 409,
         "w": 32,
         "h": 32
@@ -3560,7 +3700,10 @@
       "furn.hearth.lit.2",
       "furn.hearth.lit.3",
       "furn.loom",
+      "furn.millstones",
+      "furn.oven",
       "furn.pits",
+      "furn.quern",
       "furn.shelf.e",
       "furn.shelf.n",
       "furn.shelf.s",
@@ -3569,6 +3712,10 @@
       "furn.table",
       "furn.tub",
       "furn.well",
+      "furn.wheel.1",
+      "furn.wheel.2",
+      "furn.wheel.3",
+      "furn.wheel.ice",
       "pasture.cocks",
       "pasture.meadow",
       "pasture.rick.1",
