@@ -33,6 +33,9 @@ import { walkTo } from './walk.ts';
 /** The tick before which they do not look for work again after finding none. */
 export const LOOK_AGAIN = 30;
 
+/** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
+export const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
+
 /** Carrying: to the nearest store that takes what they hold; the home store grows when the load
  * finds no room. A good the stores already hold their plate of goes only to a store of its kind
  * (goods/plates.ts). */

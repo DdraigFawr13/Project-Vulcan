@@ -101,15 +101,17 @@ function bleed(ctx: SystemContext, p: EntityRow, wounds: EntityRow[]): boolean {
 }
 
 /** The per cent chance a wound festers over its first days: the kind's own chances, else the
- * severity's, [with care, without]; `herbs.fester` per cent of it while herbed. */
+ * severity's, [with care, without]; `herbs.fester` per cent of it while herbed and
+ * `lamp.chandler.soap.fester` per cent of that if a healer washed it with soap (V-135). */
 export function festerChance(ctx: Pick<SystemContext, 'world' | 'content'>, w: EntityRow): number {
   const { world, content } = ctx;
   // A kind of wound may have its own chances (a bite festers more), for deep and grave ones.
   const own = content.health.wounds.find((d) => d.id === w['kind'])?.fester;
   const base = (own ?? severityOf(content, w).fester)?.[dressed(ctx, w) ? 0 : 1] ?? 0;
-  return herbedNow(world, content, w)
+  const herbed = herbedNow(world, content, w)
     ? Math.floor((base * content.health.herbs.fester) / 100)
     : base;
+  return w['washed'] ? Math.floor((herbed * content.lamp.chandler.soap.fester) / 100) : herbed;
 }
 
 /** Festering in a wound's first days, and the fever it brings; true when the fever killed. */
