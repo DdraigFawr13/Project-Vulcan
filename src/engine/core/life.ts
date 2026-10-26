@@ -107,6 +107,8 @@ export interface ToolsDef {
     minutes: number;
     /** How many the cart brings, when not `cart`. */
     cart?: number;
+    /** At most this many people want one at once, those who do its work most. */
+    holders?: number;
   }[];
   materials: readonly { id: string; name: string; speed: number; life: number; ingot?: string }[];
   quality: Readonly<Record<string, number>>;

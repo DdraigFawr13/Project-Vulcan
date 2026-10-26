@@ -88,6 +88,8 @@ export const HEALTH_SCHEMAS = {
       per: num({ min: 1 }),
       coldHours: num({ min: 1 }),
       foulNear: count,
+      // The illness a foul drink exposes to (an `ills` id).
+      foulIll: text,
       warmLake: num({}),
       shun: num({ min: 1 }),
       shunNear: count,

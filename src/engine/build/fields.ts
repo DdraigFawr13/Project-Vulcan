@@ -12,7 +12,7 @@ import {
   type WorldState,
 } from '../core/index.ts';
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
-import { marksOf, raiseStock } from '../goods/index.ts';
+import { haveOf, marksOf, raiseStock, wantOf as plateOf } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { tileTemperature } from '../weather/index.ts';
@@ -87,10 +87,15 @@ export function cropNow(world: WorldState, content: EngineContent, f?: EntityRow
   if (f && !f['crop']) {
     const pick = courseNow(content, f, month);
     if (!pick || meanSoil(world, f) < content.buildings.field.soil.rest) return undefined;
-    // Flax takes a beans course while linen is short (P5.5).
+    // Flax takes a beans course while linen is short and food is not (P5.5): a band under its
+    // food plate sows to eat (anvil's only field went to flax with the store empty).
     const flax = cropOf(content, content.clothes.flax.crop);
     if (pick.crop.id === content.clothes.flax.instead && flax?.sow.includes(month))
-      if (flaxWanted(world, content)) return flax;
+      if (
+        haveOf(world, content, 'food') >= plateOf(world, content, 'food') &&
+        flaxWanted(world, content)
+      )
+        return flax;
     return pick.crop;
   }
   const own = f && f['crop'] ? cropOf(content, f['crop'] as string) : undefined;

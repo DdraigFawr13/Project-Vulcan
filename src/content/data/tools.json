@@ -6,7 +6,7 @@
 {"id":"hoe","name":"hoe","serves":["farm"],"ingots":1,"charcoal":1,"minutes":120},
 {"id":"spear","name":"spear","serves":["hunt"],"ingots":1,"charcoal":1,"minutes":120},
 {"id":"hammer","name":"hammer","serves":["build","carpentry"],"ingots":1,"charcoal":1,"minutes":120},
-{"id":"kit","name":"healer's kit","serves":["heal"],"ingots":1,"charcoal":1,"minutes":120,"cart":0}],
+{"id":"kit","name":"healer's kit","serves":["heal"],"ingots":1,"charcoal":1,"minutes":120,"cart":0,"holders":2}],
 "materials":[
 {"id":"stone","name":"stone","speed":100,"life":3600},
 {"id":"bronze","name":"bronze","speed":130,"life":12000,"ingot":"bronze-ingot"},

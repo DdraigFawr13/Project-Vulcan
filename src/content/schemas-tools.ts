@@ -35,6 +35,8 @@ export const TOOLS_SCHEMAS = {
         minutes: num({ min: 1 }),
         // How many the cart brings, when not the file's `cart` (the healer's kit: none).
         cart: opt(count),
+        // At most this many people want one at once, those who do its work most (the healer's kit).
+        holders: opt(num({ min: 1 })),
       }),
     ),
     // `speed` per cent, `life` in work minutes; a material with an `ingot` is smithed from it.

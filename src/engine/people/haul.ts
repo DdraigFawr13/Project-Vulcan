@@ -256,7 +256,15 @@ function chooseLoad(ctx: SystemContext, p: EntityRow, spare: boolean): EntityRow
       // but only by someone with nothing else to do: a harvest heap must not stop the building.
       const spoils = (i['rot'] as number) > 0 || dailyOf(content, i['kind'] as string) > 0;
       plain = enough(i) ? cluttered(i, at) : room(i);
-      extra = enough(i) && !spoils ? cluttered(i, at) : room(i);
+      // As `deliver` places it: past its plate, with a store of its kind standing, only that
+      // store (or the home store from indoors) takes it, else it is set down again at once.
+      const own = enough(i) && depotsFor(world, content, i['kind'] as string).length > 0;
+      extra =
+        enough(i) && !spoils
+          ? cluttered(i, at)
+          : own
+            ? keeps(i) || (indoors(ctx, at) && room(i))
+            : room(i);
     }
     plain &&= d < far;
     extra &&= d < farSpare;
