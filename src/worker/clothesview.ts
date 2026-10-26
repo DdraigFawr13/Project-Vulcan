@@ -21,14 +21,17 @@ const worthWord = (id: unknown): string =>
   content.clothes.worth.find((w) => w.id === id)?.word ?? String(id);
 
 /** Who made a garment: the first actor of its `clothes.made` line, else "came with them" (the
- * cart and newcomers, whose `made` is the arrival line). */
+ * cart and newcomers, whose `made` is the arrival line). A line older than the ledger's week is a
+ * stub with no actors, so the garment reads "made here" and its "why?" ends at the older record. */
 function makerOf(world: WorldState, item: EntityRow): { by: string; why?: number } {
   const line = item['made'] as number;
   const e = line > 0 ? recordOf(world, line) : undefined;
-  const actor = e && e.type === 'clothes.made' ? (e as SimEvent).actors[0] : undefined;
+  if (!e || e.type !== 'clothes.made') return { by: 'came with them' };
+  if (!('actors' in e)) return { by: 'made here', why: line };
+  const actor = (e as SimEvent).actors[0];
   const name = (world.entities['person'] ?? []).find((q) => q.id === actor)?.['name'] as
     string | undefined;
-  return name ? { by: `by ${name}`, why: line } : { by: 'came with them' };
+  return { by: name ? `by ${name}` : 'made here', why: line };
 }
 
 /** One row per garment worn, in slot order: "Everyday", "Wool tunic, good", and its second line
