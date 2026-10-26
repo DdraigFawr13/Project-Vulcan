@@ -112,7 +112,7 @@ export class PersonSheet {
     this.fillExtra(w);
   }
 
-  /** "Wearing" (the worn cloak), "Memories" (each live one and the days left) and "Tools" (each
+  /** "Wearing" (a row per garment), "Memories" (each live one and the days left) and "Tools" (each
    * with its hours left, a button to its page; owned like a bed, so no lever); the text is the
    * worker's, redrawn only when it changes. */
   private fillExtra(w: WalkerView): void {
@@ -160,12 +160,29 @@ export class PersonSheet {
       el('h3', {}, 'Warmth line'),
       el('p', {}, w.warmLine.text),
       el('h3', {}, 'Wearing'),
-      el('p', { class: 'wearing' }, w.wearing ?? 'No cloak.'),
+      ...this.wearingRows(w),
       el('h3', {}, 'Memories'),
       ...memories,
       el('h3', {}, 'Tools'),
       ...this.toolRows(w),
     );
+  }
+
+  /** A row per garment worn: its slot, "Wool tunic, good", and "by Eadgyth · worn 40% · warms 2°"
+   * with a why? to the line that made it; the worker's words. */
+  private wearingRows(w: WalkerView): HTMLElement[] {
+    if (!w.wearing?.length) return [el('p', { class: 'muted' }, 'Nothing to wear.')];
+    return w.wearing.map((r) => {
+      const text = el('span', {});
+      text.append(el('b', {}, r.text), el('br'), el('small', { class: 'aside' }, r.detail));
+      const row = el('div', { class: 'prow wear', 'data-testid': 'wearing-row' });
+      row.append(el('b', { class: 'slot' }, r.slot), text);
+      if (r.why !== undefined)
+        row.append(
+          el('button', { type: 'button', class: 'why', 'data-why': String(r.why) }, 'why?'),
+        );
+      return row;
+    });
   }
 
   private toolRows(w: WalkerView): HTMLElement[] {

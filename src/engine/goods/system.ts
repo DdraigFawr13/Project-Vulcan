@@ -7,6 +7,7 @@ import { canReach } from '../paths/index.ts';
 import type { System } from '../sim/index.ts';
 import { GOODS_TABLES, itemsOf, layItem, stackSize } from './stacks.ts';
 import { layTool, restOf } from './tools.ts';
+import { putOn } from './clothes.ts';
 import { markCommands, MARK_TABLES } from './marks.ts';
 import { DEPOT_TABLES } from './depots.ts';
 import { rollTrips, TRIP_TABLES } from './trips.ts';
@@ -98,19 +99,9 @@ export const goodsSystem: System = {
         { owner: p.id, state: 'laid' },
       ),
     );
-    // Each settler arrives wearing a wool cloak (V-092): held and worn, so it lies on no tile.
-    for (const p of people) {
-      const at = {
-        kind: cart.cloak,
-        count: 1,
-        x: p['x'] as number,
-        y: p['y'] as number,
-        z: 0,
-        made,
-      };
-      const id = layItem(world, at, { owner: p.id, state: 'worn', wear: content.life.cloak.last });
-      itemsOf(world).find((i) => i.id === id)!['holder'] = p.id;
-    }
+    // Each settler arrives dressed (V-092, P5.5): clothes are held and worn, so they lie on no tile.
+    for (const p of people)
+      for (const kind of content.clothes.cart) putOn(world, content, p, kind, made);
     setUpStore(ctx, made);
     setUpStock(ctx, made);
     // The cart's stone tools (tools.json `cart` of each kind) are kept with the cart.

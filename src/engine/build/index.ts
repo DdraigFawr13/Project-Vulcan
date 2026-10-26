@@ -13,6 +13,7 @@ export {
   nthOf,
   rowsOf,
   sizeOf,
+  PITS_KIND,
   ROAD_KIND,
   wantOf as buildWantOf,
 } from './houses.ts';
@@ -81,6 +82,7 @@ export { ringOf } from './ring.ts';
 export { freeBlock } from './metalsite.ts';
 export { bricksWanted, kilnOf } from './brick.ts';
 export { sizeOfStation, stationAt, stationOf, stationsOf, STATION_TABLES } from './station.ts';
+export { leatherStored, livePits, storedOf, wantsOuter } from './pits.ts';
 export { ingotInStore, sendBackBlock, smithiesOf } from './smithy.ts';
 export {
   foldRect,

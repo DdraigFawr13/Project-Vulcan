@@ -8,6 +8,7 @@ import { expose, illDef } from '../health/index.ts';
 import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { bedSpot, houseAt, mainOf, piecesOf } from '../build/index.ts';
 import { isWinter } from '../law/index.ts';
+import { putOn } from '../goods/index.ts';
 import { neighboursOf, type Neighbour } from '../region/index.ts';
 import type { RngStream } from '../core/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
@@ -107,6 +108,9 @@ function come(ctx: SystemContext, rng: RngStream, near: readonly Neighbour[]): v
     ),
   );
   const rows = ids.map((id) => people(world).find((p) => p.id === id)!);
+  // They come dressed for the road (P5.5).
+  for (const p of rows)
+    for (const kind of content.clothes.newcomer) putOn(world, content, p, kind, drawn);
   if (rows.length > 1) [rows[0]!['partner'], rows[1]!['partner']] = [ids[1]!, ids[0]!];
   for (const p of rows) toGreen(ctx, p);
   // A neighbour struck lately (P5.7): each of its people may carry the disease, showing later.

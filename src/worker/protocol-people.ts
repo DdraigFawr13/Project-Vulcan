@@ -87,8 +87,8 @@ export interface WalkerView {
   carried?: true;
   /** The tools they hold, each with its hours left (V-088); owned like a bed, no lever. */
   tools: { id: number; kind: string; text: string }[];
-  /** The cloak they wear and how worn it is, in words (V-092); none without one. */
-  wearing?: string;
+  /** What they wear, one row per garment in slot order (V-092, V-134); none when bare. */
+  wearing?: WearingRow[];
   /** Their live memories (V-091): the text, its mood in points, the days before it fades, the
    * line that made it (for "why?") and, when it weighs on the law now, which way (P4.8). */
   memories: { text: string; mood: number; days: number; why: number; lean?: string }[];
@@ -102,6 +102,21 @@ export interface WalkerView {
   home?: { text: string; why?: number };
   /** A stranger's page while the band speaks or they walk away (P5.9); none for the colony. */
   stranger?: StrangerView;
+}
+
+/** A worn garment: its slot, name and worth, the second line, and the line that made it. */
+export interface WearingRow {
+  slot: string;
+  text: string;
+  detail: string;
+  why?: number;
+}
+
+/** The Stock sheet's Clothes lines: the spares of each slot, and what the colony holds to make
+ * more. */
+export interface ClothesPlate {
+  slots: { name: string; text: string }[];
+  making: string;
 }
 
 /** A stranger's page (P5.9): who and from where, why they came, what they bring, what now. */
