@@ -99,8 +99,11 @@ describe('mining', () => {
     }
   });
 
-  it('gets iron ore to the store with only the plate raised, each line tracing to it', () => {
-    for (const seed of ORE_SEEDS) {
+  // One test a seed: since the larder (thirst, sowing first) tallow takes 22 days to its ore, and
+  // four seeds in one test ran past the time limit on CI.
+  it.each(ORE_SEEDS)(
+    'gets iron ore to the store with only the plate raised, each line tracing to it (%s)',
+    (seed) => {
       const sim = createSim(base);
       const world = createWorld(sim, seed);
       send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
@@ -121,8 +124,8 @@ describe('mining', () => {
       const sunk = linesOf(world, 'map.shaftSunk');
       const at = (l: (typeof sunk)[number]) => `${l.data['x']},${l.data['y']}`;
       expect(sunk.filter((l) => at(l) === at(sunk[0]!))).toHaveLength(3);
-    }
-  });
+    },
+  );
 
   it('sends a shaft plan back once; the replacement cannot be sent back', () => {
     const sim = createSim(base);
