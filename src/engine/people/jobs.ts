@@ -24,7 +24,7 @@ import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
 import { burying, takeUpBurial } from './burial.ts';
-import { dosing } from './draught.ts';
+import { dosing, draughtFirst } from './draught.ts';
 import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
@@ -284,7 +284,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
  * food is, carrying, building (a house's site cleared first) and the rest. */
 function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   const { world } = ctx;
-  if (takeUpMarked(ctx, p, false)) return true;
+  if (takeUpMarked(ctx, p, false) || draughtFirst(ctx, p)) return true;
   for (const job of jobsInOrder(world, ctx.content, p)) {
     const before = p['took'];
     if (TAKE_UP[job]?.(ctx, p)) return true;

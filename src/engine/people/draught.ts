@@ -1,6 +1,8 @@
 // Draughts (P5.7, V-136), Healing row work in work hours: a free, able person who puts Healing
 // high enough takes a draught to the nearest person abed sick who has had none for
-// `sick.draughtEvery` hours. A draught is one herb from the store: it takes `skillCut` off every
+// `sick.draughtEvery` hours. Like feeding, it comes before other new work, for whoever free puts
+// Healing highest, unless they put it last (`draughtFirst`); Healing is last in the Work sheet's
+// order, so under the start levels it would otherwise never come round. A draught is one herb from the store: it takes `skillCut` off every
 // 100 of a grave case's death chance per herbalism point (at most `cutMost`), and the first one
 // shortens the rest of the illness by `shorten` a point (at most `shortenMost`). With no herbs the
 // healer nurses them only (`nurseCut` a point) and the bout is marked herbless, which the herb
@@ -11,6 +13,7 @@ import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
+import { able, levelOf, outranked } from './priority.ts';
 import { people, skillOf, spotOf } from './spots.ts';
 import { worked } from './tools.ts';
 import { walkTo } from './walk.ts';
@@ -42,6 +45,16 @@ export function takeUpDraught(ctx: SystemContext, p: EntityRow): boolean {
   if (!q || !walkTo(ctx, p, spotOf(q))) return false;
   Object.assign(p, { job: 'draught', target: q.id, work: -1 });
   return true;
+}
+
+/** Before other new work: a draught due, unless they put Healing last or someone free puts it
+ * higher. */
+export function draughtFirst(ctx: SystemContext, p: EntityRow): boolean {
+  const { world, content } = ctx;
+  const job = content.health.care.job;
+  if (!able(content, p, job)) return false;
+  if (levelOf(world, content, p.id, job) >= content.work.priority.words.length) return false;
+  return !outranked(ctx, p, job, () => true) && takeUpDraught(ctx, p);
 }
 
 const stop = (p: EntityRow): false => {

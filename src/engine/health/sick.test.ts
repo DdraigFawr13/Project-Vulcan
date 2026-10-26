@@ -47,6 +47,19 @@ describe('sickness', () => {
     expect(lines(world, 'command.refused').at(-1)?.data['kind']).toBe('sicken');
   });
 
+  it('brings the sick a draught before other work, under the start levels', () => {
+    const sim = createSim(calm);
+    const world = createWorld(sim, 'anvil');
+    step(world, sim, 3 * DAY);
+    const p = world.entities['person']![0]!;
+    send(world, 'sicken', { person: p.id, ill: 'chill' });
+    step(world, sim, 2 * DAY);
+    const bout = boutOf(world, p.id)!;
+    expect(bout['healer']).toBeGreaterThan(0);
+    const given = lines(world, 'health.draught').concat(lines(world, 'health.noDraught'));
+    expect(given.some((e) => e.actors[1] === p.id)).toBe(true);
+  });
+
   it('kills a grave case untended, naming the grave illness; a healer cuts the chance', () => {
     const deadly: Content = {
       ...calm,
