@@ -17,7 +17,8 @@ export {
   wantOf as buildWantOf,
 } from './houses.ts';
 export { bedSpot, builtHome, homeFor, householdOf, othersHome, sleepsIn } from './beds.ts';
-export { feastInHall, hallOf, mournInHall, whoseOf } from './homes.ts';
+export { hallOf, mournInHall, whoseOf } from './homes.ts';
+export { feastOf } from './feast.ts';
 export { roomAt, type Room } from './rooms.ts';
 export { atMidden, middensOf } from './midden.ts';
 export { courseNow, meanSoil, yieldAt } from './fieldsoil.ts';
@@ -63,6 +64,7 @@ export {
 } from './wants.ts';
 export { HEARTH } from './hearths.ts';
 export { buildWell, noteDrink, planWell, WELL, WELL_TABLES, wellsOf, waterSpots } from './well.ts';
+export { millOf, noteGrind, quernToday, turning } from './mill.ts';
 export {
   cropNow,
   sowNow,
@@ -76,6 +78,8 @@ export {
 } from './fields.ts';
 export { finishReaping, finishSowing } from './fieldlife.ts';
 export { ringOf } from './ring.ts';
+export { freeBlock } from './metalsite.ts';
+export { bricksWanted, kilnOf } from './brick.ts';
 export { sizeOfStation, stationAt, stationOf, stationsOf, STATION_TABLES } from './station.ts';
 export { ingotInStore, sendBackBlock, smithiesOf } from './smithy.ts';
 export {

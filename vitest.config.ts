@@ -5,6 +5,8 @@ import { defineConfig } from 'vitest/config';
 // files out so it stays under 30 s; `npm run check:full` and CI's core job run every file. Direct
 // runs (`npx vitest run <file>`, `npm run test:related`) always include them.
 const slowFiles = [
+  // The mill and harvest home (5B Bundle 4): a 240-day run on anvil.
+  'src/engine/build/mill.test.ts',
   'src/engine/build/fields.test.ts',
   'src/engine/build/walls.test.ts',
   'src/engine/people/cook.test.ts',
@@ -39,6 +41,9 @@ const slowFiles = [
   'src/engine/map/levels.test.ts',
   // Stores by kind (5B Bundle 1): a run to the first store built and filled.
   'src/engine/build/stores.test.ts',
+  // Salt and the cellar (5B Bundle 3): runs of 20 to 60 days with miners digging.
+  'src/engine/mine/salt.test.ts',
+  'src/engine/keep/cellar.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).

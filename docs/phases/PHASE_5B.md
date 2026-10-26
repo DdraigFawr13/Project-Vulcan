@@ -7,7 +7,9 @@ Goal: a colony that feeds, clothes, lights and mends itself through the winters.
 - [x] Spec approved by Morgan, 2026-10-25 (PR #83)
 - [x] Bundle 1, stores by kind (V-129), 2026-10-25
 - [x] Bundle 2, the larder: P5.1, P5.2 (V-130, V-131, V-149), 2026-10-26
-- [ ] Bundle 3, kitchen and keeping: P5.3, P5.12
+- [x] Bundle 3, kitchen and keeping: P5.3, P5.12, 2026-10-26
+  - [x] Part 1: recipes and graded meals, cooks light the hearth, spoiling by place and warmth with weekly store lines, 2026-10-26
+  - [x] Part 2: curer and smokehouse, salt seam, cooper and barrels, cellar, potter, kiln, pots and bricks; feeders of the hurt bring a full meal, 2026-10-26
 - [ ] Bundle 4, mill and bakery: P5.11, harvest home
 - [ ] Bundle 5, the loom: P5.5
 - [ ] Bundle 6, the lamp: P5.13, soap, lit rooms
@@ -55,7 +57,7 @@ Recipes and meal worth; spoilage by place, warmth and keeping; cellar; curer, co
 
 Quern, mill and wheel, oven, miller and baker; the feast in the hall. Mock-up: UI. Done when: the frozen-river table.
 
-- Reading list: `docs/DECISIONS.md` V-085 V-133; `src/engine/build/MODULE.md`; `src/engine/people/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/DECISIONS.md` V-085 V-133 V-150; `docs/MILL_AND_FEAST.md`; `src/engine/build/MODULE.md`; `src/engine/people/MODULE.md`; `src/ui/MODULE.md`
 
 ### Bundle 5: P5.5 the loom
 

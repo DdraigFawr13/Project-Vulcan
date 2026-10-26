@@ -60,6 +60,31 @@ export const TOWN_SCHEMAS = {
   // P5.2 (V-131): the well. Over the last `days` days, once `from` have passed, a mean of more than
   // `walk` minutes a person a day spent walking to drink (or the water most drunk from frozen)
   // plans one well of furniture kind `kind` within `near` tiles of the first hearth.
+  // 5B Bundle 4 (V-133): the quern, the mill and baking; see core/mill.ts for each dial.
+  mill: obj({
+    job: ref('jobs'),
+    from: list(ref('items')),
+    flour: ref('items'),
+    quern: obj({
+      kind: text,
+      rate: num({ min: 1 }),
+      batch: num({ min: 1 }),
+      most: num({ min: 1 }),
+    }),
+    wheel: obj({ rate: num({ min: 1 }), batch: num({ min: 1 }) }),
+    ...{ want: num({ min: 1 }), days: num({ min: 1 }), w: num({ min: 3 }), h: num({ min: 3 }) },
+    ...{ near: num({ min: 1 }), tries: num({ min: 1 }) },
+    ...{ door: text, floor: text, stones: text },
+    bake: obj({
+      ...{ job: ref('jobs'), bread: ref('items'), fuel: ref('items') },
+      ...{ perPerson: num({ min: 1 }), skilled: num({ min: 1 }) },
+      hearth: obj({ batch: num({ min: 1 }), minutes: num({ min: 1 }) }),
+      oven: obj({
+        ...{ kind: text, batch: num({ min: 1 }), minutes: num({ min: 1 }) },
+        days: num({ min: 1 }),
+      }),
+    }),
+  }),
   well: obj({
     kind: text,
     walk: num({ min: 1 }),
@@ -98,6 +123,9 @@ export const TOWN_SCHEMAS = {
         from: text,
         to: text,
         eaten: opt(bool()),
+        // A store dug below its larder (keep/cellar.ts): never sited on the surface; its footprint
+        // is the larder's, one level down, and it takes its goods before the larder does.
+        below: opt(bool()),
       }),
     ),
   }),

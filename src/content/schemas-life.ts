@@ -3,6 +3,7 @@
 // from 0 to `scale`; rates are per game hour.
 import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, id, text, texts } from './schema-fields';
+import { COOK, COOPER, CURE, KEEP, POTTER } from './schemas-food';
 import { TOWN_SCHEMAS } from './schemas-town';
 
 // A house size or stage: a footprint of walls round a floor, and how many it sleeps.
@@ -136,7 +137,7 @@ export const LIFE_SCHEMAS = {
       avoid: count,
       walk: num({ min: 1 }),
       why: text,
-      words: obj({ sink: text, tunnel: text, mine: text, clay: text }),
+      words: obj({ sink: text, tunnel: text, mine: text, clay: text, cellar: text }),
     }),
     // Foraging (P2.9): the jobs.json job and the good it serves, minutes a bush takes at skill
     // `skilled`, bushes looked for within `reach` tiles of the store; a bush picked is ripe again
@@ -237,23 +238,11 @@ export const LIFE_SCHEMAS = {
       // row under it. Jobs under no heading (haul, build, tend) are plain rows on top.
       headings: list(obj({ name: text, jobs: list(ref('jobs')) })),
     }),
-    // Cooking (V-090): the jobs.json `job`, the `meal` item laid, the `fuel` item burnt (one a
-    // batch), raw foods in order of preference (`from`), enough of one for `batch` meals at `gain` times
-    // its food value (rawFor in people/cook.ts) used for them in
-    // `minutes` at skill `skilled`; meals under `perPerson` for each person make a cook take it up,
-    // and a meal at most `prefer` tiles further than the nearest food is preferred to eat.
-    cook: obj({
-      job: ref('jobs'),
-      meal: ref('items'),
-      fuel: ref('items'),
-      from: list(ref('items')),
-      gain: num({ min: 1 }),
-      batch: num({ min: 1 }),
-      minutes: num({ min: 1 }),
-      skilled: num({ min: 1 }),
-      perPerson: num({ min: 1 }),
-      prefer: count,
-    }),
+    keep: KEEP,
+    cook: COOK,
+    cure: CURE,
+    cooper: COOPER,
+    potter: POTTER,
     // Skills by use (P2.5): minutes of practice from one level to the next, `start` plus
     // `perLevel` times the level now.
     learn: obj({ start: num({ min: 1 }), perLevel: count }),

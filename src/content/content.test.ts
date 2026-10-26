@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { content, contentHash, hashContent, rawContent, validateContent } from './index';
 
@@ -62,5 +63,14 @@ describe('content', () => {
     changed.items[0].per += 0.001;
     expect(hashContent(changed)).not.toBe(contentHash);
     expect(hashContent(copy())).toBe(contentHash);
+  });
+
+  it('has a frame in sprites-nature for every vein the map draws underground', () => {
+    // A missing frame stops the page with an error screen (the salt seam, 5B Bundle 3).
+    const frames = Object.keys(
+      JSON.parse(readFileSync('public/art/sprites-nature.json', 'utf8')).frames as object,
+    );
+    for (const f of content.features.filter((x) => x.kind === 'vein'))
+      expect(frames, f.id).toContain(`${f.art}.1`);
   });
 });

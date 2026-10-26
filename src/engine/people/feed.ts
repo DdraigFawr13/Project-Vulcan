@@ -1,7 +1,8 @@
 // Feeding the hurt (P5.6): someone lying hurt cannot fetch food. When their food is under its
 // `seek` line, the nearest free person awake who can get to them fetches food (the nearest that
-// is not food of last resort) and brings it; it is on the danger rung, so it comes before their
-// own work. Not a line: the hunger line, if one comes, is the needs system's.
+// is not food of last resort) and brings enough to fill them, fed one after another at the bed;
+// it is on the danger rung, so it comes before their own work. Not a line: the hunger line, if one
+// comes, is the needs system's.
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { itemsOf } from '../goods/index.ts';
 import { bodiesOf, isDown } from '../health/index.ts';
@@ -62,7 +63,12 @@ export function seekFeeders(
       .find((r) => foodFor(ctx, r));
     if (!q) continue;
     answer(q, p);
-    Object.assign(q, { plan: p.id, what: foodFor(ctx, q)!, target: -1 });
+    const what = foodFor(ctx, q)!;
+    // Enough to fill them (a trip to the stores can be long), within one load.
+    const value = (needOf(world, p.id, 'food')?.['value'] as number) ?? 0;
+    const gives = content.life.eat[what] ?? 1;
+    const count = Math.min(content.work.haul.load, Math.ceil((content.life.scale - value) / gives));
+    Object.assign(q, { plan: p.id, what, target: -1, work: Math.max(1, count) });
     fed.add(p.id);
   }
 }
@@ -82,12 +88,22 @@ export function feeding(ctx: SystemContext, q: EntityRow): boolean {
   if (!lying(world, p)) return stop(q);
   if ((q['path'] as number[]).length) return true;
   const kind = q['what'] as string;
-  const got = fetchKind(ctx, q, kind, 1);
+  const held = () => itemsOf(world).find((i) => i['holder'] === q.id && i['kind'] === kind);
+  const got = fetchKind(ctx, q, kind, Math.max(1, q['work'] as number));
   if (got === 'walking') return true;
-  if (got === 'none') return stop(q);
+  // No more lies about: what they already carry is still brought.
+  if (got === 'none' && !held()) return stop(q);
   if (far(spotOf(q), spotOf(p)) > 1) return walkTo(ctx, q, spotOf(p)) || stop(q);
-  const item = itemsOf(world).find((i) => i['holder'] === q.id && i['kind'] === kind);
-  if (item) eat(ctx, p, item);
+  const scale = ctx.content.life.scale;
+  const gives = ctx.content.life.eat[kind] ?? 0;
+  for (let item = held(); item; item = held()) {
+    const value = (needOf(world, p.id, 'food')?.['value'] as number) ?? scale;
+    if (value > scale - gives / 2) break;
+    eat(ctx, p, item);
+  }
+  // Whatever is left over is laid by the bed for the next meal.
+  const left = held();
+  if (left) Object.assign(left, { ...spotOf(q), holder: 0 });
   stop(q);
   return true;
 }

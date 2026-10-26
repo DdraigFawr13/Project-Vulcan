@@ -3,6 +3,7 @@
 // of the world, like views.ts.
 import { content } from '../content/index.ts';
 import {
+  floorsOf,
   freeTile,
   haveOf,
   inStore,
@@ -16,10 +17,14 @@ import {
   partOf,
   planAt,
   plansOf,
+  barrelsAt,
+  potsAt,
+  rateOf,
   recordOf,
   stockOf,
   storeOf,
   wantOf,
+  type EntityRow,
   type SimEvent,
   type Stub,
   type WorldState,
@@ -107,6 +112,27 @@ export const stockView = (world: WorldState): StockView[] =>
     ...(recipeOf(def.good) && { status: metalStatus(world, content, recipeOf(def.good)!) }),
   }));
 
+/** A meal's grade before its name (P5.3): "good stew". */
+const graded = (i: EntityRow): string =>
+  content.items.find((d) => d.id === i['kind'])?.cooked && i['quality'] !== 'plain'
+    ? `${i['quality'] as string} `
+    : '';
+
+/** What food loses here (P5.12): ", loses 2% a month here", a meal "a tenth a day". */
+function keeps(world: WorldState, i: EntityRow, floors: ReadonlySet<number>): string {
+  const rate = rateOf(world, content, i, floors);
+  if (!rate) return '';
+  if (content.items.find((d) => d.id === i['kind'])?.cooked)
+    return `, loses ${Math.round(rate * 100)}% a day`;
+  const month = rate * 28 * 100;
+  const barrels = barrelsAt(world, i['x'] as number, i['y'] as number, i['z'] as number);
+  const pots = potsAt(world, i['x'] as number, i['y'] as number, i['z'] as number);
+  const kept =
+    (barrels ? `, in ${barrels} barrel${barrels === 1 ? '' : 's'}` : '') +
+    (pots ? `, in ${pots} pot${pots === 1 ? '' : 's'}` : '');
+  return `, loses ${month < 1 ? 'under 1' : Math.round(month)}% a month here${kept}`;
+}
+
 /** The inspector's goods rows for tile (x, y, z), each with the line that made or brought it. */
 export function tileGoods(
   world: WorldState,
@@ -119,13 +145,14 @@ export function tileGoods(
     const e = recordOf(world, id as number);
     return e && lineOf(e);
   };
+  const floors = floorsOf(world, content);
   const goods = itemsAt(world, x, y, z).map((i) => {
     const count = i['count'] as number;
     const kind = i['kind'] as string;
     const made = line(i['made']);
     const def = content.items.find((d) => d.id === kind);
     return {
-      text: `${nameOf(kind)}${count > 1 ? ` × ${count}` : ''}${i['state'] === 'laid' ? ', laid out' : ''}`,
+      text: `${graded(i)}${nameOf(kind)}${count > 1 ? ` × ${count}` : ''}${i['state'] === 'laid' ? ', laid out' : ''}${keeps(world, i, floors)}`,
       ...(made && { made }),
       // A tool or an ingot has a page of its own: where it came from (P4.6).
       ...((def?.tool || def?.good === 'metal') && { item: i.id }),

@@ -8,6 +8,8 @@
   {"id":"quarry","risk":0.002,"name":"Quarrying","worker":"quarrier","skill":"stoneworking","requirements":{"strength":9,"endurance":8},"workplace":"stone","outputs":{"stone":2},"serves":"materials","heavy":true,"tools":true},
   {"id":"mine","risk":0.003,"name":"Mining","worker":"miner","skill":"mining","requirements":{"strength":10,"endurance":9},"workplace":"ore","outputs":{"ore":1},"serves":"materials","heavy":true,"tools":true},
   {"id":"cook","name":"Cooking","worker":"cook","skill":"cooking","requirements":{},"workplace":"kitchen","rawFood":3,"outputs":{"meal":4},"serves":"food"},
+  {"id":"mill","name":"Milling","worker":"miller","requirements":{},"workplace":"mill","serves":"food"},
+  {"id":"bake","name":"Baking","worker":"baker","skill":"cooking","requirements":{},"workplace":"oven","serves":"food"},
   {"id":"build","risk":0.001,"name":"Building","worker":"builder","skill":"building","requirements":{"strength":8},"workplace":"construction","action":"build","serves":"shelter","heavy":true},
   {"id":"carpentry","name":"Carpentry","worker":"carpenter","skill":"crafting","requirements":{},"workplace":"construction","action":"build","serves":"shelter"},
   {"id":"tend","name":"Tending","worker":"tender","requirements":{},"workplace":"fire","action":"tend","serves":"shelter"},
@@ -16,6 +18,9 @@
   {"id":"craft-wares","name":"Crafting","worker":"craftsman","skill":"crafting","requirements":{"agility":9},"workplace":"workshop","inputs":{"logs":0.25},"reserve":{"logs":300},"outputs":{"wares":1},"serves":"goods"},
   {"id":"heal","name":"Healing","worker":"herbalist","skill":"herbalism","requirements":{"intellect":10},"workplace":"herbs","outputs":{"herbs":1},"serves":"health"},
   {"id":"charcoal","name":"Charcoal","worker":"charcoal burner","skill":"woodcutting","requirements":{},"workplace":"clamp","serves":"materials"},
+  {"id":"cure","name":"Curing","worker":"curer","skill":"cooking","requirements":{},"workplace":"smokehouse","serves":"food"},
+  {"id":"cooper","name":"Coopering","worker":"cooper","skill":"crafting","requirements":{},"workplace":"bench","serves":"food"},
+  {"id":"potter","name":"Pottery","worker":"potter","skill":"crafting","requirements":{},"workplace":"kiln","serves":"food"},
   {"id":"smelt","name":"Smelting","worker":"smelter","skill":"smithing","requirements":{},"workplace":"smelter","serves":"materials"},
   {"id":"haul","risk":0.0005,"name":"Hauling","worker":"hauler","requirements":{},"workplace":"construction","action":"haul","serves":"shelter","heavy":true}
 ]

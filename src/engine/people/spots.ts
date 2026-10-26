@@ -2,7 +2,7 @@
 // walking to stand beside a tile, and laying a yield out on the open ground around it.
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { planAt, stationAt } from '../build/index.ts';
-import { depotAt, itemsAt, layItem, stackSize, storeKindOf } from '../goods/index.ts';
+import { depotAt, depotTakes, itemsAt, layItem, stackSize } from '../goods/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { walkTo } from './walk.ts';
@@ -73,6 +73,7 @@ export function layAround(
   at: Spot,
   made: number,
   trail = '',
+  quality = 'plain',
 ): number {
   const { world, content } = ctx;
   const map = world.map;
@@ -89,11 +90,11 @@ export function layAround(
         if (at.z === 0 && (planAt(world, x, y)?.['state'] === 'plan' || stationAt(world, x, y)))
           continue;
         // Not into a store of another kind (5B Bundle 1).
-        const store = at.z === 0 ? depotAt(world, x, y, 0) : undefined;
-        if (store && store['store'] !== storeKindOf(content, kind)?.id) continue;
+        const store = depotAt(world, x, y, at.z);
+        if (store && !depotTakes(content, store, kind)) continue;
         if (!canReach(content, map, at, { x, y, z: at.z })) continue;
         const n = Math.min(size, left);
-        layItem(world, { kind, count: n, x, y, z: at.z, made }, { trail });
+        layItem(world, { kind, count: n, x, y, z: at.z, made }, { trail, quality });
         left -= n;
       }
   return count - left;

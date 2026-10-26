@@ -4,7 +4,7 @@
 // steps it, writes a ledger line or draws from an RNG stream.
 import type { Command, EventData, RegionSite, RegionValley } from '../engine/index.ts';
 import type { SaveFile } from './save.ts';
-import type { GoodsView, ItemView, StockView, WorksView } from './protocol-goods.ts';
+import type { GoodsView, ItemView, StockView, StoreView, WorksView } from './protocol-goods.ts';
 export type { GoodsView, ItemView, Spot3, StockView } from './protocol-goods.ts';
 import type { HoursView, LawView } from './protocol-law.ts';
 export type { AnswerView, HoursView, LawView, StrangersLawView } from './protocol-law.ts';
@@ -198,7 +198,7 @@ export interface TileView {
   goods?: { text: string; made?: LedgerLine; item?: number }[];
   /** Part of a store (the home store or a store of a kind, 5B Bundle 1): its name, what it takes,
    * how full it is, and the lines that set it up (or sited it) and built it. */
-  store?: { name: string; takes: string; holds: string; made?: LedgerLine; built?: LedgerLine };
+  store?: StoreView;
   /** Test mode (`?debug`): a tree is marked here, a tree could be, or the store could take it. */
   marked?: true;
   tree?: true;

@@ -8,7 +8,7 @@
 // healer nurses them only (`nurseCut` a point) and the bout is marked herbless, which the herb
 // garden reads (build/herbs.ts). Nursing a catching illness may give it to the healer.
 import type { EntityRow, WorldState } from '../core/index.ts';
-import { abedSick, boutOf, bodyOf, expose, illDef } from '../health/index.ts';
+import { boutOf, bodyOf, expose, illDef } from '../health/index.ts';
 import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -23,9 +23,11 @@ const far = (a: Spot, b: Spot): number =>
 
 const due = (ctx: SystemContext, q: EntityRow): boolean => {
   const { world, content } = ctx;
-  if (q['status'] !== 'alive' || !abedSick(world, content, q.id)) return false;
-  if (bodyOf(world, q.id)?.['carrier']) return false;
-  const last = boutOf(world, q.id)!['draught'] as number;
+  const bout = boutOf(world, q.id);
+  if (q['status'] !== 'alive' || bout?.['state'] !== 'sick') return false;
+  if (!illDef(content, bout['ill'] as string)?.abed || bodyOf(world, q.id)?.['carrier'])
+    return false;
+  const last = bout['draught'] as number;
   return !last || world.tick - last >= content.health.sick.draughtEvery * 60;
 };
 

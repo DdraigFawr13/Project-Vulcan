@@ -80,7 +80,10 @@ describe('saves', () => {
     step(loaded, sim, 40320);
     step(unbroken, sim, 40320);
     expect(toNdjson(allLines(loaded))).toBe(toNdjson(allLines(unbroken)));
-  });
+    // Two 28-day runs of a whole world: 7.5 s alone and 11 s under a full local run, just over
+    // the default 15 s on CI since cooks cook (5B Bundle 3); a world-run test's budget, as in
+    // stores.test and strangers.test (LESSONS 2026-10-26, VR-47).
+  }, 30000);
 
   it('refuses a save from other content, another format or damaged', () => {
     const save = () => structuredClone(saveOf(world, contentHash));

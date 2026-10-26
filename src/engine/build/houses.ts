@@ -93,6 +93,7 @@ export function houseName(world: WorldState, content: EngineContent, id: number)
   // Trees on a field's site are cleared the same way (P4.7), and on a smithy's (P4.9).
   if ((world.entities['smithy'] ?? []).some((f) => f.id === id)) return 'smithy';
   if ((world.entities['pasture'] ?? []).some((f) => f.id === id)) return 'pasture';
+  if ((world.entities['mill'] ?? []).some((f) => f.id === id)) return 'mill';
   // And on a store's (5B Bundle 1).
   const d = (world.entities['depot'] ?? []).find((f) => f.id === id);
   if (d) return content.buildings.stores.kinds.find((k) => k.id === d['store'])?.name ?? 'store';

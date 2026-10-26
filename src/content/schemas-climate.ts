@@ -31,6 +31,9 @@ export const CLIMATE_SCHEMAS = {
     // above takes it off; it counts as lying when `snowShare` of the open ground has it.
     snowMelt: num(),
     snowShare: share,
-    ice: obj({ shallow: iceDays, deep: iceDays, thaw: count, cap: iceDays, over: share }),
+    ice: obj({
+      ...{ shallow: iceDays, deep: iceDays, stream: iceDays, river: iceDays },
+      ...{ thaw: count, cap: iceDays, over: share },
+    }),
   }),
 };

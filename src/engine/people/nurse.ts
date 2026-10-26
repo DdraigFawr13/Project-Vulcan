@@ -9,7 +9,8 @@ import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bindWounds } from './care.ts';
-import { takeUpDraught } from './draught.ts';
+import { dosing, takeUpDraught } from './draught.ts';
+export { draughtFirst } from './draught.ts';
 import { sew } from './surgery.ts';
 import { worked } from './tools.ts';
 import { practise } from './learn.ts';
@@ -106,8 +107,20 @@ function herbDress(ctx: SystemContext, h: EntityRow, p: EntityRow, w: EntityRow)
   w['herbed'] = world.tick;
 }
 
+/** One minute of a dressing or a draught in work hours; one not finished by the end of work is
+ * left for whoever takes it up next. False when they are doing neither. */
+export function nursing(ctx: SystemContext, p: EntityRow, hours: boolean): boolean {
+  const job = p['job'];
+  if (job !== 'dress' && job !== 'draught') return false;
+  if (!hours) {
+    Object.assign(p, { job: '', target: -1, work: 0 });
+    return false;
+  }
+  return job === 'dress' ? dressing(ctx, p) : dosing(ctx, p);
+}
+
 /** One minute of dressing; false when it ended. */
-export function dressing(ctx: SystemContext, h: EntityRow): boolean {
+function dressing(ctx: SystemContext, h: EntityRow): boolean {
   const { world, content } = ctx;
   const p = personOf(world, h['target'] as number);
   const wounds = p && p['status'] === 'alive' ? toDress(ctx, p.id) : [];
