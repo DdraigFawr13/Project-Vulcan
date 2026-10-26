@@ -21,6 +21,7 @@ import {
   weatherWords,
 } from '../engine/index.ts';
 import { tileHouse } from './build.ts';
+import { sunOf } from './lampview.ts';
 import { tileField } from './fields.ts';
 import { tileGoods } from './goods.ts';
 import { tileShaft } from './mine.ts';
@@ -39,6 +40,7 @@ export function clockView(tick: number): ClockView {
     hour: c.hour,
     minute: c.minute,
     season: content.calendar.seasons[c.season]!,
+    ...sunOf(tick),
   };
 }
 

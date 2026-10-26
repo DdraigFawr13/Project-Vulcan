@@ -34,6 +34,7 @@ import { burialGoods } from './places.ts';
 import { furnitureGoods, tilePiece } from './furniture.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
+import { candleNote, litGoods } from './lampview.ts';
 import { keptNote, storeTile } from './stores.ts';
 import { stationGoods, tileWorks } from './works.ts';
 
@@ -76,9 +77,11 @@ export function goodsOf(world: WorldState): GoodsView {
       })),
     furniture: [...furnitureGoods(world), ...stationGoods(world)],
     fires: fireGoods(world),
+    lit: litGoods(world),
     work: [...workBars(world), ...jobBars(world)],
     fields: [...fieldFrames(world), ...pastureFrames(world)],
     shafts: shaftPlans(world),
+    skeps: (world.entities['skep'] ?? []).map((s) => ({ ...at(s), state: s['state'] as string })),
     middens: middensOf(world).map(({ x, y, z }) => ({ x, y, z })),
     ...burialGoods(world),
   };
@@ -103,7 +106,9 @@ export const stockView = (world: WorldState): StockView[] =>
     want: wantOf(world, content, def.good),
     level: (stockOf(world, def.good)?.['level'] as string) ?? def.start,
     levels: def.levels.map((l) => ({ id: l.id, word: l.word, count: l.count })),
-    ...(def.note && { note: stockNote(world, def.good, def.note) }),
+    ...(def.note && {
+      note: stockNote(world, def.good, def.note).replace('{candles}', candleNote(world)),
+    }),
     ...(recipeOf(def.good) && { status: metalStatus(world, content, recipeOf(def.good)!) }),
   }));
 

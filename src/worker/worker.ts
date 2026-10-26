@@ -40,6 +40,7 @@ import { itemView } from './items.ts';
 import { miningShown } from './mine.ts';
 import { peopleFeed, peopleOf, walkersOf } from './people.ts';
 import { withLying } from './places.ts';
+import { sunOf } from './lampview.ts';
 import { clockView, greenOf, placeWords, tileView, weatherOf } from './views.ts';
 import { animalFeed, animalPage, leftoversView } from './wild.ts';
 
@@ -180,7 +181,7 @@ function snapshot(w: WorldState): void {
       at: pace.last,
       speed: pace.speed,
       skipping: pace.skip,
-      day: lawHours(w, content),
+      day: { ...lawHours(w, content), ...sunOf(w.tick) },
       law: lawsOf(w),
       clock: clockView(w.tick),
       chunks,

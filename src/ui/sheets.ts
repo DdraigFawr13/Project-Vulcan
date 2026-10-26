@@ -51,7 +51,7 @@ export interface SheetDeps {
 export class Sheets {
   private people: readonly PersonView[] = [];
   private walkers: readonly WalkerView[] = [];
-  private day: Day = { workFrom: 6, workTo: 18, sleepFrom: 22 };
+  private day: Day = { workFrom: 6, workTo: 18, sleepFrom: 22, dawn: 6, dusk: 18 };
   private workKey = '';
   private buildView: BuildView | undefined;
   private buildKey = '';

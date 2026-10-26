@@ -41,7 +41,7 @@ export function planFacts(tile: TileView): [string, string][] {
   // A home's household and beds, or the hall's role, beds, feasts and mourning (P5.14).
   for (const r of house?.rows ?? []) rows.push([r.name.toLowerCase(), r.text]);
   if (room) {
-    rows.push(['beds', room.beds], ['warmth', room.warmth]);
+    rows.push(['beds', room.beds], ['warmth', room.warmth], ['light', room.light]);
   }
   return rows;
 }
