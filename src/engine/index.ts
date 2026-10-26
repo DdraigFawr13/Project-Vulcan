@@ -6,7 +6,7 @@ import { calendarSystem } from './calendar/index.ts';
 import { fireSystem } from './fire/index.ts';
 import { flockSystem } from './flock/index.ts';
 import { lampSystem } from './lamp/index.ts';
-export { floorsOf, rateOf } from './keep/index.ts';
+export { barrelsAt, floorsOf, potsAt, rateOf } from './keep/index.ts';
 import { keepSystem } from './keep/index.ts';
 import { goodsSystem } from './goods/index.ts';
 import { healthSystem } from './health/index.ts';

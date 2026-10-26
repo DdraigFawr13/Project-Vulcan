@@ -121,6 +121,8 @@ export interface StoreKindDef {
   to: string;
   /** Food: eating counts as using it at the home store. */
   eaten?: boolean;
+  /** Dug one level under its larder, not sited on the surface (keep/cellar.ts). */
+  below?: boolean;
 }
 
 /** How stores by kind are sited (build/stores.ts, goods/trips.ts). */

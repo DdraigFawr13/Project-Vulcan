@@ -36,7 +36,10 @@ export function stationGoods(world: WorldState): GoodsView['furniture'] {
     const [x, y, z] = [s['x'] as number, s['y'] as number, s['z'] as number];
     if (s['kind'] === 'smelter')
       return [{ x, y, z, art: 'furn.smelter', facing: 's', plan: s['state'] !== 'built' }];
-    const lit = s['state'] === 'lit';
+    // The smokehouse and the kiln wear the clamp's smoking frames once built (no art of its own yet).
+    const lit =
+      s['state'] === 'lit' ||
+      (['smokehouse', 'kiln'].includes(s['kind'] as string) && s['state'] === 'built');
     const out: GoodsView['furniture'] = [];
     for (let dy = 0; dy < (s['h'] as number); dy += 1)
       for (let dx = 0; dx < (s['w'] as number); dx += 1)
@@ -61,8 +64,12 @@ function whyHere(world: WorldState, s: EntityRow): string {
 }
 
 /** The person at a kind of work and what they are doing now, in the Work sheet's words. */
-function doingOf(world: WorldState, jobs: string[]): WorksView['doing'] {
-  const p = (world.entities['person'] ?? []).find((q) => jobs.includes(q['job'] as string));
+function doingOf(world: WorldState, jobs: string[], station?: EntityRow): WorksView['doing'] {
+  const p = (world.entities['person'] ?? []).find(
+    (q) =>
+      jobs.includes(q['job'] as string) &&
+      (q['job'] !== 'station' || !station || q['plan'] === station.id),
+  );
   if (!p) return undefined;
   const now = nowOf(world, p);
   return {
@@ -112,9 +119,53 @@ function smelterPage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView
       ['makes', recipesText()],
       ['in the store', reach],
     ],
-    ...(built || s['work'] !== -1 ? { doing: doingOf(world, ['smelt', 'station']) } : {}),
+    ...(built || s['work'] !== -1 ? { doing: doingOf(world, ['smelt', 'station'], s) } : {}),
     lines: linesOf(world, lineOf, [
       ['Waiting · ', s['alert']],
+      ['Built · ', s['made']],
+      ['Planned · ', s['line']],
+    ]),
+  };
+}
+
+function housePage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView {
+  const def = content.work.cure;
+  const built = s['state'] === 'built';
+  const fresh = def.from.map((k) => `${itemName(k)} ${haveOf(world, content, k)}`).join(', ');
+  return {
+    name: 'Smokehouse',
+    rows: [
+      ['what', `a smokehouse: ${def.batch} fresh meat or fish a batch, smoked over firewood`],
+      [
+        'state',
+        built ? 'built' : `planned: ${s['have'] as number} of ${def.house.cost} stone here`,
+      ],
+      ['why here', whyHere(world, s)],
+      ['fresh food', fresh],
+      ['cured', `${itemName(def.smoked)} ${haveOf(world, content, def.smoked)}`],
+    ],
+    ...(built || s['work'] !== -1 ? { doing: doingOf(world, ['cure', 'station'], s) } : {}),
+    lines: linesOf(world, lineOf, [
+      ['Built · ', s['made']],
+      ['Planned · ', s['line']],
+    ]),
+  };
+}
+
+function kilnPage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView {
+  const def = content.work.potter;
+  const built = s['state'] === 'built';
+  return {
+    name: 'Kiln',
+    rows: [
+      ['what', `a kiln: ${def.clay} clay fired into a pot, or into ${def.brick.per} bricks`],
+      ['state', built ? 'built' : `planned: ${s['have'] as number} of ${def.kiln.cost} stone here`],
+      ['why here', whyHere(world, s)],
+      ['clay', `${itemName(def.clayItem)} ${haveOf(world, content, def.clayItem)}`],
+      ['bricks', `${itemName(def.brick.item)} ${haveOf(world, content, def.brick.item)}`],
+    ],
+    ...(built || s['work'] !== -1 ? { doing: doingOf(world, ['potter', 'station'], s) } : {}),
+    lines: linesOf(world, lineOf, [
       ['Built · ', s['made']],
       ['Planned · ', s['line']],
     ]),
@@ -198,6 +249,9 @@ export function tileWorks(
   const station = stationAt(world, x, y);
   if (!station) return undefined;
   return {
-    works: (station['kind'] === 'clamp' ? clampPage : smelterPage)(world, station, lineOf),
+    works: (
+      { clamp: clampPage, smokehouse: housePage, kiln: kilnPage }[station['kind'] as string] ??
+      smelterPage
+    )(world, station, lineOf),
   };
 }

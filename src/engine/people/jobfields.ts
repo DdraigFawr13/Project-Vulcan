@@ -1,7 +1,7 @@
 // The person fields the work in jobs.ts keeps (kept apart so jobs.ts stays under its line limit).
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `beekeep`, `chandle`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
-   * `charcoal`, `smelt`, `station` (the smelter being built), `mill`, `bake` or '' (none). */
+  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `beekeep`, `chandle`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`, `charcoal`, `smelt`, `station` (a smelter or smokehouse being built),
+   * `cure`, `cooper`, `potter`, `mill`, `bake` or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',

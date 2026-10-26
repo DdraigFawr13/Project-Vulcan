@@ -1,7 +1,7 @@
 {
 "daylight":[[5.5,18.5],[4.75,19.5],[4,20.25],[3.25,21],[3.5,20.75],[4.5,19.75],[5.5,18.5],[6.25,17.5],[7,16.75],[7.5,16.5],[7.25,16.75],[6.5,17.75]],
 "dark":["tend","herd","smith"],
-"dim":["cook","heal","chandle","mill","bake"],
+"dim":["cook","heal","chandle","mill","bake","cure","potter"],
 "candle":["carpentry"],
 "at":{"carpentry":"bench"},
 "candles":[{"item":"candle","name":"tallow candle","minutes":180},{"item":"wax-candle","name":"wax candle","minutes":360}],

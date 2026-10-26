@@ -5,14 +5,22 @@
 // Also digging clay for a wall that waits for it. Ore, rubble and clay lie where they come out
 // and haulers carry them up (haul.ts). Taking up, each level, tile dug and vein mined are lines.
 import type { EntityRow } from '../core/index.ts';
-import { haveOf, layItem, loadOf, stockOf, trailText, wantOf } from '../goods/index.ts';
+import { haveOf, layItem, stockOf, trailText, wantOf } from '../goods/index.ts';
 import { diggable, layerOf, openAround, setTile } from '../map/index.ts';
-import { metalsOf, nextDig, oreShort, shaftFor, veinOpen } from '../mine/index.ts';
+import {
+  metalsOf,
+  nextDig,
+  oreShort,
+  saltCause,
+  saltShort,
+  shaftFor,
+  veinOpen,
+} from '../mine/index.ts';
 import { pack, reachFrom, unpack, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { reachableStacks } from './build.ts';
+import { cellarWork, dugCellar } from './cellar.ts';
 import { clayWork } from './clay.ts';
-import { ladderOf, sinking } from './shaft.ts';
+import { ladderOf, laddered, sinking } from './shaft.ts';
 import { nameOf, practiseMining, start, stop, takenBy, type Kind, type Task } from './minetask.ts';
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
 import { goBeside, layAround, people, spotOf } from './spots.ts';
@@ -57,50 +65,39 @@ function veinFor(ctx: SystemContext, p: EntityRow, metal: string): number | unde
   return best;
 }
 
-/** Whether the logs for the ladder can be had: what `p` holds and the stacks they can reach make
- * up its count. When they do not, `mine.noLadder` says so once for each change of the plate. */
-function laddered(
-  ctx: SystemContext,
-  p: EntityRow,
-  metal: string,
-  ladder: { kind: string; count: number },
-  plate: number | undefined,
-): boolean {
-  const held = loadOf(ctx.world, p.id);
-  const have =
-    (held?.['kind'] === ladder.kind ? (held['count'] as number) : 0) +
-    reachableStacks(ctx, p, ladder.kind).reduce((n, s) => n + (s.item['count'] as number), 0);
-  if (have >= ladder.count) return true;
-  const mark = `noLadder-${metal}`;
-  if (ctx.state[mark] !== (plate ?? 0))
-    ctx.emit('mine.noLadder', {
-      causes: plate ? [plate] : [],
-      data: { metal, logs: ladder.count },
-    });
-  ctx.state[mark] = plate ?? 0;
-  return false;
-}
-
 /** What this person would do next, or undefined when nothing is wanted. */
 function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
   const { world, content } = ctx;
   const map = world.map;
   const mine = content.work.mine;
   const others = people(world).filter((q) => q.id !== p.id && q['job'] === 'mine');
-  for (const metal of metalsOf(content)) {
+  const saltId = content.work.cure.salt.item;
+  for (const metal of [...metalsOf(content), saltId]) {
     const def = content.features.find((f) => f.id === metal)!;
+    const salt = metal === saltId;
     const coming = others.filter((q) => q['task'] === 'mine' && q['what'] === metal).length;
-    if (oreShort(world, content, metal) - coming * def.amount <= 0) continue;
+    const short = salt ? saltShort(world, content) : oreShort(world, content, metal);
+    if (short - coming * def.amount <= 0) continue;
     const ingot = `${metal}-ingot`;
     const plate = stockOf(world, ingot);
-    const base = {
-      what: metal,
-      causes: [(plate?.['line'] as number) ?? 0].filter(Boolean),
-      good: content.work.stock.find((s) => s.good === ingot)?.name ?? ingot,
-      have: haveOf(world, content, ingot),
-      want: wantOf(world, content, ingot),
-    };
-    const word = (kind: Kind): string => mine.words[kind].replace('{m}', metal);
+    // Salt is wanted by the curer, not a plate: its causes are the curer's lines (mine/salt.ts).
+    const base = salt
+      ? {
+          what: metal,
+          causes: [saltCause(world)].filter(Boolean),
+          good: nameOf(content, def.yields!),
+          have: haveOf(world, content, def.yields!),
+          want: content.work.cure.salt.per,
+        }
+      : {
+          what: metal,
+          causes: [(plate?.['line'] as number) ?? 0].filter(Boolean),
+          good: content.work.stock.find((s) => s.good === ingot)?.name ?? ingot,
+          have: haveOf(world, content, ingot),
+          want: wantOf(world, content, ingot),
+        };
+    const word = (kind: Kind): string =>
+      mine.words[kind].replace('{m}', kind === 'mine' ? nameOf(content, def.yields!) : metal);
     const vein = veinFor(ctx, p, metal);
     if (vein !== undefined)
       return {
@@ -156,7 +153,7 @@ function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
       word: word('tunnel'),
     };
   }
-  return clayWork(ctx, p);
+  return cellarWork(ctx, p) ?? clayWork(ctx, p);
 }
 
 /** Mining, while an ingot plate is short of ore the colony cannot feed from an open vein, or a
@@ -239,7 +236,7 @@ function dig(ctx: SystemContext, p: EntityRow, at: Spot): void {
     line = ctx.emit('mine.veinMined', {
       causes: [p['took'] as number],
       actors: [p.id],
-      data: { ...base, count, metal: feature.id },
+      data: { ...base, count, metal: feature.id, what: nameOf(content, feature.yields) },
     });
   } else if (p['task'] === 'clay') {
     [item, count] = [kind.digs?.item, kind.digs?.count ?? 0];
@@ -267,6 +264,7 @@ function dig(ctx: SystemContext, p: EntityRow, at: Spot): void {
     at.z,
   );
   openAround(ctx, at.x, at.y, at.z, line);
+  if (p['task'] === 'tunnel') dugCellar(ctx, p, line);
   // A vein's ore keeps the tile it came from (P4.6): the step its ingots and tools carry on.
   const trail = feature?.yields
     ? trailText([{ s: 'mined', who: base.name, tick: world.tick, ...at, k: feature.yields }])

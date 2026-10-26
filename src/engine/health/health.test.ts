@@ -12,7 +12,7 @@ import {
   type WorldState,
 } from '../index.ts';
 import { inStore, itemsOf, layItem, storeOf } from '../goods/index.ts';
-import { memoriesOf } from '../needs/index.ts';
+import { memoriesOf, needOf } from '../needs/index.ts';
 import { bodyOf, dailyChance, openWounds, woundsOf } from './index.ts';
 import { festerChance } from './heal.ts';
 
@@ -129,6 +129,28 @@ describe('health', () => {
     expect(herbed[0]!.data['wound']).toMatch(/arm/);
     expect(stack().reduce((n, i) => n + (i['count'] as number), 0)).toBeLessThan(5);
     expect(lines(world, 'health.noHerbs')).toHaveLength(0);
+  });
+
+  it('brings someone hungry abed enough to fill them in one trip, not a handful each walk', () => {
+    const sim = createSim(withoutAccidents(game));
+    const world = createWorld(sim, 'smoke');
+    step(world, sim, DAY / 2);
+    const p = people(world)[1]!;
+    send(world, 'hurt', { person: p.id, part: 'left-leg', severity: 'deep' });
+    step(world, sim, 6 * 60);
+    expect(bodyOf(world, p.id)?.['down']).toBeTruthy();
+    const food = needOf(world, p.id, 'food')!;
+    food['value'] = 2000;
+    let trips = 0;
+    let feeding = false;
+    for (let m = 0; m < 8 * 60; m += 1) {
+      step(world, sim, 1);
+      const now = people(world).some((q) => q['job'] === 'feed' && q['plan'] === p.id);
+      if (now && !feeding) trips += 1;
+      feeding = now;
+    }
+    expect(trips).toBe(1);
+    expect(food['value'] as number).toBeGreaterThan(game.life.scale - 4000);
   });
 
   it('carries a miner who fell in the shaft to bed and binds the break, each line back to the fall', () => {
