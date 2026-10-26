@@ -22,7 +22,17 @@ export interface SeasonsDef {
   }[];
   snowMelt: number;
   snowShare: number;
-  ice: { shallow: number; deep: number; thaw: number; cap: number; over: number };
+  /** Freezing degree-days a lake's shallow and deep tiles need to freeze; running water (V-150)
+   * freezes later: `stream` and `river` tiles need their own counts. Springs never freeze. */
+  ice: {
+    shallow: number;
+    deep: number;
+    stream: number;
+    river: number;
+    thaw: number;
+    cap: number;
+    over: number;
+  };
 }
 
 export type AuraSite = 'peak' | 'spring' | 'wood' | 'lake' | 'cavern' | 'obsidian';

@@ -140,7 +140,7 @@ function siteStore(
 /** Whether the store's edge would cut the green off from ground beside it that it reaches now: a
  * narrow gap between the edge and another fence or a boulder (ledger: a wood yard sealed the
  * pasture's only gate, and the flock was never folded again). */
-function shutsOff(ctx: SystemContext, rect: Rect, door: Spot, green: Spot): boolean {
+export function shutsOff(ctx: SystemContext, rect: Rect, door: Spot, green: Spot): boolean {
   const { world, content } = ctx;
   const map = world.map;
   const ring = { x: rect.x - 1, y: rect.y - 1, w: rect.w + 2, h: rect.h + 2 };
@@ -230,9 +230,9 @@ export function planStores(ctx: SystemContext, green: Spot): void {
 }
 
 /** The store's parts as plans: its edge, the door (or a gap), the floor inside. */
-function placeEdge(
+export function placeEdge(
   ctx: SystemContext,
-  kind: StoreKindDef,
+  kind: Pick<StoreKindDef, 'name' | 'wall' | 'door' | 'floor'>,
   rect: Rect,
   door: Spot,
   id: number,

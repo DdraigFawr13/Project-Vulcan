@@ -61,7 +61,13 @@ function mealsShort(ctx: SystemContext, p: EntityRow): { have: number; want: num
   const def = content.work.cook;
   const want = alive(world).length * def.perPerson;
   const coming = people(world).filter((q) => q.id !== p.id && q['job'] === JOB).length * def.batch;
-  const have = mealsOf(world, content);
+  // The baker's loaves count toward tomorrow's meals (5B Bundle 4).
+  const bread = content.buildings.mill.bake.bread;
+  const have =
+    mealsOf(world, content) +
+    itemsOf(world)
+      .filter((i) => i['kind'] === bread)
+      .reduce((n, i) => n + (i['count'] as number), 0);
   return have + coming < want ? { have, want } : undefined;
 }
 

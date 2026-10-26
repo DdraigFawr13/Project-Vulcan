@@ -5,6 +5,8 @@ import { defineConfig } from 'vitest/config';
 // files out so it stays under 30 s; `npm run check:full` and CI's core job run every file. Direct
 // runs (`npx vitest run <file>`, `npm run test:related`) always include them.
 const slowFiles = [
+  // The mill and harvest home (5B Bundle 4): a 240-day run on anvil.
+  'src/engine/build/mill.test.ts',
   'src/engine/build/fields.test.ts',
   'src/engine/build/walls.test.ts',
   'src/engine/people/cook.test.ts',
