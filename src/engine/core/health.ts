@@ -93,6 +93,9 @@ export interface SickDef {
   shortenMost: number;
   /** World years in which a neighbour's outbreak is still carried by its people. */
   fresh: number;
+  /** Raw food losing this many per 1000 a day where it lies is turning: eaten hungry, it may
+   * give a griping belly. */
+  turning: number;
 }
 
 /** The healer's kit (P5.7): stitching wound kinds `stitch`, setting `set`; each cuts festering

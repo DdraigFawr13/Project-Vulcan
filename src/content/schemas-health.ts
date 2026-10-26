@@ -100,6 +100,7 @@ export const HEALTH_SCHEMAS = {
       shorten: count,
       shortenMost: count,
       fresh: num({ min: 1 }),
+      turning: num({ min: 1 }),
     }),
     // The herb garden (build/herbs.ts): `w` by `h` beds of part `bed`, laid out in a `sow` month
     // when the herb store ran dry for someone within `within` days.

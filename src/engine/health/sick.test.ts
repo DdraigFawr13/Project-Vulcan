@@ -80,6 +80,23 @@ describe('sickness', () => {
     expect(dyingChance(def, { id: 0, cut: 48 })).toBe(52);
   });
 
+  it('gives a griping belly to someone who eats turning food hungry, up and about', () => {
+    // Hungry whenever they eat: the food need's low line above where they go to eat.
+    const needs = calm.life.needs.map((d) => (d.id === 'food' ? { ...d, low: 9000 } : d));
+    const turning: Content = {
+      ...calm,
+      life: { ...calm.life, needs },
+      health: { ...h, sick: { ...h.sick, turning: 0 }, ills: ills({ gripes: { catch: 1000 } }) },
+    };
+    const sim = createSim(turning);
+    const world = createWorld(sim, 'smoke');
+    step(world, sim, 12 * DAY);
+    const griped = lines(world, 'health.sick').find((e) => e.data['a'] === 'a griping belly')!;
+    expect(String(griped.data['how'])).toMatch(/that was turning, hungry/);
+    expect(griped.causes.length).toBe(1);
+    expect(bodyOf(world, griped.actors[0]!)?.['down'] ?? 0).toBe(0);
+  });
+
   it('brings the chill on a day cold through, and gives it to whoever shares the room', () => {
     const cold: Content = {
       ...calm,
