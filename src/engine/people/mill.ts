@@ -1,7 +1,7 @@
 // Grinding and baking (5B Bundle 4, P5.11, V-041, V-133): the Mill heading's Miller and Baker rows.
 // Nobody is told to grind or bake. While flour (stored, lying or carried, and what others are
 // grinding) is under its plate, a free able person fetches a batch of grain and grinds it at the
-// mill while its wheel turns, else at a quern while it has had less than `quern.most` minutes
+// mill while its wheel turns, else at a quern while a whole batch fits in its `quern.most` minutes
 // today (build/mill.ts notes each minute). While bread is under `bake.perPerson` loaves a person,
 // a free able person fetches a batch of flour and a firewood and bakes at the oven, else at the
 // nearest hearth (the batch's firewood heats it). Each batch is a ledger line; trips are not.
@@ -110,10 +110,14 @@ function pickGrind(ctx: SystemContext, p: EntityRow): Pick | undefined {
   const atMill = turning(world, m);
   const batch = atMill ? def.wheel.batch : def.quern.batch;
   if (have + coming(world, p, def.job, batch) >= want) return undefined;
+  // One person grinds at a piece at a time (four at one quern shared its day's minutes and none
+  // finished a batch).
+  const free = (f: EntityRow) =>
+    !people(world).some((q) => q.id !== p.id && q['job'] === def.job && q['plan'] === f.id);
   const piece = atMill
-    ? builtPiece(ctx, p, (f) => f.id === m!['stones'])
-    : quernToday(world) < def.quern.most
-      ? builtPiece(ctx, p, (f) => f['kind'] === def.quern.kind)
+    ? builtPiece(ctx, p, (f) => f.id === m!['stones'] && free(f))
+    : quernToday(world) + Math.ceil((batch * 60) / def.quern.rate) <= def.quern.most
+      ? builtPiece(ctx, p, (f) => f['kind'] === def.quern.kind && free(f))
       : undefined;
   if (!piece) return undefined;
   const stack = stackOf(ctx, p, def.job, def.from, def.quern.batch);
