@@ -1,11 +1,9 @@
 // Work (P2.4): nobody is told what to do (V-015). In working hours a free person looks at what
-// the colony wants and takes something up themselves: while it has less wood than its stock
-// level asks for, someone able to fell (jobs.json `fell`: its strength and skill) picks a tree
-// (a fallen log first, then the standing tree nearest the store, never close to the camp),
-// works it down and leaves the logs where it stood; anyone free carries what lies outside the
-// store into it, onto a matching stack. Quarrying (P3.1) is felling's twin for stone: boulders
-// broken up while the colony has less stone than it wants. Building is build.ts. Taking up
-// felling or quarrying and each tree felled or boulder broken are ledger lines; trips are not.
+// the colony wants and takes something up themselves: under the wood stock level, someone able to
+// fell (jobs.json `fell`) picks a tree (a fallen log first, then the standing one nearest the
+// store, never close to the camp) and leaves the logs where it stood; anyone free carries what
+// lies outside the store into it. Quarrying (P3.1) is felling's twin for stone; building is
+// build.ts. Taking up work and each tree or boulder are ledger lines; trips are not.
 import { houseName } from '../build/index.ts';
 import { raiseChunk } from '../map/index.ts';
 import { needOf } from '../needs/index.ts';
