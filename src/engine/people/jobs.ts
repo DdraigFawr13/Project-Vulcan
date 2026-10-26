@@ -28,9 +28,9 @@ import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
-import { millWork, takeUpBaking, takeUpMilling } from './mill.ts';
+import { MILL_TAKE_UP, millWork } from './mill.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
-import { takeUpHearth } from './hearth.ts';
+import { coldHearth, hearthFirst, takeUpHearth } from './hearth.ts';
 import { takeUpTending, tending } from './tend.ts';
 import { furnishing, takeUpCarpentry } from './carpentry.ts';
 import { farming, takeUpFarming } from './farm.ts';
@@ -53,7 +53,7 @@ const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
 
 export const JOB_FIELDS = {
   /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
-   * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
+   * `charcoal`, `smelt`, `station` (the smelter being built), `mill`, `bake` or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -75,8 +75,11 @@ export const JOB_FIELDS = {
    * first fine-or-better piece (V-093), 0 until they make one. */
   making: 'text',
   fine: 'event',
-  /** Herding: the hay carried to the rick, and the wild herd being tamed with the minutes sat
-   * near it so far (a different herd starts again). */
+  /** Cooking (P5.3): the line of their first fine meal, 0 until they cook one; `lit` the work
+   * minutes left when they last worked at the fire, so a fire that went out mid-batch is seen. */
+  fineMeal: 'event',
+  lit: 'int',
+  /** Herding: hay carried to the rick; the herd being tamed and the minutes sat near it. */
   hay: 'count',
   herdId: 'int',
   sat: 'count',
@@ -226,7 +229,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'charcoal' && hours && burning(ctx, p)) return true;
   if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
   if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
-  // P5.6, P5.8: a burial is seen through once begun; dressing is work hours'.
+  // P5.6, P5.8: a burial is seen through once begun.
   if (p['job'] === 'bury' && burying(ctx, p)) return true;
   // A dressing not finished by the end of work is left for whoever takes it up next.
   if (p['job'] === 'dress' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
@@ -284,12 +287,14 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
 function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   const { world } = ctx;
   if (takeUpMarked(ctx, p, false)) return true;
-  for (const job of jobsInOrder(world, ctx.content, p)) {
+  for (const job of hearthFirst(ctx, p, jobsInOrder(world, ctx.content, p))) {
     const before = p['took'];
     if (TAKE_UP[job]?.(ctx, p)) return true;
     // Taken up (a line said) and stopped at once: look again later, not at the next kind.
     if (p['took'] !== before) break;
   }
+  // Nothing else to do: carry in the food past its plate that would spoil out there.
+  if (takeUpHauling(ctx, p, true)) return true;
   p['job'] = '';
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;
@@ -353,8 +358,7 @@ function takeUpGathering(ctx: SystemContext, p: EntityRow, g: Gather): boolean {
   return startGathering(ctx, p, tree, g);
 }
 
-/** How each kind of work on the Work sheet is taken up; a kind with no entry is never taken up
- * (content `work.priority.jobs` may list one before its milestone brings the work). */
+/** How each Work sheet kind is taken up; one with no entry (its milestone not yet in) never is. */
 const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boolean>> = {
   fell: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'fell')!),
   haul: takeUpHauling,
@@ -365,14 +369,14 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   herd: takeUpHerding,
   build: (ctx, p) =>
     takeUpBurial(ctx, p) ||
+    (coldHearth(ctx) && takeUpHearth(ctx, p)) ||
     takeUpMarked(ctx, p, true) ||
     takeUpHearth(ctx, p) ||
     takeUpStation(ctx, p) ||
     takeUpBuilding(ctx, p),
   tend: takeUpTending,
   cook: takeUpCooking,
-  mill: takeUpMilling,
-  bake: takeUpBaking,
+  ...MILL_TAKE_UP,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
   mine: takeUpMining,

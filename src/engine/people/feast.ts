@@ -1,8 +1,8 @@
 // The harvest-home supper (5B Bundle 4, proposal P1, V-093, V-121): once the colony has called it
 // (build/feast.ts), everyone free after work walks to the hall (else to the campfire) and waits.
-// When all who can come are there, or an hour before bedtime, they eat the best
-// food in store together: a cooked meal each if there are enough, else bread, else whatever food
-// gives most. One line names what was eaten and where; everyone there remembers the feast.
+// When all who can come are there, or at the last call before bed, they eat the best
+// food in store together: the most filling cooked food first (stew, pottage, bread), else whatever
+// food gives most. One line names what was eaten and where; everyone there remembers the feast.
 import { HEARTH, feastOf, furnitureOf, hallOf, roomsOf } from '../build/index.ts';
 import { clockAt, type EntityRow } from '../core/index.ts';
 import { hoursOf } from '../law/index.ts';
@@ -14,6 +14,9 @@ import type { SystemContext } from '../sim/index.ts';
 import { eat } from './eat.ts';
 import { people, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
+
+/** Minutes before bed when the supper is eaten by whoever has come. */
+const LAST_CALL = 15;
 
 /** Where the supper is: the hall's floor tiles, else the tiles round the first hearth. */
 function placeOfFeast(ctx: SystemContext): { tiles: number[]; words: string } | undefined {
@@ -33,22 +36,20 @@ function placeOfFeast(ctx: SystemContext): { tiles: number[]; words: string } | 
   return { tiles, words: 'round the fire on the green' };
 }
 
-/** The best food for one eater: a cooked meal, then bread, then the food that gives most. */
+/** The best food for one eater: the most filling cooked food (stew, pottage, bread), else the
+ * food that gives most. */
 function bestFood(ctx: SystemContext): EntityRow | undefined {
   const { content } = ctx;
   const eat = content.life.eat;
+  const cooked = (i: EntityRow) => (content.items.find((d) => d.id === i['kind'])?.cooked ? 1 : 0);
+  const value = (i: EntityRow) => eat[i['kind'] as string]!;
   const food = itemsOf(ctx.world).filter(
     (i) =>
       !i['holder'] &&
       eat[i['kind'] as string] !== undefined &&
       !content.life.lastResort.includes(i['kind'] as string),
   );
-  const order = [content.work.cook.meal, content.buildings.mill.bake.bread];
-  for (const kind of order) {
-    const got = food.find((i) => i['kind'] === kind);
-    if (got) return got;
-  }
-  return food.sort((a, b) => eat[b['kind'] as string]! - eat[a['kind'] as string]!)[0];
+  return food.sort((a, b) => cooked(b) - cooked(a) || value(b) - value(a) || a.id - b.id)[0];
 }
 
 /** Everyone there eats; one line, and the shared memory. */
@@ -104,12 +105,10 @@ export function feasting(ctx: SystemContext, p: EntityRow): boolean {
       (q) => q['status'] === 'alive' && !isDown(world, q.id) && q['doing'] !== 'sleep',
     );
     const all = coming.every((q) => (feast['there'] as number[]).includes(q.id));
-    // Those still at work or on their way get until an hour before bed.
-    if (
-      all ||
-      clockAt(world.tick, ctx.content.calendar).hour >=
-        hoursOf(world, ctx.content, p.id).sleepFrom - 1
-    )
+    // Those still at work or on their way get until the last call, a quarter hour before bed.
+    const clock = clockAt(world.tick, ctx.content.calendar);
+    const bed = hoursOf(world, ctx.content, p.id).sleepFrom * 60;
+    if (all || clock.hour * 60 + clock.minute >= bed - LAST_CALL)
       eatTogether(ctx, feast, place.words);
     p['path'] = [];
     return true;

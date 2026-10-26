@@ -26,8 +26,13 @@ export function sinking(ctx: SystemContext, p: EntityRow): boolean {
   const depth = shaft['depth'] as number;
   const [x, y] = [shaft['x'] as number, shaft['y'] as number];
   const ladder = depth === 0 ? ladderOf(content) : undefined;
-  const held = loadOf(world, p.id);
-  if (ladder && held && held['kind'] !== ladder.kind) return stop(ctx, p);
+  let held = loadOf(world, p.id);
+  // Anything else in hand (a bedroll still held after a night in a new bed) is set down here and
+  // the ladder fetched (5B Bundle 3: at dawn it made the sinker a hauler and the shaft waited).
+  if (ladder && held && held['kind'] !== ladder.kind) {
+    Object.assign(held, { ...spotOf(p), holder: 0 });
+    held = undefined;
+  }
   // Fetch until the ladder's count is held, however small the stacks lying about.
   if (ladder && (!held || (held['count'] as number) < ladder.count))
     return fetchLadder(ctx, p, ladder.kind, ladder.count);

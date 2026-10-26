@@ -8,6 +8,7 @@ import {
   fireOf,
   furnitureKind,
   furnitureOf,
+  itemsOf,
   placeOf,
   plansOf,
   recordOf,
@@ -68,6 +69,23 @@ const LABELS: Record<string, string> = {
   'work.tookUpTending': 'Tended',
 };
 
+/** The colony's cooked meals by grade and dish (P5.3), against tomorrow's want. */
+function mealsOf(world: WorldState): { meals?: string } {
+  const counts = new Map<string, number>();
+  let have = 0;
+  for (const i of itemsOf(world)) {
+    const def = content.items.find((d) => d.id === i['kind']);
+    if (!def?.cooked) continue;
+    const key = `${i['quality'] as string} ${def.name}`;
+    counts.set(key, (counts.get(key) ?? 0) + (i['count'] as number));
+    have += i['count'] as number;
+  }
+  const alive = (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive').length;
+  const want = alive * content.work.cook.perPerson;
+  const list = [...counts].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${n} ${k}`);
+  return { meals: `${have} of ${want} for tomorrow${list.length ? `: ${list.join(', ')}` : ''}` };
+}
+
 /** A built hearth's rows for its tile: lit, banked or out, its fuel, and the last line. */
 export function fireView(
   world: WorldState,
@@ -91,6 +109,7 @@ export function fireView(
     reach: here.indoors
       ? `the ${here.room}`
       : `the ground within ${content.work.fire.radius} tiles`,
+    ...mealsOf(world),
     ...(last && { last: lineOf(last), lastLabel: LABELS[last.type] ?? 'Last' }),
   };
 }

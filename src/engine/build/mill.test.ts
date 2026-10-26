@@ -7,7 +7,8 @@ import { content } from '../../content/index.ts';
 import { WATER, type WorldState } from '../core/index.ts';
 import { allLines, createSim, createWorld, step, submitCommand } from '../index.ts';
 import { memoriesOf } from '../needs/index.ts';
-import { furnitureOf, hallOf, millOf, millsOf, turning } from './index.ts';
+import { furnitureOf, hallOf, millOf, turning } from './index.ts';
+import { millsOf } from './mill.ts';
 
 const sim = createSim(content);
 const DAY = 1440;
@@ -20,7 +21,7 @@ describe('the mill and harvest home', () => {
   let world: WorldState;
   beforeAll(() => {
     world = createWorld(sim, 'anvil');
-    until(world, () => !!millOf(world), 160);
+    until(world, () => !!millOf(world), 220);
   }, 60000);
 
   it('grinds at a quern set by a hearth, then sites a mill on running water, unordered', () => {
@@ -59,7 +60,7 @@ describe('the mill and harvest home', () => {
   });
 
   it("holds one harvest home when the year's last field is in, and everyone comes", () => {
-    until(world, () => lines(world, 'hall.feast').length > 0, 200);
+    until(world, () => lines(world, 'hall.feast').length > 0, 220);
     const feasts = lines(world, 'hall.feast');
     expect(feasts).toHaveLength(1);
     // The barley came in first and brought no feast; the year's last field did.
@@ -77,9 +78,9 @@ describe('the mill and harvest home', () => {
   }, 60000);
 
   it('grinds at the mill once built, then plans an oven beside it', () => {
-    until(world, () => millOf(world)?.['state'] === 'built', 220);
+    until(world, () => millOf(world)?.['state'] === 'built', 260);
     expect(millOf(world)!['state']).toBe('built');
-    until(world, () => lines(world, 'build.ovenPlanned').length > 0, 240);
+    until(world, () => lines(world, 'build.ovenPlanned').length > 0, 280);
     expect(lines(world, 'food.ground').some((e) => e.data['where'] === 'at the mill')).toBe(true);
     expect(lines(world, 'food.baked').length).toBeGreaterThan(0);
     expect(lines(world, 'build.ovenPlanned')).toHaveLength(1);

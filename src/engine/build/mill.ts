@@ -27,7 +27,8 @@ import { hallOf } from './homes.ts';
 import { dirFrom } from './houses.ts';
 import { planPart, plansOf } from './plans.ts';
 import { doorOf, groundOf, outsideOf, scoreRect, type Rect } from './site.ts';
-import { placeEdge, shutsOff } from './stores.ts';
+import { shutsOff } from './site.ts';
+import { placeEdge } from './stores.ts';
 import { roomsOf, siteFor } from './wants.ts';
 import { inRect, isTreeAt, wayFrom, wayTo } from './way.ts';
 
@@ -163,7 +164,7 @@ function siteMill(ctx: SystemContext, green: Spot) {
     const door = doorOf(f.rect, green);
     const out = outsideOf(f.rect, door);
     if (way.trees[out.y * map.width + out.x]! < 0) continue;
-    if (shutsOff(ctx, f.rect, door, green)) continue;
+    if (shutsOff(world, content, f.rect, door, green)) continue;
     const tiles = wayTo(way, out.y * map.width + out.x);
     if (tiles.some((i) => inRect(f.rect, i % map.width, Math.floor(i / map.width)))) continue;
     // Trees on the way in are felled with the site's own.

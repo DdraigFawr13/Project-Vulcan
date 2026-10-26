@@ -193,8 +193,11 @@ function takeUp(ctx: SystemContext, p: EntityRow, job: 'mill' | 'bake'): boolean
   return millWork(ctx, p);
 }
 
-export const takeUpMilling = (ctx: SystemContext, p: EntityRow): boolean => takeUp(ctx, p, 'mill');
-export const takeUpBaking = (ctx: SystemContext, p: EntityRow): boolean => takeUp(ctx, p, 'bake');
+/** The Miller and Baker rows' take-up, for jobs.ts's table. */
+export const MILL_TAKE_UP = {
+  mill: (ctx: SystemContext, p: EntityRow): boolean => takeUp(ctx, p, 'mill'),
+  bake: (ctx: SystemContext, p: EntityRow): boolean => takeUp(ctx, p, 'bake'),
+};
 
 /** At the stack: take up to a batch, at least `least` (and, for baking, a firewood from the store). */
 function gather(ctx: SystemContext, p: EntityRow, most: number, least: number): boolean {

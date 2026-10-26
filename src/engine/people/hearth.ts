@@ -3,12 +3,19 @@
 // up the nearest planned hearth they can fetch stone for and works it where it stands, through the
 // same making flow as furniture (carpentry.ts `furnishing`), with the job word `hearth` on them.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { furnitureKind, furnitureLacks, furnitureOf, HEARTH, WELL } from '../build/index.ts';
+import {
+  furnitureKind,
+  furnitureLacks,
+  furnitureOf,
+  HEARTH,
+  roomAt,
+  WELL,
+} from '../build/index.ts';
 import { firesOf, pieceOfFire, placeOf, reachOf } from '../fire/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
 import { furnishing } from './carpentry.ts';
-import { able, outranked, priorityLine } from './priority.ts';
+import { able, levelOf, outranked, priorityLine } from './priority.ts';
 import { people, spotOf } from './spots.ts';
 
 /** The planned hearths nobody is making, nearest `p` first, that have their stone or can get it. */
@@ -122,4 +129,30 @@ export function markUsed(ctx: SystemContext): void {
   if (world.tick % 60 !== 0) return;
   for (const f of firesOf(world))
     if (f['lit'] && occupied(world, content, pieceOfFire(world, f))) f['used'] = world.tick;
+}
+
+/** Whether it is cold and a room someone sleeps in has its hearth still to make. */
+export function coldHearth(ctx: SystemContext): boolean {
+  const { world, content } = ctx;
+  const temp = (world.systems['weather']?.['temp'] as number | undefined) ?? 10;
+  if (temp >= content.life.warmth.below) return false;
+  return furnitureOf(world).some((f) => {
+    if (f['state'] !== 'plan' || furnitureKind(content, f).id !== HEARTH) return false;
+    const room = roomAt(world, content, f['x'] as number, f['y'] as number);
+    return !!room && room.sleepers > 0;
+  });
+}
+
+/** Warmth wins a tie (5B Bundle 3): while `coldHearth`, Building goes first among the kinds of
+ * work at its priority, and the hearth before clearing a site (jobs.ts), ahead of felling or
+ * cooking at the same level (a house on tallow waited a week for its fire while all who could
+ * build cleared the pasture). */
+export function hearthFirst(ctx: SystemContext, p: EntityRow, jobs: string[]): string[] {
+  const { world, content } = ctx;
+  const job = content.buildings.job;
+  if (!jobs.includes(job) || !coldHearth(ctx)) return jobs;
+  const level = levelOf(world, content, p.id, job);
+  const at = jobs.findIndex((j) => levelOf(world, content, p.id, j) === level);
+  const rest = jobs.filter((j) => j !== job);
+  return [...rest.slice(0, at), job, ...rest.slice(at)];
 }

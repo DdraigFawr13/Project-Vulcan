@@ -64,7 +64,7 @@ export {
 } from './wants.ts';
 export { HEARTH } from './hearths.ts';
 export { buildWell, noteDrink, planWell, WELL, WELL_TABLES, wellsOf, waterSpots } from './well.ts';
-export { millOf, millsOf, noteGrind, quernToday, turning } from './mill.ts';
+export { millOf, noteGrind, quernToday, turning } from './mill.ts';
 export {
   cropNow,
   sowNow,

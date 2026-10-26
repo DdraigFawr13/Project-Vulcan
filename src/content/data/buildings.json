@@ -29,7 +29,7 @@
 "town":{"ring":16,"step":4,"most":32},
 "stores":{"days":14,"save":8,"near":40,"eatenNear":12,"most":2,"apart":20,"tries":300,"kinds":[
 {"id":"granary","name":"granary","words":"grain, oats, beans and seed","goods":["grain","oats","beans","seed"],"w":6,"h":5,"door":"door-wood","floor":"floor-wood","from":"the reaping","to":"the hearths","eaten":true},
-{"id":"larder","name":"larder","words":"food","goods":["turnips","cabbages","meat","game","fish","berries","preserved","meal","bread","flour"],"w":5,"h":4,"door":"door-wood","floor":"floor-wood","from":"where food comes in","to":"the hearths","eaten":true},
+{"id":"larder","name":"larder","words":"food","goods":["turnips","cabbages","meat","game","fish","berries","preserved","meal","stew","pottage","bread","flour"],"w":5,"h":4,"door":"door-wood","floor":"floor-wood","from":"where food comes in","to":"the hearths","eaten":true},
 {"id":"wood","name":"wood yard","words":"logs, firewood and charcoal","goods":["logs","firewood","charcoal"],"w":6,"h":5,"wall":"hurdle","door":"gate-hurdle","from":"the felling","to":"the hearths and the building"},
 {"id":"ore","name":"stone and ore yard","words":"stone and ore","goods":["stone","clay","ore","copper-ore","tin-ore","iron-ore","sulphur","copper-ingot","tin-ingot","iron-ingot","bronze-ingot"],"w":5,"h":4,"wall":"wall-drystone","from":"the quarry and the mine","to":"the smelter and the building"}
 ]},
