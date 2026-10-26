@@ -3,7 +3,7 @@
 // state `worn`, lying on no tile. Spares lie in a store; the Clothes plate counts them.
 import type { EngineContent, EntityRow, GarmentDef, WorldState } from '../core/index.ts';
 import { itemsOf, layItem } from './stacks.ts';
-import { inStore } from './store.ts';
+import { inStore, wantOf } from './store.ts';
 
 export const garmentOf = (content: EngineContent, kind: string): GarmentDef | undefined =>
   content.clothes.garments.find((g) => g.item === kind);
@@ -74,4 +74,22 @@ export function sparesOf(world: WorldState, content: EngineContent, slot?: strin
         worth.indexOf(a['quality'] as string) - worth.indexOf(b['quality'] as string) ||
         a.id - b.id,
     );
+}
+
+/** How many more garments of `slot` the colony wants: its share of the Clothes plate (everyday
+ * gets the odd one), plus one for each person due to change that slot, less the spares lying
+ * anywhere (in a store, on the ground or being carried). */
+export function shortOf(world: WorldState, content: EngineContent, slot: string): number {
+  const want = wantOf(world, content, content.clothes.good);
+  const first = slot === content.clothes.slots[0]!.id;
+  const share = first ? Math.ceil(want / 2) : Math.floor(want / 2);
+  const due = (world.entities['person'] ?? []).filter((p) => {
+    if (p['status'] !== 'alive') return false;
+    const worn = wornIn(world, content, p.id, slot);
+    return !worn || leftOf(content, worn) < content.clothes.change;
+  }).length;
+  const spares = itemsOf(world).filter(
+    (i) => i['state'] !== 'worn' && garmentOf(content, i['kind'] as string)?.slot === slot,
+  ).length;
+  return Math.max(0, share + due - spares);
 }
