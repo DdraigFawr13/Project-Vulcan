@@ -23,7 +23,7 @@ import { drinking } from './drink.ts';
 import { walkTo, wander } from './walk.ts';
 import { tendInEvening } from './tend.ts';
 import { warming } from './warm.ts';
-import { feasting } from './feast.ts';
+import { feasting, HARD_STOP } from './feast.ts';
 import { lateUntil, watching } from './watch.ts';
 
 export const MIND_FIELDS = {
@@ -139,7 +139,10 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   // The harvest-home supper (5B Bundle 4) is the evening's meal: after work, unless starving, it
   // comes before eating alone, the jobs that run on past work and the evening's leisure.
   const day = hoursOf(world, content, p.id);
-  const evening = hour >= day.workTo && hour < day.sleepFrom;
+  // Someone already on their way to it is waited for past bedtime, up to the supper's hard stop.
+  const waited = p['doing'] === 'feast' ? HARD_STOP : 0;
+  const minute = hour * 60 + (world.tick % 60);
+  const evening = hour >= day.workTo && minute < day.sleepFrom * 60 + waited;
   if (evening && valueOf(ctx, p, 'food') > life.seedAt && feasting(ctx, p)) {
     p['doing'] = 'feast';
     return;
