@@ -165,7 +165,8 @@ export interface MapState {
   aura: Uint8Array;
   /** The strong aura spots, surface ones from the start and level ones as they are reached. */
   auraSpots: AuraSpot[];
-  /** Freezing degree-days on each still-water tile (the weather's ice count); 0 elsewhere. */
+  /** Freezing degree-days on each lake, stream and river tile, and whether it is frozen (the
+   * weather's ice count); 0 elsewhere. */
   ice: Uint8Array;
   /** 1 where snow lies on the ground (the weather's, V-122), else 0; never on water. */
   snowLie: Uint8Array;

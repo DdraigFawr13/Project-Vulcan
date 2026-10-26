@@ -16,4 +16,5 @@ export * from './health.ts';
 export * from './wild.ts';
 export * from './flock.ts';
 export * from './strangers.ts';
+export * from './mill.ts';
 export * from './clothes.ts';

@@ -1,10 +1,9 @@
 // Work (P2.4): nobody is told what to do (V-015). In working hours a free person looks at what
 // the colony wants and takes something up themselves: while it has less wood than its stock
-// level asks for, someone able to fell (jobs.json `fell`: its strength and skill) picks a tree
-// (a fallen log first, then the standing tree nearest the store, never close to the camp),
-// works it down and leaves the logs where it stood; anyone free carries what lies outside the
-// store into it, onto a matching stack. Quarrying (P3.1) is felling's twin for stone. Building is
-// build.ts. Taking up felling or quarrying and each tree felled or boulder broken are lines.
+// level asks for, someone able to fell (jobs.json `fell`) picks a tree (a fallen log first, then
+// the standing tree nearest the store, never close to the camp) and leaves the logs where it
+// stood; anyone free carries what lies outside the store into it. Quarrying (P3.1) is felling's
+// twin for stone. Building is build.ts. Taking up work and each tree felled are lines.
 import { houseName } from '../build/index.ts';
 import { raiseChunk } from '../map/index.ts';
 import { needOf } from '../needs/index.ts';
@@ -28,6 +27,7 @@ import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
+import { MILL_TAKE_UP, millWork } from './mill.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
 import { coldHearth, hearthFirst, takeUpHearth } from './hearth.ts';
 import { takeUpTending, tending } from './tend.ts';
@@ -52,7 +52,7 @@ const HOLDS = ['station', 'charcoal', 'smelt', 'smith', 'weave', 'tailor', 'tan'
 
 export const JOB_FIELDS = {
   /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
-   * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
+   * `charcoal`, `smelt`, `station` (the smelter being built), `mill`, `bake` or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -78,8 +78,7 @@ export const JOB_FIELDS = {
    * minutes left when they last worked at the fire, so a fire that went out mid-batch is seen. */
   fineMeal: 'event',
   lit: 'int',
-  /** Herding: the hay carried to the rick, and the wild herd being tamed with the minutes sat
-   * near it so far (a different herd starts again). */
+  /** Herding: hay carried to the rick; the herd being tamed and the minutes sat near it. */
   hay: 'count',
   herdId: 'int',
   sat: 'count',
@@ -225,11 +224,12 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'hearth' && hours && furnishing(ctx, p)) return true;
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
   if (p['job'] === 'cook' && hours && cooking(ctx, p)) return true;
+  if ((p['job'] === 'mill' || p['job'] === 'bake') && hours && millWork(ctx, p)) return true;
   if (p['job'] === 'station' && hours && stationing(ctx, p)) return true;
   if (p['job'] === 'charcoal' && hours && burning(ctx, p)) return true;
   if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
   if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
-  // P5.6, P5.8: a burial is seen through once begun; dressing is work hours'.
+  // P5.6, P5.8: a burial is seen through once begun.
   if (p['job'] === 'bury' && burying(ctx, p)) return true;
   // A dressing not finished by the end of work is left for whoever takes it up next.
   if (p['job'] === 'dress' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
@@ -357,8 +357,7 @@ function takeUpGathering(ctx: SystemContext, p: EntityRow, g: Gather): boolean {
   return startGathering(ctx, p, tree, g);
 }
 
-/** How each kind of work on the Work sheet is taken up; a kind with no entry is never taken up
- * (content `work.priority.jobs` may list one before its milestone brings the work). */
+/** How each Work sheet kind is taken up; one with no entry (its milestone not yet in) never is. */
 const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boolean>> = {
   fell: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'fell')!),
   haul: takeUpHauling,
@@ -376,6 +375,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
     takeUpBuilding(ctx, p),
   tend: takeUpTending,
   cook: takeUpCooking,
+  ...MILL_TAKE_UP,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
   mine: takeUpMining,

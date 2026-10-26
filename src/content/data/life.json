@@ -15,7 +15,7 @@
 "sleep":{"bed":1600,"bedroll":1200,"ground":700,"from":22,"to":6,"wake":9500},
 "warmth":{"comfort":0,"bedroll":6,"rise":1000,"catchUp":0.5,"perDegree":200,"below":10},
 "relax":{"from":18,"gain":800,"company":400,"reach":2},
-"eat":{"preserved":6000,"berries":1500,"fish":4000,"game":4000,"meat":4000,"grain":3000,"turnips":2500,"seed":2000,"meal":4800,"stew":4800,"pottage":4800,"oats":3000,"beans":3000,"cabbages":2500},
+"eat":{"preserved":6000,"berries":1500,"fish":4000,"game":4000,"meat":4000,"grain":3000,"turnips":2500,"seed":2000,"meal":4800,"stew":4800,"pottage":4800,"oats":3000,"beans":3000,"cabbages":2500,"bread":3600},
 "lastResort":["seed"],
 "seedAt":0,
 "mood":[{"word":"Content","at":6000},{"word":"Steady","at":4000},{"word":"Low","at":2000},{"word":"Miserable","at":0}],
