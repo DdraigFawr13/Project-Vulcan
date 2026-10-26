@@ -16,3 +16,4 @@ export {
 export { auraAt } from './aura.ts';
 export { tread, walksADay, wearStage } from './wear.ts';
 export { cutStairsAt, openAround, sinkShaftAt } from './levels.ts';
+export { makeLevel } from './underground.ts';

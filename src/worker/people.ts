@@ -17,6 +17,7 @@ import {
   partOf,
   plansOf,
   progressOf,
+  stationsOf,
   stockOf,
   TICKS_PER_DAY,
   type EntityRow,
@@ -170,8 +171,21 @@ export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
     const { key, vars } = tendDoing(world, p);
     return { text: say(key, vars), ...why };
   }
-  if (job === 'cook' || job === 'charcoal' || job === 'smelt' || job === 'station')
-    return { text: say(job), ...why };
+  if (job === 'cook' || job === 'charcoal' || job === 'smelt') return { text: say(job), ...why };
+  if (job === 'station') {
+    const kind = stationsOf(world).find((s) => s.id === p['plan'])?.['kind'] as string | undefined;
+    return { text: say(job, { what: kind ?? 'smelter' }), ...why };
+  }
+  if (job === 'cure')
+    return { text: say(job, { what: nameOf(content.items, p['what'] as string) }), ...why };
+  if (job === 'potter')
+    return {
+      text: say(p['make'] === 'carry' ? 'potted' : job, {
+        what: p['make'] === 'brick' ? 'bricks' : 'a pot',
+      }),
+      ...why,
+    };
+  if (job === 'cooper') return { text: say(p['make'] === 'carry' ? 'coopered' : job), ...why };
   if (job === 'smith') {
     const [tool = ''] = String(p['making']).split(':');
     const who = (world.entities['person'] ?? []).find((q) => q.id === p['plan']);

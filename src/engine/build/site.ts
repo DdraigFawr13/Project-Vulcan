@@ -12,6 +12,7 @@ import { inRect, isTreeAt, wayFrom, wayTo, type Rect, type Site, type Way } from
 export { inRect, type Rect, type Site } from './way.ts';
 import { furnitureOf } from './furniture.ts';
 import { partOf, plansOf } from './plans.ts';
+import { clayBricks } from './brick.ts';
 import { stationTiles } from './station.ts';
 import { ringOf } from './ring.ts';
 import { pastureTiles } from './pasturerows.ts';
@@ -276,7 +277,7 @@ export function withinReach(
   good: string,
   ground: boolean,
 ): number {
-  let total = haveOf(world, content, good);
+  let total = haveOf(world, content, good) + clayBricks(world, content, good);
   if (!ground) return total;
   const map = world.map;
   const first = storeOf(world)[0];

@@ -15,6 +15,7 @@ export {
   DEPOT_TABLES,
   depotAt,
   depotsFor,
+  depotTakes,
   depotsOf,
   depotTiles,
   insideDepot,

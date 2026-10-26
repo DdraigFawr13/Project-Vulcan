@@ -26,13 +26,15 @@ export const DEPOT_TABLES: Schemas = {
 
 export const depotsOf = (world: WorldState): EntityRow[] => world.entities['depot'] ?? [];
 
-/** Each item kind's store kind, worked out once per content. */
+/** Each item kind's store kind on the surface (a `below` kind, the cellar, is no one's), worked
+ * out once per content. */
 const kindCache = new WeakMap<EngineContent, Map<string, StoreKindDef>>();
 export function storeKindOf(content: EngineContent, kind: string): StoreKindDef | undefined {
   let m = kindCache.get(content);
   if (!m) {
     m = new Map();
-    for (const s of content.buildings.stores.kinds) for (const g of s.goods) m.set(g, s);
+    for (const s of content.buildings.stores.kinds)
+      if (!s.below) for (const g of s.goods) m.set(g, s);
     kindCache.set(content, m);
   }
   return m.get(kind);
@@ -52,26 +54,29 @@ export const insideDepot = (d: EntityRow, x: number, y: number): boolean =>
   x < (d['x'] as number) + (d['w'] as number) - 1 &&
   y < (d['y'] as number) + (d['h'] as number) - 1;
 
-/** The built depot whose inside holds the tile, if any. */
+/** The built depot whose inside holds the tile, if any: a store on the surface, or a cellar one
+ * level down. */
 export const depotAt = (
   world: WorldState,
   x: number,
   y: number,
   z: number,
 ): EntityRow | undefined =>
-  z === 0 ? depotsOf(world).find((d) => d['state'] === 'built' && insideDepot(d, x, y)) : undefined;
+  depotsOf(world).find((d) => d['state'] === 'built' && d['z'] === z && insideDepot(d, x, y));
+
+/** Whether a depot's kind takes an item kind (the larder and its cellar both take turnips). */
+export const depotTakes = (content: EngineContent, d: EntityRow, kind: string): boolean =>
+  !!content.buildings.stores.kinds.find((k) => k.id === d['store'])?.goods.includes(kind);
 
 /** The tiles inside a depot, as rows like the home store's. */
 export function depotTiles(d: EntityRow): EntityRow[] {
   const out: EntityRow[] = [];
   for (let y = (d['y'] as number) + 1; y < (d['y'] as number) + (d['h'] as number) - 1; y += 1)
     for (let x = (d['x'] as number) + 1; x < (d['x'] as number) + (d['w'] as number) - 1; x += 1)
-      out.push({ id: 0, x, y, z: 0 });
+      out.push({ id: 0, x, y, z: d['z'] as number });
   return out;
 }
 
-/** The built depots that take an item kind. */
-export const depotsFor = (world: WorldState, content: EngineContent, kind: string): EntityRow[] => {
-  const s = storeKindOf(content, kind);
-  return s ? depotsOf(world).filter((d) => d['state'] === 'built' && d['store'] === s.id) : [];
-};
+/** The built depots that take an item kind: its store kind's, and a cellar under one that takes it. */
+export const depotsFor = (world: WorldState, content: EngineContent, kind: string): EntityRow[] =>
+  depotsOf(world).filter((d) => d['state'] === 'built' && depotTakes(content, d, kind));
