@@ -18,6 +18,7 @@
   {"id":"charcoal","name":"Charcoal","worker":"charcoal burner","skill":"woodcutting","requirements":{},"workplace":"clamp","serves":"materials"},
   {"id":"cure","name":"Curing","worker":"curer","skill":"cooking","requirements":{},"workplace":"smokehouse","serves":"food"},
   {"id":"cooper","name":"Coopering","worker":"cooper","skill":"crafting","requirements":{},"workplace":"bench","serves":"food"},
+  {"id":"potter","name":"Pottery","worker":"potter","skill":"crafting","requirements":{},"workplace":"kiln","serves":"food"},
   {"id":"smelt","name":"Smelting","worker":"smelter","skill":"smithing","requirements":{},"workplace":"smelter","serves":"materials"},
   {"id":"haul","risk":0.0005,"name":"Hauling","worker":"hauler","requirements":{},"workplace":"construction","action":"haul","serves":"shelter","heavy":true}
 ]

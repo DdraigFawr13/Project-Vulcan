@@ -36,8 +36,10 @@ export function stationGoods(world: WorldState): GoodsView['furniture'] {
     const [x, y, z] = [s['x'] as number, s['y'] as number, s['z'] as number];
     if (s['kind'] === 'smelter')
       return [{ x, y, z, art: 'furn.smelter', facing: 's', plan: s['state'] !== 'built' }];
-    // The smokehouse wears the clamp's smoking frames once built (no art of its own yet).
-    const lit = s['state'] === 'lit' || (s['kind'] === 'smokehouse' && s['state'] === 'built');
+    // The smokehouse and the kiln wear the clamp's smoking frames once built (no art of its own yet).
+    const lit =
+      s['state'] === 'lit' ||
+      (['smokehouse', 'kiln'].includes(s['kind'] as string) && s['state'] === 'built');
     const out: GoodsView['furniture'] = [];
     for (let dy = 0; dy < (s['h'] as number); dy += 1)
       for (let dx = 0; dx < (s['w'] as number); dx += 1)
@@ -150,6 +152,26 @@ function housePage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView {
   };
 }
 
+function kilnPage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView {
+  const def = content.work.potter;
+  const built = s['state'] === 'built';
+  return {
+    name: 'Kiln',
+    rows: [
+      ['what', `a kiln: ${def.clay} clay fired into a pot, or into ${def.brick.per} bricks`],
+      ['state', built ? 'built' : `planned: ${s['have'] as number} of ${def.kiln.cost} stone here`],
+      ['why here', whyHere(world, s)],
+      ['clay', `${itemName(def.clayItem)} ${haveOf(world, content, def.clayItem)}`],
+      ['bricks', `${itemName(def.brick.item)} ${haveOf(world, content, def.brick.item)}`],
+    ],
+    ...(built || s['work'] !== -1 ? { doing: doingOf(world, ['potter', 'station'], s) } : {}),
+    lines: linesOf(world, lineOf, [
+      ['Built · ', s['made']],
+      ['Planned · ', s['line']],
+    ]),
+  };
+}
+
 function clampPage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView {
   const def = content.metal.clamp;
   const lit = s['state'] === 'lit';
@@ -227,10 +249,9 @@ export function tileWorks(
   const station = stationAt(world, x, y);
   if (!station) return undefined;
   return {
-    works: ({ clamp: clampPage, smokehouse: housePage }[station['kind'] as string] ?? smelterPage)(
-      world,
-      station,
-      lineOf,
-    ),
+    works: (
+      { clamp: clampPage, smokehouse: housePage, kiln: kilnPage }[station['kind'] as string] ??
+      smelterPage
+    )(world, station, lineOf),
   };
 }

@@ -114,3 +114,35 @@ export const COOPER = obj({
   minutes: num({ min: 1 }),
   skilled: num({ min: 1 }),
 });
+
+// The potter (V-132): `clay` of the `clayItem` thrown into one `pot.item` in `pot.minutes`, or
+// into `brick.per` of `brick.item` in `brick.minutes`, with `fuel` of `fuelItem` to fire it, at
+// the job's skill level `skilled`. The kiln (`kiln`): sited when `need` of `kinds` have spoiled at
+// walled stores over the kept weeks (`why`, {count}) or a house wants a wall material it lacks
+// (`whyWalls`), a `size` square on the free ground nearest the green between `near[0]` and
+// `near[1]` tiles from it, built by builders (`cost` of `material` in `minutes` at skill
+// `skilled`). A pot under a stack of `kinds` cuts the loss of `holds` of it to `times`.
+export const POTTER = obj({
+  job: ref('jobs'),
+  clay: num({ min: 1 }),
+  clayItem: ref('items'),
+  pot: obj({ item: ref('items'), minutes: num({ min: 1 }) }),
+  brick: obj({ item: ref('items'), per: num({ min: 1 }), minutes: num({ min: 1 }) }),
+  fuel: num({ min: 1 }),
+  fuelItem: ref('items'),
+  kiln: obj({
+    size: num({ min: 1 }),
+    near: list(count),
+    material: ref('items'),
+    cost: num({ min: 1 }),
+    minutes: num({ min: 1 }),
+    skilled: num({ min: 1 }),
+    need: num({ min: 1 }),
+    why: text,
+    whyWalls: text,
+  }),
+  holds: num({ min: 1 }),
+  times: share,
+  kinds: list(ref('items')),
+  skilled: num({ min: 1 }),
+});

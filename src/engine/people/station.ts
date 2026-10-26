@@ -34,6 +34,7 @@ interface Def {
 const defsOf = (content: EngineContent): Def[] => [
   { kind: 'smelter', ...content.metal.smelter, built: 'metal.smelterBuilt' },
   { kind: 'smokehouse', ...content.work.cure.house, built: 'cure.houseBuilt' },
+  { kind: 'kiln', ...content.work.potter.kiln, built: 'potter.kilnBuilt' },
 ];
 
 /** The first planned station nobody is on that `p` has stone for or can reach some. */

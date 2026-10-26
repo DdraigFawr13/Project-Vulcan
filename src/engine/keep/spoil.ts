@@ -50,14 +50,22 @@ export function keptAt(world: WorldState, content: EngineContent, i: EntityRow):
   return tileTemperature(content, world.map, floor, at) + heatAt(world, content, at);
 }
 
-/** The barrels on a store tile (cooper.ts), 0 for none. */
-export const barrelsAt = (world: WorldState, x: number, y: number, z: number): number =>
+const caskOf = (world: WorldState, x: number, y: number, z: number, field: string): number =>
   ((world.entities['cask'] ?? []).find((c) => c['x'] === x && c['y'] === y && c['z'] === z)?.[
-    'barrels'
+    field
   ] as number | undefined) ?? 0;
 
+/** The barrels on a store tile (cooper.ts), 0 for none. */
+export const barrelsAt = (world: WorldState, x: number, y: number, z: number): number =>
+  caskOf(world, x, y, z, 'barrels');
+
+/** The pots on a store tile (potter.ts), 0 for none. */
+export const potsAt = (world: WorldState, x: number, y: number, z: number): number =>
+  caskOf(world, x, y, z, 'pots');
+
 /** A stack's loss a day as a share, where it lies now. Barrels under it cut the rate of as much
- * of it as `keep.barrel.holds` a barrel covers, to `keep.barrel.times` of it. */
+ * of it as `keep.barrel.holds` a barrel covers, to `keep.barrel.times` of it; grain, oats and beans
+ * (`potter.kinds`) take pots instead, `potter.holds` a pot, to `potter.times`. */
 export function rateOf(
   world: WorldState,
   content: EngineContent,
@@ -69,9 +77,12 @@ export function rateOf(
   const place = content.work.keep.place[placeOf(world, i, floors)];
   // A cooked meal is made to be eaten tomorrow: its rate is its own, wherever it lies.
   if (content.items.find((d) => d.id === i['kind'])?.cooked) return base;
-  const barrels = barrelsAt(world, i['x'] as number, i['y'] as number, i['z'] as number);
-  const { times, holds } = content.work.keep.barrel;
-  const covered = barrels ? Math.min(1, (holds * barrels) / (i['count'] as number)) : 0;
+  const at: [number, number, number] = [i['x'] as number, i['y'] as number, i['z'] as number];
+  const pots = content.work.potter;
+  const potted = pots.kinds.includes(i['kind'] as string);
+  const { times, holds } = potted ? pots : content.work.keep.barrel;
+  const n = potted ? potsAt(world, ...at) : barrelsAt(world, ...at);
+  const covered = n ? Math.min(1, (holds * n) / (i['count'] as number)) : 0;
   return (
     base * place * warmthTimes(content, keptAt(world, content, i)) * (1 - (1 - times) * covered)
   );

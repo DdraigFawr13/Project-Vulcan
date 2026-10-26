@@ -132,8 +132,8 @@ describe('curing and barrels', () => {
       ...{ kind: 'bench', x: at.x, y: at.y, z: 0, facing: 's', quality: 4, maker: 0, owner: 0 },
       ...{ made: 1, line: 1, state: 'built', have: 0, work: -1, waited: 0 },
     });
-    const big = lay(w, 'turnips', 80, x + 7, y + 1);
-    lay(w, 'turnips', 30, x + 8, y + 1);
+    const big = lay(w, 'berries', 80, x + 7, y + 1);
+    lay(w, 'berries', 30, x + 8, y + 1);
     // Logs over the Wood plate, in the store.
     lay(w, 'logs', 25, x + 9, y + 1);
     lay(w, 'logs', 25, x + 9, y + 2);

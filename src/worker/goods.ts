@@ -18,6 +18,7 @@ import {
   planAt,
   plansOf,
   barrelsAt,
+  potsAt,
   rateOf,
   recordOf,
   stockOf,
@@ -125,7 +126,10 @@ function keeps(world: WorldState, i: EntityRow, floors: ReadonlySet<number>): st
     return `, loses ${Math.round(rate * 100)}% a day`;
   const month = rate * 28 * 100;
   const barrels = barrelsAt(world, i['x'] as number, i['y'] as number, i['z'] as number);
-  const kept = barrels ? `, in ${barrels} barrel${barrels === 1 ? '' : 's'}` : '';
+  const pots = potsAt(world, i['x'] as number, i['y'] as number, i['z'] as number);
+  const kept =
+    (barrels ? `, in ${barrels} barrel${barrels === 1 ? '' : 's'}` : '') +
+    (pots ? `, in ${pots} pot${pots === 1 ? '' : 's'}` : '');
   return `, loses ${month < 1 ? 'under 1' : Math.round(month)}% a month here${kept}`;
 }
 

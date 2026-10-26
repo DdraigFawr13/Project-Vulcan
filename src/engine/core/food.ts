@@ -74,3 +74,32 @@ export interface CooperDef {
   minutes: number;
   skilled: number;
 }
+
+export interface PotterDef {
+  job: string;
+  /** Clay a pot takes (and bricks' `per` come from), of the `clayItem`. */
+  clay: number;
+  clayItem: string;
+  pot: { item: string; minutes: number };
+  brick: { item: string; per: number; minutes: number };
+  fuel: number;
+  fuelItem: string;
+  /** The kiln: its square, its ring distance from the green (`near`: least, most), its building,
+   * the spoiled grain (`need`) that plans it and the two reasons it gives ({count}). */
+  kiln: {
+    size: number;
+    near: readonly number[];
+    material: string;
+    cost: number;
+    minutes: number;
+    skilled: number;
+    need: number;
+    why: string;
+    whyWalls: string;
+  };
+  /** Food a pot covers, the share of its loss left, and the foods pots go under. */
+  holds: number;
+  times: number;
+  kinds: readonly string[];
+  skilled: number;
+}

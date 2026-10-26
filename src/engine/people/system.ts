@@ -153,6 +153,7 @@ export const peopleSystem: System = {
       'work.tookUpCoopering',
       'cure.barrelled',
       'cure.houseBuilt',
+      ...['work.tookUpPottery', 'potter.potted', 'potter.fired', 'potter.kilnBuilt'],
     ],
     ...['work.tookUpStation', 'metal.smelterBuilt', 'work.tookUpCharcoal', 'metal.clampLit'],
     ...[

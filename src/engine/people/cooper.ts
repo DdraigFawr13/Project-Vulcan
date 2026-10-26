@@ -33,6 +33,7 @@ function foodIn(world: WorldState, ctx: SystemContext): EntityRow[] {
       !i['holder'] &&
       dailyOf(content, i['kind'] as string) > 0 &&
       !content.items.find((d) => d.id === i['kind'])?.cooked &&
+      !content.work.potter.kinds.includes(i['kind'] as string) &&
       !!depotAt(world, i['x'] as number, i['y'] as number, i['z'] as number),
   );
 }
@@ -128,7 +129,7 @@ function setBarrel(ctx: SystemContext, p: EntityRow, stack: EntityRow, barrel: E
   });
   const cask = (world.entities['cask'] ?? []).find((c) => c['x'] === x && c['y'] === y);
   if (cask) Object.assign(cask, { barrels: (cask['barrels'] as number) + 1, line });
-  else addEntity(world, 'cask', { x, y, z: 0, barrels: 1, line });
+  else addEntity(world, 'cask', { x, y, z: 0, barrels: 1, pots: 0, line });
   takeFrom(world, barrel, 1);
 }
 

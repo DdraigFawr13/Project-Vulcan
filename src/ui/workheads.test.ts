@@ -30,7 +30,7 @@ describe('Work sheet headings', () => {
       ['Wood', ['fell', 'carpentry']],
       ['Land', ['farm', 'herd', 'forage']],
       ['Food', ['cook']],
-      ['Larder', ['cure', 'cooper']],
+      ['Larder', ['cure', 'cooper', 'potter']],
       ['Metal', ['charcoal', 'smelt', 'smith']],
       ['Care', ['heal']],
     ]);

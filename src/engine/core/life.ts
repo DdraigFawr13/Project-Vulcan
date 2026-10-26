@@ -2,7 +2,7 @@
 // and the forked items list. Need values run from 0 to `scale`; rates are per game hour.
 import type { FieldDef } from './fielddef.ts';
 import type { RoadsDef, StoresDef } from './ground.ts';
-import type { CookDef, CooperDef, CureDef, KeepDef } from './food.ts';
+import type { CookDef, CooperDef, CureDef, KeepDef, PotterDef } from './food.ts';
 
 export interface NeedDef {
   id: string;
@@ -219,6 +219,7 @@ export interface WorkDef {
   /** Curing and coopering (5B Bundle 3, V-132): the smokehouse, the curer and the cooper. */
   cure: CureDef;
   cooper: CooperDef;
+  potter: PotterDef;
 }
 
 /** One part colonists build (buildings.json, P3.1 and P3.2): a tile of one material. */

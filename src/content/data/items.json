@@ -35,6 +35,8 @@
   {"id":"obsidian","name":"obsidian","good":"luxury","per":0.01,"kind":"material"},
   {"id":"salt","name":"salt","good":"salt","per":0.01,"kind":"material"},
   {"id":"barrel","name":"barrel","good":"timber","per":0.02,"kind":"material"},
+  {"id":"pot","name":"pot","good":"pots","per":0.02,"kind":"material"},
+  {"id":"brick","name":"bricks","good":"brick","per":0.004,"kind":"material"},
   {"id":"tools","name":"tools","good":"ore","per":0.02,"kind":"tool"},
   {"id":"wares","name":"wares","good":"luxury","per":0.002,"kind":"goods"},
   {"id":"herbs","name":"herbs","good":"luxury","per":0.001,"kind":"goods"},

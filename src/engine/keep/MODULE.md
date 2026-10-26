@@ -10,4 +10,5 @@ Food spoiling by place and warmth (P5.12).
 - **State owned:** tables `spoilage` (store, kind, count, made), `spoilWeek`, `cask`. No system state.
 - **Invariants:** a stack never loses more than it holds; `rot` stays under a million; no RNG.
 - **Tests:** `keep.test.ts` (open faster than walled, walled faster than below, frost slower, a meal at its own rate; whole units and the rest carried; one line a week per store naming what spoiled and citing the store; `lostOf` over the kept weeks); `people/cure.test.ts` (smokehouse sited, curing, coopering, the cured winter).
+- **Kiln (`kiln.ts`):** with no kiln, `potter.kiln.need` grain lost at walled stores (or a house wall lacking material) and clay to be had, `planKiln` plans one at the town's edge (`potter.kilnPlanned`). `cask` `pots` cut `potter.kinds`' loss (`potsAt`, `rateOf`); barrels keep to the rest.
 - **Cellar (`cellar.ts`):** a built larder with no cellar that lost `keep.cellar.need` of `keep.cellar.kinds` at walled stores (and no groundwater under it) gets `keep.cellarPlanned` and a cellar-kind `shaft` row; the last tile dug adds a `depot` `cellar` at z 1 (`keep.cellarDug`), read as `below`.

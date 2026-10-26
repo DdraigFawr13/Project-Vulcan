@@ -49,11 +49,11 @@ import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
 /** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
-const HOLDS = ['station', 'charcoal', 'smelt', 'smith', 'cure', 'cooper'];
+const HOLDS = ['station', 'charcoal', 'smelt', 'smith', 'cure', 'cooper', 'potter'];
 
 export const JOB_FIELDS = {
   /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
-   * `charcoal`, `smelt`, `station` (a smelter or smokehouse being built), `cure`, `cooper` or '' (none). */
+   * `charcoal`, `smelt`, `station` (a smelter or smokehouse being built), `cure`, `cooper`, `potter` or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',

@@ -9,6 +9,7 @@ import { removeEntity } from '../entity/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { planCellar } from './cellar.ts';
 import { planHouse } from './house.ts';
+import { planKiln } from './kiln.ts';
 import { noteWeek } from './lost.ts';
 import { spoilDay } from './spoil.ts';
 
@@ -19,8 +20,8 @@ export const KEEP_TABLES: Schemas = {
   /** A past week's loss of a kind at a store, kept `keep.history` weeks (lost.ts); `line` is the
    * weekly line that said it, for what reads it to cite. */
   spoilWeek: { week: 'int', store: 'int', kind: 'text', count: 'count', line: 'event' },
-  /** Barrels on a store tile (cooper.ts); `line` the latest line that set one there. */
-  cask: { x: 'int', y: 'int', z: 'int', barrels: 'count', line: 'event' },
+  /** Barrels and pots on a store tile (cooper.ts, potter.ts); `line` the latest line that set one there. */
+  cask: { x: 'int', y: 'int', z: 'int', barrels: 'count', pots: 'count', line: 'event' },
 };
 
 const nameOf = (content: EngineContent, kind: string): string =>
@@ -74,13 +75,20 @@ function sayWeek(ctx: SystemContext): void {
 export const keepSystem: System = {
   id: 'keep',
   every: 'day',
-  emits: ['keep.spoiled', 'keep.spoiledOpen', 'cure.housePlanned', 'keep.cellarPlanned'],
+  emits: [
+    'keep.spoiled',
+    'keep.spoiledOpen',
+    'cure.housePlanned',
+    'potter.kilnPlanned',
+    'keep.cellarPlanned',
+  ],
   tables: KEEP_TABLES,
   run(ctx) {
     spoilDay(ctx);
     const day = Math.floor(ctx.world.tick / TICKS_PER_DAY);
     if (day > 0 && day % ctx.content.work.keep.week === 0) sayWeek(ctx);
     planHouse(ctx);
+    planKiln(ctx);
     planCellar(ctx);
   },
 };

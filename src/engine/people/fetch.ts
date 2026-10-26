@@ -22,7 +22,7 @@ function stacksOf(
   only: (i: EntityRow) => boolean = () => true,
 ): EntityRow[] {
   const { world, content } = ctx;
-  const jobs = ['charcoal', 'smelt', 'smith', 'cure', 'cooper'];
+  const jobs = ['charcoal', 'smelt', 'smith', 'cure', 'cooper', 'potter'];
   const taken = new Set(jobs.flatMap((j) => [...busy(world, p, j)]));
   const from = spotOf(p);
   const far = (i: EntityRow) =>
