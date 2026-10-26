@@ -3,7 +3,7 @@
 // 2 spot cut into four tiles `furn.clamp.<nw|ne|sw|se>`, and `furn.clamp.lit.<quarter>` with `.<1-3>`
 // with smoke rising, which the page cycles); into art/src/items/ charcoal, the four ingots tinted
 // by metal (`item.<copper|tin|iron|bronze>-ingot`) and the twelve tools, four shapes tinted by
-// material (`item.<stone|bronze|iron>-<axe|pick|hoe|hammer>`). Colours only from art/palette.gpl,
+// material (`item.<stone|bronze|iron>-<axe|pick|hoe|hammer|kit>`). Colours only from art/palette.gpl,
 // a 1 px ink outline, seeded and deterministic.
 // Usage: node tools/draw-metal.mjs, then node tools/pack-sheet.mjs buildings items
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -101,6 +101,17 @@ export function metalItems(p = readPalette()) {
       s.rect(16, 4, 12, 2, l);
       s.rect(16, 9, 12, 2, d);
       s.rect(18, 5, 5, 1, p.bone);
+    },
+    // The healer's kit (P5.7): a rolled leather wrap, a small knife and a needle in the metal.
+    kit: (s, [l, m, d]) => {
+      s.ell(13, 21, 9, 5, p.trunk, p['dirt light'], p['ui oak dark']);
+      s.line(6, 20, 20, 20, p['ui oak dark']);
+      s.line(17, 15, 27, 5, d);
+      s.line(17, 14, 26, 5, m);
+      s.line(18, 14, 25, 6, l);
+      s.line(14, 17, 17, 14, p.trunk);
+      s.line(22, 16, 28, 10, m);
+      s.put(28, 9, l);
     },
   };
   for (const material of ['stone', 'bronze', 'iron'])

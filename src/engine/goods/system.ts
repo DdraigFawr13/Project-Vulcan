@@ -78,7 +78,7 @@ export const goodsSystem: System = {
     const tiles = freeTilesNear(
       world,
       content,
-      used + content.tools.kinds.length * content.tools.cart,
+      used + content.tools.kinds.reduce((n, k) => n + (k.cart ?? content.tools.cart), 0),
     );
     if (tiles.length < used) return;
     const made = ctx.emit('goods.unloaded', {
@@ -116,7 +116,7 @@ export const goodsSystem: System = {
     // The cart's stone tools (tools.json `cart` of each kind) are kept with the cart.
     const stone = content.tools.cartMaterial;
     for (const kind of content.tools.kinds)
-      for (let n = 0; n < content.tools.cart; n += 1)
+      for (let n = 0; n < (kind.cart ?? content.tools.cart); n += 1)
         layTool(world, content, restOf(world, content), {
           ...{ kind: kind.id, material: stone, quality: 'plain', made },
         });

@@ -24,6 +24,7 @@ import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
 import { burying, takeUpBurial } from './burial.ts';
+import { dosing } from './draught.ts';
 import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
@@ -229,6 +230,8 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   // A dressing not finished by the end of work is left for whoever takes it up next.
   if (p['job'] === 'dress' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
   if (p['job'] === 'dress' && dressing(ctx, p)) return true;
+  if (p['job'] === 'draught' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
+  if (p['job'] === 'draught' && dosing(ctx, p)) return true;
   const load = loadOf(world, p.id);
   // Out of hours the metal and station work keeps what it fetched and resumes next morning, and
   // so does a sinker the shaft's ladder (else they carried it back and lost the job).

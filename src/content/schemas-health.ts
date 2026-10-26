@@ -64,6 +64,60 @@ export const HEALTH_SCHEMAS = {
     // Festering can start in a wound's first `days`; fever lasts `fever` days and kills `dies`.
     fester: obj({ days: num({ min: 1 }), fever: num({ min: 1 }), dies: count }),
     herbs: obj({ item: text, every: num({ min: 1 }), days: num({ min: 1 }), fester: count }),
+    // Illnesses (P5.7, V-136): `catch` and `spread` in `sick.per`, `grave` and `dies` per cent,
+    // `immune` days (-1 never again); `world` ones come only with strangers.
+    ills: list(
+      obj({
+        id,
+        name: text,
+        a: text,
+        catch: count,
+        days: list(num({ min: 1 }), 2),
+        shows: count,
+        abed: bool(),
+        grave: count,
+        graveName: opt(text),
+        dies: count,
+        spread: count,
+        immune: num({ min: -1 }),
+        world: opt(bool()),
+        mark: opt(text),
+      }),
+    ),
+    sick: obj({
+      per: num({ min: 1 }),
+      coldHours: num({ min: 1 }),
+      foulNear: count,
+      warmLake: num({}),
+      shun: num({ min: 1 }),
+      shunNear: count,
+      night: count,
+      draughtEvery: num({ min: 1 }),
+      draught: num({ min: 1 }),
+      skillCut: count,
+      nurseCut: count,
+      cutMost: count,
+      shorten: count,
+      shortenMost: count,
+      fresh: num({ min: 1 }),
+    }),
+    // The herb garden (build/herbs.ts): `w` by `h` beds of part `bed`, laid out in a `sow` month
+    // when the herb store ran dry for someone within `within` days.
+    garden: obj({
+      w: num({ min: 1 }),
+      h: num({ min: 1 }),
+      bed: text,
+      sow: texts,
+      within: num({ min: 1 }),
+    }),
+    kit: obj({
+      tool: text,
+      stitch: texts,
+      set: texts,
+      perSkill: count,
+      hand: count,
+      most: count,
+    }),
     marks: list(
       obj({
         id,
@@ -73,6 +127,7 @@ export const HEALTH_SCHEMAS = {
         effect: text,
         by: num({ min: 1, max: 100 }),
         text,
+        ill: opt(text),
       }),
     ),
     // Binding and dressing minutes (shorter with the job's skill, `skilled` dial); a call is heard

@@ -104,6 +104,8 @@ export interface ToolsDef {
     ingots: number;
     charcoal: number;
     minutes: number;
+    /** How many the cart brings, when not `cart`. */
+    cart?: number;
   }[];
   materials: readonly { id: string; name: string; speed: number; life: number; ingot?: string }[];
   quality: Readonly<Record<string, number>>;

@@ -4,6 +4,7 @@
 // that place's record (region/record.ts) and walk in from its side of the map to the green, where
 // the band speaks for or against them (verdict.ts). Nobody is placed or admitted by the player
 // (V-041): the Strangers law only settles a split. All numbers are content (strangers.json).
+import { expose, illDef } from '../health/index.ts';
 import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { bedSpot, houseAt, mainOf, piecesOf } from '../build/index.ts';
 import { isWinter } from '../law/index.ts';
@@ -108,6 +109,11 @@ function come(ctx: SystemContext, rng: RngStream, near: readonly Neighbour[]): v
   const rows = ids.map((id) => people(world).find((p) => p.id === id)!);
   if (rows.length > 1) [rows[0]!['partner'], rows[1]!['partner']] = [ids[1]!, ids[0]!];
   for (const p of rows) toGreen(ctx, p);
+  // A neighbour struck lately (P5.7): each of its people may carry the disease, showing later.
+  const def = n.sick && illDef(content, n.sick.ill);
+  if (def)
+    for (const p of rows)
+      expose(ctx, p, def.id, `came from ${n.name}, where ${def.name} was lately`, [drawn]);
 }
 
 /** At the hour, on the month's first day (the first stranger's own day in the first autumn). */

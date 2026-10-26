@@ -15,7 +15,8 @@ export const HEALTH_TABLES: Schemas = {
    * fever broke, and `feverEnd` the tick it breaks; `line` the hurt line and `care` the last
    * line of care (found, carried, bound); `fevered` the festering line; `state` `open`,
    * `healed` or `closed` (at death); `at` the tick it was taken; `where` and `place` ("shaft",
-   * "in") from the accident. */
+   * "in") from the accident; `sewn` the per cent a healer's stitching or setting takes off its
+   * festering or crooked healing (P5.7), and `sewnBy` who (0 not yet). */
   wound: {
     person: 'entity',
     part: 'text',
@@ -38,6 +39,8 @@ export const HEALTH_TABLES: Schemas = {
     at: 'int',
     where: 'text',
     place: 'text',
+    sewn: 'count',
+    sewnBy: 'entity',
   },
   /** A lasting mark (content `marks`) on a part, and the line it healed under. */
   scar: { person: 'entity', mark: 'text', part: 'text', line: 'event' },
@@ -181,7 +184,9 @@ export function markPercent(
 /** The mark a healed wound to this part leaves, if any content entry fits it. */
 export function markFor(content: EngineContent, part: string) {
   const limb = partDef(content, part)?.limb;
-  return content.health.marks.find((m) => (m.part ? m.part === part : !!limb && m.limb === limb));
+  return content.health.marks.find(
+    (m) => !m.ill && (m.part ? m.part === part : !!limb && m.limb === limb),
+  );
 }
 
 /** A hurt person stops: what they carried is put down where they stand, their work is dropped
@@ -215,7 +220,7 @@ export function wound(
     ...{ mortal: mortal ? 1 : 0, bound: 0, dressed: 0, healer: 0, progress: 0, fester: 0 },
     ...{ herbed: 0, herbless: 0 },
     ...{ feverEnd: 0, line: 0, care: 0, fevered: 0, state: 'open', at: world.tick },
-    ...{ where: w.where, place: w.place },
+    ...{ where: w.where, place: w.place, sewn: 0, sewnBy: 0 },
   });
   const row = woundsOf(world).find((r) => r.id === id)!;
   const { their } = pronouns(p);

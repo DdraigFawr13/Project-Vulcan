@@ -9,6 +9,7 @@ import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { die } from './death.ts';
+import { abedSick } from './sick.ts';
 import {
   bodyOf,
   keepsDown,
@@ -107,9 +108,13 @@ export function festerChance(ctx: Pick<SystemContext, 'world' | 'content'>, w: E
   // A kind of wound may have its own chances (a bite festers more), for deep and grave ones.
   const own = content.health.wounds.find((d) => d.id === w['kind'])?.fester;
   const base = (own ?? severityOf(content, w).fester)?.[dressed(ctx, w) ? 0 : 1] ?? 0;
-  return herbedNow(world, content, w)
+  const herbed = herbedNow(world, content, w)
     ? Math.floor((base * content.health.herbs.fester) / 100)
     : base;
+  // Stitched (P5.7): the healer's skill and kit take their share off.
+  return content.health.kit.stitch.includes(w['kind'] as string)
+    ? Math.floor((herbed * (100 - ((w['sewn'] as number) || 0))) / 100)
+    : herbed;
 }
 
 /** Festering in a wound's first days, and the fever it brings; true when the fever killed. */
@@ -157,7 +162,10 @@ function healed(ctx: SystemContext, p: EntityRow, w: EntityRow): void {
   const sev = severityOf(content, w);
   w['state'] = 'healed';
   const def = markFor(content, w['part'] as string);
-  const marked = !!def && !!sev.mark && ctx.rng().int(100) < sev.mark[w['healer'] ? 0 : 1]!;
+  // A bone set by a healer (P5.7) heals crooked less often, by the share the setting took off.
+  const set = content.health.kit.set.includes(w['kind'] as string) ? (w['sewn'] as number) || 0 : 0;
+  const chance = Math.floor(((sev.mark?.[w['healer'] ? 0 : 1] ?? 0) * (100 - set)) / 100);
+  const marked = !!def && !!sev.mark && ctx.rng().int(100) < chance;
   const part = partDef(content, w['part'] as string)?.name ?? '';
   const markName = def ? def.name.replace('{part}', part) : '';
   const line = ctx.emit('health.healed', {
@@ -186,8 +194,9 @@ export function healHour(ctx: SystemContext): void {
     const body = bodyOf(world, p.id);
     if (!body) continue;
     const wounds = openWounds(world, p.id);
+    const sick = abedSick(world, content, p.id);
     if (!hurt.has(p.id) && body['blood'] === content.health.blood.full) {
-      if (body['down']) standUp(p, body);
+      if (body['down'] && !sick) standUp(p, body);
       continue;
     }
     if (bleed(ctx, p, wounds)) continue;
@@ -202,6 +211,7 @@ export function healHour(ctx: SystemContext): void {
     }
     if (dead) continue;
     const down =
+      sick ||
       (body['blood'] as number) < content.health.blood.faint ||
       openWounds(world, p.id).some((w) => keepsDown(content, w));
     if (down && !body['down']) {

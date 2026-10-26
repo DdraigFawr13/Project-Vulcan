@@ -25,6 +25,8 @@ import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { feeding, seekFeeders } from './feed.ts';
 import { predatorRung } from './flee.ts';
+import { sew } from './surgery.ts';
+import { worked } from './tools.ts';
 import { practise } from './learn.ts';
 import { able, levelOf } from './priority.ts';
 import { people, same, skillOf, spotOf } from './spots.ts';
@@ -335,6 +337,7 @@ function binding(ctx: SystemContext, h: EntityRow): boolean {
     );
   h['work'] = (h['work'] as number) - 1;
   practise(ctx, h, skill, 0);
+  worked(ctx, h, care.job);
   if ((h['work'] as number) > 0) return true;
   bindWounds(ctx, h, p, wounds);
   b['healer'] = 0;
@@ -374,4 +377,5 @@ export function bindWounds(
     },
   });
   for (const w of wounds) w['care'] = line;
+  sew(ctx, h, p, wounds);
 }

@@ -1,12 +1,15 @@
 // Drinking (P5.2, V-131): when water is under its `seek` line a person walks beside the nearest
 // unfrozen drinkable surface water or a well and drinks to full. No line per drink (V-036); the
 // need's own lines (`need.low`, `need.met`) say when thirst bites, and each drink, with the minutes
-// walked to it, is noted for the colony's well (build/well.ts).
+// walked to it, is noted for the colony's well (build/well.ts). A foul drink may bring the flux,
+// and water shunned after one is passed over (foul.ts, P5.7).
 import type { EntityRow } from '../core/index.ts';
 import { noteDrink, waterSpots } from '../build/index.ts';
 import { changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { isFrozen } from '../weather/index.ts';
+import { shunned } from '../health/index.ts';
+import { drankAt } from './foul.ts';
 import { goBeside, spotOf } from './spots.ts';
 
 export const DRINK_FIELDS = {
@@ -29,7 +32,10 @@ function goDrink(ctx: SystemContext, p: EntityRow): number {
   const { world, content } = ctx;
   const here = spotOf(p);
   const map = world.map;
-  const near = waterSpots(world, content)
+  const spots = waterSpots(world, content);
+  // Water shunned after a flux there (P5.7) is passed over while there is other water.
+  const clean = spots.filter((s) => !shunned(world, content, s.y * map.width + s.x));
+  const near = (clean.length ? clean : spots)
     .map((s) => [Math.max(Math.abs(s.x - here.x), Math.abs(s.y - here.y)), s] as const)
     .sort((a, b) => a[0] - b[0] || a[1].y - b[1].y || a[1].x - b[1].x);
   for (const [, s] of near.slice(0, TRIES))
@@ -55,6 +61,7 @@ export function drinking(ctx: SystemContext, p: EntityRow): boolean {
       1;
     if (i >= 0 && p['z'] === 0 && beside && !isFrozen(world.map, i)) {
       noteDrink(world, i, p['drinkMin'] as number);
+      drankAt(ctx, p, i);
       changeNeed(content, row, content.life.scale);
       crossed(ctx, p, row, def);
     } else p['thirst'] = world.tick + RETRY;

@@ -247,6 +247,7 @@ export const TEST_TOOLS: readonly string[] = [
   'markFell',
   'markStore',
   'hurt',
+  'sicken',
 ];
 
 /** The game's systems in tick order. Later milestones add theirs here. */

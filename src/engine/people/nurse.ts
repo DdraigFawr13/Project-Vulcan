@@ -9,6 +9,9 @@ import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bindWounds } from './care.ts';
+import { takeUpDraught } from './draught.ts';
+import { sew } from './surgery.ts';
+import { worked } from './tools.ts';
 import { practise } from './learn.ts';
 import { able } from './priority.ts';
 import { people, skillOf, spotOf } from './spots.ts';
@@ -60,6 +63,7 @@ export function takeUpNursing(ctx: SystemContext, p: EntityRow): boolean {
       Object.assign(p, { job: 'dress', target: q.id, work: -1 });
       return true;
     }
+    if (takeUpDraught(ctx, p)) return true;
   }
   return false;
 }
@@ -118,6 +122,7 @@ export function dressing(ctx: SystemContext, h: EntityRow): boolean {
     );
   h['work'] = (h['work'] as number) - 1;
   practise(ctx, h, skill, 0);
+  worked(ctx, h, care.job);
   if ((h['work'] as number) > 0) return true;
   const rough = wounds.filter((w) => (w['bound'] as number) < 2);
   if (rough.length) bindWounds(ctx, h, p, rough);
@@ -125,6 +130,7 @@ export function dressing(ctx: SystemContext, h: EntityRow): boolean {
     Object.assign(w, { dressed: world.tick, healer: h.id });
     herbDress(ctx, h, p, w);
   }
+  sew(ctx, h, p, wounds);
   stop(h);
   return true;
 }

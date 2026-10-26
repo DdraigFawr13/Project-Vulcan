@@ -22,6 +22,9 @@ export interface Neighbour {
   kind: string;
   /** Its reasons, in content `kinds` order; none for a quiet place. */
   reasons: Reason[];
+  /** A world disease (health.json `ills` with `world`) that struck it in the world's last
+   * `sick.fresh` years, which its people may still carry (P5.7), with the record's line. */
+  sick?: { ill: string; line: string };
 }
 
 const kept = new WeakMap<WorldState, Map<string, Neighbour[]>>();
@@ -52,10 +55,18 @@ export function neighboursOf(seed: string, content: EngineContent): Neighbour[] 
       if (!b || e.importance > b.importance || (e.importance === b.importance && e.day > b.day))
         best.set(kind, e);
     }
+    const fresh =
+      last - Math.floor((last * content.health.sick.fresh) / content.region.world.years);
+    const worldIlls = content.health.ills.filter((d) => d.world).map((d) => d.id);
+    const latest = world.events
+      .filter((e) => e.place === cell && e.day >= fresh && worldIlls.includes(e.type))
+      .sort((a, b) => b.day - a.day)[0];
+    const sick = latest && { ill: latest.type, line: told.renderEvent(latest) };
     const reasons = def.kinds
       .filter((k) => best.has(k.id))
       .map((k) => ({ kind: k.id, line: told.renderEvent(best.get(k.id)!) }));
-    return [{ name: n.name, culture: culture.id, days: n.days, dir: n.dir, kind: n.kind, reasons }];
+    const row = { name: n.name, culture: culture.id, days: n.days, dir: n.dir, kind: n.kind };
+    return [{ ...row, reasons, ...(sick && { sick }) }];
   });
   cache.set(seed, out);
   return out;
