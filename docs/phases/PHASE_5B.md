@@ -9,7 +9,7 @@ Goal: a colony that feeds, clothes, lights and mends itself through the winters.
 - [x] Bundle 2, the larder: P5.1, P5.2 (V-130, V-131, V-149), 2026-10-26
 - [ ] Bundle 3, kitchen and keeping: P5.3, P5.12
 - [ ] Bundle 4, mill and bakery: P5.11, harvest home
-- [ ] Bundle 5, the loom: P5.5
+- [x] Bundle 5, the loom: P5.5 (V-134), 2026-10-26. Measured, cold person-hours year 1 · year 2 (today → loom): anvil 3362 · 4993 → 2947 · 3933, smoke 476 · 1469 → 219 · 564, tallow 29 · 13 → 1 · 2. Anvil misses the one-third target (no flock; flax in year 2): for the 5B balance pass.
 - [ ] Bundle 6, the lamp: P5.13, soap, lit rooms
 - [ ] Bundle 7, sickness: P5.7
 - [ ] 5B balance and review
