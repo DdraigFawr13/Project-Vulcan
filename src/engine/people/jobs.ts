@@ -39,6 +39,7 @@ import { fishing, takeUpFishing } from './fish.ts';
 import { endHunt, hunting, takeUpHunting } from './hunt.ts';
 import { herding, takeUpHerding } from './herd.ts';
 import { foraging, takeUpForaging } from './forage.ts';
+import { beekeeping, takeUpBeekeeping } from './beekeep.ts';
 import { practise } from './learn.ts';
 import { smelting, takeUpSmelting } from './smelt.ts';
 import { stationing, takeUpStation } from './station.ts';
@@ -51,39 +52,6 @@ import { walkTo } from './walk.ts';
 
 /** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
 const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
-
-export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
-   * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
-  job: 'text',
-  /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
-  target: 'int',
-  /** Minutes of felling or quarrying left on the target. */
-  work: 'int',
-  /** Their line taking up the work, which each tree they fell (or part they build) cites. */
-  took: 'event',
-  /** The plan they are building (P3.1), the field they are sowing or reaping (P4.7), the shaft
-   * they are sinking or tunnelling from (P4.1) or the wall waiting for their clay, or 0. */
-  plan: 'int',
-  /** Mining (P4.1): `sink`, `tunnel`, `mine` or `clay`, and the metal (or the part, for clay). */
-  task: 'text',
-  what: 'text',
-  /** The tick before which they do not look for work again after finding none. */
-  next: 'int',
-  /** The recipe being smelted (metal.json) or the clamp's task, `stack` or `open`; '' for none. */
-  make: 'text',
-  /** Smithing (Bundle 3): the tool being made as `kind:material`, and the line of this person's
-   * first fine-or-better piece (V-093), 0 until they make one. */
-  making: 'text',
-  fine: 'event',
-  /** Herding: the hay carried to the rick, and the wild herd being tamed with the minutes sat
-   * near it so far (a different herd starts again). */
-  hay: 'count',
-  herdId: 'int',
-  sat: 'count',
-  /** Watering (Bundle 2): the tiles' worth of water carried, 0 while fetching. */
-  pail: 'count',
-} as const;
 
 /** Work that takes a feature off the map for what it yields: felling (logs) and quarrying (P3.1,
  * stone). `kinds` are the feature kinds worked, preferred in that order. */
@@ -223,6 +191,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'fish' && can('fish') && fishing(ctx, p)) return true;
   if (p['job'] === 'carpentry' && can('carpentry') && furnishing(ctx, p)) return true;
   if (p['job'] === 'hearth' && can('hearth') && furnishing(ctx, p)) return true;
+  if (p['job'] === 'beekeep' && can('beekeep') && beekeeping(ctx, p)) return true;
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
   if (p['job'] === 'cook' && can('cook') && cooking(ctx, p)) return true;
   if (p['job'] === 'station' && can('station') && stationing(ctx, p)) return true;
@@ -384,6 +353,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   smelt: takeUpSmelting,
   smith: takeUpSmithing,
   heal: takeUpNursing,
+  beekeep: takeUpBeekeeping,
 };
 
 const jobSkill = (content: EngineContent, g: Gather): string =>

@@ -1,5 +1,6 @@
 // The engine's one public surface. The engine is pure: same seed, content and commands, same
 // ledger, tick for tick (DECISIONS V-002, V-006). The worker is the only place it is run.
+import { beesSystem } from './bees/index.ts';
 import { buildSystem } from './build/index.ts';
 import { calendarSystem } from './calendar/index.ts';
 import { fireSystem } from './fire/index.ts';
@@ -117,6 +118,7 @@ export {
 export { SHAFT_STATES } from './mine/index.ts';
 export { fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
 export { daylightAt, litRooms } from './lamp/index.ts';
+export { skepsOf } from './bees/index.ts';
 export { shaftFor, shaftsOf } from './mine/index.ts';
 export {
   cloakOf,
@@ -269,6 +271,7 @@ export const SYSTEMS: readonly System[] = [
   weatherSystem,
   wildSystem,
   flockSystem,
+  beesSystem,
 ];
 
 /** A simulation over `content` with the game's systems, or the given ones (tests add fixtures). */

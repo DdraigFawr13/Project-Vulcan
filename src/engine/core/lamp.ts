@@ -36,7 +36,7 @@ export interface BeesDef {
   job: string;
   stand: number;
   woods: number;
-  skep: { minutes: number };
+  skep: { minutes: number; months: readonly string[] };
   swarm: { months: readonly string[]; chance: number };
   harvest: { month: string; honey: number; wax: number; minutes: number };
 }

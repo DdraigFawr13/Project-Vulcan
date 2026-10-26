@@ -52,7 +52,7 @@ export const LAMP_SCHEMAS = {
       job: str(),
       stand: num({ min: 1 }),
       woods: num({ min: 1 }),
-      skep: obj({ minutes: num({ min: 1 }) }),
+      skep: obj({ minutes: num({ min: 1 }), months: list(str()) }),
       swarm: obj({ months: list(str()), chance: num({ min: 0, max: 100 }) }),
       harvest: obj({
         month: str(),

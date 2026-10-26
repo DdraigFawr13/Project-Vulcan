@@ -2,6 +2,7 @@
 // each spell stays inside the caps of its power tier. Returns one line per problem.
 import { check, type RefTarget, type RefUse } from './schema';
 import { SCHEMAS } from './schemas';
+import { checkBees } from './validate-lamp';
 
 type Files = Readonly<Record<string, unknown>>;
 
@@ -83,6 +84,7 @@ export function validateContent(files: Files): string[] {
       ...checkWild(files),
       ...checkFlock(files),
       ...checkStrangers(files),
+      ...checkBees(files),
     );
   errors.push(...checkBand(files));
   return errors;

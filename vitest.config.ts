@@ -7,6 +7,8 @@ import { defineConfig } from 'vitest/config';
 const slowFiles = [
   // The lamp (P5.13): two eight-day runs with dusk at 15:00.
   'src/engine/lamp/lamp.test.ts',
+  // The skeps (P5.13): two runs of a few days from the first field to the first honey.
+  'src/engine/bees/bees.test.ts',
   'src/engine/build/fields.test.ts',
   'src/engine/build/walls.test.ts',
   'src/engine/people/cook.test.ts',
