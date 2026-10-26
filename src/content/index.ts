@@ -7,6 +7,7 @@ import band from './data/band.json';
 import biomes from './data/biomes.json';
 import buildings from './data/buildings.json';
 import calendar from './data/calendar.json';
+import clothes from './data/clothes.json';
 import conditions from './data/conditions.json';
 import creatures from './data/creatures.json';
 import cultures from './data/cultures.json';
@@ -58,6 +59,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   biomes,
   buildings,
   calendar,
+  clothes,
   conditions,
   creatures,
   cultures,

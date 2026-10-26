@@ -20,18 +20,23 @@ export const HEARTH = 'hearth';
 /** How far from the green the campfire may be set. */
 const SEARCH = 6;
 
-/** Open ground for the campfire: buildable, dry, clear, off the store and every house. */
+/** Open ground for the campfire: buildable, dry, clear, off the store and every house; features
+ * of a `clearable` kind do not count. */
 export function openGround(
   world: WorldState,
   content: EngineContent,
   x: number,
   y: number,
+  clearable: readonly string[] = [],
 ): boolean {
   const map = world.map;
   if (x < 1 || y < 1 || x >= map.width - 1 || y >= map.height - 1) return false;
   const i = y * map.width + x;
   const kind = content.terrain.kinds[map.tiles[i]!]!;
-  if (!kind.buildable || kind.water || kind.solid || map.built[i] || map.features[i]) return false;
+  if (!kind.buildable || kind.water || kind.solid || map.built[i]) return false;
+  // A feature is in the way unless it is of a kind the caller clears first (the tan pits').
+  const feature = map.features[i] ? content.features[map.features[i]! - 1]?.kind : undefined;
+  if (feature && !clearable.includes(feature)) return false;
   if (planAt(world, x, y) || inStore(world, x, y, 0) || itemsAt(world, x, y, 0).length)
     return false;
   if (stationAt(world, x, y)) return false;

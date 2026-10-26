@@ -1,11 +1,11 @@
-// Building the smelter and the smokehouse (Phase 4 Bundle 3, 5B Bundle 3, V-041): the colony plans
-// them (build/metalsite.ts, keep/house.ts); builders make them, so it is a row of the Work sheet's
+// Building the smelter, the smokehouse, the kiln and the tan pits (Phase 4 Bundle 3, 5B Bundles 3
+// and 5, V-041): the colony plans them (build/metalsite.ts, keep/house.ts, build/pits.ts); builders make them, so it is a row of the Work sheet's
 // Building kind. A free person able to build takes up a planned one if stone for it can be had,
 // fetches the stone, lays it, and works there its `minutes` (shorter with building skill, which
 // they practise). One line when taken up and one when built.
 import type { EngineContent, EntityRow } from '../core/index.ts';
-import { stationsOf } from '../build/index.ts';
-import { loadOf, takeFrom } from '../goods/index.ts';
+import { PITS_KIND, stationsOf } from '../build/index.ts';
+import { loadOf, marksOf, takeFrom } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
 import { fetchWood } from './carpentry.ts';
@@ -21,9 +21,11 @@ const stop = (p: EntityRow): false => {
 const skillName = (ctx: SystemContext): string =>
   ctx.content.jobs.find((j) => j.id === ctx.content.buildings.job)?.skill ?? '';
 
-/** What building a kind of station takes: the stone, the minutes and the line said when built. */
+/** What building a kind of station takes: the stone, the minutes, the line said when built and
+ * its name in the taking-up line (the kind's, unless it has one). */
 interface Def {
   kind: string;
+  name?: string;
   cost: number;
   material: string;
   minutes: number;
@@ -35,6 +37,12 @@ const defsOf = (content: EngineContent): Def[] => [
   { kind: 'smelter', ...content.metal.smelter, built: 'metal.smelterBuilt' },
   { kind: 'smokehouse', ...content.work.cure.house, built: 'cure.houseBuilt' },
   { kind: 'kiln', ...content.work.potter.kiln, built: 'potter.kilnBuilt' },
+  {
+    kind: PITS_KIND,
+    ...content.clothes.pits,
+    skilled: content.buildings.skilled,
+    built: 'pits.built',
+  },
 ];
 
 /** The first planned station nobody is on that `p` has stone for or can reach some. */
@@ -45,6 +53,8 @@ function choose(ctx: SystemContext, p: EntityRow): { s: EntityRow; def: Def } | 
       if (s['state'] !== 'plan') continue;
       if (people(world).some((q) => q.id !== p.id && q['job'] === 'station' && q['plan'] === s.id))
         continue;
+      // The pits' trees are felled first (build/pits.ts marks them).
+      if (marksOf(world).some((m) => m['house'] === s.id)) continue;
       if (!canStandBeside(ctx, p, s['x'] as number, s['y'] as number)) continue;
       if ((s['have'] as number) >= def.cost || stackOf(ctx, p, def.material)) return { s, def };
     }
@@ -63,7 +73,11 @@ export function takeUpStation(ctx: SystemContext, p: EntityRow): boolean {
   p['took'] = ctx.emit('work.tookUpStation', {
     causes: [s['line'] as number, priorityLine(world, p.id, job)].filter((l): l is number => !!l),
     actors: [p.id],
-    data: { name: p['name'] as string, what: def.kind, where: `at ${s['x']}, ${s['y']}` },
+    data: {
+      name: p['name'] as string,
+      what: def.name ?? def.kind,
+      where: `at ${s['x']}, ${s['y']}`,
+    },
   });
   Object.assign(p, { job: 'station', plan: s.id, target: -1 });
   return stationing(ctx, p);
@@ -97,6 +111,11 @@ export function stationing(ctx: SystemContext, p: EntityRow): boolean {
   practise(ctx, p, skillName(ctx), p['took'] as number);
   if ((s['work'] as number) > 0) return true;
   s['state'] = 'built';
+  // Bushes and herbs on the pits' ground go as they are dug.
+  if (s['kind'] === PITS_KIND)
+    for (let dy = 0; dy < ((s['h'] as number) || 1); dy += 1)
+      for (let dx = 0; dx < ((s['w'] as number) || 1); dx += 1)
+        world.map.features[(y + dy) * world.map.width + x + dx] = 0;
   s['made'] = ctx.emit(def.built, {
     causes: [p['took'] as number, s['line'] as number],
     actors: [p.id],

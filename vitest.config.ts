@@ -8,6 +8,8 @@ const slowFiles = [
   // The mill and harvest home (5B Bundle 4): a 240-day run on anvil.
   'src/engine/build/mill.test.ts',
   'src/engine/build/fields.test.ts',
+  // Tan pits (5B Bundle 5): a short run to pits built and leather tanned.
+  'src/engine/build/pits.test.ts',
   'src/engine/build/walls.test.ts',
   'src/engine/people/cook.test.ts',
   'src/worker/furniture.test.ts',

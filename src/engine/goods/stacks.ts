@@ -18,9 +18,9 @@ export const GOODS_TABLES: Schemas = {
     /** The person carrying it (0 when it lies on the ground), or whose it is, for a bedroll. */
     holder: 'entity',
     owner: 'entity',
-    /** `laid` for a bedroll laid out to sleep on, `worn` for a cloak on its owner, else ''. */
+    /** `laid` for a bedroll laid out to sleep on, `worn` for clothes on their owner, else ''. */
     state: 'text',
-    /** Wear left on a worn cloak (life.json `cloak`), else 0. */
+    /** Hours of wear left in a garment (clothes.json), else 0. */
     wear: 'count',
     /** The line that made or brought it, for "why?". */
     made: 'event',
@@ -74,13 +74,9 @@ export function layItem(
   });
 }
 
-/** What `person` is carrying to put down somewhere: the item they hold, not the cloak they wear. */
+/** What `person` is carrying to put down somewhere: the item they hold, not the clothes they wear. */
 export const loadOf = (world: WorldState, person: number): EntityRow | undefined =>
   itemsOf(world).find((i) => i['holder'] === person && i['state'] !== 'worn');
-
-/** The cloak `person` is wearing, if any. */
-export const cloakOf = (world: WorldState, person: number): EntityRow | undefined =>
-  itemsOf(world).find((i) => i['holder'] === person && i['state'] === 'worn');
 
 /** Takes up to `count` from a stack; the stack goes when emptied. Returns how many were taken. A
  * carried load used up by someone not hauling it is a trip's end (trips.ts). */

@@ -21,6 +21,7 @@ import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
 import { burying, takeUpBurial } from './burial.ts';
+import { TRADE_TAKE_UP, takeUpChange, tradeWork } from './trades.ts';
 import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
@@ -47,11 +48,10 @@ import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
 /** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
-const HOLDS = ['station', 'charcoal', 'smelt', 'smith', 'cure', 'cooper', 'potter'];
+const HOLDS = { station: 1, charcoal: 1, smelt: 1, smith: 1, ...LARDER_TAKE_UP, ...TRADE_TAKE_UP };
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`, `charcoal`, `smelt`, `station` (a smelter or smokehouse being built),
-   * `cure`, `cooper`, `potter`, `mill`, `bake` or '' (none). */
+  /** A Work sheet job, `station` (a station being built), `hearth` (one being made) or ''. */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -213,6 +213,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (herding(ctx, p, hours)) return true;
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
+  if (hours && tradeWork(ctx, p)) return true;
   if (p['job'] === 'build' && hours && building(ctx, p)) return true;
   if (p['job'] === 'mine' && hours && mining(ctx, p)) return true;
   if (p['job'] === 'farm' && hours && farming(ctx, p)) return true;
@@ -234,10 +235,9 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'dress' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
   if (p['job'] === 'dress' && dressing(ctx, p)) return true;
   const load = loadOf(world, p.id);
-  // Out of hours the metal and station work keeps what it fetched and resumes next morning, and
-  // so does a sinker the shaft's ladder (else they carried it back and lost the job).
+  // Out of hours HOLDS work keeps its load till morning, as does a sinker the shaft's ladder.
   if (load && !hours && p['job'] === 'mine' && p['task'] === 'sink') return false;
-  if (load && !HOLDS.includes(p['job'] as string)) {
+  if (load && !((p['job'] as string) in HOLDS)) {
     p['job'] = 'haul';
     deliver(ctx, p, load);
     return true;
@@ -280,12 +280,11 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   return takeUp(ctx, p);
 }
 
-/** Chooses new work: a tree marked by a test-mode order first, then the Work sheet's kinds of
- * work in their own priority order (priority.ts): felling while wood is short, foraging while
- * food is, carrying, building (a house's site cleared first) and the rest. */
+/** Chooses new work: a test-mode marked tree, then changing clothes (trades.ts), then the Work
+ * sheet's kinds in their priority order (priority.ts), a cold room's hearth first. */
 function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   const { world } = ctx;
-  if (takeUpMarked(ctx, p, false)) return true;
+  if (takeUpMarked(ctx, p, false) || takeUpChange(ctx, p)) return true;
   for (const job of hearthFirst(ctx, p, jobsInOrder(world, ctx.content, p))) {
     const before = p['took'];
     if (TAKE_UP[job]?.(ctx, p)) return true;
@@ -384,6 +383,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   smelt: takeUpSmelting,
   smith: takeUpSmithing,
   heal: takeUpNursing,
+  ...TRADE_TAKE_UP,
 };
 
 const jobSkill = (content: EngineContent, g: Gather): string =>

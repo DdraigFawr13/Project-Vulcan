@@ -52,18 +52,14 @@ export interface LifeDef {
     kind: string;
     goods: readonly { kind: string; count: number }[];
     bedroll: string;
-    cloak: string;
   };
   /** Each live memory's mood points count this many times in the mood (V-091). */
   memory: { weight: number };
-  /** The wool cloak (V-092): degrees added outdoors, wear an hour outdoors in the cold, hours it
-   * lasts. */
   /** Points the warmth warning line moves by a trait, or by each held memory (V-046, P4.8). */
   warmthLine: {
     traits: Readonly<Record<string, number>>;
     memories: Readonly<Record<string, number>>;
   };
-  cloak: { warmth: number; wear: number; last: number };
   /** Most of one kind a tile's stack holds (`default` for the rest). */
   stacks: Readonly<Record<string, number>>;
 }

@@ -1,5 +1,6 @@
-// V-091, V-092: memories hold, stack, fade and move the mood; each settler arrives in a wool cloak
-// that warms them outdoors and wears through; a cold line is notable once a person a day.
+// V-091, V-092, P5.5: memories hold, stack, fade and move the mood; each settler arrives in a wool
+// tunic and cloak that warm them outdoors and wear through; a cold line is notable once a person a
+// day.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import {
@@ -15,17 +16,22 @@ import {
 } from '../index.ts';
 import { itemsOf } from '../goods/index.ts';
 
-// Every month at -12 degrees: a winter that never lets up.
-const coldWith = (cloak: Partial<typeof content.life.cloak>) => ({
+// Every month at -20 degrees: a winter that never lets up. `garment` changes every garment.
+type Garment = (typeof content.clothes.garments)[number];
+const coldWith = (garment: Partial<Garment>) => ({
   ...content,
-  life: { ...content.life, cloak: { ...content.life.cloak, ...cloak } },
+  clothes: {
+    ...content.clothes,
+    garments: content.clothes.garments.map((g) => ({ ...g, ...garment })),
+  },
   seasons: { ...content.seasons, months: content.seasons.months.map(() => -20) },
 });
 const DAY = 1440;
 const SEED = 'anvil/2';
 type World = ReturnType<typeof createWorld>;
 const people = (w: World) => w.entities['person'] ?? [];
-const cloaks = (w: World) => itemsOf(w).filter((i) => i['kind'] === content.life.cart.cloak);
+const cloaks = (w: World) => itemsOf(w).filter((i) => i['state'] === 'worn');
+const lifeOf = (kind: string) => content.clothes.garments.find((g) => g.item === kind)!.last;
 const warmthOf = (w: World) =>
   people(w).reduce((n, p) => n + (needOf(w, p.id, 'warmth')!['value'] as number), 0);
 
@@ -64,13 +70,14 @@ describe('memories', () => {
   });
 });
 
-describe('cloaks', () => {
-  it('arrive worn, one a settler, citing the unloading, and warm them outdoors', () => {
+describe('clothes', () => {
+  it('arrive worn, a tunic and a cloak a settler, citing the unloading, and warm them outdoors', () => {
     const w = createWorld(createSim(content), SEED);
-    expect(cloaks(w)).toHaveLength(people(w).length);
+    expect(cloaks(w)).toHaveLength(people(w).length * content.clothes.cart.length);
     const unloaded = allLines(w).find((e) => e.type === 'goods.unloaded')!;
     for (const c of cloaks(w)) {
-      expect(c).toMatchObject({ state: 'worn', wear: content.life.cloak.last, made: unloaded.id });
+      const wear = lifeOf(c['kind'] as string);
+      expect(c).toMatchObject({ state: 'worn', wear, quality: 'plain', made: unloaded.id });
       expect(c['holder']).toBe(c['owner']);
     }
     // A worn cloak is not a load: nobody carries it to the store, and it stays on its owner.
@@ -84,7 +91,7 @@ describe('cloaks', () => {
       step(naked, bare, 60);
       [dressed, undressed] = [dressed + warmthOf(clothed), undressed + warmthOf(naked)];
     }
-    expect(cloaks(clothed)).toHaveLength(people(clothed).length);
+    expect(cloaks(clothed)).toHaveLength(people(clothed).length * content.clothes.cart.length);
     expect(dressed).toBeGreaterThan(undressed);
   });
 
@@ -94,8 +101,8 @@ describe('cloaks', () => {
     const n = people(w).length;
     step(w, sim, DAY);
     expect(cloaks(w)).toEqual([]);
-    const out = allLines(w).filter((e) => e.type === 'goods.cloakWornOut');
-    expect(out).toHaveLength(n);
+    const out = allLines(w).filter((e) => e.type === 'goods.wornOut');
+    expect(out).toHaveLength(n * content.clothes.cart.length);
     const unloaded = allLines(w).find((e) => e.type === 'goods.unloaded')!;
     for (const e of out) expect(e.causes).toEqual([unloaded.id]);
   });

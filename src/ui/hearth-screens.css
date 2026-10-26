@@ -499,6 +499,20 @@
   min-width: 0;
   padding: 6px 0;
 }
+.prow.wear {
+  align-items: flex-start;
+  padding: 4px 0;
+}
+.prow.wear .slot {
+  flex: 0 0 5.5em;
+  font: 700 14px/1.2 var(--name);
+  color: var(--ink-soft);
+  padding-top: 3px;
+}
+.prow.wear span {
+  flex: 1;
+  min-width: 0;
+}
 .kept h3 {
   margin: 12px 0 2px;
 }

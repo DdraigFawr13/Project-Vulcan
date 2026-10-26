@@ -11,7 +11,8 @@ export const STATION_TABLES: Schemas = {
    * it; `have`: stone brought to the smelter; `work`: minutes left once building has started, -1
    * before; `made`: the line saying it was built, 0 before; `lit`: the tick a clamp was lit;
    * `litLine`: the line saying so; `alert` and `waitFor`: the smelter's waiting alert and the
-   * item it waits for. */
+   * item it waits for. The tan pits (kind `pits`, pits.ts) are `plan`, `built` or `sent`; `sent`
+   * is 1 for a replacement (it cannot be sent back). */
   station: {
     kind: 'text',
     x: 'int',
@@ -28,7 +29,11 @@ export const STATION_TABLES: Schemas = {
     litLine: 'event',
     alert: 'event',
     waitFor: 'text',
+    sent: 'count',
   },
+  /** A hide lying in the tan pits: the pits it lies in, the tick it was laid in and the tick it
+   * is ready, and the line saying it was laid in. */
+  pit: { station: 'entity', laid: 'int', ready: 'int', line: 'event' },
 };
 
 export const stationsOf = (world: WorldState): EntityRow[] => world.entities['station'] ?? [];
@@ -42,6 +47,7 @@ export const stationAt = (world: WorldState, x: number, y: number): EntityRow | 
   stationsOf(world).find(
     (s) =>
       s['z'] === 0 &&
+      s['state'] !== 'sent' &&
       x >= (s['x'] as number) &&
       x < (s['x'] as number) + (s['w'] as number) &&
       y >= (s['y'] as number) &&
@@ -51,6 +57,7 @@ export const stationAt = (world: WorldState, x: number, y: number): EntityRow | 
 /** Every tile (as `y * width + x`) the stations cover. */
 export const stationTiles = (world: WorldState): number[] =>
   stationsOf(world).flatMap((s) => {
+    if (s['state'] === 'sent') return [];
     const out: number[] = [];
     for (let dy = 0; dy < (s['h'] as number); dy += 1)
       for (let dx = 0; dx < (s['w'] as number); dx += 1)

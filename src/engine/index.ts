@@ -122,8 +122,10 @@ export { SHAFT_STATES } from './mine/index.ts';
 export { fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
 export { shaftFor, shaftsOf } from './mine/index.ts';
 export {
-  cloakOf,
   freeTile,
+  garmentOf,
+  leftOf,
+  wornOf,
   goodsSystem,
   depotsOf,
   depotTiles,
@@ -138,6 +140,7 @@ export {
   lifeFor,
   loadOf,
   marksOf,
+  sparesOf,
   speedOf,
   stockOf,
   storeOf,

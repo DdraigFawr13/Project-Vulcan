@@ -6,7 +6,7 @@ import { NEEDS_TABLES, runNeeds, seedNeeds } from './needs.ts';
 export const needsSystem: System = {
   id: 'needs',
   every: 'hour',
-  emits: ['need.low', 'need.met', 'mood.changed', 'goods.cloakWornOut'],
+  emits: ['need.low', 'need.met', 'mood.changed', 'goods.wornOut'],
   tables: NEEDS_TABLES,
   init: (ctx) => seedNeeds(ctx.world, ctx.content),
   run: runNeeds,

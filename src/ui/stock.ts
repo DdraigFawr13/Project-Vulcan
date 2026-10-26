@@ -38,6 +38,8 @@ export function stockRows(
       block.append(aside);
       foodMix(aside, leftovers);
     }
+    // The clothes plate lists the spares by slot and what is held to make more (Bundle 5).
+    if (s.clothes) block.append(fillClothes(el('div', { 'data-clothes': '' }), s.clothes));
     // Foraging's good says when the bushes bear (P2.9, V-040), from content.
     const { good, months } = content.work.forage;
     if (s.good === good && months.length)
@@ -96,6 +98,25 @@ function fillFlock(box: Element, plate: FlockPlate): Element {
   return box;
 }
 
+/** "everyday: 1 linen smock", "outer: none", "to make them: 2 wool cloth, ...", read-only. */
+function fillClothes(box: Element, c: NonNullable<StockView['clothes']>): Element {
+  const lines: [string, string][] = [
+    ...c.slots.map((x): [string, string] => [x.name, x.text]),
+    ['to make them', c.making],
+  ];
+  const key = JSON.stringify(lines);
+  if (box.getAttribute('data-key') === key) return box;
+  box.setAttribute('data-key', key);
+  box.replaceChildren(
+    ...lines.map(([name, text]) => {
+      const p = el('p', { class: 'aside' });
+      p.append(el('b', {}, name!), `: ${text}`);
+      return p;
+    }),
+  );
+  return box;
+}
+
 /** What the kills leave: kept in the store until a trade uses them (Phase 5B). */
 function leftoverBlock(l: LeftoversView): HTMLElement {
   const block = el('div', { class: 'kept', 'data-testid': 'stock-leftovers' });
@@ -137,6 +158,8 @@ export function fillStock(
     const head = body.querySelector(`[data-testid="stock-${s.good}"] > p`);
     if (head?.lastChild) head.lastChild.textContent = `: ${haveLine(s)}`;
     // The metal line moves as the work does.
+    const clothes = body.querySelector(`[data-testid="stock-${s.good}"] > [data-clothes]`);
+    if (clothes && s.clothes) fillClothes(clothes, s.clothes);
     const status = body.querySelector(`[data-testid="stock-${s.good}"] > [data-status]`);
     if (status && s.status && status.textContent !== s.status) status.textContent = s.status;
     // An ore count in a plate's note moves as miners haul.
