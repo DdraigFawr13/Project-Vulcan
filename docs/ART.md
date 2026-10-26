@@ -18,6 +18,7 @@ Flat-shaded pixel art in the muted palette, readable at 32 px, nothing drawn bef
 | P5.10 | `tiles-world`, `buildings` | worn ground in three stages (`wear.<1-3>.<1\|2>`, taste board pick A) and the stone road `build.road-stone`, by `tools/draw-roads.mjs` |
 | P5.2 | `buildings` | `furn.well`, by `tools/draw-well.mjs` |
 | P5.1 | `buildings`, `items` | `field.ripe.<oats\|beans\|cabbages>`, `field.blight`, `item.oats`, `item.beans`, `item.cabbages` |
+| 5B B5 | `items`, `buildings` | garments, cloth, `furn.loom`, `furn.pits`, `field.ripe.flax` (`draw-clothes`, `draw-loom`) |
 | Phase 5 onward | later | animals, crops, sickbed, loom, creatures, dragon, fire, caravan |
 
 Layout: `art/src/<sheet>/<name>.png` packed by `tools/pack-sheet` into `public/art/<sheet>.png` and `<sheet>.json`. Naming: `<category>.<name>[.<variant>][.<facing>][.<frame>]`, for example `tile.grass.2`, `wall.stone.n-e`, `person.dwarf.s.1`, `item.ingot.bronze`. Content refers to art only by name. The final art (V-034: AI-made images Morgan picks from, cleaned to the palette) replaces files in `art/src` with the same names and sizes; the packer rebuilds and nothing else changes. Every asset's source and licence go in `art/PROVENANCE.md` (SAFE-05).

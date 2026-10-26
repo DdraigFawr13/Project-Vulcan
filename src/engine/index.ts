@@ -135,6 +135,7 @@ export {
   lifeFor,
   loadOf,
   marksOf,
+  sparesOf,
   speedOf,
   stockOf,
   storeOf,

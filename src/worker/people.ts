@@ -3,9 +3,6 @@
 import { content } from '../content/index.ts';
 import {
   clockAt,
-  garmentOf,
-  leftOf,
-  wornOf,
   cropNow,
   declinedLine,
   fieldsOf,
@@ -24,6 +21,7 @@ import {
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
+import { wearingRows } from './clothesview.ts';
 import { feedsOf } from './comfort.ts';
 import { careNow } from './health.ts';
 import { deadNow, healthOf } from './healthview.ts';
@@ -299,18 +297,14 @@ const withHome = (home: WalkerView['home'], stranger: WalkerView['stranger']) =>
   ...(stranger && { stranger }),
 });
 
-/** What a person wears and how worn each is (V-092, P5.5): "Wool tunic, plain: worn 30%, 2 °C
- * warmer outdoors. Wool cloak, plain: worn 10%, 4 °C warmer outdoors." */
-function wearingOf(world: WorldState, p: EntityRow): { wearing?: string } {
-  const worn = wornOf(world, p.id);
-  if (!worn.length) return {};
-  const parts = worn.map((i) => {
-    const name = nameOf(content.items, i['kind'] as string);
-    const warmth = garmentOf(content, i['kind'] as string)?.warmth ?? 0;
-    return `${name[0]!.toUpperCase()}${name.slice(1)}, ${i['quality']}: worn ${100 - leftOf(content, i)}%, ${warmth} °C warmer outdoors.`;
-  });
-  return { wearing: parts.join(' ') };
-}
+/** What a person wears, a row per garment (V-092, V-134); see clothesview.ts. */
+const wearingOf = (
+  world: WorldState,
+  p: EntityRow,
+): { wearing?: NonNullable<WalkerView['wearing']> } => {
+  const wearing = wearingRows(world, p);
+  return wearing.length ? { wearing } : {};
+};
 
 /** A person's live memories in words from memories.json, with the days before each fades. */
 function memoriesView(world: WorldState, p: EntityRow): WalkerView['memories'] {

@@ -54,19 +54,21 @@ function sideOf(green: Spot, to: Spot): string {
   return `${ns}${ew}` || 'by the green';
 }
 
-/** Free ground for a `size` by `size` station with its top-left at (x, y). */
+/** Free ground for a `size` by `size` station with its top-left at (x, y), but for features of a
+ * `clearable` kind. */
 export function freeBlock(
   world: WorldState,
   content: EngineContent,
   x: number,
   y: number,
   size: number,
+  clearable: readonly string[] = [],
 ) {
   for (let dy = 0; dy < size; dy += 1)
     for (let dx = 0; dx < size; dx += 1) {
       const fields = (world.entities['field'] ?? []).filter((f) => f['state'] !== 'sent');
       const i = (y + dy) * world.map.width + x + dx;
-      if (!openGround(world, content, x + dx, y + dy)) return false;
+      if (!openGround(world, content, x + dx, y + dy, clearable)) return false;
       if (fields.some((f) => (f['tiles'] as number[]).includes(i))) return false;
       if (livePastures(world).some((p) => onPastureGround(p, world.map.width, x + dx, y + dy)))
         return false;

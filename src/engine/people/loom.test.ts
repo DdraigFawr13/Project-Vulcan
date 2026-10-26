@@ -5,10 +5,15 @@ import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { allLines, createSim, createWorld, step } from '../index.ts';
 import { cropNow, fieldsOf } from '../build/fields.ts';
-import { itemsAt, layItem, storeOf } from '../goods/index.ts';
+import { removeEntity } from '../entity/index.ts';
+import { itemsAt, itemsOf, layItem, storeOf } from '../goods/index.ts';
 
 const DAY = 1440;
 const sim = createSim(content);
+// The cart's wool cloth would cover the plate: set aside, so the colony needs the loom.
+const noWool = (w: ReturnType<typeof createWorld>) => {
+  for (const i of itemsOf(w).filter((i) => i['kind'] === 'wool')) removeEntity(w, 'item', i.id);
+};
 const lines = (w: ReturnType<typeof createWorld>, type: string) =>
   allLines(w).filter((e) => e.type === type);
 
@@ -16,6 +21,7 @@ describe('the loom', () => {
   it('makes a loom, weaves fleece and makes clothes of it, unordered', () => {
     const w = createWorld(sim, 'smoke');
     step(w, sim, 4 * DAY);
+    noWool(w);
     const tile = storeOf(w).find((s) => !itemsAt(w, s['x'] as number, s['y'] as number, 0).length)!;
     layItem(w, {
       kind: 'fleece',
@@ -43,6 +49,7 @@ describe('the loom', () => {
   it('sows flax for a beans course in spring while clothes are short, else beans', () => {
     const w = createWorld(sim, 'ledger');
     step(w, sim, DAY);
+    noWool(w);
     const f = fieldsOf(w)[0]!;
     const beans = content.buildings.field.rotation.indexOf('beans');
     const seedmonth = content.calendar.monthNames.indexOf('Seedmonth');

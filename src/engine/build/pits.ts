@@ -8,15 +8,25 @@
 // "Edge": outside the town ring (Chebyshev from the green) and within the smelter's `reach` of
 // it; the nearest to the ring wins, then the nearer water. "Downstream": the map's river leaves by
 // the edge `riverExit`; a site is downstream when it lies further toward that edge than the
-// green does. A map with no such exit has no flow: any side is allowed.
+// green does; an upstream block is taken only when no downstream one will do. A map with no such
+// exit has no flow: any side is allowed.
 import {
   TICKS_PER_DAY,
   type EngineContent,
   type EntityRow,
   type WorldState,
 } from '../core/index.ts';
-import { addEntity } from '../entity/index.ts';
-import { inStore, itemsOf, layItem, raiseStock, shortOf, stockOf } from '../goods/index.ts';
+import { addEntity, removeEntity } from '../entity/index.ts';
+import {
+  inStore,
+  isTree,
+  itemsOf,
+  layItem,
+  marksOf,
+  raiseStock,
+  shortOf,
+  stockOf,
+} from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { PITS_KIND, wantOf } from './houses.ts';
@@ -59,6 +69,13 @@ function flowOf(world: WorldState): ((x: number, y: number) => number) | undefin
   return exits[world.map.riverExit];
 }
 
+/** Features the pits' ground may have: trees are felled first (marked, like a pasture's), bushes
+ * and herbs go when the pits are dug. */
+const CLEARABLE = ['tree', 'bush', 'herb'];
+
+/** What an upstream site adds to a block's score: more than any downstream one scores. */
+const UPSTREAM = 100_000;
+
 /** Tiles to the nearest water from a tile, within `near`; `near + 1` when none. */
 function waterDist(
   world: WorldState,
@@ -96,7 +113,7 @@ function siteOf(world: WorldState, content: EngineContent, green: Spot) {
         y < (s['y'] as number) + (s['h'] as number),
     );
   const map = world.map;
-  const found: { at: Spot; score: number }[] = [];
+  const found: { at: Spot; score: number; trees: number[] }[] = [];
   for (let y = Math.max(1, green.y - reach); y <= Math.min(map.height - 2, green.y + reach); y += 1)
     for (
       let x = Math.max(1, green.x - reach);
@@ -106,17 +123,38 @@ function siteOf(world: WorldState, content: EngineContent, green: Spot) {
       const out = cheb(green, x, y);
       if (out <= ring || out > reach) continue;
       const [mx, my] = [x + (def.w >> 1), y + (def.h >> 1)];
-      if (flow && flow(mx, my) <= flow(green.x, green.y)) continue;
+      // Downstream first; upstream only when no downstream block will do (a green near the
+      // edge the river leaves by, as on anvil, leaves too little ground below it).
+      const up = flow && flow(mx, my) <= flow(green.x, green.y) ? UPSTREAM : 0;
       const water = waterDist(world, content, mx, my, def.water);
       if (water > def.water) continue;
       let clear = true;
+      const trees: number[] = [];
       for (let dy = 0; dy < def.h && clear; dy += 1)
-        for (let dx = 0; dx < def.w && clear; dx += 1)
-          clear = freeBlock(world, content, x + dx, y + dy, 1) && !inSent(x + dx, y + dy);
-      if (clear) found.push({ at: { x, y, z: 0 }, score: (out - ring) * 100 + water });
+        for (let dx = 0; dx < def.w && clear; dx += 1) {
+          clear =
+            freeBlock(world, content, x + dx, y + dy, 1, CLEARABLE) && !inSent(x + dx, y + dy);
+          const i = (y + dy) * map.width + x + dx;
+          if (clear && isTree(world, content, i)) trees.push(i);
+        }
+      // Each tree to fell counts as much as a step further out.
+      const score = up + (out - ring + trees.length) * 100 + water;
+      if (clear) found.push({ at: { x, y, z: 0 }, score, trees });
     }
   found.sort((a, b) => a.score - b.score || a.at.y - b.at.y || a.at.x - b.at.x);
-  return found.find((f) => canReach(content, map, green, f.at));
+  // Reached at a tile of the block no tree stands on.
+  const open = (f: (typeof found)[number]): Spot | undefined => {
+    for (let dy = 0; dy < def.h; dy += 1)
+      for (let dx = 0; dx < def.w; dx += 1) {
+        const [x, y] = [f.at.x + dx, f.at.y + dy];
+        if (!f.trees.includes(y * map.width + x)) return { x, y, z: 0 };
+      }
+    return undefined;
+  };
+  return found.find((f) => {
+    const at = open(f);
+    return !!at && canReach(content, map, green, at);
+  });
 }
 
 /** Hourly: plans the tan pits when hides wait and leather is short. `sent` marks a plan replacing
@@ -146,10 +184,14 @@ export function planPits(ctx: SystemContext, green: Spot, sent = 0): void {
   }
   state['pitsNoGround'] = 0;
   const line = ctx.emit('pits.planned', { causes, data: { count: hides } });
-  addEntity(world, 'station', {
+  const id = addEntity(world, 'station', {
     ...{ kind: PITS_KIND, x: site.at.x, y: site.at.y, z: 0, w: def.w, h: def.h, state: 'plan' },
     ...{ line, have: 0, work: -1, made: 0, lit: 0, litLine: 0, alert: 0, waitFor: '', sent },
   });
+  // Trees on the ground are felled first, as on a pasture's site.
+  const width = world.map.width;
+  for (const i of site.trees)
+    addEntity(world, 'mark', { x: i % width, y: Math.floor(i / width), line, house: id });
   raiseStock(ctx, def.material, def.name, line);
 }
 
@@ -187,5 +229,7 @@ export function sendBackPits(
       ...{ x: s['x'] as number, y: s['y'] as number, z: 0, made: line },
     });
   s['state'] = 'sent';
+  for (const m of marksOf(world).filter((m) => m['house'] === s.id))
+    removeEntity(world, 'mark', m.id);
   planPits(ctx, green, 1);
 }

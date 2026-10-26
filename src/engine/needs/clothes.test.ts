@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { allLines, createSim, createWorld, step } from '../index.ts';
+import { removeEntity } from '../entity/index.ts';
 import { itemsAt, itemsOf, layItem, storeOf, wornIn } from '../goods/index.ts';
 
 const SEED = 'anvil/2';
@@ -41,5 +42,18 @@ describe('clothes', () => {
     const line = allLines(w).find((e) => e.type === 'people.changed')!;
     expect(line.actors).toEqual([p.id]);
     expect(line.data['why']).toMatch(/wool tunic was worn thin|worn through/);
+  });
+
+  it('puts on a coat from the store while no everyday clothes are to be had', () => {
+    const sim = createSim(content);
+    const w = createWorld(sim, SEED);
+    const p = people(w)[0]!;
+    removeEntity(w, 'item', wornIn(w, content, p.id, 'everyday')!.id);
+    wornIn(w, content, p.id, 'outer')!['wear'] = 2;
+    const tile = storeOf(w).find((s) => !itemsAt(w, s['x'] as number, s['y'] as number, 0).length)!;
+    const at = { x: tile['x'] as number, y: tile['y'] as number, z: 0, made: 0 };
+    layItem(w, { kind: 'hide-coat', count: 1, ...at }, { quality: 'plain', wear: 11000 });
+    step(w, sim, 1440);
+    expect(wornIn(w, content, p.id, 'outer')!['kind']).toBe('hide-coat');
   });
 });

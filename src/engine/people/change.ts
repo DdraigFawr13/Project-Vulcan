@@ -18,26 +18,30 @@ const stop = (p: EntityRow): false => {
 const nameOf = (ctx: SystemContext, kind: string): string =>
   ctx.content.items.find((i) => i.id === kind)?.name ?? kind;
 
-/** The slot `p` should change, if any: one with nothing in it, else one worn thin. */
-function slotToChange(ctx: SystemContext, p: EntityRow): string | undefined {
+/** The slots `p` should change: ones with nothing in them, or worn thin. */
+function slotsToChange(ctx: SystemContext, p: EntityRow): string[] {
   const { world, content } = ctx;
-  return content.clothes.slots.find((s) => {
-    const worn = wornIn(world, content, p.id, s.id);
-    return !worn || leftOf(content, worn) < content.clothes.change;
-  })?.id;
+  return content.clothes.slots
+    .filter((s) => {
+      const worn = wornIn(world, content, p.id, s.id);
+      return !worn || leftOf(content, worn) < content.clothes.change;
+    })
+    .map((s) => s.id);
 }
 
-/** Sets off for a spare when one of their slots needs it and nobody else is going for it. */
+/** Sets off for a spare when one of their slots needs it and nobody else is going for it: the
+ * first slot that has one (with no tunic to be had, a coat still goes on). */
 export function takeUpChange(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
-  const slot = slotToChange(ctx, p);
-  if (!slot) return false;
+  const slots = slotsToChange(ctx, p);
+  if (!slots.length) return false;
   const taken = new Set(people(world).map((q) => (q['job'] === 'change' ? q['target'] : -1)));
-  for (const spare of sparesOf(world, content, slot)) {
-    if (taken.has(spare.id) || !walkTo(ctx, p, spotOf(spare))) continue;
-    Object.assign(p, { job: 'change', target: spare.id, doing: 'work' });
-    return true;
-  }
+  for (const slot of slots)
+    for (const spare of sparesOf(world, content, slot)) {
+      if (taken.has(spare.id) || !walkTo(ctx, p, spotOf(spare))) continue;
+      Object.assign(p, { job: 'change', target: spare.id, doing: 'work' });
+      return true;
+    }
   return false;
 }
 

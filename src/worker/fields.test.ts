@@ -94,13 +94,20 @@ describe('field views', () => {
     const seed = stockView(w).find((s) => s.good === 'seed')!;
     expect(seed.levels.map((l) => l.count)).toEqual([0, 100, 200]);
     expect(seed.have).toBeGreaterThan(0);
+    // The Clothes plate lists spares by slot and what is held to make more (Bundle 5).
+    const plate = stockView(w).find((s) => s.good === 'clothes')!.clothes!;
+    expect(plate.slots.map((x) => x.name)).toEqual(['everyday', 'outer']);
+    expect(plate.making).toMatch(/^\d+ wool cloth, \d+ linen, \d+ leather, \d+ cured hides/);
   });
 
   it('shows the clothes worn and each live memory with the days left', () => {
     const w = createWorld(sim, 'ledger');
     step(w, sim, 1);
     const [first, second] = walkersOf(w);
-    expect(first!.wearing).toMatch(/^Wool tunic, plain: worn \d+%.*Wool cloak, plain: worn \d+%/);
+    expect(first!.wearing!.map((r) => r.slot)).toEqual(['Everyday', 'Outer']);
+    expect(first!.wearing![1]).toMatchObject({ text: 'Wool cloak, plain' });
+    expect(first!.wearing![1]!.detail).toMatch(/^came with them · worn \d+% · warms 4° outdoors$/);
+    expect(first!.wearing![0]!.detail).toMatch(/warms 2°$/);
     expect(first!.memories).toEqual([]);
     // Every memory content lists, given straight: the first one earned comes about day 85 on every
     // test seed, too long a run for a view test (it timed out on CI).

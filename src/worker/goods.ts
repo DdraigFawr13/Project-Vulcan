@@ -24,6 +24,7 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
+import { clothesPlate } from './clothesview.ts';
 import { fieldFrames } from './fields.ts';
 import { pastureFrames } from './flock.ts';
 import { fireGoods, workBars } from './fires.ts';
@@ -104,6 +105,7 @@ export const stockView = (world: WorldState): StockView[] =>
     level: (stockOf(world, def.good)?.['level'] as string) ?? def.start,
     levels: def.levels.map((l) => ({ id: l.id, word: l.word, count: l.count })),
     ...(def.note && { note: stockNote(world, def.good, def.note) }),
+    ...(def.good === content.clothes.good && { clothes: clothesPlate(world) }),
     ...(recipeOf(def.good) && { status: metalStatus(world, content, recipeOf(def.good)!) }),
   }));
 

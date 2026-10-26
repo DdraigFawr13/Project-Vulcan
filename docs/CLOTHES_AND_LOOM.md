@@ -6,7 +6,7 @@ Phase 5B Bundle 5 (P5.5, V-134). Content: `src/content/data/clothes.json`. Nobod
 
 - Everyone wears one garment in each slot of `clothes.slots`: everyday and outer. `needs/clothes.ts` wears the everyday garment 1 an awake hour, the outer one 1 an hour outdoors, `clothes.cold` an hour outdoors under the warmth comfort line. At 0 it is gone (`goods.wornOut`, citing its made line) and the wearer gets `ragged`.
 - Warmth outdoors adds each worn garment's `warmth` (`clothesWarmth`).
-- The cart and each newcomer come dressed in `clothes.cart` / `clothes.newcomer` (goods `putOn`).
+- The cart and each newcomer come dressed in `clothes.cart` / `clothes.newcomer` (goods `putOn`); the cart also carries 5 wool cloth (life.json `cart.goods`), a tunic each before the loom.
 
 ## Changing (people)
 
@@ -26,7 +26,7 @@ Phase 5B Bundle 5 (P5.5, V-134). Content: `src/content/data/clothes.json`. Nobod
 
 ## Tan pits and the tanner (build, people)
 
-- `build/pits.ts` `planPits` (daily): with no pits standing or planned, at least 2 hides in store, the outer slot short and under 2 leather and fur in store, one block of `clothes.pits` (4 by 3) at the edge: beyond the ring, within the smelter's reach, downstream of the green (towards `map.riverExit`; any side with no river), water within `pits.water`; nearest the ring, then the water (`pits.planned`; `pits.noGround` once, a look daily). Builders make it like a smelter (`pits.built`). `sendBack {pits}` once, before building begins (`pits.sentBack`). The Pits row on the Build sheet sets how many are wanted.
+- `build/pits.ts` `planPits` (daily): with no pits standing or planned, at least 2 hides in store, the outer slot short and under 2 leather and fur in store, one block of `clothes.pits` (4 by 3) at the edge: beyond the ring, within the smelter's reach, downstream of the green where it can be (towards `map.riverExit`), else upstream, water within `pits.water`; nearest the ring, then the water (`pits.planned`; `pits.noGround` once, a look daily). Builders make it like a smelter (`pits.built`). `sendBack {pits}` once, before building begins (`pits.sentBack`). The Pits row on the Build sheet sets how many are wanted.
 - `people/tan.ts`, the Tanner row: takes a finished hide out first (`tan.tanned`), else cures a hide into fur while the outer slot is short (`tan.cured`), else lays a hide and bark logs into a free pit for `tan.leather.days` days (`tan.laidIn`); `work.tookUpTanning` cites the pits and priority. Table `pit` (station, laid, ready, line), one row a hide.
 
 ## Tests

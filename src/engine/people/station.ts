@@ -5,7 +5,7 @@
 // taken up and one when built.
 import type { EngineContent, EntityRow } from '../core/index.ts';
 import { PITS_KIND, stationsOf } from '../build/index.ts';
-import { loadOf, takeFrom } from '../goods/index.ts';
+import { loadOf, marksOf, takeFrom } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
 import { fetchWood } from './carpentry.ts';
@@ -43,6 +43,8 @@ function choose(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   );
   return plans.find((s) => {
     const def = defOf(content, s);
+    // The pits' trees are felled first (build/pits.ts marks them).
+    if (marksOf(world).some((m) => m['house'] === s.id)) return false;
     if (!canStandBeside(ctx, p, s['x'] as number, s['y'] as number)) return false;
     return (s['have'] as number) >= def.cost || !!stackOf(ctx, p, def.material);
   });
@@ -97,6 +99,10 @@ export function stationing(ctx: SystemContext, p: EntityRow): boolean {
   practise(ctx, p, skillName(ctx), p['took'] as number);
   if ((s['work'] as number) > 0) return true;
   s['state'] = 'built';
+  // Bushes and herbs on the pits' ground go as they are dug.
+  for (let dy = 0; dy < ((s['h'] as number) || 1); dy += 1)
+    for (let dx = 0; dx < ((s['w'] as number) || 1); dx += 1)
+      if (s['kind'] === PITS_KIND) world.map.features[(y + dy) * world.map.width + x + dx] = 0;
   s['made'] = ctx.emit(def.built, {
     causes: [p['took'] as number, s['line'] as number],
     actors: [p.id],

@@ -34,8 +34,12 @@ const inRect = (r: EntityRow, x: number, y: number): boolean =>
 export function stationGoods(world: WorldState): GoodsView['furniture'] {
   return stationsOf(world).flatMap((s) => {
     const [x, y, z] = [s['x'] as number, s['y'] as number, s['z'] as number];
-    // The tan pits have no art yet (Bundle 5, slice 4).
-    if (s['kind'] === 'pits') return [];
+    // The tan pits: a row of pits along the block's middle, a working space round them.
+    if (s['kind'] === 'pits')
+      return Array.from({ length: (s['w'] as number) - 1 }, (_, dx) => ({
+        ...{ x: x + dx, y: y + ((s['h'] as number) >> 1), z },
+        ...{ art: 'furn.pits', facing: 's', plan: s['state'] !== 'built' },
+      }));
     if (s['kind'] === 'smelter')
       return [{ x, y, z, art: 'furn.smelter', facing: 's', plan: s['state'] !== 'built' }];
     const lit = s['state'] === 'lit';
