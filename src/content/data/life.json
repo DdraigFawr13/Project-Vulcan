@@ -19,7 +19,7 @@
 "lastResort":["seed"],
 "seedAt":0,
 "mood":[{"word":"Content","at":6000},{"word":"Steady","at":4000},{"word":"Low","at":2000},{"word":"Miserable","at":0}],
-"cart":{"kind":"cart","goods":[{"kind":"preserved","count":640},{"kind":"seed","count":80},{"kind":"wool","count":5}],"bedroll":"bedroll"},
+"cart":{"kind":"cart","goods":[{"kind":"preserved","count":640},{"kind":"seed","count":80}],"bedroll":"bedroll"},
 "memory":{"weight":100},
 "warmthLine":{"traits":{"hardy":-600},"memories":{"cold-night":300,"slept-rough":200}},
 "stacks":{"smock":1,"tunic":1,"cloak":1,"leather-coat":1,"hide-coat":1,"preserved":100,"grain":100,"turnips":100,"oats":100,"beans":100,"cabbages":100,"seed":100,"logs":50,"stone":50,"default":50}
