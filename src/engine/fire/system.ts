@@ -7,14 +7,19 @@ import type { System, SystemContext } from '../sim/index.ts';
 import { FIRE_TABLES, firesOf, fuelOf, pieceOfFire, placeOf, timeWords } from './fire.ts';
 
 /** Ash (V-135): a fire that has burned `ash.every` minutes lays one ash on the nearest free tile
- * beside its hearth (onto a pile of ash there with room first), else on the hearth's own tile. */
+ * beside its hearth (onto a pile of ash there with room first), else on the hearth's own tile,
+ * while the colony holds under `ash.keep`; past that it is scattered and nothing is laid. */
 function layAsh(ctx: SystemContext, f: EntityRow, piece: EntityRow, burned: number): void {
   const { world, content } = ctx;
-  const { item, every } = content.lamp.ash;
+  const { item, every, keep } = content.lamp.ash;
   f['ash'] = (f['ash'] as number) + burned;
   const [x, y, z] = [piece['x'] as number, piece['y'] as number, piece['z'] as number];
   while ((f['ash'] as number) >= every) {
     f['ash'] = (f['ash'] as number) - every;
+    const held = itemsOf(world)
+      .filter((i) => i['kind'] === item)
+      .reduce((n, i) => n + (i['count'] as number), 0);
+    if (held >= keep) continue;
     const near = (i: EntityRow) =>
       i['z'] === z &&
       Math.max(Math.abs((i['x'] as number) - x), Math.abs((i['y'] as number) - y)) <= 3;

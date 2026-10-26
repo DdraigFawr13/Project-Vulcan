@@ -42,8 +42,9 @@ export const LAMP_SCHEMAS = {
         fester: num({ min: 0, max: 100 }),
       }),
     }),
-    // A lit fire leaves one `item` of ash beside its hearth for every `every` minutes it burns.
-    ash: obj({ item: ref('items'), every: num({ min: 1 }) }),
+    // A lit fire leaves one `item` of ash beside its hearth for every `every` minutes it burns,
+    // while the colony holds fewer than `keep`; past that the ash is raked out and scattered.
+    ash: obj({ item: ref('items'), every: num({ min: 1 }), keep: num({ min: 0 }) }),
     // Bees (V-135): once a field stands, a stand of `stand` skeps is wanted at the field's edge
     // nearest woods (trees within `woods` tiles); the beekeeper makes each skep in `skep.minutes`,
     // catches a swarm into an empty one with `swarm.chance` per cent a working day in the
