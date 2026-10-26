@@ -76,6 +76,7 @@ export {
 } from './fields.ts';
 export { finishReaping, finishSowing } from './fieldlife.ts';
 export { ringOf } from './ring.ts';
+export { freeBlock } from './metalsite.ts';
 export { sizeOfStation, stationAt, stationOf, stationsOf, STATION_TABLES } from './station.ts';
 export { ingotInStore, sendBackBlock, smithiesOf } from './smithy.ts';
 export {

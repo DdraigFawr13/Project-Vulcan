@@ -17,6 +17,7 @@ import {
   partOf,
   planAt,
   plansOf,
+  barrelsAt,
   rateOf,
   recordOf,
   stockOf,
@@ -123,7 +124,9 @@ function keeps(world: WorldState, i: EntityRow, floors: ReadonlySet<number>): st
   if (content.items.find((d) => d.id === i['kind'])?.cooked)
     return `, loses ${Math.round(rate * 100)}% a day`;
   const month = rate * 28 * 100;
-  return `, loses ${month < 1 ? 'under 1' : Math.round(month)}% a month here`;
+  const barrels = barrelsAt(world, i['x'] as number, i['y'] as number, i['z'] as number);
+  const kept = barrels ? `, in ${barrels} barrel${barrels === 1 ? '' : 's'}` : '';
+  return `, loses ${month < 1 ? 'under 1' : Math.round(month)}% a month here${kept}`;
 }
 
 /** The inspector's goods rows for tile (x, y, z), each with the line that made or brought it. */

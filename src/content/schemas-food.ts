@@ -22,6 +22,11 @@ export const KEEP = obj({
   haulFirst: share,
   haulBonus: count,
   words: obj({ open: text, home: text }),
+  // The weekly losses are kept `history` weeks (the curer's need reads them); a barrel on a
+  // store tile cuts the rate of the food there to `times` of it (cooper.ts, spoil.ts), for as
+  // much food as `holds` barrels' worth.
+  history: count,
+  barrel: obj({ times: share, holds: num({ min: 1 }) }),
 });
 
 // Cooking (V-090): the jobs.json `job`, the `meal` item laid, the `fuel` item burnt (one a
@@ -58,4 +63,42 @@ export const COOK = obj({
   skilled: num({ min: 1 }),
   perPerson: num({ min: 1 }),
   prefer: count,
+});
+
+// Curing (V-132): when `need.count` fresh meat, game or fish spoiled over the kept weeks and
+// there is no smokehouse, the colony plans one (`house`: a `size` square within `near` tiles of the
+// larder, of `cost` of `material` in `minutes` by builders at skill `skilled`). A curer then takes a
+// `batch` of one of `from` and `fuel` of `fuelItem`, works `minutes` at skill `skilled` and lays
+// `batch` of the `smoked` item, or of `salt.makes` when `salt.per` of `salt.item` came too.
+export const CURE = obj({
+  job: ref('jobs'),
+  // The reason the colony gives for planning the smokehouse; {count} is what spoiled.
+  why: text,
+  need: obj({ count: num({ min: 1 }) }),
+  house: obj({
+    size: num({ min: 1 }),
+    near: count,
+    material: ref('items'),
+    cost: num({ min: 1 }),
+    minutes: num({ min: 1 }),
+    skilled: num({ min: 1 }),
+  }),
+  from: list(ref('items')),
+  batch: num({ min: 1 }),
+  fuel: num({ min: 1 }),
+  fuelItem: ref('items'),
+  minutes: num({ min: 1 }),
+  skilled: num({ min: 1 }),
+  salt: obj({ item: ref('items'), per: num({ min: 1 }), makes: ref('items') }),
+  smoked: ref('items'),
+});
+
+// The cooper (V-132): `logs` of wood made into one `item` (a barrel) in `minutes` at the job's
+// skill level `skilled`; barrels are put under the food that spoils (keep.barrel).
+export const COOPER = obj({
+  job: ref('jobs'),
+  item: ref('items'),
+  logs: num({ min: 1 }),
+  minutes: num({ min: 1 }),
+  skilled: num({ min: 1 }),
 });

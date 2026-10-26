@@ -1,10 +1,10 @@
-// Building the smelter (Phase 4 Bundle 3, V-041): the colony plans it (build/metalsite.ts);
-// builders make it, so it is a row of the Work sheet's Building kind. A free person able to build
-// takes up the planned smelter if stone for it can be had, fetches the stone, lays it, and works
-// there `smelter.minutes` (shorter with building skill, which they practise). One line when
-// taken up and one when built.
-import type { EntityRow } from '../core/index.ts';
-import { stationOf } from '../build/index.ts';
+// Building the smelter and the smokehouse (Phase 4 Bundle 3, 5B Bundle 3, V-041): the colony plans
+// them (build/metalsite.ts, keep/house.ts); builders make them, so it is a row of the Work sheet's
+// Building kind. A free person able to build takes up a planned one if stone for it can be had,
+// fetches the stone, lays it, and works there its `minutes` (shorter with building skill, which
+// they practise). One line when taken up and one when built.
+import type { EngineContent, EntityRow } from '../core/index.ts';
+import { stationsOf } from '../build/index.ts';
 import { loadOf, takeFrom } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
@@ -21,15 +21,33 @@ const stop = (p: EntityRow): false => {
 const skillName = (ctx: SystemContext): string =>
   ctx.content.jobs.find((j) => j.id === ctx.content.buildings.job)?.skill ?? '';
 
-/** The planned smelter, if nobody is on it and `p` has stone for it or can reach some. */
-function choose(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
+/** What building a kind of station takes: the stone, the minutes and the line said when built. */
+interface Def {
+  kind: string;
+  cost: number;
+  material: string;
+  minutes: number;
+  skilled: number;
+  built: string;
+}
+
+const defsOf = (content: EngineContent): Def[] => [
+  { kind: 'smelter', ...content.metal.smelter, built: 'metal.smelterBuilt' },
+  { kind: 'smokehouse', ...content.work.cure.house, built: 'cure.houseBuilt' },
+];
+
+/** The first planned station nobody is on that `p` has stone for or can reach some. */
+function choose(ctx: SystemContext, p: EntityRow): { s: EntityRow; def: Def } | undefined {
   const { world, content } = ctx;
-  const s = stationOf(world, 'smelter');
-  const def = content.metal.smelter;
-  if (!s || s['state'] !== 'plan') return undefined;
-  if (people(world).some((q) => q.id !== p.id && q['job'] === 'station')) return undefined;
-  if (!canStandBeside(ctx, p, s['x'] as number, s['y'] as number)) return undefined;
-  return (s['have'] as number) >= def.cost || stackOf(ctx, p, def.material) ? s : undefined;
+  for (const def of defsOf(content))
+    for (const s of stationsOf(world).filter((r) => r['kind'] === def.kind)) {
+      if (s['state'] !== 'plan') continue;
+      if (people(world).some((q) => q.id !== p.id && q['job'] === 'station' && q['plan'] === s.id))
+        continue;
+      if (!canStandBeside(ctx, p, s['x'] as number, s['y'] as number)) continue;
+      if ((s['have'] as number) >= def.cost || stackOf(ctx, p, def.material)) return { s, def };
+    }
+  return undefined;
 }
 
 /** Takes up building the smelter if one is planned and nobody free who puts Building higher could. */
@@ -38,23 +56,24 @@ export function takeUpStation(ctx: SystemContext, p: EntityRow): boolean {
   const job = content.buildings.job;
   if (!able(content, p, job) || outranked(ctx, p, job, (q) => choose(ctx, q) !== undefined))
     return false;
-  const s = choose(ctx, p);
-  if (!s) return false;
+  const got = choose(ctx, p);
+  if (!got) return false;
+  const { s, def } = got;
   p['took'] = ctx.emit('work.tookUpStation', {
     causes: [s['line'] as number, priorityLine(world, p.id, job)].filter((l): l is number => !!l),
     actors: [p.id],
-    data: { name: p['name'] as string, what: 'smelter', where: `at ${s['x']}, ${s['y']}` },
+    data: { name: p['name'] as string, what: def.kind, where: `at ${s['x']}, ${s['y']}` },
   });
   Object.assign(p, { job: 'station', plan: s.id, target: -1 });
   return stationing(ctx, p);
 }
 
-/** One minute on the smelter: fetch stone, lay it, work; false when done, gone or out of reach. */
+/** One minute on the station: fetch stone, lay it, work; false when done, gone or out of reach. */
 export function stationing(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
-  const def = content.metal.smelter;
-  const s = stationOf(world, 'smelter');
-  if (!s || s.id !== p['plan'] || s['state'] !== 'plan') return stop(p);
+  const s = stationsOf(world).find((r) => r.id === p['plan']);
+  const def = s && defsOf(content).find((d) => d.kind === s['kind']);
+  if (!s || !def || s['state'] !== 'plan') return stop(p);
   const [x, y] = [s['x'] as number, s['y'] as number];
   const here = spotOf(p);
   const beside = here.z === 0 && Math.abs(here.x - x) + Math.abs(here.y - y) === 1;
@@ -77,7 +96,7 @@ export function stationing(ctx: SystemContext, p: EntityRow): boolean {
   practise(ctx, p, skillName(ctx), p['took'] as number);
   if ((s['work'] as number) > 0) return true;
   s['state'] = 'built';
-  s['made'] = ctx.emit('metal.smelterBuilt', {
+  s['made'] = ctx.emit(def.built, {
     causes: [p['took'] as number, s['line'] as number],
     actors: [p.id],
     data: { name: p['name'] as string, where: `at ${x}, ${y}` },

@@ -147,6 +147,13 @@ export const peopleSystem: System = {
     ],
     ...['hall.feast', 'people.movedHome'],
     'goods.ateSeed',
+    ...[
+      'work.tookUpCuring',
+      'cure.cured',
+      'work.tookUpCoopering',
+      'cure.barrelled',
+      'cure.houseBuilt',
+    ],
     ...['work.tookUpStation', 'metal.smelterBuilt', 'work.tookUpCharcoal', 'metal.clampLit'],
     ...[
       'metal.charcoalMade',

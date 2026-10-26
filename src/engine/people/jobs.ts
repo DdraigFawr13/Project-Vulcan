@@ -28,6 +28,7 @@ import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
+import { larderWork, LARDER_TAKE_UP } from './larder.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
 import { coldHearth, hearthFirst, takeUpHearth } from './hearth.ts';
 import { takeUpTending, tending } from './tend.ts';
@@ -48,11 +49,11 @@ import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
 /** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
-const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
+const HOLDS = ['station', 'charcoal', 'smelt', 'smith', 'cure', 'cooper'];
 
 export const JOB_FIELDS = {
   /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
-   * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
+   * `charcoal`, `smelt`, `station` (a smelter or smokehouse being built), `cure`, `cooper` or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -225,6 +226,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
   if (p['job'] === 'cook' && hours && cooking(ctx, p)) return true;
   if (p['job'] === 'station' && hours && stationing(ctx, p)) return true;
+  if (hours && larderWork(ctx, p)) return true;
   if (p['job'] === 'charcoal' && hours && burning(ctx, p)) return true;
   if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
   if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
@@ -376,6 +378,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
     takeUpBuilding(ctx, p),
   tend: takeUpTending,
   cook: takeUpCooking,
+  ...LARDER_TAKE_UP,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
   mine: takeUpMining,

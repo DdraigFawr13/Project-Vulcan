@@ -3,7 +3,7 @@
 // from 0 to `scale`; rates are per game hour.
 import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, id, text, texts } from './schema-fields';
-import { COOK, KEEP } from './schemas-food';
+import { COOK, COOPER, CURE, KEEP } from './schemas-food';
 import { TOWN_SCHEMAS } from './schemas-town';
 
 // A house size or stage: a footprint of walls round a floor, and how many it sleeps.
@@ -240,6 +240,8 @@ export const LIFE_SCHEMAS = {
     }),
     keep: KEEP,
     cook: COOK,
+    cure: CURE,
+    cooper: COOPER,
     // Skills by use (P2.5): minutes of practice from one level to the next, `start` plus
     // `perLevel` times the level now.
     learn: obj({ start: num({ min: 1 }), perLevel: count }),

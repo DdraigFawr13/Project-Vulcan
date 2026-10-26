@@ -2,6 +2,7 @@
 // and the forked items list. Need values run from 0 to `scale`; rates are per game hour.
 import type { FieldDef } from './fielddef.ts';
 import type { RoadsDef, StoresDef } from './ground.ts';
+import type { CookDef, CooperDef, CureDef, KeepDef } from './food.ts';
 
 export interface NeedDef {
   id: string;
@@ -213,41 +214,11 @@ export interface WorkDef {
   };
   learn: { start: number; perLevel: number };
   /** Keeping food (P5.12, V-132): spoiling by place, warmth and keeping (content `work.keep`). */
-  keep: {
-    place: { open: number; store: number; house: number; walled: number; below: number };
-    warmth: readonly { under: number; times: number }[];
-    below: number;
-    week: number;
-    haulFirst: number;
-    haulBonus: number;
-    words: { open: string; home: string };
-  };
-  cook: {
-    job: string;
-    meal: string;
-    /** Recipes best first (P5.3): a batch's worth of a `main` food and `sideCount` of a `side`. */
-    recipes: readonly {
-      id: string;
-      item: string;
-      main: readonly string[];
-      side: readonly string[];
-      sideCount: number;
-    }[];
-    /** Grades best first: a batch reaching `at` (cooking level plus the roll) leaves `memory`. */
-    grades: readonly { id: string; at: number; memory: string }[];
-    roll: number;
-    stream: string;
-    fineMemory: string;
-    fuel: string;
-    from: readonly string[];
-    /** A batch's food value over the raw food's it is made from. */
-    gain: number;
-    batch: number;
-    minutes: number;
-    skilled: number;
-    perPerson: number;
-    prefer: number;
-  };
+  keep: KeepDef;
+  cook: CookDef;
+  /** Curing and coopering (5B Bundle 3, V-132): the smokehouse, the curer and the cooper. */
+  cure: CureDef;
+  cooper: CooperDef;
 }
 
 /** One part colonists build (buildings.json, P3.1 and P3.2): a tile of one material. */

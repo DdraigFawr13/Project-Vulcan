@@ -49,6 +49,7 @@ function spotFor(world: WorldState, p: EntityRow): { x: number; y: number; z: nu
   const at = (r: EntityRow | undefined) =>
     r && { x: r['x'] as number, y: r['y'] as number, z: (r['z'] as number | undefined) ?? 0 };
   if (job === 'smelt') return at(stationOf(world, 'smelter'));
+  if (job === 'cure') return at(stationOf(world, 'smokehouse'));
   if (job === 'charcoal') return at(stationOf(world, 'clamp'));
   if (job === 'smith') {
     const forge = content.jobs.find((j) => j.id === 'smith')?.workplace ?? 'forge';
