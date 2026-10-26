@@ -157,7 +157,7 @@ export function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void 
 
 /** Something that should be carried to a store, nearest them: lying outside the stores, or in the
  * home store when a store of its kind has room for it. */
-function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
+function chooseLoad(ctx: SystemContext, p: EntityRow, spare: boolean): EntityRow | undefined {
   const { world, content } = ctx;
   const kinds = content.work.haul.kinds;
   const waste = content.work.haul.midden;
@@ -225,8 +225,9 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
     if (inHomeStore(world, at.x, at.y, at.z)) {
       if (!keeps(i)) continue;
     } else if (!marked && !dirt && !stray) {
-      // Food that spoils is carried in past its plate too: in the open it spoils twice as fast.
-      const keep = (i['rot'] as number) > 0 || dailyOf(content, i['kind'] as string) > 0;
+      // Food that spoils is carried in past its plate too (in the open it spoils twice as fast),
+      // but only by someone with nothing else to do: a harvest heap must not stop the building.
+      const keep = spare && ((i['rot'] as number) > 0 || dailyOf(content, i['kind'] as string) > 0);
       if (enough(i) && !keep ? !cluttered(i, at) : !room(i)) continue;
     }
     if (canReach(content, world.map, from, at)) [best, far] = [i, d];
@@ -234,9 +235,9 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   return best;
 }
 
-/** Carrying the nearest load to a store. */
-export function takeUpHauling(ctx: SystemContext, p: EntityRow): boolean {
-  const item = chooseLoad(ctx, p);
+/** Carrying the nearest load to a store; `spare`, also food past its plate that would spoil. */
+export function takeUpHauling(ctx: SystemContext, p: EntityRow, spare = false): boolean {
+  const item = chooseLoad(ctx, p, spare);
   if (!item || !walkTo(ctx, p, spotOf(item))) return false;
   p['job'] = 'haul';
   p['target'] = item.id;
