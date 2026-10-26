@@ -6,7 +6,7 @@ Phase 5B Bundle 5 (P5.5, V-134). Content: `src/content/data/clothes.json`. Nobod
 
 - Everyone wears one garment in each slot of `clothes.slots`: everyday and outer. `needs/clothes.ts` wears the everyday garment 1 an awake hour, the outer one 1 an hour outdoors, `clothes.cold` an hour outdoors under the warmth comfort line. At 0 it is gone (`goods.wornOut`, citing its made line) and the wearer gets `ragged`.
 - Warmth outdoors adds each worn garment's `warmth` (`clothesWarmth`).
-- The cart and each newcomer come dressed in `clothes.cart` / `clothes.newcomer` (goods `putOn`).
+- The cart and each newcomer come dressed in `clothes.cart` / `clothes.newcomer` (goods `putOn`). The cart also brings 5 wool cloth (`life.cart.goods`), enough for the first tunics or cloaks before a flock or flax field.
 
 ## Changing (people)
 
