@@ -16,6 +16,8 @@ export const DRINK_FIELDS = {
   drinkMin: 'int',
   /** The tick before which they do not look for water again after finding none. */
   thirst: 'int',
+  /** 1 while a drink was gone for from their leisure: the walk is part of it (needs). */
+  stroll: 'int',
 } as const;
 
 const RETRY = 60;
@@ -56,7 +58,7 @@ export function drinking(ctx: SystemContext, p: EntityRow): boolean {
       changeNeed(content, row, content.life.scale);
       crossed(ctx, p, row, def);
     } else p['thirst'] = world.tick + RETRY;
-    Object.assign(p, { doing: '', drinkAt: 0, drinkMin: 0 });
+    Object.assign(p, { doing: '', drinkAt: 0, drinkMin: 0, stroll: 0 });
     return false;
   }
   if ((row['value'] as number) >= def.seek || world.tick < (p['thirst'] as number)) return false;
@@ -65,6 +67,11 @@ export function drinking(ctx: SystemContext, p: EntityRow): boolean {
     p['thirst'] = world.tick + RETRY;
     return false;
   }
-  Object.assign(p, { doing: 'drink', drinkAt: at, drinkMin: 0 });
+  Object.assign(p, {
+    doing: 'drink',
+    drinkAt: at,
+    drinkMin: 0,
+    stroll: p['doing'] === 'relax' ? 1 : 0,
+  });
   return true;
 }

@@ -4,12 +4,23 @@
 // The content is tuned so this happens in weeks, not a year: homes wanted at once, the first
 // stranger on 14 Thawmonth, always a couple, the band's leaning set by `weigh`.
 import { describe, expect, it } from 'vitest';
-import { content } from '../../content/index.ts';
-import { allLines, createSim, createWorld, step, submitCommand, whyOf } from '../index.ts';
+import { content as game } from '../../content/index.ts';
+import {
+  allLines,
+  createSim,
+  createWorld,
+  step,
+  submitCommand,
+  whyOf,
+  withoutAccidents,
+} from '../index.ts';
 import { hallOf, homeFor, householdOf, sleepsIn } from '../build/index.ts';
 import { memoriesOf } from '../needs/index.ts';
 import { stanceOf } from './welcome.ts';
 
+// Without accidents: someone laid up where they fell sleeps outside their home (5B Bundle 2 moved
+// anvil/1's first accident into these weeks).
+const content = withoutAccidents(game);
 const DAY = 1440;
 const SEED = 'anvil/1';
 const s = content.strangers;

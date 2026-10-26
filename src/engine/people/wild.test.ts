@@ -3,7 +3,7 @@
 // frozen water; a bold armed pair stands and a lone timid person runs for a house; an attack's
 // line leads back through the sighting to the pack's hunger; the first offal makes a midden.
 import { describe, expect, it } from 'vitest';
-import { content } from '../../content/index.ts';
+import { content as game } from '../../content/index.ts';
 import { clockAt, streamFor, type EntityRow } from '../core/index.ts';
 import { greenOf, middensOf, ringOf, roomAt, housesOf } from '../build/index.ts';
 import { addEntity, removeEntity } from '../entity/index.ts';
@@ -15,12 +15,15 @@ import {
   createWorld,
   step,
   submitCommand,
+  withoutAccidents,
   type SystemContext,
   type WorldState,
 } from '../index.ts';
 import { memoriesOf, needOf } from '../needs/index.ts';
 import { animalsOf, herdsOf, packOf, spareCount } from '../wild/index.ts';
 
+// Accidents (P5.6) are left out: someone laid up before the wolves come cannot stand or run.
+const content = withoutAccidents(game);
 const sim = createSim(content);
 const DAY = 1440;
 const lines = (w: WorldState, type: string) => w.log.filter((e) => e.type === type);

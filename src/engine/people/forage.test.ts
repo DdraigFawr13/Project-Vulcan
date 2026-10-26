@@ -36,6 +36,11 @@ describe('foraging', () => {
     it(`goes after food within a day when the cart is low on ${seed}`, () => {
       const world = shortOfFood(createWorld(sim, seed));
       step(world, sim, DAY);
+      // Sow first (5B Bundle 2): a field waiting in its sowing month is sown before the band
+      // hunts, fishes or forages, so a band still sowing gets the day it takes to finish.
+      const is = (type: string) => allLines(world).some((e) => e.type === type);
+      for (let d = 0; d < 3 && is('work.tookUpSowing') && !is('field.sown'); d += 1)
+        step(world, sim, DAY);
       expect(world.commandLog).toHaveLength(0);
       // Hunting and fishing come before foraging (P5.4a); any of the three answers the plate.
       const first = [...foraging(world), ...gathering(world)].sort((a, b) => a.id - b.id)[0]!;

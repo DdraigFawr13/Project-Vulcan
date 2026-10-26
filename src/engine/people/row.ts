@@ -62,6 +62,7 @@ export function addPerson(
       drinkAt: 0,
       drinkMin: 0,
       thirst: 0,
+      stroll: 0,
     },
     ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0, make: '' },
     ...{ making: '', fine: 0, task: '', what: '', hay: 0, herdId: 0, sat: 0, pail: 0 },
