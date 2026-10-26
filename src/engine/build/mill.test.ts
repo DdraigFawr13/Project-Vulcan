@@ -19,11 +19,15 @@ let hallAtFeast: boolean | undefined;
 let atMill: WorldState | undefined;
 const hallRoom = (w: WorldState) =>
   roomsOf(w, content).some((r) => r.h.id === hallOf(w)?.id && r.room?.tiles.length);
+// Reads the hour's own lines, not the whole ledger, and the hall's rooms only in the feast's hour
+// (each hour's full reads made this file the slowest in the suite).
+const seen = new Set<string>();
 const until = (w: WorldState, done: () => boolean, days: number) => {
   while (!done() && w.tick < days * DAY) {
-    const hall = hallRoom(w);
-    step(w, sim, 60);
-    if (hallAtFeast === undefined && lines(w, 'hall.feast').length) hallAtFeast = hall;
+    const hour = step(w, sim, 60);
+    for (const e of hour) seen.add(e.type);
+    if (hallAtFeast === undefined && hour.some((e) => e.type === 'hall.feast'))
+      hallAtFeast = hallRoom(w);
     if (!atMill && millOf(w)) atMill = structuredClone(w);
   }
 };
@@ -33,11 +37,11 @@ describe('the mill and harvest home', () => {
   beforeAll(() => {
     world = createWorld(sim, 'anvil');
     // The supper can come before the mill: its shared memory is checked before it fades.
-    until(world, () => !!millOf(world) || lines(world, 'hall.feast').length > 0, 220);
+    until(world, () => !!millOf(world) || seen.has('hall.feast'), 220);
   }, 60000);
 
   it("holds one harvest home when the year's last field is in, and everyone comes", () => {
-    until(world, () => lines(world, 'hall.feast').length > 0, 220);
+    until(world, () => seen.has('hall.feast'), 220);
     const feasts = lines(world, 'hall.feast');
     expect(feasts).toHaveLength(1);
     // The barley came in first and brought no feast; the year's last field did.
@@ -95,7 +99,7 @@ describe('the mill and harvest home', () => {
   it('grinds at the mill once built, then plans an oven beside it', () => {
     until(world, () => millOf(world)?.['state'] === 'built', 260);
     expect(millOf(world)!['state']).toBe('built');
-    until(world, () => lines(world, 'build.ovenPlanned').length > 0, 280);
+    until(world, () => seen.has('build.ovenPlanned'), 280);
     expect(lines(world, 'food.ground').some((e) => e.data['where'] === 'at the mill')).toBe(true);
     expect(lines(world, 'food.baked').length).toBeGreaterThan(0);
     expect(lines(world, 'build.ovenPlanned')).toHaveLength(1);

@@ -1,6 +1,7 @@
 // P5.5, V-134, V-041: with fleece in store and the Clothes plate short, and no order to anyone, a
 // carpenter makes a loom, a weaver weaves the fleece into wool and a tailor makes a garment of it.
-// Flax takes a field's beans course in spring while the everyday clothes wanted are short.
+// Flax takes a field's beans course in spring while the everyday clothes wanted are short and food
+// is at its plate.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { allLines, createSim, createWorld, step } from '../index.ts';
@@ -57,6 +58,12 @@ describe('the loom', () => {
     Object.assign(f, { course: beans, crop: '', done: [], state: 'fallow' });
     for (const i of f['tiles'] as number[]) w.map.fertility[i] = 60;
     expect(cropNow(w, content, f)?.id).toBe('flax');
+    // A band under its food plate sows to eat (the 5B review: anvil's only field went to flax).
+    const hungry = structuredClone(w);
+    const food = new Set(content.items.filter((i) => i.good === 'food').map((i) => i.id));
+    for (const i of itemsOf(hungry).filter((i) => food.has(i['kind'] as string)))
+      removeEntity(hungry, 'item', i.id);
+    expect(cropNow(hungry, content, fieldsOf(hungry)[0]!)?.id).toBe('beans');
     const stock = w.entities['stock']!.find((s) => s['good'] === 'clothes')!;
     stock['level'] = 'none';
     expect(cropNow(w, content, f)?.id).toBe('beans');

@@ -1,5 +1,5 @@
 // Foul water (P5.7, V-136): a drink within `sick.foulNear` tiles of the midden or a fold, or from
-// a lake in warm weather (`sick.warmLake` degrees), is one exposure to the flux (health `expose`),
+// a lake in warm weather (`sick.warmLake` degrees), is one exposure to `sick.foulIll` (the flux, health `expose`),
 // with the water tile kept so the band can shun it once the flux shows. A well is never foul.
 import { WATER, type EntityRow } from '../core/index.ts';
 import { foldTiles, livePastures, middensOf, wellsOf } from '../build/index.ts';
@@ -23,12 +23,16 @@ function foulness(ctx: SystemContext, tile: number): { how: string; cause: numbe
   if (fold) return { how: `drank from the ${water} by the fold`, cause: fold['line'] as number };
   const temp = (world.systems['weather']?.['temp'] as number | undefined) ?? 0;
   if (water === 'lake' && temp >= content.health.sick.warmLake)
-    return { how: 'drank from the lake in the warm weather', cause: 0 };
+    return {
+      how: 'drank from the lake in the warm weather',
+      cause: (world.systems['weather']?.['spell'] as number | undefined) ?? 0,
+    };
   return undefined;
 }
 
 /** `p` drank at `tile`: a foul drink may give them the flux. */
 export function drankAt(ctx: SystemContext, p: EntityRow, tile: number): void {
   const foul = foulness(ctx, tile);
-  if (foul) expose(ctx, p, 'flux', foul.how, [foul.cause], { water: tile + 1 });
+  if (foul)
+    expose(ctx, p, ctx.content.health.sick.foulIll, foul.how, [foul.cause], { water: tile + 1 });
 }

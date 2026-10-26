@@ -41,9 +41,10 @@ describe('houses', () => {
   });
 
   it('says once why a crowded house gets no room when no side has clear ground, water and the store being in the way', () => {
-    // Whether a house is boxed in is the seed's layout: search a list (5B Bundle 2 moved anvil's).
+    // Whether a house is boxed in is the seed's layout: search a list (5B Bundle 2 moved anvil's;
+    // smoke/1 first since the 5B review, the one that boxes in today, as each miss costs 3 s).
     let blocked: ReturnType<typeof lines> = [];
-    for (const seed of ['anvil', 'anvil/1', 'smoke/1', 'tallow/2']) {
+    for (const seed of ['smoke/1', 'anvil', 'anvil/1', 'tallow/2']) {
       const w = createWorld(sim, seed);
       step(w, sim, 16 * DAY);
       blocked = lines(w, 'build.growBlocked');

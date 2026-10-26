@@ -269,8 +269,9 @@ function takeUp(ctx: SystemContext, p: EntityRow, dark = false): boolean {
     // Taken up (a line said) and stopped at once: look again later, not at the next kind.
     if (p['took'] !== before) break;
   }
-  // Nothing else to do: carry in the food past its plate that would spoil out there.
-  if (takeUpHauling(ctx, p, true)) return true;
+  // Nothing else to do: carry in the food past its plate that would spoil out there (outdoor
+  // work, so not after dusk).
+  if (!dark && takeUpHauling(ctx, p, true)) return true;
   p['job'] = '';
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;

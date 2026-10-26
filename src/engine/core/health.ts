@@ -75,6 +75,8 @@ export interface SickDef {
   coldHours: number;
   /** A drink this near the midden or fold is foul, and so is a still lake at `warmLake`°. */
   foulNear: number;
+  /** The illness (an `ills` id) a foul drink exposes to. */
+  foulIll: string;
   warmLake: number;
   /** After a flux, water within `shunNear` tiles of where it was caught is shunned `shun` days. */
   shun: number;

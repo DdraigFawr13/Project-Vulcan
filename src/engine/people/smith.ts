@@ -1,7 +1,8 @@
 // Smithing (Bundle 3, V-041, V-088): nobody orders a tool. Someone who has done tool work in the
 // last week and has no tool of that kind, or one worse than the best metal with ingots in the
-// colony could make (a better material, whatever the quality), is a want; the smith makes the want
-// of whoever does that work most first, one smith at a time. A free person able to smith, with a
+// colony could make (a better material, whatever the quality), is a want (for a kind with
+// `holders`, only that many who do its work most); the smith makes the want of whoever does that
+// work most first, one smith at a time. A free person able to smith, with a
 // forge standing, fetches the ingots and charcoal from wherever they lie (as smelting does) and
 // carries them, then works at the forge `minutes × 2 × skilled ÷ (skilled + level)`; when the
 // tool is finished the carried inputs are used up and the tool lies with the cart. Its quality is their smithing level plus a roll of up
@@ -74,7 +75,7 @@ function wantsNow(ctx: SystemContext, all: boolean): ToolWant[] {
     const material = makeable(ctx, kind.id);
     const best = material ? content.tools.materials.find((m) => m.id === material)!.speed : 0;
     const free = freeTools(world, content, kind.id)[0];
-    for (const row of mostUsed(ctx, kind.id)) {
+    for (const row of mostUsed(ctx, kind.id).slice(0, kind.holders ?? Infinity)) {
       const person = people(world).find((q) => q.id === row['person'])!;
       if (!all && making.includes(`${person.id}:${kind.id}`)) continue;
       const have = Math.max(
