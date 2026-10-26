@@ -5,7 +5,8 @@
 // granary (`build.millNeeded`), its walls by the house wall rule, its millstones inside and its
 // wheel in the water. Its wheel stands while that water is frozen (V-150): `mill.stood`, then
 // `mill.turns`. Once flour has stood at its plate on `bake.oven.days` days since the mill was
-// built (the mill grinds more than the hearth bakes), an oven is planned beside the mill's door (`build.ovenPlanned`). The mill can be sent back once.
+// built (the mill grinds more than the hearth bakes), an oven is planned beside the mill's door
+// (`build.ovenPlanned`). The mill can be sent back once.
 import { TICKS_PER_DAY, WATER, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
 import {
@@ -324,6 +325,18 @@ export function planMilling(ctx: SystemContext, green: Spot): void {
   planOven(ctx, green);
 }
 
+/** Why the mill cannot be sent back now, or '' when it can (the page offers the button then). */
+export function millRefusal(world: WorldState, m: EntityRow | undefined): string {
+  if (!m) return 'no such plan';
+  if (m['state'] !== 'plan') return 'it is built';
+  if (m['sent']) return 'it was sent back once already';
+  const stones = furnitureOf(world).find((f) => f.id === m['stones']);
+  const begun =
+    plansOf(world).some((p) => p['house'] === m.id && p['state'] === 'built') ||
+    stones?.['state'] === 'built';
+  return begun ? 'building has begun on it' : '';
+}
+
 /** The mill's `sendBack {mill}` lever: once, before anything is built on it, the site is dropped
  * (material brought laid back, trees unmarked) and another chosen at once. */
 export function sendBackMill(
@@ -336,15 +349,7 @@ export function sendBackMill(
   const m = millsOf(world).find((r) => r.id === data['mill']);
   const plans = m ? plansOf(world).filter((p) => p['house'] === m.id) : [];
   const stones = m ? furnitureOf(world).find((f) => f.id === m['stones']) : undefined;
-  const why = !m
-    ? 'no such plan'
-    : m['state'] !== 'plan'
-      ? 'it is built'
-      : m['sent']
-        ? 'it was sent back once already'
-        : plans.some((p) => p['state'] === 'built') || stones?.['state'] === 'built'
-          ? 'building has begun on it'
-          : '';
+  const why = millRefusal(world, m);
   if (why) {
     ctx.emit('command.refused', { causes: [cause], data: { kind: 'sendBack', reason: why } });
     return;

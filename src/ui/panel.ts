@@ -19,7 +19,7 @@ import { placeHead, placeTitle } from './placerows.ts';
 import { shaftBack, shaftTitle } from './shaftrows.ts';
 import { STAIN_NOTE, standingFacts, standingLines } from './tilerows.ts';
 import { animalRows } from './animalsheet.ts';
-import { worksDoing } from './worksrows.ts';
+import { worksBack, worksDoing } from './worksrows.ts';
 import { versionLine } from './version.ts';
 import { testTools, type TestOrder } from './testtools.ts';
 
@@ -50,8 +50,8 @@ export interface PanelActions {
   newGame(seed: string): void;
   /** A test tool (test mode) on the tile shown: dig, mark a tree, add a store tile. */
   test(tile: TileView, kind: TestOrder, arg?: number | string): void;
-  /** Send the plan of house `id` (or of a shaft, `sendBackShaft`) back: the colony chooses again. */
-  sendBack(tile: TileView, id: number, kind: 'sendBack' | 'sendBackShaft'): void;
+  /** Send the plan of house `id` (or a shaft's, or the mill's) back: the colony chooses again. */
+  sendBack(tile: TileView, id: number, kind: 'sendBack' | 'sendBackShaft' | 'sendBackMill'): void;
   /** Opens the item page of a tool or an ingot stack (view only). */
   item(id: number): void;
   /** The Stock lever: how much of `good` the colony keeps. */
@@ -185,6 +185,7 @@ export class Panel {
     }
     this.body.append(
       ...shaftBack(tile, () => this.actions.sendBack(tile, tile.shaft!.id, 'sendBackShaft')),
+      ...worksBack(tile, (id) => this.actions.sendBack(tile, id, 'sendBackMill')),
     );
     if (this.debug)
       this.body.append(

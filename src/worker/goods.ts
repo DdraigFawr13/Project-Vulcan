@@ -41,6 +41,7 @@ import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
 import { keptNote, storeTile } from './stores.ts';
 import { stationGoods, tileWorks } from './works.ts';
+import { millGoods, tileMill } from './mill.ts';
 
 const nameOf = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 
@@ -79,7 +80,7 @@ export function goodsOf(world: WorldState): GoodsView {
         state: p['state'] as string,
         house: p['house'] as number,
       })),
-    furniture: [...furnitureGoods(world), ...stationGoods(world)],
+    furniture: [...furnitureGoods(world), ...stationGoods(world), ...millGoods(world)],
     fires: fireGoods(world),
     work: [...workBars(world), ...jobBars(world)],
     fields: [...fieldFrames(world), ...pastureFrames(world)],
@@ -169,7 +170,7 @@ export function tileGoods(
     ...(surface && !inStore(world, x, y, 0) && freeTile(world, content, x, y) && { open: true }),
     ...(surface && planOf(world, x, y, line)),
     ...(surface && tilePiece(world, x, y, lineOf)),
-    ...(surface && tileWorks(world, x, y, lineOf)),
+    ...(surface && (tileWorks(world, x, y, lineOf) ?? tileMill(world, x, y, lineOf))),
   };
 }
 
