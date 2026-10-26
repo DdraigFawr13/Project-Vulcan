@@ -15,38 +15,50 @@ export const heldOf = (ctx: SystemContext, p: EntityRow, kind: string): number =
     .reduce((n, i) => n + (i['count'] as number), 0);
 
 /** The free stacks of `kind` `p` can reach, nearest first (ties by id) and not taken by another's job. */
-function stacksOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow[] {
+function stacksOf(
+  ctx: SystemContext,
+  p: EntityRow,
+  kind: string,
+  only: (i: EntityRow) => boolean = () => true,
+): EntityRow[] {
   const { world, content } = ctx;
-  const taken = new Set(
-    ['charcoal', 'smelt', 'smith', 'weave', 'tailor', 'tan'].flatMap((j) => [...busy(world, p, j)]),
-  );
+  const jobs = ['charcoal', 'smelt', 'smith', 'cure', 'cooper', 'potter', 'weave', 'tailor', 'tan'];
+  const taken = new Set(jobs.flatMap((j) => [...busy(world, p, j)]));
   const from = spotOf(p);
   const far = (i: EntityRow) =>
     Math.max(Math.abs((i['x'] as number) - from.x), Math.abs((i['y'] as number) - from.y));
   return itemsOf(world)
-    .filter((i) => i['kind'] === kind && !i['holder'] && !taken.has(i.id))
+    .filter((i) => i['kind'] === kind && !i['holder'] && !taken.has(i.id) && only(i))
     .filter((i) => canReach(content, world.map, from, spotOf(i)))
     .sort((a, b) => far(a) - far(b) || a.id - b.id);
 }
 
 /** How many of `kind` `p` could fetch now. */
-export const reachableOf = (ctx: SystemContext, p: EntityRow, kind: string): number =>
-  heldOf(ctx, p, kind) + stacksOf(ctx, p, kind).reduce((n, i) => n + (i['count'] as number), 0);
+export const reachableOf = (
+  ctx: SystemContext,
+  p: EntityRow,
+  kind: string,
+  only?: (i: EntityRow) => boolean,
+): number =>
+  heldOf(ctx, p, kind) +
+  stacksOf(ctx, p, kind, only).reduce((n, i) => n + (i['count'] as number), 0);
 
 /** One minute of fetching until `p` holds `need` of `kind`: `done` when they do, `walking` while
- * on the way to a stack or just having taken from one, `none` when no more can be reached. */
+ * on the way to a stack or just having taken from one, `none` when no more can be reached.
+ * `only` limits the stacks to those it accepts (the curer takes from the stores only). */
 export function fetchKind(
   ctx: SystemContext,
   p: EntityRow,
   kind: string,
   need: number,
+  only?: (i: EntityRow) => boolean,
 ): 'done' | 'walking' | 'none' {
   const { world } = ctx;
   const left = need - heldOf(ctx, p, kind);
   if (left <= 0) return 'done';
   const stack =
     itemsOf(world).find((i) => i.id === p['target'] && i['kind'] === kind && !i['holder']) ??
-    stacksOf(ctx, p, kind)[0];
+    stacksOf(ctx, p, kind, only)[0];
   if (!stack) return 'none';
   p['target'] = stack.id;
   if (!same(spotOf(stack), spotOf(p))) return walkTo(ctx, p, spotOf(stack)) ? 'walking' : 'none';

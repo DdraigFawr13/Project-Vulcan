@@ -6,6 +6,7 @@
 {"id":"wall-stone","name":"stone wall","kind":"wall","material":"stone","cost":5,"minutes":60,"art":"build.wall-stone"},
 {"id":"wall-wood","name":"wood wall","kind":"wall","material":"logs","cost":4,"minutes":45,"art":"build.wall-wood"},
 {"id":"wall-daub","name":"wattle and daub wall","kind":"wall","material":"clay","cost":3,"also":{"material":"logs","cost":1},"minutes":40,"art":"build.wall-daub"},
+{"id":"wall-brick","name":"brick wall","kind":"wall","material":"brick","cost":6,"minutes":50,"art":"build.wall-stone"},
 {"id":"floor-stone","name":"stone floor","kind":"floor","material":"stone","cost":2,"minutes":30,"art":"build.floor-stone"},
 {"id":"road-stone","name":"stone road","kind":"road","material":"stone","cost":2,"minutes":30,"art":"build.road-stone"},
 {"id":"floor-wood","name":"wood floor","kind":"floor","material":"logs","cost":2,"minutes":20,"art":"build.floor-wood"},
@@ -17,7 +18,7 @@
 {"id":"stair-stone","name":"stone stair down","kind":"stair","material":"stone","cost":10,"minutes":120,"art":"build.stair-stone"},
 {"id":"stair-wood","name":"wooden stair down","kind":"stair","material":"logs","cost":6,"minutes":90,"art":"build.stair-wood"}
 ],
-"house":{"name":"Houses","start":1,"near":14,"reach":40,"walls":["wall-stone","wall-wood","wall-daub"],"door":"door-wood","floor":"floor-wood",
+"house":{"name":"Houses","start":1,"near":14,"reach":40,"walls":["wall-stone","wall-wood","wall-daub","wall-brick"],"door":"door-wood","floor":"floor-wood",
 "sizes":[
 {"id":"lean-to","name":"lean-to","w":4,"h":4,"sleeps":2},
 {"id":"cottage","name":"cottage","w":6,"h":4,"sleeps":4},
@@ -29,9 +30,10 @@
 "town":{"ring":16,"step":4,"most":32},
 "stores":{"days":14,"save":8,"near":40,"eatenNear":12,"most":2,"apart":20,"tries":300,"kinds":[
 {"id":"granary","name":"granary","words":"grain, oats, beans and seed","goods":["grain","oats","beans","seed"],"w":6,"h":5,"door":"door-wood","floor":"floor-wood","from":"the reaping","to":"the hearths","eaten":true},
-{"id":"larder","name":"larder","words":"food","goods":["turnips","cabbages","meat","game","fish","berries","preserved","meal","stew","pottage","bread","flour"],"w":5,"h":4,"door":"door-wood","floor":"floor-wood","from":"where food comes in","to":"the hearths","eaten":true},
+{"id":"larder","name":"larder","words":"food","goods":["turnips","cabbages","meat","game","fish","berries","preserved","smoked","salted","salt","meal","stew","pottage","bread","flour"],"w":5,"h":4,"door":"door-wood","floor":"floor-wood","from":"where food comes in","to":"the hearths","eaten":true},
 {"id":"wood","name":"wood yard","words":"logs, firewood and charcoal","goods":["logs","firewood","charcoal"],"w":6,"h":5,"wall":"hurdle","door":"gate-hurdle","from":"the felling","to":"the hearths and the building"},
-{"id":"ore","name":"stone and ore yard","words":"stone and ore","goods":["stone","clay","ore","copper-ore","tin-ore","iron-ore","sulphur","copper-ingot","tin-ingot","iron-ingot","bronze-ingot"],"w":5,"h":4,"wall":"wall-drystone","from":"the quarry and the mine","to":"the smelter and the building"}
+{"id":"ore","name":"stone and ore yard","words":"stone and ore","goods":["stone","clay","brick","ore","copper-ore","tin-ore","iron-ore","sulphur","copper-ingot","tin-ingot","iron-ingot","bronze-ingot"],"w":5,"h":4,"wall":"wall-drystone","from":"the quarry and the mine","to":"the smelter and the building"},
+{"id":"cellar","name":"cellar","words":"turnips, cabbages and berries","goods":["turnips","cabbages","berries"],"w":5,"h":4,"from":"where the roots come in","to":"the hearths","below":true}
 ]},
 "mill":{"job":"mill","from":["grain","oats"],"flour":"flour","quern":{"kind":"quern","rate":4,"batch":2,"most":90},"wheel":{"rate":30,"batch":15},"want":45,"days":14,"w":4,"h":4,"near":40,"tries":300,"door":"door-wood","floor":"floor-wood","stones":"millstones","bake":{"job":"bake","bread":"bread","fuel":"firewood","perPerson":1,"skilled":10,"hearth":{"batch":4,"minutes":45},"oven":{"kind":"oven","batch":12,"minutes":60,"days":7}}},
 "well":{"kind":"well","walk":120,"days":7,"from":3,"near":6},

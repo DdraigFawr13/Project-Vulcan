@@ -300,7 +300,7 @@
         "h": 32
       }
     },
-    "vein.silver.1": {
+    "vein.salt.1": {
       "frame": {
         "x": 1,
         "y": 103,
@@ -320,7 +320,7 @@
         "h": 32
       }
     },
-    "vein.sulphur.1": {
+    "vein.silver.1": {
       "frame": {
         "x": 35,
         "y": 103,
@@ -340,9 +340,29 @@
         "h": 32
       }
     },
-    "vein.tin.1": {
+    "vein.sulphur.1": {
       "frame": {
         "x": 69,
+        "y": 103,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "vein.tin.1": {
+      "frame": {
+        "x": 103,
         "y": 103,
         "w": 32,
         "h": 32
@@ -382,6 +402,7 @@
       "vein.gold.1",
       "vein.iron.1",
       "vein.obsidian.1",
+      "vein.salt.1",
       "vein.silver.1",
       "vein.sulphur.1",
       "vein.tin.1"

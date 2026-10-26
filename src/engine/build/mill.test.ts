@@ -19,24 +19,32 @@ const until = (w: WorldState, done: () => boolean, days: number) => {
 
 describe('the mill and harvest home', () => {
   let world: WorldState;
-  // Who was alive and who remembered the feast at the end of its day: the mill can come weeks
-  // after it, when a memory has faded or the band has changed.
-  let atFeast: { alive: number; remembered: boolean[] } | undefined;
-  const note = (): void => {
-    const feast = lines(world, 'hall.feast')[0];
-    if (!feast || atFeast) return;
-    const alive = (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
-    const remembered = (feast.actors ?? []).map((id) =>
-      memoriesOf(world, id).some((m) => m['line'] === feast.id),
-    );
-    atFeast = { alive: alive.length, remembered };
-  };
   beforeAll(() => {
     world = createWorld(sim, 'anvil');
-    until(world, () => (note(), !!millOf(world)), 220);
+    // The supper can come before the mill: its shared memory is checked before it fades.
+    until(world, () => !!millOf(world) || lines(world, 'hall.feast').length > 0, 220);
+  }, 60000);
+
+  it("holds one harvest home when the year's last field is in, and everyone comes", () => {
+    until(world, () => lines(world, 'hall.feast').length > 0, 220);
+    const feasts = lines(world, 'hall.feast');
+    expect(feasts).toHaveLength(1);
+    // The barley came in first and brought no feast; the year's last field did.
+    const homes = lines(world, 'farm.harvestHome');
+    expect(homes.length).toBeGreaterThan(1);
+    expect(feasts[0]!.causes).toContain(homes.at(-1)!.id);
+    // In the hall once there is one (strangers bring it, V-121); before that, round the fire.
+    expect(feasts[0]!.data['where']).toBe(
+      hallOf(world) ? 'in the hall' : 'round the fire on the green',
+    );
+    const alive = (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
+    expect(feasts[0]!.actors).toHaveLength(alive.length);
+    for (const id of feasts[0]!.actors ?? [])
+      expect(memoriesOf(world, id).some((m) => m['line'] === feasts[0]!.id)).toBe(true);
   }, 60000);
 
   it('grinds at a quern set by a hearth, then sites a mill on running water, unordered', () => {
+    until(world, () => !!millOf(world), 220);
     expect(world.commandLog).toHaveLength(0);
     const quern = furnitureOf(world).find((f) => f['kind'] === content.buildings.mill.quern.kind);
     expect(quern?.['state']).toBe('built');
@@ -70,25 +78,6 @@ describe('the mill and harvest home', () => {
     expect(millOf(world)!.id).toBe(second.id);
     expect(lines(world, 'command.refused').at(-1)!.data['reason']).toMatch(/sent back once/);
   });
-
-  it("holds one harvest home when the year's last field is in, and everyone comes", () => {
-    until(world, () => (note(), lines(world, 'hall.feast').length > 0), 220);
-    note();
-    const feasts = lines(world, 'hall.feast');
-    expect(feasts).toHaveLength(1);
-    // The barley came in first and brought no feast; the year's last field did.
-    const homes = lines(world, 'farm.harvestHome');
-    expect(homes.length).toBeGreaterThan(1);
-    expect(feasts[0]!.causes).toContain(homes.at(-1)!.id);
-    // In the hall once there is one (strangers bring it, V-121); before that, round the fire. The
-    // feast can come before this check's day, so it is the hall's opening line that must come first.
-    const hall = hallOf(world)?.['hall'] as number | undefined;
-    expect(feasts[0]!.data['where']).toBe(
-      hall && hall < feasts[0]!.id ? 'in the hall' : 'round the fire on the green',
-    );
-    expect(feasts[0]!.actors).toHaveLength(atFeast!.alive);
-    expect(atFeast!.remembered).toEqual(feasts[0]!.actors!.map(() => true));
-  }, 60000);
 
   it('grinds at the mill once built, then plans an oven beside it', () => {
     until(world, () => millOf(world)?.['state'] === 'built', 260);

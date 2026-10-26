@@ -1,9 +1,8 @@
 // Work (P2.4): nobody is told what to do (V-015). In working hours a free person looks at what
-// the colony wants and takes something up themselves: while it has less wood than its stock
-// level asks for, someone able to fell (jobs.json `fell`) picks a tree (a fallen log first, then
-// the standing tree nearest the store, never close to the camp) and leaves the logs where it
-// stood; anyone free carries what lies outside the store into it. Quarrying (P3.1) is felling's
-// twin for stone. Building is build.ts. Taking up work and each tree felled are lines.
+// the colony wants and takes something up themselves: under the wood stock level, someone able to
+// fell (jobs.json `fell`) picks a tree (a fallen log first, then the standing one nearest the
+// store, never close to the camp) and leaves the logs where it stood; anyone free carries what
+// lies outside the store into it. Quarrying is felling's twin for stone. Taking up work is a line.
 import { houseName } from '../build/index.ts';
 import { raiseChunk } from '../map/index.ts';
 import { needOf } from '../needs/index.ts';
@@ -27,6 +26,7 @@ import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
+import { larderWork, LARDER_TAKE_UP } from './larder.ts';
 import { MILL_TAKE_UP, millWork } from './mill.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
 import { coldHearth, hearthFirst, takeUpHearth } from './hearth.ts';
@@ -48,11 +48,10 @@ import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
 /** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
-const HOLDS = ['station', 'charcoal', 'smelt', 'smith', 'weave', 'tailor', 'tan'];
+const HOLDS = { station: 1, charcoal: 1, smelt: 1, smith: 1, ...LARDER_TAKE_UP, ...TRADE_TAKE_UP };
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
-   * `charcoal`, `smelt`, `station` (the smelter being built), `mill`, `bake` or '' (none). */
+  /** A Work sheet job, `station` (a station being built), `hearth` (one being made) or ''. */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -226,6 +225,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'cook' && hours && cooking(ctx, p)) return true;
   if ((p['job'] === 'mill' || p['job'] === 'bake') && hours && millWork(ctx, p)) return true;
   if (p['job'] === 'station' && hours && stationing(ctx, p)) return true;
+  if (hours && larderWork(ctx, p)) return true;
   if (p['job'] === 'charcoal' && hours && burning(ctx, p)) return true;
   if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
   if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
@@ -235,10 +235,9 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'dress' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
   if (p['job'] === 'dress' && dressing(ctx, p)) return true;
   const load = loadOf(world, p.id);
-  // Out of hours the metal and station work keeps what it fetched and resumes next morning, and
-  // so does a sinker the shaft's ladder (else they carried it back and lost the job).
+  // Out of hours HOLDS work keeps its load till morning, as does a sinker the shaft's ladder.
   if (load && !hours && p['job'] === 'mine' && p['task'] === 'sink') return false;
-  if (load && !HOLDS.includes(p['job'] as string)) {
+  if (load && !((p['job'] as string) in HOLDS)) {
     p['job'] = 'haul';
     deliver(ctx, p, load);
     return true;
@@ -375,6 +374,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
     takeUpBuilding(ctx, p),
   tend: takeUpTending,
   cook: takeUpCooking,
+  ...LARDER_TAKE_UP,
   ...MILL_TAKE_UP,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),

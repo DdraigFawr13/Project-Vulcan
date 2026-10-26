@@ -8,13 +8,14 @@ import { haveOf, ingotWant, stockOf, wornTools } from '../goods/index.ts';
 import { TICKS_PER_DAY } from '../core/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { fill, MINE_TABLES, metalsOf, oreShort, shaftFor, shaftsOf } from './shafts.ts';
+import { saltCause, saltOf, saltShort, saltWhy } from './salt.ts';
 import { openVein, siteShaft } from './site.ts';
 import { nextDig } from './tunnel.ts';
 
 const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** Plans a shaft for `metal` citing `causes`, or says once per plate change that no stain does.
- * Returns whether a plan was made. */
+/** Plans a shaft for `metal` (or the salt seam, whose reason is the curer's) citing `causes`, or
+ * says once per plate change that no stain does. Returns whether a plan was made. */
 function planShaft(
   ctx: SystemContext,
   metal: string,
@@ -22,8 +23,9 @@ function planShaft(
   causes: readonly number[],
 ): boolean {
   const { world, content, state } = ctx;
+  const salt = metal === saltOf(content);
   const plate = stockOf(world, `${metal}-ingot`);
-  const line = (plate?.['line'] as number | undefined) ?? 0;
+  const line = salt ? saltCause(world) : ((plate?.['line'] as number | undefined) ?? 0);
   const site = siteShaft(world, content, metal);
   const name = content.features.find((f) => f.id === metal)!;
   if (!site) {
@@ -36,12 +38,14 @@ function planShaft(
   const word = name.vein?.stainWord ?? '';
   const ingot = `${metal}-ingot`;
   const have = haveOf(world, content, ingot);
-  const why = fill(content.work.mine.why, {
-    ...{ Metal: capital(metal), metal, have },
-    ...{ want: have + ingotWant(world, content, metal), word, far: site.far, dir: site.dir },
-  });
+  const why = salt
+    ? saltWhy(world, content, word, site)
+    : fill(content.work.mine.why, {
+        ...{ Metal: capital(metal), metal, have },
+        ...{ want: have + ingotWant(world, content, metal), word, far: site.far, dir: site.dir },
+      });
   // The plate's line and the worn tools' lines that ask for metal (P4.9).
-  const worn = wornTools(world, content).map((w) => w.item['worn'] as number);
+  const worn = salt ? [] : wornTools(world, content).map((w) => w.item['worn'] as number);
   const planned = ctx.emit('mine.shaftPlanned', {
     causes: [...causes, ...(line ? [line] : []), ...worn.filter((l) => l > 0)],
     data: {
@@ -72,13 +76,15 @@ function sendBackShaft(
   const row = entityOf(ctx.world, 'shaft', data['shaft'] as number);
   const why = !row
     ? 'there is no such shaft'
-    : row['state'] === 'sent'
-      ? 'it was sent back already'
-      : row['state'] !== 'planned' || row['depth'] || sinking(ctx, row)
-        ? 'digging has begun'
-        : row['sentBack']
-          ? 'a plan that replaced one sent back cannot be sent back again'
-          : undefined;
+    : !ctx.content.features.some((f) => f.id === row['metal'])
+      ? 'it is the stair of a cellar, not a mine'
+      : row['state'] === 'sent'
+        ? 'it was sent back already'
+        : row['state'] !== 'planned' || row['depth'] || sinking(ctx, row)
+          ? 'digging has begun'
+          : row['sentBack']
+            ? 'a plan that replaced one sent back cannot be sent back again'
+            : undefined;
   if (why || !row) {
     ctx.emit('command.refused', {
       causes: [cause],
@@ -113,8 +119,11 @@ export const mineSystem: System = {
     const day = Math.floor(world.tick / TICKS_PER_DAY);
     if (sig === state['sig'] && day === state['day']) return;
     [state['sig'], state['day']] = [sig, day];
-    for (const metal of metals) {
-      if (!oreShort(world, content, metal) || openVein(world, content, metal)) continue;
+    // The salt seam is wanted like a metal, by the curer's need (salt.ts).
+    const wanted = saltShort(world, content) ? [...metals, saltOf(content)] : metals;
+    for (const metal of wanted) {
+      const short = metal === saltOf(content) ? saltShort(world, content) : 0;
+      if (!(short || oreShort(world, content, metal)) || openVein(world, content, metal)) continue;
       const causes: number[] = [];
       const live = shaftFor(world, metal);
       if (live) {

@@ -155,6 +155,14 @@ export const peopleSystem: System = {
       'clothes.made',
     ],
     'goods.ateSeed',
+    ...[
+      'work.tookUpCuring',
+      'cure.cured',
+      'work.tookUpCoopering',
+      'cure.barrelled',
+      'cure.houseBuilt',
+      ...['work.tookUpPottery', 'potter.potted', 'potter.fired', 'potter.kilnBuilt'],
+    ],
     ...['work.tookUpStation', 'metal.smelterBuilt', 'work.tookUpCharcoal', 'metal.clampLit'],
     ...[
       'metal.charcoalMade',
@@ -176,6 +184,7 @@ export const peopleSystem: System = {
     ...['mine.sank', 'mine.dug', 'mine.veinMined', 'mine.clayDug', 'mine.noLadder'],
     ...['health.hurt', 'health.found', 'health.missed', 'health.carried', 'health.bound'],
     'work.tookUpBurial',
+    'keep.cellarDug',
     ...['work.tookUpHunting', 'work.tookUpFishing', 'work.followedTracks', 'work.trackingPack'],
     ...['wild.tracksFound', 'wild.sighted', 'wild.attacked', 'wild.killed'],
     ...['wild.predatorWounded', 'wild.predatorKilled', 'wild.packDrewOff'],
