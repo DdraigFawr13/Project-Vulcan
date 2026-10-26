@@ -35,7 +35,7 @@ describe('the chandler', () => {
     });
     stockOf(w, 'candles')!['level'] = 'plenty';
     const before = count(w, 'candle');
-    step(w, sim, 6 * DAY);
+    step(w, sim, 12 * DAY);
     expect(w.commandLog).toHaveLength(0);
     const took = allLines(w).filter((e) => e.type === 'lamp.tookUp');
     const dipped = allLines(w).filter((e) => e.type === 'lamp.dipped');

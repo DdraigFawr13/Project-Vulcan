@@ -25,6 +25,7 @@ import {
 } from '../goods/index.ts';
 import { middensOf, planTiles, roomAt, roomsOf } from '../build/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
+import { dailyOf } from '../keep/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { busy, layAround, same, spotOf } from './spots.ts';
 import { tallyAdd } from './tally.ts';
@@ -49,9 +50,11 @@ export function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void
   // Past its plate a good goes only to a store of its kind, once one stands; till then (a cleared
   // site's logs) to the home store as before. Carried out of a room, it goes wherever there is room.
   const own = storedEnough(world, content)(load) && depotsFor(world, content, kind).length > 0;
-  const home = () => slotFor(world, content, kind, count, here) ?? growStore(ctx, made);
+  const grade = (load['quality'] as string) || 'plain';
+  const home = () => slotFor(world, content, kind, count, here, grade) ?? growStore(ctx, made);
   const slot = own
-    ? (depotSlot(world, content, kind, count, here) ?? (indoors(ctx, here) ? home() : undefined))
+    ? (depotSlot(world, content, kind, count, here, grade) ??
+      (indoors(ctx, here) ? home() : undefined))
     : home();
   if (!slot && aside(ctx, p, load, here)) return;
   if (!slot) {
@@ -69,7 +72,9 @@ export function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void
     return;
   }
   tallyAdd(ctx, 'hauled', count);
-  const stack = itemsAt(world, here.x, here.y, here.z).find((i) => i['kind'] === kind);
+  const stack = itemsAt(world, here.x, here.y, here.z).find(
+    (i) => i['kind'] === kind && ((i['quality'] as string) || 'plain') === grade,
+  );
   if (stack) {
     stack['count'] = (stack['count'] as number) + count;
     // The stack keeps where both lots came from.
@@ -153,9 +158,17 @@ export function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void 
   carried['holder'] = p.id;
 }
 
+/** The nearest load counting food past its plate, found by the last plain look (one scan serves
+ * both: the spare look comes right after a plain one that found nothing). */
+let spareSeen:
+  { world: object; person: number; tick: number; item: EntityRow | undefined } | undefined;
+
 /** Something that should be carried to a store, nearest them: lying outside the stores, or in the
  * home store when a store of its kind has room for it. */
-function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
+function chooseLoad(ctx: SystemContext, p: EntityRow, spare: boolean): EntityRow | undefined {
+  const seen = spareSeen;
+  if (spare && seen?.world === ctx.world && seen.person === p.id && seen.tick === ctx.world.tick)
+    return seen.item;
   const { world, content } = ctx;
   const kinds = content.work.haul.kinds;
   const waste = content.work.haul.midden;
@@ -164,6 +177,8 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const from = spotOf(p);
   let best: EntityRow | undefined;
   let far = Infinity;
+  let bestSpare: EntityRow | undefined;
+  let farSpare = Infinity;
   // A load the full store has no room for, and cannot grow for, stays where it lies; carrying
   // it would only set it down again (seen on a forest seed once a house's site was cleared).
   // Worked out only for a load that would be nearest, once per kind and size.
@@ -172,23 +187,26 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const room = (i: EntityRow) => {
     grows ??= growSpot(world, content) !== undefined;
     if (grows) return true;
-    const key = `${i['kind']}:${i['count']}`;
+    const q = (i['quality'] as string) || 'plain';
+    const key = `${i['kind']}:${i['count']}:${q}`;
     if (!fits.has(key))
-      fits.set(key, !!slotFor(world, content, i['kind'] as string, i['count'] as number, from));
+      fits.set(key, !!slotFor(world, content, i['kind'] as string, i['count'] as number, from, q));
     return fits.get(key)!;
   };
   // Goods in the home store are carried over to a store of their kind with room for the load.
   const slots = new Map<string, boolean>();
   const keeps = (i: EntityRow) => {
-    const key = `${i['kind']}:${i['count']}`;
+    const q = (i['quality'] as string) || 'plain';
+    const key = `${i['kind']}:${i['count']}:${q}`;
     if (!slots.has(key))
       slots.set(
         key,
-        depotSlot(world, content, i['kind'] as string, i['count'] as number, from) !== undefined,
+        depotSlot(world, content, i['kind'] as string, i['count'] as number, from, q) !== undefined,
       );
     return slots.get(key)!;
   };
   const enough = storedEnough(world, content);
+  const keep = content.work.keep;
   // Past its plate a good lying on a room's floor (a carpenter's spare logs) is carried out all the
   // same: it would take the hearth's tile (furniture.test). Food by the hearth stays to be eaten.
   let floors: Set<number> | undefined;
@@ -208,24 +226,40 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
     const dirt = waste.includes(i['kind'] as string);
     if (dirt && (!midden || (at.x === midden.x && at.y === midden.y))) continue;
     if (!marked && !dirt && !kinds.includes(i['kind'] as string)) continue;
-    const d = Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y));
-    if (d >= far) continue;
+    // What spoils fastest is carried first, as if it lay `keep.haulBonus` tiles nearer.
+    const d =
+      Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y)) -
+      (dailyOf(content, i['kind'] as string) >= keep.haulFirst ? keep.haulBonus : 0);
+    if (d >= far && d >= farSpare) continue;
     // In a store of its kind it stays; in another's (logs of the site's own trees) it goes out.
     const stray = astray(ctx, i['kind'] as string, at);
     if (stray === false) continue;
     // In the home store: only to be carried over to a store of its kind. Past its plate, a good
     // lies where it was made (LESSONS: carried, a surplus kept the band hauling all year).
+    let plain = true;
+    let extra = true;
     if (inHomeStore(world, at.x, at.y, at.z)) {
       if (!keeps(i)) continue;
-    } else if (!marked && !dirt && !stray && (enough(i) ? !cluttered(i, at) : !room(i))) continue;
-    if (canReach(content, world.map, from, at)) [best, far] = [i, d];
+    } else if (!marked && !dirt && !stray) {
+      // Food that spoils is carried in past its plate too (in the open it spoils twice as fast),
+      // but only by someone with nothing else to do: a harvest heap must not stop the building.
+      const spoils = (i['rot'] as number) > 0 || dailyOf(content, i['kind'] as string) > 0;
+      plain = enough(i) ? cluttered(i, at) : room(i);
+      extra = enough(i) && !spoils ? cluttered(i, at) : room(i);
+    }
+    plain &&= d < far;
+    extra &&= d < farSpare;
+    if ((!plain && !extra) || !canReach(content, world.map, from, at)) continue;
+    if (plain) [best, far] = [i, d];
+    if (extra) [bestSpare, farSpare] = [i, d];
   }
-  return best;
+  spareSeen = { world, person: p.id, tick: world.tick, item: bestSpare };
+  return spare ? bestSpare : best;
 }
 
-/** Carrying the nearest load to a store. */
-export function takeUpHauling(ctx: SystemContext, p: EntityRow): boolean {
-  const item = chooseLoad(ctx, p);
+/** Carrying the nearest load to a store; `spare`, also food past its plate that would spoil. */
+export function takeUpHauling(ctx: SystemContext, p: EntityRow, spare = false): boolean {
+  const item = chooseLoad(ctx, p, spare);
   if (!item || !walkTo(ctx, p, spotOf(item))) return false;
   p['job'] = 'haul';
   p['target'] = item.id;

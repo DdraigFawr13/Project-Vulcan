@@ -1,7 +1,7 @@
 // The person fields the work in jobs.ts keeps (kept apart so jobs.ts stays under its line limit).
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `beekeep`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
-   * `charcoal`, `smelt`, `station` (the smelter being built) or '' (none). */
+  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `beekeep`, `chandle`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
+   * `charcoal`, `smelt`, `station` (the smelter being built), `mill`, `bake` or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -23,8 +23,11 @@ export const JOB_FIELDS = {
    * first fine-or-better piece (V-093), 0 until they make one. */
   making: 'text',
   fine: 'event',
-  /** Herding: the hay carried to the rick, and the wild herd being tamed with the minutes sat
-   * near it so far (a different herd starts again). */
+  /** Cooking (P5.3): the line of their first fine meal, 0 until they cook one; `lit` the work
+   * minutes left when they last worked at the fire, so a fire that went out mid-batch is seen. */
+  fineMeal: 'event',
+  lit: 'int',
+  /** Herding: hay carried to the rick; the herd being tamed and the minutes sat near it. */
   hay: 'count',
   herdId: 'int',
   sat: 'count',

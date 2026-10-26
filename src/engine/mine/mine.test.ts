@@ -100,7 +100,8 @@ describe('mining', () => {
   });
 
   // One test a seed: since the larder (thirst, sowing first) tallow takes 22 days to its ore, and
-  // four seeds in one test ran past the time limit on CI.
+  // four seeds in one test ran past the time limit on CI. Since 5B Bundle 3 anvil takes 34: the
+  // cooks' firewood walks site its wood yard 5 days sooner, and the yard is built before the ore.
   it.each(ORE_SEEDS)(
     'gets iron ore to the store with only the plate raised, each line tracing to it (%s)',
     (seed) => {
@@ -108,7 +109,7 @@ describe('mining', () => {
       const world = createWorld(sim, seed);
       send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
       let days = 0;
-      while (!oreStacks(world).length && days < 30) {
+      while (!oreStacks(world).length && days < 40) {
         step(world, sim, DAY);
         days += 1;
       }

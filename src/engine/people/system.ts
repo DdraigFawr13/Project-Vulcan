@@ -122,6 +122,7 @@ export const peopleSystem: System = {
     'work.tookUpTending',
     'work.tookUpCooking',
     'food.cooked',
+    ...['work.tookUpMilling', 'work.tookUpBaking', 'food.ground', 'food.baked'],
     'people.warming',
     'fire.lit',
     'fire.built',

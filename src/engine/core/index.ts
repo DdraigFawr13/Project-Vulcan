@@ -17,3 +17,4 @@ export * from './wild.ts';
 export * from './flock.ts';
 export * from './strangers.ts';
 export * from './lamp.ts';
+export * from './mill.ts';

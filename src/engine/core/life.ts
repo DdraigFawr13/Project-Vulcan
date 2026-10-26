@@ -1,5 +1,6 @@
 // What the needs, goods and people's daily round read from content: Vulcan's life file (P2.2)
 // and the forked items list. Need values run from 0 to `scale`; rates are per game hour.
+import type { MillDef } from './mill.ts';
 import type { FieldDef } from './fielddef.ts';
 import type { RoadsDef, StoresDef } from './ground.ts';
 
@@ -75,6 +76,9 @@ export interface ItemDef {
   good: string;
   /** A cooked dish (items.json): eaten in preference to raw food (work.cook). */
   cooked?: boolean;
+  /** Food's loss a 28-day month or a day, as a share (keep spoil.ts, P5.12). */
+  spoilPerMonth?: number;
+  spoilPerDay?: number;
   /** An ingot names the ore it is smelted from (Bundle 3). */
   ore?: string;
   /** A tool: its kind (tools.json) and material. */
@@ -209,9 +213,32 @@ export interface WorkDef {
     headings: readonly { name: string; jobs: readonly string[] }[];
   };
   learn: { start: number; perLevel: number };
+  /** Keeping food (P5.12, V-132): spoiling by place, warmth and keeping (content `work.keep`). */
+  keep: {
+    place: { open: number; store: number; house: number; walled: number; below: number };
+    warmth: readonly { under: number; times: number }[];
+    below: number;
+    week: number;
+    haulFirst: number;
+    haulBonus: number;
+    words: { open: string; home: string };
+  };
   cook: {
     job: string;
     meal: string;
+    /** Recipes best first (P5.3): a batch's worth of a `main` food and `sideCount` of a `side`. */
+    recipes: readonly {
+      id: string;
+      item: string;
+      main: readonly string[];
+      side: readonly string[];
+      sideCount: number;
+    }[];
+    /** Grades best first: a batch reaching `at` (cooking level plus the roll) leaves `memory`. */
+    grades: readonly { id: string; at: number; memory: string }[];
+    roll: number;
+    stream: string;
+    fineMemory: string;
     fuel: string;
     from: readonly string[];
     /** A batch's food value over the raw food's it is made from. */
@@ -253,12 +280,11 @@ export interface BuildingsDef {
     floor: string;
     pieces: readonly string[];
   };
-  /** P5.10: the Roads row and how a stretch is chosen (build/roads.ts). */
-  roads: RoadsDef;
+  roads: RoadsDef; // P5.10: the Roads row and how a stretch is chosen (build/roads.ts)
   town: { ring: number; step: number; most: number };
-  /** 5B Bundle 1 (V-129): stores by kind, sited from need (build/stores.ts). */
-  stores: StoresDef;
+  stores: StoresDef; // 5B Bundle 1 (V-129): stores by kind, sited from need (build/stores.ts)
   well: { kind: string; walk: number; days: number; from: number; near: number };
+  mill: MillDef; // 5B Bundle 4 (V-133): the quern, the mill and baking (core/mill.ts)
   field: FieldDef;
   rooms: RoomsDef;
   furniture: FurnitureDef;

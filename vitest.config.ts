@@ -7,10 +7,12 @@ import { defineConfig } from 'vitest/config';
 const slowFiles = [
   // The lamp (P5.13): two eight-day runs with dusk at 15:00.
   'src/engine/lamp/lamp.test.ts',
-  // The chandler (V-135): three six-day colonies.
+  // The chandler (V-135): colonies of six and twelve days (the hearth is lit from day 3 or 4).
   'src/engine/people/chandle.test.ts',
   // The skeps (P5.13): two runs of a few days from the first field to the first honey.
   'src/engine/bees/bees.test.ts',
+  // The mill and harvest home (5B Bundle 4): a 240-day run on anvil.
+  'src/engine/build/mill.test.ts',
   'src/engine/build/fields.test.ts',
   'src/engine/build/walls.test.ts',
   'src/engine/people/cook.test.ts',

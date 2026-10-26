@@ -104,14 +104,16 @@ function wanted(ctx: SystemContext, p: EntityRow): { recipe: Recipe; why: string
   return undefined;
 }
 
-/** The nearest lit hearth `p` can stand beside, one in a room before one in the open. */
+/** The nearest lit hearth `p` can stand beside, one in a room before one in the open, with fuel
+ * for a batch and the walk (`minutes × 2`), so it is still burning when they get there. */
 function hearthFor(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const { world, content } = ctx;
+  const enough = content.lamp.chandler.minutes * 2;
   const from = spotOf(p);
   const d = (r: EntityRow) =>
     Math.abs((r['x'] as number) - from.x) + Math.abs((r['y'] as number) - from.y);
   const lit = firesOf(world)
-    .filter((f) => f['lit'])
+    .filter((f) => f['lit'] && (f['fuel'] as number) >= enough)
     .map((f) => pieceOfFire(world, f))
     .filter((r) => r['z'] === 0)
     .sort(

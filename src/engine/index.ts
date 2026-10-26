@@ -6,6 +6,8 @@ import { calendarSystem } from './calendar/index.ts';
 import { fireSystem } from './fire/index.ts';
 import { flockSystem } from './flock/index.ts';
 import { lampSystem } from './lamp/index.ts';
+export { floorsOf, rateOf } from './keep/index.ts';
+import { keepSystem } from './keep/index.ts';
 import { goodsSystem } from './goods/index.ts';
 import { healthSystem } from './health/index.ts';
 import { mapSystem } from './map/index.ts';
@@ -272,6 +274,7 @@ export const SYSTEMS: readonly System[] = [
   wildSystem,
   flockSystem,
   beesSystem,
+  keepSystem,
 ];
 
 /** A simulation over `content` with the game's systems, or the given ones (tests add fixtures). */

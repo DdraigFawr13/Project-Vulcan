@@ -16,6 +16,7 @@ export function pieceFacts(tile: TileView): [string, string][] {
     // A hearth or campfire (P3.6): the fire's state, its fuel and what it warms replace the first row.
     rows[0] = [piece.name, `${piece.fire.state}, ${piece.fire.where}`];
     rows.push(['fuel', piece.fire.fuel], ['warms', piece.fire.reach]);
+    if (piece.fire.meals) rows.push(['meals', piece.fire.meals]);
   }
   if (piece.bench) {
     rows.push(

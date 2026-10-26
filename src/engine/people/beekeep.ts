@@ -2,7 +2,8 @@
 // priority order (the Beekeeping row, after Candlemaking) takes up, in this order, a skep still to
 // be made, the honey of a skep with bees in the harvest month, and in a swarm month the looking
 // over of an empty skep (once a day each, a swarm caught by chance: no line for a visit that
-// finds nothing). Work is done from beside the skep. The skeps and their lines are src/engine/bees.
+// finds nothing). One beekeeper at a time, and a look covers the whole stand. Work is done from
+// beside the skep. The skeps and their lines are src/engine/bees.
 import type { EntityRow } from '../core/index.ts';
 import { entityOf } from '../entity/index.ts';
 import {
@@ -19,7 +20,7 @@ import {
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
 import { able, outranked, priorityLine } from './priority.ts';
-import { busy, canStandBeside, goBeside, layAll, spotOf } from './spots.ts';
+import { busy, canStandBeside, goBeside, layAll, people, spotOf } from './spots.ts';
 import { scaled } from './tools.ts';
 
 type Task = 'make' | 'harvest' | 'tend';
@@ -65,6 +66,8 @@ export function takeUpBeekeeping(ctx: SystemContext, p: EntityRow): boolean {
   const { content } = ctx;
   const bees = content.lamp.bees;
   if (!able(content, p, bees.job)) return false;
+  // One beekeeper at a time: a stand of skeps is one person's work.
+  if (people(ctx.world).some((q) => q.id !== p.id && q['job'] === bees.job)) return false;
   if (outranked(ctx, p, bees.job, (q) => chooseSkep(ctx, q) !== undefined)) return false;
   const pick = chooseSkep(ctx, p);
   if (!pick || !goBeside(ctx, p, pick.skep['x'] as number, pick.skep['y'] as number)) return false;
@@ -121,7 +124,9 @@ export function beekeeping(ctx: SystemContext, p: EntityRow): boolean {
     if ((p['work'] as number) > 0) return true;
   }
   if (task === 'make') skepMade(ctx, skep, p);
-  else if (task === 'tend') skepTended(ctx, skep, p);
+  // Looking over the stand: every empty skep in it not yet looked at today, in one visit.
+  else if (task === 'tend')
+    for (const s of skepsOf(ctx.world).filter((s) => wanted(ctx, s, 'tend'))) skepTended(ctx, s, p);
   else {
     const got = honeyTaken(ctx, skep, p);
     const { honey, wax } = ctx.content.lamp.bees.harvest;

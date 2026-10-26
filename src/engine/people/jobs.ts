@@ -31,8 +31,9 @@ import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
 import { chandling, takeUpChandling } from './chandle.ts';
+import { MILL_TAKE_UP, millWork } from './mill.ts';
 import { deliver, HOLDS, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
-import { takeUpHearth } from './hearth.ts';
+import { coldHearth, hearthFirst, takeUpHearth } from './hearth.ts';
 import { takeUpTending, tending } from './tend.ts';
 import { furnishing, takeUpCarpentry } from './carpentry.ts';
 import { farming, takeUpFarming } from './farm.ts';
@@ -193,11 +194,13 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
   if (p['job'] === 'cook' && can('cook') && cooking(ctx, p)) return true;
   if (p['job'] === 'chandle' && can('chandle') && chandling(ctx, p)) return true;
+  if ((p['job'] === 'mill' || p['job'] === 'bake') && can(p['job']) && millWork(ctx, p))
+    return true;
   if (p['job'] === 'station' && can('station') && stationing(ctx, p)) return true;
   if (p['job'] === 'charcoal' && can('charcoal') && burning(ctx, p)) return true;
   if (p['job'] === 'smelt' && can('smelt') && smelting(ctx, p)) return true;
   if (p['job'] === 'smith' && can('smith') && smithing(ctx, p)) return true;
-  // P5.6, P5.8: a burial is seen through once begun; dressing is work hours'.
+  // P5.6, P5.8: a burial is seen through once begun.
   if (p['job'] === 'bury' && burying(ctx, p)) return true;
   // A dressing not finished by the end of work is left for whoever takes it up next.
   if (p['job'] === 'dress' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
@@ -257,13 +260,15 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
 function takeUp(ctx: SystemContext, p: EntityRow, dark = false): boolean {
   const { world, content } = ctx;
   if (!dark && takeUpMarked(ctx, p, false)) return true;
-  for (const job of jobsInOrder(world, content, p)) {
+  for (const job of hearthFirst(ctx, p, jobsInOrder(world, content, p))) {
     if (dark && !workableInDark(ctx, job)) continue;
     const before = p['took'];
     if (TAKE_UP[job]?.(ctx, p)) return true;
     // Taken up (a line said) and stopped at once: look again later, not at the next kind.
     if (p['took'] !== before) break;
   }
+  // Nothing else to do: carry in the food past its plate that would spoil out there.
+  if (takeUpHauling(ctx, p, true)) return true;
   p['job'] = '';
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;
@@ -327,8 +332,7 @@ function takeUpGathering(ctx: SystemContext, p: EntityRow, g: Gather): boolean {
   return startGathering(ctx, p, tree, g);
 }
 
-/** How each kind of work on the Work sheet is taken up; a kind with no entry is never taken up
- * (content `work.priority.jobs` may list one before its milestone brings the work). */
+/** How each Work sheet kind is taken up; one with no entry (its milestone not yet in) never is. */
 const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boolean>> = {
   fell: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'fell')!),
   haul: takeUpHauling,
@@ -339,12 +343,14 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   herd: takeUpHerding,
   build: (ctx, p) =>
     takeUpBurial(ctx, p) ||
+    (coldHearth(ctx) && takeUpHearth(ctx, p)) ||
     takeUpMarked(ctx, p, true) ||
     takeUpHearth(ctx, p) ||
     takeUpStation(ctx, p) ||
     takeUpBuilding(ctx, p),
   tend: takeUpTending,
   cook: takeUpCooking,
+  ...MILL_TAKE_UP,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),
   mine: takeUpMining,

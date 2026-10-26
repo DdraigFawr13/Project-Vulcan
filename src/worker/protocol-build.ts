@@ -259,6 +259,8 @@ export interface PieceView {
     state: string;
     fuel: string;
     reach: string;
+    /** The colony's cooked meals (P5.3): "10 of 10 for tomorrow: 4 good stew, ...". */
+    meals?: string;
     last?: LedgerLine;
     lastLabel?: string;
   };

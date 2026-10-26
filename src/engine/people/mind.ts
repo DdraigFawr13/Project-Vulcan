@@ -12,6 +12,7 @@ import { isDark } from '../lamp/index.ts';
 import { hoursOf } from '../law/index.ts';
 import { bedOwnedBy } from '../build/index.ts';
 import { bankFire } from '../fire/index.ts';
+import { reachFrom } from '../paths/index.ts';
 import { claimBed } from './claim.ts';
 import { carryBed, movesIn } from './home.ts';
 import { working } from './jobs.ts';
@@ -22,6 +23,7 @@ import { drinking } from './drink.ts';
 import { walkTo, wander } from './walk.ts';
 import { tendInEvening } from './tend.ts';
 import { warming } from './warm.ts';
+import { feasting } from './feast.ts';
 import { lateUntil, watching } from './watch.ts';
 
 export const MIND_FIELDS = {
@@ -65,24 +67,38 @@ const foodHere = (ctx: SystemContext, p: EntityRow, desperate: boolean): EntityR
 
 /** Sets off to the nearest food lying on the ground (food of last resort only when `desperate`),
  * or a cooked meal if it is no more than `work.cook.prefer` tiles further; false when there is
- * none to reach. */
+ * none to reach. When the nearest cannot be walked to (a store walled into a pocket), the nearest
+ * of what can is tried instead (5B Bundle 3: a band went hungry beside turnips it could reach). */
 function goEat(ctx: SystemContext, p: EntityRow, desperate: boolean): boolean {
-  const { x, y, z } = { x: p['x'] as number, y: p['y'] as number, z: p['z'] as number };
+  const best = nearestFood(ctx, p, desperate, () => true);
+  if (!best) return false;
+  if (walkTo(ctx, p, spotOf(best))) return true;
+  const reach = reachFrom(ctx.content, ctx.world.map, spotOf(p));
+  const next = nearestFood(ctx, p, desperate, (i) => reach(spotOf(i)));
+  return !!next && walkTo(ctx, p, spotOf(next));
+}
+
+/** The nearest food `ok` allows, or a cooked meal up to `work.cook.prefer` tiles further. */
+function nearestFood(
+  ctx: SystemContext,
+  p: EntityRow,
+  desperate: boolean,
+  ok: (i: EntityRow) => boolean,
+): EntityRow | undefined {
+  const { x, y, z } = spotOf(p);
   let best: EntityRow | undefined;
   let far = Infinity;
   let meal: EntityRow | undefined;
   let mealFar = Infinity;
   for (const i of itemsOf(ctx.world)) {
-    if (i['holder'] || !edible(ctx, i['kind'] as string, desperate)) continue;
+    if (i['holder'] || !edible(ctx, i['kind'] as string, desperate) || !ok(i)) continue;
     const d =
       Math.max(Math.abs((i['x'] as number) - x), Math.abs((i['y'] as number) - y)) +
       Math.abs((i['z'] as number) - z) * 100;
     if (d < far) [best, far] = [i, d];
     if (cooked(ctx, i) && d < mealFar) [meal, mealFar] = [i, d];
   }
-  if (meal && mealFar <= far + ctx.content.work.cook.prefer) best = meal;
-  if (!best) return false;
-  return walkTo(ctx, p, { x: best['x'] as number, y: best['y'] as number, z: best['z'] as number });
+  return meal && mealFar <= far + ctx.content.work.cook.prefer ? meal : best;
 }
 
 /** Lies down: on their own laid-out bedroll when there is a way to it, else where they stand;
@@ -120,6 +136,14 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     if (item) eat(ctx, p, item);
     p['doing'] = '';
   }
+  // The harvest-home supper (5B Bundle 4) is the evening's meal: after work, unless starving, it
+  // comes before eating alone, the jobs that run on past work and the evening's leisure.
+  const day = hoursOf(world, content, p.id);
+  const evening = hour >= day.workTo && hour < day.sleepFrom;
+  if (evening && valueOf(ctx, p, 'food') > life.seedAt && feasting(ctx, p)) {
+    p['doing'] = 'feast';
+    return;
+  }
   // A tamer sits far from the store, so goes back sooner (flock.json `tame.back`, herdtask.ts).
   const taming = p['job'] === content.flock.job && p['task'] === 'tame';
   const seek = taming ? content.flock.tame.back : seekOf(ctx, 'food');
@@ -133,7 +157,6 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   }
   // Thirst next (P5.2): to the nearest water or the well, to drink to full.
   if (drinking(ctx, p)) return;
-  const day = hoursOf(world, content, p.id);
   const night = hour >= day.sleepFrom || hour < day.workFrom;
   const rest = valueOf(ctx, p, 'rest');
   // Below its warning line, warmth beats sleep as it beats work (P3.6, V-046; phase review: a
