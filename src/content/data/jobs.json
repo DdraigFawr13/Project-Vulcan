@@ -8,6 +8,8 @@
   {"id":"quarry","risk":0.002,"name":"Quarrying","worker":"quarrier","skill":"stoneworking","requirements":{"strength":9,"endurance":8},"workplace":"stone","outputs":{"stone":2},"serves":"materials","heavy":true,"tools":true},
   {"id":"mine","risk":0.003,"name":"Mining","worker":"miner","skill":"mining","requirements":{"strength":10,"endurance":9},"workplace":"ore","outputs":{"ore":1},"serves":"materials","heavy":true,"tools":true},
   {"id":"cook","name":"Cooking","worker":"cook","skill":"cooking","requirements":{},"workplace":"kitchen","rawFood":3,"outputs":{"meal":4},"serves":"food"},
+  {"id":"mill","name":"Milling","worker":"miller","requirements":{},"workplace":"mill","serves":"food"},
+  {"id":"bake","name":"Baking","worker":"baker","skill":"cooking","requirements":{},"workplace":"oven","serves":"food"},
   {"id":"build","risk":0.001,"name":"Building","worker":"builder","skill":"building","requirements":{"strength":8},"workplace":"construction","action":"build","serves":"shelter","heavy":true},
   {"id":"carpentry","name":"Carpentry","worker":"carpenter","skill":"crafting","requirements":{},"workplace":"construction","action":"build","serves":"shelter"},
   {"id":"tend","name":"Tending","worker":"tender","requirements":{},"workplace":"fire","action":"tend","serves":"shelter"},

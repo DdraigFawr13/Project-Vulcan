@@ -11,7 +11,7 @@ import { haveOf, isTree, marksOf, stockOf } from '../goods/index.ts';
 import { addMemories } from '../needs/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { feastInHall } from './homes.ts';
+import { callFeast, lastOfYear } from './feast.ts';
 import {
   cropNow,
   cropOf,
@@ -79,8 +79,8 @@ export function finishReaping(ctx: SystemContext, f: EntityRow, cause: number): 
     'harvested',
     home,
   );
-  // The harvest-home supper is eaten in the hall (P5.14).
-  feastInHall(ctx, home);
+  // The last field of the year brings the harvest-home supper in the hall (5B Bundle 4).
+  if (lastOfYear(ctx, f)) callFeast(ctx, home);
   drawSoil(ctx, f, crop.id, harvested);
   Object.assign(f, { state: 'fallow', crop: '', done: [], reapers: [], got: 0, kept: 0 });
   Object.assign(f, clearBlight());

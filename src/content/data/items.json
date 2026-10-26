@@ -15,6 +15,8 @@
   {"id":"meal","name":"fare","good":"food","per":0.002976190476190476,"kind":"food","cooked":true,"spoilPerDay":0.1},
   {"id":"stew","name":"stew","good":"food","per":0.002976190476190476,"kind":"food","cooked":true,"spoilPerDay":0.1},
   {"id":"pottage","name":"pottage","good":"food","per":0.002976190476190476,"kind":"food","cooked":true,"spoilPerDay":0.1},
+  {"id":"bread","name":"loaves of bread","good":"food","per":0.002976190476190476,"kind":"food","cooked":true,"spoilPerDay":0.05},
+  {"id":"flour","name":"flour","good":"flour","per":0.002976190476190476,"kind":"food","spoilPerMonth":0.01},
   {"id":"logs","name":"logs","good":"timber","per":0.01,"kind":"material"},
   {"id":"firewood","name":"firewood","good":"timber","per":0.01,"kind":"material"},
   {"id":"stone","name":"stone","good":"ore","per":0.002,"kind":"material"},

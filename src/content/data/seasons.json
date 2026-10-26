@@ -11,5 +11,5 @@
 ],
 "snowMelt":3,
 "snowShare":0.1,
-"ice": {"shallow":10,"deep":40,"thaw":2,"cap":120,"over":0.9}
+"ice": {"shallow":10,"deep":40,"stream":30,"river":40,"thaw":2,"cap":120,"over":0.9}
 }

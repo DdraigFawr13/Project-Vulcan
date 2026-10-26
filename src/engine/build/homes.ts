@@ -7,7 +7,6 @@
 // of the band sleeps in a home of their own, the first house becomes the hall: newcomers sleep
 // there until their homes are up, the harvest-home supper is eaten there and mourners gather there.
 import { TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
-import { addMemories } from '../needs/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { homeFor, householdOf, sleepsIn } from './beds.ts';
@@ -136,19 +135,6 @@ export function planHomes(ctx: SystemContext, green: Spot): void {
   sayWants(ctx);
   planHome(ctx, green);
   becomeHall(ctx);
-}
-
-/** The harvest-home supper is eaten in the hall: everyone remembers the feast. */
-export function feastInHall(ctx: SystemContext, cause: number): void {
-  const hall = hallOf(ctx.world);
-  const there = alive(ctx.world).map((p) => p.id);
-  if (!hall || !there.length) return;
-  const line = ctx.emit('hall.feast', {
-    causes: [cause, hall['hall'] as number],
-    actors: there,
-    data: { count: there.length },
-  });
-  addMemories(ctx, there, ctx.content.strangers.memories.feast, line);
 }
 
 /** After a burial the mourners gather in the hall, if there is one. */
