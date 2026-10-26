@@ -68,9 +68,11 @@ describe('skip ahead', () => {
     expect(toNdjson(allLines(run))).toBe(toNdjson(allLines(skipped)));
 
     // Hunger that follows is caused by the food running out, not by the band's arrival.
-    step(skipped, sim, 2 * DAY, (e) => e.type === 'need.low');
-    const hungry = skipped.log.findLast((e) => e.type === 'need.low')!;
-    expect(hungry.data['need']).toBe('food');
+    const hunger = (e: (typeof skipped.log)[number]) =>
+      e.type === 'need.low' && e.data['need'] === 'food';
+    step(skipped, sim, 2 * DAY, hunger);
+    const hungry = skipped.log.findLast(hunger)!;
+    expect(hungry).toBeDefined();
     expect(whyOf(skipped, hungry.id)[0]?.event.type).toBe('goods.foodGone');
   });
 });

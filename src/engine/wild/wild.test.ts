@@ -94,8 +94,9 @@ describe('the wild valley', () => {
     step(world, sim, 10);
     expect([animal['x'], animal['y']]).toEqual([to % map.width, Math.floor(to / map.width)]);
     expect(printsAt(world, content, to)).toMatchObject({ kind: 'hoof', ageHours: 0 });
-    // The animal leaves the valley, so nothing treads the tile again.
+    // The animal leaves the valley and the snow melts, so nothing prints the tile again.
     removeEntity(world, 'animal', animal.id);
+    map.snowLie[to] = 0;
     step(world, sim, 25 * 60);
     expect(printsAt(world, content, to)).toBeUndefined();
     step(world, sim, 2 * DAY);
