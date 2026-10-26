@@ -45,6 +45,8 @@ export interface PersonSources {
   item(id: number): void;
   /** Test mode only: gives them a wound by hand (the `hurt` command); none outside it. */
   hurt?(person: number, part: string, severity: string): void;
+  /** Test mode only: makes them ill by hand (the `sicken` command). */
+  sicken?(person: number, ill: string): void;
 }
 
 export class PersonSheet {
@@ -287,6 +289,7 @@ export class PersonSheet {
         lines: this.sources.lines,
         lineRow: (l) => this.panel.lineRow(l),
         ...(this.sources.hurt && { hurt: this.sources.hurt }),
+        ...(this.sources.sicken && { sicken: this.sources.sicken }),
       });
       this.blood = rows.find((r) => r.dataset['testid'] === 'blood');
       return rows;

@@ -22,6 +22,7 @@ import {
   type SimEvent,
   type WorldState,
 } from '../engine/index.ts';
+import { illnessOf, pastIll, sickState } from './illview.ts';
 import type { HealthView } from './protocol-people.ts';
 
 const words = content.health.words;
@@ -104,6 +105,8 @@ function statusOf(world: WorldState, p: EntityRow, w: EntityRow): string {
 /** The state sentence of someone alive. */
 function stateOf(world: WorldState, p: EntityRow, open: EntityRow[]): string {
   const body = bodyOf(world, p.id);
+  const sick = sickState(world, p, say);
+  if (sick) return open.length ? `${sick} ${say('hurt')}` : sick;
   if (!open.length) {
     const marks = [
       markPercent(world, content, p.id, 'walk') < 100 ? say('markWalk') : '',
@@ -127,7 +130,8 @@ function stateOf(world: WorldState, p: EntityRow, open: EntityRow[]): string {
 export function healthOf(world: WorldState, p: EntityRow): HealthView | undefined {
   const body = bodyOf(world, p.id);
   const scars = scarsOf(world, p.id);
-  if (!body && !scars.length) return undefined;
+  const ills = (world.entities['ill'] ?? []).some((r) => r['person'] === p.id);
+  if (!body && !scars.length && !ills) return undefined;
   const status = p['status'] as string;
   const alive = status === 'alive';
   const open = openWounds(world, p.id);
@@ -157,6 +161,8 @@ export function healthOf(world: WorldState, p: EntityRow): HealthView | undefine
   const losing = open.some(bleeding);
   const line = Math.round((content.health.blood.faint * 100) / full);
   const marking = open.map((w) => severityOf(content, w)).find((s) => s.mark);
+  const illness = alive ? illnessOf(world, p, say, stamp) : undefined;
+  const past = alive ? pastIll(world, p, say, stamp) : undefined;
   const text = !alive
     ? status === 'buried'
       ? say('buried')
@@ -165,7 +171,7 @@ export function healthOf(world: WorldState, p: EntityRow): HealthView | undefine
   return {
     ...(status === 'dead' && { badge: 'dead' as const }),
     ...(alive &&
-      (isDown(world, p.id) || open.some((w) => severityOf(content, w).bleed > 0)) && {
+      (isDown(world, p.id) || !!illness || open.some((w) => severityOf(content, w).bleed > 0)) && {
         badge: 'hurt' as const,
       }),
     ...(status === 'buried' && { buried: true as const }),
@@ -209,6 +215,8 @@ export function healthOf(world: WorldState, p: EntityRow): HealthView | undefine
       marking?.mark && {
         hint: say('hint', { severity: marking.name, pc: String(marking.mark[0]) }),
       }),
+    ...(illness && { illness }),
+    ...(past && { pastIll: past }),
     ...(((body?.['died'] as number) ?? 0) > 0 && { death: body!['died'] as number }),
   };
 }

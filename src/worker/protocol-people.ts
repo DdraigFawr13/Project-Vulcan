@@ -32,8 +32,27 @@ export interface HealthView {
   marks: { title: string; effect: string; story: string; why: number }[];
   /** What an open deep wound may leave, while there is no mark yet. */
   hint?: string;
+  /** The illness showing now (P5.7), and the last one they are over and safe from. */
+  illness?: IllnessView;
+  pastIll?: string;
   /** The death line, for the dead. */
   death?: number;
+}
+
+/** A bout of illness on the Health tab (P5.7): its course, day `day` of about `of` (hatched
+ * once grave), with the line it showed under for "why?". */
+export interface IllnessView {
+  title: string;
+  day: number;
+  of: number;
+  grave: boolean;
+  dayWord: string;
+  ofWord: string;
+  state: string;
+  cause: string;
+  draught?: string;
+  catching?: string;
+  why: number;
 }
 
 /** Where a person stands this tick (P2.3), sent with every snapshot so the screen can walk them,
