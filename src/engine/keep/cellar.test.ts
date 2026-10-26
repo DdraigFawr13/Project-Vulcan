@@ -2,7 +2,7 @@
 // planned from the spoil lines, dug by the miners (the stair sunk, then the larder's inside tiles
 // on level 1), and when the last tile is dug it is a store of its own kind that keeps cooler.
 // Nothing is faked: the run steps the real sim, with turnips that spoil fast so 20 are lost in
-// four weeks (`items` below), no pasture, no accidents, no cooking and no barrel effect.
+// four weeks (`items` below), no pasture, no accidents, no cooking and no barrel or pot effect.
 import { describe, expect, it } from 'vitest';
 import { content as game } from '../../content/index.ts';
 import { addEntity } from '../entity/index.ts';
@@ -26,8 +26,9 @@ const content = withoutAccidents({
   work: {
     ...game.work,
     cook: { ...game.work.cook, perPerson: 0 },
-    // A barrel under the food would change the rates this compares.
+    // A barrel or pots under the food would change the rates this compares.
     keep: { ...game.work.keep, barrel: { ...game.work.keep.barrel, times: 1 } },
+    potter: { ...game.work.potter, times: 1 },
   },
   items: game.items.map((i) => (i.id === 'turnips' ? { ...i, spoilPerMonth: 0.9 } : i)),
 });
