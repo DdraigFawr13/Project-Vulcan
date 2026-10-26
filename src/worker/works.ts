@@ -34,6 +34,8 @@ const inRect = (r: EntityRow, x: number, y: number): boolean =>
 export function stationGoods(world: WorldState): GoodsView['furniture'] {
   return stationsOf(world).flatMap((s) => {
     const [x, y, z] = [s['x'] as number, s['y'] as number, s['z'] as number];
+    // The tan pits have no art yet (Bundle 5, slice 4).
+    if (s['kind'] === 'pits') return [];
     if (s['kind'] === 'smelter')
       return [{ x, y, z, art: 'furn.smelter', facing: 's', plan: s['state'] !== 'built' }];
     const lit = s['state'] === 'lit';
@@ -196,7 +198,7 @@ export function tileWorks(
   );
   if (smithy) return { works: smithyPage(world, smithy, lineOf) };
   const station = stationAt(world, x, y);
-  if (!station) return undefined;
+  if (!station || station['kind'] === 'pits') return undefined;
   return {
     works: (station['kind'] === 'clamp' ? clampPage : smelterPage)(world, station, lineOf),
   };

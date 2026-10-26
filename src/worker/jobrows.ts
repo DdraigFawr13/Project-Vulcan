@@ -10,6 +10,8 @@ export function jobShown(world: WorldState, job: string): boolean {
     return stationsOf(world).some((s) => s['kind'] === 'smelter' && s['state'] === 'built');
   // Herding waits for a pasture, planned or built.
   if (job === content.flock.job) return livePastures(world).length > 0;
+  if (job === content.clothes.tan.job)
+    return stationsOf(world).some((s) => s['kind'] === 'pits' && s['state'] === 'built');
   if (job === 'smith') return piecesOf(world, 'forge').some((f) => f['state'] === 'built');
   return true;
 }

@@ -21,7 +21,7 @@ import { livePastures, onPastureGround } from './pasturerows.ts';
 import { ringOf } from './ring.ts';
 import { sizeOfStation, stationOf } from './station.ts';
 
-const cheb = (a: Spot, x: number, y: number): number =>
+export const cheb = (a: Spot, x: number, y: number): number =>
   Math.max(Math.abs(a.x - x), Math.abs(a.y - y));
 
 /** The stairs or shaft on the surface nearest the green (ties in tile order), else the store's
@@ -55,7 +55,13 @@ function sideOf(green: Spot, to: Spot): string {
 }
 
 /** Free ground for a `size` by `size` station with its top-left at (x, y). */
-function freeBlock(world: WorldState, content: EngineContent, x: number, y: number, size: number) {
+export function freeBlock(
+  world: WorldState,
+  content: EngineContent,
+  x: number,
+  y: number,
+  size: number,
+) {
   for (let dy = 0; dy < size; dy += 1)
     for (let dx = 0; dx < size; dx += 1) {
       const fields = (world.entities['field'] ?? []).filter((f) => f['state'] !== 'sent');
@@ -146,7 +152,7 @@ export function planStations(ctx: SystemContext, green: Spot): void {
     const size = sizeOfStation(content, 'smelter');
     addEntity(world, 'station', {
       ...{ kind: 'smelter', x: at.x, y: at.y, z: 0, w: size, h: size, state: 'plan', line },
-      ...{ have: 0, work: -1, made: 0, lit: 0, litLine: 0, alert: 0, waitFor: '' },
+      ...{ have: 0, work: -1, made: 0, lit: 0, litLine: 0, alert: 0, waitFor: '', sent: 0 },
     });
     raiseStock(ctx, content.metal.smelter.material, 'smelter', line);
     smelter = stationOf(world, 'smelter');
@@ -171,6 +177,6 @@ export function planStations(ctx: SystemContext, green: Spot): void {
   });
   addEntity(world, 'station', {
     ...{ kind: 'clamp', x: at.x, y: at.y, z: 0, w: size, h: size, state: 'idle', line },
-    ...{ have: 0, work: -1, made: 0, lit: 0, litLine: 0, alert: 0, waitFor: '' },
+    ...{ have: 0, work: -1, made: 0, lit: 0, litLine: 0, alert: 0, waitFor: '', sent: 0 },
   });
 }

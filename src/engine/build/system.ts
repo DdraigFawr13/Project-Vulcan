@@ -27,6 +27,7 @@ import { planWell, WELL_TABLES } from './well.ts';
 import { planStations } from './metalsite.ts';
 import { STATION_TABLES } from './station.ts';
 import { planBench } from './wants.ts';
+import { planPits, sendBackPits } from './pits.ts';
 import { planSmithy, SMITHY_TABLES, sendBackSmithy } from './smithy.ts';
 import { BURIAL_TABLES, planBurial, sendBackBurial } from './burial.ts';
 import { MIDDEN_TABLES, planMidden } from './midden.ts';
@@ -151,6 +152,7 @@ export const buildSystem: System = {
     ...['build.storeSited', 'build.storeBuilt'],
     ...['pasture.needed', 'pasture.sited', 'pasture.sentBack', 'pasture.noGround', 'pasture.built'],
     ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
+    ...['pits.planned', 'pits.noGround', 'pits.sentBack'],
     ...['build.sickroom', 'build.burialSited', 'build.burialSentBack', 'build.middenSited'],
     ...['build.roadPlanned', 'build.roadLaid'],
   ],
@@ -164,6 +166,7 @@ export const buildSystem: System = {
   initialState: {
     ...{ nobody: 0, green: 0, need: 0, noGround: 0, tried: 0, ring: 0, ringLine: 0 },
     ...{ fieldNeed: 0, fieldNoGround: 0, fieldTried: 0, smithyNoGround: 0, smithyTried: 0 },
+    ...{ pitsNoGround: 0, pitsTried: 0 },
     ...{ pastureNeed: 0, pastureNoGround: 0, pastureTried: 0 },
     // 5B Bundle 1: the tick stores were first and last looked at (stores.ts).
     storeFrom: 0,
@@ -178,7 +181,16 @@ export const buildSystem: System = {
     ...{ blightDay: 0, wetBits: 0, wasDry: 0 },
   },
   refs: [
-    ...['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround', 'smithyNoGround'],
+    ...[
+      'nobody',
+      'need',
+      'noGround',
+      'ringLine',
+      'fieldNeed',
+      'fieldNoGround',
+      'smithyNoGround',
+      'pitsNoGround',
+    ],
     ...['pastureNeed', 'pastureNoGround'],
   ],
   tables: {
@@ -201,13 +213,15 @@ export const buildSystem: System = {
     sendBack: (ctx, command, cause) =>
       command.data['pasture'] !== undefined
         ? sendBackPasture(ctx, command.data, cause, greenOf(ctx.world))
-        : command.data['burial'] !== undefined
-          ? sendBackBurial(ctx, command.data, cause, greenOf(ctx.world))
-          : command.data['smithy'] !== undefined
-            ? sendBackSmithy(ctx, command.data, cause, greenOf(ctx.world))
-            : command.data['field'] !== undefined
-              ? sendBackField(ctx, command.data, cause, greenOf(ctx.world))
-              : sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
+        : command.data['pits'] !== undefined
+          ? sendBackPits(ctx, command.data, cause, greenOf(ctx.world))
+          : command.data['burial'] !== undefined
+            ? sendBackBurial(ctx, command.data, cause, greenOf(ctx.world))
+            : command.data['smithy'] !== undefined
+              ? sendBackSmithy(ctx, command.data, cause, greenOf(ctx.world))
+              : command.data['field'] !== undefined
+                ? sendBackField(ctx, command.data, cause, greenOf(ctx.world))
+                : sendBack(ctx, command.data, cause, (h, line) => chooseAgain(ctx, h, line)),
   },
   init(ctx) {
     const { world, content, state } = ctx;
@@ -237,6 +251,7 @@ export const buildSystem: System = {
     planRoomHearths(ctx);
     planWell(ctx, green);
     planStations(ctx, green);
+    planPits(ctx, green);
     // P5.6, P5.8: a sickroom once enough lie hurt; a burial ground at the first death.
     planSickroom(ctx, green);
     planBurial(ctx, green);
