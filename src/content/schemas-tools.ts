@@ -33,6 +33,8 @@ export const TOOLS_SCHEMAS = {
         ingots: num({ min: 1 }),
         charcoal: count,
         minutes: num({ min: 1 }),
+        // How many the cart brings, when not the file's `cart` (the healer's kit: none).
+        cart: opt(count),
       }),
     ),
     // `speed` per cent, `life` in work minutes; a material with an `ingot` is smithed from it.

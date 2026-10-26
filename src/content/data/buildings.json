@@ -16,7 +16,8 @@
 {"id":"hurdle","name":"hurdle","kind":"wall","material":"logs","cost":1,"minutes":20,"art":"build.hurdle"},
 {"id":"gate-hurdle","name":"hurdle gate","kind":"door","material":"logs","cost":1,"minutes":20,"art":"build.gate-hurdle"},
 {"id":"stair-stone","name":"stone stair down","kind":"stair","material":"stone","cost":10,"minutes":120,"art":"build.stair-stone"},
-{"id":"stair-wood","name":"wooden stair down","kind":"stair","material":"logs","cost":6,"minutes":90,"art":"build.stair-wood"}
+{"id":"stair-wood","name":"wooden stair down","kind":"stair","material":"logs","cost":6,"minutes":90,"art":"build.stair-wood"},
+{"id":"herb-bed","name":"herb bed","kind":"floor","material":"logs","cost":1,"minutes":30,"art":"build.herb-bed"}
 ],
 "house":{"name":"Houses","start":1,"near":14,"reach":40,"walls":["wall-stone","wall-wood","wall-daub","wall-brick"],"door":"door-wood","floor":"floor-wood",
 "sizes":[

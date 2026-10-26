@@ -1,6 +1,6 @@
 // The person sheet's Health tab (P5.6, P5.8): a six-part body figure, the state in words, the Blood bar
 // with its faint line, the wounds and lasting marks, each with "why?"; and, in test mode only,
-// the Hurt tool (V-041). Indirect control (V-015, V-041): nothing here orders the hurt or the dead
+// the Hurt and Make sick tools (V-041). The Illness box (P5.7) shows a bout's course day by day. Indirect control (V-015, V-041): nothing here orders the hurt or the dead
 // about. The words are the worker's (`HealthView`), the page only shows them (GAME-02).
 import { content } from '../content/index.ts';
 import type { HealthView, LedgerLine, PersonView } from '../worker/index.ts';
@@ -86,6 +86,8 @@ export interface HealthSources {
   lineRow(line: LedgerLine): HTMLElement;
   /** Test mode only: a wound given by hand (the `hurt` command). */
   hurt?(person: number, part: string, severity: string): void;
+  /** Test mode only: an illness given by hand (the `sicken` command). */
+  sicken?(person: number, ill: string): void;
 }
 
 /** The tab's rows for `p`; `h` is none for someone never hurt. */
@@ -123,6 +125,9 @@ export function healthBody(
         el('button', { type: 'button', class: 'why', 'data-why': String(h.death) }, 'why?'),
       ),
     );
+  if (h?.illness || h?.pastIll) out.push(el('h3', {}, 'Illness'));
+  if (h?.illness) out.push(illnessBox(h.illness));
+  if (h?.pastIll) out.push(el('p', { class: 'muted' }, h.pastIll));
   out.push(el('h3', {}, 'Wounds'));
   if (!h?.wounds.length) out.push(el('p', { class: 'muted' }, 'No open wounds.'));
   for (const w of h?.wounds ?? []) {
@@ -142,12 +147,40 @@ export function healthBody(
     box.append(el('b', {}, m.title), el('p', {}, m.effect), story);
     out.push(box);
   }
-  if (src.hurt && !dead) out.push(hurtTool(p, src.hurt));
+  if (src.hurt && !dead) out.push(hurtTool(p, src.hurt, src.sicken));
   return out;
 }
 
-/** The test-mode Hurt tool: a part, a severity and a Hurt button, in a red TEST MODE row. */
-function hurtTool(p: PersonView, hurt: NonNullable<HealthSources['hurt']>): HTMLElement {
+/** A bout: its name and "why?", a strip of its days (ember gone by, hatched once grave), the
+ * state, how it was caught, the last draught and whether it is catching. */
+function illnessBox(ill: NonNullable<HealthView['illness']>): HTMLElement {
+  const box = el('div', { class: 'wound', 'data-testid': 'illness', 'data-line': String(ill.why) });
+  const head = el('b', {}, `${ill.title} `);
+  const course = el('div', {
+    class: 'course',
+    role: 'img',
+    'aria-label': `${ill.dayWord} ${ill.ofWord}`,
+  });
+  course.style.gridTemplateColumns = `repeat(${ill.of}, 1fr)`;
+  for (let d = 1; d <= ill.of; d += 1)
+    course.append(el('i', { class: d <= ill.day ? (ill.grave ? 'd g' : 'd') : '' }));
+  const ck = el('div', { class: 'ck' });
+  ck.append(el('span', {}, ill.dayWord), el('span', {}, ill.ofWord));
+  const cause = el('p', { class: 'aside' }, `${ill.cause} `);
+  cause.append(whyButton(ill.why));
+  box.append(head, course, ck, el('p', {}, ill.state), cause);
+  if (ill.draught) box.append(el('p', {}, ill.draught));
+  if (ill.catching) box.append(el('p', { class: 'aside' }, ill.catching));
+  return box;
+}
+
+/** The test-mode tools: a part, a severity and a Hurt button; an illness and a Make sick button;
+ * under a red TEST MODE tag. */
+function hurtTool(
+  p: PersonView,
+  hurt: NonNullable<HealthSources['hurt']>,
+  sicken: HealthSources['sicken'],
+): HTMLElement {
   const part = el('select', { 'aria-label': 'Part' });
   for (const q of content.health.parts) part.append(el('option', { value: q.id }, q.name));
   const severity = el('select', { 'aria-label': 'Severity' });
@@ -160,5 +193,14 @@ function hurtTool(p: PersonView, hurt: NonNullable<HealthSources['hurt']>): HTML
   row.append(part, severity, go);
   const box = el('div', { class: 'hurttool' });
   box.append(head, row);
+  if (sicken) {
+    const ill = el('select', { 'aria-label': 'Illness' });
+    for (const d of content.health.ills) ill.append(el('option', { value: d.id }, d.name));
+    const make = el('button', { type: 'button', 'data-testid': 'sicken-go' }, 'Make sick');
+    make.addEventListener('click', () => sicken(p.id, ill.value));
+    const sick = el('div', { class: 'row hurtrow' });
+    sick.append(ill, make);
+    box.append(sick);
+  }
   return box;
 }

@@ -9,6 +9,10 @@ import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bindWounds } from './care.ts';
+import { dosing, takeUpDraught } from './draught.ts';
+export { draughtFirst } from './draught.ts';
+import { sew } from './surgery.ts';
+import { worked } from './tools.ts';
 import { practise } from './learn.ts';
 import { able } from './priority.ts';
 import { people, skillOf, spotOf } from './spots.ts';
@@ -60,6 +64,7 @@ export function takeUpNursing(ctx: SystemContext, p: EntityRow): boolean {
       Object.assign(p, { job: 'dress', target: q.id, work: -1 });
       return true;
     }
+    if (takeUpDraught(ctx, p)) return true;
   }
   return false;
 }
@@ -102,6 +107,18 @@ function herbDress(ctx: SystemContext, h: EntityRow, p: EntityRow, w: EntityRow)
   w['herbed'] = world.tick;
 }
 
+/** One minute of a dressing or a draught in work hours; one not finished by the end of work is
+ * left for whoever takes it up next. False when they are doing neither. */
+export function nursing(ctx: SystemContext, p: EntityRow, hours: boolean): boolean {
+  const job = p['job'];
+  if (job !== 'dress' && job !== 'draught') return false;
+  if (!hours) {
+    Object.assign(p, { job: '', target: -1, work: 0 });
+    return false;
+  }
+  return job === 'dress' ? dressing(ctx, p) : dosing(ctx, p);
+}
+
 /** A dressing washes a wound not yet washed when the store has soap (V-135). A piece of soap does
  * `soap.washes` washings, counted from the wounds washed so far (`washed` set), so a new piece is
  * cut from the store at the first washing and each `washes`th after it, and nothing else is kept. */
@@ -123,7 +140,7 @@ function wash(ctx: SystemContext, w: EntityRow): void {
 }
 
 /** One minute of dressing; false when it ended. */
-export function dressing(ctx: SystemContext, h: EntityRow): boolean {
+function dressing(ctx: SystemContext, h: EntityRow): boolean {
   const { world, content } = ctx;
   const p = personOf(world, h['target'] as number);
   const wounds = p && p['status'] === 'alive' ? toDress(ctx, p.id) : [];
@@ -138,6 +155,7 @@ export function dressing(ctx: SystemContext, h: EntityRow): boolean {
     );
   h['work'] = (h['work'] as number) - 1;
   practise(ctx, h, skill, 0);
+  worked(ctx, h, care.job);
   if ((h['work'] as number) > 0) return true;
   const rough = wounds.filter((w) => (w['bound'] as number) < 2);
   if (rough.length) bindWounds(ctx, h, p, rough);
@@ -146,6 +164,7 @@ export function dressing(ctx: SystemContext, h: EntityRow): boolean {
     wash(ctx, w);
     herbDress(ctx, h, p, w);
   }
+  sew(ctx, h, p, wounds);
   stop(h);
   return true;
 }

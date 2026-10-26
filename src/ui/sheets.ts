@@ -100,6 +100,7 @@ export class Sheets {
       ...(testModeOn(new URLSearchParams(location.search)) && {
         hurt: (person: number, part: string, severity: string) =>
           command('hurt', { person, part, severity }),
+        sicken: (person: number, ill: string) => command('sicken', { person, ill }),
       }),
     });
     this.dawn = new Dawn(deps.panel, deps.lines);

@@ -110,7 +110,7 @@ function doingOf(p: EntityRow): string {
   if (p['status'] === 'dead') return 'Dead';
   if (p['doing'] === 'hurt') return 'Lying hurt';
   if (p['doing'] === 'work' && p['job'] === 'carry') return 'Carrying the hurt';
-  if (p['doing'] === 'work' && ['bind', 'dress', 'feed'].includes(p['job'] as string))
+  if (p['doing'] === 'work' && ['bind', 'dress', 'feed', 'draught'].includes(p['job'] as string))
     return 'Tending the hurt';
   if (p['doing'] === 'work' && p['job'] === 'bury') return 'Burying the dead';
   if (p['doing'] === 'sleep') return walking ? 'Going to bed' : 'Sleeping';

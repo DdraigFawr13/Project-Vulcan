@@ -38,7 +38,7 @@ export const kindServing = (content: EngineContent, use: string) =>
   content.tools.kinds.find((k) => k.serves.includes(use));
 
 /** The best tool of `kind` that `person` holds. */
-const bestHeld = (ctx: SystemContext, person: number, kind: string): EntityRow | undefined =>
+export const bestHeld = (ctx: SystemContext, person: number, kind: string): EntityRow | undefined =>
   heldBy(ctx.world, ctx.content, person)
     .filter((i) => toolOf(ctx.content, i)?.kind === kind)
     .sort((a, b) => speedOf(ctx.content, b) - speedOf(ctx.content, a) || a.id - b.id)[0];
@@ -149,7 +149,7 @@ export function giveTool(
 
 /** A person starting work a tool serves who holds none of that kind takes the best free one
  * they can reach in the store (no walking: the store is one place). */
-function equip(ctx: SystemContext, p: EntityRow, use: string): void {
+export function equip(ctx: SystemContext, p: EntityRow, use: string): void {
   const { world, content } = ctx;
   const kind = kindServing(content, use);
   if (!kind || bestHeld(ctx, p.id, kind.id)) return;

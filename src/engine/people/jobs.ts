@@ -24,7 +24,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
 import { burying, takeUpBurial } from './burial.ts';
 import { TRADE_TAKE_UP, takeUpChange, tradeWork } from './trades.ts';
-import { dressing, takeUpNursing } from './nurse.ts';
+import { draughtFirst, nursing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
@@ -206,9 +206,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'smith' && can('smith') && smithing(ctx, p)) return true;
   // P5.6, P5.8: a burial is seen through once begun.
   if (p['job'] === 'bury' && burying(ctx, p)) return true;
-  // A dressing not finished by the end of work is left for whoever takes it up next.
-  if (p['job'] === 'dress' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
-  if (p['job'] === 'dress' && dressing(ctx, p)) return true;
+  if (nursing(ctx, p, hours)) return true;
   const load = loadOf(world, p.id);
   // Out of hours HOLDS work keeps its load till morning, as does a sinker the shaft's ladder.
   if (load && !hours && p['job'] === 'mine' && p['task'] === 'sink') return false;
@@ -262,7 +260,8 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
  * only work the dark or a light allows (dusk.ts). */
 function takeUp(ctx: SystemContext, p: EntityRow, dark = false): boolean {
   const { world, content } = ctx;
-  if (!dark && (takeUpMarked(ctx, p, false) || takeUpChange(ctx, p))) return true;
+  if (!dark && (takeUpMarked(ctx, p, false) || draughtFirst(ctx, p) || takeUpChange(ctx, p)))
+    return true;
   for (const job of hearthFirst(ctx, p, jobsInOrder(world, content, p))) {
     if (dark && !workableInDark(ctx, job)) continue;
     const before = p['took'];

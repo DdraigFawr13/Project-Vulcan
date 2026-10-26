@@ -117,6 +117,14 @@ describe('the mill and harvest home', () => {
       kind: 'setStock',
       data: { good: 'flour', level: 'plenty' },
     });
+    // Milling first for everyone (a Work sheet lever), so the day's grinding does not hang on
+    // whether hauling or smelting happens to fill it (it did once the cart brought wool, PR #93).
+    for (const p of (world.entities['person'] ?? []).filter((q) => q['status'] === 'alive'))
+      submitCommand(world, {
+        tick: world.tick + 1,
+        kind: 'setPriority',
+        data: { person: p.id, job: content.buildings.mill.job, level: 1 },
+      });
     step(world, sim, DAY);
     const after = lines(world, 'food.ground').slice(before);
     if (!turning(world, mill))

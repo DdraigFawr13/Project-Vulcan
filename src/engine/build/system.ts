@@ -32,6 +32,7 @@ import { planBench } from './wants.ts';
 import { planPits, sendBackPits } from './pits.ts';
 import { planSmithy, SMITHY_TABLES, sendBackSmithy } from './smithy.ts';
 import { BURIAL_TABLES, planBurial, sendBackBurial } from './burial.ts';
+import { HERB_TABLES, planHerbGarden } from './herbs.ts';
 import { MIDDEN_TABLES, planMidden } from './midden.ts';
 import { planSickroom } from './sickroom.ts';
 import { finishRoads, planRoads, ROAD_TABLES } from './roads.ts';
@@ -136,6 +137,7 @@ export const buildSystem: System = {
     'build.noGround',
     'build.sited',
     'build.sentBack',
+    'build.herbGarden',
     ...['people.wantsHome', 'build.homeSited', 'build.hall'],
     'build.houseBuilt',
     'build.roomAdded',
@@ -207,6 +209,7 @@ export const buildSystem: System = {
     ...STATION_TABLES,
     ...BURIAL_TABLES,
     ...MIDDEN_TABLES,
+    ...HERB_TABLES,
     ...ROAD_TABLES,
     ...WELL_TABLES,
     ...MILL_TABLES,
@@ -266,6 +269,8 @@ export const buildSystem: System = {
     planBurial(ctx, green);
     // P5.4a: a midden at the first offal.
     planMidden(ctx, green);
+    // P5.7: a herb garden once the herb store ran dry for someone.
+    planHerbGarden(ctx);
     // P5.10: a road on the most worn way, as stone allows.
     finishRoads(ctx);
     planRoads(ctx, green);

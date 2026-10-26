@@ -520,6 +520,29 @@ table.grid th small {
 .hurttool {
   margin-top: 10px;
 }
+/* An illness's course (P5.7): one cell a day, ember gone by, hatched once it turned grave. */
+.course {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 2px;
+}
+.course i {
+  height: 12px;
+  background: var(--track);
+  border: 1px solid var(--ink-soft);
+}
+.course i.d {
+  background: var(--ember);
+}
+.course i.g {
+  background: repeating-linear-gradient(135deg, var(--ember) 0 3px, var(--track) 3px 6px);
+}
+.ck {
+  display: flex;
+  justify-content: space-between;
+  font: 400 12px/1 var(--label);
+  color: var(--ink-soft);
+}
 .hurtrow select,
 .hurtrow button {
   min-height: 44px;

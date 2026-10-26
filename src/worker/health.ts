@@ -1,6 +1,7 @@
-// What the hurt and those caring for them are doing, in content `work.doing` words (P5.6, P5.8).
+// What the hurt and the sick, and those caring for them, are doing, in content `work.doing` words (P5.6, P5.8).
 import { content } from '../content/index.ts';
 import { bodyOf, openWounds, woundName, type EntityRow, type WorldState } from '../engine/index.ts';
+import { boutOf, illDef } from './illview.ts';
 
 type Say = (key: string, vars?: Record<string, string>) => string;
 
@@ -21,6 +22,9 @@ function woundOf(world: WorldState, person: number): string {
 export function careNow(world: WorldState, p: EntityRow, say: Say): string | undefined {
   if (p['doing'] === 'hurt') {
     const wound = woundOf(world, p.id);
+    const bout = boutOf(world, p.id);
+    const ill = bout?.['state'] === 'sick' ? illDef(bout['ill']) : undefined;
+    if (!wound && ill?.abed) return say('sick', { ill: ill.name });
     return say(wound ? 'hurt' : 'hurtWeak', { wound });
   }
   const job = p['job'] as string;
@@ -35,6 +39,7 @@ export function careNow(world: WorldState, p: EntityRow, say: Say): string | und
       name: nameOf(world, p['target']),
       wound: woundOf(world, p['target'] as number),
     });
+  if (job === 'draught') return say('draught', { name: nameOf(world, p['target']) });
   if (job === 'feed') return say('feed', { name: nameOf(world, p['plan']) });
   if (job === 'bury')
     return say(p['task'] === 'dig' ? 'dig' : 'bury', { name: nameOf(world, p['target']) });

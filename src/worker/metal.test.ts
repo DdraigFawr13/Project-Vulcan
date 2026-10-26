@@ -152,9 +152,9 @@ describe('the metal screens', () => {
       expect(drawn.map((i) => i.frame)).toEqual(['cart']);
       const listed = tileGoods(world, x, y, z, nobody).goods!.map((g) => g.text);
       expect(listed).toContain('handcart');
-      // Three of each tool kind (axes, picks, hoes, hammers and, since P5.4a, spears).
+      // Three of each tool kind the cart brings (axes, picks, hoes, hammers, spears; no healer's kit).
       expect(listed.filter((t) => t.startsWith('stone '))).toHaveLength(
-        content.tools.kinds.length * content.tools.cart,
+        content.tools.kinds.reduce((n, k) => n + (k.cart ?? content.tools.cart), 0),
       );
     }
   });

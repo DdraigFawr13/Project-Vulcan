@@ -1,11 +1,14 @@
 // The health system (P5.6, P5.8): each hour the hurt bleed and heal (heal.ts), the dead lie
 // unburied or are buried at day's end (death.ts). What hurts people is their work (people/
 // accident.ts); who finds, carries, binds, dresses and buries them is the people's (people/
-// care.ts, nurse.ts, burial.ts). `hurt` is a test-mode tool (V-041): a wound given by hand.
+// care.ts, nurse.ts, burial.ts). Illness runs its course hourly first (sick.ts, P5.7). `hurt`
+// and `sicken` are test-mode tools (V-041): a wound or an illness given by hand.
 import { clockAt } from '../core/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { buryAtDayEnd, unburiedHour } from './death.ts';
 import { healHour } from './heal.ts';
+import { expose, illDef, sickHour, SICK_TABLES } from './sick.ts';
+import { SOAP_TABLES } from './soap.ts';
 import { HEALTH_TABLES, partDef, wound } from './wounds.ts';
 
 /** `hurt {person, part, severity}` (test mode): a cut there, as if it had happened. */
@@ -43,6 +46,28 @@ function hurt(ctx: SystemContext, data: Readonly<Record<string, unknown>>, cause
   );
 }
 
+/** `sicken {person, ill}` (test mode, P5.7): the illness, showing now. */
+function sicken(ctx: SystemContext, data: Readonly<Record<string, unknown>>, cause: number): void {
+  const p = (ctx.world.entities['person'] ?? []).find((q) => q.id === data['person']);
+  const reason =
+    !p || p['status'] !== 'alive'
+      ? 'no such person alive'
+      : !illDef(ctx.content, data['ill'] as string)
+        ? 'no such illness'
+        : '';
+  const caught =
+    !reason &&
+    expose(ctx, p!, data['ill'] as string, 'by a test-mode order', [cause], {
+      sure: true,
+      shows: 0,
+    });
+  if (reason || !caught)
+    ctx.emit('command.refused', {
+      causes: [cause],
+      data: { kind: 'sicken', reason: reason || 'already ill, or over it lately' },
+    });
+}
+
 export const healthSystem: System = {
   id: 'health',
   every: 'hour',
@@ -56,10 +81,18 @@ export const healthSystem: System = {
     'health.died',
     'health.unburied',
     'health.buried',
+    'health.sick',
+    'health.spread',
+    'health.grave',
+    'health.passed',
   ],
-  tables: HEALTH_TABLES,
-  commands: { hurt: (ctx, command, cause) => hurt(ctx, command.data, cause) },
+  tables: { ...HEALTH_TABLES, ...SICK_TABLES, ...SOAP_TABLES },
+  commands: {
+    hurt: (ctx, command, cause) => hurt(ctx, command.data, cause),
+    sicken: (ctx, command, cause) => sicken(ctx, command.data, cause),
+  },
   run(ctx) {
+    sickHour(ctx);
     healHour(ctx);
     unburiedHour(ctx);
     buryAtDayEnd(ctx, clockAt(ctx.world.tick, ctx.content.calendar).hour);

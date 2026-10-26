@@ -195,6 +195,7 @@ describe('carpentry and furniture', () => {
       'markFell',
       'markStore',
       'hurt',
+      'sicken',
     ];
     const kinds = SYSTEMS.flatMap((s) => Object.keys(s.commands ?? {}));
     expect(kinds.filter((k) => !levers.includes(k) && !tools.includes(k))).toEqual([]);

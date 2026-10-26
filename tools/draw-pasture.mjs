@@ -104,6 +104,31 @@ function stubbleTile(p) {
   return c;
 }
 
+// The herb garden's bed (P5.7, `build.herb-bed`): dark dug earth inside a log edge, with three
+// rows of low leafy clumps flecked pale like the wild herbs.
+function herbBed(p) {
+  const c = canvas();
+  for (let y = 0; y < S; y++)
+    for (let x = 0; x < S; x++) c.put(x, y, noise(47, x >> 1, y) < 0.5 ? p['dirt dark'] : p.dirt);
+  for (let k = 0; k < S; k++) {
+    for (const [x, y] of [
+      [k, 0],
+      [k, S - 1],
+      [0, k],
+      [S - 1, k],
+    ])
+      c.put(x, y, (k >> 2) % 2 ? p['ui oak grain'] : p['ui oak light']);
+  }
+  for (const row of [7, 16, 25])
+    for (const col of [7, 16, 25]) {
+      c.disc(col, row, 3.4, p['grass dark']);
+      c.disc(col - 1, row - 1, 2.2, p.grass);
+      c.put(col - 1, row - 2, p['grass tip']);
+      c.put(col + 1, row, p.bone);
+    }
+  return c;
+}
+
 function meadowTile(p) {
   const c = canvas();
   for (let y = 0; y < S; y++)
@@ -217,5 +242,6 @@ export function drawPasture(p = readPalette()) {
   frames['pasture.stubble'] = stubbleTile(p).img;
   for (const n of [1, 2, 3]) frames[`pasture.rick.${n}`] = rick(p, n);
   frames['pasture.tuft'] = tuft(p);
+  frames['build.herb-bed'] = herbBed(p).img;
   return frames;
 }

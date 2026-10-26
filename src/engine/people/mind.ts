@@ -130,14 +130,9 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     if (!walking) carryBed(ctx, p);
     return;
   }
-  if (p['doing'] === 'eat') {
-    if (walking) return;
-    const item = foodHere(ctx, p, valueOf(ctx, p, 'food') <= life.seedAt);
-    if (item) eat(ctx, p, item);
-    p['doing'] = '';
-  }
   // The harvest-home supper (5B Bundle 4) is the evening's meal: after work, unless starving, it
-  // comes before eating alone, the jobs that run on past work and the evening's leisure.
+  // comes before eating alone (even on the way to it), the jobs that run on past work and the
+  // evening's leisure.
   const day = hoursOf(world, content, p.id);
   // Someone already on their way to it is waited for past bedtime, up to the supper's hard stop.
   const waited = p['doing'] === 'feast' ? HARD_STOP : 0;
@@ -146,6 +141,13 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   if (evening && valueOf(ctx, p, 'food') > life.seedAt && feasting(ctx, p)) {
     p['doing'] = 'feast';
     return;
+  }
+  // Out walking to eat alone when the supper is called, they turn for the supper instead (above).
+  if (p['doing'] === 'eat') {
+    if (walking) return;
+    const item = foodHere(ctx, p, valueOf(ctx, p, 'food') <= life.seedAt);
+    if (item) eat(ctx, p, item);
+    p['doing'] = '';
   }
   // A tamer sits far from the store, so goes back sooner (flock.json `tame.back`, herdtask.ts).
   const taming = p['job'] === content.flock.job && p['task'] === 'tame';
