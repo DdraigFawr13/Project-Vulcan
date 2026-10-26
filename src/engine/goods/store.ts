@@ -145,6 +145,7 @@ export function slotAmong(
   kind: string,
   count: number,
   from: Spot,
+  quality = 'plain',
 ): Spot | undefined {
   const size = stackSize(content, kind);
   // The stacks on each of `tiles`, in one pass over the items (this is hot: every load asks).
@@ -162,6 +163,8 @@ export function slotAmong(
     const fits = here.length
       ? here.length === 1 &&
         here[0]!['kind'] === kind &&
+        // Meals of another grade (P5.3) keep their own stack.
+        (here[0]!['quality'] ?? 'plain') === quality &&
         (here[0]!['count'] as number) + count <= size
       : true;
     if (!fits) continue;
@@ -181,6 +184,7 @@ export const depotSlot = (
   kind: string,
   count: number,
   from: Spot,
+  quality = 'plain',
 ): Spot | undefined => {
   // The nearest store of the kind first: a matching stack in a far one does not draw the load.
   const near = (d: EntityRow) =>
@@ -190,7 +194,7 @@ export const depotSlot = (
     );
   const depots = [...depotsFor(world, content, kind)].sort((a, b) => near(a) - near(b));
   for (const d of depots) {
-    const slot = slotAmong(world, content, depotTiles(d), kind, count, from);
+    const slot = slotAmong(world, content, depotTiles(d), kind, count, from, quality);
     if (slot) return slot;
   }
   return undefined;
@@ -204,9 +208,10 @@ export const slotFor = (
   kind: string,
   count: number,
   from: Spot,
+  quality = 'plain',
 ): Spot | undefined =>
-  depotSlot(world, content, kind, count, from) ??
-  slotAmong(world, content, storeOf(world), kind, count, from);
+  depotSlot(world, content, kind, count, from, quality) ??
+  slotAmong(world, content, storeOf(world), kind, count, from, quality);
 
 /** Each item kind's `good` (items.json), worked out once per content: `haveOf` is hot. */
 const goodCache = new WeakMap<EngineContent, Map<string, string | undefined>>();

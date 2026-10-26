@@ -73,6 +73,7 @@ export function layAround(
   at: Spot,
   made: number,
   trail = '',
+  quality = 'plain',
 ): number {
   const { world, content } = ctx;
   const map = world.map;
@@ -93,7 +94,7 @@ export function layAround(
         if (store && store['store'] !== storeKindOf(content, kind)?.id) continue;
         if (!canReach(content, map, at, { x, y, z: at.z })) continue;
         const n = Math.min(size, left);
-        layItem(world, { kind, count: n, x, y, z: at.z, made }, { trail });
+        layItem(world, { kind, count: n, x, y, z: at.z, made }, { trail, quality });
         left -= n;
       }
   return count - left;

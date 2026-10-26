@@ -31,6 +31,8 @@ export const GOODS_TABLES: Schemas = {
     worked: 'count',
     /** The `tool.worn` line once a held tool is worn and asks for a better one (P4.9), else 0. */
     worn: 'event',
+    /** Food's spoiling carried over to tomorrow, in millionths of one (keep spoil.ts, P5.12). */
+    rot: 'count',
   },
 };
 
@@ -68,6 +70,7 @@ export function layItem(
     trail: extra.trail ?? '',
     worked: 0,
     worn: 0,
+    rot: 0,
   });
 }
 

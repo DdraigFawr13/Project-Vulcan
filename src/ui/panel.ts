@@ -147,6 +147,7 @@ export class Panel {
         ? [
             ['store', `${tile.store.name.toLowerCase()}: ${tile.store.takes}`],
             ['holds', tile.store.holds],
+            ...(tile.store.spoiled ? [['spoiled', tile.store.spoiled]] : []),
           ]
         : []),
       ...standingFacts(tile),

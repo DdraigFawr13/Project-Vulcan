@@ -11,6 +11,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { hoursOf } from '../law/index.ts';
 import { bedOwnedBy } from '../build/index.ts';
 import { bankFire } from '../fire/index.ts';
+import { reachFrom } from '../paths/index.ts';
 import { claimBed } from './claim.ts';
 import { carryBed, movesIn } from './home.ts';
 import { working } from './jobs.ts';
@@ -64,24 +65,38 @@ const foodHere = (ctx: SystemContext, p: EntityRow, desperate: boolean): EntityR
 
 /** Sets off to the nearest food lying on the ground (food of last resort only when `desperate`),
  * or a cooked meal if it is no more than `work.cook.prefer` tiles further; false when there is
- * none to reach. */
+ * none to reach. When the nearest cannot be walked to (a store walled into a pocket), the nearest
+ * of what can is tried instead (5B Bundle 3: a band went hungry beside turnips it could reach). */
 function goEat(ctx: SystemContext, p: EntityRow, desperate: boolean): boolean {
-  const { x, y, z } = { x: p['x'] as number, y: p['y'] as number, z: p['z'] as number };
+  const best = nearestFood(ctx, p, desperate, () => true);
+  if (!best) return false;
+  if (walkTo(ctx, p, spotOf(best))) return true;
+  const reach = reachFrom(ctx.content, ctx.world.map, spotOf(p));
+  const next = nearestFood(ctx, p, desperate, (i) => reach(spotOf(i)));
+  return !!next && walkTo(ctx, p, spotOf(next));
+}
+
+/** The nearest food `ok` allows, or a cooked meal up to `work.cook.prefer` tiles further. */
+function nearestFood(
+  ctx: SystemContext,
+  p: EntityRow,
+  desperate: boolean,
+  ok: (i: EntityRow) => boolean,
+): EntityRow | undefined {
+  const { x, y, z } = spotOf(p);
   let best: EntityRow | undefined;
   let far = Infinity;
   let meal: EntityRow | undefined;
   let mealFar = Infinity;
   for (const i of itemsOf(ctx.world)) {
-    if (i['holder'] || !edible(ctx, i['kind'] as string, desperate)) continue;
+    if (i['holder'] || !edible(ctx, i['kind'] as string, desperate) || !ok(i)) continue;
     const d =
       Math.max(Math.abs((i['x'] as number) - x), Math.abs((i['y'] as number) - y)) +
       Math.abs((i['z'] as number) - z) * 100;
     if (d < far) [best, far] = [i, d];
     if (cooked(ctx, i) && d < mealFar) [meal, mealFar] = [i, d];
   }
-  if (meal && mealFar <= far + ctx.content.work.cook.prefer) best = meal;
-  if (!best) return false;
-  return walkTo(ctx, p, { x: best['x'] as number, y: best['y'] as number, z: best['z'] as number });
+  return meal && mealFar <= far + ctx.content.work.cook.prefer ? meal : best;
 }
 
 /** Lies down: on their own laid-out bedroll when there is a way to it, else where they stand;

@@ -3,6 +3,8 @@
 import type { EntityRow } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { changing } from './change.ts';
+
+export { takeUpChange } from './change.ts';
 import { tailoring, takeUpTailoring } from './tailor.ts';
 import { takeUpTanning, tanning } from './tan.ts';
 import { takeUpWeaving, weaving } from './weave.ts';

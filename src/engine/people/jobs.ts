@@ -3,9 +3,8 @@
 // level asks for, someone able to fell (jobs.json `fell`: its strength and skill) picks a tree
 // (a fallen log first, then the standing tree nearest the store, never close to the camp),
 // works it down and leaves the logs where it stood; anyone free carries what lies outside the
-// store into it, onto a matching stack. Quarrying (P3.1) is felling's twin for stone: boulders
-// broken up while the colony has less stone than it wants. Building is build.ts. Taking up
-// felling or quarrying and each tree felled or boulder broken are ledger lines; trips are not.
+// store into it, onto a matching stack. Quarrying (P3.1) is felling's twin for stone. Building is
+// build.ts. Taking up felling or quarrying and each tree felled or boulder broken are lines.
 import { houseName } from '../build/index.ts';
 import { raiseChunk } from '../map/index.ts';
 import { needOf } from '../needs/index.ts';
@@ -24,14 +23,13 @@ import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
 import { burying, takeUpBurial } from './burial.ts';
-import { takeUpChange } from './change.ts';
-import { TRADE_TAKE_UP, tradeWork } from './trades.ts';
+import { TRADE_TAKE_UP, takeUpChange, tradeWork } from './trades.ts';
 import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
-import { takeUpHearth } from './hearth.ts';
+import { coldHearth, hearthFirst, takeUpHearth } from './hearth.ts';
 import { takeUpTending, tending } from './tend.ts';
 import { furnishing, takeUpCarpentry } from './carpentry.ts';
 import { farming, takeUpFarming } from './farm.ts';
@@ -76,6 +74,10 @@ export const JOB_FIELDS = {
    * first fine-or-better piece (V-093), 0 until they make one. */
   making: 'text',
   fine: 'event',
+  /** Cooking (P5.3): the line of their first fine meal, 0 until they cook one; `lit` the work
+   * minutes left when they last worked at the fire, so a fire that went out mid-batch is seen. */
+  fineMeal: 'event',
+  lit: 'int',
   /** Herding: the hay carried to the rick, and the wild herd being tamed with the minutes sat
    * near it so far (a different herd starts again). */
   hay: 'count',
@@ -279,18 +281,19 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   return takeUp(ctx, p);
 }
 
-/** Chooses new work: a tree marked by a test-mode order first, then the Work sheet's kinds of
- * work in their own priority order (priority.ts): felling while wood is short, foraging while
- * food is, carrying, building (a house's site cleared first) and the rest. */
+/** Chooses new work: a test-mode marked tree, then changing clothes (trades.ts), then the Work
+ * sheet's kinds in their priority order (priority.ts), a cold room's hearth first. */
 function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   const { world } = ctx;
   if (takeUpMarked(ctx, p, false) || takeUpChange(ctx, p)) return true;
-  for (const job of jobsInOrder(world, ctx.content, p)) {
+  for (const job of hearthFirst(ctx, p, jobsInOrder(world, ctx.content, p))) {
     const before = p['took'];
     if (TAKE_UP[job]?.(ctx, p)) return true;
     // Taken up (a line said) and stopped at once: look again later, not at the next kind.
     if (p['took'] !== before) break;
   }
+  // Nothing else to do: carry in the food past its plate that would spoil out there.
+  if (takeUpHauling(ctx, p, true)) return true;
   p['job'] = '';
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;
@@ -366,6 +369,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   herd: takeUpHerding,
   build: (ctx, p) =>
     takeUpBurial(ctx, p) ||
+    (coldHearth(ctx) && takeUpHearth(ctx, p)) ||
     takeUpMarked(ctx, p, true) ||
     takeUpHearth(ctx, p) ||
     takeUpStation(ctx, p) ||

@@ -90,3 +90,14 @@ export interface ItemView {
   /** The line that made or laid it, for "why?". */
   made?: LedgerLine;
 }
+
+/** A store tile's rows (5B Bundle 1): its name, what it takes, how full, and its lines. */
+export interface StoreView {
+  name: string;
+  takes: string;
+  holds: string;
+  /** Food spoiled (P5.12): "this week so far 3 · weeks before 7, 11, 4". */
+  spoiled?: string;
+  made?: LedgerLine;
+  built?: LedgerLine;
+}

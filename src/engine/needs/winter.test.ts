@@ -64,9 +64,9 @@ describe('memories', () => {
     const memory = -5 * 3 * content.life.memory.weight;
     const expected = Math.max(0, Math.floor(sum / weights) + memory);
     expect(moodOf(w, b)!['value']).toBe(expected);
-    // They fade after their days.
+    // They fade after their days (meals eaten meanwhile leave memories of their own).
     step(w, sim, 6 * DAY);
-    expect(memoriesOf(w, b)).toEqual([]);
+    expect(memoriesOf(w, b).filter((m) => m['memory'] === 'cold-night')).toEqual([]);
   });
 });
 

@@ -4,6 +4,7 @@
 // The lowest wins and ties go in tile order, so the same seed gives the same town.
 import type { EngineContent, EntityRow, PartDef, SizeDef, WorldState } from '../core/index.ts';
 import { depotsOf, haveOf, itemsOf, storeOf } from '../goods/index.ts';
+import { withBuiltAll } from '../map/index.ts';
 import { reachFrom, type Spot } from '../paths/index.ts';
 import { DUG_LEVEL, digsFor } from './dug.ts';
 import { inRect, isTreeAt, wayFrom, wayTo, type Rect, type Site, type Way } from './way.ts';
@@ -224,6 +225,7 @@ export function siteFor(
     const out = outsideOf(site, site.door);
     const tiles = wayTo(way, out.y * width + out.x);
     if (tiles.some((i) => inRect(site, i % width, Math.floor(i / width)))) continue;
+    if (shutsOff(world, content, site, site.door, green)) continue;
     const extra = tiles.filter((i) => isTreeAt(world, content, i) && !site.trees.includes(i));
     return { ...site, trees: [...site.trees, ...extra] };
   }
@@ -362,4 +364,36 @@ export function chooseHouse(
     wall,
     why: `${word(wall)} walls, as ${good} is most plentiful and enough to finish it`,
   };
+}
+
+/** Whether a building's edge would cut the green off from ground beside it that it reaches now: a
+ * narrow gap between the edge and another fence or a boulder (ledger: a wood yard sealed the
+ * pasture's only gate, and the flock was never folded again; a house built across the granary's
+ * way in walled its door into a pocket, 5B Bundle 3). */
+export function shutsOff(
+  world: WorldState,
+  content: EngineContent,
+  rect: Rect,
+  door: Spot,
+  green: Spot,
+): boolean {
+  const map = world.map;
+  const ring = { x: rect.x - 1, y: rect.y - 1, w: rect.w + 2, h: rect.h + 2 };
+  const edge: number[] = [];
+  const beside: Spot[] = [];
+  for (let y = ring.y; y < ring.y + ring.h; y += 1)
+    for (let x = ring.x; x < ring.x + ring.w; x += 1) {
+      if (x < 0 || y < 0 || x >= map.width || y >= map.height) continue;
+      if (inRect(rect, x, y)) {
+        if (onEdge(rect, x, y) && !(x === door.x && y === door.y)) edge.push(y * map.width + x);
+      } else beside.push({ x, y, z: 0 });
+    }
+  const now = reachFrom(content, map, green);
+  const reached = beside.filter(now);
+  if (!reached.length) return false;
+  const wall = content.buildings.parts.findIndex((p) => p.kind === 'wall') + 1;
+  return withBuiltAll(map, edge, wall, () => {
+    const after = reachFrom(content, map, green);
+    return reached.some((s) => !after(s));
+  });
 }

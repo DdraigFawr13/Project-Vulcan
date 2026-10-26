@@ -29,10 +29,14 @@ export function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
   if (!def || !row) return;
   const gives = ctx.content.life.eat[item['kind'] as string] ?? 0;
   const [made, wasCooked] = [item['made'] as number, cooked(ctx, item)];
+  // A meal is remembered by its grade (P5.3): plain fare as before, good and fine more.
+  const grades = ctx.content.work.cook.grades;
+  const memory = (grades.find((g) => g.id === item['quality']) ?? grades[grades.length - 1]!)
+    .memory;
   if (ctx.content.life.lastResort.includes(item['kind'] as string)) saySeed(ctx, p, row);
   eatFrom(ctx, item, p);
-  // A cooked meal is remembered (V-090): `ate-well`, citing the batch's line.
-  if (wasCooked) addMemory(ctx, p.id, 'ate-well', made);
+  // A cooked meal is remembered (V-090), citing the batch's line.
+  if (wasCooked) addMemory(ctx, p.id, memory, made);
   tallyAdd(ctx, 'eaten', 1);
   changeNeed(ctx.content, row, gives);
   crossed(ctx, p, row, def);

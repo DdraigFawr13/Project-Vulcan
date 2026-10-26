@@ -78,6 +78,8 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-37** Readable at a glance: art reads at 32 px, colour is never the only signal, text uses plain words, and every alert names who, what and where.
 - **VR-38** Performance is a design constraint: the full map (150 by 150 by 5 levels) with about 30 colonists (V-027) holds 60 fps at 3x on the production build. A feature that breaks it is not done.
 - **VR-39** Determinism is sacred: engine code obeys V-006, and any new randomness gets its own named RNG stream.
+- **VR-70** Nothing built may seal what the green reaches (LESSONS x2: a wood yard sealed the pasture gate; a house sealed the granary door). Every siting of a store, house or other walled building runs `shutsOff` (build `site.ts`) before it is planned.
+- **VR-71** Carrying a surplus is a last-resort job (LESSONS x2: a log surplus kept the band hauling all year; a turnip heap past its plate stopped all building on anvil). Goods past their plate are hauled only by someone with nothing else to take up, after the Work-sheet loop; a year run counts unbuilt plans by day 200.
 
 ## 9. Lessons
 
