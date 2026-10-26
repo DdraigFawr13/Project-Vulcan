@@ -1,7 +1,8 @@
 // Food spoiling (P5.12, V-132): each midnight every food stack lying on a tile loses its item's
 // rate (`spoilPerDay`, else `spoilPerMonth` over a 28-day month), times where it lies (open ground,
 // the home store, a house floor, a walled store, below ground) and how warm its tile is (the day's
-// temperature there plus any fire's heat; below ground a steady `keep.below` degrees). Whole units
+// temperature there plus any fire's heat; below ground a steady `keep.below` degrees, a cellar's
+// too, its own store of `below` place). Whole units
 // are taken from the stack; the part of a unit left over is kept on the stack (`rot`, in
 // millionths) for the next day. Carried food does not spoil. What each store loses is counted and
 // said once a week (system.ts).
@@ -83,7 +84,7 @@ export const floorsOf = (world: WorldState, content: EngineContent): Set<number>
 /** The key a loss is counted under: a store of a kind's id, the home store (0) or the open (-1). */
 function keyOf(world: WorldState, i: EntityRow, place: Place): number {
   if (place === 'walled' || place === 'below') {
-    const d = depotAt(world, i['x'] as number, i['y'] as number, 0);
+    const d = depotAt(world, i['x'] as number, i['y'] as number, i['z'] as number);
     return d ? d.id : -1;
   }
   return place === 'store' ? 0 : -1;

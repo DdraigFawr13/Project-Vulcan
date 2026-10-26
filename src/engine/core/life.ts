@@ -147,7 +147,7 @@ export interface WorkDef {
     avoid: number;
     walk: number;
     why: string;
-    words: { sink: string; tunnel: string; mine: string; clay: string };
+    words: { sink: string; tunnel: string; mine: string; clay: string; cellar: string };
   };
   forage: {
     job: string;

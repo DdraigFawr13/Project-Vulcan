@@ -15,5 +15,6 @@
 {"id":"gold","name":"gold vein","kind":"vein","art":"vein.gold","yields":"gold-ore","amount":20,"density":{},"vein":{"level":4,"per10k":1.5,"size":[4,8],"near":0,"rocks":{"rock-wall":2}}},
 {"id":"silver","name":"silver vein","kind":"vein","art":"vein.silver","yields":"silver-ore","amount":20,"density":{},"vein":{"level":4,"per10k":2.5,"size":[5,10],"near":0,"rocks":{"slate":2}}},
 {"id":"gems","name":"gem pocket","kind":"vein","art":"vein.gems","yields":"gems","amount":20,"density":{},"vein":{"level":4,"per10k":1.5,"size":[3,5],"near":0,"rocks":{"rock-wall":2}}},
-{"id":"obsidian","name":"obsidian","kind":"vein","art":"vein.obsidian","yields":"obsidian","amount":20,"density":{},"vein":{"level":4,"per10k":3,"size":[6,12],"near":0,"rocks":{}}}
+{"id":"obsidian","name":"obsidian","kind":"vein","art":"vein.obsidian","yields":"obsidian","amount":20,"density":{},"vein":{"level":4,"per10k":3,"size":[6,12],"near":0,"rocks":{}}},
+{"id":"salt","name":"salt seam","kind":"vein","art":"vein.salt","yields":"salt","amount":20,"density":{},"vein":{"stain":true,"stainColour":"#e8e6dc","stainWord":"white","level":2,"per10k":3,"size":[6,12],"near":0,"rocks":{"limestone":2,"sandstone":2}}}
 ]

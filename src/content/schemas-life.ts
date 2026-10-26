@@ -137,7 +137,7 @@ export const LIFE_SCHEMAS = {
       avoid: count,
       walk: num({ min: 1 }),
       why: text,
-      words: obj({ sink: text, tunnel: text, mine: text, clay: text }),
+      words: obj({ sink: text, tunnel: text, mine: text, clay: text, cellar: text }),
     }),
     // Foraging (P2.9): the jobs.json job and the good it serves, minutes a bush takes at skill
     // `skilled`, bushes looked for within `reach` tiles of the store; a bush picked is ripe again

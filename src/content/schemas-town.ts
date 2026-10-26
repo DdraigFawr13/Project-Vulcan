@@ -98,6 +98,9 @@ export const TOWN_SCHEMAS = {
         from: text,
         to: text,
         eaten: opt(bool()),
+        // A store dug below its larder (keep/cellar.ts): never sited on the surface; its footprint
+        // is the larder's, one level down, and it takes its goods before the larder does.
+        below: opt(bool()),
       }),
     ),
   }),

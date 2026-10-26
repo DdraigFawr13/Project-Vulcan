@@ -30,24 +30,32 @@ export function noteWeek(
     if ((r['week'] as number) <= week - keep.history) removeEntity(world, 'spoilWeek', r.id);
 }
 
-const counted = (world: WorldState, kinds: readonly string[], walled: boolean): EntityRow[] =>
+/** `stores`: any store or the open, only walled stores, or the one store with that id. */
+type Where = 'any' | 'walled' | number;
+
+const counted = (world: WorldState, kinds: readonly string[], where: Where): EntityRow[] =>
   rows(world).filter(
-    (r) => kinds.includes(r['kind'] as string) && (!walled || (r['store'] as number) > 0),
+    (r) =>
+      kinds.includes(r['kind'] as string) &&
+      (where === 'any' || (where === 'walled' ? (r['store'] as number) > 0 : r['store'] === where)),
   );
 
-/** How many of `kinds` were lost over the kept weeks: at any store or in the open, or only at
- * walled stores. */
+/** How many of `kinds` were lost over the kept weeks: at any store or in the open, only at walled
+ * stores, or at one store. */
 export const lostOf = (
   world: WorldState,
   kinds: readonly string[],
-  stores: 'any' | 'walled' = 'any',
-): number =>
-  counted(world, kinds, stores === 'walled').reduce((n, r) => n + (r['count'] as number), 0);
+  stores: Where = 'any',
+): number => counted(world, kinds, stores).reduce((n, r) => n + (r['count'] as number), 0);
 
 /** The latest weekly line that lost one of `kinds`, if any. */
-export function lostLine(world: WorldState, kinds: readonly string[]): number | undefined {
+export function lostLine(
+  world: WorldState,
+  kinds: readonly string[],
+  stores: Where = 'any',
+): number | undefined {
   let best: EntityRow | undefined;
-  for (const r of counted(world, kinds, false))
+  for (const r of counted(world, kinds, stores))
     if (
       !best ||
       (r['week'] as number) > (best['week'] as number) ||

@@ -7,6 +7,7 @@ import { depotsOf, storeOf } from '../goods/index.ts';
 import type { Schemas } from '../entity/index.ts';
 import { removeEntity } from '../entity/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
+import { planCellar } from './cellar.ts';
 import { planHouse } from './house.ts';
 import { noteWeek } from './lost.ts';
 import { spoilDay } from './spoil.ts';
@@ -73,12 +74,13 @@ function sayWeek(ctx: SystemContext): void {
 export const keepSystem: System = {
   id: 'keep',
   every: 'day',
-  emits: ['keep.spoiled', 'keep.spoiledOpen', 'cure.housePlanned'],
+  emits: ['keep.spoiled', 'keep.spoiledOpen', 'cure.housePlanned', 'keep.cellarPlanned'],
   tables: KEEP_TABLES,
   run(ctx) {
     spoilDay(ctx);
     const day = Math.floor(ctx.world.tick / TICKS_PER_DAY);
     if (day > 0 && day % ctx.content.work.keep.week === 0) sayWeek(ctx);
     planHouse(ctx);
+    planCellar(ctx);
   },
 };

@@ -12,6 +12,8 @@ export interface KeepDef {
   history: number;
   /** A barrel cuts the rate of the food it covers to `times` of it; `holds` food a barrel. */
   barrel: { times: number; holds: number };
+  /** The cellar dug under a larder that loses `need` of `kinds` (keep/cellar.ts). */
+  cellar: { kinds: readonly string[]; need: number; why: string };
 }
 
 export interface CookDef {
@@ -60,7 +62,8 @@ export interface CureDef {
   fuelItem: string;
   minutes: number;
   skilled: number;
-  salt: { item: string; per: number; makes: string };
+  /** `want`: fresh meat and fish in the stores that make the mine seek salt; `why`: its reason. */
+  salt: { item: string; per: number; makes: string; want: number; why: string };
   smoked: string;
 }
 

@@ -27,6 +27,10 @@ export const KEEP = obj({
   // much food as `holds` barrels' worth.
   history: count,
   barrel: obj({ times: share, holds: num({ min: 1 }) }),
+  // The cellar (5B Bundle 3): when `need` of the `kinds` have spoiled at walled stores over the kept
+  // weeks and a larder has no cellar, one is dug under it; `why` is its reason ({count}). It keeps
+  // at `below` degrees and its place factor is `place.below`.
+  cellar: obj({ kinds: list(ref('items')), need: count, why: text }),
 });
 
 // Cooking (V-090): the jobs.json `job`, the `meal` item laid, the `fuel` item burnt (one a
@@ -89,7 +93,15 @@ export const CURE = obj({
   fuelItem: ref('items'),
   minutes: num({ min: 1 }),
   skilled: num({ min: 1 }),
-  salt: obj({ item: ref('items'), per: num({ min: 1 }), makes: ref('items') }),
+  // With a smokehouse, no salt in the stores and `want` fresh meat, game and fish there, the mine
+  // plans a shaft by the nearest `item` stain; `why` is its reason ({fresh}, {word}, {far}, {dir}).
+  salt: obj({
+    item: ref('items'),
+    per: num({ min: 1 }),
+    makes: ref('items'),
+    want: num({ min: 1 }),
+    why: text,
+  }),
   smoked: ref('items'),
 });
 

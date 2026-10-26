@@ -186,13 +186,16 @@ export const depotSlot = (
   from: Spot,
   quality = 'plain',
 ): Spot | undefined => {
-  // The nearest store of the kind first: a matching stack in a far one does not draw the load.
+  // The nearest store of the kind first: a matching stack in a far one does not draw the load. A
+  // cellar shares its larder's middle and keeps cooler, so it comes first of the two.
   const near = (d: EntityRow) =>
     Math.max(
       Math.abs((d['x'] as number) + ((d['w'] as number) >> 1) - from.x),
       Math.abs((d['y'] as number) + ((d['h'] as number) >> 1) - from.y),
     );
-  const depots = [...depotsFor(world, content, kind)].sort((a, b) => near(a) - near(b));
+  const depots = [...depotsFor(world, content, kind)].sort(
+    (a, b) => near(a) - near(b) || (b['z'] as number) - (a['z'] as number),
+  );
   for (const d of depots) {
     const slot = slotAmong(world, content, depotTiles(d), kind, count, from, quality);
     if (slot) return slot;

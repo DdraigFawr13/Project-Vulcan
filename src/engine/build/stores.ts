@@ -155,7 +155,8 @@ export function planStores(ctx: SystemContext, green: Spot): void {
   if (housesOf(world).some((h) => h['state'] !== 'built' && h['state'] !== 'sent')) return;
   const at = { x: home['x'] as number, y: home['y'] as number };
   const full = homeFull(ctx);
-  const kinds = [...def.kinds]
+  const kinds = def.kinds
+    .filter((k) => !k.below)
     .map((kind) => ({ kind, tiles: full ? homeTilesOf(ctx, kind.id) : 0 }))
     .sort((a, b) => b.tiles - a.tiles);
   for (const { kind, tiles } of kinds) {
