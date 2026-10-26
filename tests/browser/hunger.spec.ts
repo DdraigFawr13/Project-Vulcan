@@ -48,7 +48,9 @@ test('a hungry colonist\'s Food "why?" names the line that ate the last of the f
   // on the alert line, then for the hunger it causes (seed grain is eaten under the warning line
   // first, and a stone tool breaking stops the skip too).
   const foodGone = /ate the last of the band's food/;
-  for (let skips = 0; skips < 60 && !foodGone.test(await alertText(page)); skips++)
+  // The cart lasts about 70 days; 5B Bundle 2's thirst adds a few more stops on the way (tired,
+  // bored), so the loop allows 100.
+  for (let skips = 0; skips < 100 && !foodGone.test(await alertText(page)); skips++)
     await skipOnce();
   expect(await alertText(page)).toMatch(foodGone);
   // Then the first "is hungry" line, and that person's sheet: who gets hungry first depends on

@@ -20,8 +20,8 @@ export { bedSpot, builtHome, homeFor, householdOf, othersHome, sleepsIn } from '
 export { feastInHall, hallOf, mournInHall, whoseOf } from './homes.ts';
 export { roomAt, type Room } from './rooms.ts';
 export { atMidden, middensOf } from './midden.ts';
-export { courseNow, yieldAt } from './fieldsoil.ts';
-export { thirsty, tileYield } from './blight.ts';
+export { courseNow, meanSoil, yieldAt } from './fieldsoil.ts';
+export { farFromWater, thirsty, tileYield, wetDays } from './blight.ts';
 export { mucky, muckLeft, poorestTile, spreadMuck, takeLoad } from './soillife.ts';
 export { burialGround, burialsOf, freePlots, gravesOf, inBurial } from './burial.ts';
 export { housesOf, rectOf, type Rect } from './site.ts';

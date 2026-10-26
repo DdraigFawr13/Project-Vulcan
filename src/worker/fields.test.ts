@@ -74,6 +74,11 @@ describe('field views', () => {
     expect(field.name).toMatch(/ field$/);
     expect(field.harvest).toMatch(/^ripe in \d+ days?/);
     expect(field.frost).toContain('°C');
+    // 5B Bundle 2: soil, the rotation's next crops, blight and water, in words.
+    expect(field.soil).toMatch(/\d+ of 100/);
+    expect(field.next).toContain(', then ');
+    expect(field.blight).toMatch(/wet days? in the last 14|brown/);
+    expect(field.water).toMatch(/water/);
     expect(field.seed).toContain('Seed plate');
     expect(field.why).toContain('fertility');
     expect(field.sited?.type).toBe('field.sited');

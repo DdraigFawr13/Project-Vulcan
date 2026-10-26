@@ -1,4 +1,4 @@
-// A field tile's page (P4.7): crop, size, harvest, seed, frost, who is at it and why the colony
+// A field tile's page (P4.7, 5B Bundle 2): crop, size, soil, next crops, blight, water, harvest, seed, frost, who is at it and why the colony
 // laid it out there, then the lines behind it. Every value is words from the worker; nothing
 // here decides a rule (GAME-02) or picks a tile or a person (V-049).
 import type { LedgerLine, TileView } from '../worker/index.ts';
@@ -18,6 +18,10 @@ export function fieldFacts(tile: TileView): [string, string][] {
     ['crop', field.crop],
     ['field', field.size],
     ['why here', field.why],
+    ['soil', field.soil],
+    ['next', field.next],
+    ['blight', field.blight],
+    ['water', field.water],
     ['harvest', field.harvest],
     ['seed', field.seed],
     ['frost', field.frost],
