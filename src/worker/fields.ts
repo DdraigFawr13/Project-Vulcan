@@ -23,6 +23,7 @@ import {
 } from '../engine/index.ts';
 import type { GoodsView, LedgerLine, TileView } from './protocol.ts';
 import type { BuildView, FieldRow } from './protocol-build.ts';
+import { fieldCare } from './fieldcare.ts';
 
 const def = content.buildings.field;
 /** Fields that stand or are planned (not sent back). */
@@ -99,27 +100,41 @@ export function buildFields(
   };
 }
 
-/** The furrow frames for the map: planned and fallow ground, sown tiles, ripe crops by kind. Tiles
+/** The furrow frames for the map: planned and fallow ground, sown tiles, ripe crops by kind, blight. Tiles
  * sown on a planned or fallow field show sown; tiles reaped on a ripe one show fallow. */
 export function fieldFrames(world: WorldState): GoodsView['fields'] {
   const groups = new Map<string, number[]>();
   for (const f of liveFields(world)) {
     const state = f['state'] as string;
     const done = new Set(fieldDone(f));
+    const sick = new Set((f['blight'] as number[] | undefined) ?? []);
     for (const i of fieldTiles(f)) {
+      // Blighted tiles brown on a sown or ripe field until they are reaped (5B Bundle 2).
       const frame =
-        state === 'sown' || (state !== 'ripe' && done.has(i))
-          ? 'field.sown'
-          : state === 'ripe'
-            ? done.has(i)
-              ? 'field.fallow'
-              : `field.ripe.${f['crop'] as string}`
-            : `field.${state}`;
+        sick.has(i) && (state === 'sown' || (state === 'ripe' && !done.has(i)))
+          ? 'field.blight'
+          : state === 'sown' || (state !== 'ripe' && done.has(i))
+            ? 'field.sown'
+            : state === 'ripe'
+              ? done.has(i)
+                ? 'field.fallow'
+                : `field.ripe.${f['crop'] as string}`
+              : `field.${state}`;
       groups.set(frame, [...(groups.get(frame) ?? []), i]);
     }
   }
   return [...groups].map(([frame, tiles]) => ({ frame, tiles }));
 }
+
+/** What a farmer at a field is doing there: watering and mucking are its tasks (5B Bundle 2). */
+const doingOf = (p: EntityRow, state: string): string =>
+  p['task'] === 'water'
+    ? 'watering'
+    : p['task'] === 'muck'
+      ? 'carrying muck'
+      : state === 'ripe'
+        ? 'reaping'
+        : 'sowing';
 
 /** The field a surface tile belongs to, for its page. */
 export function tileField(
@@ -182,7 +197,8 @@ export function tileField(
       harvest: harvest[state] ?? '',
       seed,
       frost: frost[state] ?? '',
-      ...(who && { here: `${who['name'] as string}, ${state === 'ripe' ? 'reaping' : 'sowing'}` }),
+      ...fieldCare(world, f),
+      ...(who && { here: `${who['name'] as string}, ${doingOf(who, state)}` }),
       why: f['why'] as string,
       ...(lines.last && { last: lines.last }),
       ...(lines.took && { took: lines.took }),

@@ -164,9 +164,12 @@ function hourOf(
     const low = life.needs.find((n) => n.id === 'warmth')?.low ?? 0;
     return life.warmth.rise + Math.round(Math.max(0, low - value) * life.warmth.catchUp);
   }
-  if (id === 'recreation' && p['doing'] === 'relax')
+  // A drink gone for from their leisure (people drink.ts `stroll`) is a stroll, part of it (P5.2).
+  if (id === 'recreation' && (p['doing'] === 'relax' || (p['doing'] === 'drink' && p['stroll'])))
     return life.relax.gain + (company(world, content, p) ? life.relax.company : 0);
-  return -fall;
+  // Thirst falls slowly through the night (`asleepFall`, P5.2).
+  const slow = life.needs.find((n) => n.id === id)?.asleepFall;
+  return -(slow !== undefined && asleep(p) ? slow : fall);
 }
 
 /** What explains a need going low: the weather spell for cold, the room's building for beauty

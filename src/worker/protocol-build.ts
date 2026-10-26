@@ -138,6 +138,11 @@ export interface FieldView {
   seed: string;
   /** What a frost does to it. */
   frost: string;
+  /** 5B Bundle 2: its soil, the crops its rotation sows next, its blight and how near water it lies. */
+  soil: string;
+  next: string;
+  blight: string;
+  water: string;
   /** Who is sowing or reaping it now. */
   here?: string;
   /** The reason it lies there. */

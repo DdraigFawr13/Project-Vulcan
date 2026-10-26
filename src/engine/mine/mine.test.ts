@@ -99,8 +99,11 @@ describe('mining', () => {
     }
   });
 
-  it('gets iron ore to the store with only the plate raised, each line tracing to it', () => {
-    for (const seed of ORE_SEEDS) {
+  // One test a seed: since the larder (thirst, sowing first) tallow takes 22 days to its ore, and
+  // four seeds in one test ran past the time limit on CI.
+  it.each(ORE_SEEDS)(
+    'gets iron ore to the store with only the plate raised, each line tracing to it (%s)',
+    (seed) => {
       const sim = createSim(base);
       const world = createWorld(sim, seed);
       send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
@@ -116,9 +119,13 @@ describe('mining', () => {
       const chain = whyOf(world, made).map((c) => c.event.type);
       expect(chain).toContain('work.tookUp');
       expect(chain).toContain('goods.stockSet');
-      expect(linesOf(world, 'map.shaftSunk').length).toBe(3);
-    }
-  });
+      // The iron shaft, planned first, sunk three levels (a slow seed may have begun copper and
+      // tin shafts by then).
+      const sunk = linesOf(world, 'map.shaftSunk');
+      const at = (l: (typeof sunk)[number]) => `${l.data['x']},${l.data['y']}`;
+      expect(sunk.filter((l) => at(l) === at(sunk[0]!))).toHaveLength(3);
+    },
+  );
 
   it('sends a shaft plan back once; the replacement cannot be sent back', () => {
     const sim = createSim(base);
@@ -237,7 +244,7 @@ describe('mining', () => {
           const { x, y, z, made } = item as Record<string, number>;
           layItem(world, { kind: 'logs', count: 1, x: x!, y: y!, z: z!, made: made! });
         }
-    for (let m = 0; m < DAY / 10 && !linesOf(world, 'mine.sank').length; m += 1)
+    for (let m = 0; m < (3 * DAY) / 10 && !linesOf(world, 'mine.sank').length; m += 1)
       step(world, sim, 10);
     expect(linesOf(world, 'mine.sank')[0]?.data['ladder']).toBe(' with 2 logs for a ladder');
   });

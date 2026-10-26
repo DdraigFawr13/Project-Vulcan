@@ -24,6 +24,8 @@ import {
   tilesOf,
 } from './fields.ts';
 import { ringOf } from './ring.ts';
+import { clearBlight, tickBlight } from './blight.ts';
+import { drawSoil, tickSoil } from './soillife.ts';
 
 const list = (items: readonly string[]): string =>
   items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
@@ -44,6 +46,7 @@ export function finishSowing(ctx: SystemContext, f: EntityRow, cause: number): v
   f['done'] = [];
   f['state'] = 'sown';
   f['sown'] = ctx.world.tick;
+  Object.assign(f, clearBlight(), { dry: tilesOf(f).map(() => 0) });
   f['last'] = ctx.emit('field.sown', {
     causes: [cause, f['last'] as number],
     data: { crop: crop.name, tiles: tilesOf(f).length, ...placeOf(ctx.world, f) },
@@ -78,7 +81,9 @@ export function finishReaping(ctx: SystemContext, f: EntityRow, cause: number): 
   );
   // The harvest-home supper is eaten in the hall (P5.14).
   feastInHall(ctx, home);
+  drawSoil(ctx, f, crop.id, harvested);
   Object.assign(f, { state: 'fallow', crop: '', done: [], reapers: [], got: 0, kept: 0 });
+  Object.assign(f, clearBlight());
   f['last'] = harvested;
   if (f['leave']) leaveField(ctx, f, harvested);
 }
@@ -124,6 +129,8 @@ function clearFor(ctx: SystemContext, f: EntityRow, seed: number): void {
 export function tickFields(ctx: SystemContext): void {
   const { world, content } = ctx;
   const weather = world.systems['weather'];
+  tickSoil(ctx, fieldsOf(world));
+  tickBlight(ctx, fieldsOf(world));
   for (const f of [...fieldsOf(world)]) {
     const state = f['state'] as string;
     if (state === 'sown') {
@@ -133,7 +140,7 @@ export function tickFields(ctx: SystemContext): void {
           causes: [weather?.['spell'] ?? 0, f['last'] as number].filter((l) => l > 0),
           data: { crop: crop.name, tiles: tilesOf(f).length, ...placeOf(world, f) },
         });
-        Object.assign(f, { state: 'fallow', crop: '', done: [] });
+        Object.assign(f, { state: 'fallow', crop: '', done: [] }, clearBlight());
         if (f['leave']) leaveField(ctx, f, f['last'] as number);
       } else if (world.tick >= (f['sown'] as number) + crop.days * TICKS_PER_DAY) {
         f['state'] = 'ripe';

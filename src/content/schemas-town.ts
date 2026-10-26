@@ -1,10 +1,72 @@
-// Shapes of the town's ground: the ring, the stores and the roads (`buildings`, spread into
-// schemas-life.ts), and walking and footfall (`terrain`, spread into schemas-world.ts).
+// Shapes of the town's ground: the ring, the stores, fields, the well and the roads (`buildings`,
+// spread into schemas-life.ts), and walking and footfall (`terrain`, spread into schemas-world.ts).
 import { bool, list, num, obj, opt, ref } from './schema';
-import { text, texts } from './schema-fields';
+import { count, id, text, texts } from './schema-fields';
 
 export const TOWN_SCHEMAS = {
   town: obj({ ring: num({ min: 1 }), step: num({ min: 1 }), most: num({ min: 1 }) }),
+  // Fields (P4.7, V-089; see core/fielddef.ts for what each dial does).
+  field: obj({
+    name: text,
+    seed: ref('items'),
+    weigh: obj({ fertility: count, water: count, near: count, tries: num({ min: 1 }) }),
+    start: num({ min: 1, max: 4 }),
+    perMouth: num({ min: 1 }),
+    reach: num({ min: 1 }),
+    water: count,
+    good: count,
+    least: num({ min: 1 }),
+    crops: list(
+      obj({
+        id,
+        name: text,
+        item: ref('items'),
+        sow: list(text),
+        days: num({ min: 1 }),
+        yield: num({ min: 1 }),
+        frost: num(),
+        draw: num({ min: -100, max: 100 }),
+      }),
+    ),
+    // Phase 5B Bundle 2 (V-130): see core/fielddef.ts.
+    rotation: list(text),
+    soil: obj({
+      base: count,
+      most: num({ min: 1 }),
+      rest: count,
+      winter: obj({ month: text, gain: count }),
+      muck: obj({ month: text, gain: count, midden: count, fold: count }),
+    }),
+    // Blight and dry spells (V-130): see core/fielddef.ts.
+    blight: obj({
+      span: num({ min: 1, max: 30 }),
+      start: num({ min: 1 }),
+      spreadAt: num({ min: 1 }),
+      oneIn: num({ min: 1 }),
+      repeatIn: num({ min: 1 }),
+      spread: num({ min: 0, max: 100 }),
+      most: num({ min: 1, max: 100 }),
+      early: num({ min: 1, max: 100 }),
+    }),
+    dry: obj({
+      weather: text,
+      near: count,
+      loss: count,
+      cap: num({ min: 0, max: 100 }),
+      tiles: num({ min: 1 }),
+      minutes: num({ min: 1 }),
+    }),
+  }),
+  // P5.2 (V-131): the well. Over the last `days` days, once `from` have passed, a mean of more than
+  // `walk` minutes a person a day spent walking to drink (or the water most drunk from frozen)
+  // plans one well of furniture kind `kind` within `near` tiles of the first hearth.
+  well: obj({
+    kind: text,
+    walk: num({ min: 1 }),
+    days: num({ min: 1 }),
+    from: num({ min: 1 }),
+    near: num({ min: 1 }),
+  }),
   // 5B Bundle 1 (V-129): stores by kind, sited from need (build/stores.ts). Carrying is kept for
   // `days` days (goods/trips.ts); a kind gets a store when the best spot within `near` of
   // the green saves `save` tiles of walking a day, or when the home store is full; at most `most`

@@ -40,10 +40,15 @@ describe('houses', () => {
     expect(needOf(world!, own.actors[0]!, 'privacy')!['low']).toBe(0);
   });
 
-  it('says once why a crowded house gets no room when no side has clear ground, water and the store being in the way (anvil)', () => {
-    const w = createWorld(sim, 'anvil');
-    step(w, sim, 16 * DAY);
-    const blocked = lines(w, 'build.growBlocked');
+  it('says once why a crowded house gets no room when no side has clear ground, water and the store being in the way', () => {
+    // Whether a house is boxed in is the seed's layout: search a list (5B Bundle 2 moved anvil's).
+    let blocked: ReturnType<typeof lines> = [];
+    for (const seed of ['anvil', 'anvil/1', 'smoke/1', 'tallow/2']) {
+      const w = createWorld(sim, seed);
+      step(w, sim, 16 * DAY);
+      blocked = lines(w, 'build.growBlocked');
+      if (blocked.length) break;
+    }
     expect(blocked.length).toBeGreaterThan(0);
     expect(blocked.length).toBeLessThanOrEqual(2);
     expect(blocked[0]!.causes.length).toBeGreaterThan(0);

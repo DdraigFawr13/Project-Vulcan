@@ -1,5 +1,6 @@
 // What the needs, goods and people's daily round read from content: Vulcan's life file (P2.2)
 // and the forked items list. Need values run from 0 to `scale`; rates are per game hour.
+import type { FieldDef } from './fielddef.ts';
 import type { RoadsDef, StoresDef } from './ground.ts';
 
 export interface NeedDef {
@@ -15,6 +16,7 @@ export interface NeedDef {
   weight: number;
   /** Its warning line is notable once a person a day (V-092). */
   quiet?: boolean;
+  asleepFall?: number; // falls this much an hour asleep, not `fall`
 }
 
 export interface LifeDef {
@@ -40,6 +42,8 @@ export interface LifeDef {
   eat: Readonly<Record<string, number>>;
   /** Kinds eaten only when hungry with nothing else to reach (seed grain, P4.7). */
   lastResort: readonly string[];
+  /** A person eats a kind of last resort only with Food at or under this. */
+  seedAt: number;
   /** Mood words, highest first. */
   mood: readonly { word: string; at: number }[];
   cart: {
@@ -152,8 +156,8 @@ export interface WorkDef {
     /** Herb clumps (Bundle 6): the plate's good, the months they grow, days to grow back. */
     herbs: { good: string; months: readonly string[]; regrowDays: number };
   };
-  /** Farming (P4.7): minutes to sow or reap a tile at skill `skilled`. */
-  farm: { job: string; sow: number; reap: number; skilled: number };
+  /** Farming (P4.7): minutes to sow or reap a tile, or to spread a load of muck on one at skill `skilled`. */
+  farm: { job: string; sow: number; reap: number; muck: number; skilled: number };
   /** Hunting (P5.4a): stalking within `near` tiles, a kill chance (per cent) every `every` minutes
    * of `chance` + `perLevel` per level of skill, at most `most`; `snare` species are snared, not
    * stalked, one every `every` minutes; prints under `follow.hours` old are followed `ahead`
@@ -254,6 +258,7 @@ export interface BuildingsDef {
   town: { ring: number; step: number; most: number };
   /** 5B Bundle 1 (V-129): stores by kind, sited from need (build/stores.ts). */
   stores: StoresDef;
+  well: { kind: string; walk: number; days: number; from: number; near: number };
   field: FieldDef;
   rooms: RoomsDef;
   furniture: FurnitureDef;
@@ -316,6 +321,7 @@ export interface FurnitureKind {
    * material, where it stands. */
   job?: string;
   material?: string;
+  also?: { material: string; cost: number };
 }
 
 /** Fire and fuel (work.json `fire`, P3.6). */
@@ -365,32 +371,4 @@ export interface MemoryDef {
   text: string;
   /** How many of it can be held at once (one when absent). */
   stacks?: number;
-}
-
-/** A crop (P4.7): sown in the named months, ripe `days` days later, lost to a frost under `frost`. */
-export interface CropDef {
-  id: string;
-  name: string;
-  item: string;
-  sow: readonly string[];
-  days: number;
-  yield: number;
-  frost: number;
-}
-
-/** What colonists lay out as fields (P4.7, V-051, V-089). */
-export interface FieldDef {
-  name: string;
-  /** The item sown, one a tile (P4.7). */
-  seed: string;
-  /** Siting: a block's score weights (`near` is per tile past the ring's edge), and how many of
-   * the best are tried for a way in (fieldsite.ts). */
-  weigh: { fertility: number; water: number; near: number; tries: number };
-  start: number;
-  perMouth: number;
-  reach: number;
-  water: number;
-  good: number;
-  least: number;
-  crops: readonly CropDef[];
 }

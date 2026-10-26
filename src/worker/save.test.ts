@@ -147,6 +147,18 @@ describe('saves', () => {
   // its internal element kind, and `map.tileCauses` flips kind while the tick runs, depending on
   // how warm the optimiser is from the test files run earlier in the worker (`isolate: false`).
   // Measured whole, the save grew by an extra 84 kB in about 1 run of 4.
+  it('loads a save made once the band has laid out a field and gone to drink (5B Bundle 2)', () => {
+    // Every column of a new row must be set: a field laid out without one broke every save.
+    const sim = createSim(content);
+    const world = createWorld(sim, 'smoke/2');
+    // Saved the minute the field is laid out, before any daily tick fills a missing column in.
+    while (!world.entities['field']?.length && world.tick < TICKS_PER_DAY) step(world, sim, 1);
+    expect(world.entities['field']?.length).toBeGreaterThan(0);
+    expect(
+      checkSave(structuredClone(saveOf(world, contentHash)), contentHash, content, sim.tables),
+    ).toEqual(world);
+  });
+
   it('stores nothing for a level until it is reached', () => {
     const fresh = createWorld(sim, 'save-test');
     const bytes = () => serialize(fresh.map.levels).length;

@@ -16,7 +16,9 @@ import { marksOf, raiseStock } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { tileTemperature } from '../weather/index.ts';
+import { clearBlight } from './blight.ts';
 import { chooseField } from './fieldsite.ts';
+import { courseNow, meanSoil } from './fieldsoil.ts';
 import { dirFrom, FIELD_KIND, wantOf } from './houses.ts';
 
 export const FIELD_TABLES: Schemas = {
@@ -29,7 +31,11 @@ export const FIELD_TABLES: Schemas = {
    * replaced one sent back; `leave` the town-ring line that marks it to be left to grass after
    * its next harvest; `got` and `kept` the harvest laid so far (the rest, and what was kept as
    * seed); `reapers` the people who reaped it; `noSeed` the season (year * 4 + season) the
-   * no-seed alert was last said; `at` the tile its lines name (its first tile when sited). */
+   * no-seed alert was last said; `at` the tile its lines name (its first tile when sited);
+   * `course` its place in the rotation (fieldsoil.ts); `prev` the last two crops it bore,
+   * `rested` the month (year * months + month + 1) its rest was last said; `blight` the tiles
+   * blighted, `dry` the dry days each tile has lost (parallel to `tiles`), `watered` the tiles
+   * watered today, `cut` the per cent grown when it was cut early (blight.ts). */
   field: {
     crop: 'text',
     state: 'text',
@@ -47,6 +53,14 @@ export const FIELD_TABLES: Schemas = {
     reapers: 'ints',
     noSeed: 'count',
     at: 'int',
+    course: 'int',
+    prev: 'text',
+    rested: 'int',
+    blight: 'ints',
+    dry: 'ints',
+    watered: 'ints',
+    cut: 'count',
+    wline: 'event',
   },
 };
 
@@ -64,10 +78,15 @@ export const cropOf = (content: EngineContent, id: string) =>
   content.buildings.field.crops.find((c) => c.id === id);
 
 /** The crop that may be sown on field `f` now: the one it already has, if this is still a month
- * to sow it in; else the first crop (content order) with this month to sow. */
+ * to sow it in; else its rotation's (fieldsoil.ts), none while its soil is under `soil.rest`;
+ * with no field, the first crop (content order) with this month to sow. */
 export function cropNow(world: WorldState, content: EngineContent, f?: EntityRow) {
   const month = content.calendar.monthNames[clockAt(world.tick, content.calendar).month] ?? '';
   const crops = content.buildings.field.crops;
+  if (f && !f['crop']) {
+    const pick = courseNow(content, f, month);
+    return pick && meanSoil(world, f) >= content.buildings.field.soil.rest ? pick.crop : undefined;
+  }
   const own = f && f['crop'] ? cropOf(content, f['crop'] as string) : undefined;
   return own
     ? own.sow.includes(month)
@@ -174,6 +193,7 @@ export function planFields(ctx: SystemContext, green: Spot, causes: number[], se
   addEntity(world, 'field', {
     ...{ crop: '', state: 'plan', tiles: site.tiles, done: [], sown: 0, line, last: line },
     ...{ took: 0, why, sent, leave: 0, got: 0, kept: 0, reapers: [], noSeed: 0 },
+    ...{ course: 0, prev: '', rested: 0, wline: 0, ...clearBlight() },
     at: site.tiles[0]!,
   });
   raiseStock(ctx, content.buildings.field.seed, content.buildings.field.name.toLowerCase(), line);

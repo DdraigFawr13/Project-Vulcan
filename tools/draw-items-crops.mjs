@@ -1,5 +1,6 @@
-// The P4.7 `items` icons (tools/draw-items.mjs): turnips, seed grain and the worn wool cloak (a
-// settler's cloak lies on no tile, but the frame is there for the store and the item page).
+// The P4.7 `items` icons (tools/draw-items.mjs): turnips, seed grain, the worn wool cloak (a
+// settler's cloak lies on no tile, but the frame is there for the store and the item page) and,
+// since 5B Bundle 2, oats, beans and cabbages.
 import { noise } from './draw-nature.mjs';
 import { surface } from './draw-items-surface.mjs';
 
@@ -20,6 +21,44 @@ export function cropItems(p) {
     turnip(11, 21);
     turnip(21, 21);
     turnip(16, 14);
+  });
+  // 5B Bundle 2: oats in a loose heap, a pile of dried beans, three cabbage heads.
+  icon('item.oats', (s) => {
+    // Three nodding stalks over the heap, oats' loose heads hanging to one side.
+    for (const x of [11, 16, 21]) {
+      s.line(x, 20, x + 1, 9, p['straw dark']);
+      for (const [dx, dy] of [
+        [2, 10],
+        [3, 12],
+        [2, 14],
+        [-1, 11],
+      ])
+        s.put(x + dx, dy, p['sand light']);
+    }
+    s.ell(16, 21, 10, 5, p['sand dark'], p.sand, p['straw dark']);
+    for (let k = 0; k < 22; k++) {
+      const x = 8 + Math.floor(noise(13, k, 1) * 17);
+      const y = 17 + Math.floor(noise(13, k, 2) * 7);
+      s.put(x, y, k % 2 ? p['sand light'] : p['straw light']);
+    }
+  });
+  icon('item.beans', (s) => {
+    s.ell(16, 21, 10, 5, p['dirt'], p['dirt light'], p['dirt dark']);
+    for (let k = 0; k < 16; k++) {
+      const x = 8 + Math.floor(noise(17, k, 1) * 16);
+      const y = 17 + Math.floor(noise(17, k, 2) * 7);
+      s.put(x, y, p['sand dark']);
+      s.put(x + 1, y, k % 3 ? p['leaf litter light'] : p.bone);
+    }
+  });
+  icon('item.cabbages', (s) => {
+    const head = (cx, cy) => {
+      s.ell(cx, cy, 5, 4.5, p.willow, p['willow light'], p['willow dark']);
+      s.ell(cx, cy - 1, 2.5, 2, p['birch leaf light']);
+    };
+    head(11, 21);
+    head(21, 21);
+    head(16, 14);
   });
   icon('item.seed', (s) => {
     s.ell(16, 22, 9, 4, p['dirt dark']);

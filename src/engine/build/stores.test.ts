@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { depotsOf, insideDepot, itemsOf, storeKindOf } from '../goods/index.ts';
 import { allLines, createSim, createWorld, greenOf, step, whyOf } from '../index.ts';
+import { reachFrom, walkAt } from '../paths/index.ts';
 
 const sim = createSim(content);
 const DAY = 1440;
@@ -42,5 +43,28 @@ describe('stores by kind', () => {
     );
     expect(inside.length).toBeGreaterThan(0);
     for (const i of inside) expect(storeKindOf(content, i['kind'] as string)?.id).toBe(kind.id);
+  }, 30000);
+
+  it('never sites a store whose edge shuts off ground beside it, such as a pasture gate', () => {
+    // ledger: the wood yard once went up a tile from the pasture fence, between two boulders, and
+    // its edge sealed the pasture's only gate; the flock was never folded again.
+    const world = createWorld(sim, 'ledger');
+    const wood = () => depotsOf(world).find((d) => d['store'] === 'wood');
+    while (wood()?.['state'] !== 'built' && world.tick < 40 * DAY) step(world, sim, DAY);
+    expect(wood()?.['state']).toBe('built');
+    const map = world.map;
+    const reach = reachFrom(content, map, greenOf(world));
+    const pasture = world.entities['pasture']![0]!;
+    for (const gate of [pasture['gate'], pasture['foldGate']] as number[]) {
+      const [x, y] = [gate % map.width, Math.floor(gate / map.width)];
+      const sides = [
+        [x + 1, y],
+        [x - 1, y],
+        [x, y + 1],
+        [x, y - 1],
+      ].filter(([sx, sy]) => walkAt(content, map, 0, sy! * map.width + sx!) > 0);
+      expect(sides.length).toBeGreaterThan(0);
+      for (const [sx, sy] of sides) expect(reach({ x: sx!, y: sy!, z: 0 })).toBe(true);
+    }
   }, 30000);
 });

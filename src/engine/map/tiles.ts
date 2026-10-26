@@ -155,14 +155,25 @@ export function setBuilt(
 /** What `check` says with `part` built on surface tile (x, y) for its length only; the tile is
  * then as it was. For asking whether a part would cut a way, never for building it. */
 export function withBuilt<T>(map: MapState, x: number, y: number, part: number, check: () => T): T {
-  const i = y * map.width + x;
-  const was = map.built[i]!;
-  map.built[i] = part;
-  raiseChunk(map, x, y);
+  return withBuiltAll(map, [y * map.width + x], part, check);
+}
+
+/** `withBuilt` for many surface tiles (indices) at once: a whole edge before it is planned. */
+export function withBuiltAll<T>(
+  map: MapState,
+  tiles: readonly number[],
+  part: number,
+  check: () => T,
+): T {
+  const was = tiles.map((i) => map.built[i]!);
+  const raise = () =>
+    tiles.forEach((i) => raiseChunk(map, i % map.width, Math.floor(i / map.width)));
+  for (const i of tiles) map.built[i] = part;
+  raise();
   try {
     return check();
   } finally {
-    map.built[i] = was;
-    raiseChunk(map, x, y);
+    tiles.forEach((i, k) => (map.built[i] = was[k]!));
+    raise();
   }
 }

@@ -1,6 +1,9 @@
 [
   {"id":"grain","name":"grain","good":"food","per":0.002976190476190476,"kind":"food","spoilPerMonth":0.006},
   {"id":"turnips","name":"turnips","good":"food","per":0.002976190476190476,"kind":"food","spoilPerMonth":0.05},
+  {"id":"oats","name":"oats","good":"food","per":0.002976190476190476,"kind":"food","spoilPerMonth":0.006},
+  {"id":"beans","name":"beans","good":"food","per":0.002976190476190476,"kind":"food","spoilPerMonth":0.05},
+  {"id":"cabbages","name":"cabbages","good":"food","per":0.002976190476190476,"kind":"food","spoilPerMonth":0.05},
   {"id":"seed","name":"seed grain","good":"seed","per":0.002976190476190476,"kind":"seed","spoilPerMonth":0.006},
   {"id":"fish","name":"fish","good":"food","per":0.002976190476190476,"kind":"food","spoilPerMonth":0.25},
   {"id":"meat","name":"meat","good":"food","per":0.002976190476190476,"kind":"food","spoilPerMonth":0.25},

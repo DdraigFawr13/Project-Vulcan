@@ -23,6 +23,7 @@ import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
 import { planHomes } from './homes.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
 import { planCampfire, planRoomHearths } from './hearths.ts';
+import { planWell, WELL_TABLES } from './well.ts';
 import { planStations } from './metalsite.ts';
 import { STATION_TABLES } from './station.ts';
 import { planBench } from './wants.ts';
@@ -146,6 +147,7 @@ export const buildSystem: System = {
     'metal.clampPlanned',
     ...['town.ringWidened', 'field.needed', 'field.noGround', 'field.sited', 'field.sentBack'],
     ...['field.ripe', 'field.frostKilled', 'field.noSeed', 'field.sown', 'field.leftToGrass'],
+    ...['field.rests', 'field.soil', 'field.muckReady', 'field.blight'],
     ...['build.storeSited', 'build.storeBuilt'],
     ...['pasture.needed', 'pasture.sited', 'pasture.sentBack', 'pasture.noGround', 'pasture.built'],
     ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
@@ -170,6 +172,10 @@ export const buildSystem: System = {
     homeTried: 0,
     // P5.10: the tick the colony last looked for a stretch of road to lay.
     roadTried: 0,
+    // Phase 5B Bundle 2: the game day (1 + its index) the soil was last worked, and the loads of muck left.
+    ...{ soilDay: 0, muck: 0 },
+    // Blight: the game day it was last worked, the wet days of the last window as bits, and 1 if yesterday was dry.
+    ...{ blightDay: 0, wetBits: 0, wasDry: 0 },
   },
   refs: [
     ...['nobody', 'need', 'noGround', 'ringLine', 'fieldNeed', 'fieldNoGround', 'smithyNoGround'],
@@ -186,6 +192,7 @@ export const buildSystem: System = {
     ...BURIAL_TABLES,
     ...MIDDEN_TABLES,
     ...ROAD_TABLES,
+    ...WELL_TABLES,
   },
   commands: {
     placeBuilding: (ctx, command, cause) => placeBuilding(ctx, command.data, cause),
@@ -228,6 +235,7 @@ export const buildSystem: System = {
     planBench(ctx);
     planSmithy(ctx, green);
     planRoomHearths(ctx);
+    planWell(ctx, green);
     planStations(ctx, green);
     // P5.6, P5.8: a sickroom once enough lie hurt; a burial ground at the first death.
     planSickroom(ctx, green);

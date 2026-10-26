@@ -11,6 +11,7 @@ export {
   setBuilt,
   setTile,
   withBuilt,
+  withBuiltAll,
 } from './tiles.ts';
 export { auraAt } from './aura.ts';
 export { tread, walksADay, wearStage } from './wear.ts';
