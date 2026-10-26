@@ -9,6 +9,7 @@ import type { CultureDef, NamesDef, RegionDef } from './region.ts';
 import type { FlockDefs } from './flock.ts';
 import type { WildDefs } from './wild.ts';
 import type { StrangersDefs } from './strangers.ts';
+import type { LampDefs } from './lamp.ts';
 
 /** The named RNG streams (docs/ARCHITECTURE.md "RNG"). A system draws only from its own. */
 export const STREAMS = [
@@ -367,7 +368,7 @@ export interface CalendarDef {
 }
 
 /** The content the engine core reads. The worker passes the content layer's `content`. */
-export interface EngineContent extends PeopleDefs, WildDefs, FlockDefs, StrangersDefs {
+export interface EngineContent extends PeopleDefs, WildDefs, FlockDefs, StrangersDefs, LampDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */
   events: readonly { id: string; template: string; notable?: Readonly<Record<string, string>> }[];

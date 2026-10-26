@@ -197,7 +197,8 @@ function chooseLoad(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   // Goods on a planned house's tiles are carried off whatever the Stock level (clearing.ts).
   const clearing = planTiles(world);
   for (const i of itemsOf(world)) {
-    if (i['holder'] || taken.has(i.id)) continue;
+    // Kept with the cart (the band's candles) stays there.
+    if (i['holder'] || taken.has(i.id) || i['state'] === 'kept') continue;
     const at = spotOf(i);
     const marked = at.z === 0 && clearing.has(at.y * world.map.width + at.x);
     // Offal is carried to the midden and nowhere else; a midden sited, and not already on it.

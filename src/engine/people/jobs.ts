@@ -20,6 +20,8 @@ import {
   unmark,
   wantOf,
 } from '../goods/index.ts';
+import { isDark, lit } from '../lamp/index.ts';
+import { afterDusk, workableInDark } from './dusk.ts';
 import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
@@ -202,8 +204,11 @@ function shortOf(
 export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boolean {
   const { world, content } = ctx;
   const map = world.map;
+  // P5.13: in the work hours, by the light this work needs (outdoor work stops at dusk, the finer
+  // trades need a candle burning in their room). Asked only for the work they are at.
+  const can = (job: string) => hours && lit(ctx, p, job);
   // P5.4a: hunting and fishing end at dusk, wherever they have got to.
-  if (!hours && (p['job'] === 'hunt' || p['job'] === 'fish')) {
+  if ((p['job'] === 'hunt' || p['job'] === 'fish') && !can(p['job'] as string)) {
     endHunt(p);
     p['path'] = [];
   }
@@ -211,19 +216,19 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (herding(ctx, p, hours)) return true;
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
-  if (p['job'] === 'build' && hours && building(ctx, p)) return true;
-  if (p['job'] === 'mine' && hours && mining(ctx, p)) return true;
-  if (p['job'] === 'farm' && hours && farming(ctx, p)) return true;
-  if (p['job'] === 'hunt' && hours && hunting(ctx, p)) return true;
-  if (p['job'] === 'fish' && hours && fishing(ctx, p)) return true;
-  if (p['job'] === 'carpentry' && hours && furnishing(ctx, p)) return true;
-  if (p['job'] === 'hearth' && hours && furnishing(ctx, p)) return true;
+  if (p['job'] === 'build' && can('build') && building(ctx, p)) return true;
+  if (p['job'] === 'mine' && can('mine') && mining(ctx, p)) return true;
+  if (p['job'] === 'farm' && can('farm') && farming(ctx, p)) return true;
+  if (p['job'] === 'hunt' && can('hunt') && hunting(ctx, p)) return true;
+  if (p['job'] === 'fish' && can('fish') && fishing(ctx, p)) return true;
+  if (p['job'] === 'carpentry' && can('carpentry') && furnishing(ctx, p)) return true;
+  if (p['job'] === 'hearth' && can('hearth') && furnishing(ctx, p)) return true;
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
-  if (p['job'] === 'cook' && hours && cooking(ctx, p)) return true;
-  if (p['job'] === 'station' && hours && stationing(ctx, p)) return true;
-  if (p['job'] === 'charcoal' && hours && burning(ctx, p)) return true;
-  if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
-  if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
+  if (p['job'] === 'cook' && can('cook') && cooking(ctx, p)) return true;
+  if (p['job'] === 'station' && can('station') && stationing(ctx, p)) return true;
+  if (p['job'] === 'charcoal' && can('charcoal') && burning(ctx, p)) return true;
+  if (p['job'] === 'smelt' && can('smelt') && smelting(ctx, p)) return true;
+  if (p['job'] === 'smith' && can('smith') && smithing(ctx, p)) return true;
   // P5.6, P5.8: a burial is seen through once begun; dressing is work hours'.
   if (p['job'] === 'bury' && burying(ctx, p)) return true;
   // A dressing not finished by the end of work is left for whoever takes it up next.
@@ -239,6 +244,8 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
     return true;
   }
   if (!hours) return false;
+  // After dusk only work that can be done in the dark or by light is taken up (P5.13).
+  if (isDark(content, world.tick) && spotOf(p).z === 0) return afterDusk(ctx, p, takeUp);
   const target = p['target'] as number;
   const g = gatherOf(content, p['job']);
   if (g && target >= 0 && sourceAt(world, content, target, g)) {
@@ -279,10 +286,11 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
 /** Chooses new work: a tree marked by a test-mode order first, then the Work sheet's kinds of
  * work in their own priority order (priority.ts): felling while wood is short, foraging while
  * food is, carrying, building (a house's site cleared first) and the rest. */
-function takeUp(ctx: SystemContext, p: EntityRow): boolean {
-  const { world } = ctx;
-  if (takeUpMarked(ctx, p, false)) return true;
-  for (const job of jobsInOrder(world, ctx.content, p)) {
+function takeUp(ctx: SystemContext, p: EntityRow, dark = false): boolean {
+  const { world, content } = ctx;
+  if (!dark && takeUpMarked(ctx, p, false)) return true;
+  for (const job of jobsInOrder(world, content, p)) {
+    if (dark && !workableInDark(ctx, job)) continue;
     const before = p['took'];
     if (TAKE_UP[job]?.(ctx, p)) return true;
     // Taken up (a line said) and stopped at once: look again later, not at the next kind.

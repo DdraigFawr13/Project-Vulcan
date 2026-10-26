@@ -27,6 +27,7 @@ import {
 // Test-only fixtures: a system that rolls its dice every hour and a lever with no game meaning.
 const fixtureContent: EngineContent = {
   calendar: content.calendar,
+  lamp: content.lamp,
   terrain: content.terrain,
   biomes: content.biomes,
   features: content.features,

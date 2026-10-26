@@ -103,6 +103,8 @@
 {"id":"fire.built","importance":2,"template":"{name} laid {what} {where}."},
 {"id":"fire.lit","importance":2,"template":"{name} lit the fire {where}: {why}."},
 {"id":"fire.out","importance":2,"template":"The fire {where} went out: {why}."},
+{"id":"lamp.lit","importance":1,"template":"{name} lit a {candle} in {where} to work at the {at} after dusk."},
+{"id":"lamp.dark","importance":2,"template":"Dusk fell on {where} with no light: {why}. {name} left the {at} till morning."},
 {"id":"fire.banked","importance":1,"template":"{name} banked the fire {where} for the night."},
 {"id":"fire.unbanked","importance":1,"template":"The banked fire {where} burns up again at dawn."},
 {"id":"work.tookUpCooking","importance":1,"template":"{name} took up cooking at the fire {where}: {have} of the {want} meals wanted for tomorrow."},

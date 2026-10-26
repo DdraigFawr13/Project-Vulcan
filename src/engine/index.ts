@@ -4,6 +4,7 @@ import { buildSystem } from './build/index.ts';
 import { calendarSystem } from './calendar/index.ts';
 import { fireSystem } from './fire/index.ts';
 import { flockSystem } from './flock/index.ts';
+import { lampSystem } from './lamp/index.ts';
 import { goodsSystem } from './goods/index.ts';
 import { healthSystem } from './health/index.ts';
 import { mapSystem } from './map/index.ts';
@@ -115,6 +116,7 @@ export {
 } from './health/index.ts';
 export { SHAFT_STATES } from './mine/index.ts';
 export { fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
+export { daylightAt, litRooms } from './lamp/index.ts';
 export { shaftFor, shaftsOf } from './mine/index.ts';
 export {
   cloakOf,
@@ -260,6 +262,7 @@ export const SYSTEMS: readonly System[] = [
   buildSystem,
   mineSystem,
   fireSystem,
+  lampSystem,
   needsSystem,
   lawSystem,
   calendarSystem,

@@ -50,13 +50,13 @@ export function goodsOf(world: WorldState): GoodsView {
     y: r['y'] as number,
     z: r['z'] as number,
   });
-  // Free tools are kept with the cart, on its tile (restOf): they ride in it, so the map draws the
-  // cart alone there and the inspector lists them.
+  // Free tools and the band's candles are kept with the cart, on its tile (restOf): they ride in
+  // it, so the map draws the cart alone there and the inspector lists them.
   const cart = itemsOf(world).find((i) => i['kind'] === content.life.cart.kind);
   const inCart = (i: { [k: string]: unknown }) =>
     !!cart &&
     i !== cart &&
-    !!content.items.find((x) => x.id === i['kind'])?.tool &&
+    (!!content.items.find((x) => x.id === i['kind'])?.tool || i['state'] === 'kept') &&
     i['x'] === cart['x'] &&
     i['y'] === cart['y'] &&
     i['z'] === cart['z'];

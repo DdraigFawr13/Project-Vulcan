@@ -8,6 +8,7 @@ import { itemsAt, itemsOf } from '../goods/index.ts';
 import { armOut } from '../health/index.ts';
 import { needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { isDark } from '../lamp/index.ts';
 import { hoursOf } from '../law/index.ts';
 import { bedOwnedBy } from '../build/index.ts';
 import { bankFire } from '../fire/index.ts';
@@ -160,7 +161,11 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     p['doing'] = 'work';
     return;
   }
-  const leisure = hour >= day.workTo || valueOf(ctx, p, 'recreation') < seekOf(ctx, 'recreation');
+  // After dusk, with no work the dark allows, the rest of the working day is free time (P5.13).
+  const leisure =
+    hour >= day.workTo ||
+    isDark(content, world.tick) ||
+    valueOf(ctx, p, 'recreation') < seekOf(ctx, 'recreation');
   p['doing'] = leisure ? 'relax' : '';
   wander(ctx, p);
 }
