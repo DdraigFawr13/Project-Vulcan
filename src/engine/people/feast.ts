@@ -8,6 +8,7 @@ import { clockAt, type EntityRow } from '../core/index.ts';
 import { hoursOf } from '../law/index.ts';
 import { itemsOf } from '../goods/index.ts';
 import { isDown } from '../health/index.ts';
+import { reachFrom } from '../paths/index.ts';
 import { addMemories } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { eat } from './eat.ts';
@@ -114,6 +115,14 @@ export function feasting(ctx: SystemContext, p: EntityRow): boolean {
     return true;
   }
   if (p['doing'] === 'feast' && (p['path'] as number[]).length) return true;
-  const to = place.tiles[p.id % place.tiles.length]!;
-  return walkTo(ctx, p, { x: to % width, y: Math.floor(to / width), z: 0 });
+  // Their own place at the table, else the next free one they can get to (a wall, the hearth or
+  // water may stand on some of the tiles round a fire).
+  const reach = reachFrom(ctx.content, world.map, here);
+  const n = place.tiles.length;
+  for (let k = 0; k < n; k += 1) {
+    const to = place.tiles[(p.id + k) % n]!;
+    const spot = { x: to % width, y: Math.floor(to / width), z: 0 };
+    if (reach(spot)) return walkTo(ctx, p, spot);
+  }
+  return false;
 }
