@@ -86,17 +86,23 @@ export function storeTile(
 export function keptNote(world: WorldState, good: string): string | undefined {
   const counts = (i: EntityRow) =>
     i['kind'] === good || content.items.find((d) => d.id === i['kind'])?.good === good;
-  const places: string[] = [];
-  for (const d of depotsOf(world).filter((r) => r['state'] === 'built')) {
-    const n = depotTiles(d).filter((t) =>
-      itemsAt(world, t['x'] as number, t['y'] as number, 0).some(counts),
-    ).length;
-    if (n) places.push(`the ${kindOf(d).name} (${n} tile${n > 1 ? 's' : ''})`);
-  }
-  const n = storeOf(world).filter((t) =>
-    itemsAt(world, t['x'] as number, t['y'] as number, t['z'] as number).some(counts),
-  ).length;
-  if (n) places.push(`the home store (${n} tile${n > 1 ? 's' : ''})`);
+  // Two stores of one kind (two larders) are counted together.
+  const tiles = new Map<string, number>();
+  const add = (name: string, n: number) => n && tiles.set(name, (tiles.get(name) ?? 0) + n);
+  for (const d of depotsOf(world).filter((r) => r['state'] === 'built'))
+    add(
+      kindOf(d).name,
+      depotTiles(d).filter((t) =>
+        itemsAt(world, t['x'] as number, t['y'] as number, 0).some(counts),
+      ).length,
+    );
+  add(
+    'home store',
+    storeOf(world).filter((t) =>
+      itemsAt(world, t['x'] as number, t['y'] as number, t['z'] as number).some(counts),
+    ).length,
+  );
+  const places = [...tiles].map(([name, n]) => `the ${name} (${n} tile${n > 1 ? 's' : ''})`);
   if (!places.length) return undefined;
   const list =
     places.length < 2 ? places[0]! : `${places.slice(0, -1).join(', ')} and ${places.at(-1)}`;

@@ -65,6 +65,8 @@ export interface WorksView {
   doing?: { who: string; text: string; why?: number } | undefined;
   /** Its lines, labelled "Built", "Planned", "Waiting". */
   lines: { label: string; line: LedgerLine }[];
+  /** The mill (5B Bundle 4): its id, for its one Send back while nothing on it is built. */
+  back?: number;
 }
 
 /** One step of an item's "Made from": the words before a tile button, the button, and the rest. */

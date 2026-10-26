@@ -42,8 +42,10 @@ export class Orders {
         ? { house: arg as number }
         : kind === 'sendBackShaft'
           ? { shaft: arg as number }
-          : { x, y, ...(kind === 'placeBuilding' && arg !== undefined && { part: arg }) };
-    this.send({ type: 'command', tick, kind, data });
+          : kind === 'sendBackMill'
+            ? { mill: arg as number }
+            : { x, y, ...(kind === 'placeBuilding' && arg !== undefined && { part: arg }) };
+    this.send({ type: 'command', tick, kind: kind === 'sendBackMill' ? 'sendBack' : kind, data });
     this.send({ type: 'inspect', x, y, z });
   }
 
