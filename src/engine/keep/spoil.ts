@@ -1,7 +1,8 @@
 // Food spoiling (P5.12, V-132): each midnight every food stack lying on a tile loses its item's
 // rate (`spoilPerDay`, else `spoilPerMonth` over a 28-day month), times where it lies (open ground,
 // the home store, a house floor, a walled store, below ground) and how warm its tile is (the day's
-// temperature there plus any fire's heat; below ground a steady `keep.below` degrees). Whole units
+// temperature there plus any fire's heat; below ground a steady `keep.below` degrees, a cellar's
+// too, its own store of `below` place). Whole units
 // are taken from the stack; the part of a unit left over is kept on the stack (`rot`, in
 // millionths) for the next day. Carried food does not spoil. What each store loses is counted and
 // said once a week (system.ts).
@@ -49,7 +50,22 @@ export function keptAt(world: WorldState, content: EngineContent, i: EntityRow):
   return tileTemperature(content, world.map, floor, at) + heatAt(world, content, at);
 }
 
-/** A stack's loss a day as a share, where it lies now. */
+const caskOf = (world: WorldState, x: number, y: number, z: number, field: string): number =>
+  ((world.entities['cask'] ?? []).find((c) => c['x'] === x && c['y'] === y && c['z'] === z)?.[
+    field
+  ] as number | undefined) ?? 0;
+
+/** The barrels on a store tile (cooper.ts), 0 for none. */
+export const barrelsAt = (world: WorldState, x: number, y: number, z: number): number =>
+  caskOf(world, x, y, z, 'barrels');
+
+/** The pots on a store tile (potter.ts), 0 for none. */
+export const potsAt = (world: WorldState, x: number, y: number, z: number): number =>
+  caskOf(world, x, y, z, 'pots');
+
+/** A stack's loss a day as a share, where it lies now. Barrels under it cut the rate of as much
+ * of it as `keep.barrel.holds` a barrel covers, to `keep.barrel.times` of it; grain, oats and beans
+ * (`potter.kinds`) take pots instead, `potter.holds` a pot, to `potter.times`. */
 export function rateOf(
   world: WorldState,
   content: EngineContent,
@@ -61,7 +77,15 @@ export function rateOf(
   const place = content.work.keep.place[placeOf(world, i, floors)];
   // A cooked meal is made to be eaten tomorrow: its rate is its own, wherever it lies.
   if (content.items.find((d) => d.id === i['kind'])?.cooked) return base;
-  return base * place * warmthTimes(content, keptAt(world, content, i));
+  const at: [number, number, number] = [i['x'] as number, i['y'] as number, i['z'] as number];
+  const pots = content.work.potter;
+  const potted = pots.kinds.includes(i['kind'] as string);
+  const { times, holds } = potted ? pots : content.work.keep.barrel;
+  const n = potted ? potsAt(world, ...at) : barrelsAt(world, ...at);
+  const covered = n ? Math.min(1, (holds * n) / (i['count'] as number)) : 0;
+  return (
+    base * place * warmthTimes(content, keptAt(world, content, i)) * (1 - (1 - times) * covered)
+  );
 }
 
 /** House floor tiles (rooms of built houses), for `placeOf`. */
@@ -71,7 +95,7 @@ export const floorsOf = (world: WorldState, content: EngineContent): Set<number>
 /** The key a loss is counted under: a store of a kind's id, the home store (0) or the open (-1). */
 function keyOf(world: WorldState, i: EntityRow, place: Place): number {
   if (place === 'walled' || place === 'below') {
-    const d = depotAt(world, i['x'] as number, i['y'] as number, 0);
+    const d = depotAt(world, i['x'] as number, i['y'] as number, i['z'] as number);
     return d ? d.id : -1;
   }
   return place === 'store' ? 0 : -1;

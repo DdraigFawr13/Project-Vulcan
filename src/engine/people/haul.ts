@@ -6,8 +6,9 @@ import type { EntityRow } from '../core/index.ts';
 import {
   depotAt,
   depotsFor,
-  storeKindOf,
+  depotTakes,
   depotSlot,
+  depotsOf,
   growSpot,
   growStore,
   inHomeStore,
@@ -105,7 +106,7 @@ const indoors = (ctx: SystemContext, at: Spot): boolean =>
 /** In a store of another kind (true), of its own kind (false), or in none (undefined). */
 function astray(ctx: SystemContext, kind: string, at: Spot): boolean | undefined {
   const d = depotAt(ctx.world, at.x, at.y, at.z);
-  return d && d['store'] !== storeKindOf(ctx.content, kind)?.id;
+  return d && !depotTakes(ctx.content, d, kind);
 }
 
 /** Goods lying where a house or room is planned (build/clearing.ts), or in a store of another
@@ -202,6 +203,19 @@ function chooseLoad(ctx: SystemContext, p: EntityRow, spare: boolean): EntityRow
       );
     return slots.get(key)!;
   };
+  // Food in a larder is carried down to its cellar once it has room (not back up: only a slot
+  // below counts).
+  const cool = new Map<string, boolean>();
+  const cellared = depotsOf(world).some((d) => d['z'] !== 0);
+  const cooler = (i: EntityRow, at: Spot) => {
+    if (!cellared || at.z !== 0) return false;
+    const key = `${i['kind']}:${i['count']}`;
+    if (!cool.has(key)) {
+      const slot = depotSlot(world, content, i['kind'] as string, i['count'] as number, from);
+      cool.set(key, slot !== undefined && slot.z > 0);
+    }
+    return cool.get(key)!;
+  };
   const enough = storedEnough(world, content);
   const keep = content.work.keep;
   // Past its plate a good lying on a room's floor (a carpenter's spare logs) is carried out all the
@@ -229,7 +243,7 @@ function chooseLoad(ctx: SystemContext, p: EntityRow, spare: boolean): EntityRow
     if (d >= far && d >= farSpare) continue;
     // In a store of its kind it stays; in another's (logs of the site's own trees) it goes out.
     const stray = astray(ctx, i['kind'] as string, at);
-    if (stray === false) continue;
+    if (stray === false && !cooler(i, at)) continue;
     // In the home store: only to be carried over to a store of its kind. Past its plate, a good
     // lies where it was made (LESSONS: carried, a surplus kept the band hauling all year).
     let plain = true;

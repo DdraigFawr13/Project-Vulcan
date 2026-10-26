@@ -206,6 +206,12 @@ const VEINS = {
     accent: 'gem red',
     dark: 'slate line',
   },
+  salt: {
+    seed: 481,
+    cols: ['floor light', 'bone', 'snow light'],
+    accent: 'snow light',
+    dark: 'gravel dark',
+  },
   obsidian: {
     seed: 471,
     cols: ['darkness', 'ink', 'slate light'],

@@ -41,6 +41,9 @@ const slowFiles = [
   'src/engine/map/levels.test.ts',
   // Stores by kind (5B Bundle 1): a run to the first store built and filled.
   'src/engine/build/stores.test.ts',
+  // Salt and the cellar (5B Bundle 3): runs of 20 to 60 days with miners digging.
+  'src/engine/mine/salt.test.ts',
+  'src/engine/keep/cellar.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).

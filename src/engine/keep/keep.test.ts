@@ -6,7 +6,7 @@ import { addEntity } from '../entity/index.ts';
 import { layItem } from '../goods/index.ts';
 import { allLines, createSim, createWorld, itemsOf } from '../index.ts';
 import { contextFor } from '../sim/system.ts';
-import { floorsOf, keepSystem, placeOf, rateOf } from './index.ts';
+import { floorsOf, keepSystem, lostOf, placeOf, rateOf } from './index.ts';
 
 const sim = createSim(content);
 const DAY = 1440;
@@ -79,5 +79,26 @@ describe('keeping food', () => {
     expect(stored[0]!.causes).toEqual([1]);
     const open = allLines(w).filter((e) => e.type === 'keep.spoiledOpen');
     expect(open.some((e) => /berries/.test(e.data['what'] as string))).toBe(true);
+  });
+
+  it('keeps the last keep.history weeks of what was lost, for lostOf', () => {
+    const { w } = bare();
+    const { startX: x, startY: y } = w.map;
+    lay(w, 'fish', 200, x + 7, y + 1);
+    lay(w, 'berries', 200, x - 8, y);
+    const ctx = contextFor(w, sim, keepSystem);
+    w.systems['weather']!['temp'] = 15;
+    for (let d = 1; d <= 42; d += 1) {
+      w.tick = d * DAY;
+      keepSystem.run!(ctx);
+    }
+    const weeks = (w.entities['spoilWeek'] ?? []).map((r) => r['week'] as number);
+    expect(new Set(weeks).size).toBe(content.work.keep.history);
+    expect(Math.max(...weeks)).toBe(6);
+    expect(Math.min(...weeks)).toBe(6 - content.work.keep.history + 1);
+    expect(lostOf(w, ['fish'], 'walled')).toBeGreaterThan(0);
+    expect(lostOf(w, ['berries'], 'walled')).toBe(0);
+    expect(lostOf(w, ['berries'])).toBeGreaterThan(0);
+    expect(lostOf(w, ['fish', 'berries'])).toBe(lostOf(w, ['fish']) + lostOf(w, ['berries']));
   });
 });

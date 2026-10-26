@@ -6,7 +6,7 @@ import { sinkShaftAt } from '../map/index.ts';
 import { shaftsOf } from '../mine/index.ts';
 import type { EngineContent, EntityRow } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { stackOf } from './build.ts';
+import { reachableStacks, stackOf } from './build.ts';
 import { nameOf, practiseMining, start, stop } from './minetask.ts';
 import { goBeside, same, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
@@ -15,6 +15,30 @@ import { walkTo } from './walk.ts';
 export function ladderOf(content: EngineContent): { kind: string; count: number } | undefined {
   const first = Object.entries(content.work.mine.ladder)[0];
   return first ? { kind: first[0], count: first[1] } : undefined;
+}
+
+/** Whether the logs for the ladder can be had: what `p` holds and the stacks they can reach make
+ * up its count. When they do not, `mine.noLadder` says so once for each change of the plate. */
+export function laddered(
+  ctx: SystemContext,
+  p: EntityRow,
+  metal: string,
+  ladder: { kind: string; count: number },
+  plate: number | undefined,
+): boolean {
+  const held = loadOf(ctx.world, p.id);
+  const have =
+    (held?.['kind'] === ladder.kind ? (held['count'] as number) : 0) +
+    reachableStacks(ctx, p, ladder.kind).reduce((n, s) => n + (s.item['count'] as number), 0);
+  if (have >= ladder.count) return true;
+  const mark = `noLadder-${metal}`;
+  if (ctx.state[mark] !== (plate ?? 0))
+    ctx.emit('mine.noLadder', {
+      causes: plate ? [plate] : [],
+      data: { metal, logs: ladder.count },
+    });
+  ctx.state[mark] = plate ?? 0;
+  return false;
 }
 
 /** Sinking a shaft a level: fetch the ladder for the first, stand by (or in) the shaft, work the

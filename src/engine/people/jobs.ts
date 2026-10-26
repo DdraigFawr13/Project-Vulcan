@@ -1,11 +1,8 @@
 // Work (P2.4): nobody is told what to do (V-015). In working hours a free person looks at what
-// the colony wants and takes something up themselves: while it has less wood than its stock
-// level asks for, someone able to fell (jobs.json `fell`: its strength and skill) picks a tree
-// (a fallen log first, then the standing tree nearest the store, never close to the camp),
-// works it down and leaves the logs where it stood; anyone free carries what lies outside the
-// store into it, onto a matching stack. Quarrying (P3.1) is felling's twin for stone: boulders
-// broken up while the colony has less stone than it wants. Building is build.ts. Taking up
-// felling or quarrying and each tree felled or boulder broken are ledger lines; trips are not.
+// the colony wants and takes something up themselves: under the wood stock level, someone able to
+// fell (jobs.json `fell`) picks a tree (a fallen log first, then the standing one nearest the
+// store, never close to the camp) and leaves the logs where it stood; anyone free carries what
+// lies outside the store into it. Quarrying is felling's twin for stone. Taking up work is a line.
 import { houseName } from '../build/index.ts';
 import { raiseChunk } from '../map/index.ts';
 import { needOf } from '../needs/index.ts';
@@ -28,6 +25,7 @@ import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
+import { larderWork, LARDER_TAKE_UP } from './larder.ts';
 import { MILL_TAKE_UP, millWork } from './mill.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
 import { coldHearth, hearthFirst, takeUpHearth } from './hearth.ts';
@@ -49,11 +47,11 @@ import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
 /** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
-const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
+const HOLDS = ['station', 'charcoal', 'smelt', 'smith', 'cure', 'cooper', 'potter'];
 
 export const JOB_FIELDS = {
-  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
-   * `charcoal`, `smelt`, `station` (the smelter being built), `mill`, `bake` or '' (none). */
+  /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`, `charcoal`, `smelt`, `station` (a smelter or smokehouse being built),
+   * `cure`, `cooper`, `potter`, `mill`, `bake` or '' (none). */
   job: 'text',
   /** The tile being felled or quarried, or the item going to be fetched; -1 for none. */
   target: 'int',
@@ -226,6 +224,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'cook' && hours && cooking(ctx, p)) return true;
   if ((p['job'] === 'mill' || p['job'] === 'bake') && hours && millWork(ctx, p)) return true;
   if (p['job'] === 'station' && hours && stationing(ctx, p)) return true;
+  if (hours && larderWork(ctx, p)) return true;
   if (p['job'] === 'charcoal' && hours && burning(ctx, p)) return true;
   if (p['job'] === 'smelt' && hours && smelting(ctx, p)) return true;
   if (p['job'] === 'smith' && hours && smithing(ctx, p)) return true;
@@ -376,6 +375,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
     takeUpBuilding(ctx, p),
   tend: takeUpTending,
   cook: takeUpCooking,
+  ...LARDER_TAKE_UP,
   ...MILL_TAKE_UP,
   carpentry: takeUpCarpentry,
   quarry: (ctx, p) => takeUpGathering(ctx, p, gatherOf(ctx.content, 'quarry')!),

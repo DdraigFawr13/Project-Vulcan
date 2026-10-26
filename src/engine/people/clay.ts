@@ -1,16 +1,18 @@
 // Digging clay for a wall plan that waits for it (P4.1, V-096): from the nearest known clay tile on
 // level 1 that someone can get beside (build `digsFor`, the rule a house counts clay by).
-import { digsFor, planPart, plansOf } from '../build/index.ts';
+import { digsFor, kilnOf, planPart, plansOf } from '../build/index.ts';
 import type { EntityRow } from '../core/index.ts';
 import { haveOf } from '../goods/index.ts';
 import { pack, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { takenBy, type Task } from './minetask.ts';
+import { clayWanted } from './potter.ts';
 import { people, spotOf } from './spots.ts';
 
 /** The wall plan waiting longest for a good the ground gives (a part's material that a terrain
  * kind digs, not stone: clay in the content) that the colony has none of, if any, with that good
- * and what it still needs of it across the plans. */
+ * and what it still needs of it across the plans; else the kiln, when its pots and bricks want
+ * more clay than the stores hold. */
 function clayNeed(ctx: SystemContext, p: EntityRow) {
   const { world, content } = ctx;
   const dug = new Set(
@@ -31,13 +33,21 @@ function clayNeed(ctx: SystemContext, p: EntityRow) {
     if (!first && wants[0]) [first, good] = [plan, wants[0].good];
     need += wants.filter((w) => w.good === good).reduce((n, w) => n + w.left, 0);
   }
-  if (!first) return undefined;
+  const kiln = kilnOf(world);
+  const wanted = kiln && !first ? clayWanted(ctx) : 0;
+  if (!first && !wanted) return undefined;
   const coming = people(world).filter(
     (q) => q.id !== p.id && q['job'] === 'mine' && q['task'] === 'clay',
   ).length;
-  const per = content.terrain.kinds.find((k) => k.digs?.item === good)?.digs?.count ?? 0;
-  const have = haveOf(world, content, good) + coming * per;
-  return have < need ? { plan: first, good, have, need } : undefined;
+  const clay = first ? good : content.work.potter.clayItem;
+  const per = content.terrain.kinds.find((k) => k.digs?.item === clay)?.digs?.count ?? 0;
+  const have = haveOf(world, content, clay) + coming * per;
+  // A wall plan waiting for clay comes first; else the kiln's pots and bricks want it.
+  if (first)
+    return have < need
+      ? { plan: first, good, have, need, what: planPart(content, first).name }
+      : undefined;
+  return have < wanted ? { plan: kiln!, good: clay, have, need: wanted, what: 'kiln' } : undefined;
 }
 
 /** Digging clay for a wall plan, from the nearest known clay tile on level 1 that can be reached. */
@@ -62,7 +72,7 @@ export function clayWork(ctx: SystemContext, p: EntityRow): Task | undefined {
   if (best === undefined) return undefined;
   return {
     kind: 'clay',
-    what: planPart(content, need.plan).name,
+    what: need.what,
     plan: need.plan.id,
     target: best,
     minutes: content.work.mine.dig,

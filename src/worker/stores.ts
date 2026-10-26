@@ -64,7 +64,7 @@ export function storeTile(
       ...(made && { made }),
     };
   }
-  const d = z === 0 ? depotsOf(world).find((r) => insideDepot(r, x, y)) : undefined;
+  const d = depotsOf(world).find((r) => r['z'] === z && insideDepot(r, x, y));
   if (!d) return undefined;
   const kind = kindOf(d);
   const tiles = depotTiles(d);
@@ -93,7 +93,7 @@ export function keptNote(world: WorldState, good: string): string | undefined {
     add(
       kindOf(d).name,
       depotTiles(d).filter((t) =>
-        itemsAt(world, t['x'] as number, t['y'] as number, 0).some(counts),
+        itemsAt(world, t['x'] as number, t['y'] as number, t['z'] as number).some(counts),
       ).length,
     );
   add(

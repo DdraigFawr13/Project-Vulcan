@@ -55,7 +55,13 @@ function sideOf(green: Spot, to: Spot): string {
 }
 
 /** Free ground for a `size` by `size` station with its top-left at (x, y). */
-function freeBlock(world: WorldState, content: EngineContent, x: number, y: number, size: number) {
+export function freeBlock(
+  world: WorldState,
+  content: EngineContent,
+  x: number,
+  y: number,
+  size: number,
+) {
   for (let dy = 0; dy < size; dy += 1)
     for (let dx = 0; dx < size; dx += 1) {
       const fields = (world.entities['field'] ?? []).filter((f) => f['state'] !== 'sent');
