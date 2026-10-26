@@ -80,6 +80,7 @@ export function validateContent(files: Files): string[] {
       ...checkHouse(files),
       ...checkCrops(files),
       ...checkHaul(files),
+      ...checkLamp(files),
       ...checkWild(files),
       ...checkFlock(files),
       ...checkStrangers(files),
@@ -281,6 +282,14 @@ function checkHaul(files: Files): string[] {
         ]
       : [],
   );
+}
+
+// The chandler's job (lamp.json) is a job in jobs.json (V-135).
+function checkLamp(files: Files): string[] {
+  const job = (files['lamp'] as { chandler: { job: string } }).chandler.job;
+  return (files['jobs'] as { id: string }[]).some((j) => j.id === job)
+    ? []
+    : [`lamp.chandler.job: "${job}" is not in jobs`];
 }
 
 // The wild valley (src/engine/wild): every month it names is a calendar month, a species has art

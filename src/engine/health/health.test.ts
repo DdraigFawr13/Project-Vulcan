@@ -13,7 +13,7 @@ import {
 } from '../index.ts';
 import { inStore, itemsOf, layItem, storeOf } from '../goods/index.ts';
 import { memoriesOf } from '../needs/index.ts';
-import { bodyOf, dailyChance, openWounds } from './index.ts';
+import { bodyOf, dailyChance, openWounds, woundsOf } from './index.ts';
 import { festerChance } from './heal.ts';
 
 const DAY = 1440;
@@ -71,6 +71,31 @@ describe('health', () => {
     expect(festerChance({ world, content: game }, row({ herbed: world.tick - DAY }))).toBe(10);
     // Three days on, the herbs have worn off.
     expect(festerChance({ world, content: game }, row({ herbed: world.tick - 3 * DAY }))).toBe(20);
+  });
+
+  it('cuts the chance a washed wound festers, and washes a dressed wound with store soap (V-135)', () => {
+    const world = createWorld(createSim(game), 'smoke');
+    world.tick = 5 * DAY;
+    const row = (washed: number) =>
+      ({ id: 1, kind: 'cut', severity: 'deep', bound: 2, dressed: world.tick, washed }) as never;
+    const plain = festerChance({ world, content: game }, row(0));
+    expect(festerChance({ world, content: game }, row(1))).toBe(
+      Math.floor((plain * game.lamp.chandler.soap.fester) / 100),
+    );
+    expect(plain).toBeGreaterThan(festerChance({ world, content: game }, row(1)));
+    // A healer dressing the wound uses one soap from the store and marks it washed.
+    const sim = createSim(withoutAccidents(game));
+    const w = createWorld(sim, 'smoke');
+    const slot = storeOf(w)[0]!;
+    const at = { x: slot['x'] as number, y: slot['y'] as number, z: slot['z'] as number };
+    layItem(w, { kind: 'soap', count: 2, ...at, made: 0 }, {});
+    step(w, sim, DAY / 2);
+    send(w, 'hurt', { person: people(w)[1]!.id, part: 'left-arm', severity: 'deep' });
+    step(w, sim, 3 * DAY);
+    const washed = woundsOf(w).filter((x) => x['washed']);
+    expect(washed).toHaveLength(1);
+    const left = itemsOf(w).filter((i) => i['kind'] === 'soap');
+    expect(left.reduce((n, i) => n + (i['count'] as number), 0)).toBe(1);
   });
 
   it('dresses a fresh deep wound with a herb from the store, once in the ledger', () => {

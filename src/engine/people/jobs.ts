@@ -30,7 +30,8 @@ import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
-import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
+import { chandling, takeUpChandling } from './chandle.ts';
+import { deliver, HOLDS, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
 import { takeUpHearth } from './hearth.ts';
 import { takeUpTending, tending } from './tend.ts';
 import { furnishing, takeUpCarpentry } from './carpentry.ts';
@@ -48,9 +49,6 @@ import { able, declineIfUnable, jobsInOrder, outranked, priorityLine } from './p
 import { tallyAdd } from './tally.ts';
 import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
-
-/** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
-const HOLDS = ['station', 'charcoal', 'smelt', 'smith'];
 
 export const JOB_FIELDS = {
   /** `fell`, `quarry`, `forage`, `hunt`, `fish`, `farm`, `herd`, `cook`, `build`, `carpentry`, `mine`, `hearth` (a hearth being made), `smith`, `tend`, `haul`,
@@ -225,6 +223,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'hearth' && can('hearth') && furnishing(ctx, p)) return true;
   if (p['job'] === 'tend' && tending(ctx, p)) return true;
   if (p['job'] === 'cook' && can('cook') && cooking(ctx, p)) return true;
+  if (p['job'] === 'chandle' && can('chandle') && chandling(ctx, p)) return true;
   if (p['job'] === 'station' && can('station') && stationing(ctx, p)) return true;
   if (p['job'] === 'charcoal' && can('charcoal') && burning(ctx, p)) return true;
   if (p['job'] === 'smelt' && can('smelt') && smelting(ctx, p)) return true;
@@ -384,6 +383,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   smelt: takeUpSmelting,
   smith: takeUpSmithing,
   heal: takeUpNursing,
+  chandle: takeUpChandling,
 };
 
 const jobSkill = (content: EngineContent, g: Gather): string =>

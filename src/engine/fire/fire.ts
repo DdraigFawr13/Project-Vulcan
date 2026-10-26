@@ -13,7 +13,8 @@ export const FIRE_TABLES: Schemas = {
   /** `piece`: the hearth (a furniture row); `lit`: 1 while it burns; `fuel`: minutes of fuel
    * left; `kind`: the fuel (work.json `fire.fuels`), '' before any; `banked`: 1 while it burns
    * low; `used`: the tick someone was last in its room or reach; `line`: its last line (built,
-   * lit, banked, tended), which the next one cites. */
+   * lit, banked, tended), which the next one cites; `ash`: minutes burned towards the next
+   * ash laid beside the hearth (lamp.json `ash`, system.ts). */
   fire: {
     piece: 'entity',
     lit: 'count',
@@ -22,6 +23,7 @@ export const FIRE_TABLES: Schemas = {
     banked: 'count',
     used: 'int',
     line: 'event',
+    ash: 'count',
   },
 };
 
@@ -40,7 +42,7 @@ export const fuelOf = (content: EngineContent, id: string) =>
 /** A new, unlit fire for a hearth just built; `cause` is the line that built it. */
 export function createFire(ctx: SystemContext, piece: EntityRow, cause: number): void {
   addEntity(ctx.world, 'fire', {
-    ...{ piece: piece.id, lit: 0, fuel: 0, kind: '', banked: 0 },
+    ...{ piece: piece.id, lit: 0, fuel: 0, kind: '', banked: 0, ash: 0 },
     ...{ used: ctx.world.tick, line: cause },
   });
 }
