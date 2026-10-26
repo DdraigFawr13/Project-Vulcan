@@ -9,6 +9,8 @@ const slowFiles = [
   'src/engine/lamp/lamp.test.ts',
   // The chandler (V-135): three six-day colonies.
   'src/engine/people/chandle.test.ts',
+  // The skeps (P5.13): two runs of a few days from the first field to the first honey.
+  'src/engine/bees/bees.test.ts',
   'src/engine/build/fields.test.ts',
   'src/engine/build/walls.test.ts',
   'src/engine/people/cook.test.ts',

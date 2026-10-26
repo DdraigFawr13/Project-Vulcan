@@ -16,7 +16,7 @@ import { drawBand, type Home } from './band.ts';
 import { drawSmithing } from './smithing.ts';
 import { addPerson, ATTRIBUTES, NEWCOMER_FIELDS } from './row.ts';
 import { FORAGE_TABLES } from './forage.ts';
-import { JOB_FIELDS } from './jobs.ts';
+import { JOB_FIELDS } from './jobfields.ts';
 import { DRINK_FIELDS } from './drink.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
 import { markUsed } from './hearth.ts';

@@ -111,6 +111,7 @@
 {"id":"bees.skep","importance":1,"template":"{name} made a skep for the stand by the {field}."},
 {"id":"bees.swarm","importance":2,"template":"{name} caught a swarm from the woods into a skep by the {field}."},
 {"id":"bees.harvest","importance":2,"template":"{name} took {honey} honey and {wax} beeswax from the skeps by the {field}."},
+{"id":"work.tookUpBees","importance":1,"template":"{name} took up {what} for the skeps by the {field}."},
 {"id":"fire.banked","importance":1,"template":"{name} banked the fire {where} for the night."},
 {"id":"fire.unbanked","importance":1,"template":"The banked fire {where} burns up again at dawn."},
 {"id":"work.tookUpCooking","importance":1,"template":"{name} took up cooking at the fire {where}: {have} of the {want} meals wanted for tomorrow."},
