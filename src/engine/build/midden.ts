@@ -64,9 +64,9 @@ function siteMidden(ctx: SystemContext, green: Spot): Spot | undefined {
   for (const t of tiles) {
     const i = t.y * map.width + t.x;
     if (t.x < 0 || t.y < 0 || t.x >= map.width || t.y >= map.height) continue;
-    if (!freeTile(world, content, t.x, t.y) || map.features[i] || !walkAt(content, map, 0, i))
+    // The cheap tile tests first: freeTile scans every item and row, and most tiles fail sooner.
+    if (map.features[i] || !walkAt(content, map, 0, i) || walkAt(content, map, 0, i) > def.walk)
       continue;
-    if (walkAt(content, map, 0, i) > def.walk) continue;
     if (
       houses.some(
         (h) =>
@@ -78,6 +78,7 @@ function siteMidden(ctx: SystemContext, green: Spot): Spot | undefined {
     )
       continue;
     if (near(t.x, t.y, apart, (j) => fields.has(j) || !dryAt(content, map, j))) continue;
+    if (!freeTile(world, content, t.x, t.y)) continue;
     if (reach({ x: t.x, y: t.y, z: 0 })) return { x: t.x, y: t.y, z: 0 };
   }
   return undefined;

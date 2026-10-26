@@ -29,6 +29,7 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
+import { clothesPlate } from './clothesview.ts';
 import { fieldFrames } from './fields.ts';
 import { pastureFrames } from './flock.ts';
 import { fireGoods, workBars } from './fires.ts';
@@ -115,6 +116,7 @@ export const stockView = (world: WorldState): StockView[] =>
     ...(def.note && {
       note: stockNote(world, def.good, def.note).replace('{candles}', candleNote(world)),
     }),
+    ...(def.good === content.clothes.good && { clothes: clothesPlate(world) }),
     ...(recipeOf(def.good) && { status: metalStatus(world, content, recipeOf(def.good)!) }),
   }));
 

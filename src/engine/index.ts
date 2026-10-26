@@ -126,8 +126,10 @@ export { daylightAt, litRooms } from './lamp/index.ts';
 export { skepsOf } from './bees/index.ts';
 export { shaftFor, shaftsOf } from './mine/index.ts';
 export {
-  cloakOf,
   freeTile,
+  garmentOf,
+  leftOf,
+  wornOf,
   goodsSystem,
   depotsOf,
   depotTiles,
@@ -142,6 +144,7 @@ export {
   lifeFor,
   loadOf,
   marksOf,
+  sparesOf,
   speedOf,
   stockOf,
   storeOf,

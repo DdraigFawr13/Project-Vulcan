@@ -16,7 +16,7 @@ import { heatAt } from '../fire/index.ts';
 import { tileTemperature } from '../weather/index.ts';
 import { bedOwnedBy, houseAt, type Room } from '../build/index.ts';
 import { comfortOf, roomHere } from './comfort.ts';
-import { cloakWarmth, wearCloak } from './cloak.ts';
+import { clothesWarmth, wearClothes } from './clothes.ts';
 import { expireMemories, MEMORY_TABLES, memoriesOf, memoryMood } from './memory.ts';
 
 export const NEEDS_TABLES: Schemas = {
@@ -111,16 +111,16 @@ export function feltAt(world: WorldState, content: EngineContent, i: number): nu
   return temp + heatAt(world, content, i);
 }
 
-/** The temperature a person feels where they stand, before their cloak. */
+/** The temperature a person feels where they stand, before their clothes. */
 function feelsBare(ctx: SystemContext, p: EntityRow): number {
   const { world, content } = ctx;
   if ((p['z'] as number) > 0) return content.life.warmth.below;
   return feltAt(world, content, (p['y'] as number) * world.map.width + (p['x'] as number));
 }
 
-/** The temperature a person feels where they stand: the cloak they wear adds to it outdoors. */
+/** The temperature a person feels where they stand: their clothes add to it outdoors. */
 const feels = (ctx: SystemContext, p: EntityRow): number =>
-  feelsBare(ctx, p) + cloakWarmth(ctx.world, ctx.content, p);
+  feelsBare(ctx, p) + clothesWarmth(ctx.world, ctx.content, p);
 
 /** Someone else at leisure within reach. */
 function company(world: WorldState, content: EngineContent, p: EntityRow): boolean {
@@ -194,7 +194,7 @@ export function runNeeds(ctx: SystemContext): void {
   expireMemories(world);
   for (const p of rowsOf(world, 'person')) {
     if (p['status'] !== 'alive') continue;
-    wearCloak(ctx, p, feelsBare(ctx, p));
+    wearClothes(ctx, p, feelsBare(ctx, p));
     const name = p['name'] as string;
     let worst: EntityRow | undefined;
     // The room they stand in, worked out once an hour and only if a need asks.

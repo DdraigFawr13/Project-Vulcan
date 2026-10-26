@@ -147,6 +147,13 @@ export const peopleSystem: System = {
       'farm.harvestHome',
     ],
     ...['hall.feast', 'people.movedHome'],
+    ...[
+      'people.changed',
+      'work.tookUpWeaving',
+      'loom.wove',
+      'work.tookUpTailoring',
+      'clothes.made',
+    ],
     'goods.ateSeed',
     ...[
       'work.tookUpCuring',
@@ -173,6 +180,7 @@ export const peopleSystem: System = {
       'smith.noIngots',
     ],
     'craft.firstFine',
+    ...['work.tookUpTanning', 'pits.built', 'tan.laidIn', 'tan.tanned', 'tan.cured'],
     ...['mine.sank', 'mine.dug', 'mine.veinMined', 'mine.clayDug', 'mine.noLadder'],
     ...['health.hurt', 'health.found', 'health.missed', 'health.carried', 'health.bound'],
     'work.tookUpBurial',

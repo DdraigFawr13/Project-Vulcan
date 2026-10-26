@@ -227,11 +227,15 @@ function reapTile(ctx: SystemContext, p: EntityRow, f: EntityRow, tile: number):
   const { world, content } = ctx;
   const crop = cropOf(content, f['crop'] as string)!;
   const at = { x: tile % world.map.width, y: Math.floor(tile / world.map.width), z: 0 };
-  const short = Math.max(
-    0,
-    wantOf(world, content, content.buildings.field.seed) -
-      haveOf(world, content, content.buildings.field.seed),
-  );
+  // Seed grain is kept back from a food crop's harvest only (not flax, P5.5).
+  const food = content.items.find((i) => i.id === crop.item)?.good === 'food';
+  const short = !food
+    ? 0
+    : Math.max(
+        0,
+        wantOf(world, content, content.buildings.field.seed) -
+          haveOf(world, content, content.buildings.field.seed),
+      );
   const yielded = tileYield(world, content, f, crop.yield, tile);
   const seed = Math.min(yielded, short);
   const made = p['took'] as number;

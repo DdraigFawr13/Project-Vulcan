@@ -11,6 +11,7 @@ import { anyBench, bedOwnedBy, furnitureOf } from './furniture.ts';
 import { HEARTH } from './hearths.ts';
 import { crowdedIn, mainOf, nthOf, rowsOf, sizeOf } from './houses.ts';
 import { roomAt, type Room } from './rooms.ts';
+import { loomWant } from './loom.ts';
 import { householdOf } from './beds.ts';
 import { whoseOf } from './homes.ts';
 import { housesOf, rectOf } from './site.ts';
@@ -28,6 +29,8 @@ export interface Want {
   /** How many of the kind it has, and how many it should. */
   have: number;
   need: number;
+  /** Why it is wanted, when that is not the room's lack (the loom, P5.5). */
+  why?: string;
 }
 
 /** Every built house room that is closed off, in house order. */
@@ -230,6 +233,8 @@ export function nextWant(world: WorldState, content: EngineContent): Want | unde
     if (at) bed = { ...l, rr, at };
   }
   if (bed) return bed;
+  const loom = loomWant(world, content);
+  if (loom) return loom;
   const order = [...rooms].sort((a, b) => b.room.sleepers - a.room.sleepers);
   for (const rr of order) {
     const wants = lacks(world, content, rr);
@@ -299,6 +304,8 @@ export function wantSignature(world: WorldState, content: EngineContent): number
     (n) => n['need'] === 'privacy' && n['low'],
   ).length;
   sig = sig * 31 + crowded;
+  // Fleece or flax to weave can make a loom wanted (P5.5).
+  sig = sig * 31 + +!!loomWant(world, content);
   // Each bedroll's tile, scrambled so a move changes the sum (a plain x + 7y missed a move of
   // 7 east and 1 north, found in the phase review).
   const { width } = world.map;

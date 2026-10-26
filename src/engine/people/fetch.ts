@@ -8,7 +8,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { busy, same, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
 
-/** How many of `kind` `p` holds (not the cloak they wear). */
+/** How many of `kind` `p` holds (not the clothes they wear). */
 export const heldOf = (ctx: SystemContext, p: EntityRow, kind: string): number =>
   itemsOf(ctx.world)
     .filter((i) => i['holder'] === p.id && i['kind'] === kind && i['state'] !== 'worn')
@@ -22,7 +22,7 @@ function stacksOf(
   only: (i: EntityRow) => boolean = () => true,
 ): EntityRow[] {
   const { world, content } = ctx;
-  const jobs = ['charcoal', 'smelt', 'smith', 'cure', 'cooper', 'potter'];
+  const jobs = ['charcoal', 'smelt', 'smith', 'cure', 'cooper', 'potter', 'weave', 'tailor', 'tan'];
   const taken = new Set(jobs.flatMap((j) => [...busy(world, p, j)]));
   const from = spotOf(p);
   const far = (i: EntityRow) =>

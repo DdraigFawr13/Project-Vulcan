@@ -23,6 +23,7 @@ import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
 import { burying, takeUpBurial } from './burial.ts';
+import { TRADE_TAKE_UP, takeUpChange, tradeWork } from './trades.ts';
 import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
@@ -30,7 +31,7 @@ import { cooking, takeUpCooking } from './cook.ts';
 import { chandling, takeUpChandling } from './chandle.ts';
 import { larderWork, LARDER_TAKE_UP } from './larder.ts';
 import { MILL_TAKE_UP, millWork } from './mill.ts';
-import { deliver, HOLDS, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
+import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
 import { coldHearth, hearthFirst, takeUpHearth } from './hearth.ts';
 import { takeUpTending, tending } from './tend.ts';
 import { furnishing, takeUpCarpentry } from './carpentry.ts';
@@ -49,6 +50,9 @@ import { able, declineIfUnable, jobsInOrder, outranked, priorityLine } from './p
 import { tallyAdd } from './tally.ts';
 import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
+
+/** Work that keeps what it fetched when the working day ends, instead of carrying it back. */
+const HOLDS = { station: 1, charcoal: 1, smelt: 1, smith: 1, ...LARDER_TAKE_UP, ...TRADE_TAKE_UP };
 
 /** Work that takes a feature off the map for what it yields: felling (logs) and quarrying (P3.1,
  * stone). `kinds` are the feature kinds worked, preferred in that order. */
@@ -181,6 +185,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (herding(ctx, p, hours)) return true;
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
+  if (can(p['job'] as string) && tradeWork(ctx, p)) return true;
   if (p['job'] === 'build' && can('build') && building(ctx, p)) return true;
   if (p['job'] === 'mine' && can('mine') && mining(ctx, p)) return true;
   if (p['job'] === 'farm' && can('farm') && farming(ctx, p)) return true;
@@ -205,10 +210,9 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (p['job'] === 'dress' && !hours) Object.assign(p, { job: '', target: -1, work: 0 });
   if (p['job'] === 'dress' && dressing(ctx, p)) return true;
   const load = loadOf(world, p.id);
-  // Out of hours the metal and station work keeps what it fetched and resumes next morning, and
-  // so does a sinker the shaft's ladder (else they carried it back and lost the job).
+  // Out of hours HOLDS work keeps its load till morning, as does a sinker the shaft's ladder.
   if (load && !hours && p['job'] === 'mine' && p['task'] === 'sink') return false;
-  if (load && !HOLDS.includes(p['job'] as string)) {
+  if (load && !((p['job'] as string) in HOLDS)) {
     p['job'] = 'haul';
     deliver(ctx, p, load);
     return true;
@@ -253,12 +257,12 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   return takeUp(ctx, p);
 }
 
-/** Chooses new work: a tree marked by a test-mode order first, then the Work sheet's kinds of
- * work in their own priority order (priority.ts): felling while wood is short, foraging while
- * food is, carrying, building (a house's site cleared first) and the rest. */
+/** Chooses new work: a test-mode marked tree, then changing clothes (trades.ts), then the Work
+ * sheet's kinds in their priority order (priority.ts), a cold room's hearth first; after dusk
+ * only work the dark or a light allows (dusk.ts). */
 function takeUp(ctx: SystemContext, p: EntityRow, dark = false): boolean {
   const { world, content } = ctx;
-  if (!dark && takeUpMarked(ctx, p, false)) return true;
+  if (!dark && (takeUpMarked(ctx, p, false) || takeUpChange(ctx, p))) return true;
   for (const job of hearthFirst(ctx, p, jobsInOrder(world, content, p))) {
     if (dark && !workableInDark(ctx, job)) continue;
     const before = p['took'];
@@ -360,6 +364,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   heal: takeUpNursing,
   chandle: takeUpChandling,
   beekeep: takeUpBeekeeping,
+  ...TRADE_TAKE_UP,
 };
 
 const jobSkill = (content: EngineContent, g: Gather): string =>

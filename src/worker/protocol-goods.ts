@@ -1,6 +1,7 @@
 // The wire shapes of what the map draws for goods, the Stock sheet (P2.4 onward), the metal works' tile pages and
 // the item page (Bundle 3), split from protocol.ts.
 import type { LedgerLine } from './protocol.ts';
+import type { ClothesPlate } from './protocol-people.ts';
 
 /** A tile spot, for the map's goods layer. */
 export interface Spot3 {
@@ -57,6 +58,8 @@ export interface StockView {
   status?: string;
   /** Which stores keep the good (5B Bundle 1), e.g. "Kept in the wood yard (9 tiles)." */
   kept?: string;
+  /** The Clothes plate's spares by slot and what is held to make more (Bundle 5). */
+  clothes?: ClothesPlate;
 }
 
 /** A tile page for the smelter, the charcoal clamp or the smithy (Bundle 3): words from the engine. */

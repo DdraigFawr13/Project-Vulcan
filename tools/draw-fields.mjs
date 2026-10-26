@@ -4,7 +4,7 @@
 // stretch of furrows with no edge between them (the taste board's pick: furrows shaped to the good
 // soil, no edge). States: `field.plan` (turned soil), `field.sown` (green sprouts), `field.ripe.barley`
 // (golden stalks), `field.ripe.turnips` (leafy tops over pale crowns), `field.fallow` (stubble and
-// dry soil); 5B Bundle 2: `field.ripe.oats`, `.beans`, `.cabbages` and `field.blight` (browned
+// dry soil); 5B Bundle 2: `field.ripe.oats`, `.beans`, `.cabbages` and `field.blight`; Bundle 5: `field.ripe.flax` (browned
 // dead stalks). Seeded and deterministic.
 // Usage: node tools/draw-fields.mjs, then node tools/pack-sheet.mjs buildings
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -70,6 +70,14 @@ export function drawFields(p = readPalette()) {
       if (y % 8 < 2 || y % 8 > 6) return n > 0.8 ? p['grass dark'] : undefined;
       if (crest(k)) return y % 8 === 4 ? p['willow light'] : p.willow;
       return p['willow dark'];
+    }),
+    // 5B Bundle 5: flax stands in slim green stalks flecked with small blue flowers.
+    'field.ripe.flax': frame(false, (k, y, n) => {
+      if (crest(k)) {
+        if (y % 8 === 2 && n > 0.2) return k === 3 ? p.silver : p['ice shade'];
+        return y % 4 === 0 ? p['birch leaf light'] : y % 4 === 3 ? p.ash : p['birch leaf'];
+      }
+      return n > 0.6 ? p['grass light'] : undefined;
     }),
     // Blight: the crop browned and dead on its ridges.
     'field.blight': frame(false, (k, y, n) => {

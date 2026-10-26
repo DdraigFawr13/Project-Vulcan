@@ -19,6 +19,7 @@ import { tileTemperature } from '../weather/index.ts';
 import { clearBlight } from './blight.ts';
 import { chooseField } from './fieldsite.ts';
 import { courseNow, meanSoil } from './fieldsoil.ts';
+import { flaxWanted } from './loom.ts';
 import { dirFrom, FIELD_KIND, wantOf } from './houses.ts';
 
 export const FIELD_TABLES: Schemas = {
@@ -85,7 +86,12 @@ export function cropNow(world: WorldState, content: EngineContent, f?: EntityRow
   const crops = content.buildings.field.crops;
   if (f && !f['crop']) {
     const pick = courseNow(content, f, month);
-    return pick && meanSoil(world, f) >= content.buildings.field.soil.rest ? pick.crop : undefined;
+    if (!pick || meanSoil(world, f) < content.buildings.field.soil.rest) return undefined;
+    // Flax takes a beans course while linen is short (P5.5).
+    const flax = cropOf(content, content.clothes.flax.crop);
+    if (pick.crop.id === content.clothes.flax.instead && flax?.sow.includes(month))
+      if (flaxWanted(world, content)) return flax;
+    return pick.crop;
   }
   const own = f && f['crop'] ? cropOf(content, f['crop'] as string) : undefined;
   return own

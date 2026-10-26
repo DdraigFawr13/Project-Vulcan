@@ -3,7 +3,6 @@
 import { content } from '../content/index.ts';
 import {
   clockAt,
-  cloakOf,
   cropNow,
   declinedLine,
   fieldsOf,
@@ -23,6 +22,7 @@ import {
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
+import { wearingRows } from './clothesview.ts';
 import { feedsOf } from './comfort.ts';
 import { careNow } from './health.ts';
 import { deadNow, healthOf } from './healthview.ts';
@@ -174,7 +174,8 @@ export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   if (job === 'cook' || job === 'charcoal' || job === 'smelt') return { text: say(job), ...why };
   if (job === 'station') {
     const kind = stationsOf(world).find((s) => s.id === p['plan'])?.['kind'] as string | undefined;
-    return { text: say(job, { what: kind ?? 'smelter' }), ...why };
+    const what = kind === 'pits' ? content.clothes.pits.name : (kind ?? 'smelter');
+    return { text: say(job, { what }), ...why };
   }
   if (job === 'cure')
     return { text: say(job, { what: nameOf(content.items, p['what'] as string) }), ...why };
@@ -311,17 +312,14 @@ const withHome = (home: WalkerView['home'], stranger: WalkerView['stranger']) =>
   ...(stranger && { stranger }),
 });
 
-/** The cloak a person wears and how worn it is (V-092): "Wool cloak, worn 30%, warmer outdoors". */
-function wearingOf(world: WorldState, p: EntityRow): { wearing?: string } {
-  const cloak = cloakOf(world, p.id);
-  if (!cloak) return {};
-  const { last, warmth } = content.life.cloak;
-  const worn = Math.round(100 - ((cloak['wear'] as number) * 100) / last);
-  const name = nameOf(content.items, cloak['kind'] as string);
-  return {
-    wearing: `${name[0]!.toUpperCase()}${name.slice(1)}: worn ${worn}%, ${warmth} °C warmer outdoors.`,
-  };
-}
+/** What a person wears, a row per garment (V-092, V-134); see clothesview.ts. */
+const wearingOf = (
+  world: WorldState,
+  p: EntityRow,
+): { wearing?: NonNullable<WalkerView['wearing']> } => {
+  const wearing = wearingRows(world, p);
+  return wearing.length ? { wearing } : {};
+};
 
 /** A person's live memories in words from memories.json, with the days before each fades. */
 function memoriesView(world: WorldState, p: EntityRow): WalkerView['memories'] {

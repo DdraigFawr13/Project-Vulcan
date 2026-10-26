@@ -34,6 +34,12 @@ const inRect = (r: EntityRow, x: number, y: number): boolean =>
 export function stationGoods(world: WorldState): GoodsView['furniture'] {
   return stationsOf(world).flatMap((s) => {
     const [x, y, z] = [s['x'] as number, s['y'] as number, s['z'] as number];
+    // The tan pits: a row of pits along the block's middle, a working space round them.
+    if (s['kind'] === 'pits')
+      return Array.from({ length: (s['w'] as number) - 1 }, (_, dx) => ({
+        ...{ x: x + dx, y: y + ((s['h'] as number) >> 1), z },
+        ...{ art: 'furn.pits', facing: 's', plan: s['state'] !== 'built' },
+      }));
     if (s['kind'] === 'smelter')
       return [{ x, y, z, art: 'furn.smelter', facing: 's', plan: s['state'] !== 'built' }];
     // The smokehouse and the kiln wear the clamp's smoking frames once built (no art of its own yet).
@@ -251,7 +257,7 @@ export function tileWorks(
   );
   if (smithy) return { works: smithyPage(world, smithy, lineOf) };
   const station = stationAt(world, x, y);
-  if (!station) return undefined;
+  if (!station || station['kind'] === 'pits') return undefined;
   return {
     works: (
       { clamp: clampPage, smokehouse: housePage, kiln: kilnPage }[station['kind'] as string] ??
