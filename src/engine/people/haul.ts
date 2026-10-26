@@ -155,9 +155,17 @@ export function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void 
   carried['holder'] = p.id;
 }
 
+/** The nearest load counting food past its plate, found by the last plain look (one scan serves
+ * both: the spare look comes right after a plain one that found nothing). */
+let spareSeen:
+  { world: object; person: number; tick: number; item: EntityRow | undefined } | undefined;
+
 /** Something that should be carried to a store, nearest them: lying outside the stores, or in the
  * home store when a store of its kind has room for it. */
 function chooseLoad(ctx: SystemContext, p: EntityRow, spare: boolean): EntityRow | undefined {
+  const seen = spareSeen;
+  if (spare && seen?.world === ctx.world && seen.person === p.id && seen.tick === ctx.world.tick)
+    return seen.item;
   const { world, content } = ctx;
   const kinds = content.work.haul.kinds;
   const waste = content.work.haul.midden;
@@ -166,6 +174,8 @@ function chooseLoad(ctx: SystemContext, p: EntityRow, spare: boolean): EntityRow
   const from = spotOf(p);
   let best: EntityRow | undefined;
   let far = Infinity;
+  let bestSpare: EntityRow | undefined;
+  let farSpare = Infinity;
   // A load the full store has no room for, and cannot grow for, stays where it lies; carrying
   // it would only set it down again (seen on a forest seed once a house's site was cleared).
   // Worked out only for a load that would be nearest, once per kind and size.
@@ -216,23 +226,31 @@ function chooseLoad(ctx: SystemContext, p: EntityRow, spare: boolean): EntityRow
     const d =
       Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y)) -
       (dailyOf(content, i['kind'] as string) >= keep.haulFirst ? keep.haulBonus : 0);
-    if (d >= far) continue;
+    if (d >= far && d >= farSpare) continue;
     // In a store of its kind it stays; in another's (logs of the site's own trees) it goes out.
     const stray = astray(ctx, i['kind'] as string, at);
     if (stray === false) continue;
     // In the home store: only to be carried over to a store of its kind. Past its plate, a good
     // lies where it was made (LESSONS: carried, a surplus kept the band hauling all year).
+    let plain = true;
+    let extra = true;
     if (inHomeStore(world, at.x, at.y, at.z)) {
       if (!keeps(i)) continue;
     } else if (!marked && !dirt && !stray) {
       // Food that spoils is carried in past its plate too (in the open it spoils twice as fast),
       // but only by someone with nothing else to do: a harvest heap must not stop the building.
-      const keep = spare && ((i['rot'] as number) > 0 || dailyOf(content, i['kind'] as string) > 0);
-      if (enough(i) && !keep ? !cluttered(i, at) : !room(i)) continue;
+      const spoils = (i['rot'] as number) > 0 || dailyOf(content, i['kind'] as string) > 0;
+      plain = enough(i) ? cluttered(i, at) : room(i);
+      extra = enough(i) && !spoils ? cluttered(i, at) : room(i);
     }
-    if (canReach(content, world.map, from, at)) [best, far] = [i, d];
+    plain &&= d < far;
+    extra &&= d < farSpare;
+    if ((!plain && !extra) || !canReach(content, world.map, from, at)) continue;
+    if (plain) [best, far] = [i, d];
+    if (extra) [bestSpare, farSpare] = [i, d];
   }
-  return best;
+  spareSeen = { world, person: p.id, tick: world.tick, item: bestSpare };
+  return spare ? bestSpare : best;
 }
 
 /** Carrying the nearest load to a store; `spare`, also food past its plate that would spoil. */
