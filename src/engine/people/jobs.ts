@@ -74,6 +74,10 @@ export const JOB_FIELDS = {
    * first fine-or-better piece (V-093), 0 until they make one. */
   making: 'text',
   fine: 'event',
+  /** Cooking (P5.3): the line of their first fine meal, 0 until they cook one; `lit` the work
+   * minutes left when they last worked at the fire, so a fire that went out mid-batch is seen. */
+  fineMeal: 'event',
+  lit: 'int',
   /** Herding: the hay carried to the rick, and the wild herd being tamed with the minutes sat
    * near it so far (a different herd starts again). */
   hay: 'count',

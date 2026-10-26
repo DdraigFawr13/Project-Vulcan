@@ -22,8 +22,7 @@ import {
   storeOf,
   tripsFor,
 } from '../goods/index.ts';
-import { withBuiltAll } from '../map/index.ts';
-import { reachFrom, type Spot } from '../paths/index.ts';
+import { type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { dirFrom, homeless } from './houses.ts';
 import { partOf, plansOf } from './plans.ts';
@@ -32,6 +31,7 @@ import {
   groundOf,
   housesOf,
   onEdge,
+  shutsOff,
   outsideOf,
   scoreRect,
   withinReach,
@@ -127,7 +127,7 @@ function siteStore(
     const door = doorOf(rect, green);
     const out = outsideOf(rect, door);
     if (way.trees[out.y * map.width + out.x]! < 0) continue;
-    if (shutsOff(ctx, rect, door, green)) continue;
+    if (shutsOff(world, content, rect, door, green)) continue;
     // The way in must not cross the site; trees on it are felled with the site's own.
     const tiles = wayTo(way, out.y * map.width + out.x);
     if (tiles.some((i) => inRect(rect, i % map.width, Math.floor(i / map.width)))) continue;
@@ -135,32 +135,6 @@ function siteStore(
     return { rect, door, trees: [...fit.trees, ...extra], walk: s.walk };
   }
   return undefined;
-}
-
-/** Whether the store's edge would cut the green off from ground beside it that it reaches now: a
- * narrow gap between the edge and another fence or a boulder (ledger: a wood yard sealed the
- * pasture's only gate, and the flock was never folded again). */
-function shutsOff(ctx: SystemContext, rect: Rect, door: Spot, green: Spot): boolean {
-  const { world, content } = ctx;
-  const map = world.map;
-  const ring = { x: rect.x - 1, y: rect.y - 1, w: rect.w + 2, h: rect.h + 2 };
-  const edge: number[] = [];
-  const beside: Spot[] = [];
-  for (let y = ring.y; y < ring.y + ring.h; y += 1)
-    for (let x = ring.x; x < ring.x + ring.w; x += 1) {
-      if (x < 0 || y < 0 || x >= map.width || y >= map.height) continue;
-      if (inRect(rect, x, y)) {
-        if (onEdge(rect, x, y) && !(x === door.x && y === door.y)) edge.push(y * map.width + x);
-      } else beside.push({ x, y, z: 0 });
-    }
-  const now = reachFrom(content, map, green);
-  const reached = beside.filter(now);
-  if (!reached.length) return false;
-  const wall = content.buildings.parts.findIndex((p) => p.kind === 'wall') + 1;
-  return withBuiltAll(map, edge, wall, () => {
-    const after = reachFrom(content, map, green);
-    return reached.some((s) => !after(s));
-  });
 }
 
 /** Once a day: the first store kind whose store would save enough walking, or whose goods fill a

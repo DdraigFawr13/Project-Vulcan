@@ -42,7 +42,7 @@ describe('cooking', () => {
         step(w, sim, 60);
         const day = Math.floor(w.tick / DAY);
         for (const p of people(w)) {
-          const well = memoriesOf(w, p.id).filter((m) => m['memory'] === 'ate-well');
+          const well = memoriesOf(w, p.id).filter((m) => /^ate-/.test(m['memory'] as string));
           if (well.length) eatingDays.add(day);
           // A memory more than an hour old is in the hour's mood.
           const made = well.find((m) => (m['until'] as number) - 2 * DAY <= w.tick - 60);
@@ -87,14 +87,20 @@ describe('cooking', () => {
     ).toBe(true);
   });
 
-  it('does nothing with no lit fire: the band eats raw', () => {
+  it('lights the hearth to cook when warm weather left it out (P5.3)', () => {
     const warm = createSim({
       ...content,
       seasons: { ...content.seasons, months: content.seasons.months.map(() => 25) },
     });
     const w = createWorld(warm, 'ledger');
-    step(w, warm, 3 * DAY);
-    expect(lines(w, 'food.cooked')).toEqual([]);
-    expect(lines(w, 'work.tookUpCooking')).toEqual([]);
+    step(w, warm, 6 * DAY);
+    const lit = lines(w, 'fire.lit').filter((e) => e.data['why'] === 'a meal was to be cooked');
+    expect(lit.length).toBeGreaterThan(0);
+    expect(lines(w, 'work.tookUpCooking').map((e) => e.id)).toContain(lit[0]!.causes[0]);
+    // Each batch names its grade and dish.
+    const cooked = lines(w, 'food.cooked');
+    expect(cooked.length).toBeGreaterThan(0);
+    for (const e of cooked)
+      expect(e.data['what']).toMatch(/^(plain|good|fine) (fare|stew|pottage)$/);
   });
 });
