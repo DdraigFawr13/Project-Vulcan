@@ -59,12 +59,13 @@ describe('hearth and firewood', () => {
     it(`keeps a heated room above the warmth line through a hard winter, unordered, on ${seed}`, () => {
       const w = createWorld(sim, seed);
       let allLitDay = 0;
-      // Hours in a heated room so far, per person; samples days 8 to 12.
+      // Hours in a heated room so far, per person; samples days 8 to 14 (two more days since 5B
+      // Bundle 2: walking to drink costs the band about a day of its first fortnight).
       const streak = new Map<number, number>();
       let sampled = 0;
       let under = 0;
       let lowest = Infinity;
-      for (let h = 0; h < 12 * 24; h += 1) {
+      for (let h = 0; h < 14 * 24; h += 1) {
         step(w, sim, 60);
         const day = Math.floor(w.tick / DAY);
         const lit = roomsLit(w);
@@ -92,7 +93,7 @@ describe('hearth and firewood', () => {
       );
       expect(campfire).toBeDefined();
       expect(allLitDay).toBeGreaterThan(0);
-      expect(allLitDay).toBeLessThanOrEqual(12);
+      expect(allLitDay).toBeLessThanOrEqual(14);
       expect(sampled).toBeGreaterThan(0);
       expect(under).toBe(0);
       // The fires are banked for the night and unbanked at dawn.

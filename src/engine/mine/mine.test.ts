@@ -116,7 +116,11 @@ describe('mining', () => {
       const chain = whyOf(world, made).map((c) => c.event.type);
       expect(chain).toContain('work.tookUp');
       expect(chain).toContain('goods.stockSet');
-      expect(linesOf(world, 'map.shaftSunk').length).toBe(3);
+      // The iron shaft, planned first, sunk three levels (a slow seed may have begun copper and
+      // tin shafts by then).
+      const sunk = linesOf(world, 'map.shaftSunk');
+      const at = (l: (typeof sunk)[number]) => `${l.data['x']},${l.data['y']}`;
+      expect(sunk.filter((l) => at(l) === at(sunk[0]!))).toHaveLength(3);
     }
   });
 

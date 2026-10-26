@@ -61,7 +61,9 @@ export function drinking(ctx: SystemContext, p: EntityRow): boolean {
     Object.assign(p, { doing: '', drinkAt: 0, drinkMin: 0, stroll: 0 });
     return false;
   }
-  if ((row['value'] as number) >= def.seek || world.tick < (p['thirst'] as number)) return false;
+  // Asleep, only real thirst (under the warning line) gets them up.
+  const seek = p['doing'] === 'sleep' ? def.low : def.seek;
+  if ((row['value'] as number) >= seek || world.tick < (p['thirst'] as number)) return false;
   const at = goDrink(ctx, p);
   if (!at) {
     p['thirst'] = world.tick + RETRY;
