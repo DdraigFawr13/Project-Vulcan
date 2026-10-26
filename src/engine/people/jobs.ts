@@ -29,7 +29,7 @@ import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
 import { cooking, takeUpCooking } from './cook.ts';
 import { deliver, LOOK_AGAIN, pickUp, takeUpHauling } from './haul.ts';
-import { takeUpHearth } from './hearth.ts';
+import { coldHearth, hearthFirst, takeUpHearth } from './hearth.ts';
 import { takeUpTending, tending } from './tend.ts';
 import { furnishing, takeUpCarpentry } from './carpentry.ts';
 import { farming, takeUpFarming } from './farm.ts';
@@ -286,7 +286,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
 function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   const { world } = ctx;
   if (takeUpMarked(ctx, p, false)) return true;
-  for (const job of jobsInOrder(world, ctx.content, p)) {
+  for (const job of hearthFirst(ctx, p, jobsInOrder(world, ctx.content, p))) {
     const before = p['took'];
     if (TAKE_UP[job]?.(ctx, p)) return true;
     // Taken up (a line said) and stopped at once: look again later, not at the next kind.
@@ -367,6 +367,7 @@ const TAKE_UP: Readonly<Record<string, (ctx: SystemContext, p: EntityRow) => boo
   herd: takeUpHerding,
   build: (ctx, p) =>
     takeUpBurial(ctx, p) ||
+    (coldHearth(ctx) && takeUpHearth(ctx, p)) ||
     takeUpMarked(ctx, p, true) ||
     takeUpHearth(ctx, p) ||
     takeUpStation(ctx, p) ||

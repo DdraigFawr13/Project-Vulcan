@@ -107,10 +107,16 @@ describe('health', () => {
   });
 
   it('carries a miner who fell in the shaft to bed and binds the break, each line back to the fall', () => {
+    // The first seed whose miner takes up a shaft within 12 days (VR-24; since 5B Bundle 3 cooks
+    // take a hand, and tallow's sinker starts later).
     const sim = createSim(falls);
-    const world = createWorld(sim, 'tallow');
-    send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
-    for (let d = 0; d < 12 && !lines(world, 'health.hurt').length; d += 1) step(world, sim, DAY);
+    let world = createWorld(sim, 'tallow');
+    for (const seed of ['tallow', 'smoke', 'anvil']) {
+      world = createWorld(sim, seed);
+      send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
+      for (let d = 0; d < 12 && !lines(world, 'health.hurt').length; d += 1) step(world, sim, DAY);
+      if (lines(world, 'health.hurt').length) break;
+    }
     const hurt = lines(world, 'health.hurt')[0]!;
     expect(hurt, 'a fall within 12 days').toBeDefined();
     expect(hurt.data['what']).toBe('fell in the shaft');
