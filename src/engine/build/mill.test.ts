@@ -13,8 +13,10 @@ import { millsOf } from './mill.ts';
 const sim = createSim(content);
 const DAY = 1440;
 const lines = (w: WorldState, type: string) => allLines(w).filter((e) => e.type === type);
-// Whether the hall's room stood when the harvest-home supper was called, read hour by hour.
+// Whether the hall's room stood when the harvest-home supper was called, read hour by hour, and
+// the world as it was the hour the mill was sited (the send-back lever needs nothing built yet).
 let hallAtFeast: boolean | undefined;
+let atMill: WorldState | undefined;
 const hallRoom = (w: WorldState) =>
   roomsOf(w, content).some((r) => r.h.id === hallOf(w)?.id && r.room?.tiles.length);
 const until = (w: WorldState, done: () => boolean, days: number) => {
@@ -22,6 +24,7 @@ const until = (w: WorldState, done: () => boolean, days: number) => {
     const hall = hallRoom(w);
     step(w, sim, 60);
     if (hallAtFeast === undefined && lines(w, 'hall.feast').length) hallAtFeast = hall;
+    if (!atMill && millOf(w)) atMill = structuredClone(w);
   }
 };
 
@@ -74,17 +77,19 @@ describe('the mill and harvest home', () => {
   }, 60000);
 
   it('lets the mill be sent back once, and chooses another site at once', () => {
-    const first = millOf(world)!;
-    submitCommand(world, { tick: world.tick + 1, kind: 'sendBack', data: { mill: first.id } });
-    step(world, sim, 2);
+    until(world, () => !!millOf(world), 220);
+    const w = atMill!;
+    const first = millOf(w)!;
+    submitCommand(w, { tick: w.tick + 1, kind: 'sendBack', data: { mill: first.id } });
+    step(w, sim, 2);
     expect(first['state']).toBe('sent');
-    const second = millOf(world)!;
+    const second = millOf(w)!;
     expect(second.id).not.toBe(first.id);
     expect(second['sent']).toBe(1);
-    submitCommand(world, { tick: world.tick + 1, kind: 'sendBack', data: { mill: second.id } });
-    step(world, sim, 2);
-    expect(millOf(world)!.id).toBe(second.id);
-    expect(lines(world, 'command.refused').at(-1)!.data['reason']).toMatch(/sent back once/);
+    submitCommand(w, { tick: w.tick + 1, kind: 'sendBack', data: { mill: second.id } });
+    step(w, sim, 2);
+    expect(millOf(w)!.id).toBe(second.id);
+    expect(lines(w, 'command.refused').at(-1)!.data['reason']).toMatch(/sent back once/);
   });
 
   it('grinds at the mill once built, then plans an oven beside it', () => {
