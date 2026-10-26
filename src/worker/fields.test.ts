@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../content/index.ts';
 import {
+  addMemory,
   createSim,
   createWorld,
   fieldsOf,
@@ -13,6 +14,7 @@ import {
   submitCommand,
   type SimEvent,
   type Stub,
+  type SystemContext,
 } from '../engine/index.ts';
 import { buildView } from './build.ts';
 import { goodsOf, stockView } from './goods.ts';
@@ -97,20 +99,23 @@ describe('field views', () => {
   it('shows the cloak worn and each live memory with the days left', () => {
     const w = createWorld(sim, 'ledger');
     step(w, sim, 1);
-    const first = walkersOf(w)[0]!;
-    expect(first.wearing).toMatch(/^Wool cloak: worn \d+%/);
-    expect(first.memories).toEqual([]);
-    const text = (m: { text: string }) => m.text;
-    let seen: string[] = [];
-    for (let day = 0; day < 90 && !seen.length; day += 1) {
-      step(w, sim, DAY);
-      seen = walkersOf(w).flatMap((p) => p.memories.map(text));
+    const [first, second] = walkersOf(w);
+    expect(first!.wearing).toMatch(/^Wool cloak: worn \d+%/);
+    expect(first!.memories).toEqual([]);
+    // Every memory content lists, given straight: the first one earned comes about day 85 on every
+    // test seed, too long a run for a view test (it timed out on CI).
+    const ctx = { world: w, content } as unknown as SystemContext;
+    for (const m of content.memories) addMemory(ctx, first!.id, m.id, w.begunEvent, second!.id);
+    step(w, sim, DAY);
+    const seen = walkersOf(w).find((p) => p.id === first!.id)!.memories;
+    const name = w.entities['person']!.find((q) => q.id === second!.id)!['name'] as string;
+    expect(seen).toHaveLength(content.memories.length);
+    for (const m of seen) {
+      const def = content.memories.find((d) => d.text.replace('{about}', name) === m.text)!;
+      expect(def).toBeDefined();
+      expect(m.days).toBeGreaterThanOrEqual(1);
+      expect(m.days).toBeLessThanOrEqual(def.decayDays);
+      expect(m.text).not.toContain('{');
     }
-    expect(seen.length).toBeGreaterThan(0);
-    for (const p of walkersOf(w))
-      for (const m of p.memories) {
-        expect(m.days).toBeGreaterThanOrEqual(1);
-        expect(m.text).not.toContain('{');
-      }
   });
 });
