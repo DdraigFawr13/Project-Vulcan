@@ -13,6 +13,32 @@ export interface LampDef {
   candles: readonly { item: string; name: string; minutes: number }[];
   /** The candles the band brings, kept with the cart. */
   cart: { item: string; count: number };
+  chandler: ChandlerDef;
+  /** A lit fire leaves one ash `item` beside its hearth each `every` minutes it burns. */
+  ash: { item: string; every: number };
+  bees: BeesDef;
+}
+
+export interface ChandlerDef {
+  job: string;
+  minutes: number;
+  skilled: number;
+  /** First wanted, first made: each takes `from` and makes `makes` (item kinds and counts). */
+  recipes: readonly {
+    id: string;
+    from: Readonly<Record<string, number>>;
+    makes: Readonly<Record<string, number>>;
+  }[];
+  soap: { item: string; keep: number; washes: number; fester: number };
+}
+
+export interface BeesDef {
+  job: string;
+  stand: number;
+  woods: number;
+  skep: { minutes: number };
+  swarm: { months: readonly string[]; chance: number };
+  harvest: { month: string; honey: number; wax: number; minutes: number };
 }
 
 export interface LampDefs {

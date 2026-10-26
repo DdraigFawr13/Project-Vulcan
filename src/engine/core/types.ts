@@ -34,6 +34,7 @@ export const STREAMS = [
   'smithing',
   'strangers',
   'blight',
+  'bees',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 

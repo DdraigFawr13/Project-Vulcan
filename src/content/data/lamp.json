@@ -1,9 +1,12 @@
 {
 "daylight":[[5.5,18.5],[4.75,19.5],[4,20.25],[3.25,21],[3.5,20.75],[4.5,19.75],[5.5,18.5],[6.25,17.5],[7,16.75],[7.5,16.5],[7.25,16.75],[6.5,17.75]],
 "dark":["tend","herd","smith"],
-"dim":["cook","heal"],
+"dim":["cook","heal","chandle"],
 "candle":["carpentry"],
 "at":{"carpentry":"bench"},
 "candles":[{"item":"candle","name":"tallow candle","minutes":180},{"item":"wax-candle","name":"wax candle","minutes":360}],
-  "cart": { "item": "candle", "count": 12 }
+"cart":{"item":"candle","count":12},
+"chandler":{"job":"chandle","minutes":90,"skilled":10,"recipes":[{"id":"soap","from":{"fat":1,"ash":3},"makes":{"soap":2}},{"id":"wax","from":{"wax":1},"makes":{"wax-candle":4}},{"id":"tallow","from":{"fat":1},"makes":{"candle":12}}],"soap":{"item":"soap","keep":2,"washes":10,"fester":50}},
+"ash":{"item":"ash","every":480},
+"bees":{"job":"beekeep","stand":3,"woods":12,"skep":{"minutes":120},"swarm":{"months":["Bloommonth","Highsun"],"chance":8},"harvest":{"month":"Harvestmonth","honey":6,"wax":1,"minutes":60}}
 }
