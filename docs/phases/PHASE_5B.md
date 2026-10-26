@@ -10,7 +10,7 @@ Goal: a colony that feeds, clothes, lights and mends itself through the winters.
 - [x] Bundle 3, kitchen and keeping: P5.3, P5.12, 2026-10-26
   - [x] Part 1: recipes and graded meals, cooks light the hearth, spoiling by place and warmth with weekly store lines, 2026-10-26
   - [x] Part 2: curer and smokehouse, salt seam, cooper and barrels, cellar, potter, kiln, pots and bricks; feeders of the hurt bring a full meal, 2026-10-26
-- [ ] Bundle 4, mill and bakery: P5.11, harvest home
+- [x] Bundle 4, mill and bakery: P5.11, harvest home (V-150), 2026-10-26 (engine #88, screens #90)
 - [ ] Bundle 5, the loom: P5.5
 - [ ] Bundle 6, the lamp: P5.13, soap, lit rooms
 - [ ] Bundle 7, sickness: P5.7
