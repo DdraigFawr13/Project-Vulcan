@@ -10,7 +10,7 @@ Goal: a colony that feeds, clothes, lights and mends itself through the winters.
 - [ ] Bundle 3, kitchen and keeping: P5.3, P5.12
 - [ ] Bundle 4, mill and bakery: P5.11, harvest home
 - [ ] Bundle 5, the loom: P5.5
-- [ ] Bundle 6, the lamp: P5.13, soap, lit rooms
+- [x] Bundle 6, the lamp: P5.13, soap, lit rooms (V-135), 2026-10-26
 - [ ] Bundle 7, sickness: P5.7
 - [ ] 5B balance and review
 

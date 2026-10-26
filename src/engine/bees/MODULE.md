@@ -1,7 +1,8 @@
 # bees
 
-The skep stand and the beekeeper's year (P5.13, V-135). Control stays indirect (V-015): no lever places a skep or names a person; beekeepers (people `beekeep.ts`, the Beekeeping row on the Work sheet) choose the work.
+The skep stand by a field and the beekeeper's year (P5.13).
 
+- **Control:** indirect (V-015): no lever places a skep or names a person; beekeepers (people `beekeep.ts`, the Beekeeping row on the Work sheet) choose the work.
 - **Public API:** `index.ts`: `beesSystem` (after `flockSystem` in `SYSTEMS`, daily, stream `bees`), `BEES_TABLES`, `skepsOf(world)` (rows with `x`, `y`, `z`, `state`; for the screens), `skepNow`, `swarmNow`, `harvestNow`, `yearNow`, `dayNow`, `skepMade`, `skepTended`, `honeyTaken` (the state changes and lines the people side calls).
 - **Table `skep`:** `x`, `y`, `z` (0), `field` (the field row it stands by), `state` (`plan`, `empty`, `bees`), `line` (its latest line), `harvested` (the year last robbed, 0 none), `visited` (the day number a beekeeper last looked for a swarm).
 - **Siting (`skeps.ts`):** daily in a `bees.skep.months` month (the spring before the swarms, so a new colony's first weeks go to shelter and food), with a field in state `sown`, `ripe` or `fallow` and no skeps, the nearest tree within `bees.woods` tiles of the field's box gives the side (several: nearest first, north, east, south, west); `bees.stand` skeps are planned side by side in a row just outside the field (a second row out if the first is taken), nearest the middle of the side, on free buildable surface off every house, plan, store, road, field and item. One `bees.sited` line (why: flowers on the field and the woods side), citing the field's line. Nothing fits: no line, again tomorrow. Scored, never drawn.
