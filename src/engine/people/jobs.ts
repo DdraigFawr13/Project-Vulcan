@@ -24,6 +24,7 @@ import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
 import { burying, takeUpBurial } from './burial.ts';
+import { changing, takeUpChange } from './change.ts';
 import { dressing, takeUpNursing } from './nurse.ts';
 import { burning, takeUpCharcoal } from './charcoal.ts';
 import { mining, takeUpMining } from './mine.ts';
@@ -211,6 +212,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   if (herding(ctx, p, hours)) return true;
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'work' && walking) return true;
+  if (p['job'] === 'change' && hours && changing(ctx, p)) return true;
   if (p['job'] === 'build' && hours && building(ctx, p)) return true;
   if (p['job'] === 'mine' && hours && mining(ctx, p)) return true;
   if (p['job'] === 'farm' && hours && farming(ctx, p)) return true;
@@ -281,7 +283,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
  * food is, carrying, building (a house's site cleared first) and the rest. */
 function takeUp(ctx: SystemContext, p: EntityRow): boolean {
   const { world } = ctx;
-  if (takeUpMarked(ctx, p, false)) return true;
+  if (takeUpMarked(ctx, p, false) || takeUpChange(ctx, p)) return true;
   for (const job of jobsInOrder(world, ctx.content, p)) {
     const before = p['took'];
     if (TAKE_UP[job]?.(ctx, p)) return true;

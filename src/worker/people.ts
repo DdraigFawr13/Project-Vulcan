@@ -3,7 +3,9 @@
 import { content } from '../content/index.ts';
 import {
   clockAt,
-  cloakOf,
+  garmentOf,
+  leftOf,
+  wornOf,
   cropNow,
   declinedLine,
   fieldsOf,
@@ -297,16 +299,17 @@ const withHome = (home: WalkerView['home'], stranger: WalkerView['stranger']) =>
   ...(stranger && { stranger }),
 });
 
-/** The cloak a person wears and how worn it is (V-092): "Wool cloak, worn 30%, warmer outdoors". */
+/** What a person wears and how worn each is (V-092, P5.5): "Wool tunic, plain: worn 30%, 2 °C
+ * warmer outdoors. Wool cloak, plain: worn 10%, 4 °C warmer outdoors." */
 function wearingOf(world: WorldState, p: EntityRow): { wearing?: string } {
-  const cloak = cloakOf(world, p.id);
-  if (!cloak) return {};
-  const { last, warmth } = content.life.cloak;
-  const worn = Math.round(100 - ((cloak['wear'] as number) * 100) / last);
-  const name = nameOf(content.items, cloak['kind'] as string);
-  return {
-    wearing: `${name[0]!.toUpperCase()}${name.slice(1)}: worn ${worn}%, ${warmth} °C warmer outdoors.`,
-  };
+  const worn = wornOf(world, p.id);
+  if (!worn.length) return {};
+  const parts = worn.map((i) => {
+    const name = nameOf(content.items, i['kind'] as string);
+    const warmth = garmentOf(content, i['kind'] as string)?.warmth ?? 0;
+    return `${name[0]!.toUpperCase()}${name.slice(1)}, ${i['quality']}: worn ${100 - leftOf(content, i)}%, ${warmth} °C warmer outdoors.`;
+  });
+  return { wearing: parts.join(' ') };
 }
 
 /** A person's live memories in words from memories.json, with the days before each fades. */

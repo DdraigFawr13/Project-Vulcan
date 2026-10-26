@@ -227,6 +227,8 @@ export function haveOf(world: WorldState, content: EngineContent, good: string):
   let n = 0;
   for (const i of itemsOf(world)) {
     if (i['kind'] !== good && goods.get(i['kind'] as string) !== good) continue;
+    // Clothes being worn are nobody's spares (P5.5).
+    if (i['state'] === 'worn') continue;
     // Off the map (x -1) is an owned tool between uses, kept as carried.
     if (!i['holder'] && (i['x'] as number) >= 0) {
       reach ??= reachFrom(content, map, { x: map.startX, y: map.startY, z: 0 });

@@ -11,6 +11,8 @@
   {"id":"kin-wandered","mood":-5,"decayDays":6,"text":"{about} wandered off"},
   {"id":"saw-theft","mood":-5,"decayDays":10,"text":"Saw {about} steal from the stores"},
   {"id":"ate-well","mood":3,"decayDays":2,"text":"Ate a cooked meal"},
+  {"id":"well-dressed","mood":2,"decayDays":6,"text":"Wearing fine new clothes"},
+  {"id":"ragged","mood":-2,"decayDays":1,"text":"My clothes are in rags"},
   {"id":"cursed-item","mood":-6,"decayDays":3,"text":"Troubled by a cursed heirloom"},
   {"id":"envied","mood":-3,"decayDays":5,"text":"Envied {about}'s treasure"},
   {"id":"short-meals","mood":-6,"decayDays":3,"text":"On short meals"},

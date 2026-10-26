@@ -1,0 +1,23 @@
+{
+"good":"clothes",
+"slots":[{"id":"everyday","name":"Everyday"},{"id":"outer","name":"Outer"}],
+"garments":[
+{"item":"smock","slot":"everyday","warmth":1,"last":4000,"from":[{"kind":"linen","count":1}],"minutes":240},
+{"item":"tunic","slot":"everyday","warmth":2,"last":4800,"from":[{"kind":"wool","count":1}],"minutes":240},
+{"item":"cloak","slot":"outer","warmth":4,"last":11000,"from":[{"kind":"wool","count":2}],"minutes":360},
+{"item":"leather-coat","slot":"outer","warmth":4,"last":22000,"from":[{"kind":"leather","count":2}],"minutes":480},
+{"item":"hide-coat","slot":"outer","warmth":6,"last":11000,"from":[{"kind":"fur","count":2}],"minutes":480}
+],
+"cold":2,
+"worth":[{"id":"fine","word":"fine","at":8,"last":150},{"id":"good","word":"good","at":4,"last":125},{"id":"plain","word":"plain","at":-99,"last":100}],
+"change":10,
+"ragged":10,
+"memories":{"fine":"well-dressed","ragged":"ragged"},
+"cart":["tunic","cloak"],
+"newcomer":["tunic","cloak"],
+"tailor":{"job":"tailor","skilled":10,"roll":2},
+"weave":{"job":"weave","skilled":10,"recipes":[{"makes":"wool","out":1,"from":[{"kind":"fleece","count":1}],"minutes":480},{"makes":"linen","out":1,"from":[{"kind":"flax","count":10}],"minutes":480}]},
+"loom":{"piece":"loom"},
+"tan":{"job":"tan","skilled":10,"hide":"hide","leather":{"makes":"leather","bark":"logs","days":28,"minutes":60},"fur":{"makes":"fur","minutes":180}},
+"pits":{"name":"tan pits","w":4,"h":3,"pits":3,"material":"logs","cost":4,"minutes":240,"water":12,"start":1}
+}
