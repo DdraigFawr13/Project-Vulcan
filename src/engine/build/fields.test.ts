@@ -92,15 +92,17 @@ describe('fields', () => {
     const most = { grain: 0, seed: 0 };
     // Each reaper remembers bringing it in (V-091), the memory citing the harvest home.
     let remembered: boolean | undefined;
+    // Read only the lines each hour writes, not the whole ledger (LESSONS 2026-10-26), and stop
+    // once the harvest home is remembered and grain and seed are in, within 20 days.
     for (let hour = 0; hour < 20 * 24; hour += 1) {
-      step(world, sim, 60);
-      const home = lines(world, 'farm.harvestHome')[0];
+      const home = step(world, sim, 60).find((e) => e.type === 'farm.harvestHome');
       if (home && remembered === undefined)
         remembered = home.actors.every((id) =>
           memoriesOf(world, id).some((m) => m['memory'] === 'harvested' && m['line'] === home.id),
         );
       most.grain = Math.max(most.grain, stored('grain'));
       most.seed = Math.max(most.seed, stored('seed'));
+      if (remembered !== undefined && most.grain > 0 && most.seed > before) break;
     }
     expect(world.commandLog).toHaveLength(0);
     const harvested = lines(world, 'field.harvested')[0]!;
