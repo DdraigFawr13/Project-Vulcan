@@ -28,7 +28,7 @@ Delegate only when cheaper (VR-51): ~30k tokens of reading or output, ~150 lines
 
 ## Budgets (log overruns as OVER, VR-47)
 
-Setup 10 min and 60 KB before the first edit; session hook 2 min; checks as in VR-67; a test file 2 s; CI 5 min; a milestone reading list 80 KB (`npm run reading-cost`).
+Setup 10 min and 60 KB before the first edit; session hook 2 min; checks as in VR-67; a test file 2 s; CI 5 min; a milestone reading list 82 KB (`npm run reading-cost`, V-151).
 
 ## Where things live
 
