@@ -24,12 +24,11 @@ import { fieldsOf, ringOf } from './index.ts';
 // Hunting and fishing (P5.4a) would put fish and game in the store beside the harvest this file
 // follows, so the wild valley is kept out of the colony's way. So is the flock (Bundle 3): its
 // herders and hurdles share the hands the harvest needs.
-const sim = createSim(
-  withoutWild({
-    ...content,
-    flock: { ...content.flock, tame: { ...content.flock.tame, species: [] } },
-  }),
-);
+const harvestContent = withoutWild({
+  ...content,
+  flock: { ...content.flock, tame: { ...content.flock.tame, species: [] } },
+});
+const sim = createSim(harvestContent);
 const DAY = 1440;
 const SEEDS = ['ledger', 'tallow', 'anvil'];
 type World = ReturnType<typeof createWorld>;
@@ -75,14 +74,27 @@ describe('fields', () => {
     });
   }
 
-  const harvestWorld = createWorld(sim, SEEDS[0]!);
   it('sows in spring, reaps when ripe, and brings grain and seed to the store', () => {
-    const world = harvestWorld;
+    // Crops ripen in 6 days instead of 56 to 90, so the test waits days, not a season, for the
+    // harvest (CI timed the full 84-day barley out at 20 s). Sowing, ripening, reaping and
+    // hauling are the same code; only the growing time is shorter.
+    const quick = {
+      ...harvestContent.buildings.field,
+      crops: harvestContent.buildings.field.crops.map((c) => ({ ...c, days: 6 })),
+    };
+    const fast = createSim({
+      ...harvestContent,
+      buildings: { ...harvestContent.buildings, field: quick },
+    });
+    const world = createWorld(fast, SEEDS[0]!);
     const stored = (kind: string) =>
       itemsOf(world)
         .filter((i) => i['kind'] === kind && inStore(world, i['x'] as number, i['y'] as number, 0))
         .reduce((n, i) => n + (i['count'] as number), 0);
-    step(world, sim, 80 * DAY);
+    // Wait for the crop to ripen (capped at 30 days), checking the fields, not the ledger.
+    const ripe = () => fieldsOf(world).some((f) => f['state'] === 'ripe');
+    for (let at = 0; at < 30 * 24 && !ripe(); at += 6) step(world, fast, 360);
+    expect(ripe()).toBe(true);
     // The cart's seed went into the ground, a seed a tile; the turnips sown after the barley use
     // the harvest's seed again, so watch the store hour by hour.
     const sown = fieldsOf(world).reduce((n, f) => n + (f['tiles'] as number[]).length, 0);
@@ -92,8 +104,11 @@ describe('fields', () => {
     const most = { grain: 0, seed: 0 };
     // Each reaper remembers bringing it in (V-091), the memory citing the harvest home.
     let remembered: boolean | undefined;
-    for (let hour = 0; hour < 20 * 24; hour += 1) {
-      step(world, sim, 60);
+    // Until grain and fresh seed stand in the store and the reapers' memory is read, capped at
+    // 20 days.
+    const done = () => remembered !== undefined && most.grain > 0 && most.seed > before;
+    for (let hour = 0; hour < 20 * 24 && !done(); hour += 1) {
+      step(world, fast, 60);
       const home = lines(world, 'farm.harvestHome')[0];
       if (home && remembered === undefined)
         remembered = home.actors.every((id) =>
@@ -120,7 +135,7 @@ describe('fields', () => {
     // Hauled in: grain stands in the store, and the seed the cart brought was topped up.
     expect(most.grain).toBeGreaterThan(0);
     expect(most.seed).toBeGreaterThan(before);
-  }, 20000);
+  });
 
   it('lays a field as one compact block just outside the ring', () => {
     const world = createWorld(sim, SEEDS[0]!);
