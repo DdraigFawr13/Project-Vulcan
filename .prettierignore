@@ -34,10 +34,12 @@ src/content/data/
 .claude/master/RULES.md
 .claude/master/sync.mjs
 .claude/skills/audit/
+.claude/skills/brainstorm/
 .claude/skills/efficient-github-actions/
 .claude/skills/planning-interview/
 .claude/skills/routing/
 .claude/skills/test-design/
+.claude/skills/ui-style/
 .claude/skills/write-spec/
 .github/workflows/prune-merged-branches.yml
 # ai-master:end

@@ -36,12 +36,13 @@ The four new agents are on trial: each is measured on first use against doing th
 
 | Skill | Source | Use when |
 | --- | --- | --- |
-| `mockup-round` | new, Vulcan | Start of every milestone, after its spec is approved |
+| `mockup-round` | new, Vulcan | Start of every milestone, after its spec is approved; in charge of mock-ups until the `ui-mockups` pilot (V-152) |
 | `phase-review` | new, Vulcan | The last milestone of a phase has merged |
 | `balance-check` | new, Vulcan | Any tuning question; the 15-minute, three-run box |
 | `map-check` | new, Vulcan (adapted from Story Generator's `worldgen-check`) | After Phase 1 milestones or any map change |
 | `art-sheet` | new, Vulcan | A milestone's art row comes due |
 | `efficient-github-actions` | synced from AI-Master | Any change under `.github/workflows` or CI cost question |
+| `ui-style` | synced from AI-Master | Setting up or changing the look; `docs/UI_STYLE.md` is the style doc |
 | `bootstrap-project` | built in | Once, in P0.1, to adopt AI-Master |
 | `session-start-hook` | built in | Once, in P0.1, for the cloud session hook |
 | `artifact-design` | built in | Every page published for Morgan |
