@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 // The one browser smoke (RULES.md VR-23): the bare link shows the title, a seed opens the site
 // picker, a valley is settled, the band's arrival screen names who can build and cook, the
@@ -7,15 +7,18 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 // below once time runs and the inspector leads down them on a phone, then a shaft; a reload
 // continues where the game was, shaft and all; the title's Continue names the valley and loads it.
 // P2.5 to P2.7: a person's tabs, the Work sheet's stepper, Skip to a notable line and the alerts.
-/** Each button's smallest side (px) under `row`, measured in one step: the game runs while the
- * Work sheet is open, and a snapshot that redraws it between finding a button and measuring it
- * left a detached button with no box (CI, PR #63). */
-const buttonSides = (row: Locator) =>
-  row
-    .getByRole('button')
-    .evaluateAll((all) =>
-      all.map((b) => Math.min(b.getBoundingClientRect().width, b.getBoundingClientRect().height)),
-    );
+/** Each button's smallest side (px) in the sheet's row for `job`, found and measured in one page
+ * call: the game runs while the Work sheet is open, and a snapshot that redraws it between finding
+ * a button and measuring it leaves a detached button with no box. `evaluateAll` is two calls (find,
+ * then evaluate), so it still raced: 0,0 in CI on PR #101, after PR #63's null box. */
+const buttonSides = (page: Page, job: string) =>
+  page.evaluate(
+    (selector) =>
+      [...document.querySelectorAll(selector)].map((b) =>
+        Math.min(b.getBoundingClientRect().width, b.getBoundingClientRect().height),
+      ),
+    `[data-testid="panel"] .prio[data-job="${job}"] button`,
+  );
 const tick = async (page: Page) =>
   Number(await page.getByTestId('debug').getAttribute('data-tick'));
 /** The last snapshot's tick and the worker's clock when it was sent (ms). */
@@ -291,7 +294,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // P3.4: Carpentry comes from content like the other rows, with its skill line and 44 px steppers.
   const carpentry = panel.locator('.prio[data-job="carpentry"]');
   await expect(carpentry).toContainText(/crafting \d+, can reach \d+/);
-  const carpentrySides = await buttonSides(carpentry);
+  const carpentrySides = await buttonSides(page, 'carpentry');
   expect(carpentrySides.length).toBeGreaterThan(0);
   expect(
     carpentrySides.every((n) => n >= 44),
@@ -312,7 +315,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   const tend = panel.locator('.prio[data-job="tend"]');
   await expect(tend).toContainText('Tending');
   await expect(tend).toContainText('no skill needed');
-  const tendSides = await buttonSides(tend);
+  const tendSides = await buttonSides(page, 'tend');
   expect(tendSides.length).toBeGreaterThan(0);
   expect(
     tendSides.every((n) => n >= 44),
