@@ -119,13 +119,16 @@
   border-bottom: 1px solid var(--rule);
 }
 #hud .tabs button {
-  flex: 1;
+  /* Six tabs share a 390 px row by their width (P6.2). */
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-inline: 3px;
   border: 0;
   border-bottom: 3px solid transparent;
   border-image: none;
   background: none;
   color: var(--ink-soft);
-  font: 700 15px/1 var(--name);
+  font: 700 14px/1 var(--name);
   text-shadow: none;
 }
 #hud .tabs button[aria-pressed='true'] {
@@ -378,19 +381,6 @@ table.grid td {
   padding-left: 8px;
   margin: 8px 0;
 }
-.mem {
-  display: flex;
-  gap: 6px;
-  align-items: baseline;
-  flex-wrap: wrap;
-  font-size: 15px;
-  margin: 4px 0;
-}
-.mem .pts {
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-soft);
-}
 
 /* The desktop Work grid: a person per column and the trades as rows, so every job fits in the sheet. */
 table.grid {
@@ -554,4 +544,79 @@ table.grid th small {
   flex: 0 0 auto;
   align-self: flex-start;
   height: var(--tap);
+}
+
+/* Memories and thoughts (P6.2, V-154): the Thinking line under Doing now, in the reading face;
+   the Memories tab's rows (band, name, why?, then the line on why it matters); the thought
+   bubbles over the map are paper and ink, never buttons. */
+.thinking {
+  margin-top: 8px;
+}
+.thinking p {
+  font-style: italic;
+}
+.memrow {
+  display: grid;
+  grid-template-columns: 62px 1fr auto;
+  gap: 2px 8px;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--track);
+}
+.memrow .band {
+  font: 700 13px/1.2 var(--name);
+  color: var(--ink-soft);
+}
+.memrow .band.heavy,
+.memrow .band.lasting {
+  color: var(--ink);
+}
+.memrow .t {
+  font: 16px/1.3 var(--read);
+  color: var(--ink);
+  min-width: 0;
+}
+.memrow .r {
+  grid-column: 2 / 4;
+  font: italic 14px/1.3 var(--read);
+  color: var(--ink-soft);
+}
+.thought-bubbles {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bubble {
+  position: absolute;
+  max-width: 150px;
+  padding: 5px 8px;
+  background: var(--page);
+  border: 1px solid var(--oak-dark);
+  border-radius: 3px;
+  font: italic 13px/1.25 var(--read);
+  color: var(--ink);
+  box-shadow: 0 1px 0 var(--oak-dark);
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-top-color: var(--oak-dark);
+  border-bottom: 0;
+}
+.bubble.below {
+  transform: translate(-50%, 0);
+}
+.bubble.below::after {
+  bottom: auto;
+  top: -7px;
+  border: 6px solid transparent;
+  border-bottom-color: var(--oak-dark);
+  border-top: 0;
 }

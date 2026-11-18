@@ -7,7 +7,7 @@ import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { eatFrom } from '../goods/index.ts';
 import { expose } from '../health/index.ts';
 import { floorsOf, rateOf } from '../keep/index.ts';
-import { addMemory, changeNeed, crossed, needOf } from '../needs/index.ts';
+import { addMemory, changeNeed, crossed, needOf, tasted } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { tallyAdd } from './tally.ts';
 
@@ -54,6 +54,8 @@ export function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
   eatFrom(ctx, item, p);
   // A cooked meal is remembered (V-090), citing the batch's line.
   if (wasCooked) addMemory(ctx, p.id, memory, made);
+  // The same food day after day is remembered too (V-146), citing the batch or the food's line.
+  tasted(ctx, p.id, item['kind'] as string, made || ((item['line'] as number) ?? 0));
   tallyAdd(ctx, 'eaten', 1);
   changeNeed(ctx.content, row, gives);
   crossed(ctx, p, row, def);

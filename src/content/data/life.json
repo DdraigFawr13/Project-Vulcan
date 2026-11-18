@@ -1,13 +1,13 @@
 {
 "scale":10000,"again":1000,
 "needs":[
-{"id":"food","name":"Food","fall":400,"low":3000,"seek":5200,"lowWord":"Hungry","okWord":"Fed","weight":3},
-{"id":"rest","name":"Rest","fall":300,"low":3000,"seek":2500,"lowWord":"Tired","okWord":"Rested","weight":2},
-{"id":"warmth","name":"Warmth","fall":0,"low":3000,"seek":0,"lowWord":"Cold","okWord":"Warm","weight":2,"quiet":true},
-{"id":"recreation","name":"Recreation","fall":150,"low":3000,"seek":3500,"lowWord":"Bored","okWord":"Relaxed","weight":1},
-{"id":"beauty","name":"Beauty","fall":0,"low":3000,"seek":0,"lowWord":"Gloomy","okWord":"Fine","weight":1},
-{"id":"privacy","name":"Privacy","fall":0,"low":3000,"seek":0,"lowWord":"Crowded","okWord":"Settled","weight":1},
-{"id":"water","name":"Water","fall":300,"asleepFall":100,"low":3000,"seek":5500,"lowWord":"Thirsty","okWord":"Quenched","weight":1}
+{"id":"food","name":"Food","fall":400,"low":3000,"seek":5200,"lowWord":"Hungry","okWord":"Fed","weight":3,"memory":"went-hungry","thoughts":["So hungry I can't think of the work.","When will we eat properly?"]},
+{"id":"rest","name":"Rest","fall":300,"low":3000,"seek":2500,"lowWord":"Tired","okWord":"Rested","weight":2,"thoughts":["I could sleep where I stand."]},
+{"id":"warmth","name":"Warmth","fall":0,"low":3000,"seek":0,"lowWord":"Cold","okWord":"Warm","weight":2,"quiet":true,"memory":"cold-night","thoughts":["So cold. I need a fire.","My hands are numb."]},
+{"id":"recreation","name":"Recreation","fall":150,"low":3000,"seek":3500,"lowWord":"Bored","okWord":"Relaxed","weight":1,"thoughts":["All work and no rest."]},
+{"id":"beauty","name":"Beauty","fall":0,"low":3000,"seek":0,"lowWord":"Gloomy","okWord":"Fine","weight":1,"thoughts":["This place is grim."]},
+{"id":"privacy","name":"Privacy","fall":0,"low":3000,"seek":0,"lowWord":"Crowded","okWord":"Settled","weight":1,"thoughts":["Never a moment to myself."]},
+{"id":"water","name":"Water","fall":300,"asleepFall":100,"low":3000,"seek":5500,"lowWord":"Thirsty","okWord":"Quenched","weight":1,"thoughts":["My throat is dry as dust."]}
 ],
 "start":[8000,9000,9000,8000,6000,8000,9000],
 "beauty":{"neutral":6000,"perPoint":1000,"rate":250,"outdoors":50},
@@ -20,7 +20,7 @@
 "seedAt":0,
 "mood":[{"word":"Content","at":6000},{"word":"Steady","at":4000},{"word":"Low","at":2000},{"word":"Miserable","at":0}],
 "cart":{"kind":"cart","goods":[{"kind":"preserved","count":640},{"kind":"seed","count":80},{"kind":"wool","count":5}],"bedroll":"bedroll"},
-"memory":{"weight":100},
+"memory":{"weight":100,"heavy":3,"lasting":8,"lingerDays":84,"spellDays":7,"windowDays":28,"recentHours":6,"sameFood":{"days":14,"kinds":2,"memory":"same-food"},"thoughts":{"none":["Nothing much on my mind."],"good":["{memory}. That was good.","Still glad of it: {memory}."],"bad":["{memory}. I can't shake it.","I keep going back to it: {memory}."]}},
 "warmthLine":{"traits":{"hardy":-600},"memories":{"cold-night":300,"slept-rough":200}},
 "stacks":{"smock":1,"tunic":1,"cloak":1,"leather-coat":1,"hide-coat":1,"preserved":100,"grain":100,"turnips":100,"oats":100,"beans":100,"cabbages":100,"seed":100,"logs":50,"stone":50,"default":50}
 }

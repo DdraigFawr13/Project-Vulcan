@@ -35,6 +35,9 @@ export const LIFE_SCHEMAS = {
         // `quiet`: warning line notable once a person a day (V-092); `asleepFall`: fall asleep.
         quiet: opt(bool()),
         asleepFall: opt(count),
+        // The memory a person gains while under the line (V-154) and what they think then.
+        memory: opt(ref('memories')),
+        thoughts: list(text),
       }),
     ),
     // Each need's value when the band arrives, in the order of `needs`.
@@ -77,8 +80,21 @@ export const LIFE_SCHEMAS = {
       goods: list(obj({ kind: ref('items'), count: num({ min: 1 }) })),
       bedroll: ref('items'),
     }),
-    // Memories (V-091): each live memory's mood, in points, counts `weight` times in the mood.
-    memory: obj({ weight: count }),
+    // Memories (V-091, V-154): each fresh memory's mood points count `weight` times in the mood.
+    // Weight `heavy` or more lingers `lingerDays` after it last came; `lasting` or more stays for
+    // life. A memory with a `heavy` name gains 1 for each `spellDays` it came in `windowDays`.
+    // Thoughts come from a need under its line, a memory got in `recentHours`, else the strongest.
+    memory: obj({
+      weight: count,
+      heavy: num({ min: 1 }),
+      lasting: num({ min: 1 }),
+      lingerDays: count,
+      spellDays: num({ min: 1 }),
+      windowDays: num({ min: 1, max: 30 }),
+      recentHours: count,
+      sameFood: obj({ days: num({ min: 1 }), kinds: num({ min: 1 }), memory: ref('memories') }),
+      thoughts: obj({ none: list(text), good: list(text), bad: list(text) }),
+    }),
     // The warmth warning line moves by temperament and memories (V-046): points a trait or a held
     // memory adds to it, each memory row counted (P4.8).
     warmthLine: obj({ traits: map(num(), 'traits'), memories: map(num(), 'memories') }),

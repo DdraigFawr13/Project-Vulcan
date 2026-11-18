@@ -1,12 +1,6 @@
 {
   "version": "v4.15.0",
   "layers": ["core", "stacks/node-web", "project-types/game"],
-  "exclude": [
-    {
-      "id": "skill/ui-mockups",
-      "reason": "local mockup-round until the pilot"
-    }
-  ],
   "overrides": [
     {
       "id": "CTX-01",

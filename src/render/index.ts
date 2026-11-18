@@ -22,6 +22,7 @@ import { GoodsSprites } from './goods.ts';
 import { GreenSprites } from './green.ts';
 import { PeopleSprites } from './people.ts';
 import { WorkBars } from './progress.ts';
+import { Bubbles } from './bubbles.ts';
 import { Finder } from './finder.ts';
 import { WildSprites } from './wild.ts';
 import { WearLayer } from './wear.ts';
@@ -110,6 +111,7 @@ export function startRenderer(
   const wild = new WildSprites(game, scene);
   const wear = new WearLayer(game, scene);
   const finder = new Finder(game, scene, () => people.spots());
+  const bubbles = new Bubbles(game, scene, parent, () => people.spots());
   // The smoke has no handle on the renderer: this event centres the view on an animal and writes
   // where it stands on screen (canvas px) to `data-animal-at`.
   parent.addEventListener('vulcan:find-animal', (e) => {
@@ -144,7 +146,10 @@ export function startRenderer(
     setAura: (spots) => scene.setAura(spots),
     zoomStep: (direction) => scene.zoomStep(direction),
     lookAt: (x, y) => scene.controls?.lookAt((x + 0.5) * TILE, (y + 0.5) * TILE),
-    setTopInset: (px) => scene.setTopInset(px),
+    setTopInset: (px) => {
+      scene.setTopInset(px);
+      bubbles.setTopInset(px);
+    },
     setLevel: (z) => {
       scene.setLevel(z);
       people.setLevel(z);
@@ -164,6 +169,7 @@ export function startRenderer(
     focus: (x, y, below) => scene.controls?.focus((x + 0.5) * TILE, (y + 0.5) * TILE, below),
     follow: (id, pulse) => {
       finder.follow(id, pulse);
+      bubbles.follow(id);
       // For the find check: where the person stands on screen (canvas px) once the view is drawn.
       delete parent.dataset['found'];
       if (id !== undefined)
@@ -182,7 +188,10 @@ export function startRenderer(
     showNames: (on) => finder.showNames(on),
     setPeople: (list) => people.set(list),
     personAt: (x, y) => people.at(x, y),
-    movePeople: (walkers) => people.move(walkers),
+    movePeople: (walkers) => {
+      people.move(walkers);
+      bubbles.setThoughts(walkers);
+    },
     setAnimals: (list) => {
       wild.set(list);
       parent.dataset['animals'] = String(list.length);

@@ -155,12 +155,20 @@ export {
 export {
   addMemories,
   addMemory,
+  bandOf,
   feltAt,
+  goesAt,
+  heldMemoriesOf,
   memoriesOf,
+  memoryName,
   moodOf,
   needOf,
   needsSystem,
+  strongestFirst,
+  thoughtOf,
   warmLineOf,
+  type Band,
+  type Thought,
 } from './needs/index.ts';
 export {
   customaryHours,

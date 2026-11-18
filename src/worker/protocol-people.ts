@@ -89,9 +89,10 @@ export interface WalkerView {
   tools: { id: number; kind: string; text: string }[];
   /** What they wear, one row per garment in slot order (V-092, V-134); none when bare. */
   wearing?: WearingRow[];
-  /** Their live memories (V-091): the text, its mood in points, the days before it fades, the
-   * line that made it (for "why?") and, when it weighs on the law now, which way (P4.8). */
-  memories: { text: string; mood: number; days: number; why: number; lean?: string }[];
+  /** Every memory they hold, strongest first (V-091, V-154): see MemoryView. */
+  memories: MemoryView[];
+  /** What is on their mind (V-154), in quotes, and the line it comes from (0 for none). */
+  thought: { text: string; why: number };
   /** Their answer to the work-hours law (P4.8); none while the law is Customary. */
   law?: AnswerView;
   /** Hurt, healed or dead (P5.6, P5.8); none for someone never hurt. */
@@ -125,4 +126,14 @@ export interface StrangerView {
   who: string;
   rows: { name: string; text: string; why?: number }[];
   foot: string;
+}
+
+/** A held memory (V-154): its name ("The hungry spring"), band, a line on why it matters and
+ * how long it stays ("+8 mood, 2 days left." or "Hungry on 46 days, … stays until 5 Mistmonth."
+ * with how it leans on the law while fresh, P4.8), and the line that made it, for "why?". */
+export interface MemoryView {
+  text: string;
+  band: 'Light' | 'Heavy' | 'Lasting';
+  note: string;
+  why: number;
 }
