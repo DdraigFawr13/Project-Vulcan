@@ -15,6 +15,7 @@ Each item is tagged: `(lint)` items are flagged by `ui-mockups`' `mockup-lint.mj
 - (lint) Text below the style's minimum size [Vulcan LESSONS:24]
 - (look) Tap targets below the style's minimum [Vulcan LESSONS:24]
 - (lint) Placeholder copy (lorem ipsum, TODO) [adventure-manager LESSONS:15]
+- (lint) Text colour set only on `:root`, not on `body`, so dark mode shows dark text on a dark page [dfma-review LESSONS "pages" 2026-11-08]
 - (look) Invented example facts: a name, number or option not in the project's files [adventure-manager LESSONS:15]
 - (look) Copy tics: em-dash asides, "not X but Y", "seamless", "unlock", filler intros [Morgan 2026-11-03, D-050; artifact-design guidance "Writing the copy"]
 - (look) A control that gives no answer on the screen where it was used [Vulcan LESSONS:19]

@@ -19,7 +19,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 ## 3. A clean, efficient repo
 
 - **VR-08** One branch per milestone, cut from the latest `main`; one PR per branch; squash-merge on green CI (GIT-01, GIT-05).
-- **VR-09** Merged branches are deleted at once: GitHub's auto-delete setting on, plus the synced prune workflow. A branch is never reused after its merge (GIT-02).
+- **VR-09** Merged branches are deleted at once: GitHub's auto-delete setting on, plus the synced prune workflow. A branch is never reused after its merge (GIT-01, GIT-08).
 - **VR-10** No build output, reports, scratch files, worktrees or secrets in git; `.gitignore` covers them (DEL-06, SAFE-02).
 - **VR-11** No new runtime dependency without asking (SAFE-03). Delete code a change makes dead in the same PR.
 - **VR-12** CI runs only on PRs and `main`, cancels superseded runs, and stays under 5 minutes (CI-06).

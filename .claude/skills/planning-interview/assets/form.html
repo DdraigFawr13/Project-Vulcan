@@ -95,7 +95,7 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid var(--brass); 
   reply comments as "c_<id>". Item types:
     single   { id, q, why?, opts: ["a", { t: "b", rec: 1 }] }        one choice; rec marks your recommendation
     multi    { id, q, why?, opts }                                     any number
-    text     { id, q, why? }                                           free text (not counted in progress)
+    text     { id, q, why? }                                           free text (not counted in progress); any item without opts shows as text
     priority { id, name, desc?, tag? }                                 Now / Soon / Later / No
     keep     { id, name, desc?, tag? }                                 Keep / After / Cut
     reply    { id, title, body, take, sev?: "high"|"medium"|"low", src? }   Agree / Disagree / Discuss + comment
@@ -161,7 +161,7 @@ function renderItems(items) {
       continue;
     }
     const card = el("section", { class: "card" + (answered(state[it.id]) ? " done" : "") }, el("h3", {}, it.q), it.why ? el("p", { class: "why" }, it.why) : null);
-    card.append(...(it.type === "text" ? [textBox(it.id, it.q)] : [chips(it), noteBox(it, it.q)].filter(Boolean))); out.push(card);
+    card.append(...(it.type === "text" || !Array.isArray(it.opts) ? [textBox(it.id, it.q)] : [chips(it), noteBox(it, it.q)].filter(Boolean))); out.push(card);
   }
   return out;
 }

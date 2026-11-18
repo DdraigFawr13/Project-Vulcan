@@ -16,6 +16,8 @@ src/content/data/
 .claude/agents/reader.md
 .claude/agents/reviewer.md
 .claude/agents/test-runner.md
+.claude/hooks/guards/checks/ci.mjs
+.claude/hooks/guards/checks/edits.mjs
 .claude/hooks/guards/checks/gates.mjs
 .claude/hooks/guards/checks/git.mjs
 .claude/hooks/guards/checks/secrets.mjs
@@ -27,6 +29,7 @@ src/content/data/
 .claude/hooks/guards/lib.mjs
 .claude/hooks/guards/modules.mjs
 .claude/hooks/guards/parse.mjs
+.claude/hooks/guards/post-tool-use.mjs
 .claude/hooks/guards/pre-tool-use.mjs
 .claude/hooks/guards/stop.mjs
 .claude/hooks/session-start.sh

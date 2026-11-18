@@ -33,6 +33,7 @@ Copy `assets/SPEC.md` (in this skill's folder) to `docs/specs/<slug>.md` and fil
 - **Slices:** each slice is a thin end-to-end path that fits one fresh session, leaves the project working and gives Morgan something to try. A slice per layer (all the database, then all the UI) is not a slice. Ask "what can Morgan try when this lands?"
 - **No implementation code.** Schemas and signatures are fine.
 - **Label every assumption** (WS-06), and copy names from the source.
+- **Run what it names.** Before step 5, call every library function the spec relies on with a small real input, and read the check script and CI workflow for the folders they run before naming a test path. In dfma-review a named geometry call found 0 walls on a plain block, and tests were placed in folders the checks never ran; prototyping first caught 3 facts the plan lacked (dfma-review LESSONS "spec", 2026-11-07 and 2026-11-08).
 
 Keep it as short as the work allows. A builder needs decisions and checks, not essays.
 
@@ -88,7 +89,7 @@ After approval:
 
 ## 8. Build, slice by slice
 
-- **Fresh session per slice.** Build each slice in a fresh session, or give it to the `implementer` agent with a DEL-04 brief made from the slice: goal, files, checks, commands. Never build it in the session that wrote the spec.
+- **One build session.** Build the slices in a session other than the one that wrote the spec, or give a slice to the `implementer` agent with a DEL-04 brief made from it: goal, files, checks, commands. After a slice merges, start the next approved slice in the same session without being asked, while its context is under 300k tokens (an assumption under test, D-065); past that, update HANDOFF and start the next slice in a new session yourself.
 - **Re-check before each slice.** If the spec or the merged code changed since the last check, run the zero-decision check (with its cross-slice part) on the sections the slice touches, against what earlier slices actually merged. Ask Morgan any gap before building.
 - **Screen changes.** A slice that adds a screen, changes a screen's layout or controls, or changes a style token starts with a mock-up made with `ui-mockups`, approved by Morgan before code.
 - **Checks fail first.** Before writing code, run the slice's checks and confirm they fail.
