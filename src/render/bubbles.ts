@@ -57,6 +57,10 @@ export class Bubbles {
 
   /** Each snapshot: a thought that changed (after the first one seen) shows for a while. */
   setThoughts(walkers: readonly WalkerView[]): void {
+    // Someone gone from the snapshot (dead and buried, or left) is forgotten.
+    const here = new Set(walkers.map((w) => w.id));
+    for (const id of [...this.thoughts.keys()])
+      if (!here.has(id)) [this.thoughts, this.until].forEach((m) => m.delete(id));
     for (const w of walkers) {
       const was = this.thoughts.get(w.id);
       if (was !== undefined && was !== w.thought.text) this.until.set(w.id, this.clock + SHOW_MS);

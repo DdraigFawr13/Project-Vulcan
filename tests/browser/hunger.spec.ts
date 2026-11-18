@@ -1,5 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { alertText, settle, skipOnce } from './helpers';
+import life from '../../src/content/data/life.json' with { type: 'json' };
+
+// Any need's thought line (life.json `needs[].thoughts`), as the sheet shows it in quotes.
+const NEED_THOUGHT = new RegExp(
+  life.needs
+    .flatMap((n) => n.thoughts)
+    .map((t) => `“${t.replace(/[.?]/g, '\\$&')}”`)
+    .join('|'),
+);
 
 // The band going hungry, apart from the smoke so the smoke keeps its time (CI, PR #69, as the Hurt
 // check did in PR #70): with Food wanted at none nobody forages, fishes or hunts, so the cart's food
@@ -44,9 +53,10 @@ test('a hungry colonist\'s Food "why?" names the line that ate the last of the f
   await panel.getByRole('button', { name: 'Needs' }).click();
   await hungry.first().click({ timeout: 5000 });
   await expect(panel.getByTestId('chain')).toContainText("ate the last of the band's food");
-  // P6.2 (V-154): hungry, they think of food, and the Memories tab holds the hunger (which comes
+  // P6.2 (V-154): under a need's line they think of it, and the Memories tab holds the hunger (which comes
   // first after a winter of it is memoryview.test.ts).
-  await expect(panel.getByTestId('thinking')).toContainText(/hungry|eat properly/);
+  // Their lowest need under its line speaks (hunger, or privacy in a crowded first house).
+  await expect(panel.getByTestId('thinking')).toContainText(NEED_THOUGHT);
   await panel.getByRole('button', { name: 'Memories' }).click();
   await expect(
     panel.getByTestId('memory').filter({ hasText: /Went to bed hungry|The hungry/ }),

@@ -1,5 +1,5 @@
 // What is on a person's mind (P6.2, V-154): one line from content, chosen in order: the lowest
-// need under its warning line; else a memory they gained in the last `life.memory.recentHours`;
+// need under its warning line; else a memory new to them (a run begun) in `life.memory.recentHours`;
 // else their strongest memory (heaviest, then fresh before lingering, then the most mood); else
 // `life.memory.thoughts.none`. Each list holds a few lines and a person's own hash picks one, so
 // two people with the same memory can say it differently. Fixed text, no randomness.
@@ -11,7 +11,7 @@ import {
   type EntityRow,
   type WorldState,
 } from '../core/index.ts';
-import { bandOf, heldMemoriesOf } from './memory.ts';
+import { bandOf, goesAt, heldMemoriesOf } from './memory.ts';
 
 export interface Thought {
   text: string;
@@ -80,7 +80,8 @@ export function thoughtOf(world: WorldState, content: EngineContent, person: num
   const def = low && content.life.needs.find((d) => d.id === low['need']);
   if (low && def?.thoughts.length)
     return { text: pick(def.thoughts, person, def.id), why: low['line'] as number };
-  const held = heldMemoriesOf(world, person);
+  // Not one at the end of its days that the hour's pass has yet to drop (as the tab shows).
+  const held = heldMemoriesOf(world, person).filter((m) => world.tick < goesAt(content, m));
   const since = world.tick - content.life.memory.recentHours * TICKS_PER_HOUR;
   const recent = held
     .filter((m) => (m['since'] as number) >= since)

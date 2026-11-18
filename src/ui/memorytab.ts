@@ -23,7 +23,9 @@ export function memoryRows(w: WalkerView | undefined): HTMLElement[] {
       row.append(
         el('span', { class: `band ${m.band.toLowerCase()}` }, m.band),
         el('span', { class: 't' }, m.text),
-        el('button', { type: 'button', class: 'why', 'data-why': String(m.why) }, 'why?'),
+        m.why
+          ? el('button', { type: 'button', class: 'why', 'data-why': String(m.why) }, 'why?')
+          : el('span'),
         el('span', { class: 'r' }, m.note),
       );
       return row;

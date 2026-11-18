@@ -50,7 +50,14 @@ describe('cooking', () => {
             needOf(w, p.id, 'food') && (w.entities['mood'] ?? []).find((m) => m['person'] === p.id);
           if (made && mood && (mood['value'] as number) < content.life.scale) {
             sampled += 1;
-            if ((mood['value'] as number) > needsMean(w, p.id)) raised += 1;
+            // Over what the needs and every other memory (hunger, cold, the same food) make.
+            const others = memoriesOf(w, p.id)
+              .filter((m) => !/^ate-/.test(m['memory'] as string))
+              .reduce((n, m) => {
+                const pts = content.memories.find((d) => d.id === m['memory'])?.mood ?? 0;
+                return n + pts * content.life.memory.weight;
+              }, 0);
+            if ((mood['value'] as number) > Math.max(0, needsMean(w, p.id) + others)) raised += 1;
           }
         }
       }
