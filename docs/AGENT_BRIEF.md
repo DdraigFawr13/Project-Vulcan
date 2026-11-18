@@ -9,7 +9,7 @@ One page. Everything else is read only at the section a reading list names.
 - **Indirect control** (V-015, V-019): no command moves, drafts or targets one colonist.
 - **Content over code** (V-007): a new item, law or creature is a data entry.
 - **Read in pieces** (VR-42 to VR-45): read `MODULE.md` contracts, not neighbours' code; system folders are imported only through `index.ts`; files under 400 lines.
-- **Lean tests** (VR-21 to VR-27): one determinism test, boundary tests of player-visible rules, one browser smoke, seed lists instead of pinned seeds.
+- **Lean tests** (VR-21 to VR-27): one determinism test, boundary tests of player-visible rules, one smoke plus the shared sheets file in the browser (VR-23), seed lists instead of pinned seeds.
 - **Ask on design forks** (VR-13); pick small defaults and say which (VR-14).
 - **Anything Morgan reads** goes out as an artifact page too (VR-41).
 
@@ -28,7 +28,7 @@ Delegate only when cheaper (VR-51): ~30k tokens of reading or output, ~150 lines
 
 ## Budgets (log overruns as OVER, VR-47)
 
-Setup 10 min and 60 KB before the first edit; session hook 2 min; checks as in VR-67; a test file 2 s; CI 5 min; a milestone reading list 84 KB (`npm run reading-cost`, V-151, V-163).
+Every number is in VR-46 (setup, hook, CI, reading list) and VR-67 (checks).
 
 ## Where things live
 

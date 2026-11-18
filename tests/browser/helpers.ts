@@ -1,0 +1,73 @@
+import { expect, type Page } from '@playwright/test';
+
+// Shared by the browser specs, so a browser lesson is applied once (audit 2026-11-18 F12).
+
+/** The last snapshot's tick, as the test-mode readout shows it. */
+export const tick = async (page: Page) =>
+  Number(await page.getByTestId('debug').getAttribute('data-tick'));
+
+/** The alert line's text. */
+export const alertText = async (page: Page) =>
+  (await page.getByTestId('alert').getAttribute('aria-label')) ?? '';
+
+/** Opens `/?seed=<seed>` at 390 x 844, settles valley `site` and arrives, paused on Day 1. */
+export async function settle(page: Page, seed: string, site: number, debug = true) {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/?seed=${seed}${debug ? '&debug' : ''}`);
+  // The picker waits on the seed's Story Generator world and its history (P1.6): about 5 s here.
+  await expect(page.locator('[data-card]')).toHaveCount(3, { timeout: 20_000 });
+  await page.getByTestId(`valley-${site}`).click();
+  await page.getByRole('button', { name: 'Settle here' }).click();
+  await page.getByTestId('arrive').click();
+  await expect(page.locator('.pslot').first()).toBeVisible();
+}
+
+/** Skip once: runs to the next notable line and waits until it has stopped there, paused. */
+export async function skipOnce(page: Page) {
+  const from = await tick(page);
+  // The button is in place (the bar never moves), so the click skips Playwright's wait for two
+  // still frames, and the tick is polled every 50 ms: on a slow runner mid-skip frames are slow, and
+  // those waits cost about a second a skip, which took the smoke past its CI limit (PR #69).
+  await page.getByTestId('speed-skip').click({ force: true });
+  await expect.poll(() => tick(page), { intervals: [50] }).toBeGreaterThan(from);
+  await expect(page.getByTestId('speed-skip')).toHaveAttribute('aria-pressed', 'false', {
+    timeout: 30_000,
+  });
+}
+
+/** Each button's smallest side (px) in the sheet's row for `job`, found and measured in one page
+ * call (VR-73): the game runs while the Work sheet is open, and a snapshot that redraws it between
+ * finding a button and measuring it leaves a detached button with no box (0,0 in CI on PR #101). */
+export const buttonSides = (page: Page, job: string) =>
+  page.evaluate(
+    (selector) =>
+      [...document.querySelectorAll(selector)].map((b) =>
+        Math.min(b.getBoundingClientRect().width, b.getBoundingClientRect().height),
+      ),
+    `[data-testid="panel"] .prio[data-job="${job}"] button`,
+  );
+
+/** What breaks the phone rules on the screen as shown: tap targets under 44 px, text under 11 px,
+ * or a page wider than the screen (UI_STYLE.md). Empty when the screen keeps them. */
+export const phoneRules = (page: Page) =>
+  page.evaluate(() => {
+    const shown = (e: Element) => {
+      const r = e.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight;
+    };
+    const bad: string[] = [];
+    for (const b of document.querySelectorAll('#hud button')) {
+      const r = b.getBoundingClientRect();
+      if (shown(b) && !b.closest('svg') && Math.min(r.width, r.height) < 44)
+        bad.push(`tap ${Math.round(Math.min(r.width, r.height))} px: ${b.textContent}`);
+    }
+    const text = document.createTreeWalker(document.getElementById('hud')!, NodeFilter.SHOW_TEXT);
+    while (text.nextNode()) {
+      const parent = text.currentNode.parentElement;
+      if (!parent || !text.currentNode.textContent!.trim() || parent.closest('svg')) continue;
+      const size = parseFloat(getComputedStyle(parent).fontSize);
+      if (shown(parent) && size < 11) bad.push(`text ${size} px: ${text.currentNode.textContent}`);
+    }
+    if (document.documentElement.scrollWidth > innerWidth) bad.push('wider than the screen');
+    return bad;
+  });
