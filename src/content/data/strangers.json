@@ -3,7 +3,7 @@
 "draw":{"base":30,"food":[{"days":120,"rate":100},{"days":60,"rate":60},{"days":0,"rate":20}],"noBed":50,"name":10,"winter":30,"eat":4,"hour":7,"first":{"month":"Leaffall","day":9}},
 "couple":33,
 "animal":20,
-"animals":["sheep","goat"],
+"animals":["sheep","goat"],"goods":{"trades":{"farming":{"item":"seed","count":40},"foraging":{"item":"honey","count":6},"fishing":{"item":"smoked","count":20},"hunting":{"item":"fur","count":2},"woodcutting":{"item":"fleece","count":6},"stoneworking":{"item":"fleece","count":6},"mining":{"item":"fleece","count":6},"cooking":{"item":"salted","count":20},"building":{"item":"fleece","count":6},"crafting":{"item":"wool","count":10},"herbalism":{"item":"herbs","count":12},"fighting":{"item":"leather","count":3}},"need":50},
 "years":30,
 "wait":40,
 "reasons":{

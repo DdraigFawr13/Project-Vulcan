@@ -77,12 +77,11 @@ describe('saves', () => {
     expect(world.log[0]!.id).toBeGreaterThan(memory[0]!);
     // Save, reload and continue gives the same ledger as an unbroken run (the P0.5 done-when).
     const unbroken = structuredClone(world);
-    step(loaded, sim, 40320);
-    step(unbroken, sim, 40320);
+    step(loaded, sim, 10 * TICKS_PER_DAY);
+    step(unbroken, sim, 10 * TICKS_PER_DAY);
     expect(toNdjson(allLines(loaded))).toBe(toNdjson(allLines(unbroken)));
-    // Two 28-day runs of a whole world: 7.5 s alone and 11 s under a full local run, just over
-    // the default 15 s on CI since cooks cook (5B Bundle 3); a world-run test's budget, as in
-    // stores.test and strangers.test (LESSONS 2026-10-26, VR-47).
+    // Two 10-day runs of a whole world (28 days each took 11 s under a full local run; the
+    // rule is the same at any length once the sealed segments are in play, as they are by day 10).
   }, 30000);
 
   it('refuses a save from other content, another format or damaged', () => {

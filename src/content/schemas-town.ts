@@ -12,6 +12,12 @@ export const TOWN_SCHEMAS = {
     weigh: obj({ fertility: count, water: count, near: count, tries: num({ min: 1 }) }),
     start: num({ min: 1, max: 4 }),
     perMouth: num({ min: 1 }),
+    hungry: obj({
+      hour: num({ min: 0, max: 23 }),
+      days: num({ min: 1 }),
+      more: num({ min: 1 }),
+      most: num({ min: 1 }),
+    }),
     reach: num({ min: 1 }),
     water: count,
     good: count,

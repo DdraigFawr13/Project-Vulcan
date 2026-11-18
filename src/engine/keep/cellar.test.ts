@@ -125,7 +125,8 @@ describe('the cellar', () => {
 
   it('is a store that takes the roots and keeps them cooler than the larder', () => {
     const { w, x, y } = world();
-    until(w, 'keep.cellarDug', 100);
+    // The first test may have dug it already; `step` only returns new lines, so look first.
+    if (!allLines(w).some((e) => e.type === 'keep.cellarDug')) until(w, 'keep.cellarDug', 100);
     step(w, sim, 3 * DAY);
     const below = itemsOf(w).filter((i) => i['kind'] === 'turnips' && i['z'] === 1);
     expect(below.length).toBeGreaterThan(0);

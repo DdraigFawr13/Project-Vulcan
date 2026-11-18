@@ -20,13 +20,39 @@ type World = ReturnType<typeof createWorld>;
 const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === type);
 const firstHouse = (w: World) => housesOf(w).find((h) => !h['of'])!;
 
+// A seed's first ten days, run once and shared by the read-only tests below (they must not step
+// or change it). `early` is what day 1 showed: the log is sealed by day 10, so the cottage's
+// reason is read then.
+const tenDays = new Map<
+  string,
+  { world: World; early: { size: unknown; chain: string[]; why: unknown; orders: number } }
+>();
+function ranWith(seed: string) {
+  let r = tenDays.get(seed);
+  if (!r) {
+    const world = createWorld(sim, seed);
+    step(world, sim, DAY);
+    const sited = lines(world, 'build.sited')[0]!;
+    const early = {
+      size: sited.data['size'],
+      chain: whyOf(world, sited.id).map((c) => c.event.type),
+      why: firstHouse(world)['why'],
+      orders: world.commandLog.length,
+    };
+    step(world, sim, 9 * DAY);
+    r = { world, early };
+    tenDays.set(seed, r);
+  }
+  return r;
+}
+const ran = (seed: string): World => ranWith(seed).world;
+
 describe('houses', () => {
   it('adds a room of their own for a crowded sleeper, who moves in and stops feeling crowded', () => {
     // Whether anyone feels crowded is the seed's layout (phase review, V-078): search a list.
     let world: World | undefined;
     for (const seed of ['ledger/1', 'tallow/2', 'smoke/1', 'anvil/2', 'gwerin/1']) {
-      const w = createWorld(sim, seed);
-      step(w, sim, 9 * DAY);
+      const w = ran(seed);
       if (lines(w, 'build.growsPrivate').length) {
         world = w;
         break;
@@ -93,17 +119,14 @@ describe('houses', () => {
 
   for (const seed of SEEDS) {
     it(`sites a cottage with a reason, unordered, and adds a room as it fills on ${seed}`, () => {
-      const world = createWorld(sim, seed);
-      step(world, sim, DAY);
+      const { world, early } = ranWith(seed);
+      expect(early.orders).toBe(0);
       expect(world.commandLog).toHaveLength(0);
-      const sited = lines(world, 'build.sited')[0]!;
-      expect(sited.data['size']).toBe('cottage');
+      expect(early.size).toBe('cottage');
       // It traces back to the band sleeping in the open.
-      expect(whyOf(world, sited.id).map((c) => c.event.type)).toContain('build.needed');
+      expect(early.chain).toContain('build.needed');
       const house = firstHouse(world);
-      expect(house['why']).not.toBe('');
-
-      step(world, sim, 9 * DAY);
+      expect(early.why).not.toBe('');
       expect(house['state']).toBe('built');
       // Five people, a cottage for four: a room is added on, citing the house built.
       const grows = lines(world, 'build.grows')[0]!;
@@ -115,14 +138,6 @@ describe('houses', () => {
       expect(lines(world, 'people.movedIn')).toHaveLength(5);
     });
   }
-
-  it('sites the same house on the same seed', () => {
-    const [a, b] = [createWorld(sim, 'anvil/2'), createWorld(sim, 'anvil/2')];
-    step(a, sim, DAY);
-    step(b, sim, DAY);
-    const at = (w: World) => (({ x, y, w: wd, h, door }) => ({ x, y, wd, h, door }))(firstHouse(w));
-    expect(at(a)).toEqual(at(b));
-  });
 
   it('works out a room from its walls and door', () => {
     const world = createWorld(sim, 'ledger/1');

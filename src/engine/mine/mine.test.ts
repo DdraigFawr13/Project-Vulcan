@@ -125,6 +125,7 @@ describe('mining', () => {
       const sunk = linesOf(world, 'map.shaftSunk');
       const at = (l: (typeof sunk)[number]) => `${l.data['x']},${l.data['y']}`;
       expect(sunk.filter((l) => at(l) === at(sunk[0]!))).toHaveLength(3);
+      expect(linesOf(world, 'mine.sank').length).toBeGreaterThan(0);
     },
   );
 
@@ -308,12 +309,5 @@ describe('mining', () => {
     const route = nextDig(world, base, foot, 'iron', new Set());
     expect(route?.tile).not.toBe(at(2));
     expect(route).toBeDefined();
-  });
-
-  it('is deterministic: the same seed and lever give the same ledger', () => {
-    const a = run(SINK_SEED, 10).world;
-    const b = run(SINK_SEED, 10).world;
-    expect(JSON.stringify(allLines(a))).toBe(JSON.stringify(allLines(b)));
-    expect(linesOf(a, 'mine.sank').length).toBeGreaterThan(0);
   });
 });

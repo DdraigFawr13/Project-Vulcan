@@ -51,14 +51,14 @@ describe('strangers and homes in words', () => {
     for (let h = 0; h < 4 && !w.systems['strangers']?.['last']; h += 1) step(w, sim, 60);
     const law = strangersLawView(w);
     expect(law.verdict!.text).toMatch(/: \d for, \d against\. /);
-    if (law.verdict!.text.includes('Split'))
-      expect(law.answers).toHaveLength(people().filter((p) => p['status'] === 'alive').length);
+    // On anvil/1 the band splits, so the law decides and each answers (asserted, not skipped).
+    expect(law.verdict!.text).toContain('Split');
+    expect(law.answers).toHaveLength(people().filter((p) => p['status'] === 'alive').length);
     expect(law.about).toContain('Those in need lets in someone fleeing hunger');
     // Once turned away and off the map, they leave the page's people.
-    if (st!['status'] !== 'alive') {
-      step(w, sim, 2 * DAY);
-      expect(walkersOf(w).some((x) => x.id === st!.id)).toBe(false);
-    }
+    expect(st!['status']).not.toBe('alive');
+    step(w, sim, 2 * DAY);
+    expect(walkersOf(w).some((x) => x.id === st!.id)).toBe(false);
     // Everyone has moved out of the first cottage, which is the hall.
     for (let d = 0; d < 30 && !hallOf(w); d += 1) step(w, sim, DAY);
     const hall = hallOf(w)!;
