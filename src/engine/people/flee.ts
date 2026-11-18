@@ -15,6 +15,7 @@ import { addMemory, needOf } from '../needs/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { animalsOf, packOf, whenWord } from '../wild/index.ts';
+import { lineOf } from './lines.ts';
 import { people, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
 
@@ -219,8 +220,7 @@ function restTime(ctx: SystemContext, p: EntityRow, line: number): boolean {
   return hour >= day.sleepFrom || hour < day.workFrom || rest < line;
 }
 
-const restSeek = (ctx: SystemContext): number =>
-  ctx.content.life.needs.find((n) => n.id === 'rest')?.seek ?? 0;
+const restSeek = (ctx: SystemContext, p: EntityRow): number => lineOf(ctx, p, 'rest');
 
 /** Someone lying down in a shut room with a predator in sight stays in: they do not get up to go
  * out for food, and once rested by day they wake to keep their flight. True when it took the
@@ -252,7 +252,7 @@ export function predatorRung(ctx: SystemContext, p: EntityRow): boolean {
   if (stance === 'stand') {
     p['path'] = [];
     // Nobody stands guard through their night: at bedtime they make for a shut room like the rest.
-    if (!restTime(ctx, p, restSeek(ctx))) return true;
+    if (!restTime(ctx, p, restSeek(ctx, p))) return true;
     p['doing'] = 'flee';
     if (!sheltered(ctx, p)) runFrom(ctx, p, spotOf(near));
     return true;
@@ -263,7 +263,7 @@ export function predatorRung(ctx: SystemContext, p: EntityRow): boolean {
       // they are: a pack resting at the town's edge in sight of a house kept whoever had run
       // there standing awake all night, every minute, missing sleep and meals.
       p['path'] = [];
-      if (restTime(ctx, p, restSeek(ctx))) p['doing'] = 'sleep';
+      if (restTime(ctx, p, restSeek(ctx, p))) p['doing'] = 'sleep';
       return true;
     }
     if (!(p['path'] as number[]).length) runFrom(ctx, p, spotOf(near));

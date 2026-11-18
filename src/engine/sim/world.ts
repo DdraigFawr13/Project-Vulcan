@@ -9,7 +9,13 @@ import {
   type Notable,
   type Templates,
 } from '../log/index.ts';
+import type { LineHook } from '../people/index.ts';
 import { contextFor, type System } from './system.ts';
+
+/** What a sim's owner may plug in from outside (`setLineHook`); not saved state. */
+export interface SimHooks {
+  line?: LineHook;
+}
 
 /** Everything a world runs under that is not saved state: content and code. */
 export interface Sim {
@@ -23,6 +29,7 @@ export interface Sim {
   tables: Schemas;
   /** Game days of lines kept in full (`RECENT_DAYS`); tests vary it to show it changes nothing. */
   recentDays: number;
+  hooks: SimHooks;
 }
 
 export function createSim(
@@ -53,7 +60,15 @@ export function createSim(
     (t) => !templates.has(t),
   );
   if (missing.length) throw new Error(`No template in content events for: ${missing.join(', ')}.`);
-  return { content, templates, notable: notableOf(content.events), systems, tables, recentDays };
+  return {
+    content,
+    templates,
+    notable: notableOf(content.events),
+    systems,
+    tables,
+    recentDays,
+    hooks: {},
+  };
 }
 
 /** A new world at 06:00 on day 1, its first ledger line already written. `look` is 1 for the

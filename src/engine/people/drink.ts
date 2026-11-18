@@ -10,6 +10,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { isFrozen } from '../weather/index.ts';
 import { shunned } from '../health/index.ts';
 import { drankAt } from './foul.ts';
+import { lineOf } from './lines.ts';
 import { goBeside, spotOf } from './spots.ts';
 
 export const DRINK_FIELDS = {
@@ -69,7 +70,7 @@ export function drinking(ctx: SystemContext, p: EntityRow): boolean {
     return false;
   }
   // Asleep, only real thirst (under the warning line) gets them up.
-  const seek = p['doing'] === 'sleep' ? def.low : def.seek;
+  const seek = p['doing'] === 'sleep' ? def.low : lineOf(ctx, p, 'water');
   if ((row['value'] as number) >= seek || world.tick < (p['thirst'] as number)) return false;
   const at = goDrink(ctx, p);
   if (!at) {

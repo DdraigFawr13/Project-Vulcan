@@ -4,12 +4,14 @@
 // it is on the danger rung, so it comes before their own work. Not a line: the hunger line, if one
 // comes, is the needs system's.
 import type { EntityRow, WorldState } from '../core/index.ts';
+import { entityOf } from '../entity/index.ts';
 import { itemsOf } from '../goods/index.ts';
 import { bodiesOf, isDown } from '../health/index.ts';
 import { needOf } from '../needs/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { eat } from './eat.ts';
+import { lineOf } from './lines.ts';
 import { fetchKind } from './fetch.ts';
 import { people, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
@@ -18,7 +20,9 @@ const far = (a: Spot, b: Spot): number =>
   Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) + Math.abs(a.z - b.z) * 100;
 
 const hungry = (ctx: SystemContext, person: number): boolean => {
-  const seek = ctx.content.life.needs.find((n) => n.id === 'food')?.seek ?? 0;
+  const p = entityOf(ctx.world, 'person', person);
+  if (!p) return false;
+  const seek = lineOf(ctx, p, 'food');
   return ((needOf(ctx.world, person, 'food')?.['value'] as number) ?? seek) < seek;
 };
 

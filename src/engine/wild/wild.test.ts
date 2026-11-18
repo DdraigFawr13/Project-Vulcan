@@ -44,6 +44,7 @@ const contextOf = (w: WorldState, c: EngineContent): SystemContext => ({
   state: w.systems['wild']!,
   rng: () => streamFor(w, 'wild'),
   emit: (type, fields) => emit(w, templatesOf(c.events), type, fields),
+  hooks: {},
 });
 
 describe('the wild valley', () => {

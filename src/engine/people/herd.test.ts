@@ -32,6 +32,7 @@ const ctxOf = (w: WorldState): SystemContext => ({
   state: w.systems['flock']!,
   rng: () => streamFor(w, 'flock'),
   emit: (type, fields) => emit(w, templatesOf(content.events), type, fields),
+  hooks: {},
 });
 /** Sets the clock to `month` (0-based), `day` (1-based) at hh:mm. */
 const clock = (w: WorldState, month: number, day: number, hh = 0, mm = 0) => {

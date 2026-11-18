@@ -25,7 +25,7 @@ export * from './core/index.ts';
 export * from './log/index.ts';
 export * from './entity/index.ts';
 export { applyDue, createWorld, replay, step, submitCommand } from './sim/index.ts';
-export type { Cadence, Sim, System, SystemContext } from './sim/index.ts';
+export type { Cadence, Sim, SimHooks, System, SystemContext } from './sim/index.ts';
 export {
   bedOwnedBy,
   bedsOf,
@@ -182,10 +182,11 @@ export {
   peopleSystem,
   PEOPLE_TABLES,
   progressOf,
+  setLineHook,
   tradeOf,
   yesterdayOf,
 } from './people/index.ts';
-export type { Day, Tally, Home, Person } from './people/index.ts';
+export type { Day, Tally, Home, Person, LineHook, LineNeed } from './people/index.ts';
 export { makeRegion, regionSystem, siteOf, valleyOf } from './region/index.ts';
 export type { Region, RegionNeighbour, RegionSite, RegionValley } from './region/index.ts';
 export { isFrozen, tileTemperature, weatherSystem, weatherWords } from './weather/index.ts';
