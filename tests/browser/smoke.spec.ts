@@ -1,68 +1,20 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { phoneRules, tick } from './helpers';
 
 // The one browser smoke (RULES.md VR-23): the bare link shows the title, a seed opens the site
-// picker, a valley is settled, the band's arrival screen names who can build and cook, the
-// game draws the map, starts paused, runs at 3x and stops dead when paused; the inspector answers "why?"; a save
-// survives a page reload and carries on; the ledger exports; stairs cut while paused open the level
-// below once time runs and the inspector leads down them on a phone, then a shaft; a reload
-// continues where the game was, shaft and all; the title's Continue names the valley and loads it.
-// P2.5 to P2.7: a person's tabs, the Work sheet's stepper, Skip to a notable line and the alerts.
-/** Each button's smallest side (px) in the sheet's row for `job`, found and measured in one page
- * call: the game runs while the Work sheet is open, and a snapshot that redraws it between finding
- * a button and measuring it leaves a detached button with no box. `evaluateAll` is two calls (find,
- * then evaluate), so it still raced: 0,0 in CI on PR #101, after PR #63's null box. */
-const buttonSides = (page: Page, job: string) =>
-  page.evaluate(
-    (selector) =>
-      [...document.querySelectorAll(selector)].map((b) =>
-        Math.min(b.getBoundingClientRect().width, b.getBoundingClientRect().height),
-      ),
-    `[data-testid="panel"] .prio[data-job="${job}"] button`,
-  );
-const tick = async (page: Page) =>
-  Number(await page.getByTestId('debug').getAttribute('data-tick'));
-/** The last snapshot's tick and the worker's clock when it was sent (ms). */
-// Both read in one step: read one at a time, a busy page can update `at` from a newer snapshot
-// between the two, which made a correct 100 a second read as 148 in CI.
-const reading = (page: Page) =>
-  page
-    .getByTestId('debug')
-    .evaluate((d) => ({ tick: Number(d.dataset['tick']), at: Number(d.dataset['at']) }));
-
-/** What breaks the phone rules on the screen as shown: small tap targets or text, or overflow. */
-const phoneRules = (page: Page) =>
-  page.evaluate(() => {
-    const shown = (e: Element) => {
-      const r = e.getBoundingClientRect();
-      return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight;
-    };
-    const bad: string[] = [];
-    for (const b of document.querySelectorAll('#hud button')) {
-      const r = b.getBoundingClientRect();
-      if (shown(b) && !b.closest('svg') && Math.min(r.width, r.height) < 44)
-        bad.push(`tap ${Math.round(Math.min(r.width, r.height))} px: ${b.textContent}`);
-    }
-    const text = document.createTreeWalker(document.getElementById('hud')!, NodeFilter.SHOW_TEXT);
-    while (text.nextNode()) {
-      const parent = text.currentNode.parentElement;
-      if (!parent || !text.currentNode.textContent!.trim() || parent.closest('svg')) continue;
-      const size = parseFloat(getComputedStyle(parent).fontSize);
-      if (shown(parent) && size < 11) bad.push(`text ${size} px: ${text.currentNode.textContent}`);
-    }
-    if (document.documentElement.scrollWidth > innerWidth) bad.push('wider than the screen');
-    return bad;
-  });
+// picker, a valley is settled, the band's arrival screen names who can build and cook, the game
+// draws the map, starts paused, runs at 3x and stops dead when paused; the inspector answers "why?";
+// a save survives a page reload and carries on; the ledger exports; stairs cut while paused open the
+// level below once time runs, then a shaft; a reload continues where the game was, shaft and all;
+// the title's Continue names the valley and loads it. The phone sheets are sheets.spec.ts.
 
 test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports', async ({
   page,
 }) => {
-  // The whole round makes the world three times (boot, reload, load) and takes about 17 s here; CI's
-  // runner takes about 1.5 to 2 times as long, past Playwright's default 30 s per test once P1.2's
-  // water joined each generation (P1.1's green run already used about 26 s). The steps keep their
-  // own waits; this is the round's overall budget. Since P1.6 each fresh worker that needs the
-  // region (the picker, the reload) first makes the seed's Story Generator world: the round went
-  // from about 26 s to 42 s here, so up to about 85 s on CI's runner.
-  test.setTimeout(150_000);
+  // The round loads the game five times (two links, two reloads and a Load); each fresh worker that
+  // needs the region first makes the seed's Story Generator world (P1.6), about 5 s here and up to
+  // twice that on CI's runner. The steps keep their own waits; this is the round's overall budget.
+  test.setTimeout(120_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
@@ -95,28 +47,16 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await expect(page.getByTestId('version')).toHaveText(/^v\d+\.(\d+|dev)$/);
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
 
-  // Paused at the start: the tick does not move.
+  // Paused at the start, 3x moves the clock, and Space stops it dead: one snapshot may still be on
+  // its way, then nothing moves. The rates themselves are src/worker/pace.test.ts.
   const start = await tick(page);
-  await page.waitForTimeout(500);
-  expect(await tick(page)).toBe(start);
-
-  // 3x runs 100 game minutes a second; allow for timer jitter in a busy CI runner. Time it by the
-  // worker's own clock on each snapshot: the page can show a snapshot late when its thread is busy,
-  // and a late first reading made a correct rate look 45% fast in CI.
   await page.getByTestId('speed-3').click();
-  const from = await reading(page);
-  await page.waitForTimeout(1000);
-  const to = await reading(page);
-  const ran = ((to.tick - from.tick) * 1000) / (to.at - from.at);
-  expect(ran, `${to.tick - from.tick} ticks in ${to.at - from.at} ms`).toBeGreaterThan(50);
-  expect(ran, `${to.tick - from.tick} ticks in ${to.at - from.at} ms`).toBeLessThan(130);
-
-  // Pause stops the tick: one snapshot may still be on its way, then nothing moves.
+  await expect.poll(() => tick(page)).toBeGreaterThan(start);
   await page.keyboard.press('Space');
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
-  await page.waitForTimeout(100);
-  const paused = await tick(page);
-  await page.waitForTimeout(1000);
+  let paused = -1;
+  await expect.poll(async () => paused === (paused = await tick(page))).toBe(true);
+  await page.waitForTimeout(500);
   expect(await tick(page)).toBe(paused);
 
   // The inspector: a tap names the tile and the line that laid it out, a world-generation line
@@ -177,29 +117,6 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await page.getByTestId('speed-3').click();
   await expect.poll(() => tick(page)).toBeGreaterThan(paused);
 
-  // The Stock lever (P2.4): asking for plenty of wood is a ledger line, with no order to anyone.
-  await page.getByTestId('open-stock').click();
-  await expect(panel.getByTestId('stock-logs')).toContainText('of 50 wanted');
-  await panel.getByTestId('stock-logs').getByRole('button', { name: 'Plenty (200)' }).click();
-  await expect(panel.getByTestId('stock-logs')).toContainText('of 200 wanted');
-  // P3.6: Firewood is its own plate, with the same three levels as Wood (V-048).
-  const firewood = panel.getByTestId('stock-firewood');
-  await expect(firewood).toContainText(/^Firewood: \d+ of 20 wanted/);
-  await expect(firewood.getByRole('button', { name: 'Plenty (60)' })).toBeVisible();
-  // P4.5: the Bronze plate is one of the four ingot plates.
-  await expect(panel.getByTestId('stock-bronze-ingot')).toContainText('Bronze ingots');
-  // P4.7: the Seed plate sits above Food with its own three levels (none, some 100, plenty 200).
-  await expect(panel.getByTestId('stock-seed')).toContainText(/^Seed: \d+ of 100 wanted/);
-  await expect(
-    panel.getByTestId('stock-seed').getByRole('button', { name: 'Plenty (200)' }),
-  ).toBeVisible();
-  // Food is a stock level too (P2.9). Wanting none means nobody forages, so the band goes hungry
-  // when the cart runs out (the hunger "why?" is hunger.spec.ts; the shaft steps below run in it).
-  await panel.getByTestId('stock-food').getByRole('button', { name: /^None/ }).click();
-  await expect(panel.getByTestId('stock-food')).toContainText('none wanted');
-  await page.getByTestId('open-ledger').click();
-  await expect(panel).toContainText('The colony now wants plenty of wood.');
-
   // The levels below: level 1 is blank until a shaft reaches it, then it opens and inspects.
   await page.keyboard.press('>');
   await expect(page.getByTestId('level')).toHaveText('−1');
@@ -255,195 +172,18 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await panel.getByRole('button', { name: 'Go down to −2' }).click();
   await expect(page.getByTestId('level')).toHaveText('−2');
   await expect(panel).toContainText('shaft');
-
-  // Each face fills its ring exactly, so the head sits centred (Morgan's playtests, twice).
-  const faces = await page.locator('.pslot .face').evaluateAll((all) =>
-    all.map((f) => {
-      const ring = f.getBoundingClientRect();
-      const pic = f.querySelector('canvas')!.getBoundingClientRect();
-      return (
-        Math.abs(pic.x + pic.width / 2 - (ring.x + ring.width / 2)) + pic.width - f.clientWidth
-      );
-    }),
-  );
-  expect(
-    faces.every((off) => Math.abs(off) < 0.5),
-    `face offsets ${faces}`,
-  ).toBe(true);
-
-  // P2.5 to P2.7 on a phone. A face opens that person's sheet in tabs; the Work sheet's stepper
-  // ranks hauling higher, which is a ledger line naming the person, never an order to a tile.
-  await page.locator('.pslot').first().click();
-  await panel.getByRole('button', { name: 'Skills' }).click();
-  await expect(panel).toContainText('Trade:');
-  await panel.getByRole('button', { name: 'Work' }).click();
-  await expect(panel).toContainText('Felling');
-  await page.getByRole('button', { name: 'More' }).click();
-  await page.getByTestId('open-work').click();
-  await expect(panel).toContainText("The colony's day");
-  await expect(panel.locator('[data-day]')).toHaveCount(0);
-  // Bundle 2 (V-071): trades sit under headings; the first begins open and the rest folded. A
-  // folded heading's stepper sets every row under it, one priority each, and unfolding shows them.
-  const land = panel.locator('.prio.head[data-heading="Land"]');
-  await expect(panel.locator('.prio[data-job="farm"]')).toBeHidden();
-  await land.getByRole('button', { name: /^Land, every row, for .+: raise$/ }).click();
-  await land.locator('.fold').click();
-  for (const job of ['farm', 'forage'])
-    await expect(panel.locator(`.prio[data-job="${job}"] .val`)).toContainText('2');
-  await panel.locator('.prio.head[data-heading="Wood"] .fold').click();
-  // P3.4: Carpentry comes from content like the other rows, with its skill line and 44 px steppers.
-  const carpentry = panel.locator('.prio[data-job="carpentry"]');
-  await expect(carpentry).toContainText(/crafting \d+, can reach \d+/);
-  const carpentrySides = await buttonSides(page, 'carpentry');
-  expect(carpentrySides.length).toBeGreaterThan(0);
-  expect(
-    carpentrySides.every((n) => n >= 44),
-    `${carpentrySides}`,
-  ).toBe(true);
-  // P4.7: Farming and Cooking come from content with the same steppers.
-  // A heading over one row (Food, Care) is a label with no stepper or fold; its row is always shown.
-  await expect(panel.locator('.prio.head[data-heading="Food"] button')).toHaveCount(0);
-  await expect(panel.locator('.prio.head[data-heading="Care"] button')).toHaveCount(0);
-  await expect(panel.getByTestId('care-note')).toContainText('Binding a bleeding wound');
-  for (const [job, name] of [
-    ['farm', 'Farming'],
-    ['cook', 'Cooking'],
-    ['heal', 'Healing'],
-  ] as const)
-    await expect(panel.locator(`.prio[data-job="${job}"]`)).toContainText(name);
-  // P3.6: Tending is its own row beside Felling and Hauling, with the same four-step priority.
-  const tend = panel.locator('.prio[data-job="tend"]');
-  await expect(tend).toContainText('Tending');
-  await expect(tend).toContainText('no skill needed');
-  const tendSides = await buttonSides(page, 'tend');
-  expect(tendSides.length).toBeGreaterThan(0);
-  expect(
-    tendSides.every((n) => n >= 44),
-    `${tendSides}`,
-  ).toBe(true);
-  expect(await phoneRules(page)).toEqual([]);
-  // Scrolled to its foot, the sheet keeps its title and ✕ in view.
-  await panel.evaluate((p) => (p.scrollTop = p.scrollHeight));
-  const sheet = (await panel.boundingBox())!;
-  const close = (await panel.getByRole('button', { name: 'Close panel' }).boundingBox())!;
-  expect(close.y).toBeGreaterThanOrEqual(sheet.y);
-  expect(close.y + close.height).toBeLessThanOrEqual(sheet.y + sheet.height);
-  await panel.getByRole('button', { name: /^Hauling for .+: raise$/ }).click();
-  await page.getByTestId('open-ledger').click();
-  await expect(panel).toContainText(/ now puts hauling second\./);
-  const skipOnce = async () => {
-    const from = await tick(page);
-    // The button is in place (the bar never moves), so the click skips Playwright's wait for two
-    // still frames, and the tick is polled every 50 ms: on a slow runner, mid-skip frames are
-    // slow, and those waits cost about a second on each of the forty-odd skips below, which took
-    // the smoke past its CI limit (PR #69).
-    await page.getByTestId('speed-skip').click({ force: true });
-    await expect.poll(() => tick(page), { intervals: [50] }).toBeGreaterThan(from);
-    await expect(page.getByTestId('speed-skip')).toHaveAttribute('aria-pressed', 'false', {
-      timeout: 30_000,
-    });
-  }; // Bundle 2 mining: wanting some iron ingots (the Stock sheet shows the three ingot plates and
-  // their asides) gets the miners to plan a shaft by a stain, an alert whose Show leads to the
-  // plan's tile page: its rows, Send back (once) and the aside.
-  await page.getByRole('button', { name: 'More' }).click();
-  await page.getByTestId('open-stock').click();
-  for (const plate of ['Iron ingots', 'Copper ingots', 'Tin ingots'])
-    await expect(panel).toContainText(plate);
-  await expect(panel.getByTestId('stock-iron-ingot')).toContainText(/ iron ore in the store\./);
-  await expect(panel.getByTestId('stock-stone')).toContainText('comes up as stone.');
-  await expect(panel).not.toContainText('join this sheet when quarrying');
-  await panel.getByTestId('stock-iron-ingot').getByRole('button', { name: 'Some (10)' }).click();
-  // The plan is a notable line, so Skip stops paused on it, before a miner takes up sinking it
-  // (then it can no longer be sent back). Worn tools plan copper and tin shafts first, and a
-  // hungry band plans slowly, so skip until iron's rust stain is in the Alerts sheet (another alert
-  // on the same tick can take the alert line, as it did in CI).
-  const ironPlan = panel
-    .locator('[data-line]')
-    .filter({ hasText: 'planned a shaft by the rust stain' });
-  const planned = async () => {
-    await page.getByTestId('alert').click();
-    return (await ironPlan.count()) > 0;
-  };
-  for (let skips = 0; skips < 20 && !(await planned()); skips++) await skipOnce();
-  await ironPlan.first().getByTestId('alert-show').click();
-  // Show centres the tile in the part of the screen below the bar.
-  const canvas2 = page.getByTestId('game').locator('canvas');
-  const mid = (await canvas2.boundingBox())!;
-  const bar = await page
-    .locator('#hud')
-    .evaluate((e) => parseFloat(e.style.getPropertyValue('--bar-h')));
-  await canvas2.click({ position: { x: mid.width / 2, y: mid.height / 2 + bar / 2 } });
-  await expect(panel).toContainText('Shaft, planned');
-  await expect(panel).toContainText('a shaft with a ladder, down to level');
-  await expect(panel).toContainText('2 logs for the ladder');
-  await expect(panel).toContainText('A plan can be sent back once');
-  await panel.getByTestId('send-back-shaft').click();
-  await expect(panel.getByTestId('send-back-shaft')).toBeHidden();
-  await page.getByTestId('open-ledger').click();
-  await expect(panel).toContainText('The shaft plan for iron was sent back');
-  // Skip runs to the next notable line and stops there paused; the alert line opens the feed.
-  await page.getByTestId('speed-skip').click();
-  await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true', {
-    timeout: 30_000,
-  });
-  await expect(page.getByTestId('speed-skip')).toHaveAttribute('aria-pressed', 'false');
-  await page.getByTestId('alert').click();
-  await expect(panel.locator('[data-line]').first()).toBeVisible();
-  expect(await phoneRules(page)).toEqual([]);
-  // The band going hungry and the Food row's "why?" are their own spec (hunger.spec.ts), so the
-  // smoke keeps its time on CI's runner (PR #69).
-  await page.locator('.pslot').first().click();
-  // P2.9: the sheet says what they are doing; ⋯ → Yesterday opens the dawn page with the
-  // day's figures.
-  await expect(panel.getByTestId('doing-now')).toContainText('Doing now');
-  await page.getByRole('button', { name: 'More' }).click();
-  await page.getByTestId('open-dawn').click();
-  await expect(panel.getByTestId('dawn-tally')).toContainText('Logs felled');
-  expect(await phoneRules(page)).toEqual([]);
-  await panel.getByRole('button', { name: 'Carry on' }).click();
-  await expect(panel).toBeHidden();
-  // P3.7: the Build sheet under ⋯ has the Houses stepper (the colony's need, never a tile) and
-  // the colony's need. A level is a lever that applies at once while paused.
-  await page.getByRole('button', { name: 'More' }).click();
-  await page.getByTestId('open-build').click();
-  // P4.7: Fields is a row like Houses, with its need in tiles of crops.
-  const fields = page.getByTestId('build-fields');
-  await expect(fields).toContainText('Fields');
-  await expect(page.getByTestId('build-field-need')).toContainText('tiles of crops');
-  for (const b of await fields.getByRole('button').all())
-    expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  const houses = page.getByTestId('build-houses');
-  await expect(houses).toContainText('Houses');
-  await expect(page.getByTestId('build-need')).toContainText('Need:');
-  for (const b of await houses.getByRole('button').all())
-    expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  await expect(houses).toContainText('first');
-  await houses.getByRole('button', { name: 'Houses: lower' }).click();
-  await expect(houses).toContainText('second');
-  expect(await phoneRules(page)).toEqual([]);
-  // P4.8: ⋯ → Laws has the work-hours law's settings as 44 px buttons, and the Work sheet's day
-  // is read-only (no steppers).
-  await page.getByRole('button', { name: 'More' }).click();
-  await page.getByTestId('open-laws').click();
-  await expect(panel).toContainText('Work hours');
-  // Folded to one line beside the Strangers law (P5.9) until opened.
-  await panel.getByRole('button', { name: 'Show the work hours law' }).click();
-  const settings = panel.getByRole('group', { name: 'Work hours law' }).getByRole('button');
-  expect(await settings.count()).toBeGreaterThanOrEqual(3);
-  for (const b of await settings.all())
-    expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  expect(await phoneRules(page)).toEqual([]);
-  await page.getByTestId('open-ledger').click();
-  await expect(panel).toContainText(/ now puts Houses second\./);
-
+  const copies = async () =>
+    Number(await page.evaluate(() => document.documentElement.dataset['standby'] ?? 0));
+  const copiesBefore = await copies();
   await page.getByTestId('speed-3').click();
   await page.setViewportSize({ width: 1280, height: 720 });
 
   // Closing or reloading keeps the play since the last save: the page holds a standby copy taken
-  // every 5 s of play and writes it as the page goes. Wait for one past the shaft, then pause and
-  // reload. Paused, so `before` is the worker's own tick: read while running, the page's last
-  // snapshot lags the worker, and a standby taken in that gap came back 5 ticks past it in CI.
-  await page.waitForTimeout(6000);
+  // every 5 s of play and writes it as the page goes. Wait for one past the shaft (the page counts
+  // them), then pause and reload. Paused, so `before` is the worker's own tick: read while running,
+  // the page's last snapshot lags the worker, and a standby taken in that gap came back 5 ticks
+  // past it in CI.
+  await expect.poll(copies, { timeout: 20_000 }).toBeGreaterThan(copiesBefore);
   await page.getByTestId('speed-0').click();
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
   let before = -1;
@@ -457,7 +197,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // The bare link now shows the title over the last valley, and Continue carries on there.
   await page.goto('/');
   const resume = page.getByRole('button', { name: /Continue/ });
-  // Skip ahead above carried the valley past the first month, so any month of Year 1.
+  // Any day of Year 1: how far the valley ran depends on the machine's speed.
   await expect(resume).toContainText(/\w · Day \d+ of \w+, Year 1/, { timeout: 20_000 });
   await resume.click();
   await expect.poll(() => tick(page)).toBeGreaterThan(paused);

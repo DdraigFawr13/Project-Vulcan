@@ -1,7 +1,6 @@
 // Vulcan bench S1 (Phobos spec vulcan-bench J1): the needs-ladder lines can be supplied from
 // outside through a line hook, and with no hook, or one that gives today's line, nothing changes.
-import { readdirSync, readFileSync } from 'node:fs';
-import path from 'node:path';
+// That only lines.ts and needs/ read a seek line is a boundary rule: tools/tests/boundaries.test.ts.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { createSim, createWorld, setLineHook, step, type LineHook } from '../index.ts';
@@ -32,25 +31,9 @@ describe('the line hook', () => {
     expect(same.world).toBe(today.world);
   });
 
-  it('food-hook-changes-eating: food’s line 1500 higher changes the minutes spent eating', () => {
+  it('food-hook-changes-eating: food’s line 1500 higher means more minutes spent eating', () => {
     const raised = run((_ctx, _p, need, line) => (need === 'food' ? line + 1500 : line));
-    expect(raised.eating).not.toBe(today.eating);
-  });
-
-  it('lines-only-reader: only lines.ts and needs/ read a seek line or call warmLineOf', () => {
-    const engine = path.resolve(import.meta.dirname, '..');
-    const files = (readdirSync(engine, { recursive: true }) as string[])
-      .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
-      .map((f) => f.split(path.sep).join('/'))
-      .filter((f) => f !== 'people/lines.ts' && !f.startsWith('needs/'));
-    const readers = files.filter((f) =>
-      readFileSync(path.join(engine, f), 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .split('\n')
-        .map((l) => l.replace(/\/\/.*$/, ''))
-        .filter((l) => !/^\s*(import|export)\b.*\bfrom\b/.test(l) && !/^\s*}\s*from\b/.test(l))
-        .some((l) => /\.seek\b/.test(l) || /\bwarmLineOf\(/.test(l)),
-    );
-    expect(readers).toEqual([]);
+    // A higher line sends them to eat sooner and more often; any change at all was too weak a check.
+    expect(raised.eating).toBeGreaterThan(today.eating);
   });
 });

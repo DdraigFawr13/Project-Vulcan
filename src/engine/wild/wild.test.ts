@@ -114,7 +114,17 @@ describe('the wild valley', () => {
     const made = itemsOf(world).filter((i) => i['made'] === line);
     const total = (kind: string) =>
       made.filter((i) => i['kind'] === kind).reduce((n, i) => n + (i['count'] as number), 0);
-    expect(['game', 'hide', 'bone', 'fat', 'offal'].map(total)).toEqual([36, 1, 2, 1, 1]);
+    // The yields come from the species' content entry (VR-24), so a retune moves both sides.
+    const deer = content.wild.species.find((s) => s.id === 'deer')!;
+    const left = (kind: string) => deer.leftovers.find((l) => l.item === kind)?.count ?? 0;
+    expect(deer.meat).toBeGreaterThan(0);
+    expect(['game', 'hide', 'bone', 'fat', 'offal'].map(total)).toEqual([
+      deer.meat,
+      left('hide'),
+      left('bone'),
+      left('fat'),
+      1,
+    ]);
     expect(made.every((i) => i['owner'] === 0 && i['holder'] === 0)).toBe(true);
     const at = made.find((i) => i['kind'] === 'hide')!;
     expect([at['x'], at['y']]).toEqual([animal['x'], animal['y']]);

@@ -3,7 +3,8 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/browser',
   fullyParallel: false,
-  workers: 1,
+  // Two workers since the smoke stopped timing the clock (audit 2026-11-18): 1.9 to 1.5 min locally.
+  workers: 2,
   // No retries: a test that passes only on retry is not green (VER-04).
   retries: 0,
   reporter: 'list',
@@ -14,7 +15,8 @@ export default defineConfig({
     timeout: 180_000,
     reuseExistingServer: !process.env.CI,
   },
-  // One Chromium smoke. Add engines only for a concrete compatibility need.
+  // Chromium only (the smoke, the phone sheets and three bug checks). Add engines only for a
+  // concrete compatibility need.
   // PLAYWRIGHT_CHROMIUM_PATH (set by .claude/hooks/session-start.sh in cloud sessions) points at
   // a preinstalled Chromium when the pinned build is missing; CI leaves it unset.
   projects: [

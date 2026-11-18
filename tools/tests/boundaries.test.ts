@@ -1,3 +1,5 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { checkModule } from '../check-boundaries.mjs';
@@ -43,5 +45,23 @@ describe('boundaries check', () => {
     expect(checkModule(at('worker/loop.ts'), 'setInterval(() => {}, 50);')).toEqual([]);
     expect(checkModule(at('render/scene.ts'), "import Phaser from 'phaser';")).toEqual([]);
     expect(checkModule(at('worker/loop.ts'), "import Phaser from 'phaser';")).not.toEqual([]);
+  });
+
+  // Vulcan bench S1 (Phobos spec vulcan-bench J1), moved from people/lines.test.ts.
+  it('lines-only-reader: only lines.ts and needs/ read a seek line or call warmLineOf', () => {
+    const engine = `${src}engine`;
+    const files = (readdirSync(engine, { recursive: true }) as string[])
+      .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
+      .map((f) => f.split(path.sep).join('/'))
+      .filter((f) => f !== 'people/lines.ts' && !f.startsWith('needs/'));
+    const readers = files.filter((f) =>
+      readFileSync(path.join(engine, f), 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .split('\n')
+        .map((l) => l.replace(/\/\/.*$/, ''))
+        .filter((l) => !/^\s*(import|export)\b.*\bfrom\b/.test(l) && !/^\s*}\s*from\b/.test(l))
+        .some((l) => /\.seek\b/.test(l) || /\bwarmLineOf\(/.test(l)),
+    );
+    expect(readers).toEqual([]);
   });
 });

@@ -5,8 +5,8 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 ## 1. Delegation
 
 - **VR-01** Routine work goes to cheaper agents: spec'd coding to the Sonnet `implementer`, long check runs (multi-seed balance, sweeps) to the Haiku `test-runner`, broad searches to a Haiku Explore agent, red CI to `ci-fixer` (DEL-03).
-- **VR-02** The main session keeps the design decisions, questions for Morgan, architecture, reviews, commits and merges (DEL-01).
-- **VR-03** Run quick checks and small edits directly; a cold agent costs 20 to 60k tokens to read in (DEL-02).
+- **VR-02** SUPERSEDED by DEL-01: the shared rule says the same (audit 2026-11-18).
+- **VR-03** Run quick checks and small edits directly; a cold agent costs 20 to 60k tokens to read in (DEL-08).
 - **VR-04** Every brief is self-contained: goal, files, rules that apply, done criteria, commands, "do not commit", report length (DEL-04). Every delegated diff is reviewed before it is committed (DEL-05).
 
 ## 2. Review before Morgan sees it
@@ -21,14 +21,14 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-08** One branch per milestone, cut from the latest `main`; one PR per branch; squash-merge on green CI (GIT-01, GIT-05).
 - **VR-09** Merged branches are deleted at once: GitHub's auto-delete setting on, plus the synced prune workflow. A branch is never reused after its merge (GIT-01, GIT-08).
 - **VR-10** No build output, reports, scratch files, worktrees or secrets in git; `.gitignore` covers them (DEL-06, SAFE-02).
-- **VR-11** No new runtime dependency without asking (SAFE-03). Delete code a change makes dead in the same PR.
+- **VR-11** No new runtime dependency without asking (SAFE-01). Delete code a change makes dead in the same PR.
 - **VR-12** CI runs only on PRs and `main`, cancels superseded runs, and stays under 5 minutes (CI-06).
 
 ## 4. Asking
 
 - **VR-13** When the direction is unclear, or Claude is not sure exactly what Morgan wants, ask before building. One question at a time, with short options and a recommendation, on a decision card (WS-03).
 - **VR-14** For small forks that do not change what Morgan sees or the plan, pick the reasonable default, say which, and keep going (WS-02).
-- **VR-15** Never invent a mechanic or a fact about the world to fill a gap; ask, or label it an assumption (WS-06).
+- **VR-15** SUPERSEDED by WS-06: the shared rule says the same (audit 2026-11-18).
 
 ## 5. Plan and status
 
@@ -56,7 +56,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 
 - **VR-21** One determinism test for the whole engine (same seed and commands, same log), not one per system (GAME-06).
 - **VR-22** Unit tests cover rules with an outcome a player would notice, at a system's boundary, not its internals. Content entries are checked by validators, not one test each.
-- **VR-23** One browser smoke test: the game boots, runs, saves and reloads. New browser tests only for a bug that reached Morgan.
+- **VR-23** Browser tests (V-164): one smoke (`smoke.spec.ts`: boots, runs, saves, reloads, continues) and one phone-sheets file (`sheets.spec.ts`) whose checks share one settled world, where a new sheet's check goes. A spec of its own only for a bug that reached Morgan or a check that needs another seed. Checks of text the worker computes belong in a worker test; shared steps live in `tests/browser/helpers.ts` (audit 2026-11-18: ten one-sheet specs each booted a world).
 - **VR-24** A test that needs an example event searches a fixed seed list instead of pinning one seed; expected values are computed at test time, never hand-saved (Story Generator LESSONS 2026-10-16).
 - **VR-25** Budgets: the checks as in VR-67, CI under 5 minutes. A change that breaks a budget removes or merges tests before it adds more. When a new test covers an old one, delete the old one.
 - **VR-26** Each bug fix adds one regression test at the level where the bug lived, and no more.
@@ -70,7 +70,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-28** Indirect control only. The player acts through priorities, standing orders (such as how much of a good to keep), laws, what to build and nudges; colonists choose where to cut, build and stack, and where each building goes (V-049). Levers nudge, never command (V-041, Morgan's wording). No lever moves, drafts or targets one colonist, or marks a tile to work, including in combat (V-015). Direct tools exist only in a TEST MODE row behind `?debug` (Morgan, 2026-10-18).
 - **VR-29** Every consequence is visible and traceable. Each state change a player would read or trace is an event with its causes (DECISIONS V-036: moves, need decay and work progress are not); the inspector can walk any number, mood or item back to them (GAME-04).
 - **VR-30** Content over code. A new item, crop, law, creature or spell is a data entry; an engine special case for one entry is a design smell to raise, not to ship (GAME-04).
-- **VR-31** One mechanism per idea. Warmth, mood, quality and legitimacy each have one system that every feature feeds, never a parallel one bolted on (WS-05).
+- **VR-31** One mechanism per idea. Warmth, mood, quality and legitimacy each have one system that every feature feeds, never a parallel one bolted on (GAME-07).
 - **VR-32** No gamey shortcuts: no teleporting items, no free resources, no events without a cause in the world. If it would not happen in the valley, it does not happen in the game.
 - **VR-33** Simulate what the player can see or what feeds something they can see. Anything else is aggregated or left out until it matters.
 - **VR-34** Failure is a story. A colony may fail, but the ledger must explain why in the player's terms; a death or collapse with no readable cause is a bug.
@@ -85,7 +85,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 
 ## 9. Lessons
 
-- **VR-40** Each mistake Morgan corrects becomes a dated one-line entry in LESSONS.md: area, mistake, root cause, rule, count. At a count of 2 the rule also goes into this file (SRC-05).
+- **VR-40** SUPERSEDED by SRC-05: the shared rule says the same; this file is where a count-2 rule goes (audit 2026-11-18).
 
 ## 10. Efficiency
 
@@ -93,7 +93,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-43** Every brief for a thread or agent names its phase file, milestone and reading list, so nobody searches for where to start.
 - **VR-44** Code is built to be read in pieces: one folder per system, `index.ts` as its only public surface, a `MODULE.md` contract of at most 40 lines kept current in the same PR as any API change, files under 400 lines (PLAN.md §6).
 - **VR-45** Read a neighbouring system's `MODULE.md`, not its code. Needing its code is a sign the contract is missing something; fix the contract in the same PR.
-- **VR-46** Setup time is measured on every thread and logged in `vulcan/process/thread-times.md` at merge. Budgets: 10 minutes and 60 KB read before the first edit, 2 minutes for the session hook, the checks as in VR-67, 2 s per test file, 5 minutes of CI (PLAN.md §6).
+- **VR-46** Setup time is measured on every thread and logged in `vulcan/process/thread-times.md` at merge. Budgets: 10 minutes and 60 KB read before the first edit, 2 minutes for the session hook, the checks as in VR-67 (a test file over 3 s goes on the slow list), 5 minutes of CI, a milestone reading list 84 KB (`npm run reading-cost`, V-151, V-163) (PLAN.md §6; the old 2 s per file was broken by 37 of 80 files, audit 2026-11-18).
 - **VR-47** Going over a budget is flagged, never absorbed: say the number in the delivery reply, add a LESSONS line with the cause, and fix the cause by the phase review at the latest.
 - **VR-48** Efficient programming: write the interface and the `MODULE.md` first, then the code; no abstraction before its second use; bulk code goes to the `implementer` with the reading list in its brief (VR-01).
 - **VR-49** Efficient testing from day one: tests next to their code, the related tests only while iterating (`npx vitest related <files>`), the slow-test flag on, and a test removed when a newer one covers it (VR-21 to VR-27).
