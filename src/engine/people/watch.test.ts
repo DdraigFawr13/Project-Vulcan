@@ -32,6 +32,7 @@ const ctxOf = (w: WorldState): SystemContext => ({
   state: w.systems['flock']!,
   rng: () => streamFor(w, 'flock'),
   emit: (type, fields) => emit(w, templatesOf(content.events), type, fields),
+  hooks: {},
 });
 
 /** A world at 15:00 with a pasture north of the start, four ewes folded, the

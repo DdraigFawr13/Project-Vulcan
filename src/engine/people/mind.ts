@@ -19,6 +19,7 @@ import { working } from './jobs.ts';
 import { spotOf } from './spots.ts';
 import { cooked, eat } from './eat.ts';
 import { danger } from './care.ts';
+import { lineOf } from './lines.ts';
 import { drinking } from './drink.ts';
 import { walkTo, wander } from './walk.ts';
 import { tendInEvening } from './tend.ts';
@@ -45,9 +46,6 @@ const RETRY = 60;
 
 const valueOf = (ctx: SystemContext, p: EntityRow, need: string): number =>
   (needOf(ctx.world, p.id, need)?.['value'] as number) ?? ctx.content.life.scale;
-
-const seekOf = (ctx: SystemContext, need: string): number =>
-  ctx.content.life.needs.find((n) => n.id === need)?.seek ?? 0;
 
 /** Food of last resort (seed grain, P4.7) is eaten only when `desperate`: Food at `life.seedAt`. */
 const edible = (ctx: SystemContext, kind: string, desperate: boolean): boolean =>
@@ -151,7 +149,7 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   }
   // A tamer sits far from the store, so goes back sooner (flock.json `tame.back`, herdtask.ts).
   const taming = p['job'] === content.flock.job && p['task'] === 'tame';
-  const seek = taming ? content.flock.tame.back : seekOf(ctx, 'food');
+  const seek = taming ? content.flock.tame.back : lineOf(ctx, p, 'food');
   if (valueOf(ctx, p, 'food') < seek && world.tick >= (p['retry'] as number)) {
     // Seed grain only when under the warning line with nothing else to reach (P4.7).
     if (goEat(ctx, p, false) || (valueOf(ctx, p, 'food') <= life.seedAt && goEat(ctx, p, true))) {
@@ -175,7 +173,7 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     if (night || late || rest < life.sleep.wake) return;
     p['doing'] = '';
   }
-  if (night || late || rest < seekOf(ctx, 'rest')) {
+  if (night || late || rest < lineOf(ctx, p, 'rest')) {
     goToBed(ctx, p, night);
     return;
   }
@@ -193,7 +191,7 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   const leisure =
     hour >= day.workTo ||
     isDark(content, world.tick) ||
-    valueOf(ctx, p, 'recreation') < seekOf(ctx, 'recreation');
+    valueOf(ctx, p, 'recreation') < lineOf(ctx, p, 'recreation');
   p['doing'] = leisure ? 'relax' : '';
   wander(ctx, p);
 }

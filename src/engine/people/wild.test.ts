@@ -35,6 +35,7 @@ const contextOf = (w: WorldState): SystemContext => ({
   state: w.systems['people']!,
   rng: () => streamFor(w, 'people'),
   emit: (type, fields) => emit(w, templatesOf(content.events), type, fields),
+  hooks: {},
 });
 
 /** Open, flat, dry ground the green can reach, `d` tiles (the larger axis) from it and clear of

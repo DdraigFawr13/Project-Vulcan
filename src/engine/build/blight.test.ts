@@ -25,6 +25,7 @@ const ctxOf = (w: WorldState): SystemContext => ({
   state: w.systems['build']!,
   rng: () => streamFor(w, 'build'),
   emit: (type, fields) => emit(w, templatesOf(content.events), type, fields),
+  hooks: {},
 });
 /** A world a day old, so its first field is sited, with that field sown to barley just now. */
 function sown(seed: string) {

@@ -4,7 +4,7 @@ import { streamFor } from '../core/index.ts';
 import type { Command, EngineContent, RngStream, StreamName, WorldState } from '../core/index.ts';
 import type { Schemas } from '../entity/index.ts';
 import { emit, type EventFields } from '../log/index.ts';
-import type { Sim } from './world.ts';
+import type { Sim, SimHooks } from './world.ts';
 
 export type Cadence = 'minute' | 'hour' | 'day' | 'month';
 
@@ -16,6 +16,8 @@ export interface SystemContext {
   /** This system's RNG stream; throws when the system declares none. */
   rng(): RngStream;
   emit(type: string, fields?: EventFields): number;
+  /** The sim's hooks (`Sim.hooks`). */
+  hooks: SimHooks;
 }
 
 export interface System {
@@ -51,5 +53,6 @@ export function contextFor(world: WorldState, sim: Sim, system: System): SystemC
       return streamFor(world, system.stream);
     },
     emit: (type, fields) => emit(world, sim.templates, type, fields),
+    hooks: sim.hooks,
   };
 }

@@ -1,15 +1,18 @@
 // What the map and budget tools use from the engine, gathered for tools/engine.mjs.
 export {
   addEntity,
+  clockAt,
   createSim,
   createWorld,
   flocksOf,
   hallOf,
   headOf,
   homeFor,
+  hoursOf,
   isFrozen,
   makeRegion,
   removeEntity,
+  setLineHook,
   step,
   submitCommand,
   SYSTEMS,

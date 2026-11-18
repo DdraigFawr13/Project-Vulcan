@@ -8,9 +8,10 @@ import type { EntityRow } from '../core/index.ts';
 import { furnitureOf, HEARTH } from '../build/index.ts';
 import { heatMap } from '../fire/index.ts';
 import { loadOf } from '../goods/index.ts';
-import { feltAt, needOf, warmLineOf } from '../needs/index.ts';
+import { feltAt, needOf } from '../needs/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { lineOf } from './lines.ts';
 import { spotOf } from './spots.ts';
 import { coldPick, tendForWarmth } from './tend.ts';
 import { walkTo } from './walk.ts';
@@ -63,7 +64,7 @@ export function warming(ctx: SystemContext, p: EntityRow): boolean {
   const row = needOf(world, p.id, 'warmth');
   if (!def || !row || p['z'] !== 0 || p['job'] === 'tend') return false;
   const value = row['value'] as number;
-  const low = warmLineOf(world, content, p.id);
+  const low = lineOf(ctx, p, 'warmth');
   const on = p['doing'] === 'warm';
   if (on && value >= low + life.again) {
     p['doing'] = '';

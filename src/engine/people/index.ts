@@ -10,3 +10,5 @@ export { yesterdayOf } from './tally.ts';
 export type { Tally } from './tally.ts';
 export { declinedLine, levelOf } from './priority.ts';
 export { toolFactor } from './tools.ts';
+export { lineOf, setLineHook, todayLine } from './lines.ts';
+export type { LineHook, LineNeed } from './lines.ts';

@@ -19,6 +19,7 @@ import {
 } from '../goods/index.ts';
 import { isDark, lit } from '../lamp/index.ts';
 import { afterDusk, workableInDark } from './dusk.ts';
+import { lineOf } from './lines.ts';
 import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { building, takeUpBuilding } from './build.ts';
@@ -249,7 +250,7 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
   }
   // Under its seek line, recreation beats taking up new work (P2.2): the mind lets them relax.
   const fun = needOf(world, p.id, 'recreation');
-  const seek = content.life.needs.find((n) => n.id === 'recreation')?.seek ?? 0;
+  const seek = lineOf(ctx, p, 'recreation');
   if (fun && (fun['value'] as number) < seek) return false;
   if (world.tick < (p['next'] as number)) return false;
   return takeUp(ctx, p);

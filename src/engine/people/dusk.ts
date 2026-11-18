@@ -4,6 +4,7 @@ import type { EntityRow } from '../core/index.ts';
 import { canLight, lightClass, nextDawn } from '../lamp/index.ts';
 import { needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { lineOf } from './lines.ts';
 
 /** Whether a kind of work can be taken up after dusk: dark and fire work can, a candle trade
  * when its room has a candle or the store one to light. */
@@ -24,7 +25,7 @@ export function afterDusk(
 ): boolean {
   const { world, content } = ctx;
   const fun = needOf(world, p.id, 'recreation');
-  const seek = content.life.needs.find((n) => n.id === 'recreation')?.seek ?? 0;
+  const seek = lineOf(ctx, p, 'recreation');
   if (fun && (fun['value'] as number) < seek) return false;
   if (world.tick < (p['next'] as number)) return false;
   const [job, target, work] = [p['job'], p['target'], p['work']];
