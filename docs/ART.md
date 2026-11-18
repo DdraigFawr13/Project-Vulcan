@@ -1,6 +1,6 @@
 # Placeholder art plan
 
-Flat-shaded pixel art in the muted palette, readable at 32 px, nothing drawn before its milestone needs it. Each sheet is shown to Morgan as an artifact before it lands.
+Flat-shaded pixel art in the muted palette, readable at 32 px, nothing drawn before its milestone needs it. The final look, and how PixelLab makes it, is in [ART_DIRECTION.md](ART_DIRECTION.md). Each sheet is shown to Morgan as an artifact before it lands.
 
 | Milestone | Sheet | Contents |
 | --- | --- | --- |
