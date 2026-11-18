@@ -23,6 +23,9 @@ export interface FieldDef {
   weigh: { fertility: number; water: number; near: number; tries: number };
   start: number;
   perMouth: number;
+  /** A hungry winter breaks new ground (V-162, build/hungry.ts): after a winter with `days`
+   * days at `hour` under the food plate, `more` field tiles a mouth, up to `most` in all. */
+  hungry: { hour: number; days: number; more: number; most: number };
   reach: number;
   water: number;
   good: number;

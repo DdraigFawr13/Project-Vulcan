@@ -4,13 +4,13 @@
 // otherwise stroll near the camp. What they are doing is the `doing` field, which the needs
 // system reads each hour; none of it is a ledger line until a need crosses its warning line.
 import { clockAt, type EntityRow } from '../core/index.ts';
-import { itemsAt, itemsOf } from '../goods/index.ts';
+import { haveOf, itemsAt, itemsOf } from '../goods/index.ts';
 import { armOut } from '../health/index.ts';
 import { needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { isDark } from '../lamp/index.ts';
 import { hoursOf } from '../law/index.ts';
-import { bedOwnedBy } from '../build/index.ts';
+import { bedOwnedBy, fieldTiles, liveFields } from '../build/index.ts';
 import { bankFire } from '../fire/index.ts';
 import { reachFrom } from '../paths/index.ts';
 import { claimBed } from './claim.ts';
@@ -47,10 +47,19 @@ const RETRY = 60;
 const valueOf = (ctx: SystemContext, p: EntityRow, need: string): number =>
   (needOf(ctx.world, p.id, need)?.['value'] as number) ?? ctx.content.life.scale;
 
-/** Food of last resort (seed grain, P4.7) is eaten only when `desperate`: Food at `life.seedAt`. */
+/** Food of last resort (seed grain, P4.7) is eaten only when `desperate`: Food at `life.seedAt`,
+ * and (Phase 6 Bundle 0) only seed beyond what the colony's fields need to sow: the seed corn is
+ * kept back, whoever goes hungry. */
 const edible = (ctx: SystemContext, kind: string, desperate: boolean): boolean =>
   ctx.content.life.eat[kind] !== undefined &&
-  (desperate || !ctx.content.life.lastResort.includes(kind));
+  (!ctx.content.life.lastResort.includes(kind) || (desperate && seedSpare(ctx) > 0));
+
+/** Seed grain in the valley beyond one a tile of every live field. */
+const seedSpare = (ctx: SystemContext): number => {
+  const { world, content } = ctx;
+  const tiles = liveFields(world).reduce((n, f) => n + fieldTiles(f).length, 0);
+  return haveOf(world, content, content.buildings.field.seed) - tiles;
+};
 
 /** Food on their tile: a cooked meal, then ordinary food, then (only when `desperate`) food of
  * last resort. */

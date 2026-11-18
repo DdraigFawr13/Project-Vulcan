@@ -30,10 +30,17 @@ const people = (w: World) => w.entities['person'] ?? [];
 const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === type);
 
 /** Worlds ten days on, one per seed, with a built house and someone sleeping in a bed of it. */
+const tenDays = new Map<string, World>();
 function* housedWorlds(): Generator<World> {
   for (const seed of SEEDS) {
-    const w = createWorld(sim, seed);
-    step(w, sim, 10 * DAY);
+    // Each seed's ten days run once for the file; every test gets its own copy to change.
+    let base = tenDays.get(seed);
+    if (!base) {
+      base = createWorld(sim, seed);
+      step(base, sim, 10 * DAY);
+      tenDays.set(seed, base);
+    }
+    const w = structuredClone(base);
     if (
       housesOf(w).some((h) => h['state'] === 'built') &&
       people(w).some((p) => bedOwnedBy(w, p.id))

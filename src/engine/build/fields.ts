@@ -20,6 +20,7 @@ import { clearBlight } from './blight.ts';
 import { chooseField } from './fieldsite.ts';
 import { courseNow, meanSoil } from './fieldsoil.ts';
 import { flaxWanted } from './loom.ts';
+import { moreOf } from './hungry.ts';
 import { dirFrom, FIELD_KIND, wantOf } from './houses.ts';
 
 export const FIELD_TABLES: Schemas = {
@@ -145,7 +146,7 @@ function tallyOf(ctx: SystemContext): { alive: number; have: number; need: numbe
   const have = liveFields(world)
     .filter((f) => !f['leave'])
     .reduce((n, f) => n + tilesOf(f).length, 0);
-  return { alive, have, need: alive * content.buildings.field.perMouth };
+  return { alive, have, need: alive * (content.buildings.field.perMouth + moreOf(ctx.state)) };
 }
 
 /** Sites a field if the Fields level calls for one: said with the need first, then the plan, or

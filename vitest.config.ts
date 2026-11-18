@@ -52,6 +52,13 @@ const slowFiles = [
   // Salt and the cellar (5B Bundle 3): runs of 20 to 60 days with miners digging.
   'src/engine/mine/salt.test.ts',
   'src/engine/keep/cellar.test.ts',
+  // Moved out of the quick tier to fit `npm run check` under 40 s (VR-67, 2026-11-18): colony runs
+  // of 10 to 30 days (sickness, smithy, loom, well, Work priorities).
+  'src/engine/health/sick.test.ts',
+  'src/engine/build/smithy.test.ts',
+  'src/engine/people/loom.test.ts',
+  'src/engine/build/well.test.ts',
+  'src/engine/people/priority.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).

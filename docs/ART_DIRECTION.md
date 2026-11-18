@@ -1,6 +1,6 @@
 # Final art direction
 
-Morgan chose this look on 2026-11-18 in two PixelLab rounds (V-165): [round 1, four directions](https://claude.ai/artifact/QsaKukr674YPimLgTHtwGL) and [round 2, the Pro test sheet](https://claude.ai/artifact/KMoKyZj4kThJWWxxBUHSXu). The final art is made in Phase 10 (V-034). Until then, any new placeholder sprite follows the rules below where a script can, so the swap stays a file swap (ART.md).
+Morgan chose this look on 2026-11-18 in two PixelLab rounds (V-166): [round 1, four directions](https://claude.ai/artifact/QsaKukr674YPimLgTHtwGL) and [round 2, the Pro test sheet](https://claude.ai/artifact/KMoKyZj4kThJWWxxBUHSXu). The final art is made in Phase 10 (V-034). Until then, any new placeholder sprite follows the rules below where a script can, so the swap stays a file swap (ART.md).
 
 ## The look
 

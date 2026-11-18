@@ -31,21 +31,44 @@ const foraging = (w: World) =>
 const gathering = (w: World) =>
   allLines(w).filter((e) => e.type === 'work.tookUpHunting' || e.type === 'work.tookUpFishing');
 
+/** A seed's colony short of food, run once for the file: its first food line and the command log
+ * as the band first answers the plate (days 3 to 4), and yesterday's tally at day 3. The world is
+ * then left for `warmRun` to carry on, so nothing else reads it. */
+const timelines = new Map<string, ReturnType<typeof buildTimeline>>();
+function buildTimeline(seed: string) {
+  const world = shortOfFood(createWorld(sim, seed));
+  const beforeAnyDay = yesterdayOf(world, content);
+  step(world, sim, 3 * DAY);
+  const y = yesterdayOf(world, content)!;
+  // The tally counts logs: stone broken up for the house is not felled.
+  const onDay = (type: string) =>
+    allLines(world)
+      .filter((e) => e.type === type && e.tick >= 2 * DAY && e.tick < 3 * DAY)
+      .filter((e) => e.data['verb'] !== 'broke up')
+      .reduce((n, e) => n + (e.data['count'] as number), 0);
+  const tally = { beforeAnyDay, y, felled: onDay('work.felled'), picked: onDay('work.picked') };
+  // Sow first (5B Bundle 2): a field waiting in its sowing month is sown before the band hunts,
+  // fishes or forages, so a band still sowing gets the day it takes to finish.
+  const is = (type: string) => allLines(world).some((e) => e.type === type);
+  if (is('work.tookUpSowing') && !is('field.sown')) step(world, sim, DAY);
+  // Hunting and fishing come before foraging (P5.4a); any of the three answers the plate.
+  const first = [...foraging(world), ...gathering(world)].sort((a, b) => a.id - b.id)[0]!;
+  const cause = allLines(world).find((e) => e.id === first.causes[0])?.type;
+  return { world, tally, orders: world.commandLog.length, good: first.data['good'], cause };
+}
+const timeline = (seed: string) => {
+  let t = timelines.get(seed);
+  if (!t) timelines.set(seed, (t = buildTimeline(seed)));
+  return t;
+};
+
 describe('foraging', () => {
   for (const seed of SEEDS) {
     it(`goes after food within a day when the cart is low on ${seed}`, () => {
-      const world = shortOfFood(createWorld(sim, seed));
-      step(world, sim, DAY);
-      // Sow first (5B Bundle 2): a field waiting in its sowing month is sown before the band
-      // hunts, fishes or forages, so a band still sowing gets the day it takes to finish.
-      const is = (type: string) => allLines(world).some((e) => e.type === type);
-      for (let d = 0; d < 3 && is('work.tookUpSowing') && !is('field.sown'); d += 1)
-        step(world, sim, DAY);
-      expect(world.commandLog).toHaveLength(0);
-      // Hunting and fishing come before foraging (P5.4a); any of the three answers the plate.
-      const first = [...foraging(world), ...gathering(world)].sort((a, b) => a.id - b.id)[0]!;
-      expect(first.data['good']).toBe('food');
-      expect(allLines(world).find((e) => e.id === first.causes[0])?.type).toBe('goods.stockSet');
+      const t = timeline(seed);
+      expect(t.orders).toBe(0);
+      expect(t.good).toBe('food');
+      expect(t.cause).toBe('goods.stockSet');
     });
 
     it(`stocks berries unordered and keeps the band fed to day 35 on ${seed}`, () => {
@@ -75,8 +98,9 @@ describe('foraging', () => {
     expect(allLines(world).filter((e) => e.type === 'work.picked')).toEqual([]);
     expect(foraging(world)).toEqual([]);
 
-    const warm = shortOfFood(createWorld(sim, 'ledger/1'));
-    step(warm, sim, 40 * DAY);
+    // The same short-of-food colony the timeline made, carried on to day 40.
+    const warm = timeline('ledger/1').world;
+    step(warm, sim, 40 * DAY - warm.tick);
     const picked = allLines(warm).filter((e) => e.type === 'work.picked');
     expect(picked.length).toBeGreaterThan(0);
     // A bush picked is ripe again exactly `regrowDays` later, if it is still the warm months.
@@ -117,20 +141,12 @@ describe('foraging', () => {
   it("counts yesterday's work the way the day's lines do", () => {
     let picked = 0;
     for (const seed of SEEDS) {
-      const world = shortOfFood(createWorld(sim, seed));
-      expect(yesterdayOf(world, content)).toBeUndefined();
-      step(world, sim, 3 * DAY);
-      const y = yesterdayOf(world, content)!;
-      expect([y.day, y.month]).toEqual([3, 'Thawmonth']);
-      // The tally counts logs: stone broken up for the house is not felled.
-      const onDay = (type: string) =>
-        allLines(world)
-          .filter((e) => e.type === type && e.tick >= 2 * DAY && e.tick < 3 * DAY)
-          .filter((e) => e.data['verb'] !== 'broke up')
-          .reduce((n, e) => n + (e.data['count'] as number), 0);
-      expect(y.felled).toBe(onDay('work.felled'));
-      expect(y.picked).toBe(onDay('work.picked'));
-      picked += y.picked;
+      const { tally } = timeline(seed);
+      expect(tally.beforeAnyDay).toBeUndefined();
+      expect([tally.y.day, tally.y.month]).toEqual([3, 'Thawmonth']);
+      expect(tally.y.felled).toBe(tally.felled);
+      expect(tally.y.picked).toBe(tally.picked);
+      picked += tally.y.picked;
     }
     expect(picked).toBeGreaterThan(0);
   });

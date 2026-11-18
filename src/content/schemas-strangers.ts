@@ -30,6 +30,13 @@ export const STRANGERS_SCHEMAS = {
     couple: percent,
     animal: percent,
     animals: texts,
+    // What a household brings from home (5B proposal 2, V-162): by the first newcomer's trade,
+    // `count` of `item` laid at the green when they stay; `need` percent of it (rounded down,
+    // at least 1) when they come fleeing a trouble that is a need.
+    goods: obj({
+      trades: map(obj({ item: ref('items'), count: num({ min: 1 }) }), 'abilities'),
+      need: percent,
+    }),
     // A neighbour's reason is read from its last `years` of the region's record.
     years: num({ min: 1 }),
     // Minutes a stranger waits at the green while the band speaks.
