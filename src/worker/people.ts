@@ -9,7 +9,6 @@ import {
   itemsOf,
   levelOf,
   loadOf,
-  memoriesOf,
   moodOf,
   needOf,
   nextNeed,
@@ -18,7 +17,6 @@ import {
   progressOf,
   stationsOf,
   stockOf,
-  TICKS_PER_DAY,
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
@@ -29,7 +27,8 @@ import { deadNow, healthOf } from './healthview.ts';
 import { hearthDoing, tendDoing } from './fires.ts';
 import { herdDoing } from './herd.ts';
 import { carpentryDoing } from './furniture.ts';
-import { lawOfWalker, leanWords } from './law.ts';
+import { lawOfWalker } from './law.ts';
+import { memoriesView, thoughtView } from './memoryview.ts';
 import { personTools } from './items.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 import { jobShown } from './jobrows.ts';
@@ -285,6 +284,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     ...wearingOf(world, p),
     ...withHealth(healthOf(world, p)),
     memories: memoriesView(world, p),
+    thought: thoughtView(world, p),
     ...lawOfWalker(world, p),
     tools: personTools(world, p.id),
     skills: skillsOf(world, p),
@@ -321,28 +321,7 @@ const wearingOf = (
   return wearing.length ? { wearing } : {};
 };
 
-/** A person's live memories in words from memories.json, with the days before each fades. */
-function memoriesView(world: WorldState, p: EntityRow): WalkerView['memories'] {
-  const people = world.entities['person'] ?? [];
-  return memoriesOf(world, p.id).flatMap((m) => {
-    const def = content.memories.find((d) => d.id === m['memory']);
-    if (!def) return [];
-    const about = people.find((q) => q.id === m['about'])?.['name'] as string | undefined;
-    return [
-      {
-        text: def.text.replace('{about}', about ?? 'someone'),
-        mood: def.mood,
-        days: Math.max(1, Math.ceil(((m['until'] as number) - world.tick) / TICKS_PER_DAY)),
-        why: m['line'] as number,
-        ...withLean(leanWords(world, m['memory'] as string)),
-      },
-    ];
-  });
-}
-
 const withHealth = (health: WalkerView['health']) => (health ? { health } : {});
-
-const withLean = (lean: string | undefined) => (lean ? { lean } : {});
 
 /** A person's skills with practice towards the next level (P2.5). */
 function skillsOf(world: WorldState, p: EntityRow): WalkerView['skills'] {

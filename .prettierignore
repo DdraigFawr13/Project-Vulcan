@@ -42,6 +42,7 @@ src/content/data/
 .claude/skills/planning-interview/
 .claude/skills/routing/
 .claude/skills/test-design/
+.claude/skills/ui-mockups/
 .claude/skills/ui-style/
 .claude/skills/write-spec/
 .github/workflows/prune-merged-branches.yml

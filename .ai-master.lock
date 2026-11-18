@@ -1,7 +1,7 @@
 {
   "version": "v4.15.0",
   "commit": "bcc0045b54e965c46b7930b9b2f2b6f9af8a5ea6",
-  "manifest": "78185dd9ff7f3148b7bad13ad34ab66286fb25b2dfd2d3e51f0190a9ca0bdce1",
+  "manifest": "b725d576c9690d804e25afb68ecda3562732fc0aa3d03ea1521e2658fed4dfe3",
   "budget": {
     "lines": 200,
     "bytes": 24576
@@ -58,6 +58,10 @@
     ".claude/skills/test-design/references/browser-tests.md": "1dd7d99ab2c4c577a967b1d2d50791825411e2386d0ff873fe77216e7fc0ad40",
     ".claude/skills/test-design/scripts/test-traps.mjs": "72e627a62485907258f39edea3ec001049a3a94eeba6c019d41044b0cea4e20c",
     ".claude/skills/test-design/SKILL.md": "c18cae14fc5069de3f4606d5546c3d4a9a1752abc45930c7f8513daa0854b15e",
+    ".claude/skills/ui-mockups/assets/zoom-viewer.html": "caaf5b82822d2d335bc8d48a548b26d16216651000e0c69f6d6f65a0cb41556a",
+    ".claude/skills/ui-mockups/scripts/add-zoom.mjs": "a0a3890293136f7c8d1eab49a7cf4d41f7bed98bfeddc7446c15747c9d2da252",
+    ".claude/skills/ui-mockups/scripts/mockup-lint.mjs": "b9f40c6dbe527c33f168188e672505525240a2c9bbfb826a20b71694580a8887",
+    ".claude/skills/ui-mockups/SKILL.md": "b7c665c599cb1918e9da04196e42cad7e313c8acc322e0b8dece0b75a7c57469",
     ".claude/skills/ui-style/assets/UI_STYLE.md": "6c0856ee3b836b8a9f6a8408c9f54f8e2cf738c9a109e566ab6c848a37019b32",
     ".claude/skills/ui-style/references/avoid.md": "a18249653151b899aa5b0329a45809af6b293646bed8da6b764601be6031b913",
     ".claude/skills/ui-style/SKILL.md": "90463b07da9bcda47f8ce6aef900a94627b543922e4e19f7f5dde65857e0e649",

@@ -200,7 +200,22 @@ export const PEOPLE_SCHEMAS = {
       needRates: opt(map(count, 'needs')),
     }),
   ),
-  memories: list(obj({ id, mood: num(), decayDays: count, text, stacks: opt(count) })),
+  // Memories (V-091, V-154): `weight` (1 when absent) is how much it touches a person; `heavy`
+  // names one that a run of days made heavy and says what came ("Hungry on 46 days"); the
+  // thoughts are lines a person may think while they hold it, light or heavy.
+  memories: list(
+    obj({
+      id,
+      mood: num(),
+      decayDays: count,
+      text,
+      stacks: opt(count),
+      weight: opt(num({ min: 1 })),
+      heavy: opt(obj({ name: text, came: text })),
+      thoughts: opt(list(text)),
+      heavyThoughts: opt(list(text)),
+    }),
+  ),
   jobs: list(
     obj({
       id,

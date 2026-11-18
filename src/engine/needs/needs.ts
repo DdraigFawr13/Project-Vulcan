@@ -17,7 +17,8 @@ import { tileTemperature } from '../weather/index.ts';
 import { bedOwnedBy, houseAt, type Room } from '../build/index.ts';
 import { comfortOf, roomHere } from './comfort.ts';
 import { clothesWarmth, wearClothes } from './clothes.ts';
-import { expireMemories, MEMORY_TABLES, memoriesOf, memoryMood } from './memory.ts';
+import { DIET_TABLES } from './diet.ts';
+import { addMemory, expireMemories, MEMORY_TABLES, memoriesOf, memoryMood } from './memory.ts';
 
 export const NEEDS_TABLES: Schemas = {
   need: {
@@ -33,6 +34,7 @@ export const NEEDS_TABLES: Schemas = {
     noted: 'count',
   },
   ...MEMORY_TABLES,
+  ...DIET_TABLES,
   mood: { person: 'entity', value: 'int', word: 'text', line: 'event' },
 };
 
@@ -191,7 +193,7 @@ function causeOf(ctx: SystemContext, p: EntityRow, row: EntityRow): number {
 export function runNeeds(ctx: SystemContext): void {
   const { world, content } = ctx;
   const life = content.life;
-  expireMemories(world);
+  expireMemories(world, content);
   for (const p of rowsOf(world, 'person')) {
     if (p['status'] !== 'alive') continue;
     wearClothes(ctx, p, feelsBare(ctx, p));
@@ -205,6 +207,8 @@ export function runNeeds(ctx: SystemContext): void {
       if (!row) continue;
       changeNeed(content, row, hourOf(ctx, p, def.id, def.fall, where));
       crossed(ctx, p, row, def);
+      // Hungry or cold, the memory of it is kept fresh hour by hour (V-154), citing the low line.
+      if (row['low'] && def.memory) addMemory(ctx, p.id, def.memory, row['line'] as number);
       if (!worst || (row['value'] as number) < (worst['value'] as number)) worst = row;
     }
     const mood = moodOf(world, p.id);

@@ -50,3 +50,4 @@ export function spawnSimWorker(testMode: boolean): Worker {
   worker.postMessage({ type: 'testMode', on: testMode } satisfies ToWorker);
   return worker;
 }
+export type { MemoryView } from './protocol-people.ts';

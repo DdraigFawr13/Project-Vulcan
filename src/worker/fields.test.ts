@@ -100,7 +100,7 @@ describe('field views', () => {
     expect(plate.making).toMatch(/^\d+ wool cloth, \d+ linen, \d+ leather, \d+ cured hides/);
   });
 
-  it('shows the clothes worn and each live memory with the days left', () => {
+  it('shows the clothes worn and each memory with the days left', () => {
     const w = createWorld(sim, 'ledger');
     step(w, sim, 1);
     const [first, second] = walkersOf(w);
@@ -116,12 +116,18 @@ describe('field views', () => {
     step(w, sim, DAY);
     const seen = walkersOf(w).find((p) => p.id === first!.id)!.memories;
     const name = w.entities['person']!.find((q) => q.id === second!.id)!['name'] as string;
-    expect(seen).toHaveLength(content.memories.length);
+    // A day on, only a one-day memory (ragged clothes) has gone.
+    expect(seen).toHaveLength(content.memories.filter((m) => m.decayDays > 1).length);
     for (const m of seen) {
       const def = content.memories.find((d) => d.text.replace('{about}', name) === m.text)!;
       expect(def).toBeDefined();
-      expect(m.days).toBeGreaterThanOrEqual(1);
-      expect(m.days).toBeLessThanOrEqual(def.decayDays);
+      // Each says its mood and days left; a heavy or lasting one also how long it stays (V-154).
+      const left = /[+−]\d+ mood(, (\d+) days left|, fades tomorrow| while it was fresh)/.exec(
+        m.note,
+      );
+      expect(left).not.toBeNull();
+      expect(Number(left![2] ?? 1)).toBeLessThanOrEqual(def.decayDays);
+      if (m.band !== 'Light') expect(m.note).toMatch(/stays (until \d+ \w+|for life)\.$/);
       expect(m.text).not.toContain('{');
     }
   });

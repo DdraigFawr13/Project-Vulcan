@@ -19,6 +19,10 @@ export interface NeedDef {
   /** Its warning line is notable once a person a day (V-092). */
   quiet?: boolean;
   asleepFall?: number; // falls this much an hour asleep, not `fall`
+  /** The memory gained while under the line (V-154). */
+  memory?: string;
+  /** What a person under the line thinks (V-154). */
+  thoughts: readonly string[];
 }
 
 export interface LifeDef {
@@ -53,8 +57,19 @@ export interface LifeDef {
     goods: readonly { kind: string; count: number }[];
     bedroll: string;
   };
-  /** Each live memory's mood points count this many times in the mood (V-091). */
-  memory: { weight: number };
+  /** Memories (V-091, V-154): a fresh one's mood points count `weight` times in the mood; the
+   * weight bands, the run that makes one heavy, the same-food rule and the fallback thoughts. */
+  memory: {
+    weight: number;
+    heavy: number;
+    lasting: number;
+    lingerDays: number;
+    spellDays: number;
+    windowDays: number;
+    recentHours: number;
+    sameFood: { days: number; kinds: number; memory: string };
+    thoughts: { none: readonly string[]; good: readonly string[]; bad: readonly string[] };
+  };
   /** Points the warmth warning line moves by a trait, or by each held memory (V-046, P4.8). */
   warmthLine: {
     traits: Readonly<Record<string, number>>;
@@ -369,4 +384,10 @@ export interface MemoryDef {
   text: string;
   /** How many of it can be held at once (one when absent). */
   stacks?: number;
+  /** How much it touches a person (1 when absent, V-154). */
+  weight?: number;
+  /** What a run of it becomes when heavy, and what came ("Hungry"). */
+  heavy?: { name: string; came: string };
+  thoughts?: readonly string[];
+  heavyThoughts?: readonly string[];
 }

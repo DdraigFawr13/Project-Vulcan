@@ -113,7 +113,10 @@ export function lawOfWalker(world: WorldState, p: EntityRow): Pick<WalkerView, '
     if (t['person'] === p.id && traits[t['trait'] as string])
       why.push(content.traits.find((d) => d.id === t['trait'])?.name ?? (t['trait'] as string));
   const held = (world.entities['memory'] ?? []).filter(
-    (m) => m['person'] === p.id && memories[m['memory'] as string],
+    (m) =>
+      m['person'] === p.id &&
+      world.tick < (m['until'] as number) &&
+      memories[m['memory'] as string],
   );
   for (const id of new Set(held.map((m) => m['memory'] as string))) {
     const n = held.filter((m) => m['memory'] === id).length;

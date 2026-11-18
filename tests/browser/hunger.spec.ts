@@ -44,5 +44,12 @@ test('a hungry colonist\'s Food "why?" names the line that ate the last of the f
   await panel.getByRole('button', { name: 'Needs' }).click();
   await hungry.first().click({ timeout: 5000 });
   await expect(panel.getByTestId('chain')).toContainText("ate the last of the band's food");
+  // P6.2 (V-154): hungry, they think of food, and the Memories tab holds the hunger (which comes
+  // first after a winter of it is memoryview.test.ts).
+  await expect(panel.getByTestId('thinking')).toContainText(/hungry|eat properly/);
+  await panel.getByRole('button', { name: 'Memories' }).click();
+  await expect(
+    panel.getByTestId('memory').filter({ hasText: /Went to bed hungry|The hungry/ }),
+  ).toHaveCount(1);
   expect(errors).toEqual([]);
 });

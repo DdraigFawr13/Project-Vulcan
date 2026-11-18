@@ -1,4 +1,4 @@
-// A person's sheet (P2.6) in tabs: Needs (mood and needs, live), Health (P5.6, P5.8), Skills (each with its practice
+// A person's sheet (P2.6) in tabs: Needs (mood and needs, live), Memories (P6.2), Health (P5.6, P5.8), Skills (each with its practice
 // towards the next level), Work (their priorities, as on the Work sheet) and Ledger (the lines
 // about them). It shows what the snapshot says; nothing here decides a rule (GAME-02).
 import type { LedgerLine, PersonView, StrangerView, WalkerView } from '../worker/index.ts';
@@ -6,6 +6,7 @@ import { el } from './dom.ts';
 import type { Panel } from './panel.ts';
 import { fillBlood, healthBody, healthKey } from './healthtab.ts';
 import { fillNeed, needRow, skillRows, whoLine } from './person.ts';
+import { fillThought, memoryRows } from './memorytab.ts';
 
 /** A stranger's page (P5.9): who, rows with "why?", and that nothing here takes them in. */
 function strangerRows(s: StrangerView): HTMLElement[] {
@@ -27,9 +28,10 @@ function strangerRows(s: StrangerView): HTMLElement[] {
   ];
 }
 
-export type PersonTab = 'needs' | 'health' | 'skills' | 'work' | 'ledger';
+export type PersonTab = 'needs' | 'memories' | 'health' | 'skills' | 'work' | 'ledger';
 const TABS: readonly [PersonTab, string][] = [
   ['needs', 'Needs'],
+  ['memories', 'Memories'],
   ['health', 'Health'],
   ['skills', 'Skills'],
   ['work', 'Work'],
@@ -55,10 +57,12 @@ export class PersonSheet {
   private walkers: readonly WalkerView[] = [];
   /** What they are doing and why (P2.9), above the tabs; filled in place each snapshot. */
   private now = el('div', { class: 'doingnow', 'data-testid': 'doing-now' });
+  /** What is on their mind (P6.2), under Doing now on every tab; filled in place. */
+  private thought = el('div', { class: 'doingnow thinking', 'data-testid': 'thinking' });
   private rows: HTMLElement[] = [];
   /** The Health tab's Blood row, moved in place each snapshot. */
   private blood: HTMLElement | undefined;
-  /** The Needs tab's Wearing and Memories sections, filled in place each snapshot. */
+  /** The Needs tab's Home, law, Warmth line, Wearing and Tools sections, filled in place. */
   private extra = el('div', { class: 'wearmem', 'data-testid': 'wear-memories' });
   /** A stranger's page is up (P5.9): it is redrawn as a whole, and as tabs once they stay. */
   private strangerShown = false;
@@ -112,29 +116,12 @@ export class PersonSheet {
     this.fillExtra(w);
   }
 
-  /** "Wearing" (a row per garment), "Memories" (each live one and the days left) and "Tools" (each
-   * with its hours left, a button to its page; owned like a bed, so no lever); the text is the
-   * worker's, redrawn only when it changes. */
+  /** "Wearing" (a row per garment) and "Tools" (each with its hours left, a button to its page;
+   * owned like a bed, so no lever); the text is the worker's, redrawn only when it changes. */
   private fillExtra(w: WalkerView): void {
-    const shown = JSON.stringify([w.wearing, w.memories, w.tools, w.law, w.warmLine, w.home]);
+    const shown = JSON.stringify([w.wearing, w.tools, w.law, w.warmLine, w.home]);
     if (this.extra.dataset['shown'] === shown) return;
     this.extra.dataset['shown'] = shown;
-    const memories = w.memories.length
-      ? w.memories.map((m) => {
-          const row = el('div', { class: 'mem' });
-          const left = m.days > 1 ? `${m.days} days left` : 'fades tomorrow';
-          row.append(
-            el('span', {}, m.text),
-            el(
-              'span',
-              { class: 'pts' },
-              `${m.mood > 0 ? '+' : '−'}${Math.abs(m.mood)} mood, ${left}${m.lean ? `, ${m.lean}` : ''}`,
-            ),
-            el('button', { type: 'button', class: 'why', 'data-why': String(m.why) }, 'why?'),
-          );
-          return row;
-        })
-      : [el('p', { class: 'muted' }, 'Nothing weighs on them now.')];
     const law = w.law
       ? el('p', { 'data-line': String(w.law.why) }, '')
       : el('p', {}, 'Keeps the customary hours.');
@@ -161,8 +148,6 @@ export class PersonSheet {
       el('p', {}, w.warmLine.text),
       el('h3', {}, 'Wearing'),
       ...this.wearingRows(w),
-      el('h3', {}, 'Memories'),
-      ...memories,
       el('h3', {}, 'Tools'),
       ...this.toolRows(w),
     );
@@ -207,6 +192,7 @@ export class PersonSheet {
   /** "Doing now" and its why?, rebuilt only when the sentence or its line changes, so a chain
    * opened under it stays open and a tap never slips. */
   private fillNow(): void {
+    fillThought(this.thought, this.walker()?.thought);
     const now = this.walker()?.now;
     const shown = now ? `${now.text}|${now.why ?? ''}` : '';
     if (this.now.dataset['shown'] === shown) return;
@@ -241,6 +227,7 @@ export class PersonSheet {
     if (this.tab === 'work')
       return JSON.stringify(this.sources.work(this.p!, w).map((r) => r.outerHTML));
     if (this.tab === 'ledger') return String(this.mine().at(-1)?.id);
+    if (this.tab === 'memories') return JSON.stringify(w?.memories);
     return '';
   }
 
@@ -265,8 +252,10 @@ export class PersonSheet {
     }
     this.drawn = this.key();
     this.now.dataset['shown'] = '-';
+    this.thought.dataset['shown'] = '-';
     this.panel.showView('person', p.home ? `${p.name} of ${p.home}` : p.name, [
       this.now,
+      this.thought,
       tabs,
       ...this.body(p, w),
     ]);
@@ -301,6 +290,7 @@ export class PersonSheet {
       ];
     }
     if (this.tab === 'work') return this.sources.work(p, w);
+    if (this.tab === 'memories') return memoryRows(w);
     if (this.tab === 'health') {
       const rows = healthBody(p, w?.health, {
         lines: this.sources.lines,

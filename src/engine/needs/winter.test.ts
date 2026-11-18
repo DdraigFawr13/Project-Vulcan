@@ -37,9 +37,14 @@ const warmthOf = (w: World) =>
 
 describe('memories', () => {
   it('hold, stack to their limit, move the mood and fade', () => {
-    const sim = createSim(content);
+    // No memory stacks in today's content: one is made to, three deep.
+    const stacked = {
+      ...content,
+      memories: content.memories.map((m) => (m.id === 'culled-raised' ? { ...m, stacks: 3 } : m)),
+    };
+    const sim = createSim(stacked);
     const w = createWorld(sim, SEED);
-    const ctx = { world: w, content } as unknown as SystemContext;
+    const ctx = { world: w, content: stacked } as unknown as SystemContext;
     const [a, b] = [people(w)[0]!.id, people(w)[1]!.id];
     // One that does not stack is refreshed, not doubled.
     addMemory(ctx, a, 'ate-well', 1);
@@ -50,7 +55,7 @@ describe('memories', () => {
     expect(memoriesOf(w, a)[0]!['until']).toBeGreaterThan(first);
     expect(memoriesOf(w, a)[0]!['line']).toBe(2);
     // One that stacks holds up to `stacks`, then refreshes.
-    for (let k = 0; k < 5; k += 1) addMemory(ctx, b, 'cold-night', 3);
+    for (let k = 0; k < 5; k += 1) addMemory(ctx, b, 'culled-raised', 3);
     expect(memoriesOf(w, b)).toHaveLength(3);
     addMemory(ctx, b, 'no-such-memory', 3);
     expect(memoriesOf(w, b)).toHaveLength(3);
@@ -61,12 +66,12 @@ describe('memories', () => {
       sum += (needOf(w, b, def.id)!['value'] as number) * def.weight;
       weights += def.weight;
     }
-    const memory = -5 * 3 * content.life.memory.weight;
+    const memory = -2 * 3 * content.life.memory.weight;
     const expected = Math.max(0, Math.floor(sum / weights) + memory);
     expect(moodOf(w, b)!['value']).toBe(expected);
     // They fade after their days (meals eaten meanwhile leave memories of their own).
     step(w, sim, 6 * DAY);
-    expect(memoriesOf(w, b).filter((m) => m['memory'] === 'cold-night')).toEqual([]);
+    expect(memoriesOf(w, b).filter((m) => m['memory'] === 'culled-raised')).toEqual([]);
   });
 });
 
