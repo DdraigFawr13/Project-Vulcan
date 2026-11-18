@@ -72,5 +72,33 @@ if [ -f .claude/hooks/session-start.local.sh ]; then
   bash .claude/hooks/session-start.local.sh || say "session-start.local.sh failed"
 fi
 
+# 5. Work in flight elsewhere (GIT-06): cloud clones see only the default branch and its HANDOFF,
+#    so list the other remote branches. dfma-review redid a slice that sat on one (2026-11-08).
+if command -v git >/dev/null && git rev-parse --git-dir >/dev/null 2>&1; then
+  here="$(git branch --show-current 2>/dev/null)"
+  base="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')"
+  tip="$(git rev-parse --verify --quiet "origin/${base:-main}" 2>/dev/null)"
+  others=""; n=0
+  while read -r sha ref; do
+    b="${ref#refs/heads/}"
+    case "$b" in "${base:-main}"|main|"$here"|"") continue ;; esac
+    # Skip a branch already merged, when this clone has its commit; unknown commits are listed.
+    if [ -n "$tip" ] && git cat-file -e "${sha}^{commit}" 2>/dev/null && git merge-base --is-ancestor "$sha" "$tip" 2>/dev/null; then continue; fi
+    n=$((n + 1)); [ "$n" -le 8 ] && others="${others}${b} "
+  done < <(timeout 10 git ls-remote --heads origin 2>/dev/null)
+  [ "$n" -gt 8 ] && others="${others}(+$((n - 8)) more) "
+  [ "$n" -gt 0 ] && say "unmerged branches on origin: ${others}- check them and their PRs for work in flight before starting (GIT-06)"
+fi
+
+# 6. HANDOFF over its cap (CTX-02, D-055): the same numbers sync --check prints as a note.
+for h in docs/HANDOFF.md HANDOFF.md; do
+  [ -f "$h" ] || continue
+  lines="$(wc -l < "$h" | tr -d ' ')"; bytes="$(wc -c < "$h" | tr -d ' ')"
+  if [ "$lines" -gt 60 ] || [ "$bytes" -gt 8192 ]; then
+    say "${h} is ${lines} lines and ${bytes} bytes (cap 60 lines, 8192 bytes, CTX-02); move finished entries to docs/archive/ at the next checkpoint"
+  fi
+  break
+done
+
 [ -f package.json ] && say "ready: node $(node -v 2>/dev/null)"
 exit 0

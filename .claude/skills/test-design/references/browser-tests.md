@@ -27,3 +27,6 @@ Read with the `test-design` skill when writing, changing or fixing browser tests
 - Set `retries: 0` (VER-04).
 - Set an explicit per-test timeout with a margin over the local time.
 - Turn on `reuseExistingServer` only when the port is known to be free (Vulcan:54).
+- In cloud sessions, use the container's preinstalled Chromium (WEB-05 has the node-web setting); don't download browsers.
+- Pin the Playwright driver and client to one version, and rebuild a fresh environment from the final file before pushing (dfma:10).
+- Pin CI's runner image to one the pinned Playwright supports, and move them together (dfma:13).

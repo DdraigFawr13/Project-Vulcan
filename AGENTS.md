@@ -17,6 +17,7 @@ Open [docs/RULES.md](docs/RULES.md), [docs/DECISIONS.md](docs/DECISIONS.md), [do
 
 - While iterating: `npm run test:related -- <changed files>`.
 - Every push: `npm run check` (test-traps warnings, drift, format, types, boundaries, limits, code map, reading, quick tests, build). Before ready: `npm run check:full` and `npm run test:browser` once (VR-67).
+- Test time budgets (VR-67): `npm run check` under 40 s; `npm run check:full` under 120 s (measured 136 s on 2026-11-18, OVER; Phase 6 Bundle 0 brings it back).
 - UI or render changes: also `npm run test:browser`.
 - Map or terrain changes: `npm run map:stats` (the seed table against Phase 1's done-whens; seeds in `src/engine/map/seeds.ts`) and `npm run map:render` (PNGs in `tmp/maps/`, not committed), as the `map-check` skill says.
 - After adding or changing a module's `index.ts` or `MODULE.md`: `npm run codemap`.

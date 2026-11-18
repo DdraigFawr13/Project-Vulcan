@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { isMain, rel, root, size, walk } from './lib.mjs';
 
-export const budgetBytes = 82 * 1024; // about 21k tokens (80 KB until V-151) at an estimated 4 bytes a token
+export const budgetBytes = 84 * 1024; // about 21.5k tokens (80 KB until V-151, 82 KB until V-163) at an estimated 4 bytes a token
 export const base = [
   'AGENTS.md',
   '.claude/master/RULES.md',
