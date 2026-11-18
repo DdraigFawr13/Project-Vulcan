@@ -44,6 +44,8 @@ export class Saves {
   private opened: SaveStore | undefined;
   /** The newest standby copy of the running world, not yet written. */
   private standby: Extract<FromWorker, { type: 'saved' }> | undefined;
+  /** How many standby copies have come back since the page opened. */
+  private standbyCopies = 0;
   private lastStandbyTick = -1;
   /** Why saves are unavailable, or why the last save failed; shown in the save panel. */
   private problem = '';
@@ -137,8 +139,11 @@ export class Saves {
 
   /** The worker's answers about saves and exports. */
   handle(m: FromWorker): void {
-    if (m.type === 'saved' && m.standby) this.standby = this.lastCopy = m;
-    else if (m.type === 'saved') void this.write(m);
+    if (m.type === 'saved' && m.standby) {
+      this.standby = this.lastCopy = m;
+      // Counted on the page so a browser test can wait for a copy rather than sleep past one.
+      document.documentElement.dataset['standby'] = String(++this.standbyCopies);
+    } else if (m.type === 'saved') void this.write(m);
     else if (m.type === 'exported') void this.export(m);
     else if (m.type === 'segments') {
       const { items } = m;
