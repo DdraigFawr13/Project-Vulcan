@@ -5,7 +5,7 @@ Phase 6 (People) in two halves (V-153): 6A "Word and law" (P6.2 to P6.7) here; 6
 ## Status
 
 - [x] Spec approved by Morgan, 2026-11-18 (workshop answers, V-153 to V-163)
-- [ ] Bundle 0, leftovers: check:full under 120 s, a hungry winter breaks new ground, newcomers bring goods
+- [x] Bundle 0, leftovers: check:full under 120 s, a hungry winter breaks new ground, newcomers bring goods, the seed corn kept back (V-165), 2026-11-18. Three years on four valley seeds: tallow/1 cold person-hours in year 2 fell 8,785 to 1,511, its year-3 field grew 48 to 122 tiles and its hungry person-days 3,545 to 1,766 (16 people, not 13); anvil/1, smoke/1 and ledger/1 stay fed.
 - [ ] Bundle 1, memory ledger and thought line: P6.2
 - [ ] Bundle 2, tales and beliefs: P6.3, winter evenings by the hearth
 - [ ] Bundle 3, the self and ambitions: P6.4
