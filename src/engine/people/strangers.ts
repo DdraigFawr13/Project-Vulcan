@@ -201,7 +201,13 @@ export const strangersSystem: System = {
   stream: 'strangers',
   emits: [
     ...['region.record', 'people.drawn', 'people.strangerCame', 'people.strangerStays'],
-    ...['people.strangerTurnedAway', 'people.strangerFed', 'people.broughtAnimal', 'law.answered'],
+    ...[
+      'people.strangerTurnedAway',
+      'people.strangerFed',
+      'people.broughtAnimal',
+      'people.broughtGoods',
+      'law.answered',
+    ],
   ],
   // `first` 1 once the first stranger came; `stayed` how many stayed, the colony's name; `last`
   // the line of the band's last word on a stranger.

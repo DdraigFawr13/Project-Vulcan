@@ -26,6 +26,11 @@ export interface StrangersDef {
   couple: number;
   animal: number;
   animals: readonly string[];
+  /** What a household brings from home, by trade (V-162). */
+  goods: {
+    trades: Readonly<Record<string, { item: string; count: number }>>;
+    need: number;
+  };
   years: number;
   wait: number;
   reasons: Readonly<Record<string, string>>;

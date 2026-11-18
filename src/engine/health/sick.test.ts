@@ -38,7 +38,8 @@ describe('sickness', () => {
     expect(shown.data['a']).toBe('the flux');
     expect(bodyOf(world, p.id)?.['down']).toBe(1);
     expect(p['doing']).toBe('hurt');
-    step(world, sim, 9 * DAY);
+    const over = () => lines(world, 'health.passed').some((e) => e.actors[0] === p.id);
+    for (let d = 0; d < 9 && !over(); d += 1) step(world, sim, DAY);
     const passed = lines(world, 'health.passed').find((e) => e.actors[0] === p.id)!;
     expect(passed.causes).toContain(shown.id);
     expect(boutOf(world, p.id)).toBeUndefined();
@@ -72,7 +73,8 @@ describe('sickness', () => {
     step(world, sim, 2 * DAY);
     const p = world.entities['person']![1]!;
     send(world, 'sicken', { person: p.id, ill: 'chill' });
-    step(world, sim, 11 * DAY);
+    const dead = () => lines(world, 'health.died').some((e) => e.actors[0] === p.id);
+    for (let d = 0; d < 11 && !dead(); d += 1) step(world, sim, DAY);
     const turned = lines(world, 'health.grave').find((e) => e.actors[0] === p.id)!;
     expect(turned.data['grave']).toBe('lung fever');
     const died = lines(world, 'health.died').find((e) => e.actors[0] === p.id)!;
@@ -92,7 +94,8 @@ describe('sickness', () => {
     };
     const sim = createSim(turning);
     const world = createWorld(sim, 'smoke');
-    step(world, sim, 12 * DAY);
+    const gripes = () => lines(world, 'health.sick').some((e) => e.data['a'] === 'a griping belly');
+    for (let d = 0; d < 12 && !gripes(); d += 1) step(world, sim, DAY);
     const griped = lines(world, 'health.sick').find((e) => e.data['a'] === 'a griping belly')!;
     expect(String(griped.data['how'])).toMatch(/that was turning, hungry/);
     expect(griped.causes.length).toBe(1);

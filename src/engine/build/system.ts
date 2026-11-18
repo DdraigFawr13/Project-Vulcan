@@ -16,6 +16,7 @@ import { FURNITURE_TABLES } from './furniture.ts';
 import { tickFields, markLeaving } from './fieldlife.ts';
 import { finishStores, planStores } from './stores.ts';
 import { FIELD_TABLES, planFields, sendBackField } from './fields.ts';
+import { hungryWinter } from './hungry.ts';
 import { PASTURE_TABLES } from './pasturerows.ts';
 import { finishPastures, planPasture, sendBackPasture } from './pasture.ts';
 import { finishHouses, growHouses } from './grow.ts';
@@ -150,7 +151,14 @@ export const buildSystem: System = {
     'fire.noFloor',
     'metal.smelterPlanned',
     'metal.clampPlanned',
-    ...['town.ringWidened', 'field.needed', 'field.noGround', 'field.sited', 'field.sentBack'],
+    ...[
+      'town.ringWidened',
+      'field.needed',
+      'field.hungryWinter',
+      'field.noGround',
+      'field.sited',
+      'field.sentBack',
+    ],
     ...['field.ripe', 'field.frostKilled', 'field.noSeed', 'field.sown', 'field.leftToGrass'],
     ...['field.rests', 'field.soil', 'field.muckReady', 'field.blight'],
     ...['build.storeSited', 'build.storeBuilt'],
@@ -251,6 +259,7 @@ export const buildSystem: System = {
     // P5.14: homes of their own, and the hall.
     planHomes(ctx, green);
     tickFields(ctx);
+    hungryWinter(ctx);
     planFields(ctx, green, []);
     // 5B Bundle 1: stores by kind from need.
     finishStores(ctx);

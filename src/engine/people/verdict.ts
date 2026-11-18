@@ -103,6 +103,31 @@ function animal(ctx: SystemContext, group: readonly EntityRow[], line: number): 
   if (meat > 0) layItem(world, { kind: content.flock.cull.item, count: meat, ...g, made });
 }
 
+/** What a household brings from home (5B proposal 2, V-162): by the first newcomer's trade, laid
+ * at the green for the haulers; less when they fled a need, with a line either way. */
+export function bringGoods(ctx: SystemContext, group: readonly EntityRow[], line: number): void {
+  const { world, content } = ctx;
+  const g = content.strangers.goods;
+  const lead = group[0]!;
+  const brought = g.trades[lead['trade'] as string];
+  const item = brought && content.items.find((i) => i.id === brought.item);
+  if (!brought || !item) return;
+  const fled = content.strangers.kinds.find((k) => k.id === lead['reason'])?.need ?? false;
+  const count = fled ? Math.max(1, Math.floor((brought.count * g.need) / 100)) : brought.count;
+  const made = ctx.emit('people.broughtGoods', {
+    causes: [line],
+    actors: group.map((p) => p.id),
+    data: {
+      names: list(group.map((p) => p['name'] as string)),
+      count,
+      what: item.name,
+      home: lead['home'] as string,
+      little: fled ? ', what little they could carry' : '',
+    },
+  });
+  layItem(world, { kind: item.id, count, ...greenOf(world), made });
+}
+
 /** Food for the road from the store, up to `count`: what is taken. */
 function roadFood(world: WorldState, ctx: SystemContext, count: number): number {
   const { content } = ctx;
@@ -205,6 +230,7 @@ export function decide(ctx: SystemContext, lead: EntityRow, group: EntityRow[]):
     for (const p of group) admit(ctx, p, line);
     state['stayed'] = (state['stayed'] ?? 0) + group.length;
     animal(ctx, group, line);
+    bringGoods(ctx, group, line);
     return;
   }
   for (const { q, st } of stances)
