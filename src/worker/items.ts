@@ -15,13 +15,13 @@ import {
   type SimEvent,
   type Stub,
   type WorldState,
+  itemName,
 } from '../engine/index.ts';
 import type { LedgerLine } from './protocol.ts';
 import type { ItemStep, ItemView } from './protocol-goods.ts';
 import { clockView } from './views.ts';
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
-const itemName = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 const hours = (minutes: number): number => Math.ceil(minutes / 60);
 /** "2 iron ingots", "1 tin ingot": the item names are plural. */
 const counted = (n: number, name: string): string =>
@@ -45,7 +45,7 @@ const wordOf = (item: EntityRow): string => {
 /** "fine iron axe", "stone pick", or an ingot's name. */
 function nameOf(item: EntityRow): string {
   const tool = toolOf(content, item);
-  if (!tool) return itemName(item['kind'] as string);
+  if (!tool) return itemName(content, item['kind'] as string);
   const kind = content.tools.kinds.find((k) => k.id === tool.kind)?.name ?? tool.kind;
   return [wordOf(item), content.tools.materials.find((m) => m.id === tool.material)?.name, kind]
     .filter(Boolean)
@@ -62,7 +62,7 @@ function stepsOf(item: EntityRow): ItemStep[] {
     const when = dateOf(s.tick);
     const [who, k] = [s.who ? ` by ${s.who}` : '', s.k ?? ''];
     if (s.s === 'mined') {
-      const ore = `${itemName(k) || 'ore'}, mined${who}`;
+      const ore = `${itemName(content, k) || 'ore'}, mined${who}`;
       const known = s.x !== undefined && s.y !== undefined && s.who !== '';
       const place = s.z ? `${s.z} level${s.z > 1 ? 's' : ''} down` : 'on the surface';
       out.push(
@@ -83,13 +83,13 @@ function stepsOf(item: EntityRow): ItemStep[] {
       const r = content.metal.recipes.find((x) => x.makes === k);
       const runs = Math.max(1, Math.round((s.n ?? 1) / (r?.out ?? 1)));
       const from = r
-        ? `, from ${r.inputs.map((i) => counted(i.count * runs, itemName(i.kind))).join(' and ')}`
+        ? `, from ${r.inputs.map((i) => counted(i.count * runs, itemName(content, i.kind))).join(' and ')}`
         : '';
       const verb = s.s === 'mixed' ? 'mixed' : 'smelted';
       if (s.s === 'mixed') base = 0;
       out.push({
         depth: base,
-        text: `${counted(s.n ?? 1, itemName(k))}, ${verb}${who}${when && `, ${when}`}${from}`,
+        text: `${counted(s.n ?? 1, itemName(content, k))}, ${verb}${who}${when && `, ${when}`}${from}`,
       });
       if (s.s === 'mixed') base = 1;
     }

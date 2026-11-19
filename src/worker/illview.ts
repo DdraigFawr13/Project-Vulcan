@@ -10,6 +10,7 @@ import {
   TICKS_PER_HOUR,
   type EntityRow,
   type WorldState,
+  personName,
 } from '../engine/index.ts';
 import type { IllnessView } from './protocol-people.ts';
 
@@ -24,8 +25,6 @@ export const boutOf = (world: WorldState, person: number): EntityRow | undefined
 export const illDef = (id: unknown) => content.health.ills.find((d) => d.id === id);
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
-const nameOf = (world: WorldState, id: unknown): string =>
-  ((world.entities['person'] ?? []).find((q) => q.id === id)?.['name'] as string) ?? '';
 
 /** Their bout if it is showing, with its content entry. */
 function showing(world: WorldState, p: EntityRow) {
@@ -70,7 +69,7 @@ export function illnessOf(
   const draught = !def.abed
     ? undefined
     : given
-      ? say('illDraught', { healer: nameOf(world, r['healer']), time: stamp(world, given) }) +
+      ? say('illDraught', { healer: personName(world, r['healer']), time: stamp(world, given) }) +
         ((r['herbless'] as number) > given
           ? say('illNoHerbs')
           : say('illNext', { next: stamp(world, next) }))

@@ -10,7 +10,7 @@ import path from 'node:path';
 import { isMain, root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
 import { readPalette } from './draw-tiles-base.mjs';
-import { noise } from './draw-nature.mjs';
+import { noise } from './draw-tiles-base.mjs';
 
 const S = 32;
 

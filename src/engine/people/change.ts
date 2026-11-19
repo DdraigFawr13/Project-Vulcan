@@ -9,14 +9,12 @@ import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { people, same, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
+import { itemName } from '../core/index.ts';
 
 const stop = (p: EntityRow): false => {
   Object.assign(p, { job: '', target: -1 });
   return false;
 };
-
-const nameOf = (ctx: SystemContext, kind: string): string =>
-  ctx.content.items.find((i) => i.id === kind)?.name ?? kind;
 
 /** The slots `p` should change: ones with nothing in them, or worn thin. */
 function slotsToChange(ctx: SystemContext, p: EntityRow): string[] {
@@ -55,7 +53,7 @@ export function changing(ctx: SystemContext, p: EntityRow): boolean {
   const old = wornIn(world, content, p.id, g.slot);
   if (old) removeEntity(world, 'item', old.id);
   Object.assign(spare, { holder: p.id, owner: p.id, state: 'worn' });
-  const what = nameOf(ctx, spare['kind'] as string);
+  const what = itemName(ctx.content, spare['kind'] as string);
   const line = ctx.emit('people.changed', {
     causes: [spare['made'] as number].filter((l) => l > 0),
     actors: [p.id],
@@ -63,7 +61,7 @@ export function changing(ctx: SystemContext, p: EntityRow): boolean {
       name: p['name'] as string,
       what: `${spare['quality']} ${what}`,
       why: old
-        ? `the old ${nameOf(ctx, old['kind'] as string)} was worn thin`
+        ? `the old ${itemName(ctx.content, old['kind'] as string)} was worn thin`
         : 'the old one had worn through',
     },
   });

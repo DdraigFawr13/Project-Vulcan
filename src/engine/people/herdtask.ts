@@ -2,7 +2,13 @@
 // or let out. In order: butcher an animal marked to cull, shear, carry cured hay to the rick, mow
 // the meadow on a mowing day, and sit near a wild herd until it lets one be taken in. The rules
 // themselves are src/engine/flock; this picks the work and does the walking and the minutes.
-import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
+import {
+  clockAt,
+  type EngineContent,
+  type EntityRow,
+  type WorldState,
+  cheb,
+} from '../core/index.ts';
 import {
   canTame,
   flocksOf,
@@ -34,9 +40,6 @@ const claimed = (world: WorldState, p: EntityRow, task: string, target: number):
   people(world).some(
     (q) => q.id !== p.id && q['job'] === 'herd' && q['task'] === task && q['target'] === target,
   );
-
-const cheb = (a: { x: number; y: number }, b: { x: number; y: number }): number =>
-  Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 const at = (r: EntityRow) => ({ x: r['x'] as number, y: r['y'] as number });
 

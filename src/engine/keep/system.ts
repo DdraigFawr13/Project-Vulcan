@@ -2,7 +2,7 @@
 // `keep.week` days each store that lost food says so in one line, naming what spoiled; food left
 // lying in the open gets its own line. The week's counts are the `spoilage` table, cleared after
 // (kept a few weeks as `spoilWeek`, lost.ts, which the smokehouse's siting reads, house.ts).
-import { TICKS_PER_DAY, type EngineContent, type EntityRow } from '../core/index.ts';
+import { TICKS_PER_DAY, type EngineContent, type EntityRow, itemName } from '../core/index.ts';
 import { depotsOf, storeOf } from '../goods/index.ts';
 import type { Schemas } from '../entity/index.ts';
 import { removeEntity } from '../entity/index.ts';
@@ -24,9 +24,6 @@ export const KEEP_TABLES: Schemas = {
   cask: { x: 'int', y: 'int', z: 'int', barrels: 'count', pots: 'count', line: 'event' },
 };
 
-const nameOf = (content: EngineContent, kind: string): string =>
-  content.items.find((i) => i.id === kind)?.name ?? kind;
-
 /** "5 turnips and 2 fish": most first, ties in content order. */
 function whatOf(content: EngineContent, rows: readonly EntityRow[]): string {
   const order = (k: string) => content.items.findIndex((i) => i.id === k);
@@ -36,7 +33,7 @@ function whatOf(content: EngineContent, rows: readonly EntityRow[]): string {
         (b['count'] as number) - (a['count'] as number) ||
         order(a['kind'] as string) - order(b['kind'] as string),
     )
-    .map((r) => `${r['count']} ${nameOf(content, r['kind'] as string)}`);
+    .map((r) => `${r['count']} ${itemName(content, r['kind'] as string)}`);
   return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts[0]!;
 }
 

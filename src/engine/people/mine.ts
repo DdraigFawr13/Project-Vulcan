@@ -4,7 +4,7 @@
 // open ground and then the cheapest rock or earth, or mining a vein tile they can get beside.
 // Also digging clay for a wall that waits for it. Ore, rubble and clay lie where they come out
 // and haulers carry them up (haul.ts). Taking up, each level, tile dug and vein mined are lines.
-import type { EntityRow } from '../core/index.ts';
+import { itemName, type EntityRow } from '../core/index.ts';
 import { haveOf, layItem, stockOf, trailText, wantOf } from '../goods/index.ts';
 import { diggable, layerOf, openAround, setTile } from '../map/index.ts';
 import {
@@ -21,7 +21,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { cellarWork, dugCellar } from './cellar.ts';
 import { clayWork } from './clay.ts';
 import { ladderOf, laddered, sinking } from './shaft.ts';
-import { nameOf, practiseMining, start, stop, takenBy, type Kind, type Task } from './minetask.ts';
+import { practiseMining, start, stop, takenBy, type Kind, type Task } from './minetask.ts';
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
 import { goBeside, layAround, people, spotOf } from './spots.ts';
 
@@ -85,7 +85,7 @@ function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
       ? {
           what: metal,
           causes: [saltCause(world)].filter(Boolean),
-          good: nameOf(content, def.yields!),
+          good: itemName(content, def.yields!),
           have: haveOf(world, content, def.yields!),
           want: content.work.cure.salt.per,
         }
@@ -97,7 +97,7 @@ function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
           want: wantOf(world, content, ingot),
         };
     const word = (kind: Kind): string =>
-      mine.words[kind].replace('{m}', kind === 'mine' ? nameOf(content, def.yields!) : metal);
+      mine.words[kind].replace('{m}', kind === 'mine' ? itemName(content, def.yields!) : metal);
     const vein = veinFor(ctx, p, metal);
     if (vein !== undefined)
       return {
@@ -236,7 +236,7 @@ function dig(ctx: SystemContext, p: EntityRow, at: Spot): void {
     line = ctx.emit('mine.veinMined', {
       causes: [p['took'] as number],
       actors: [p.id],
-      data: { ...base, count, metal: feature.id, what: nameOf(content, feature.yields) },
+      data: { ...base, count, metal: feature.id, what: itemName(content, feature.yields) },
     });
   } else if (p['task'] === 'clay') {
     [item, count] = [kind.digs?.item, kind.digs?.count ?? 0];
@@ -247,7 +247,7 @@ function dig(ctx: SystemContext, p: EntityRow, at: Spot): void {
     });
   } else {
     [item, count] = [kind.digs?.item, kind.digs?.count ?? 0];
-    const gave = item ? `: ${count} ${nameOf(content, item)}` : '';
+    const gave = item ? `: ${count} ${itemName(content, item)}` : '';
     line = ctx.emit('mine.dug', {
       causes: [p['took'] as number],
       actors: [p.id],

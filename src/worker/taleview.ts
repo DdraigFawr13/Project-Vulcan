@@ -10,12 +10,10 @@ import {
   taleText,
   type EntityRow,
   type WorldState,
+  personName,
 } from '../engine/index.ts';
 import { dayWords } from './memoryview.ts';
 import type { BeliefView, TaleView } from './protocol-people.ts';
-
-const nameOf = (world: WorldState, id: number): string =>
-  ((world.entities['person'] ?? []).find((q) => q.id === id)?.['name'] as string) ?? 'someone';
 
 /** `p`'s tales, newest first, and beliefs, strongest first. */
 export function talesView(
@@ -32,7 +30,7 @@ export function talesView(
     const day = dayWords(t['heard'] as number);
     const how: TaleView['how'] = teller ? 'Heard' : def.word ? 'Word' : 'Saw';
     const from = {
-      Heard: `Heard from ${nameOf(world, teller)}, ${day}`,
+      Heard: `Heard from ${personName(world, teller, 'someone')}, ${day}`,
       Word: `Brought word of it, ${day}`,
       Saw: 'Saw it',
     }[how];

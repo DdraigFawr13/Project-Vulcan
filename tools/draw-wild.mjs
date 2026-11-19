@@ -12,23 +12,12 @@ import { isMain, root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
 import { readPalette } from './draw-tiles-base.mjs';
 import { surface } from './draw-items-surface.mjs';
-import { flockSprites } from './draw-flock.mjs';
+import { flockSprites, mirror } from './draw-flock.mjs';
 import { wildPrints, wildMidden, wildItems } from './draw-wild-marks.mjs';
 
 const S = 32;
 const FEET = 29;
 export const ANIMALS = ['wolf', 'bear', 'stag', 'hind', 'boar', 'goat', 'hare'];
-
-function mirror(img) {
-  const out = createImage(S, S);
-  for (let y = 0; y < S; y++)
-    for (let x = 0; x < S; x++)
-      out.data.set(
-        img.data.subarray((y * S + x) * 4, (y * S + x) * 4 + 4),
-        (y * S + (S - 1 - x)) * 4,
-      );
-  return out;
-}
 
 // Four legs as vertical bars ending on the ground. `xs` = [near front, far front, near back, far
 // back]; diagonal gait, so near front and far back swing together; the forward-swung foot lifts 1 px.

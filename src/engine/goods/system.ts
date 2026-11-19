@@ -12,6 +12,7 @@ import { markCommands, MARK_TABLES } from './marks.ts';
 import { DEPOT_TABLES } from './depots.ts';
 import { rollTrips, TRIP_TABLES } from './trips.ts';
 import { dryAt, setStock, setUpStock, setUpStore, STORE_TABLES } from './store.ts';
+import { itemName } from '../core/index.ts';
 
 /** Open tiles joined to the camp, nearest first in rings, that hold no item yet. */
 function freeTilesNear(world: WorldState, content: EngineContent, count: number): number[][] {
@@ -33,9 +34,6 @@ function freeTilesNear(world: WorldState, content: EngineContent, count: number)
       }
   return out;
 }
-
-const nameOf = (content: EngineContent, kind: string): string =>
-  content.items.find((i) => i.id === kind)?.name ?? kind;
 
 export const goodsSystem: System = {
   id: 'goods',
@@ -85,7 +83,7 @@ export const goodsSystem: System = {
     const made = ctx.emit('goods.unloaded', {
       causes: [arrived],
       data: {
-        goods: cart.goods.map((g) => `${g.count} ${nameOf(content, g.kind)}`).join(', '),
+        goods: cart.goods.map((g) => `${g.count} ${itemName(content, g.kind)}`).join(', '),
         beds: people.length,
       },
     });

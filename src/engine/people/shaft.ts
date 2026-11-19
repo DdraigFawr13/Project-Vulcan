@@ -4,10 +4,10 @@
 import { itemsOf, layItem, loadOf, takeFrom } from '../goods/index.ts';
 import { sinkShaftAt } from '../map/index.ts';
 import { shaftsOf } from '../mine/index.ts';
-import type { EngineContent, EntityRow } from '../core/index.ts';
+import { itemName, type EngineContent, type EntityRow } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { reachableStacks, stackOf } from './build.ts';
-import { nameOf, practiseMining, start, stop } from './minetask.ts';
+import { practiseMining, start, stop } from './minetask.ts';
 import { goBeside, same, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
 
@@ -83,7 +83,7 @@ export function sinking(ctx: SystemContext, p: EntityRow): boolean {
       x,
       y,
       level,
-      ladder: used ? ` with ${used} ${nameOf(content, ladder!.kind)} for a ladder` : '',
+      ladder: used ? ` with ${used} ${itemName(content, ladder!.kind)} for a ladder` : '',
     },
   });
   sinkShaftAt(ctx, x, y, depth, level, line);

@@ -5,7 +5,13 @@
 // the band speaks for or against them (verdict.ts). Nobody is placed or admitted by the player
 // (V-041): the Strangers law only settles a split. All numbers are content (strangers.json).
 import { expose, illDef } from '../health/index.ts';
-import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
+import {
+  clockAt,
+  list,
+  type EngineContent,
+  type EntityRow,
+  type WorldState,
+} from '../core/index.ts';
 import { bedSpot, houseAt, mainOf, piecesOf } from '../build/index.ts';
 import { isWinter } from '../law/index.ts';
 import { foodDays, putOn } from '../goods/index.ts';
@@ -16,10 +22,10 @@ import { bringKnown, drawStranger, knownOf } from './band.ts';
 import { addPerson } from './row.ts';
 import { drawSmithing } from './smithing.ts';
 import { stepAlong } from './walk.ts';
-import { decide, list, namesOf } from './verdict.ts';
+import { decide, namesOf } from './verdict.ts';
 import { edgeSpot, toGreen } from './edge.ts';
+import { people } from '../entity/index.ts';
 
-const people = (world: WorldState): EntityRow[] => world.entities['person'] ?? [];
 const alive = (world: WorldState) => people(world).filter((p) => p['status'] === 'alive');
 const strangersOf = (world: WorldState) => people(world).filter((p) => p['status'] === 'stranger');
 

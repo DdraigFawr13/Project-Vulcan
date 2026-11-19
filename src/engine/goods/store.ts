@@ -3,7 +3,7 @@
 // load finds no room. The player's lever is how much of each good the colony wants kept (V-015);
 // it is a row per good, and every change is a ledger line that later work cites.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { addEntity, type Schemas } from '../entity/index.ts';
+import { addEntity, type Schemas, tableOf } from '../entity/index.ts';
 import { canReach, reachFrom, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { depotAt, depotsFor, depotsOf, depotTiles, onDepot } from './depots.ts';
@@ -16,9 +16,7 @@ export const STORE_TABLES: Schemas = {
   stock: { good: 'text', level: 'text', line: 'event' },
 };
 
-const rows = (world: WorldState, kind: string): EntityRow[] => world.entities[kind] ?? [];
-
-export const storeOf = (world: WorldState): EntityRow[] => rows(world, 'store');
+export const storeOf = (world: WorldState): EntityRow[] => tableOf(world, 'store');
 
 /** Whether the tile is the home store's. */
 export const inHomeStore = (world: WorldState, x: number, y: number, z: number): boolean =>
@@ -248,7 +246,7 @@ export function haveOf(world: WorldState, content: EngineContent, good: string):
 }
 
 export const stockOf = (world: WorldState, good: string): EntityRow | undefined =>
-  rows(world, 'stock').find((s) => s['good'] === good);
+  tableOf(world, 'stock').find((s) => s['good'] === good);
 
 /** How much of a good the colony wants now. */
 export function wantOf(world: WorldState, content: EngineContent, good: string): number {

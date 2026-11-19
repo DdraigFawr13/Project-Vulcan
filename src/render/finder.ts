@@ -3,6 +3,7 @@
 // everyone on the level on screen in ember too and writes their first name over their head. Both
 // follow the drawn sprites, so they glide with them. View state only.
 import Phaser from 'phaser';
+import { cssToken } from './tokens.ts';
 
 const TILE = 32;
 /** Under the people (8) and over the lying (7.9); the pulse and names over the night (8.6). */
@@ -23,8 +24,6 @@ export interface Spot {
   y: number;
 }
 
-const token = (name: string, fallback: string): string =>
-  getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 const colour = (hex: string): number => Phaser.Display.Color.HexStringToColor(hex).color;
 
 export class Finder {
@@ -71,8 +70,8 @@ export class Finder {
     pulse.clear();
     this.age = Math.min(PULSE_MS, this.age + delta);
     const zoom = this.scene.cameras.main.zoom;
-    const ember = colour(token('--ember', '#c8743a'));
-    const dark = colour(token('--oak-dark', '#1a110b'));
+    const ember = colour(cssToken('--ember', '#c8743a'));
+    const dark = colour(cssToken('--oak-dark', '#1a110b'));
     const named = new Set<number>();
     for (const s of this.spots()) {
       const mine = s.id === this.followed;
@@ -110,11 +109,11 @@ export class Finder {
     if (!text) {
       text = this.scene.add
         .text(0, 0, s.name.split(' ')[0]!, {
-          fontFamily: token('--read', 'Georgia, serif'),
+          fontFamily: cssToken('--read', 'Georgia, serif'),
           fontSize: `${NAME_PX}px`,
           fontStyle: 'bold',
-          color: token('--bone', '#efe2c2'),
-          stroke: token('--oak-dark', '#1a110b'),
+          color: cssToken('--bone', '#efe2c2'),
+          stroke: cssToken('--oak-dark', '#1a110b'),
           strokeThickness: 4,
           resolution: 3,
         })

@@ -15,9 +15,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { edgeSpot } from './edge.ts';
 import { walkTo } from './walk.ts';
 import { stanceOf, type Stance } from './welcome.ts';
-
-export const list = (items: readonly string[]): string =>
-  items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+import { list } from '../core/index.ts';
 
 /** "Durza of Kraghthar", or "Asgild and Ormar of Granstead". */
 export const namesOf = (group: readonly EntityRow[]): string =>

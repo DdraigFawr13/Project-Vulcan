@@ -1,6 +1,12 @@
 // Ground and words the wild system shares: where an animal may stand, and how a place, a count of
 // game and a name read in a line.
-import { clockAt, type EngineContent, type MapState, type WorldState } from '../core/index.ts';
+import {
+  clockAt,
+  type EngineContent,
+  type MapState,
+  type WorldState,
+  list,
+} from '../core/index.ts';
 import { dirFrom, greenOf } from '../build/index.ts';
 import { walkAt } from '../paths/index.ts';
 import { valleyOf } from '../region/index.ts';
@@ -38,9 +44,6 @@ export function openNear(
 
 export const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
-export const listOf = (items: readonly string[]): string =>
-  items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
-
 /** The valley's name, or "the valley" on a plain seed. */
 export const valleyName = (world: WorldState, content: EngineContent): string =>
   valleyOf(world.seed, content)?.valley.name ?? 'the valley';
@@ -71,7 +74,7 @@ export function gameCounts(world: WorldState): Map<string, number> {
 /** The game in words: "4 deer and 9 hares" (species in content order; none gives ''). */
 export function gameWords(world: WorldState, content: EngineContent): string {
   const counts = gameCounts(world);
-  return listOf(
+  return list(
     content.wild.species.flatMap((s) => {
       const n = counts.get(s.id) ?? 0;
       return n ? [`${n} ${n === 1 ? s.name : s.plural}`] : [];

@@ -28,6 +28,7 @@ import {
   type SimEvent,
   type Stub,
   type WorldState,
+  itemName,
 } from '../engine/index.ts';
 import { clothesPlate } from './clothesview.ts';
 import { fieldFrames } from './fields.ts';
@@ -44,8 +45,6 @@ import { candleNote, litGoods } from './lampview.ts';
 import { keptNote, storeTile } from './stores.ts';
 import { stationGoods, tileWorks } from './works.ts';
 import { millGoods, tileMill } from './mill.ts';
-
-const nameOf = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 
 /** Art frame for an item kind: the cart has its own, a laid bedroll its laid frame. */
 const frameOf = (kind: string, state: string): string =>
@@ -160,7 +159,7 @@ export function tileGoods(
     const made = line(i['made']);
     const def = content.items.find((d) => d.id === kind);
     return {
-      text: `${graded(i)}${nameOf(kind)}${count > 1 ? ` × ${count}` : ''}${i['state'] === 'laid' ? ', laid out' : ''}${keeps(world, i, floors)}`,
+      text: `${graded(i)}${itemName(content, kind)}${count > 1 ? ` × ${count}` : ''}${i['state'] === 'laid' ? ', laid out' : ''}${keeps(world, i, floors)}`,
       ...(made && { made }),
       // A tool or an ingot has a page of its own: where it came from (P4.6).
       ...((def?.tool || def?.good === 'metal') && { item: i.id }),
@@ -204,9 +203,9 @@ function planOf(
     state === 'down'
       ? 'taking it down'
       : carrying
-        ? `bringing ${carrying['count'] as number} ${nameOf(part.material)}`
+        ? `bringing ${carrying['count'] as number} ${itemName(content, part.material)}`
         : nextNeed(content, row)
-          ? `fetching ${nameOf(nextNeed(content, row)!.material)}`
+          ? `fetching ${itemName(content, nextNeed(content, row)!.material)}`
           : 'building';
   return {
     plan: {
@@ -215,7 +214,7 @@ function planOf(
       state,
       have: state === 'built' ? part.cost : (row['have'] as number),
       cost: part.cost,
-      good: nameOf(part.material),
+      good: itemName(content, part.material),
       ...(builder && { builder: builder['name'] as string, doing }),
       ...(placed && { placed }),
       ...(built && { built }),

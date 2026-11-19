@@ -33,10 +33,10 @@ import {
 } from './flock.ts';
 import type { LedgerLine } from './protocol.ts';
 import type { AnimalPage } from './protocol-wild.ts';
+import { plural } from './words.ts';
 
 type LineOf = (e: SimEvent | Stub) => LedgerLine;
 const { flock: def } = content;
-const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 
 /** A flock's latest lines, newest first, each once: the flock's own, the cull's, the pack's
  * taking and the pasture's latest and sitting. */

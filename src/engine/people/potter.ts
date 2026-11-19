@@ -19,6 +19,7 @@ import { practise } from './learn.ts';
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
 import { canStandBeside, goBeside, layAll, people, same, skillOf, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
+import { itemName } from '../core/index.ts';
 
 const stop = (p: EntityRow): false => {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0, make: '', what: '' });
@@ -27,9 +28,6 @@ const stop = (p: EntityRow): false => {
 
 const skillName = (ctx: SystemContext): string =>
   ctx.content.jobs.find((j) => j.id === ctx.content.work.potter.job)?.skill ?? '';
-
-const nameOf = (ctx: SystemContext, kind: string): string =>
-  ctx.content.items.find((i) => i.id === kind)?.name ?? kind;
 
 const sum = (rows: readonly EntityRow[]): number =>
   rows.reduce((n, r) => n + (r['count'] as number), 0);
@@ -160,7 +158,7 @@ function setPot(ctx: SystemContext, p: EntityRow, stack: EntityRow, pot: EntityR
     actors: [p.id],
     data: {
       name: p['name'] as string,
-      what: nameOf(ctx, stack['kind'] as string),
+      what: itemName(ctx.content, stack['kind'] as string),
       store: kind?.name ?? 'store',
     },
   });
@@ -203,7 +201,7 @@ export function potting(ctx: SystemContext, p: EntityRow): boolean {
         data: {
           name: p['name'] as string,
           count: def.brick.per,
-          what: nameOf(ctx, def.brick.item),
+          what: itemName(ctx.content, def.brick.item),
         },
       });
       layAll(ctx, def.brick.item, def.brick.per, here, line);

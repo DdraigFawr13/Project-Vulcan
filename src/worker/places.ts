@@ -21,6 +21,8 @@ import {
   type SimEvent,
   type Stub,
   type WorldState,
+  personOf,
+  people,
 } from '../engine/index.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { GoodsView } from './protocol-goods.ts';
@@ -30,9 +32,6 @@ import type { WalkerView } from './protocol-people.ts';
 export const word = (key: string): string => content.health.words[key] ?? key;
 const fill = (text: string, vars: Record<string, string | number>): string =>
   text.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
-const people = (world: WorldState): EntityRow[] => world.entities['person'] ?? [];
-const personOf = (world: WorldState, id: unknown): EntityRow | undefined =>
-  people(world).find((p) => p.id === id);
 
 /** The graves and the burial ground's rectangle, for the map. */
 export function burialGoods(world: WorldState): Pick<GoodsView, 'graves' | 'burial'> {

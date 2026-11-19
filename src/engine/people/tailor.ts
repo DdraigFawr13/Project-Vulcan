@@ -4,7 +4,7 @@
 // cloth, leather or cured hides they can reach, at the nearest table (else the loom). Worth is
 // their skill plus or less up to `tailor.roll` from the `craft` stream (clothes.json `worth`); the
 // garment lies for haulers to take to a store, from where people change into it (change.ts).
-import { streamFor, type EntityRow } from '../core/index.ts';
+import { streamFor, type EntityRow, itemName } from '../core/index.ts';
 import { furnitureOf } from '../build/index.ts';
 import { lifeOf, shortOf, wantOf, worthFor, sparesOf, layItem } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -18,9 +18,6 @@ const stop = (p: EntityRow): false => {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0, make: '' });
   return false;
 };
-
-const nameOf = (ctx: SystemContext, kind: string): string =>
-  ctx.content.items.find((i) => i.id === kind)?.name ?? kind;
 
 /** The garment `p` could make now: the shorter slot first (everyday on a tie), its warmest
  * garment whose inputs they can reach. */
@@ -78,7 +75,7 @@ export function takeUpTailoring(ctx: SystemContext, p: EntityRow): boolean {
     actors: [p.id],
     data: {
       name: p['name'] as string,
-      what: nameOf(ctx, g.item),
+      what: itemName(ctx.content, g.item),
       why: `clothes are short: ${spares} spare${spares === 1 ? '' : 's'} of ${wantOf(world, content, content.clothes.good)}`,
     },
   });
@@ -119,7 +116,7 @@ export function tailoring(ctx: SystemContext, p: EntityRow): boolean {
     data: {
       name: p['name'] as string,
       worth: content.clothes.worth.find((w) => w.id === worth)?.word ?? worth,
-      what: nameOf(ctx, g.item),
+      what: itemName(ctx.content, g.item),
       where: whereOf(ctx, at),
     },
   });

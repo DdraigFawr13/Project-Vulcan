@@ -17,12 +17,12 @@ import {
   type SimEvent,
   type Stub,
   type WorldState,
+  itemName,
 } from '../engine/index.ts';
 import type { GoodsView, LedgerLine } from './protocol.ts';
 import type { PieceView } from './protocol-build.ts';
 
 const fuels = content.work.fire.fuels;
-const itemName = (id: string): string => content.items.find((i) => i.id === id)?.name ?? id;
 const isHearth = (piece: EntityRow): boolean => piece['kind'] === 'hearth';
 
 /** The art a hearth shows by its fire: the cold ring, lit flames or banked embers. */
@@ -99,7 +99,7 @@ export function fireView(
   const left = fire['fuel'] as number;
   const banked = !!fire['banked'];
   const last = recordOf(world, fire['line'] as number);
-  const name = itemName(fuel?.item ?? fuels[0]!.item);
+  const name = itemName(content, fuel?.item ?? fuels[0]!.item);
   const lasts =
     fuel && banked ? ` (banked, it lasts ${minutesWords(left * fuel.banked.rate)})` : '';
   return {

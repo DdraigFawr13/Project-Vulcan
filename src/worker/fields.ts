@@ -20,18 +20,18 @@ import {
   type SimEvent,
   type Stub,
   type WorldState,
+  itemName,
 } from '../engine/index.ts';
 import type { GoodsView, LedgerLine, TileView } from './protocol.ts';
 import type { BuildView, FieldRow } from './protocol-build.ts';
 import { fieldCare } from './fieldcare.ts';
+import { plural } from './words.ts';
 
 const def = content.buildings.field;
 /** Fields that stand or are planned (not sent back). */
 const liveFields = (world: WorldState): EntityRow[] =>
   fieldsOf(world).filter((f) => f['state'] !== 'sent');
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
-const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
-const itemName = (id: string): string => content.items.find((i) => i.id === id)?.name ?? id;
 
 /** The crop on field `f`, or the one that would be sown on it this month. */
 const cropOfField = (world: WorldState, f: EntityRow) =>
@@ -154,7 +154,7 @@ export function tileField(
   const crop = cropOfField(world, f);
   const n = fieldTiles(f).length;
   const done = fieldDone(f).length;
-  const item = crop ? itemName(crop.item) : '';
+  const item = crop ? itemName(content, crop.item) : '';
   const total = crop ? crop.yield * n : 0;
   const days = (from: number, c: { days: number }) =>
     Math.max(1, Math.ceil((from + c.days * TICKS_PER_DAY - world.tick) / TICKS_PER_DAY));

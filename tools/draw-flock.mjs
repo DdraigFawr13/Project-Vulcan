@@ -11,7 +11,7 @@ const S = 32;
 const FEET = 29;
 export const FLOCK = ['ewe', 'ram', 'lamb', 'nanny', 'billy', 'kid'];
 
-function mirror(img) {
+export function mirror(img) {
   const out = createImage(S, S);
   for (let y = 0; y < S; y++)
     for (let x = 0; x < S; x++)

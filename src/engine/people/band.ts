@@ -2,6 +2,7 @@
 // with a culture's given name, an age, attributes from their race, traits, and skills with a fixed
 // potential. Pure: every draw comes from the stream it is given.
 import type { BandDef, EngineContent, RngStream } from '../core/index.ts';
+import { clamp, dice } from '../core/index.ts';
 
 export interface Home {
   /** The settlement, '' when the world has no region (a plain seed). */
@@ -63,14 +64,6 @@ function givenName(rng: RngStream, content: EngineContent, culture: string, sex:
   }
   return name;
 }
-
-const dice = (rng: RngStream, n: number): number => {
-  let sum = 0;
-  for (let k = 0; k < n; k += 1) sum += rng.between(1, 6);
-  return sum - Math.floor((7 * n) / 2);
-};
-
-const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
 /** The best skill now; a tie goes to the higher potential, then to the skill listed first. */
 export function tradeOf(band: BandDef, skills: Person['skills']): string {

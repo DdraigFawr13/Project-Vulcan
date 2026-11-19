@@ -12,14 +12,12 @@ import { fetchKind, reachableOf, useHeld } from './fetch.ts';
 import { practise } from './learn.ts';
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
 import { canStandBeside, goBeside, layAll, people, skillOf, spotOf } from './spots.ts';
+import { itemName } from '../core/index.ts';
 
 const stop = (p: EntityRow): false => {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0, make: '' });
   return false;
 };
-
-const nameOf = (ctx: SystemContext, kind: string): string =>
-  ctx.content.items.find((i) => i.id === kind)?.name ?? kind;
 
 /** The colony's built loom. */
 export const loomOf = (ctx: SystemContext): EntityRow | undefined =>
@@ -77,8 +75,8 @@ export function takeUpWeaving(ctx: SystemContext, p: EntityRow): boolean {
     actors: [p.id],
     data: {
       name: p['name'] as string,
-      what: nameOf(ctx, r.makes),
-      from: nameOf(ctx, r.from[0]!.kind),
+      what: itemName(ctx.content, r.makes),
+      from: itemName(ctx.content, r.from[0]!.kind),
       why: `the tailor is short of cloth`,
     },
   });
@@ -116,7 +114,7 @@ export function weaving(ctx: SystemContext, p: EntityRow): boolean {
     data: {
       name: p['name'] as string,
       count: r.out,
-      what: nameOf(ctx, r.makes),
+      what: itemName(ctx.content, r.makes),
       where: whereOf(ctx, loom),
     },
   });

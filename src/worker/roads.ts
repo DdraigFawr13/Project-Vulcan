@@ -15,8 +15,7 @@ import {
 import type { RoadsRow } from './protocol-build.ts';
 import type { TileView } from './protocol.ts';
 import { clockView } from './views.ts';
-
-const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
+import { plural } from './words.ts';
 
 const part = () => content.buildings.parts.find((p) => p.id === content.buildings.roads.part)!;
 

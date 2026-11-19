@@ -5,7 +5,7 @@
 // stands (a bed elsewhere is left once one there is free and reachable); under `away` they leave
 // the valley by their home's road with a line and nobody nurses them. Someone away comes back
 // once it has passed; who dies out there is not brought home (health/death.ts, body `away`).
-import type { EntityRow, WorldState } from '../core/index.ts';
+import { list, type EntityRow, type WorldState } from '../core/index.ts';
 import { greenOf, houseAt, piecesOf } from '../build/index.ts';
 import {
   bodiesOf,
@@ -22,10 +22,7 @@ import { answerTo, sickRule } from '../law/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { edgeSpot } from './edge.ts';
-import { spotOf } from './spots.ts';
-import { list } from './verdict.ts';
-
-const people = (world: WorldState): EntityRow[] => world.entities['person'] ?? [];
+import { spotOf, people } from './spots.ts';
 
 /** The road someone leaves and comes back by: their home's side, else the south. */
 const roadOf = (p: EntityRow): string => (p['homeDir'] as string) || 'south';

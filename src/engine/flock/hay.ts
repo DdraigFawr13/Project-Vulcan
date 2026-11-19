@@ -1,6 +1,6 @@
 // The hay meadow (proposal P3): mowing on a day after a dry night, drying in swaths, the rick, and
 // the rain that spoils cut hay. The people side picks the work; these are the rules.
-import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
+import { type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { meadowTiles } from '../build/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { dayNumber, monthNow, pastureOf, whoName } from './flock.ts';
@@ -111,5 +111,4 @@ export function setMowDay(ctx: SystemContext, flock: EntityRow): void {
     flock['mowDay'] = dayNumber(ctx.world.tick);
 }
 
-export const yearNow = (world: WorldState, content: EngineContent): number =>
-  clockAt(world.tick, content.calendar).year;
+export { yearNow } from '../core/index.ts';
