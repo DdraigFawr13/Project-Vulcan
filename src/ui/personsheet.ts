@@ -305,7 +305,7 @@ export class PersonSheet {
       const lines = this.mine().slice(-50).reverse();
       const arrived = el('div', { class: 'line prow', 'data-line': String(p.arrived) });
       const text = el('span', {}, 'Came with the band ');
-      // Archived lines are not held here; their "why?" ends at "older record", so it stays.
+      // Archived lines are not held here; their "why?" may end at "older record", so it stays.
       const line = this.sources.lines().find((l) => l.id === p.arrived);
       if (line?.why !== false)
         text.append(
