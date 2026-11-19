@@ -1,5 +1,5 @@
 {
-"scale":10000,"again":1000,
+"scale":10000,"again":1000,"sight":6,
 "needs":[
 {"id":"food","name":"Food","fall":400,"low":3000,"seek":5200,"lowWord":"Hungry","okWord":"Fed","weight":3,"memory":"went-hungry","thoughts":["So hungry I can't think of the work.","When will we eat properly?"]},
 {"id":"rest","name":"Rest","fall":300,"low":3000,"seek":2500,"lowWord":"Tired","okWord":"Rested","weight":2,"thoughts":["I could sleep where I stand."]},

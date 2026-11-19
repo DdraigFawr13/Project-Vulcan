@@ -69,7 +69,6 @@ export interface LawsDef {
     moodPer: number;
     low: number;
     needs: readonly string[];
-    sight: number;
     settle: number;
     every: number;
   };

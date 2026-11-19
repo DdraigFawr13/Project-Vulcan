@@ -1,11 +1,12 @@
 // Seeing it happen (P6.3, V-155): each new ledger line of a type a tale copies (tales.json
-// `event`, with its `only` data) becomes a story. Its living actors and anyone awake on the same
-// level within `see` tiles of one hold it at its `truth` level, citing the line. Of a `word` tale
+// `event`, with its `only` data) becomes a story. Its living actors and anyone awake who
+// sees one (needs `sees`: within sight or the same house) hold it at its `truth` level, citing the line. Of a `word` tale
 // (no one to see it) one awake person, by the tales' dice, brings word. Seeing it feeds the
 // tale's belief.
 import { TICKS_PER_DAY, type EntityRow, type SimEvent, type TaleDef } from '../core/index.ts';
 import { addEntity, alive } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { sees } from '../needs/index.ts';
 import { feedBelief } from './belief.ts';
 
 /** The ledger lines after `seen`, oldest first. */
@@ -24,15 +25,11 @@ function witnesses(ctx: SystemContext, def: TaleDef, e: SimEvent): EntityRow[] {
     return awake.length ? [ctx.rng().pick(awake)] : people.slice(0, 1);
   }
   const actors = people.filter((p) => e.actors.includes(p.id));
-  const see = ctx.content.tales.see;
-  const near = (p: EntityRow, a: EntityRow) =>
-    p['z'] === a['z'] &&
-    Math.max(
-      Math.abs((p['x'] as number) - (a['x'] as number)),
-      Math.abs((p['y'] as number) - (a['y'] as number)),
-    ) <= see;
+  const { world, content } = ctx;
   return people.filter(
-    (p) => actors.includes(p) || (p['doing'] !== 'sleep' && actors.some((a) => near(p, a))),
+    (p) =>
+      actors.includes(p) ||
+      (p['doing'] !== 'sleep' && actors.some((a) => sees(world, content, p, a))),
   );
 }
 

@@ -20,6 +20,9 @@ export const LIFE_SCHEMAS = {
     scale: num({ min: 100 }),
     // A need back this far above its warning line is met again (one line, not one a minute).
     again: count,
+    // Who sees someone: the awake on the same level within `sight` tiles, or in the same house
+    // (needs `sees`). One rule for every witness: tales, law answers, thefts and brawls.
+    sight: count,
     // Each need falls `fall` an hour; under `low` it is a warning (a ledger line); under `seek`
     // the person goes to put it right. Weights make the mood.
     needs: list(

@@ -22,7 +22,7 @@ export interface DefyDef {
   steps: readonly DefyStep[];
   /** One work minute in `every` idled. */
   slow: { every: number };
-  take: { count: number; every: number; sight: number };
+  take: { count: number; every: number };
   brawl: {
     every: number;
     reach: number;

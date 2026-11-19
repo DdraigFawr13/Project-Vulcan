@@ -26,7 +26,7 @@ export const DEFY_SCHEMAS = {
       }),
     ),
     slow: obj({ every: num({ min: 2 }) }),
-    take: obj({ count: num({ min: 1 }), every: num({ min: 1 }), sight: count }),
+    take: obj({ count: num({ min: 1 }), every: num({ min: 1 }) }),
     brawl: obj({
       every: num({ min: 1 }),
       reach: count,

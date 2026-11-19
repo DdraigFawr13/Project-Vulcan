@@ -155,4 +155,18 @@ describe('tales', () => {
     expect(talesOf(w, bran.id)).toHaveLength(1);
     expect(storiesOf(w)).toHaveLength(1);
   });
+
+  it('drops the tales of the dead, keeping the story while the living hold it', () => {
+    const { w, people, meet, nextTelling, attack } = setUp();
+    const [bran, cai] = people;
+    attack(bran);
+    step(w, talesOnly, 1);
+    meet(bran, cai);
+    nextTelling();
+    bran['status'] = 'dead';
+    step(w, talesOnly, TICKS_PER_DAY);
+    expect(talesOf(w, bran.id)).toEqual([]);
+    expect(talesOf(w, cai.id)).toHaveLength(1);
+    expect(storiesOf(w)).toHaveLength(1);
+  });
 });

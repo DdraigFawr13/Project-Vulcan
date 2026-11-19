@@ -29,6 +29,8 @@ export interface LifeDef {
   scale: number;
   /** How far above `low` a need must get back to be met again. */
   again: number;
+  /** How far a person sees: tiles on the same level, besides the same house (needs `sees`). */
+  sight: number;
   needs: readonly NeedDef[];
   /** Each need's value on arrival, in the order of `needs`. */
   start: readonly number[];
