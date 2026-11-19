@@ -76,7 +76,9 @@ export function layItem(
 
 /** What `person` is carrying to put down somewhere: the item they hold, not the clothes they wear. */
 export const loadOf = (world: WorldState, person: number): EntityRow | undefined =>
-  itemsOf(world).find((i) => i['holder'] === person && i['state'] !== 'worn');
+  itemsOf(world).find(
+    (i) => i['holder'] === person && i['state'] !== 'worn' && i['state'] !== 'hid',
+  );
 
 /** Takes up to `count` from a stack; the stack goes when emptied. Returns how many were taken. A
  * carried load used up by someone not hauling it is a trip's end (trips.ts). */

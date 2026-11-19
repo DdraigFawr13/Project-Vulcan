@@ -74,6 +74,10 @@ export const LAWS_SCHEMAS = {
             // the names a faction against it takes (colony.json).
             harsh: opt(num({ min: 1 })),
             faction: opt(list(text)),
+            // P6.7: the beliefs that carry a grievance with it into acts (tales.json), and what a
+            // Punishment setting does to a thief or brawler caught (defy.json `punish`).
+            beliefs: opt(list(str())),
+            punish: opt(oneOf('work', 'stocks', 'away')),
           }),
         ),
       }),

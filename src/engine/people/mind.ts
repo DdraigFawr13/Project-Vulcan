@@ -27,6 +27,8 @@ import { warming } from './warm.ts';
 import { gathering, practising } from './evening.ts';
 import { feasting, HARD_STOP } from './feast.ts';
 import { lateUntil, watching } from './watch.ts';
+import { pilfer } from '../defy/index.ts';
+import { departing, eatStash, extraWork, inStocks, slacking } from './defy.ts';
 
 export const MIND_FIELDS = {
   /** `eat`, `drink` (drink.ts), `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `warm` (warm.ts), `hurt` (lying
@@ -133,6 +135,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   const life = content.life;
   // Danger comes first (P5.6): lying hurt, carrying the hurt, binding a bleeding wound.
   if (danger(ctx, p)) return;
+  // Leaving the valley (P6.7): nothing else until they are gone.
+  if (departing(ctx, p)) return;
   const walking = (p['path'] as number[]).length > 0;
   if (p['doing'] === 'moveBed') {
     if (!walking) carryBed(ctx, p);
@@ -154,7 +158,11 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   if (p['doing'] === 'eat') {
     if (walking) return;
     const item = foodHere(ctx, p, valueOf(ctx, p, 'food') <= life.seedAt);
-    if (item) eat(ctx, p, item);
+    if (item) {
+      eat(ctx, p, item);
+      // At the ladder's `take` step they pocket more from the store (P6.7).
+      pilfer(ctx, p, item);
+    }
     p['doing'] = '';
   }
   // A tamer sits far from the store, so goes back sooner (flock.json `tame.back`, herdtask.ts).
@@ -162,6 +170,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   const seek = taming ? content.flock.tame.back : lineOf(ctx, p, 'food');
   // Keeping the Rations law (P6.5), they eat no more once today's share is eaten.
   const held = rationed(world, content, p);
+  // A stash pocketed from the store is eaten first, where they stand (P6.7).
+  if (valueOf(ctx, p, 'food') < seek && !held && eatStash(ctx, p)) return;
   if (valueOf(ctx, p, 'food') < seek && !held && world.tick >= (p['retry'] as number)) {
     // Seed grain only when under the warning line with nothing else to reach (P4.7).
     if (goEat(ctx, p, false) || (valueOf(ctx, p, 'food') <= life.seedAt && goEat(ctx, p, true))) {
@@ -190,7 +200,12 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     return;
   }
   // An open deep arm wound stops work with that hand until it heals (P5.6).
-  const hours = hour >= day.workFrom && hour < day.workTo && !armOut(world, content, p.id);
+  // A sentence of extra work keeps them at it to bedtime (P6.7).
+  const workTo = extraWork(ctx, p) ? day.sleepFrom : day.workTo;
+  const hours = hour >= day.workFrom && hour < workTo && !armOut(world, content, p.id);
+  // A day in the stocks is the working day on the green; working slowly idles a minute in a few.
+  if (inStocks(ctx, p, hours)) return;
+  if (hours && p['doing'] === 'work' && slacking(ctx, p)) return;
   if (working(ctx, p, hours)) {
     p['doing'] = 'work';
     return;
