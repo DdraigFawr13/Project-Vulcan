@@ -1,5 +1,5 @@
 // Priority flood: fills every hollow of a height field to its brim from the map's edges, so water
-// has somewhere to go from every tile. Plain arithmetic only (V-006).
+// has somewhere to go from every tile, then where each tile drains. Plain arithmetic only (V-006).
 
 /** How much higher each step into a filled hollow stands, so water always has a way down. */
 const RISE = 0.001;
@@ -111,4 +111,45 @@ export function flood(surface: readonly number[], width: number, height: number)
     }
   }
   return { level, order };
+}
+
+/**
+ * Where each tile drains: a lower neighbour drawn with odds by its drop (diagonals by the drop
+ * over their longer step). The draw is a hash of the tile and the world's `salt`, so the stream
+ * is read the same number of times whatever the ground. Edge tiles drain off the map (-1).
+ */
+export function drains(
+  level: readonly number[],
+  width: number,
+  height: number,
+  salt: number,
+): number[] {
+  const to = new Array<number>(width * height).fill(-1);
+  const weights = new Array<number>(8);
+  for (let y = 1; y < height - 1; y += 1)
+    for (let x = 1; x < width - 1; x += 1) {
+      const i = y * width + x;
+      let total = 0;
+      for (let k = 0; k < 8; k += 1) {
+        const [dx, dy] = N8[k]!;
+        const drop = level[i]! - level[(y + dy) * width + x + dx]!;
+        weights[k] = drop > 0 ? (dx && dy ? drop * 0.7071 : drop) : 0;
+        total += weights[k]!;
+      }
+      let roll = hash(i, salt) * total;
+      for (let k = 0; k < 8; k += 1) {
+        if (weights[k]! <= 0) continue;
+        to[i] = (y + N8[k]![1]) * width + x + N8[k]![0];
+        roll -= weights[k]!;
+        if (roll <= 0) break;
+      }
+    }
+  return to;
+}
+
+/** A tile's draw in [0, 1) from its index and the world's salt. */
+function hash(i: number, salt: number): number {
+  let h = Math.imul(i ^ salt, 0x9e3779b1);
+  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b);
+  return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
 }

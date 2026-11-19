@@ -7,14 +7,14 @@
 // go in tile order, so the same seed gives the same pasture. The geometry (fold corner, gates,
 // meadow and rick) is worked out here and stored in the pasture row (pasturerows.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { depotsOf } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import { burialsOf } from './burial.ts';
 import { foldRect, foldWall, onPastureGround, pastureTiles, pasturesOf } from './pasturerows.ts';
 import { ringOf } from './ring.ts';
-import { groundOf, housesOf, rectOf } from './site.ts';
+import { groundOf, rectOf } from './site.ts';
 import { smithiesOf } from './smithy.ts';
-import { isTreeAt } from './way.ts';
+import { besideBuilt, counter, waterReach } from './sitegrid.ts';
+import { inRect, isTreeAt } from './way.ts';
 
 /** What `choosePasture` returns: the row's geometry, and the reason. */
 export interface PastureSite {
@@ -146,47 +146,31 @@ function meadows(content: EngineContent, row: EntityRow, green: Spot, width: num
   return out.sort((a, b) => b.d - a.d);
 }
 
-/** Chebyshev distance to the nearest water tile, up to `limit` (limit + 1 beyond), for every
- * tile of the map; a breadth-first sweep from the water tiles. */
-function waterReach(world: WorldState, content: EngineContent, limit: number): Uint8Array {
-  const map = world.map;
-  const dist = new Uint8Array(map.width * map.height).fill(limit + 1);
-  let edge: number[] = [];
-  for (let i = 0; i < dist.length; i += 1)
-    if (content.terrain.kinds[map.tiles[i]!]!.water) {
-      dist[i] = 0;
-      edge.push(i);
-    }
-  for (let d = 1; d <= limit; d += 1) {
-    const next: number[] = [];
-    for (const i of edge)
-      for (let dy = -1; dy <= 1; dy += 1)
-        for (let dx = -1; dx <= 1; dx += 1) {
-          const [x, y] = [(i % map.width) + dx, Math.floor(i / map.width) + dy];
-          if (x < 0 || y < 0 || x >= map.width || y >= map.height) continue;
-          const j = y * map.width + x;
-          if (dist[j]! <= d) continue;
-          dist[j] = d;
-          next.push(j);
-        }
-    edge = next;
-  }
-  return dist;
+type PastureDef = EngineContent['flock']['pasture'];
+
+/** One scored origin for the pasture's rectangle. */
+interface Candidate {
+  x: number;
+  y: number;
+  score: number;
+  far: number;
+  water: number;
+  herd: EntityRow;
 }
 
-/** Counts the set cells of a grid in any rectangle at once (a running sum); a rectangle off the
- * map counts as full. */
-function counter(cells: Uint8Array, width: number, height: number) {
-  const sum = new Int32Array((width + 1) * (height + 1));
-  const at = (x: number, y: number) => y * (width + 1) + x;
-  for (let y = 0; y < height; y += 1)
-    for (let x = 0; x < width; x += 1)
-      sum[at(x + 1, y + 1)] =
-        cells[y * width + x]! + sum[at(x + 1, y)]! + sum[at(x, y + 1)]! - sum[at(x, y)]!;
-  return (x: number, y: number, w: number, h: number): number =>
-    x < 0 || y < 0 || x + w > width || y + h > height
-      ? w * h
-      : sum[at(x + w, y + h)]! - sum[at(x + w, y)]! - sum[at(x, y + h)]! + sum[at(x, y)]!;
+/** What every candidate is weighed against: the green, the ring, the herds and the ground. */
+interface Survey {
+  world: WorldState;
+  content: EngineContent;
+  green: Spot;
+  def: PastureDef;
+  ring: number;
+  herds: EntityRow[];
+  lo: { x: number; y: number };
+  hi: { x: number; y: number };
+  clear: (x: number, y: number, w: number, h: number) => number;
+  trees: (x: number, y: number, w: number, h: number) => number;
+  wet: Uint8Array;
 }
 
 /** The best site for a pasture, or undefined when none fits. */
@@ -195,47 +179,35 @@ export function choosePasture(
   content: EngineContent,
   green: Spot,
 ): PastureSite | undefined {
-  const map = world.map;
-  const { width, height } = map;
-  const def = content.flock.pasture;
   const herds = wildHerds(world, content);
   if (!herds.length) return undefined;
-  const ring = ringOf(world, content);
-  const ground = groundOf(world);
-  const shut = new Set<number>();
-  for (const h of housesOf(world).filter((r) => r['state'] !== 'sent')) {
-    const r = rectOf(h);
-    for (let y = r.y - 1; y <= r.y + r.h; y += 1)
-      for (let x = r.x - 1; x <= r.x + r.w; x += 1) shut.add(y * width + x);
+  const survey = surveyFor(world, content, green, herds);
+  const found = candidates(survey);
+  found.sort((a, b) => a.score - b.score || a.y - b.y || a.x - b.x);
+  for (const f of found.slice(0, survey.def.weigh.tries)) {
+    const site = siteFrom(survey, f);
+    if (site) return site;
   }
-  for (const d of depotsOf(world))
-    for (let y = (d['y'] as number) - 1; y <= (d['y'] as number) + (d['h'] as number); y += 1)
-      for (let x = (d['x'] as number) - 1; x <= (d['x'] as number) + (d['w'] as number); x += 1)
-        shut.add(y * width + x);
-  const smithies = smithiesOf(world).map(rectOf);
-  const burials = burialsOf(world).map(rectOf);
-  const sent = pasturesOf(world).filter((p) => p['state'] === 'sent');
-  const inside = (r: { x: number; y: number; w: number; h: number }, x: number, y: number) =>
-    x >= r.x && y >= r.y && x < r.x + r.w && y < r.y + r.h;
-  const open = (i: number): boolean => {
-    const [x, y] = [i % width, Math.floor(i / width)];
-    if (x < 1 || y < 1 || x >= width - 1 || y >= height - 1) return false;
-    if (cheb(green, x, y) <= ring || shut.has(i) || map.built[i]) return false;
-    // A bush or herbs are cleared as a hurdle goes up, a tree or log is felled first (a mark);
-    // any other feature (a boulder) is in the way.
-    const feat = map.features[i]! ? content.features[map.features[i]! - 1]!.kind : '';
-    if (feat && feat !== 'bush' && feat !== 'herb' && feat !== 'tree' && feat !== 'log')
-      return false;
-    const kind = content.terrain.kinds[map.tiles[i]!]!;
-    if (!kind.buildable || kind.water || kind.solid) return false;
-    if (ground.items.has(i) || ground.taken.has(i)) return false;
-    return ![...smithies, ...burials].some((r) => inside(r, x, y));
-  };
+  return undefined;
+}
+
+/** The search box round the green and the running counts of blocked and wooded tiles in it. */
+function surveyFor(
+  world: WorldState,
+  content: EngineContent,
+  green: Spot,
+  herds: EntityRow[],
+): Survey {
+  const { width, height } = world.map;
+  const def = content.flock.pasture;
+  const ring = ringOf(world, content);
   const lo = { x: Math.max(1, green.x - def.reach - 12), y: Math.max(1, green.y - def.reach - 12) };
   const hi = {
     x: Math.min(width - 2, green.x + def.reach + 12),
     y: Math.min(height - 2, green.y + def.reach + 12),
   };
+  const open = openTest(world, content, green, ring);
+  const sent = pasturesOf(world).filter((p) => p['state'] === 'sent');
   const bad = new Uint8Array(width * height).fill(1);
   const tree = new Uint8Array(width * height);
   for (let y = lo.y; y <= hi.y; y += 1)
@@ -248,71 +220,113 @@ export function choosePasture(
   const clear = counter(bad, width, height);
   const trees = counter(tree, width, height);
   const wet = waterReach(world, content, def.water);
-  const wz = def.weigh;
-  const found: {
-    x: number;
-    y: number;
-    score: number;
-    far: number;
-    water: number;
-    herd: EntityRow;
-  }[] = [];
-  for (let y = lo.y; y + def.h - 1 <= hi.y; y += 1)
-    for (let x = lo.x; x + def.w - 1 <= hi.x; x += 1) {
-      const [cx, cy] = [x + Math.floor(def.w / 2), y + Math.floor(def.h / 2)];
-      if (cheb(green, cx, cy) > def.reach) continue;
-      if (clear(x, y, def.w, def.h)) continue;
-      let water = def.water + 1;
-      for (let ty = y; ty < y + def.h && water > 0; ty += 1)
-        for (let tx = x; tx < x + def.w; tx += 1) water = Math.min(water, wet[ty * width + tx]!);
-      if (water > def.water) continue;
-      let far = Infinity;
-      for (let ty = y; ty < y + def.h; ty += 1)
-        for (let tx = x; tx < x + def.w; tx += 1) far = Math.min(far, cheb(green, tx, ty));
-      let herd = herds[0]!;
-      let near = Infinity;
-      for (const hd of herds) {
-        const d = Math.max(Math.abs((hd['x'] as number) - cx), Math.abs((hd['y'] as number) - cy));
-        if (d < near) [herd, near] = [hd, d];
-      }
-      found.push({
-        ...{ x, y, far, water, herd },
-        score:
-          wz.near * (far - ring - 1) +
-          wz.water * water +
-          wz.herd * near +
-          wz.trees * trees(x, y, def.w, def.h),
-      });
+  return { world, content, green, def, ring, herds, lo, hi, clear, trees, wet };
+}
+
+/** Whether a tile is ground a pasture may cover. */
+function openTest(world: WorldState, content: EngineContent, green: Spot, ring: number) {
+  const map = world.map;
+  const { width, height } = map;
+  const ground = groundOf(world);
+  const shut = besideBuilt(world);
+  const taken = [...smithiesOf(world).map(rectOf), ...burialsOf(world).map(rectOf)];
+  return (i: number): boolean => {
+    const [x, y] = [i % width, Math.floor(i / width)];
+    if (x < 1 || y < 1 || x >= width - 1 || y >= height - 1) return false;
+    if (cheb(green, x, y) <= ring || shut.has(i) || map.built[i]) return false;
+    if (!openGround(world, content, i)) return false;
+    if (ground.items.has(i) || ground.taken.has(i)) return false;
+    return !taken.some((r) => inRect(r, x, y));
+  };
+}
+
+/** A bush or herbs are cleared as a hurdle goes up, a tree or log is felled first (a mark); any
+ * other feature (a boulder) is in the way, as is ground that is not buildable, water or solid. */
+function openGround(world: WorldState, content: EngineContent, i: number): boolean {
+  const map = world.map;
+  const feat = map.features[i]! ? content.features[map.features[i]! - 1]!.kind : '';
+  if (feat && !CLEARED.has(feat)) return false;
+  const kind = content.terrain.kinds[map.tiles[i]!]!;
+  return !(!kind.buildable || kind.water || kind.solid);
+}
+
+const CLEARED = new Set(['bush', 'herb', 'tree', 'log']);
+
+/** Every origin in the box whose rectangle is clear, near enough the green and near water. */
+function candidates(s: Survey): Candidate[] {
+  const { def } = s;
+  const found: Candidate[] = [];
+  for (let y = s.lo.y; y + def.h - 1 <= s.hi.y; y += 1)
+    for (let x = s.lo.x; x + def.w - 1 <= s.hi.x; x += 1) {
+      const c = candidateAt(s, x, y);
+      if (c) found.push(c);
     }
-  found.sort((a, b) => a.score - b.score || a.y - b.y || a.x - b.x);
-  for (const f of found.slice(0, wz.tries)) {
-    const centre = { x: f.x + Math.floor(def.w / 2), y: f.y + Math.floor(def.h / 2) };
-    const corner = (green.y < centre.y ? 'n' : 's') + (green.x < centre.x ? 'w' : 'e');
-    const row = {
-      id: 0,
-      ...{ x: f.x, y: f.y, w: def.w, h: def.h, corner, fold: def.fold },
-      ...{ gate: 0, foldGate: 0 },
-    } as EntityRow;
-    const m = meadows(content, row, green, width).find(
-      (c) =>
-        !clear(c.mx, c.my, c.mw, c.mh) && !clear(c.rick % width, Math.floor(c.rick / width), 1, 1),
-    );
-    if (!m) continue;
-    row['gate'] = outerGate(row, green, width);
-    row['foldGate'] = innerGate(row, width);
-    const at = { x: row['gate'] % width, y: Math.floor(row['gate'] / width), z: 0 };
-    if (!canReach(content, map, green, at)) continue;
-    const fell: number[] = [];
-    const all = [...pastureTiles({ ...row, ...m } as EntityRow, width)];
-    for (const i of all) if (isTreeAt(world, content, i)) fell.push(i);
-    return {
-      ...{ x: f.x, y: f.y, w: def.w, h: def.h, corner, trees: fell },
-      ...{ gate: row['gate'], foldGate: row['foldGate'] },
-      ...{ mx: m.mx, my: m.my, mw: m.mw, mh: m.mh, rick: m.rick },
-      far: f.far - ring - 1,
-      wet: f.water,
-      herd: f.herd,
-    };
+  return found;
+}
+
+function candidateAt(s: Survey, x: number, y: number): Candidate | undefined {
+  const { def, green } = s;
+  const [cx, cy] = [x + Math.floor(def.w / 2), y + Math.floor(def.h / 2)];
+  if (cheb(green, cx, cy) > def.reach) return undefined;
+  if (s.clear(x, y, def.w, def.h)) return undefined;
+  const water = nearestWater(s, x, y);
+  if (water > def.water) return undefined;
+  let far = Infinity;
+  for (let ty = y; ty < y + def.h; ty += 1)
+    for (let tx = x; tx < x + def.w; tx += 1) far = Math.min(far, cheb(green, tx, ty));
+  let herd = s.herds[0]!;
+  let near = Infinity;
+  for (const hd of s.herds) {
+    const d = Math.max(Math.abs((hd['x'] as number) - cx), Math.abs((hd['y'] as number) - cy));
+    if (d < near) [herd, near] = [hd, d];
   }
-  return undefined;
+  const wz = def.weigh;
+  const score =
+    wz.near * (far - s.ring - 1) +
+    wz.water * water +
+    wz.herd * near +
+    wz.trees * s.trees(x, y, def.w, def.h);
+  return { x, y, far, water, herd, score };
+}
+
+/** The rectangle's closest tile to water, stopping early at 0. */
+function nearestWater(s: Survey, x: number, y: number): number {
+  const { def } = s;
+  const width = s.world.map.width;
+  let water = def.water + 1;
+  for (let ty = y; ty < y + def.h && water > 0; ty += 1)
+    for (let tx = x; tx < x + def.w; tx += 1) water = Math.min(water, s.wet[ty * width + tx]!);
+  return water;
+}
+
+/** The candidate made whole: a clear meadow and rick, a gate the green can reach; or undefined. */
+function siteFrom(s: Survey, f: Candidate): PastureSite | undefined {
+  const { world, content, def, green, clear } = s;
+  const width = world.map.width;
+  const centre = { x: f.x + Math.floor(def.w / 2), y: f.y + Math.floor(def.h / 2) };
+  const corner = (green.y < centre.y ? 'n' : 's') + (green.x < centre.x ? 'w' : 'e');
+  const row = {
+    id: 0,
+    ...{ x: f.x, y: f.y, w: def.w, h: def.h, corner, fold: def.fold },
+    ...{ gate: 0, foldGate: 0 },
+  } as EntityRow;
+  const m = meadows(content, row, green, width).find(
+    (c) =>
+      !clear(c.mx, c.my, c.mw, c.mh) && !clear(c.rick % width, Math.floor(c.rick / width), 1, 1),
+  );
+  if (!m) return undefined;
+  row['gate'] = outerGate(row, green, width);
+  row['foldGate'] = innerGate(row, width);
+  const at = { x: row['gate'] % width, y: Math.floor(row['gate'] / width), z: 0 };
+  if (!canReach(content, world.map, green, at)) return undefined;
+  const all = [...pastureTiles({ ...row, ...m } as EntityRow, width)];
+  const fell = all.filter((i) => isTreeAt(world, content, i));
+  return {
+    ...{ x: f.x, y: f.y, w: def.w, h: def.h, corner, trees: fell },
+    ...{ gate: row['gate'], foldGate: row['foldGate'] },
+    ...{ mx: m.mx, my: m.my, mw: m.mw, mh: m.mh, rick: m.rick },
+    far: f.far - s.ring - 1,
+    wet: f.water,
+    herd: f.herd,
+  };
 }

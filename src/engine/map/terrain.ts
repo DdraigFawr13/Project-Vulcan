@@ -1,7 +1,7 @@
 // The surface generator's ground: a valley's climate, height, biomes, rock and fertility, all
 // from the `worldgen` stream and the dials in content (terrain.json `generator`, biomes.json).
 import type { EngineContent, RngStream } from '../core/index.ts';
-import { raiseMountains } from './mountains.ts';
+import { type Mountains, raiseMountains } from './mountains.ts';
 import { AXES, bake, fractalNoise, quantile } from './noise.ts';
 import { clamp } from '../core/index.ts';
 
@@ -55,20 +55,71 @@ export function layGround(
   climateId?: string,
 ): Ground {
   const gen = content.terrain.generator;
-  const { biomes, rules } = content.biomes;
-  const kinds = new Map(content.terrain.kinds.map((k, i) => [k.id, i]));
-  const biomeIds = new Map(biomes.map((b, i) => [b.id, i]));
-  const kindIndex = (id: string): number => {
-    const i = kinds.get(id);
-    if (i === undefined) throw new Error(`Terrain "${id}" is not a terrain kind.`);
-    return i;
+  const look = lookups(content);
+  const sky = drawClimate(rng, gen, climateId);
+  // The valley's axis: one of 16 compass directions, as unit vectors written out, so no
+  // trigonometry or square roots run in the engine.
+  const axis = rng.pick(AXES);
+  const fields = drawFields(rng, gen, width, height);
+  const elevation = troughOf(gen, fields, axis, sky, width, height);
+  const ridgedField = fields.ridge.map((r) => 1 - Math.abs(2 * r - 1));
+  const peaks = raiseMountains(rng, gen, width, height, axis, ridgedField);
+  for (let i = 0; i < width * height; i += 1)
+    elevation[i] = Math.round(elevation[i]! + peaks.lift[i]!);
+  const heights = heightsOf(gen, elevation, fields.crags);
+  // The valley's walls are one rock; each massif is its own.
+  const wallRock = look.kindIndex(
+    rng.weighted(gen.rocks.map((r) => [r.kind, Math.round(r.weight * 10)] as const)),
+  );
+  const cover = coverAll(content, look, { sky, fields, heights, elevation, peaks, wallRock });
+  return {
+    floor: heights.valleyFloor,
+    wallFrom: heights.wallFrom,
+    axis: [axis[0], axis[1]],
+    wet: fields.wet,
+    climate: sky.climate.id,
+    temperature: sky.temperature,
+    rainfall: sky.rainfall,
+    elevation,
+    ...cover,
   };
-  const biomeIndex = (id: string): number => {
-    const i = biomeIds.get(id);
-    if (i === undefined) throw new Error(`Biome "${id}" is not a biome.`);
-    return i;
-  };
+}
 
+type Gen = EngineContent['terrain']['generator'];
+
+interface Lookups {
+  kindIndex(id: string): number;
+  biomeIndex(id: string): number;
+}
+
+/** Terrain kind and biome indices by id, refusing an id content does not have. */
+function lookups(content: EngineContent): Lookups {
+  const kinds = new Map(content.terrain.kinds.map((k, i) => [k.id, i]));
+  const biomeIds = new Map(content.biomes.biomes.map((b, i) => [b.id, i]));
+  return {
+    kindIndex(id) {
+      const i = kinds.get(id);
+      if (i === undefined) throw new Error(`Terrain "${id}" is not a terrain kind.`);
+      return i;
+    },
+    biomeIndex(id) {
+      const i = biomeIds.get(id);
+      if (i === undefined) throw new Error(`Biome "${id}" is not a biome.`);
+      return i;
+    },
+  };
+}
+
+interface Sky {
+  climate: Gen['climates'][number];
+  temperature: number;
+  rainfall: number;
+  floor: number;
+  relief: number;
+}
+
+/** The climate (the region's, or drawn by weight), its temperature and rain, and the valley's heights. */
+function drawClimate(rng: RngStream, gen: Gen, climateId: string | undefined): Sky {
   const climate =
     gen.climates.find((c) => c.id === climateId) ??
     rng.weighted(gen.climates.map((c) => [c, Math.round(c.weight * 10)] as const));
@@ -76,20 +127,41 @@ export function layGround(
   const rainfall = Math.round(draw(rng, climate.rainfall));
   const floor = Math.round(draw(rng, gen.elevation.floor));
   const relief = Math.round(draw(rng, gen.elevation.relief));
+  return { climate, temperature, rainfall, floor, relief };
+}
 
-  // The valley's axis: one of 16 compass directions, as unit vectors written out, so no
-  // trigonometry or square roots run in the engine.
-  const [ax, ay] = rng.pick(AXES);
+interface Fields {
+  rough: number[];
+  bend: number[];
+  wet: number[];
+  ridge: number[];
+  soil: number[];
+  crags: number[];
+}
 
+/** The six noise fields the ground is made from, drawn in their fixed order. */
+function drawFields(rng: RngStream, gen: Gen, width: number, height: number): Fields {
   const { cell, octaves } = gen.noise;
-  const rough = bake(fractalNoise(rng, width, height, cell, octaves), width, height);
-  const bend = bake(fractalNoise(rng, width, height, cell * 3, 2), width, height);
-  const { moisture, ridges } = gen;
-  const wet = bake(fractalNoise(rng, width, height, moisture.cell, 3), width, height);
-  const ridge = bake(fractalNoise(rng, width, height, ridges.cell, 3), width, height);
-  const soil = bake(fractalNoise(rng, width, height, cell / 2, 2), width, height);
-  const crags = bake(fractalNoise(rng, width, height, gen.rock.outcropCell, 3), width, height);
+  const field = (size: number, oct: number): number[] =>
+    bake(fractalNoise(rng, width, height, size, oct), width, height);
+  const rough = field(cell, octaves);
+  const bend = field(cell * 3, 2);
+  const wet = field(gen.moisture.cell, 3);
+  const ridge = field(gen.ridges.cell, 3);
+  const soil = field(cell / 2, 2);
+  const crags = field(gen.rock.outcropCell, 3);
+  return { rough, bend, wet, ridge, soil, crags };
+}
 
+/** Height before the massifs: a trough along the axis, roughened, with spurs on the slopes. */
+function troughOf(
+  gen: Gen,
+  fields: Fields,
+  [ax, ay]: readonly [number, number],
+  { floor, relief }: Sky,
+  width: number,
+  height: number,
+): number[] {
   const cx = (width - 1) / 2;
   const cy = (height - 1) / 2;
   const half = Math.min(width, height) / 2;
@@ -99,22 +171,31 @@ export function layGround(
       const i = y * width + x;
       // Distance across the axis, 0 on the valley floor's line and about 1 at the map's sides.
       const across = ((x - cx) * ay - (y - cy) * ax) / half;
-      const off = across + (bend[i]! - 0.5) * 2 * gen.elevation.axisNoise;
+      const off = across + (fields.bend[i]! - 0.5) * 2 * gen.elevation.axisNoise;
       const trough = clamp(off * off, 0, 1.5);
       // Ridged noise (high along its zero lines) on the slopes: spurs and saddles in the walls.
-      const spur = (1 - Math.abs(2 * ridge[i]! - 1)) * clamp(trough, 0, 1);
-      elevation[i] = floor + relief * (0.6 * trough + 0.4 * rough[i]! + ridges.weight * spur);
+      const spur = (1 - Math.abs(2 * fields.ridge[i]! - 1)) * clamp(trough, 0, 1);
+      elevation[i] =
+        floor + relief * (0.6 * trough + 0.4 * fields.rough[i]! + gen.ridges.weight * spur);
     }
-  const ridgedField = ridge.map((r) => 1 - Math.abs(2 * r - 1));
-  const peaks = raiseMountains(rng, gen, width, height, [ax, ay], ridgedField);
-  for (let i = 0; i < width * height; i += 1)
-    elevation[i] = Math.round(elevation[i]! + peaks.lift[i]!);
+  return elevation;
+}
 
+interface Heights {
+  outcropFrom: number;
+  lowland: number;
+  valleyFloor: number;
+  wallFrom: number;
+  screeFrom: number;
+  snowFrom: number;
+}
+
+/** The heights each band starts at. Rock from a height above the valley floor, so big mountains
+ * add rock, held between the `wall` shares of the map; scree is the next `scree` share below it. */
+function heightsOf(gen: Gen, elevation: readonly number[], crags: readonly number[]): Heights {
   const outcropFrom = quantile(crags, 1 - gen.rock.outcrops);
   const lowland = quantile(elevation, gen.swampLowland);
   const valleyFloor = quantile(elevation, gen.valleyFloor);
-  // Rock from a height above the valley floor, so big mountains add rock, held between the
-  // `wall` shares of the map; scree is the next `scree` share below it.
   const [fewest, most] = gen.rock.wall;
   const wallFrom = clamp(
     valleyFloor + gen.rock.line,
@@ -125,54 +206,77 @@ export function layGround(
   for (const e of elevation) if (e >= wallFrom) walls += 1;
   const screeFrom = quantile(elevation, 1 - walls / elevation.length - gen.rock.scree);
   const snowFrom = quantile(elevation, 1 - (walls / elevation.length) * gen.rock.snowTop);
-  // The valley's walls are one rock; each massif is its own.
-  const wallRock = kindIndex(
-    rng.weighted(gen.rocks.map((r) => [r.kind, Math.round(r.weight * 10)] as const)),
-  );
-  const scree = kindIndex(gen.rock.screeKind);
-  const alpine = biomeIndex(gen.alpine);
-  const swamp = biomeIndex(gen.swamp);
+  return { outcropFrom, lowland, valleyFloor, wallFrom, screeFrom, snowFrom };
+}
 
-  const tiles = new Array<number>(width * height);
-  const biomeOf = new Array<number>(width * height);
-  const fertility = new Array<number>(width * height);
-  const snow = new Array<number>(width * height).fill(0);
-  for (let i = 0; i < width * height; i += 1) {
-    const e = elevation[i]!;
-    const t = temperature - (gen.elevation.lapse * (e - valleyFloor)) / 1000;
-    const low = e <= lowland;
-    const rain = rainfall * (moisture.low + moisture.span * wet[i]!) + (low ? gen.lowlandRain : 0);
-    let b = biomeIndex(
-      rules.table[band(t, rules.temperatureBands)]![band(rain, rules.rainfallBands)]!,
-    );
-    if (e >= rules.alpineElevation) b = alpine;
-    else if (low && rain >= rules.swampRainfall && t >= rules.swampMinTemp) b = swamp;
-    biomeOf[i] = b;
-    // Rock: the heights, plus a scatter of crags standing out of the valley floor.
-    if (e >= wallFrom || crags[i]! >= outcropFrom) {
-      const own = peaks.rock[i]!;
-      tiles[i] = own ? kindIndex(own) : wallRock;
-      if (t < gen.rock.snowline && e >= snowFrom) snow[i] = 1;
-      fertility[i] = 0;
-      continue;
-    }
-    const floorKind = content.terrain.floors[biomes[b]!.id];
-    tiles[i] = e >= screeFrom ? scree : kindIndex(floorKind ?? content.terrain.surface.ground);
-    const base = biomes[b]!.fertility * (0.7 + 0.6 * soil[i]!);
-    fertility[i] = Math.round(clamp(e >= screeFrom ? base / 4 : base, 0, 100));
-  }
-  return {
-    floor: valleyFloor,
-    wallFrom,
-    axis: [ax, ay],
-    wet,
-    climate: climate.id,
-    temperature,
-    rainfall,
-    elevation,
-    biomes: biomeOf,
-    fertility,
-    tiles,
-    snow,
+interface Laid {
+  sky: Sky;
+  fields: Fields;
+  heights: Heights;
+  elevation: readonly number[];
+  peaks: Mountains;
+  wallRock: number;
+}
+
+type Cover = Pick<Ground, 'biomes' | 'fertility' | 'tiles' | 'snow'>;
+
+/** Every tile's biome, then its rock or floor, snow and fertility. */
+function coverAll(content: EngineContent, look: Lookups, laid: Laid): Cover {
+  const n = laid.elevation.length;
+  const cover: Cover = {
+    tiles: new Array<number>(n),
+    biomes: new Array<number>(n),
+    fertility: new Array<number>(n),
+    snow: new Array<number>(n).fill(0),
   };
+  for (let i = 0; i < n; i += 1) coverTile(content, look, laid, cover, i);
+  return cover;
+}
+
+function coverTile(
+  content: EngineContent,
+  look: Lookups,
+  laid: Laid,
+  cover: Cover,
+  i: number,
+): void {
+  const gen = content.terrain.generator;
+  const { sky, fields, heights } = laid;
+  const e = laid.elevation[i]!;
+  const t = sky.temperature - (gen.elevation.lapse * (e - heights.valleyFloor)) / 1000;
+  const low = e <= heights.lowland;
+  const wet = gen.moisture.low + gen.moisture.span * fields.wet[i]!;
+  const rain = sky.rainfall * wet + (low ? gen.lowlandRain : 0);
+  const b = biomeAt(content, look, { e, t, rain, low });
+  cover.biomes[i] = b;
+  // Rock: the heights, plus a scatter of crags standing out of the valley floor.
+  if (e >= heights.wallFrom || fields.crags[i]! >= heights.outcropFrom) {
+    const own = laid.peaks.rock[i];
+    cover.tiles[i] = own ? look.kindIndex(own) : laid.wallRock;
+    if (t < gen.rock.snowline && e >= heights.snowFrom) cover.snow[i] = 1;
+    cover.fertility[i] = 0;
+    return;
+  }
+  const biome = content.biomes.biomes[b]!;
+  const scree = e >= heights.screeFrom;
+  const floorKind = content.terrain.floors[biome.id] ?? content.terrain.surface.ground;
+  cover.tiles[i] = scree ? look.kindIndex(gen.rock.screeKind) : look.kindIndex(floorKind);
+  const base = biome.fertility * (0.7 + 0.6 * fields.soil[i]!);
+  cover.fertility[i] = Math.round(clamp(scree ? base / 4 : base, 0, 100));
+}
+
+/** The biome from the temperature-by-rainfall table, or alpine up high, or swamp in wet lowland. */
+function biomeAt(
+  content: EngineContent,
+  look: Lookups,
+  { e, t, rain, low }: { e: number; t: number; rain: number; low: boolean },
+): number {
+  const { rules } = content.biomes;
+  const gen = content.terrain.generator;
+  if (e >= rules.alpineElevation) return look.biomeIndex(gen.alpine);
+  if (low && rain >= rules.swampRainfall && t >= rules.swampMinTemp)
+    return look.biomeIndex(gen.swamp);
+  return look.biomeIndex(
+    rules.table[band(t, rules.temperatureBands)]![band(rain, rules.rainfallBands)]!,
+  );
 }

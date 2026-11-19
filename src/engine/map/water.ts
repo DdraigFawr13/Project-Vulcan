@@ -1,7 +1,7 @@
 // The valley's water: rivers, streams, lakes and springs carved from the ground's height, and the
 // shores beside them, from the `worldgen` stream and terrain.json `generator.water`.
 import type { EngineContent, RngStream } from '../core/index.ts';
-import { flood, N8 } from './flood.ts';
+import { drains, flood, N8 } from './flood.ts';
 import { bake, fractalNoise } from './noise.ts';
 import type { Ground } from './terrain.ts';
 
@@ -51,37 +51,93 @@ export function carveWater(
   height: number,
 ): Water {
   const dials = content.terrain.generator.water;
-  const { moisture } = content.terrain.generator;
-  const n = width * height;
+  const g: Grid = { width, height };
   const isRock = ground.tiles.map((t) => content.terrain.kinds[t]!.stone === true);
+  const noise = drawNoise(rng, dials, width, height);
+  const surface = surfaceOf(ground, dials, noise, g);
+  const { level, order } = flood(surface, width, height);
+  const to = drains(level, width, height, noise.salt);
+  const flow = gatherFlow(content, ground, order, to);
+  const scale = ground.rainfall / dials.flowRain;
+
+  const body = new Array<number>(width * height).fill(0);
+  const deep = new Array<boolean>(width * height).fill(false);
+  const lakes = fillLakes(surface, level, isRock, body, deep, width, height, dials);
+  const course = runCourses({ body, flow, scale, order, to }, ground, dials);
+  joinDiagonals(body, course, to, surface, g);
+  const wide = widenRivers(
+    { body, flow, scale, order, to },
+    course,
+    noise.swell,
+    surface,
+    dials,
+    g,
+  );
+  const springs = markSprings(body, wide, course, to);
+  const shore = shoresOf(body, isRock, ground, noise.banks, dials, g);
+  return { body, deep, shore, exit: exitOf(flow, body, width, height), lakes, springs };
+}
+
+interface Grid {
+  width: number;
+  height: number;
+}
+
+/** The tile at `x, y`, or -1 off the map. */
+function cell(g: Grid, x: number, y: number): number {
+  return x < 0 || y < 0 || x >= g.width || y >= g.height ? -1 : y * g.width + x;
+}
+
+interface Noise {
+  downstream: number;
+  salt: number;
+  jitter: number[];
+  wander: number[];
+  swell: number[];
+  banks: number[];
+}
+
+/** Every draw the water takes from the stream, in the order it always has. */
+function drawNoise(rng: RngStream, dials: Dials, width: number, height: number): Noise {
   const downstream = rng.pick([1, -1]);
   const salt = rng.int(1 << 30);
   const jitter = bake(fractalNoise(rng, width, height, 3, 2), width, height);
   const wander = bake(fractalNoise(rng, width, height, dials.meanderCell, 3), width, height);
   const swell = bake(fractalNoise(rng, width, height, dials.widthCell, 2), width, height);
   const banks = bake(fractalNoise(rng, width, height, dials.bankCell, 2), width, height);
-  const at = (x: number, y: number): number =>
-    x < 0 || y < 0 || x >= width || y >= height ? -1 : y * width + x;
+  return { downstream, salt, jitter, wander, swell, banks };
+}
 
+/** The ground the water runs over: tilted down the axis and roughened so courses bend. */
+function surfaceOf(ground: Ground, dials: Dials, noise: Noise, g: Grid): number[] {
+  const { width, height } = g;
   const cx = (width - 1) / 2;
   const cy = (height - 1) / 2;
   const half = Math.min(width, height) / 2;
   const [ax, ay] = ground.axis;
-  const surface = new Array<number>(n);
+  const surface = new Array<number>(width * height);
   for (let y = 0; y < height; y += 1)
     for (let x = 0; x < width; x += 1) {
       const i = y * width + x;
       const along = ((x - cx) * ax + (y - cy) * ay) / half;
       surface[i] =
         ground.elevation[i]! -
-        downstream * dials.tilt * along +
-        (jitter[i]! - 0.5) * 2 * dials.jitter +
-        (wander[i]! - 0.5) * 2 * dials.meander;
+        noise.downstream * dials.tilt * along +
+        (noise.jitter[i]! - 0.5) * 2 * dials.jitter +
+        (noise.wander[i]! - 0.5) * 2 * dials.meander;
     }
-  const { level, order } = flood(surface, width, height);
-  const to = drains(level, width, height, salt);
+  return surface;
+}
 
-  // Rain gathered downhill, highest tiles first.
+/** Rain gathered downhill, highest tiles first. */
+function gatherFlow(
+  content: EngineContent,
+  ground: Ground,
+  order: readonly number[],
+  to: readonly number[],
+): number[] {
+  const dials = content.terrain.generator.water;
+  const { moisture } = content.terrain.generator;
   const foot = ground.wallFrom - dials.mountainFoot;
   const flow = ground.wet.map(
     (wet, i) =>
@@ -92,14 +148,21 @@ export function carveWater(
     const i = order[k]!;
     if (to[i]! >= 0) flow[to[i]!]! += flow[i]!;
   }
-  const scale = ground.rainfall / dials.flowRain;
+  return flow;
+}
 
-  const body = new Array<number>(n).fill(0);
-  const deep = new Array<boolean>(n).fill(false);
-  const lakes = fillLakes(surface, level, isRock, body, deep, width, height, dials);
+interface Drainage {
+  body: number[];
+  flow: readonly number[];
+  scale: number;
+  order: readonly number[];
+  to: readonly number[];
+}
 
-  // Courses: enough rain, below the mountain walls; then carried on down to the edge or a lake.
-  for (let i = 0; i < n; i += 1) {
+/** Courses: enough rain, below the mountain walls; then carried on down to the edge or a lake. */
+function runCourses(d: Drainage, ground: Ground, dials: Dials): boolean[] {
+  const { body, flow, scale, order, to } = d;
+  for (let i = 0; i < body.length; i += 1) {
     const f = flow[i]! * scale;
     if (body[i] || f < dials.streamFlow || ground.elevation[i]! >= ground.wallFrom) continue;
     body[i] = f >= dials.riverFlow ? RIVER : STREAM;
@@ -109,107 +172,128 @@ export function carveWater(
     const t = to[i]!;
     if ((body[i] === STREAM || body[i] === RIVER) && t >= 0 && !body[t]) body[t] = body[i]!;
   }
-  const course = body.map((b) => b === STREAM || b === RIVER);
+  return body.map((b) => b === STREAM || b === RIVER);
+}
 
-  // A diagonal step gets a corner tile, so every channel is joined edge to edge.
-  for (let i = 0; i < n; i += 1) {
+/** A diagonal step gets a corner tile, so every channel is joined edge to edge. */
+function joinDiagonals(
+  body: number[],
+  course: readonly boolean[],
+  to: readonly number[],
+  surface: readonly number[],
+  g: Grid,
+): void {
+  for (let i = 0; i < body.length; i += 1) {
     const t = to[i]!;
     if (!course[i] || t < 0) continue;
-    const x = i % width;
-    const y = (i - x) / width;
-    const tx = t % width;
-    const ty = (t - tx) / width;
+    const x = i % g.width;
+    const y = (i - x) / g.width;
+    const tx = t % g.width;
+    const ty = (t - tx) / g.width;
     if (tx === x || ty === y) continue;
-    const a = at(tx, y);
-    const b = at(x, ty);
+    const a = cell(g, tx, y);
+    const b = cell(g, x, ty);
     const corner = surface[a]! <= surface[b]! ? a : b;
     if (!body[corner]) body[corner] = body[i]!;
   }
+}
 
-  // Rivers widen with their flow, swelling and narrowing along the way.
+/** Rivers widen with their flow, swelling and narrowing along the way. */
+function widenRivers(
+  d: Drainage,
+  course: readonly boolean[],
+  swell: readonly number[],
+  surface: readonly number[],
+  dials: Dials,
+  g: Grid,
+): number[] {
+  const { body, flow, scale } = d;
   const wide = body.slice();
-  for (let i = 0; i < n; i += 1) {
+  for (let i = 0; i < body.length; i += 1) {
     if (!course[i]) continue;
     const f = flow[i]! * scale * (dials.swellMin + dials.swellSpan * swell[i]!);
     if (f < dials.riverFlow) continue;
-    const x = i % width;
-    const y = (i - x) / width;
-    if (f < dials.riverFlow * dials.widenFlow) {
-      // Two wide: the lower of the dry side neighbours joins.
-      let side = -1;
-      for (const j of [at(x + 1, y), at(x - 1, y), at(x, y + 1), at(x, y - 1)])
-        if (j >= 0 && !body[j] && (side < 0 || surface[j]! < surface[side]!)) side = j;
-      if (side >= 0) wide[side] = RIVER;
-      continue;
-    }
-    const reach = f >= dials.wideFlow ? dials.wideReach : 1;
-    for (let dy = -2; dy <= 2; dy += 1)
-      for (let dx = -2; dx <= 2; dx += 1) {
-        const j = at(x + dx, y + dy);
-        if (j >= 0 && dx * dx + dy * dy <= reach && (!wide[j] || wide[j] === STREAM))
-          wide[j] = RIVER;
-      }
+    if (f < dials.riverFlow * dials.widenFlow) widenBySide(body, wide, surface, i, g);
+    else widenByDisc(wide, i, f >= dials.wideFlow ? dials.wideReach : 1, g);
   }
+  return wide;
+}
 
-  // Springs: stream heads that no course drains into.
-  const fed = new Uint8Array(n);
-  for (let i = 0; i < n; i += 1) if (course[i] && to[i]! >= 0) fed[to[i]!] = 1;
+/** Two wide: the lower of the dry side neighbours joins. */
+function widenBySide(
+  body: readonly number[],
+  wide: number[],
+  surface: readonly number[],
+  i: number,
+  g: Grid,
+): void {
+  const x = i % g.width;
+  const y = (i - x) / g.width;
+  let side = -1;
+  for (const j of [cell(g, x + 1, y), cell(g, x - 1, y), cell(g, x, y + 1), cell(g, x, y - 1)])
+    if (j >= 0 && !body[j] && (side < 0 || surface[j]! < surface[side]!)) side = j;
+  if (side >= 0) wide[side] = RIVER;
+}
+
+/** Three or five wide: a disc of `reach` squared tiles round the course. */
+function widenByDisc(wide: number[], i: number, reach: number, g: Grid): void {
+  const x = i % g.width;
+  const y = (i - x) / g.width;
+  for (let dy = -2; dy <= 2; dy += 1)
+    for (let dx = -2; dx <= 2; dx += 1) {
+      const j = cell(g, x + dx, y + dy);
+      if (j >= 0 && dx * dx + dy * dy <= reach && (!wide[j] || wide[j] === STREAM)) wide[j] = RIVER;
+    }
+}
+
+/** Copies the widened water into `body`, then turns stream heads no course drains into springs. */
+function markSprings(
+  body: number[],
+  wide: readonly number[],
+  course: readonly boolean[],
+  to: readonly number[],
+): number {
+  const fed = new Uint8Array(body.length);
+  for (let i = 0; i < body.length; i += 1) if (course[i] && to[i]! >= 0) fed[to[i]!] = 1;
   let springs = 0;
-  for (let i = 0; i < n; i += 1) {
+  for (let i = 0; i < body.length; i += 1) {
     body[i] = wide[i]!;
     if (course[i] && body[i] === STREAM && !fed[i]) {
       body[i] = SPRING;
       springs += 1;
     }
   }
+  return springs;
+}
 
-  // Shores: beside rivers and lakes, sand or scree in patches, marsh in damp ground.
-  const shore = new Array<number>(n).fill(0);
-  for (let i = 0; i < n; i += 1) {
-    if (body[i] || isRock[i]) continue;
-    const x = i % width;
-    const y = (i - x) / width;
-    let beside = false;
-    for (const [dx, dy] of N8) {
-      const j = at(x + dx, y + dy);
-      if (j >= 0 && (body[j] === RIVER || body[j] === LAKE)) beside = true;
-    }
-    if (!beside) continue;
+/** Shores: beside rivers and lakes, sand or scree in patches, marsh in damp ground. */
+function shoresOf(
+  body: readonly number[],
+  isRock: readonly boolean[],
+  ground: Ground,
+  banks: readonly number[],
+  dials: Dials,
+  g: Grid,
+): number[] {
+  const shore = new Array<number>(body.length).fill(0);
+  for (let i = 0; i < body.length; i += 1) {
+    if (body[i] || isRock[i] || !besideOpenWater(body, i, g)) continue;
     if (ground.wet[i]! > dials.marshWet && banks[i]! < dials.marshBank) shore[i] = MARSH;
     else if (banks[i]! > dials.beachBank)
       shore[i] = ground.elevation[i]! >= ground.wallFrom - dials.hills ? SCREE : BEACH;
   }
-
-  return { body, deep, shore, exit: exitOf(flow, body, width, height), lakes, springs };
+  return shore;
 }
 
-/**
- * Where each tile drains: a lower neighbour drawn with odds by its drop (diagonals by the drop
- * over their longer step). The draw is a hash of the tile and the world's `salt`, so the stream
- * is read the same number of times whatever the ground. Edge tiles drain off the map (-1).
- */
-function drains(level: readonly number[], width: number, height: number, salt: number): number[] {
-  const to = new Array<number>(width * height).fill(-1);
-  const weights = new Array<number>(8);
-  for (let y = 1; y < height - 1; y += 1)
-    for (let x = 1; x < width - 1; x += 1) {
-      const i = y * width + x;
-      let total = 0;
-      for (let k = 0; k < 8; k += 1) {
-        const [dx, dy] = N8[k]!;
-        const drop = level[i]! - level[(y + dy) * width + x + dx]!;
-        weights[k] = drop > 0 ? (dx && dy ? drop * 0.7071 : drop) : 0;
-        total += weights[k]!;
-      }
-      let roll = hash(i, salt) * total;
-      for (let k = 0; k < 8; k += 1) {
-        if (weights[k]! <= 0) continue;
-        to[i] = (y + N8[k]![1]) * width + x + N8[k]![0];
-        roll -= weights[k]!;
-        if (roll <= 0) break;
-      }
-    }
-  return to;
+/** True when any of a tile's 8 neighbours is river or lake. */
+function besideOpenWater(body: readonly number[], i: number, g: Grid): boolean {
+  const x = i % g.width;
+  const y = (i - x) / g.width;
+  for (const [dx, dy] of N8) {
+    const j = cell(g, x + dx, y + dy);
+    if (j >= 0 && (body[j] === RIVER || body[j] === LAKE)) return true;
+  }
+  return false;
 }
 
 /** Marks lakes in `body` and their deep water; returns how many there are. */
@@ -286,11 +370,4 @@ function exitOf(
   const x = exit % width;
   const y = (exit - x) / width;
   return y === 0 ? 'north' : y === height - 1 ? 'south' : x === 0 ? 'west' : 'east';
-}
-
-/** A tile's draw in [0, 1) from its index and the world's salt. */
-function hash(i: number, salt: number): number {
-  let h = Math.imul(i ^ salt, 0x9e3779b1);
-  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b);
-  return ((h ^ (h >>> 13)) >>> 0) / 4294967296;
 }

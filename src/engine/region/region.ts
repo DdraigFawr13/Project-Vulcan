@@ -1,7 +1,7 @@
 // The region around the valley (P1.5's screen, P1.6's source, DECISIONS V-031): a window of the
 // seed's Story Generator world, with its named ranges and rivers, six to eight of its live sites and
 // three valleys to settle. Pure: same seed and content, same world and region (V-006).
-import { clamp, streamFor, type EngineContent } from '../core/index.ts';
+import { clamp, streamFor, type EngineContent, type RngStream } from '../core/index.ts';
 import { ground, windows, type Window } from './ground.ts';
 import { RAYS } from './land.ts';
 import { compass, dayDistance, valeName } from './names.ts';
@@ -151,142 +151,197 @@ function regionIn(
       const { e, t, r, biome } = field(x, y);
       cells.push({ e, t, r, biome });
     }
-  const at = (x: number, y: number): RegionCell => cells[y * W + x]!;
-  const inside = (x: number, y: number, inset = 0): boolean =>
-    x >= inset && y >= inset && x < W - inset && y < H - inset;
-  const mountain = (c: RegionCell): boolean => c.e > dials.mountain;
-
+  const g: Grid = { cells, W, H, dials, climates: content.terrain.generator.climates };
   const rivers = riversIn(world, win, content, shift);
   const ranges = rangesIn(world, win, content);
   const sites = sitesIn(
     world,
     win,
     content,
-    (x, y) => at(clamp(x, 0, W - 1), clamp(y, 0, H - 1)).biome,
+    (x, y) => at(g, clamp(x, 0, W - 1), clamp(y, 0, H - 1)).biome,
   );
+  const chosen = chooseValleys(g, sites, rng);
+  labelRanges(g, ranges, sites);
+  const names = new Set<string>();
+  const valleys = chosen.map((v, k) =>
+    valleyAt(content, g, { sites, ranges, rivers }, { v, k, names, rng }),
+  );
+  return { region: { seed, width: W, height: H, cells, ranges, rivers, sites, valleys }, field };
+}
 
-  // Valleys: low inland cells walled by heights on several sides, away from lakes, one per climate
-  // where the region has ground for it.
-  const walls = (x: number, y: number): number =>
-    RAYS.filter(([dx, dy]) => {
-      for (let k = 2; k <= dials.valleys.reach; k += 1)
-        if (inside(x + dx * k, y + dy * k) && mountain(at(x + dx * k, y + dy * k))) return true;
-      return false;
-    }).length;
-  const wet = (x: number, y: number): boolean => {
-    for (let dy = -3; dy <= 3; dy += 1)
-      for (let dx = -3; dx <= 3; dx += 1)
-        if (inside(x + dx, y + dy) && at(x + dx, y + dy).biome === 'lake') return true;
+/** The region's cells and the dials its valleys are chosen by. */
+interface Grid {
+  cells: RegionCell[];
+  W: number;
+  H: number;
+  dials: EngineContent['region'];
+  climates: EngineContent['terrain']['generator']['climates'];
+}
+
+type Climate = Grid['climates'][number];
+type Chosen = { x: number; y: number; climate: string };
+
+const at = (g: Grid, x: number, y: number): RegionCell => g.cells[y * g.W + x]!;
+const inside = (g: Grid, x: number, y: number, inset = 0): boolean =>
+  x >= inset && y >= inset && x < g.W - inset && y < g.H - inset;
+const far = (a: { x: number; y: number }, x: number, y: number, d: number): boolean =>
+  Math.abs(a.x - x) + Math.abs(a.y - y) >= d;
+
+/** How many of the eight rays from a cell meet mountain within `valleys.reach`. */
+function walls(g: Grid, x: number, y: number): number {
+  return RAYS.filter(([dx, dy]) => {
+    for (let k = 2; k <= g.dials.valleys.reach; k += 1)
+      if (inside(g, x + dx * k, y + dy * k) && at(g, x + dx * k, y + dy * k).e > g.dials.mountain)
+        return true;
     return false;
-  };
-  const [lo, hi] = dials.valleys.low as [number, number];
-  const pool = (minWalls: number): number[] =>
-    cells
-      .map((_, i) => i)
-      .filter((i) => {
-        const x = i % W;
-        const y = (i - x) / W;
-        const c = cells[i]!;
-        return (
-          inside(x, y, dials.valleys.inset) &&
-          c.e > lo &&
-          c.e < hi &&
-          c.biome !== 'swamp' &&
-          !wet(x, y) &&
-          walls(x, y) >= minWalls
-        );
-      });
-  const climates = content.terrain.generator.climates;
-  const misfit = (c: RegionCell, cl: (typeof climates)[number]): number =>
-    Math.max(0, cl.temperature[0]! - c.t, c.t - cl.temperature[1]!) / dials.valleys.dry +
-    Math.max(0, cl.rainfall[0]! - c.r, c.r - cl.rainfall[1]!) / 150;
-  const bestClimate = (c: RegionCell): string =>
-    climates.reduce((m, q) => (misfit(c, q) < misfit(c, m) ? q : m)).id;
-  const far = (a: { x: number; y: number }, x: number, y: number, d: number): boolean =>
-    Math.abs(a.x - x) + Math.abs(a.y - y) >= d;
-  const chosen: { x: number; y: number; climate: string }[] = [];
-  const strict = pool(dials.valleys.walls);
-  for (const cl of climates) {
-    if (chosen.length === dials.valleys.count) break;
-    let best = -1;
-    let bestScore = Infinity;
-    for (const i of strict) {
-      const x = i % W;
-      const y = (i - x) / W;
-      if (!chosen.every((v) => far(v, x, y, dials.valleys.spacing))) continue;
-      if (!sites.every((v) => far(v, x, y, dials.valleys.clear))) continue;
-      const score = misfit(cells[i]!, cl) - 0.15 * walls(x, y) + rng.int(200) / 1000;
-      if (score < bestScore) [best, bestScore] = [i, score];
-    }
-    if (best >= 0)
-      chosen.push({ x: best % W, y: Math.floor(best / W), climate: bestClimate(cells[best]!) });
-  }
-  // Fewer than three found: take the best walled low ground left, then any low inland ground.
-  for (const minWalls of [2, 0]) {
-    const spare = pool(minWalls);
-    while (chosen.length < dials.valleys.count) {
-      const left = spare.filter(
-        (i) =>
-          chosen.every((v) => far(v, i % W, Math.floor(i / W), dials.valleys.spacing * 0.7)) &&
-          sites.every((v) => far(v, i % W, Math.floor(i / W), dials.valleys.clear)),
-      );
-      if (!left.length) break;
-      const i = rng.pick(left);
-      chosen.push({ x: i % W, y: Math.floor(i / W), climate: bestClimate(cells[i]!) });
-    }
-  }
+  }).length;
+}
 
-  // Labels: the biggest ranges first, kept clear of the sites and of each other.
+/** True when a lake lies within three cells. */
+function wet(g: Grid, x: number, y: number): boolean {
+  for (let dy = -3; dy <= 3; dy += 1)
+    for (let dx = -3; dx <= 3; dx += 1)
+      if (inside(g, x + dx, y + dy) && at(g, x + dx, y + dy).biome === 'lake') return true;
+  return false;
+}
+
+/** Low inland cells, not swamp nor beside a lake, walled by heights on `minWalls` sides. */
+function pool(g: Grid, minWalls: number): number[] {
+  const [lo, hi] = g.dials.valleys.low as [number, number];
+  return g.cells
+    .map((_, i) => i)
+    .filter((i) => {
+      const x = i % g.W;
+      const y = (i - x) / g.W;
+      const c = g.cells[i]!;
+      if (!inside(g, x, y, g.dials.valleys.inset) || c.e <= lo || c.e >= hi) return false;
+      return c.biome !== 'swamp' && !wet(g, x, y) && walls(g, x, y) >= minWalls;
+    });
+}
+
+function misfit(g: Grid, c: RegionCell, cl: Climate): number {
+  return (
+    Math.max(0, cl.temperature[0]! - c.t, c.t - cl.temperature[1]!) / g.dials.valleys.dry +
+    Math.max(0, cl.rainfall[0]! - c.r, c.r - cl.rainfall[1]!) / 150
+  );
+}
+
+const bestClimate = (g: Grid, c: RegionCell): string =>
+  g.climates.reduce((m, q) => (misfit(g, c, q) < misfit(g, c, m) ? q : m)).id;
+
+/** Valleys: low inland cells walled by heights on several sides, away from lakes, one per
+ * climate where the region has ground for it; fewer than three found, the best walled low
+ * ground left, then any low inland ground. */
+function chooseValleys(g: Grid, sites: readonly RegionSite[], rng: RngStream): Chosen[] {
+  const chosen: Chosen[] = [];
+  const strict = pool(g, g.dials.valleys.walls);
+  for (const cl of g.climates) {
+    if (chosen.length === g.dials.valleys.count) break;
+    const best = bestFor(g, cl, strict, { chosen, sites, rng });
+    if (best >= 0)
+      chosen.push({
+        x: best % g.W,
+        y: Math.floor(best / g.W),
+        climate: bestClimate(g, g.cells[best]!),
+      });
+  }
+  for (const minWalls of [2, 0]) spareValleys(g, pool(g, minWalls), chosen, sites, rng);
+  return chosen;
+}
+
+/** The strict cell that best fits climate `cl`, spaced from the valleys chosen and the sites. */
+function bestFor(
+  g: Grid,
+  cl: Climate,
+  strict: readonly number[],
+  { chosen, sites, rng }: { chosen: Chosen[]; sites: readonly RegionSite[]; rng: RngStream },
+): number {
+  let best = -1;
+  let bestScore = Infinity;
+  for (const i of strict) {
+    const x = i % g.W;
+    const y = (i - x) / g.W;
+    if (!chosen.every((v) => far(v, x, y, g.dials.valleys.spacing))) continue;
+    if (!sites.every((v) => far(v, x, y, g.dials.valleys.clear))) continue;
+    const score = misfit(g, g.cells[i]!, cl) - 0.15 * walls(g, x, y) + rng.int(200) / 1000;
+    if (score < bestScore) [best, bestScore] = [i, score];
+  }
+  return best;
+}
+
+/** Draws valleys from `spare` until there are enough or none is left far enough apart. */
+function spareValleys(
+  g: Grid,
+  spare: readonly number[],
+  chosen: Chosen[],
+  sites: readonly RegionSite[],
+  rng: RngStream,
+): void {
+  const { spacing, clear } = g.dials.valleys;
+  while (chosen.length < g.dials.valleys.count) {
+    const left = spare.filter((i) => {
+      const [x, y] = [i % g.W, Math.floor(i / g.W)];
+      return (
+        chosen.every((v) => far(v, x, y, spacing * 0.7)) && sites.every((v) => far(v, x, y, clear))
+      );
+    });
+    if (!left.length) break;
+    const i = rng.pick(left);
+    chosen.push({ x: i % g.W, y: Math.floor(i / g.W), climate: bestClimate(g, g.cells[i]!) });
+  }
+}
+
+/** Labels: the biggest ranges first, kept clear of the sites and of each other. */
+function labelRanges(g: Grid, ranges: RegionRange[], sites: readonly RegionSite[]): void {
   const spots = sites.map((s) => [s.x, s.y] as const);
-  for (const g of [...ranges].sort((a, b) => b.size - a.size)) {
-    const half = Math.ceil(g.name.length * 0.6);
-    const lx = clamp(g.x, half + 1, W - half - 1);
-    const ly = clamp(g.y + 2, 3, H - 2);
+  for (const r of [...ranges].sort((a, b) => b.size - a.size)) {
+    const half = Math.ceil(r.name.length * 0.6);
+    const lx = clamp(r.x, half + 1, g.W - half - 1);
+    const ly = clamp(r.y + 2, 3, g.H - 2);
     if (
-      g.size >= dials.ranges.label &&
+      r.size >= g.dials.ranges.label &&
       spots.every(([a, b]) => Math.abs(a - lx) > 17 || Math.abs(b - ly) > 4)
     ) {
-      g.label = [lx, ly];
+      r.label = [lx, ly];
       spots.push([lx, ly]);
     }
   }
+}
 
-  const names = new Set<string>();
-  const valleys: RegionValley[] = chosen.map((v, k) => {
-    const near = sites
-      .map((s) => ({ s, d: dayDistance(s.x - v.x, s.y - v.y) }))
-      .sort((a, b) => a.d - b.d || a.s.name.length - b.s.name.length)
-      .slice(0, dials.sites.near);
-    const home =
-      content.cultures.find((cu) => cu.name === near[0]?.s.culture) ?? content.cultures[0]!;
-    const name = unique(names, () => valeName(rng, home, dials.valesBy[home.id] ?? dials.vales));
-    names.add(name);
-    const range = ranges
-      .filter((g) => g.label)
-      .map((g) => ({ g, d: dayDistance(g.x - v.x, g.y - v.y) }))
-      .sort((a, b) => a.d - b.d)[0]?.g.name;
-    const river = rivers.find((r) =>
-      r.path.some(([x, y]) => Math.abs(x - v.x) + Math.abs(y - v.y) <= 3),
-    );
-    return {
-      id: k + 1,
-      name,
-      x: v.x,
-      y: v.y,
-      climate: v.climate,
-      range: range ?? '',
-      river: river?.name ?? '',
-      near: near.map(({ s, d }) => ({
-        name: s.name,
-        culture: s.culture,
-        kind: s.kind,
-        dir: compass(s.x - v.x, s.y - v.y),
-        days: Math.max(1, Math.round(d * dials.daysPerCell)),
-      })),
-    };
-  });
-
-  return { region: { seed, width: W, height: H, cells, ranges, rivers, sites, valleys }, field };
+/** A chosen valley named after its nearest people, with its nearest range, river and sites. */
+function valleyAt(
+  content: EngineContent,
+  g: Grid,
+  places: Pick<Region, 'sites' | 'ranges' | 'rivers'>,
+  { v, k, names, rng }: { v: Chosen; k: number; names: Set<string>; rng: RngStream },
+): RegionValley {
+  const { dials } = g;
+  const near = places.sites
+    .map((s) => ({ s, d: dayDistance(s.x - v.x, s.y - v.y) }))
+    .sort((a, b) => a.d - b.d || a.s.name.length - b.s.name.length)
+    .slice(0, dials.sites.near);
+  const home =
+    content.cultures.find((cu) => cu.name === near[0]?.s.culture) ?? content.cultures[0]!;
+  const name = unique(names, () => valeName(rng, home, dials.valesBy[home.id] ?? dials.vales));
+  names.add(name);
+  const range = places.ranges
+    .filter((r) => r.label)
+    .map((r) => ({ r, d: dayDistance(r.x - v.x, r.y - v.y) }))
+    .sort((a, b) => a.d - b.d)[0]?.r.name;
+  const river = places.rivers.find((r) =>
+    r.path.some(([x, y]) => Math.abs(x - v.x) + Math.abs(y - v.y) <= 3),
+  );
+  return {
+    id: k + 1,
+    ...{ name, x: v.x, y: v.y, climate: v.climate },
+    range: range ?? '',
+    river: river?.name ?? '',
+    near: near.map(({ s, d }) => ({
+      ...{ name: s.name, culture: s.culture, kind: s.kind },
+      dir: compass(s.x - v.x, s.y - v.y),
+      days: Math.max(1, Math.round(d * dials.daysPerCell)),
+    })),
+  };
 }
 
 /** The fields sampled `SCALE` times per cell, for the picker's drawing. */

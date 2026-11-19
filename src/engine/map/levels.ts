@@ -178,68 +178,117 @@ export function openAround(
   const map = ctx.world.map;
   const layer = z === 0 ? undefined : map.levels[z - 1];
   if (!layer) return undefined;
-  const { kinds, generator } = ctx.content.terrain;
-  const { width: W, height: H } = map;
-  const open = (i: number): boolean => !diggable(kinds[layer.tiles[i]!]!);
-  const changed = new Set<number>();
-  const mark = (i: number): boolean => {
-    if (layer.known[i]) return false;
-    layer.known[i] = 1;
-    changed.add(Math.floor(i / W / CHUNK) * chunksAcross(map) + Math.floor((i % W) / CHUNK));
-    return true;
-  };
-  const fresh: number[] = [];
-  for (const [dx, dy] of [[0, 0], ...NEIGHBOURS] as const) {
-    const nx = x + dx;
-    const ny = y + dy;
-    if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
-    const i = ny * W + nx;
-    if (mark(i) && open(i)) fresh.push(i);
-  }
-  const seen = new Set<number>();
-  let cave = false;
-  let water = false;
-  let tiles = 0;
-  for (const start of fresh) {
-    if (seen.has(start)) continue;
-    const region = [start];
-    seen.add(start);
-    for (let r = 0; r < region.length; r += 1) {
-      const ix = region[r]! % W;
-      const iy = (region[r]! - ix) / W;
-      for (const [dx, dy] of SIDES) {
-        const nx = ix + dx;
-        const ny = iy + dy;
-        const j = ny * W + nx;
-        if (nx < 0 || ny < 0 || nx >= W || ny >= H || seen.has(j) || !open(j)) continue;
-        if (region.length >= generator.underground.reveal) break;
-        seen.add(j);
-        region.push(j);
-      }
-    }
-    let here = false;
-    for (const i of region) {
-      const kind = kinds[layer.tiles[i]!]!;
-      if (kind.id === generator.underground.caves.kind) cave = here = true;
-      else if (kind.water) water = here = true;
-      const ix = i % W;
-      const iy = (i - ix) / W;
-      mark(i);
-      for (const [dx, dy] of NEIGHBOURS) {
-        const nx = ix + dx;
-        const ny = iy + dy;
-        if (nx >= 0 && ny >= 0 && nx < W && ny < H) mark(ny * W + nx);
-      }
-    }
-    if (here) tiles += region.length;
-  }
-  for (const c of changed) {
+  const r = revealOn(ctx, layer);
+  const found = floodOpen(r, markAround(r, x, y));
+  for (const c of r.changed) {
     const across = chunksAcross(map);
     raiseChunk(map, (c % across) * CHUNK, Math.floor(c / across) * CHUNK, z);
   }
-  if (!cave && !water) return undefined;
+  if (!found.cave && !found.water) return undefined;
+  const { cave, water, tiles } = found;
   const what = cave && water ? 'a cave and groundwater' : cave ? 'a cave' : 'groundwater';
   return ctx.emit('map.opened', { causes: [cause], data: { level: z, what, tiles } });
+}
+
+/** One reveal on one level: which tiles are open, and the chunks whose fog changed. */
+interface Reveal {
+  layer: LevelState;
+  kinds: EngineContent['terrain']['kinds'];
+  under: EngineContent['terrain']['generator']['underground'];
+  W: number;
+  H: number;
+  across: number;
+  changed: Set<number>;
+}
+
+function revealOn(ctx: SystemContext, layer: LevelState): Reveal {
+  const map = ctx.world.map;
+  const { kinds, generator } = ctx.content.terrain;
+  const [W, H] = [map.width, map.height];
+  return {
+    layer,
+    kinds,
+    under: generator.underground,
+    W,
+    H,
+    across: chunksAcross(map),
+    changed: new Set(),
+  };
+}
+
+const openAt = (r: Reveal, i: number): boolean => !diggable(r.kinds[r.layer.tiles[i]!]!);
+const onMap = (r: Reveal, x: number, y: number): boolean => x >= 0 && y >= 0 && x < r.W && y < r.H;
+
+/** Marks a tile known; true when it was not known before. */
+function mark(r: Reveal, i: number): boolean {
+  if (r.layer.known[i]) return false;
+  r.layer.known[i] = 1;
+  r.changed.add(Math.floor(i / r.W / CHUNK) * r.across + Math.floor((i % r.W) / CHUNK));
+  return true;
+}
+
+/** Marks the tile and its 8 neighbours known; returns the newly known open ones. */
+function markAround(r: Reveal, x: number, y: number): number[] {
+  const fresh: number[] = [];
+  for (const [dx, dy] of [[0, 0], ...NEIGHBOURS] as const) {
+    if (!onMap(r, x + dx, y + dy)) continue;
+    const i = (y + dy) * r.W + x + dx;
+    if (mark(r, i) && openAt(r, i)) fresh.push(i);
+  }
+  return fresh;
+}
+
+/** Floods each fresh open tile's region and marks it known with its rim; what it found. */
+function floodOpen(
+  r: Reveal,
+  fresh: readonly number[],
+): { cave: boolean; water: boolean; tiles: number } {
+  const seen = new Set<number>();
+  const found = { cave: false, water: false, tiles: 0 };
+  for (const start of fresh) {
+    if (seen.has(start)) continue;
+    const region = regionFrom(r, start, seen);
+    if (markRegion(r, region, found)) found.tiles += region.length;
+  }
+  return found;
+}
+
+/** The 4-connected open region from `start`, up to `underground.reveal` tiles. */
+function regionFrom(r: Reveal, start: number, seen: Set<number>): number[] {
+  const region = [start];
+  seen.add(start);
+  for (let k = 0; k < region.length; k += 1) {
+    const ix = region[k]! % r.W;
+    const iy = (region[k]! - ix) / r.W;
+    for (const [dx, dy] of SIDES) {
+      const j = (iy + dy) * r.W + ix + dx;
+      if (!onMap(r, ix + dx, iy + dy) || seen.has(j) || !openAt(r, j)) continue;
+      if (region.length >= r.under.reveal) break;
+      seen.add(j);
+      region.push(j);
+    }
+  }
+  return region;
+}
+
+/** Marks a region and its rim known, noting cave floor and water; true when it held either. */
+function markRegion(
+  r: Reveal,
+  region: readonly number[],
+  found: { cave: boolean; water: boolean },
+): boolean {
+  let here = false;
+  for (const i of region) {
+    const kind = r.kinds[r.layer.tiles[i]!]!;
+    if (kind.id === r.under.caves.kind) found.cave = here = true;
+    else if (kind.water) found.water = here = true;
+    const ix = i % r.W;
+    const iy = (i - ix) / r.W;
+    mark(r, i);
+    for (const [dx, dy] of NEIGHBOURS)
+      if (onMap(r, ix + dx, iy + dy)) mark(r, (iy + dy) * r.W + ix + dx);
+  }
+  return here;
 }
 
 /** The tile an order names, or undefined after a refusal line when it cannot be dug there. */
