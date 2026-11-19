@@ -46,7 +46,7 @@ export function roomsOf(world: WorldState, content: EngineContent): RoomRow[] {
 
 /** "cottage", or "cottage's second room" for a room added to it. */
 export function roomName(world: WorldState, content: EngineContent, h: EntityRow): string {
-  if (h['sick']) return 'sickroom';
+  if (h['sick']) return h['sick'] === 2 ? 'sick-house' : 'sickroom';
   const main = mainOf(world, h);
   // The hall, and a home of one's own (P5.14).
   const name = main['hall']
@@ -211,8 +211,8 @@ function spareBed(
       f['z'] === 0 &&
       inside.has((f['y'] as number) * width + (f['x'] as number)),
   ).length;
-  // The sickroom (P5.6) wants its `health.sickroom.beds`.
-  const need = content.health.sickroom.beds;
+  // The sickroom (P5.6) wants its `health.sickroom.beds`, the sick-house (P6.5) its own.
+  const need = (h['sick'] === 2 ? content.health.sickhouse : content.health.sickroom).beds;
   if (h['sick']) return beds < need ? { kind: 'bed', have: beds, need } : undefined;
   if (!h['of'] || room.sleepers) return undefined;
   if (beds) return undefined;

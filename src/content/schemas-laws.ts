@@ -1,7 +1,7 @@
 // Shape of Vulcan's laws file (src/content/data/laws.json, P4.8, V-091): each law's settings and
 // what weighs on a person's answer to each. One setting is the custom (no `hours`): the colony's
 // own day, short in winter.
-import { bool, list, map, num, obj, opt, ref, str } from './schema';
+import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, id, text } from './schema-fields';
 
 const hours = obj({ from: num({ min: 1, max: 23 }), to: num({ min: 2, max: 24 }) });
@@ -59,6 +59,8 @@ export const LAWS_SCHEMAS = {
             // Needs the setting is known to leave low (hunger under rations): not held against it.
             expects: opt(list(ref('needs'))),
             store: opt(obj({ lasts: num(), short: num() })),
+            // P6.5 Sickness: the catching-sick lie in the sick-house, or leave the valley.
+            sick: opt(oneOf('house', 'away')),
             // The Strangers law (P5.9): the reason kinds (strangers.json) a split band lets in.
             lets: opt(list(str())),
             saw: opt(ref('memories')),

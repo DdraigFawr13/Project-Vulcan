@@ -2,8 +2,8 @@
 export { healthSystem } from './system.ts';
 export { withoutAccidents } from './calm.ts';
 export { dailyChance } from './heal.ts';
-export { bedWords, die, whereWords } from './death.ts';
-export { boutOf, expose, illDef, shunned } from './sick.ts';
+export { bedWords, die, homeHouse, whereWords } from './death.ts';
+export { boutOf, catching, expose, illDef, illsOf, shunned } from './sick.ts';
 export {
   armOut,
   bodiesOf,
