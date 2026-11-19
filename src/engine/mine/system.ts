@@ -1,7 +1,7 @@
 // The mine system (P4.1, V-086, V-087): sites a shaft by a stain when a metal is wanted and no open
 // vein can feed it, as a plan with a reason; the player's one lever is `sendBackShaft`, once a
 // plan, before anyone has begun it. A sunk shaft that opens no way to a vein is spent and a new one
-// is sited. Digging is the people's (src/engine/people/mine.ts).
+// is sited. Digging is the people's (src/engine/land/mine.ts).
 import type { EntityRow } from '../core/index.ts';
 import { addEntity, entityOf } from '../entity/index.ts';
 import { haveOf, ingotWant, stockOf, wornTools } from '../goods/index.ts';

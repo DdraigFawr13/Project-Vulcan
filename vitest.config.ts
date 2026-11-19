@@ -8,7 +8,7 @@ const slowFiles = [
   // The lamp (P5.13): two eight-day runs with dusk at 15:00.
   'src/engine/lamp/lamp.test.ts',
   // The chandler (V-135): colonies of six and twelve days (the hearth is lit from day 3 or 4).
-  'src/engine/people/chandle.test.ts',
+  'src/engine/crafts/chandle.test.ts',
   // The skeps (P5.13): two runs of a few days from the first field to the first honey.
   'src/engine/bees/bees.test.ts',
   // The mill and harvest home (5B Bundle 4): a 240-day run on anvil.
@@ -17,19 +17,19 @@ const slowFiles = [
   // Tan pits (5B Bundle 5): a short run to pits built and leather tanned.
   'src/engine/build/pits.test.ts',
   'src/engine/build/walls.test.ts',
-  'src/engine/people/cook.test.ts',
+  'src/engine/crafts/cook.test.ts',
   'src/worker/furniture.test.ts',
   'src/engine/build/furniture.test.ts',
   'src/engine/build/houses.test.ts',
   'src/engine/fire/fire.test.ts',
   'src/engine/wild/wild.test.ts',
-  'src/engine/people/wild.test.ts',
+  'src/engine/herding/wild.test.ts',
   'src/engine/flock/flock.test.ts',
-  'src/engine/people/herd.test.ts',
+  'src/engine/herding/herd.test.ts',
   'src/engine/map/map.test.ts',
   'src/engine/mine/mine.test.ts',
   'src/engine/needs/winter.test.ts',
-  'src/engine/people/forage.test.ts',
+  'src/engine/land/forage.test.ts',
   'src/engine/people/jobs.test.ts',
   'src/engine/sim/skip.test.ts',
   'src/worker/save.test.ts',
@@ -38,14 +38,14 @@ const slowFiles = [
   // Injury and death (P5.6, P5.8): a 20-day run to the first cottage, and a burial.
   'src/engine/health/health.test.ts',
   // Strangers and homes (P5.9, P5.14): three runs of two to three weeks on a valley seed.
-  'src/engine/people/strangers.test.ts',
+  'src/engine/band/strangers.test.ts',
   // The same words on the page's side (P5.9, P5.14): one run of about 25 days on anvil/1.
   'src/worker/strangers.test.ts',
   // Worn paths and roads (P5.10): a run to the first cottage, then a road laid.
   'src/engine/build/roads.test.ts',
   // The 5A review: each held the quick tier past its 40 s (12.7 s of tool and smithy runs, 11.8 s
   // laying out every seed's levels).
-  'src/engine/people/tools.test.ts',
+  'src/engine/band/tools.test.ts',
   'src/engine/map/levels.test.ts',
   // Stores by kind (5B Bundle 1): a run to the first store built and filled.
   'src/engine/build/stores.test.ts',
@@ -56,9 +56,9 @@ const slowFiles = [
   // of 10 to 30 days (sickness, smithy, loom, well, Work priorities).
   'src/engine/health/sick.test.ts',
   'src/engine/build/smithy.test.ts',
-  'src/engine/people/loom.test.ts',
+  'src/engine/crafts/loom.test.ts',
   'src/engine/build/well.test.ts',
-  'src/engine/people/priority.test.ts',
+  'src/engine/band/priority.test.ts',
   // Refactor plan proposal 3 (2026-11-19): colony runs of 1 to 15 days that share what they can inside
   // each file but still held the quick tier at 40 s (5 to 8 s each with their worlds).
   'src/worker/memoryview.test.ts',
@@ -66,8 +66,8 @@ const slowFiles = [
   'src/worker/metal.test.ts',
   'src/worker/mine.test.ts',
   'src/engine/build/build.test.ts',
-  'src/engine/people/smelt.test.ts',
-  'src/engine/people/cure.test.ts',
+  'src/engine/crafts/smelt.test.ts',
+  'src/engine/crafts/cure.test.ts',
   'src/engine/build/blight.test.ts',
   'src/worker/fires.test.ts',
   'src/engine/build/fieldsoil.test.ts',

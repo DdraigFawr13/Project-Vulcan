@@ -2,7 +2,7 @@
 // build state `wetBits`) lets blight start on a sown field after a wet spell, from the `blight`
 // RNG stream, and spread on wet days; a blighted tile yields nothing, and a crop grown enough is
 // cut early. In a dry spell the tiles of a sown field far from water lose a little yield a day
-// unless a farmer watered them (people/water-fields.ts). The dials are content
+// unless a farmer watered them (land/water-fields.ts). The dials are content
 // `buildings.field.blight` and `dry`; `tileYield` is the one place a tile's yield is worked out.
 import {
   streamFor,

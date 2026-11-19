@@ -59,7 +59,7 @@ function stepTo(ctx: SystemContext, a: EntityRow, to: number): boolean {
 }
 
 /** Moves a pack animal one step nearer (x, y) when a neighbouring tile is closer and open; true if
- * it moved (the prowl of a hungry pack, people/fight.ts). */
+ * it moved (the prowl of a hungry pack, herding/fight.ts). */
 export function approach(ctx: SystemContext, a: EntityRow, x: number, y: number): boolean {
   const map = ctx.world.map;
   const [ax, ay] = [a['x'] as number, a['y'] as number];

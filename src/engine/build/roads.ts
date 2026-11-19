@@ -5,7 +5,7 @@
 // in a row (`buildings.roads`), each worn to `least` or more. The line names the two places and
 // how often the stretch is walked. Builders lay the road parts like floors; when all stand,
 // `build.roadLaid`. There is no Send back: a road only follows feet (Morgan, 2026-10-25), and
-// the row at 4 holds road work behind every other plan (people/build.ts).
+// the row at 4 holds road work behind every other plan (crafts/build.ts).
 import {
   TICKS_PER_DAY,
   type EngineContent,
@@ -196,7 +196,7 @@ export function planRoads(ctx: SystemContext, green: Spot): void {
     pick.tiles.reduce((s, i) => s + map.wear[i]!, 0) / pick.tiles.length,
   );
   // Roads take only spare stone: what other plans still need of it is kept for them, and while
-  // any other plan waits the stretch is only noted (people/build.ts ranks road work last too).
+  // any other plan waits the stretch is only noted (crafts/build.ts ranks road work last too).
   const others = plansOf(world).filter((p) => p['state'] === 'plan' && p['part'] !== part.id);
   const kept = others
     .filter((p) => planPart(content, p).material === part.material)

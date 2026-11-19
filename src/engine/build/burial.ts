@@ -2,7 +2,7 @@
 // town ring, `health.burial` w by h tiles (a grave a tile, with a hurdle edge drawn round it):
 // free, dry ground with no water beside it and no field on it, nearest the green. It can be sent
 // back once until the first grave is dug (`sendBack {burial}`), and the colony chooses again at
-// once. Graves are dug by the people (people/burial.ts) and filled at day's end (health).
+// once. Graves are dug by the people (care/burial.ts) and filled at day's end (health).
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { dryAt, freeTile } from '../goods/index.ts';
 import type { Spot } from '../paths/index.ts';

@@ -1,5 +1,5 @@
 // Where goods are carried (5B Bundle 1, V-129): the colony remembers, for the last days, where
-// loads were picked up off the ground (gathered: people/haul.ts) and where a carried load was used
+// loads were picked up off the ground (gathered: band/haul.ts) and where a carried load was used
 // up by someone not hauling it (used: `takeFrom`, at the user's tile, a hearth, a plan, the
 // smelter). Counted in TRIP_CELL-tile squares, one count a load, by item kind, a day a slot
 // (`buildings.stores.days`); build/stores.ts reads it to site stores where they save walking.

@@ -11,9 +11,7 @@ import { isDown } from '../health/index.ts';
 import { reachFrom } from '../paths/index.ts';
 import { addMemories } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { eat } from './eat.ts';
-import { people, spotOf } from './spots.ts';
-import { walkTo } from './walk.ts';
+import { eat, people, spotOf, walkTo } from '../band/index.ts';
 
 /** Minutes before bed when the supper is eaten by whoever has come, unless someone is still on
  * the way; then it waits for them until `HARD_STOP` minutes after bed, and eats with whoever is

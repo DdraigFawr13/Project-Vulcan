@@ -1,7 +1,7 @@
 // What happens to field soil (Phase 5B Bundle 2, V-130): a harvest takes its crop's `draw` from
 // each tile (beans give back), the first day of the winter month lays every field's tiles a little
 // better, a resting field says so, and on the first day of the muck month the fold and the midden
-// give loads of muck that farmers carry to the poorest fallow ground (people/farm.ts). All dials
+// give loads of muck that farmers carry to the poorest fallow ground (land/farm.ts). All dials
 // are content `buildings.field.soil`; the pure reads are fieldsoil.ts.
 import { clockAt, TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';

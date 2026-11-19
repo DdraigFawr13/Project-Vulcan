@@ -1,6 +1,6 @@
 // The fire system (P3.6): each hour a lit fire burns its fuel, a banked one unbanks at dawn, and
 // one that runs out goes out with a line citing why. Who lights, feeds and banks fires is the
-// people's (people/tend.ts, people/mind.ts); a hearth is planned by the build system (build/hearths.ts).
+// people's (crafts/tend.ts, people/mind.ts); a hearth is planned by the build system (build/hearths.ts).
 import { clockAt } from '../core/index.ts';
 import { stockOf, wantOf } from '../goods/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';

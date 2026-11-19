@@ -1,6 +1,6 @@
 // Ground dug for a good (V-097, clay): the one rule for which tiles of the first level below count,
 // shared by what a house may count on (`withinReach`, site.ts) and by the miner who digs it
-// (people/clay.ts), so a house is never sized by clay nobody can get at.
+// (land/clay.ts), so a house is never sized by clay nobody can get at.
 import type { EngineContent, WorldState } from '../core/index.ts';
 import { besideReachable } from '../paths/index.ts';
 

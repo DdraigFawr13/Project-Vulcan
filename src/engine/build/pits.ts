@@ -2,8 +2,8 @@
 // store and leather is short (the Clothes plate is short of outer spares and fewer than two
 // leather or cured hides lie in store), and no pits stand or are planned, the colony plans them
 // at the edge of the village, downstream of the green, near water. Builders make them like the
-// smelter (people/station.ts, a `station` row of kind `pits`); the tanner works them
-// (people/tan.ts). Nothing is drawn from a stream: ties go in tile order.
+// smelter (crafts/station.ts, a `station` row of kind `pits`); the tanner works them
+// (crafts/tan.ts). Nothing is drawn from a stream: ties go in tile order.
 //
 // "Edge": outside the town ring (Chebyshev from the green) and within the smelter's `reach` of
 // it; the nearest to the ring wins, then the nearer water. "Downstream": the map's river leaves by

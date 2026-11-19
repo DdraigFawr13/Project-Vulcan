@@ -1,6 +1,6 @@
 // What people do to animals beyond killing game (P5.4a, V-109, V-111): a herd whose stalk failed
 // bolts; a predator struck by a person is hurt (it flees, limping), struck again it dies. Fights
-// themselves are the people's (people/fight.ts); the wild only keeps the animals.
+// themselves are the people's (herding/fight.ts); the wild only keeps the animals.
 import type { EntityRow } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { whereWords } from './ground.ts';

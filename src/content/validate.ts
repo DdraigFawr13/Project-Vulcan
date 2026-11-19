@@ -367,7 +367,7 @@ function checkFlock(files: Files): string[] {
   return errors;
 }
 
-// Strangers (src/engine/people/strangers.ts): every month named is a calendar month, every reason
+// Strangers (src/engine/band/strangers.ts): every month named is a calendar month, every reason
 // a kind, the animals flock species and the law a law.
 function checkStrangers(files: Files): string[] {
   const f = files['strangers'] as {

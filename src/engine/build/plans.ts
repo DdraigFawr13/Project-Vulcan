@@ -1,5 +1,5 @@
 // Plans (P3.1, V-049): a tile of a part colonists are to build, with what has been brought for
-// it and the work left. Builders take plans up themselves (people/build.ts); this file owns the
+// it and the work left. Builders take plans up themselves (crafts/build.ts); this file owns the
 // rows and what happens to the map when a part is finished or taken down.
 import type { EngineContent, EntityRow, PartDef, WorldState } from '../core/index.ts';
 import { removeEntity, type Schemas } from '../entity/index.ts';

@@ -27,10 +27,10 @@ Phase 5B Bundle 5 (P5.5, V-134). Content: `src/content/data/clothes.json`. Nobod
 ## Tan pits and the tanner (build, people)
 
 - `build/pits.ts` `planPits` (daily): with no pits standing or planned, at least 2 hides in store, the outer slot short and under 2 leather and fur in store, one block of `clothes.pits` (4 by 3) at the edge: beyond the ring, within the smelter's reach, downstream of the green where it can be (towards `map.riverExit`), else upstream, water within `pits.water`; nearest the ring, then the water (`pits.planned`; `pits.noGround` once, a look daily). Builders make it like a smelter (`pits.built`). `sendBack {pits}` once, before building begins (`pits.sentBack`). The Pits row on the Build sheet sets how many are wanted.
-- `people/tan.ts`, the Tanner row: takes a finished hide out first (`tan.tanned`), else cures a hide into fur while the outer slot is short (`tan.cured`), else lays a hide and bark logs into a free pit for `tan.leather.days` days (`tan.laidIn`); `work.tookUpTanning` cites the pits and priority. Table `pit` (station, laid, ready, line), one row a hide.
+- `crafts/tan.ts`, the Tanner row: takes a finished hide out first (`tan.tanned`), else cures a hide into fur while the outer slot is short (`tan.cured`), else lays a hide and bark logs into a free pit for `tan.leather.days` days (`tan.laidIn`); `work.tookUpTanning` cites the pits and priority. Table `pit` (station, laid, ready, line), one row a hide.
 
 ## Tests
 
 - `needs/clothes.test.ts`: wear rates; changing into a spare.
 - `build/pits.test.ts`: pits planned from need, built, a hide cured and one tanned, each line citing its causes; one send-back.
-- `people/loom.test.ts`: a loom made, fleece woven and a garment made, unordered; flax for a beans course while clothes are short.
+- `crafts/loom.test.ts`: a loom made, fleece woven and a garment made, unordered; flax for a beans course while clothes are short.

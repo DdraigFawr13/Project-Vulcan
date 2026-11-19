@@ -1,9 +1,9 @@
 // The sick-house from need (P6.5, V-144): while the Sickness law in force lays the catching-sick
 // apart (a setting with `sick` `house`, laws.json) and someone has been sent to it (the bout's
-// `sent`, people/apart.ts), the builders site a house of `health.sickhouse.size` within the town
+// `sent`, care/apart.ts), the builders site a house of `health.sickhouse.size` within the town
 // ring as far from the homes as the ground allows, with a line naming who. It is a house with
 // `sick` 2: nobody claims its beds, it wants `health.sickhouse.beds` of them (wants.ts) and only
-// those sent to it are laid there (people/care.ts). The build system reads the law and health
+// those sent to it are laid there (care/care.ts). The build system reads the law and health
 // tables; it imports nothing of either.
 import { TICKS_PER_DAY, type EngineContent, type WorldState } from '../core/index.ts';
 import type { Spot } from '../paths/index.ts';

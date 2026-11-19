@@ -1,7 +1,7 @@
 // The build system (P3.1, P3.2, P3.7, P3.8): owns the plans, houses and the green. Colonists site
 // houses themselves from the Build sheet's `setBuild` level (houses.ts), and a plan can be sent
 // back once (`sendBack`); placing a part on a chosen tile (`placeBuilding`) and `deconstruct`
-// stay test-mode tools (V-041, V-049). Builders take the work up themselves (people/build.ts).
+// stay test-mode tools (V-041, V-049). Builders take the work up themselves (crafts/build.ts).
 // Each hour it finishes houses whose parts stand, sites a house while people sleep in the open,
 // grows a house that has outgrown its beds, and says once when nobody is able to build. Since
 // P4.7 it also widens the town ring when no house fits and sites, ripens and frosts fields

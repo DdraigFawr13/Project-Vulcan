@@ -4,7 +4,7 @@ import type { EntityRow } from '../core/index.ts';
 import { canLight, lightClass, nextDawn } from '../lamp/index.ts';
 import { needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { lineOf } from './lines.ts';
+import { lineOf } from '../band/index.ts';
 
 /** Whether a kind of work can be taken up after dusk: dark and fire work can, a candle trade
  * when its room has a candle or the store one to light. */

@@ -4,7 +4,7 @@
 // dig some), and no kiln stands or is planned, the colony plans a `potter.kiln.size` square at the
 // edge of town: on the free ground nearest the green between `potter.kiln.near` tiles from it
 // that someone can walk to, ties in tile order. A kiln blocks no one's way (stations leave
-// `map.built` alone), so it seals nothing. Builders build it (people/station.ts).
+// `map.built` alone), so it seals nothing. Builders build it (crafts/station.ts).
 import type { WorldState } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
 import {

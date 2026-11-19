@@ -1,5 +1,5 @@
 // The Sickness law (P6.5, V-144): a setting with `sick` lays the catching-sick in a sick-house
-// (`house`) or sends them out of the valley (`away`). The law only says so; people/apart.ts acts
+// (`house`) or sends them out of the valley (`away`). The law only says so; care/apart.ts acts
 // on it, where kin may refuse it, and build/sickhouse.ts sites the house.
 import type { EngineContent, EntityRow, LawSettingDef, WorldState } from '../core/index.ts';
 import { lawRow, settingOf } from './hours.ts';

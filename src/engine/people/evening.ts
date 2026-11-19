@@ -10,9 +10,8 @@ import { isDark } from '../lamp/index.ts';
 import { isWinter } from '../law/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practiceOf } from '../self/index.ts';
-import { practise } from './learn.ts';
+import { practise, walkTo } from '../band/index.ts';
 import { nearestWarm } from './warm.ts';
-import { walkTo } from './walk.ts';
 
 /** Minutes between looks for a fire to sit by, spread across people by id. */
 const LOOK = 15;

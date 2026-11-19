@@ -29,12 +29,12 @@ Detail kept out of the module contracts, which are on milestone reading lists wi
 ## Smithy (`src/engine/build/smithy.ts`)
 
 - Table `smithy` (x, y, w, h, house, side, state `plan`/`built`/`sent`, line, why, sent, built). Hourly, once an ingot lies in the store, the colony plans a smithy on the house of its best smith (highest smithing, ties by id; the house their bed or laid bedroll is in), on the outer side of that house or its added rooms nearest water (map water within `near`; ties east, west, south, north), on free buildable ground off every house, field, plan and the store, reachable from the green, with no tree. `smithy.sited` gives the reason; no ground gives one `smithy.noGround` (looked at again daily).
-- Open-sided: a stone floor under each of the forge, anvil block and tub. Builders make the pieces like hearths (people/hearth.ts; carpentry.ts `setStation`). `smithy.built` when all stand.
+- Open-sided: a stone floor under each of the forge, anvil block and tub. Builders make the pieces like hearths (crafts/hearth.ts; carpentry.ts `setStation`). `smithy.built` when all stand.
 - `setBuild {kind: 'smithy'}` is the Build row (start `buildings.smithy.start`). `sendBack {smithy}` once; a replacement cannot be sent back; the old site is never chosen again.
 
 ## Tests
 
-`src/engine/people/tools.test.ts`, `src/engine/build/smithy.test.ts`.
+`src/engine/band/tools.test.ts`, `src/engine/build/smithy.test.ts`.
 
 ## Screens (`src/ui`)
 

@@ -18,7 +18,7 @@ Detail kept out of the module contracts, which are on milestone reading lists wi
 
 ## Tests
 
-`src/engine/people/strangers.test.ts` (slow tier): a welcome couple stays, its arrival citing the draw, and every household ends in its own home with the hall open; an agreeing band turns a stranger away whatever the law; a split goes by Closed and Open door, everyone answering it.
+`src/engine/band/strangers.test.ts` (slow tier): a welcome couple stays, its arrival citing the draw, and every household ends in its own home with the hall open; an agreeing band turns a stranger away whatever the law; a split goes by Closed and Open door, everyone answering it.
 
 ## Screens (V-041: no lever names a stranger, a tile or a bed)
 
