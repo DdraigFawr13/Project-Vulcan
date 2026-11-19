@@ -119,7 +119,10 @@ describe('field views', () => {
     // A day on, only a one-day memory (ragged clothes) has gone.
     expect(seen).toHaveLength(content.memories.filter((m) => m.decayDays > 1).length);
     for (const m of seen) {
-      const def = content.memories.find((d) => d.text.replace('{about}', name) === m.text)!;
+      // A memory heavy from the first day (the stocks, V-174) shows by its heavy name.
+      const def = content.memories.find(
+        (d) => d.text.replace('{about}', name) === m.text || d.heavy?.name === m.text,
+      )!;
       expect(def).toBeDefined();
       // Each says its mood and days left; a heavy or lasting one also how long it stays (V-154).
       const left = /[+−]\d+ mood(, (\d+) days left|, fades tomorrow| while it was fresh)/.exec(

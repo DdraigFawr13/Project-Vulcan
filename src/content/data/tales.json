@@ -16,7 +16,11 @@
     { "id": "valley-hungry", "about": "colony", "text": "this valley cannot feed us" },
     { "id": "fields-cursed", "about": "place", "text": "the fields are cursed" },
     { "id": "valley-sickly", "about": "colony", "text": "this valley breeds sickness" },
-    { "id": "law-flouted", "about": "law", "text": "the work-hours law is not kept here" }
+    { "id": "law-flouted", "about": "law", "text": "the work-hours law is not kept here" },
+    { "id": "store-hoarded", "about": "law", "text": "the store is kept for the few" },
+    { "id": "thieves", "about": "colony", "text": "there are thieves among us" },
+    { "id": "valley-blows", "about": "colony", "text": "this valley comes to blows" },
+    { "id": "valley-leaving", "about": "colony", "text": "folk are giving up on this valley" }
   ],
   "tales": [
     { "id": "beast", "event": "wild.attacked", "truth": 1, "belief": "woods-dangerous", "from": 1, "levels": [
@@ -34,6 +38,11 @@
       "{name} is a little poorly.",
       "{name} has taken {a}.",
       "{name} has taken {a}, and it will go through us all."
+    ] },
+    { "id": "full-plate", "event": "law.keptCustom", "only": { "did": "took a full plate" }, "truth": 1, "belief": "store-hoarded", "from": 1, "levels": [
+      "{name} ate a little past their share.",
+      "{name} {did}.",
+      "{name} {did}, while the rest of us went hungry."
     ] },
     { "id": "kept-custom", "event": "law.keptCustom", "truth": 1, "belief": "law-flouted", "from": 1, "levels": [
       "{name} kept the old hours.",
@@ -75,6 +84,21 @@
       "A frost nipped the {crop}.",
       "A frost killed the {crop}: {tiles} tiles lost.",
       "The frost took every last {crop}: that ground is cursed."
+    ] },
+    { "id": "theft", "event": "defy.caught", "only": { "act": "took" }, "truth": 1, "belief": "thieves", "from": 1, "levels": [
+      "{name} was seen near the store.",
+      "{name} was caught taking from the store.",
+      "{name} has been robbing the store all winter."
+    ] },
+    { "id": "brawl", "event": "defy.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "levels": [
+      "{name} and {other} had words.",
+      "{name} came to blows with {other}.",
+      "{name} near killed {other} in a brawl."
+    ] },
+    { "id": "left", "event": "defy.left", "truth": 1, "belief": "valley-leaving", "from": 1, "word": true, "levels": [
+      "{name} has gone off down the road.",
+      "{name} left the valley{with}.",
+      "{name} fled the valley{with}, and more will follow."
     ] }
   ]
 }

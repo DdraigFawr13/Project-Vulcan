@@ -11,7 +11,10 @@ import { walkTo } from './walk.ts';
 /** How many of `kind` `p` holds (not the clothes they wear). */
 export const heldOf = (ctx: SystemContext, p: EntityRow, kind: string): number =>
   itemsOf(ctx.world)
-    .filter((i) => i['holder'] === p.id && i['kind'] === kind && i['state'] !== 'worn')
+    .filter(
+      (i) =>
+        i['holder'] === p.id && i['kind'] === kind && i['state'] !== 'worn' && i['state'] !== 'hid',
+    )
     .reduce((n, i) => n + (i['count'] as number), 0);
 
 /** The free stacks of `kind` `p` can reach, nearest first (ties by id) and not taken by another's job. */
@@ -86,7 +89,8 @@ export function useHeld(
 ): EntityRow[] {
   const used: EntityRow[] = [];
   let left = count;
-  for (const i of itemsOf(ctx.world).filter((i) => i['holder'] === p.id && i['kind'] === kind)) {
+  const mine = (i: EntityRow) => i['holder'] === p.id && i['kind'] === kind && i['state'] !== 'hid';
+  for (const i of itemsOf(ctx.world).filter(mine)) {
     if (left <= 0) break;
     used.push({ ...i } as EntityRow);
     left -= takeFrom(ctx.world, i, left);

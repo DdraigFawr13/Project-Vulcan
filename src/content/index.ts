@@ -38,6 +38,7 @@ import strangers from './data/strangers.json';
 import tales from './data/tales.json';
 import self from './data/self.json';
 import colony from './data/colony.json';
+import defy from './data/defy.json';
 import terrain from './data/terrain.json';
 import tiers from './data/tiers.json';
 import tools from './data/tools.json';
@@ -94,6 +95,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   tales,
   self,
   colony,
+  defy,
   terrain,
   tiers,
   tools,

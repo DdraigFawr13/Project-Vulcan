@@ -2,7 +2,7 @@
 export { colonySystem } from './system.ts';
 export { colonyMood, type ColonyMood, type MoodCause } from './mood.ts';
 export { trustOf } from './elder.ts';
-export { hardTimes } from './standing.ts';
+export { addCause, hardTimes } from './standing.ts';
 export {
   causesOf,
   COLONY_TABLES,

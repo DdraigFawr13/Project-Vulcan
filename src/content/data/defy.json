@@ -1,0 +1,61 @@
+{
+  "hour": 7,
+  "belief": 2,
+  "hold": 10,
+  "cool": 7,
+  "steps": [
+    { "id": "grumble", "name": "grumbles", "answer": "grumbles" },
+    {
+      "id": "slow",
+      "name": "works slowly",
+      "bar": 5,
+      "traits": { "steady": 10, "hardy": 5, "devout": 5 }
+    },
+    { "id": "refuse", "name": "refuses", "answer": "refuses" },
+    {
+      "id": "take",
+      "name": "takes from the store",
+      "bar": 25,
+      "traits": { "greedy": -10, "steady": 10, "hardy": 10, "devout": 10 }
+    },
+    {
+      "id": "brawl",
+      "name": "comes to blows",
+      "bar": 35,
+      "traits": { "hot-tempered": -10, "steady": 10, "hardy": 10, "devout": 10, "cheerful": 5 }
+    },
+    {
+      "id": "leave",
+      "name": "leaves the valley",
+      "bar": 40,
+      "hold": 21,
+      "traits": { "restless": -10, "solitary": -10, "steady": 10, "hardy": 10, "devout": 10 }
+    }
+  ],
+  "slow": { "every": 4 },
+  "take": { "count": 3, "every": 7, "sight": 6 },
+  "brawl": {
+    "every": 7,
+    "reach": 2,
+    "doing": ["eat", "relax", "feast", "work"],
+    "deep": 10,
+    "kinds": ["break", "cut"],
+    "parts": ["head", "body", "left-arm", "right-arm"],
+    "what": "was hurt in a brawl with {other}"
+  },
+  "leave": { "misery": 28, "mood": 4000, "household": true, "every": 28 },
+  "memories": {
+    "sawTheft": "saw-theft",
+    "sawBrawl": "saw-brawl",
+    "brawled": "brawled",
+    "stocks": "sat-stocks",
+    "unfair": "saw-unfair-punishment",
+    "left": "saw-leave"
+  },
+  "punish": {
+    "work": "will work on to bedtime tomorrow",
+    "stocks": "will sit tomorrow in the stocks on the green",
+    "away": "is sent out of the valley"
+  },
+  "standing": { "by": -4, "days": 84, "text": "{name} left the valley" }
+}

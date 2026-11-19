@@ -41,6 +41,10 @@ export interface LawSettingDef {
    * and the names a faction against it takes. */
   harsh?: number;
   faction?: readonly string[];
+  /** P6.7: the beliefs (tales.json) that carry a grievance against it into acts, and what a
+   * Punishment setting does to someone caught. */
+  beliefs?: readonly string[];
+  punish?: 'work' | 'stocks' | 'away';
 }
 
 export interface LawDef {
