@@ -6,6 +6,7 @@ import { depotAt, depotTakes, itemsAt, layItem, stackSize } from '../goods/index
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { walkTo } from './walk.ts';
+import { people } from '../entity/index.ts';
 
 import { besideReachable } from '../paths/index.ts';
 
@@ -26,7 +27,7 @@ export const spotOf = (r: EntityRow): Spot => ({
   z: r['z'] as number,
 });
 export const same = (a: Spot, b: Spot): boolean => a.x === b.x && a.y === b.y && a.z === b.z;
-export const people = (world: WorldState): EntityRow[] => world.entities['person'] ?? [];
+export { people };
 /** The targets others are already on in a job, so no two take the same tree or load. */
 export const busy = (world: WorldState, p: EntityRow, job: string): Set<number> =>
   new Set(
@@ -39,6 +40,11 @@ export const skillOf = (world: WorldState, p: EntityRow, skill: string): number 
   ((world.entities['skill'] ?? []).find((s) => s['person'] === p.id && s['skill'] === skill)?.[
     'level'
   ] as number) ?? 0;
+
+/** Standing on the surface on a side (not a corner) of tile x, y: where surface work is done from. */
+export const besideOnSurface = (p: EntityRow, x: number, y: number): boolean =>
+  (p['z'] as number) === 0 &&
+  Math.abs((p['x'] as number) - x) + Math.abs((p['y'] as number) - y) === 1;
 
 /** Sets off to stand beside tile (x, y) of level `z` (the surface unless told); false when no
  * side of it can be reached. */

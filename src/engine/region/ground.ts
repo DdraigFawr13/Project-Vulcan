@@ -1,8 +1,8 @@
 // The region's ground from the Story Generator's world (P1.6): which window of that world the region
 // shows, and its height, warmth, rain and biome at any point of the region grid. Biome edges are
 // warped by noise so the world's coarse cells don't show as squares. Only + - * / and floor (V-006).
-import type { EngineContent, RngStream } from '../core/index.ts';
-import { clamp, noise } from './land.ts';
+import { clamp, type EngineContent, type RngStream } from '../core/index.ts';
+import { noise } from './land.ts';
 import type { RegionCell } from './region.ts';
 import type { Site, WorldState } from './story.ts';
 

@@ -22,10 +22,10 @@ import {
 } from '../engine/index.ts';
 import type { GoodsView } from './protocol-goods.ts';
 import type { FlockPlate, PastureRow } from './protocol-flock.ts';
+import { plural } from './words.ts';
 
 export const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 export const num = (n: number): string => n.toLocaleString('en-US');
-const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 const { flock: def } = content;
 const nameWords = (s: string): string => s.replace(/^(wild|mountain) /, '');
 

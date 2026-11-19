@@ -3,6 +3,7 @@
 // story; a belief is a content template a person holds at a strength.
 import type { EngineContent, EntityRow, TaleDef, WorldState } from '../core/index.ts';
 import type { Schemas } from '../entity/index.ts';
+import { tableOf } from '../entity/index.ts';
 
 export const TALES_TABLES: Schemas = {
   /** `tale` a tales.json id, `event` the line it copies, `words` that line's data as JSON. */
@@ -23,19 +24,17 @@ export const TALES_TABLES: Schemas = {
   belief: { person: 'entity', belief: 'text', strength: 'count', line: 'event', fed: 'int' },
 };
 
-const rows = (world: WorldState, kind: string): EntityRow[] => world.entities[kind] ?? [];
-
-export const storiesOf = (world: WorldState): EntityRow[] => rows(world, 'story');
+export const storiesOf = (world: WorldState): EntityRow[] => tableOf(world, 'story');
 
 /** Every tale `person` holds, newest story first. */
 export const talesOf = (world: WorldState, person: number): EntityRow[] =>
-  rows(world, 'tale')
+  tableOf(world, 'tale')
     .filter((t) => t['person'] === person)
     .sort((a, b) => (b['story'] as number) - (a['story'] as number));
 
 /** Every belief `person` holds, strongest first. */
 export const beliefsOf = (world: WorldState, person: number): EntityRow[] =>
-  rows(world, 'belief')
+  tableOf(world, 'belief')
     .filter((b) => b['person'] === person)
     .sort((a, b) => (b['strength'] as number) - (a['strength'] as number) || a.id - b.id);
 

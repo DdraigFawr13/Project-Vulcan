@@ -16,13 +16,13 @@ import {
   type SimEvent,
   type Stub,
   type WorldState,
+  itemName,
 } from '../engine/index.ts';
 import { nowOf } from './people.ts';
 import type { LedgerLine } from './protocol.ts';
 import type { GoodsView, WorksView } from './protocol-goods.ts';
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
-const itemName = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 const inRect = (r: EntityRow, x: number, y: number): boolean =>
   x >= (r['x'] as number) &&
   x < (r['x'] as number) + (r['w'] as number) &&
@@ -92,8 +92,8 @@ export function doingOf(
 const recipesText = (): string =>
   content.metal.recipes
     .map((r) => {
-      const from = r.inputs.map((i) => `${i.count} ${itemName(i.kind)}`).join(' and ');
-      return `${itemName(r.makes)}: ${from} make ${r.out}`;
+      const from = r.inputs.map((i) => `${i.count} ${itemName(content, i.kind)}`).join(' and ');
+      return `${itemName(content, r.makes)}: ${from} make ${r.out}`;
     })
     .join('; ');
 
@@ -117,7 +117,7 @@ export function linesOf(
 function smelterPage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView {
   const def = content.metal.smelter;
   const reach = [...new Set(content.metal.recipes.flatMap((r) => r.inputs.map((i) => i.kind)))]
-    .map((k) => `${itemName(k)} ${haveOf(world, content, k)}`)
+    .map((k) => `${itemName(content, k)} ${haveOf(world, content, k)}`)
     .join(', ');
   const built = s['state'] === 'built';
   return {
@@ -141,7 +141,9 @@ function smelterPage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView
 function housePage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView {
   const def = content.work.cure;
   const built = s['state'] === 'built';
-  const fresh = def.from.map((k) => `${itemName(k)} ${haveOf(world, content, k)}`).join(', ');
+  const fresh = def.from
+    .map((k) => `${itemName(content, k)} ${haveOf(world, content, k)}`)
+    .join(', ');
   return {
     name: 'Smokehouse',
     rows: [
@@ -152,7 +154,7 @@ function housePage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView {
       ],
       ['why here', whyHere(world, s)],
       ['fresh food', fresh],
-      ['cured', `${itemName(def.smoked)} ${haveOf(world, content, def.smoked)}`],
+      ['cured', `${itemName(content, def.smoked)} ${haveOf(world, content, def.smoked)}`],
     ],
     ...(built || s['work'] !== -1 ? { doing: doingOf(world, ['cure', 'station'], s) } : {}),
     lines: linesOf(world, lineOf, [
@@ -171,8 +173,8 @@ function kilnPage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView {
       ['what', `a kiln: ${def.clay} clay fired into a pot, or into ${def.brick.per} bricks`],
       ['state', built ? 'built' : `planned: ${s['have'] as number} of ${def.kiln.cost} stone here`],
       ['why here', whyHere(world, s)],
-      ['clay', `${itemName(def.clayItem)} ${haveOf(world, content, def.clayItem)}`],
-      ['bricks', `${itemName(def.brick.item)} ${haveOf(world, content, def.brick.item)}`],
+      ['clay', `${itemName(content, def.clayItem)} ${haveOf(world, content, def.clayItem)}`],
+      ['bricks', `${itemName(content, def.brick.item)} ${haveOf(world, content, def.brick.item)}`],
     ],
     ...(built || s['work'] !== -1 ? { doing: doingOf(world, ['potter', 'station'], s) } : {}),
     lines: linesOf(world, lineOf, [
@@ -233,7 +235,7 @@ function smithyPage(world: WorldState, s: EntityRow, lineOf: LineOf): WorksView 
       [
         'built of',
         [...byMaterial]
-          .map(([m, names]) => `${itemName(m)} for the ${names.join(', ')}`)
+          .map(([m, names]) => `${itemName(content, m)} for the ${names.join(', ')}`)
           .join('; '),
       ],
     ],

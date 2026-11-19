@@ -6,11 +6,10 @@
 // second kills it (wild `woundPredator`); a miss, and the wolf may bite (`bite.chance`), the part
 // and depth drawn by weight into the health system. One line, `wild.attacked`, tells it all and
 // cites the sighting; the pack then draws off to its den. Witnesses within `witness` remember.
-import { streamFor, type EntityRow } from '../core/index.ts';
+import { streamFor, type EntityRow, list, cheb } from '../core/index.ts';
 import { heldSpeed } from './tools.ts';
 import { pronouns, wound } from '../health/index.ts';
 import { addMemory } from '../needs/index.ts';
-import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { middensOf } from '../build/index.ts';
 import {
@@ -25,8 +24,6 @@ import {
 import { armedWith, isNight, sheltered, shelterFor, upAndAbout } from './flee.ts';
 import { people, skillOf, spotOf } from './spots.ts';
 
-const reach = (a: Spot, b: Spot): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
-
 /** Whether a wolf may go for `t`: out of shelter, not standing, and alone or the last of those
  * fleeing to shelter. */
 function exposed(ctx: SystemContext, t: EntityRow): boolean {
@@ -38,16 +35,13 @@ function exposed(ctx: SystemContext, t: EntityRow): boolean {
       q.id !== t.id &&
       q['status'] === 'alive' &&
       q['z'] === 0 &&
-      reach(spotOf(q), spotOf(t)) <= content.wild.folk.alone,
+      cheb(spotOf(q), spotOf(t)) <= content.wild.folk.alone,
   );
   return (
     !mates.length ||
     (t['doing'] === 'flee' && mates.every((q) => sheltered(ctx, q) || q['doing'] === 'stand'))
   );
 }
-
-const listOf = (items: readonly string[]): string =>
-  items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 
 /** The midden is where a hungry pack goes first (V-072): told to wild when one is sited. */
 export function syncLures(ctx: SystemContext): void {
@@ -76,14 +70,12 @@ export function attacksMinute(ctx: SystemContext): void {
   const memo = new Map<number, boolean>();
   for (const wolf of wolves) {
     const near = prey
-      .filter((t) => reach(spotOf(t), spotOf(wolf)) <= folk.prowl)
-      .sort(
-        (a, b) => reach(spotOf(a), spotOf(wolf)) - reach(spotOf(b), spotOf(wolf)) || a.id - b.id,
-      );
+      .filter((t) => cheb(spotOf(t), spotOf(wolf)) <= folk.prowl)
+      .sort((a, b) => cheb(spotOf(a), spotOf(wolf)) - cheb(spotOf(b), spotOf(wolf)) || a.id - b.id);
     for (const t of near) {
       if (!memo.has(t.id)) memo.set(t.id, exposed(ctx, t));
       if (!memo.get(t.id)) continue;
-      if (reach(spotOf(t), spotOf(wolf)) <= 1) return fight(ctx, wolf, t);
+      if (cheb(spotOf(t), spotOf(wolf)) <= 1) return fight(ctx, wolf, t);
       if (world.tick % content.wild.move.trot === 0)
         approach(ctx, wolf, t['x'] as number, t['y'] as number);
       break;
@@ -108,7 +100,7 @@ function fight(ctx: SystemContext, wolf: EntityRow, target: EntityRow): void {
       upAndAbout(ctx, q) &&
       q['doing'] === 'stand' &&
       !!armedWith(ctx, q) &&
-      reach(spotOf(q), spotOf(target)) <= folk.beside,
+      cheb(spotOf(q), spotOf(target)) <= folk.beside,
   );
   const jobSkill = content.jobs.find((j) => j.id === content.work.hunt.job)?.skill ?? '';
   const bites: Bite[] = [];
@@ -157,11 +149,7 @@ function fight(ctx: SystemContext, wolf: EntityRow, target: EntityRow): void {
     );
   if (hit) woundPredator(ctx, wolf, hit.by.id, line);
   for (const q of people(world))
-    if (
-      q.id !== target.id &&
-      upAndAbout(ctx, q) &&
-      reach(spotOf(q), spotOf(target)) <= folk.witness
-    )
+    if (q.id !== target.id && upAndAbout(ctx, q) && cheb(spotOf(q), spotOf(target)) <= folk.witness)
       addMemory(ctx, q.id, folk.memories.attack, line, target.id);
   drawOff(ctx, line);
 }
@@ -193,7 +181,7 @@ function describe(
       .replace('{severity}', content.health.severities.find((s) => s.id === b.severity)!.name);
   const name = target['name'] as string;
   const bitten = bites.length
-    ? ` ${words.bitten.replace('{name}', name).replace('{bites}', listOf(bites.map(part)))}`
+    ? ` ${words.bitten.replace('{name}', name).replace('{bites}', list(bites.map(part)))}`
     : ` ${words.unhurt.replace('{name}', name)}`;
   return { species, name, why, fight, bitten };
 }

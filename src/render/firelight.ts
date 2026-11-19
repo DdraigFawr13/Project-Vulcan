@@ -9,6 +9,7 @@
 // months. Pictures only: where and how far come from the snapshot, the hour from its clock.
 import Phaser from 'phaser';
 import type { ClockView, GoodsView } from '../worker/index.ts';
+import { tokenColour } from './tokens.ts';
 
 const TILE = 32;
 const GLOW = 'firelight.glow';
@@ -37,12 +38,6 @@ export function nightOf(clock: Pick<ClockView, 'hour' | 'minute' | 'dawn' | 'dus
       : 1 - ramp(clock.dawn - RAMP, clock.dawn + RAMP);
   return t * t * (3 - 2 * t);
 }
-
-/** A colour the page's tokens define, as a number Phaser takes. */
-const token = (name: string, fallback: string): number =>
-  Phaser.Display.Color.HexStringToColor(
-    getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback,
-  ).color;
 
 export class Firelight {
   private fires: GoodsView['fires'] = [];
@@ -143,7 +138,7 @@ export class Firelight {
       this.key = key;
       for (const p of this.pools) p.image.destroy();
       this.pools = [];
-      const tint = token('--ember', '#c8743a');
+      const tint = tokenColour('--ember', '#c8743a');
       if (surface)
         for (const f of this.fires)
           this.pools.push({
@@ -157,7 +152,7 @@ export class Firelight {
             phase: f.x * 1.7 + f.y * 2.9,
           });
       // A candlelit room's pool: paler (the bone token) and flat, over the floor's bounding box.
-      const pale = token('--bone', '#efe2c2');
+      const pale = tokenColour('--bone', '#efe2c2');
       if (surface)
         for (const r of this.lit)
           this.pools.push({

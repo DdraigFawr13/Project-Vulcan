@@ -12,10 +12,10 @@ import {
   type EntityRow,
   type SimEvent,
   type WorldState,
+  itemName,
 } from '../engine/index.ts';
 import type { ClothesPlate, WearingRow } from './protocol-people.ts';
 
-const nameOf = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 const cap = (s: string): string => `${s.charAt(0).toUpperCase()}${s.slice(1)}`;
 const worthWord = (id: unknown): string =>
   content.clothes.worth.find((w) => w.id === id)?.word ?? String(id);
@@ -46,7 +46,7 @@ export function wearingRows(world: WorldState, p: EntityRow): WearingRow[] {
     return [
       {
         slot: slot.name,
-        text: `${cap(nameOf(item['kind'] as string))}, ${worthWord(item['quality'])}`,
+        text: `${cap(itemName(content, item['kind'] as string))}, ${worthWord(item['quality'])}`,
         detail: `${maker.by} · worn ${100 - leftOf(content, item)}% · warms ${warms}°${k > 0 ? ' outdoors' : ''}`,
         ...(maker.why !== undefined && { why: maker.why }),
       },
@@ -60,7 +60,9 @@ function sparesLine(world: WorldState, slot: string): string {
   for (const i of sparesOf(world, content, slot))
     counts.set(i['kind'] as string, (counts.get(i['kind'] as string) ?? 0) + 1);
   if (!counts.size) return 'none';
-  return [...counts].map(([kind, n]) => `${n} ${nameOf(kind)}${n > 1 ? 's' : ''}`).join(', ');
+  return [...counts]
+    .map(([kind, n]) => `${n} ${itemName(content, kind)}${n > 1 ? 's' : ''}`)
+    .join(', ');
 }
 
 /** The Clothes plate's read-only lines: spares by slot, and what the colony holds to make more. */
@@ -71,6 +73,6 @@ export function clothesPlate(world: WorldState): ClothesPlate {
       name: s.name.toLowerCase(),
       text: sparesLine(world, s.id),
     })),
-    making: mats.map((k) => `${haveOf(world, content, k)} ${nameOf(k)}`).join(', '),
+    making: mats.map((k) => `${haveOf(world, content, k)} ${itemName(content, k)}`).join(', '),
   };
 }

@@ -6,13 +6,14 @@
 // for haulers: salt meat if the salt came too, else smoked meat. Out of hours they keep what they
 // fetched and go on next morning. Taking up and each batch are ledger lines; trips are not.
 import type { EntityRow, WorldState } from '../core/index.ts';
-import { stationsOf } from '../build/index.ts';
 import { inStore } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { fetchKind, reachableOf, useHeld } from './fetch.ts';
 import { practise } from './learn.ts';
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
 import { canStandBeside, goBeside, layAll, people, skillOf, spotOf } from './spots.ts';
+import { itemName } from '../core/index.ts';
+import { smokehouseOf } from '../mine/index.ts';
 
 const stop = (p: EntityRow): false => {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0, make: '', what: '' });
@@ -22,18 +23,11 @@ const stop = (p: EntityRow): false => {
 const skillName = (ctx: SystemContext): string =>
   ctx.content.jobs.find((j) => j.id === ctx.content.work.cure.job)?.skill ?? '';
 
-const nameOf = (ctx: SystemContext, kind: string): string =>
-  ctx.content.items.find((i) => i.id === kind)?.name ?? kind;
-
 /** Only what lies in a store (the home store or a built one) is cured. */
 const stored =
   (world: WorldState) =>
   (i: EntityRow): boolean =>
     inStore(world, i['x'] as number, i['y'] as number, i['z'] as number);
-
-/** The built smokehouse, if there is one. */
-const houseOf = (world: WorldState): EntityRow | undefined =>
-  stationsOf(world).find((s) => s['kind'] === 'smokehouse' && s['state'] === 'built');
 
 /** How much fresh food (any of `cure.from`) lies in the stores. */
 const freshIn = (ctx: SystemContext, p: EntityRow): number =>
@@ -56,7 +50,7 @@ function pick(ctx: SystemContext, p: EntityRow): { kind: string; salted: boolean
 export function takeUpCuring(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
   const def = content.work.cure;
-  const house = houseOf(world);
+  const house = smokehouseOf(world);
   if (!house) return false;
   if (!able(content, p, def.job)) {
     declineIfUnable(ctx, p, def.job);
@@ -90,7 +84,7 @@ export function takeUpCuring(ctx: SystemContext, p: EntityRow): boolean {
 export function curing(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
   const def = content.work.cure;
-  const house = houseOf(world);
+  const house = smokehouseOf(world);
   if (!house || house.id !== p['plan']) return stop(p);
   const only = stored(world);
   const wants: [string, number][] = [
@@ -122,7 +116,7 @@ export function curing(ctx: SystemContext, p: EntityRow): boolean {
   const line = ctx.emit('cure.cured', {
     causes: [p['took'] as number],
     actors: [p.id],
-    data: { name: p['name'] as string, count: def.batch, what: nameOf(ctx, made) },
+    data: { name: p['name'] as string, count: def.batch, what: itemName(ctx.content, made) },
   });
   layAll(ctx, made, def.batch, here, line);
   stop(p);

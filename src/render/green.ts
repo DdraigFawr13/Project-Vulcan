@@ -4,6 +4,7 @@
 // picture build.ts draws. Pictures only: where and what come from the snapshot's `BuildView`.
 import Phaser from 'phaser';
 import type { BuildView } from '../worker/index.ts';
+import { tokenColour } from './tokens.ts';
 
 const TILE = 32;
 /** The ring's radius in tiles, and how many dashes make it. */
@@ -12,12 +13,6 @@ const DASHES = 14;
 // Above the buildings (4 to 6) and the people (8), under the selection mark (10).
 const RING_DEPTH = 3;
 const LABEL_DEPTH = 9;
-
-/** A colour the page's tokens define, as a number Phaser takes. */
-const token = (name: string): number =>
-  Phaser.Display.Color.HexStringToColor(
-    getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#efe2c2',
-  ).color;
 
 export class GreenSprites {
   private view: BuildView | undefined;
@@ -60,7 +55,7 @@ export class GreenSprites {
     if (this.z !== 0) return;
     const [cx, cy] = [(view.green.x + 0.5) * TILE, (view.green.y + 0.5) * TILE];
     const ring = this.scene.add.graphics().setDepth(RING_DEPTH);
-    const grass = token('--bone-soft');
+    const grass = tokenColour('--bone-soft', '#efe2c2');
     ring.fillStyle(grass, 0.12).fillCircle(cx, cy, RADIUS * TILE);
     ring.lineStyle(3, grass, 0.85);
     const step = (Math.PI * 2) / DASHES;

@@ -20,6 +20,9 @@ import {
   type SimEvent,
   type Stub,
   type WorldState,
+  list,
+  personOf,
+  people,
 } from '../engine/index.ts';
 import { answerView, lawView } from './law.ts';
 import { RULED, ruledView } from './lawsheet.ts';
@@ -32,12 +35,8 @@ const words = content.strangers.words;
 const say = (key: string, vars: Record<string, string | number> = {}): string =>
   (words[key] ?? '').replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
-const list = (items: readonly string[]): string =>
-  items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 const nameOf = (rows: readonly { id: string; name: string }[], id: unknown): string =>
   rows.find((r) => r.id === id)?.name ?? String(id);
-const people = (world: WorldState): EntityRow[] => world.entities['person'] ?? [];
-const personOf = (world: WorldState, id: number) => people(world).find((p) => p.id === id);
 
 /** "9 Leaffall" */
 function dayOf(tick: number): string {

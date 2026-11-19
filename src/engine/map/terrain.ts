@@ -3,6 +3,7 @@
 import type { EngineContent, RngStream } from '../core/index.ts';
 import { raiseMountains } from './mountains.ts';
 import { AXES, bake, fractalNoise, quantile } from './noise.ts';
+import { clamp } from '../core/index.ts';
 
 export interface Ground {
   /** The valley floor's height (m): the share `valleyFloor` of tiles lie lower. */
@@ -22,8 +23,6 @@ export interface Ground {
   axis: readonly [number, number];
   wet: number[];
 }
-
-const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
 
 /** The band a value falls in: 0 below the first edge, `edges.length` above the last. */
 function band(value: number, edges: readonly number[]): number {

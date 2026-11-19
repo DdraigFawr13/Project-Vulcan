@@ -8,6 +8,7 @@ import {
   type EngineContent,
   type MapState,
   type WorldState,
+  list,
 } from '../core/index.ts';
 import type { Schemas } from '../entity/index.ts';
 import { valleyOf } from '../region/index.ts';
@@ -101,9 +102,6 @@ function standingSpots(map: MapState, content: EngineContent, count: number): [n
   while (out.length < count) out.push([map.startX, map.startY]);
   return out;
 }
-
-const list = (items: readonly string[]): string =>
-  items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 
 export const peopleSystem: System = {
   id: 'people',

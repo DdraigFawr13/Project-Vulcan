@@ -17,12 +17,10 @@ import { practise } from './learn.ts';
 import { able } from './priority.ts';
 import { people, skillOf, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
+import { personOf } from '../entity/index.ts';
 
 const far = (a: Spot, b: Spot): number =>
   Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) + Math.abs(a.z - b.z) * 100;
-
-const personOf = (world: WorldState, id: number): EntityRow | undefined =>
-  people(world).find((p) => p.id === id);
 
 /** Others on `job` for whom. */
 const tended = (world: WorldState, p: EntityRow, job: string, field: string): Set<number> =>

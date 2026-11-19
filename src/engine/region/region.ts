@@ -1,9 +1,9 @@
 // The region around the valley (P1.5's screen, P1.6's source, DECISIONS V-031): a window of the
 // seed's Story Generator world, with its named ranges and rivers, six to eight of its live sites and
 // three valleys to settle. Pure: same seed and content, same world and region (V-006).
-import { streamFor, type EngineContent } from '../core/index.ts';
+import { clamp, streamFor, type EngineContent } from '../core/index.ts';
 import { ground, windows, type Window } from './ground.ts';
-import { clamp, RAYS } from './land.ts';
+import { RAYS } from './land.ts';
 import { compass, dayDistance, valeName } from './names.ts';
 import { rangesIn, riversIn, sitesIn } from './places.ts';
 import { storyWorld, type WorldState } from './story.ts';

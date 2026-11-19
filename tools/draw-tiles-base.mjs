@@ -18,7 +18,7 @@ export function readPalette(file = path.join(root, 'art/palette.gpl')) {
 }
 
 // A small integer hash: the same tile, seed and position always give the same value in [0, 1).
-function noise(seed, x, y) {
+export function noise(seed, x, y) {
   let h =
     Math.imul(seed ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(x, 0x27d4eb2f) ^ Math.imul(y, 0x165667b1);
   h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);

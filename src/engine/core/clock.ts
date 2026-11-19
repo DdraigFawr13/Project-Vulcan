@@ -1,4 +1,5 @@
 // Game time from a tick count: one tick is one game minute (docs/ARCHITECTURE.md "Tick").
+import type { EngineContent, WorldState } from './types.ts';
 
 /** The forked calendar (src/content/data/calendar.json). */
 export interface CalendarDef {
@@ -42,3 +43,7 @@ export function clockAt(tick: number, calendar: CalendarDef): Clock {
     season: Math.floor((month * calendar.seasons.length) / calendar.monthsPerYear),
   };
 }
+
+/** The colony's year now. */
+export const yearNow = (world: WorldState, content: EngineContent): number =>
+  clockAt(world.tick, content.calendar).year;

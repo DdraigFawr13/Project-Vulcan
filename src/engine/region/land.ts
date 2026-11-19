@@ -1,9 +1,8 @@
 // The region's small helpers: value noise (the biome-edge warp), clamping and the eight rays a
 // valley's walls are looked for along. Only + - * / and floor (V-006).
 import type { RngStream } from '../core/index.ts';
+import { clamp, smooth } from '../core/index.ts';
 
-const smooth = (t: number): number => t * t * (3 - 2 * t);
-export const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
 const SIDES = [
   [1, 0],
   [-1, 0],

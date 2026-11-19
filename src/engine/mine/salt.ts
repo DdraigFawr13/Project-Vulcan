@@ -9,7 +9,7 @@ import { fill, shaftFor } from './shafts.ts';
 import type { ShaftSite } from './site.ts';
 
 /** The built smokehouse, if there is one. */
-const houseOf = (world: WorldState): EntityRow | undefined =>
+export const smokehouseOf = (world: WorldState): EntityRow | undefined =>
   stationsOf(world).find((s) => s['kind'] === 'smokehouse' && s['state'] === 'built');
 
 /** How much of `kinds` lies in a store. */
@@ -28,7 +28,7 @@ export const saltOf = (content: EngineContent): string => content.work.cure.salt
 export function saltShort(world: WorldState, content: EngineContent): number {
   const { from, salt } = content.work.cure;
   const def = content.features.find((f) => f.id === salt.item);
-  if (!def || !houseOf(world) || stored(world, [salt.item]) > 0) return 0;
+  if (!def || !smokehouseOf(world) || stored(world, [salt.item]) > 0) return 0;
   if (haveOf(world, content, salt.item) > 0) return 0;
   return stored(world, from) >= salt.want || shaftFor(world, salt.item) ? def.amount : 0;
 }
@@ -37,7 +37,9 @@ export function saltShort(world: WorldState, content: EngineContent): number {
  * line (0 for none). */
 export function saltCause(world: WorldState): number {
   const curer = (world.entities['person'] ?? []).find((p) => p['job'] === 'cure');
-  return (curer?.['took'] as number | undefined) || ((houseOf(world)?.['made'] as number) ?? 0);
+  return (
+    (curer?.['took'] as number | undefined) || ((smokehouseOf(world)?.['made'] as number) ?? 0)
+  );
 }
 
 /** The reason for a salt shaft plan, from content. */

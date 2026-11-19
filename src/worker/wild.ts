@@ -23,12 +23,12 @@ import { flockPlate } from './flock.ts';
 import { keptPage } from './flockpage.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
+import { plural } from './words.ts';
 
 type LineOf = (e: SimEvent | Stub) => LedgerLine;
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 const low = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
-const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
 const COMPASS = [
   'north',
   'north-east',

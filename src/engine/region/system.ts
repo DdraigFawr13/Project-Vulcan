@@ -4,6 +4,7 @@ import type { EngineContent } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
 import type { System } from '../sim/index.ts';
 import { makeRegion, type Region, type RegionValley } from './region.ts';
+import { list } from '../core/index.ts';
 
 /** The region seed and valley number a world seed names, or undefined for a plain seed. */
 export function siteOf(seed: string): { region: string; site: number } | undefined {
@@ -22,9 +23,6 @@ export function valleyOf(
   const valley = region.valleys[at.site - 1];
   return valley && { region, valley };
 }
-
-const list = (items: readonly string[]): string =>
-  items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 
 export const regionSystem: System = {
   id: 'region',

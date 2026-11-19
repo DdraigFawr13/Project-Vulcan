@@ -19,11 +19,7 @@ import { reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
 import { scaled, worked } from './tools.ts';
-import { besideReachable, goBeside, skillOf, spotOf } from './spots.ts';
-
-const near = (p: EntityRow, x: number, y: number): boolean =>
-  (p['z'] as number) === 0 &&
-  Math.abs((p['x'] as number) - x) + Math.abs((p['y'] as number) - y) === 1;
+import { besideReachable, goBeside, skillOf, spotOf, besideOnSurface } from './spots.ts';
 
 /** The tiles a load is fetched beside: the midden and each built fold's gate, nearest first. */
 function sources(ctx: SystemContext, p: EntityRow): { x: number; y: number }[] {
@@ -63,7 +59,7 @@ export function mucking(ctx: SystemContext, p: EntityRow, f: EntityRow): boolean
     if (muckLeft(world) <= 0 || !mucky(world, f)) return false;
     const from = sources(ctx, p)[0];
     if (!from) return false;
-    if (!near(p, from.x, from.y)) return goBeside(ctx, p, from.x, from.y);
+    if (!besideOnSurface(p, from.x, from.y)) return goBeside(ctx, p, from.x, from.y);
     if (!takeLoad(world)) return false;
     const level = skillOf(
       world,
@@ -82,7 +78,7 @@ export function mucking(ctx: SystemContext, p: EntityRow, f: EntityRow): boolean
     return true;
   }
   const [x, y] = [tile % width, Math.floor(tile / width)];
-  if (!near(p, x, y)) return goBeside(ctx, p, x, y);
+  if (!besideOnSurface(p, x, y)) return goBeside(ctx, p, x, y);
   p['work'] = (p['work'] as number) - 1;
   worked(ctx, p, 'farm');
   practise(

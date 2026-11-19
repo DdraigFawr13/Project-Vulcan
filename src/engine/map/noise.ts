@@ -1,6 +1,7 @@
 // Smooth value noise for the map generator, from lattice values drawn off the caller's RNG stream.
 // Only + - * / and floor, so every browser gives the same map (V-006).
 import type { RngStream } from '../core/index.ts';
+import { smooth } from '../core/index.ts';
 
 /** A field of values in [0, 1] over a width by height map. */
 export type Field = (x: number, y: number) => number;
@@ -27,8 +28,6 @@ export const AXES: readonly (readonly [number, number])[] = [
   [C2, -C2],
   [C1, -C3],
 ];
-
-const smooth = (t: number): number => t * t * (3 - 2 * t);
 
 /** One octave: random values on a grid of `cell` tiles, blended smoothly between grid points. */
 function octave(rng: RngStream, width: number, height: number, cell: number): Field {

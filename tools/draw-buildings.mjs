@@ -12,8 +12,9 @@ import path from 'node:path';
 import { isMain, root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
 import { readPalette } from './draw-tiles-base.mjs';
-import { noise } from './draw-nature.mjs';
+import { noise } from './draw-tiles-base.mjs';
 import { drawPasture } from './draw-pasture.mjs';
+import { outline } from './draw-furniture.mjs';
 
 const S = 32;
 // The band: 11 px wide, from 11 to 21 (about a third of the tile).
@@ -36,18 +37,6 @@ function image(draw) {
 const has = (img, x, y) => x >= 0 && y >= 0 && x < S && y < S && img.data[(y * S + x) * 4 + 3] > 0;
 
 // Ink on every transparent pixel beside an opaque one, so a part reads on any ground.
-function outline(img, ink) {
-  const mark = [];
-  for (let y = 0; y < S; y++)
-    for (let x = 0; x < S; x++)
-      if (
-        !has(img, x, y) &&
-        (has(img, x - 1, y) || has(img, x + 1, y) || has(img, x, y - 1) || has(img, x, y + 1))
-      )
-        mark.push([x, y]);
-  for (const [x, y] of mark) img.data.set([...ink, 255], (y * S + x) * 4);
-  return img;
-}
 
 // The rectangles a band joining `mask`'s sides covers: the middle and an arm to each side.
 function bandRects(mask) {

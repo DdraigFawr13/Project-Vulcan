@@ -21,6 +21,7 @@ import {
   type EntityRow,
   type SimEvent,
   type WorldState,
+  personName,
 } from '../engine/index.ts';
 import { illnessOf, pastIll, sickState } from './illview.ts';
 import type { HealthView } from './protocol-people.ts';
@@ -39,9 +40,6 @@ function stamp(world: WorldState, tick: number): string {
     ? time
     : `${time}, ${c.day} ${content.calendar.monthNames[c.month]!}`;
 }
-
-const nameOf = (world: WorldState, id: unknown): string =>
-  ((world.entities['person'] ?? []).find((q) => q.id === id)?.['name'] as string) ?? '';
 
 /** The data of a recent ledger line (a sealed one has none). */
 const dataOf = (world: WorldState, id: unknown): SimEvent | undefined => {
@@ -63,7 +61,7 @@ const bleeding = (w: EntityRow): boolean => (w['bleed'] as number) > 0 || !!w['m
 /** A wound's care and healing in words. */
 function statusOf(world: WorldState, p: EntityRow, w: EntityRow): string {
   const bound = w['bound'] as number;
-  const healer = nameOf(world, w['healer']);
+  const healer = personName(world, w['healer']);
   if (w['state'] !== 'open')
     return bound >= 2
       ? say('closedBound', { healer, time: stamp(world, w['dressed'] as number) })
@@ -83,7 +81,7 @@ function statusOf(world: WorldState, p: EntityRow, w: EntityRow): string {
       (w['mortal'] || (w['bleed'] as number) >= 2 ? say('bleedFast') : say('bleedSlow')) + fever
     );
   if (bound === 1) {
-    const finder = nameOf(world, bodyOf(world, p.id)?.['finder']);
+    const finder = personName(world, bodyOf(world, p.id)?.['finder']);
     const by = finder ? say('roughBy', { name: finder }) : '';
     return say('rough', { by }) + mends + fever;
   }

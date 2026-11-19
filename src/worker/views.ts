@@ -19,6 +19,7 @@ import {
   type WorldState,
   WATER,
   weatherWords,
+  itemName,
 } from '../engine/index.ts';
 import { tileHouse } from './build.ts';
 import { sunOf } from './lampview.ts';
@@ -78,8 +79,6 @@ function iceOf(w: WorldState, i: number): string {
     ? `frozen over${date ?? ''}`
     : `open water${date ? `, thawed${date}` : ''}`;
 }
-
-const itemName = (id: string): string => content.items.find((item) => item.id === id)?.name ?? id;
 
 /** Tile (x, y) on level `z` for the inspector, its last change shown by `lineOf`; undefined off
  * the map or on an unreached level. */
@@ -148,12 +147,12 @@ export function tileView(
 }
 
 /** A vein's metal: its ore's name without "ore" ("iron"). */
-const metalOf = (f: { yields: string }): string => itemName(f.yields).replace(/ ore$/, '');
+const metalOf = (f: { yields: string }): string => itemName(content, f.yields).replace(/ ore$/, '');
 
 /** What grows or lies on a tile for the page: a vein says how much ore is in this tile. */
 function featureWords(f: (typeof content.features)[number]): string {
-  if (!f.vein) return `${f.name} (${f.amount} ${itemName(f.yields)})`;
-  const item = itemName(f.yields);
+  if (!f.vein) return `${f.name} (${f.amount} ${itemName(content, f.yields)})`;
+  const item = itemName(content, f.yields);
   return `${metalOf(f)}, ${f.amount} ${item.endsWith(' ore') ? 'ore' : item} in this tile`;
 }
 

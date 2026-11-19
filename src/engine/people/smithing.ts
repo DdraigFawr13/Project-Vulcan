@@ -4,15 +4,9 @@
 // stream by the same formula as another skill, in the band's order.
 import type { EngineContent, RngStream } from '../core/index.ts';
 import type { Person } from './band.ts';
+import { clamp, dice } from '../core/index.ts';
 
 export const SMITHING = 'smithing';
-
-const dice = (rng: RngStream, n: number): number => {
-  let sum = 0;
-  for (let k = 0; k < n; k += 1) sum += rng.between(1, 6);
-  return sum - Math.floor((7 * n) / 2);
-};
-const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
 /** Each person's smithing potential and level, in band order. The share of adult life lived is
  * worked back from their age. */

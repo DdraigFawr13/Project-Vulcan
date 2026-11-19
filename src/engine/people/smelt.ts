@@ -23,6 +23,7 @@ import { fetchKind, reachableOf, useHeld } from './fetch.ts';
 import { practise } from './learn.ts';
 import { able, declineIfUnable, outranked, priorityLine } from './priority.ts';
 import { canStandBeside, goBeside, layAll, people, skillOf, spotOf } from './spots.ts';
+import { itemName } from '../core/index.ts';
 
 const stop = (p: EntityRow): false => {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0, make: '' });
@@ -31,9 +32,6 @@ const stop = (p: EntityRow): false => {
 
 const skillName = (ctx: SystemContext): string =>
   ctx.content.jobs.find((j) => j.id === ctx.content.metal.smelter.job)?.skill ?? '';
-
-const nameOf = (ctx: SystemContext, kind: string): string =>
-  ctx.content.items.find((i) => i.id === kind)?.name ?? kind;
 
 /** What `p` would make, and every input a wanted recipe is waiting for: ore or ingots the colony
  * has none of (an ingot a wanted recipe makes is not waited for), and the fuel it has none of. */
@@ -76,7 +74,7 @@ function alert(ctx: SystemContext, smelter: EntityRow, missing: readonly string[
   for (const m of now.filter((k) => !said.includes(k)))
     smelter['alert'] = ctx.emit('metal.waiting', {
       causes: [smelter['line'] as number],
-      data: { where: `at ${smelter['x']}, ${smelter['y']}`, good: nameOf(ctx, m) },
+      data: { where: `at ${smelter['x']}, ${smelter['y']}`, good: itemName(ctx.content, m) },
     });
   smelter['waitFor'] = now.join(',');
   if (!now.length) smelter['alert'] = 0;
@@ -105,7 +103,7 @@ export function takeUpSmelting(ctx: SystemContext, p: EntityRow): boolean {
     actors: [p.id],
     data: {
       name: p['name'] as string,
-      what: `${r.alloy ? 'mixing' : 'smelting'} ${nameOf(ctx, r.makes)}`,
+      what: `${r.alloy ? 'mixing' : 'smelting'} ${itemName(ctx.content, r.makes)}`,
       why: `${by?.name ?? 'ingots'} are wanted`,
     },
   });
@@ -151,7 +149,7 @@ export function smelting(ctx: SystemContext, p: EntityRow): boolean {
     data: {
       name: p['name'] as string,
       count: r.out,
-      what: nameOf(ctx, r.makes),
+      what: itemName(ctx.content, r.makes),
       where: `at ${x}, ${y}`,
     },
   });

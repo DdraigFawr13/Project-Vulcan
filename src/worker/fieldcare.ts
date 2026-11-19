@@ -12,9 +12,9 @@ import {
   type WorldState,
 } from '../engine/index.ts';
 import type { FieldView } from './protocol-build.ts';
+import { plural } from './words.ts';
 
 const def = content.buildings.field;
-const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
 const ints = (f: EntityRow, key: string): number[] => (f[key] as number[] | undefined) ?? [];
 const nameOf = (id: string): string => cropOf(content, id)?.name ?? id;
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);

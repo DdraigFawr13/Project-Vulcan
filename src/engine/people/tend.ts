@@ -31,6 +31,7 @@ import { able, outranked, priorityLine } from './priority.ts';
 import { goBeside, people, same, spotOf } from './spots.ts';
 import { scaled, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
+import { cheb } from '../core/index.ts';
 
 /** What `p` would do: tend a fire (`fire` and the fuel `item` to fetch) or split `logs`. */
 export interface Pick {
@@ -58,9 +59,6 @@ function stop(p: EntityRow): false {
   p['target'] = -1;
   return false;
 }
-
-const cheb = (a: { x: number; y: number }, b: { x: number; y: number }): number =>
-  Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 /** The log stack nearest `p` that they can reach: one in the store first, else one lying outside
  * it (a full store leaves felled logs where they lie, and the fires must still be fed; P4.9). */

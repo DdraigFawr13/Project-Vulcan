@@ -14,11 +14,11 @@ import {
   WATER,
   type EntityRow,
   type WorldState,
+  itemName,
 } from '../engine/index.ts';
 import type { GoodsView, WorksView } from './protocol-goods.ts';
 import { doingOf, linesOf, type LineOf } from './works.ts';
 
-const itemName = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 const at = (r: EntityRow, k: string): number => r[k] as number;
 
 /** The mill's wheel on its water tile: faint while planned, turning (numbered frames) while its
@@ -58,7 +58,7 @@ function millPage(world: WorldState, m: EntityRow, lineOf: LineOf): WorksView {
   const done = parts.filter((p) => p['state'] === 'built').length;
   const mats = [...new Set(plans.map((p) => partOf(content, p['part'] as string)?.material))]
     .filter((k): k is string => !!k)
-    .map(itemName);
+    .map((id) => itemName(content, id));
   const grind = turning(world, m)
     ? `at the mill: ${def.wheel.rate} grain an hour against the quern's ${def.quern.rate}`
     : `at the quern, ${def.quern.rate} grain an hour, at most ${Math.round(def.quern.most / 6) / 10} hours a day`;

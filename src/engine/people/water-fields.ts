@@ -12,11 +12,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { isFrozen } from '../weather/index.ts';
 import { practise } from './learn.ts';
 import { scaled, worked } from './tools.ts';
-import { besideReachable, busy, goBeside, skillOf, spotOf } from './spots.ts';
-
-const near = (p: EntityRow, x: number, y: number): boolean =>
-  (p['z'] as number) === 0 &&
-  Math.abs((p['x'] as number) - x) + Math.abs((p['y'] as number) - y) === 1;
+import { besideReachable, busy, goBeside, skillOf, spotOf, besideOnSurface } from './spots.ts';
 
 /** The places water is drawn from: unfrozen drinkable surface tiles and a standing well. */
 export function isWaterSpot(ctx: SystemContext, tile: number): boolean {
@@ -82,7 +78,7 @@ export function watering(ctx: SystemContext, p: EntityRow, f: EntityRow): boolea
       p['target'] = tile = from;
     }
     const [x, y] = [tile % width, Math.floor(tile / width)];
-    if (!near(p, x, y)) return goBeside(ctx, p, x, y);
+    if (!besideOnSurface(p, x, y)) return goBeside(ctx, p, x, y);
     if (nextThirsty(ctx, p, f) === undefined) return false;
     Object.assign(p, { pail: dry.tiles, target: -1 });
     return true;
@@ -102,7 +98,7 @@ export function watering(ctx: SystemContext, p: EntityRow, f: EntityRow): boolea
     p['work'] = scaled(ctx, p, 'farm', minutes);
   }
   const [x, y] = [tile % width, Math.floor(tile / width)];
-  if (!near(p, x, y)) return goBeside(ctx, p, x, y);
+  if (!besideOnSurface(p, x, y)) return goBeside(ctx, p, x, y);
   p['work'] = (p['work'] as number) - 1;
   worked(ctx, p, 'farm');
   practise(

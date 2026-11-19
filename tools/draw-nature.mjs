@@ -4,19 +4,12 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { isMain, root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
-import { readPalette } from './draw-tiles-base.mjs';
+import { readPalette, noise } from './draw-tiles-base.mjs';
+export { noise };
 import { undergroundTiles, undergroundVeins } from './draw-underground.mjs';
 import { slate, limestone, sandstone, snowcap, log } from './draw-nature-rock.mjs';
 
 export const S = 32;
-
-export function noise(seed, x, y) {
-  let h =
-    Math.imul(seed ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(x, 0x27d4eb2f) ^ Math.imul(y, 0x165667b1);
-  h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
-  h = Math.imul(h ^ (h >>> 12), 0x297a2d39);
-  return ((h ^ (h >>> 15)) >>> 0) / 4294967296;
-}
 
 // Smooth value noise that wraps at the tile edge, so tiles repeat seamlessly.
 export function blobs(seed, x, y, cell) {

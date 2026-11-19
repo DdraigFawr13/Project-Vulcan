@@ -30,6 +30,7 @@ import {
   type SimEvent,
   type Stub,
   type WorldState,
+  itemName,
 } from '../engine/index.ts';
 import { buildFields } from './fields.ts';
 import { burialRow, sickBeds, word } from './places.ts';
@@ -40,8 +41,6 @@ import { homeRows, homesRow } from './strangers.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { BuildRow, BuildView, SmithyRow } from './protocol-build.ts';
 import { roadsRow } from './roads.ts';
-
-const itemName = (kind: string): string => content.items.find((i) => i.id === kind)?.name ?? kind;
 
 /** "cottage", "Gwallog's home" or "hall" (P5.14), or "cottage's second room" for a room added. */
 function nameOf(world: WorldState, h: EntityRow): string {
@@ -77,7 +76,7 @@ function matsOf(world: WorldState, h: EntityRow): BuildRow['mats'] {
       mats.set(part.also.material, a);
     }
   }
-  return [...mats].map(([good, m]) => ({ good: itemName(good), ...m }));
+  return [...mats].map(([good, m]) => ({ good: itemName(content, good), ...m }));
 }
 
 /** "5 people sleep under the open sky" (the event's words), or "none now". */

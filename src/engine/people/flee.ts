@@ -6,7 +6,7 @@
 // decisions of everyone who sees it in one go are one line, `wild.sighted`, naming each, at most
 // an hour (the later come to their own, silently). Stance is `doing`: `stand` or `flee`, which
 // holds while a predator stays in sight. Nobody is ordered (V-041); it is their own nerve.
-import { clockAt, type EntityRow } from '../core/index.ts';
+import { clockAt, type EntityRow, list, cheb } from '../core/index.ts';
 import { dirFrom, greenOf, housesOf, houseName, rectOf, roomAt } from '../build/index.ts';
 import { heldBy, toolOf } from '../goods/index.ts';
 import { isDown, stopFor } from '../health/index.ts';
@@ -18,8 +18,6 @@ import { animalsOf, packOf, whenWord } from '../wild/index.ts';
 import { lineOf } from './lines.ts';
 import { people, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
-
-const reach = (a: Spot, b: Spot): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 /** Whether `p` is awake on the surface and on their feet: someone a predator can be seen by. */
 export const upAndAbout = (ctx: SystemContext, p: EntityRow): boolean =>
@@ -71,7 +69,7 @@ export function predatorsOf(ctx: SystemContext): EntityRow[] {
   const den = pack ? { x: pack['denX'] as number, y: pack['denY'] as number, z: 0 } : undefined;
   const far = ctx.content.wild.folk.den;
   const list = animalsOf(ctx.world).filter(
-    (a) => a['pack'] !== 0 && (!den || reach(spotOf(a), den) > far),
+    (a) => a['pack'] !== 0 && (!den || cheb(spotOf(a), den) > far),
   );
   PREDATORS.set(ctx.world, { tick: ctx.world.tick, list });
   return list;
@@ -81,7 +79,7 @@ export function predatorsOf(ctx: SystemContext): EntityRow[] {
 function seenBy(ctx: SystemContext, p: EntityRow): EntityRow[] {
   const folk = ctx.content.wild.folk;
   const sight = isNight(ctx) ? folk.sight.night : folk.sight.day;
-  return predatorsOf(ctx).filter((a) => reach(spotOf(a), spotOf(p)) <= sight);
+  return predatorsOf(ctx).filter((a) => cheb(spotOf(a), spotOf(p)) <= sight);
 }
 
 /** The nearest house with a shut room that `p` can reach: where to run, and its name. */
@@ -101,7 +99,7 @@ export function shelterFor(
       },
     }))
     .filter((r) => !!roomAt(world, content, r.spot.x, r.spot.y))
-    .sort((a, b) => reach(a.spot, here) - reach(b.spot, here) || a.h.id - b.h.id);
+    .sort((a, b) => cheb(a.spot, here) - cheb(b.spot, here) || a.h.id - b.h.id);
   for (const { h, spot } of rooms)
     if (canReach(content, world.map, here, spot))
       return { spot, house: houseName(world, content, (h['of'] as number) || h.id) };
@@ -141,9 +139,6 @@ function houseNear(ctx: SystemContext, p: EntityRow): string | undefined {
   return h ? houseName(world, content, (h['of'] as number) || h.id) : undefined;
 }
 
-const listOf = (items: readonly string[]): string =>
-  items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
-
 /** The decisions of everyone newly in sight of a predator, as one group: sets their stance and
  * writes the `wild.sighted` line (when none was written in the hour), naming each. */
 function decide(ctx: SystemContext, group: readonly EntityRow[], seen: EntityRow): void {
@@ -155,7 +150,7 @@ function decide(ctx: SystemContext, group: readonly EntityRow[], seen: EntityRow
   const stands = group.filter(
     (q) =>
       readyToStand(ctx, q) &&
-      awake.some((o) => o.id !== q.id && reach(spotOf(o), spotOf(q)) <= folk.together && allies(o)),
+      awake.some((o) => o.id !== q.id && cheb(spotOf(o), spotOf(q)) <= folk.together && allies(o)),
   );
   const ran: { p: EntityRow; house?: string }[] = [];
   for (const q of group) {
@@ -185,15 +180,15 @@ function decide(ctx: SystemContext, group: readonly EntityRow[], seen: EntityRow
   const traits = folk.bold.filter((t) => stands.some((q) => hasTrait(ctx, q, [t]).length));
   const stood = stands.length
     ? folk.words.stood
-        .replace('{names}', listOf(stands.map((q) => q['name'] as string)))
-        .replace('{weapons}', weapons.length === 1 ? `${weapons[0]}s` : listOf(weapons))
+        .replace('{names}', list(stands.map((q) => q['name'] as string)))
+        .replace('{weapons}', weapons.length === 1 ? `${weapons[0]}s` : list(weapons))
         .replace('{traits}', traits.join(', ')) + ' '
     : '';
   const house = ran.find((r) => r.house)?.house;
   const ranText = ran.length
     ? (house ? folk.words.ran.replace('{house}', house) : folk.words.ranAway).replace(
         '{names}',
-        listOf(ran.map((r) => r.p['name'] as string)),
+        list(ran.map((r) => r.p['name'] as string)),
       )
     : '';
   const line = ctx.emit('wild.sighted', {
@@ -247,7 +242,7 @@ export function predatorRung(ctx: SystemContext, p: EntityRow): boolean {
     return false;
   }
   const near = [...seen].sort(
-    (a, b) => reach(spotOf(a), spotOf(p)) - reach(spotOf(b), spotOf(p)) || a.id - b.id,
+    (a, b) => cheb(spotOf(a), spotOf(p)) - cheb(spotOf(b), spotOf(p)) || a.id - b.id,
   )[0]!;
   if (stance === 'stand') {
     p['path'] = [];

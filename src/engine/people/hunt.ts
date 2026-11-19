@@ -7,7 +7,7 @@
 // the pack has attacked within `tracks.packDays`, two who put Hunt higher go after it
 // (`work.trackingPack`; fight or flee, flee.ts, does the rest when they come in sight).
 // Taking up, tracks and each kill are ledger lines (the kill is wild's `wild.killed`).
-import { streamFor, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
+import { streamFor, TICKS_PER_DAY, type EntityRow, cheb } from '../core/index.ts';
 import { greenOf, ringOf } from '../build/index.ts';
 import { haveOf, stockOf, wantOf } from '../goods/index.ts';
 import { addMemory } from '../needs/index.ts';
@@ -30,7 +30,6 @@ import { people, skillOf, spotOf } from './spots.ts';
 import { scaled, toolPercent, worked } from './tools.ts';
 import { walkTo } from './walk.ts';
 
-const reach = (a: Spot, b: Spot): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 const DIRS = [
   [0, -1],
   [1, -1],
@@ -49,7 +48,7 @@ export function endHunt(p: EntityRow): false {
 }
 
 const nearestOf = (animals: readonly EntityRow[], from: Spot): EntityRow | undefined =>
-  [...animals].sort((a, b) => reach(spotOf(a), from) - reach(spotOf(b), from) || a.id - b.id)[0];
+  [...animals].sort((a, b) => cheb(spotOf(a), from) - cheb(spotOf(b), from) || a.id - b.id)[0];
 
 /** Hunting is wanted when food, with the meat others are walking to, is under its Food plate. */
 function foodShort(
@@ -82,7 +81,7 @@ function chooseHerd(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
     if (a['herd']) size.set(a['herd'] as number, (size.get(a['herd'] as number) ?? 0) + 1);
   const green = greenOf(world);
   const apart = (h: EntityRow): number =>
-    reach({ x: h['x'] as number, y: h['y'] as number, z: 0 }, green);
+    cheb({ x: h['x'] as number, y: h['y'] as number, z: 0 }, green);
   const all = huntable(world, content);
   const stalked = all.filter((h) => !snared.includes(h['species'] as string));
   const list = (stalked.length ? stalked : all).sort(
@@ -223,11 +222,11 @@ export function hunting(ctx: SystemContext, p: EntityRow): boolean {
   if (!herd || !prey || animals.length <= content.wild.spare) return endHunt(p);
   const snare = def.snare.species.includes(herd['species'] as string);
   const running = !snare && animals.some((a) => a['state'] === 'flee');
-  if (reach(spotOf(prey), spotOf(p)) > def.near || running) {
+  if (cheb(spotOf(prey), spotOf(p)) > def.near || running) {
     // Out of range, or the herd running: after it, and waiting where they stand once beside it.
     p['task'] = 'walk';
     p['work'] = 0;
-    if (running && reach(spotOf(prey), spotOf(p)) <= 1) {
+    if (running && cheb(spotOf(prey), spotOf(p)) <= 1) {
       p['path'] = [];
       return true;
     }
@@ -263,7 +262,7 @@ function trackPack(ctx: SystemContext, p: EntityRow): boolean {
     spotOf(p),
   );
   if (!prey) return endHunt(p);
-  if (reach(spotOf(prey), spotOf(p)) <= content.wild.folk.sight.day) {
+  if (cheb(spotOf(prey), spotOf(p)) <= content.wild.folk.sight.day) {
     p['path'] = [];
     return true;
   }
@@ -287,7 +286,7 @@ export function tracksMinute(ctx: SystemContext, p: EntityRow): void {
     const herd = herdOf(world, p['target'] as number);
     const prey = herd && nearestOf(membersOf(world, herd.id), spotOf(p));
     // Within range of a calm herd they stop to stalk; one that is running is still followed.
-    if (prey && reach(spotOf(prey), spotOf(p)) <= def.near && prey['state'] !== 'flee')
+    if (prey && cheb(spotOf(prey), spotOf(p)) <= def.near && prey['state'] !== 'flee')
       p['path'] = [];
   }
   const i = (p['y'] as number) * map.width + (p['x'] as number);
@@ -316,8 +315,8 @@ function followTracks(
     })
     .sort(
       (a, b) =>
-        reach({ x: a['x'] as number, y: a['y'] as number, z: 0 }, to) -
-          reach({ x: b['x'] as number, y: b['y'] as number, z: 0 }, to) || a.id - b.id,
+        cheb({ x: a['x'] as number, y: a['y'] as number, z: 0 }, to) -
+          cheb({ x: b['x'] as number, y: b['y'] as number, z: 0 }, to) || a.id - b.id,
     )[0];
   const prey = herd && nearestOf(membersOf(world, herd.id), spotOf(p));
   if (!herd || !prey) return;
@@ -340,7 +339,7 @@ function pawsFound(ctx: SystemContext, p: EntityRow): void {
   const { world, content, state } = ctx;
   const green = greenOf(world);
   const r = ringOf(world, content) + content.wild.folk.tracks.ring;
-  if (p['doing'] === 'sleep' || reach(spotOf(p), green) > r) return;
+  if (p['doing'] === 'sleep' || cheb(spotOf(p), green) > r) return;
   const day = Math.floor(world.tick / TICKS_PER_DAY) + 1;
   const pack = packOf(world);
   if (state['tracksDay'] !== day && pack) {

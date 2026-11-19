@@ -10,12 +10,12 @@ import {
   type SimEvent,
   type Stub,
   type WorldState,
+  itemName,
 } from '../engine/index.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { GoodsView } from './protocol-goods.ts';
 
 const mine = content.work.mine;
-const itemName = (id: string): string => content.items.find((i) => i.id === id)?.name ?? id;
 
 /** Shafts planned or being sunk, for the map's faint plan layer. */
 export const shaftPlans = (world: WorldState): GoodsView['shafts'] =>
@@ -48,7 +48,7 @@ export function tileShaft(
   if (!s) return {};
   const to = s['to'] as number;
   const ladder = Object.entries(mine.ladder)
-    .map(([kind, n]) => `${n} ${itemName(kind)}`)
+    .map(([kind, n]) => `${n} ${itemName(content, kind)}`)
     .join(' and ');
   const who = (world.entities['person'] ?? []).find(
     (p) => p['job'] === mine.job && p['task'] === 'sink' && p['plan'] === s.id,

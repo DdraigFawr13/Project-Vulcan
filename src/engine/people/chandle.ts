@@ -26,6 +26,7 @@ import {
   spotOf,
 } from './spots.ts';
 import { walkTo } from './walk.ts';
+import { itemName } from '../core/index.ts';
 
 const JOB = 'chandle';
 type Recipe = EngineContent['lamp']['chandler']['recipes'][number];
@@ -40,9 +41,6 @@ interface Pick {
 
 const skillName = (content: EngineContent): string =>
   content.jobs.find((j) => j.id === content.lamp.chandler.job)?.skill ?? '';
-
-const nameOf = (content: EngineContent, id: string): string =>
-  content.items.find((i) => i.id === id)?.name ?? id;
 
 function stop(p: EntityRow): false {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0, make: '' });
@@ -238,8 +236,8 @@ export function chandling(ctx: SystemContext, p: EntityRow): boolean {
     data: {
       name: p['name'] as string,
       count,
-      what: nameOf(content, made),
-      from: entries.map(([k, n]) => `${n} ${nameOf(content, k)}`).join(' and '),
+      what: itemName(content, made),
+      from: entries.map(([k, n]) => `${n} ${itemName(content, k)}`).join(' and '),
       where: placeOf(world, content, piece).where,
     },
   });

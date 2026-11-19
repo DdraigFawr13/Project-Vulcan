@@ -6,6 +6,7 @@
 import Phaser from 'phaser';
 import { TICKS_PER_SECOND, type GoodsView, type Speed } from '../worker/index.ts';
 import { advance, reconcile, type Bar } from './progress-math.ts';
+import { tokenColour } from './tokens.ts';
 
 const TILE = 32;
 /** The bar's size in art pixels: a track 24 wide and 4 tall inside a 1 px edge. */
@@ -13,12 +14,6 @@ const WIDTH = 24;
 const HEIGHT = 4;
 // Over the people (8) and the night (8.5, 8.6); under the selection marks (10).
 const DEPTH = 9.5;
-
-/** A colour the page's tokens define, as a number Phaser takes. */
-const token = (name: string, fallback: string): number =>
-  Phaser.Display.Color.HexStringToColor(
-    getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback,
-  ).color;
 
 export class WorkBars {
   private bars = new Map<string, Bar>();
@@ -32,10 +27,11 @@ export class WorkBars {
     game.events.once(Phaser.Core.Events.READY, () =>
       scene.events.once(Phaser.Scenes.Events.CREATE, () => {
         this.live = true;
-        const ember = Phaser.Display.Color.ValueToColor(token('--ember', '#c8743a'));
+        const ember = Phaser.Display.Color.ValueToColor(tokenColour('--ember', '#c8743a'));
         this.colours = {
-          edge: token('--oak', '#4a3322'),
-          track: Phaser.Display.Color.ValueToColor(token('--iron', '#5c5e5e')).darken(40).color,
+          edge: tokenColour('--oak', '#4a3322'),
+          track: Phaser.Display.Color.ValueToColor(tokenColour('--iron', '#5c5e5e')).darken(40)
+            .color,
           fill: ember.color,
           tip: ember.clone().lighten(25).color,
         };

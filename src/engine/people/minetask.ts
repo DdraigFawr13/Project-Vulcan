@@ -1,5 +1,5 @@
 // What a miner is doing (P4.1): the task, who else is on which tile, starting and stopping it.
-import type { EngineContent, EntityRow } from '../core/index.ts';
+import type { EntityRow } from '../core/index.ts';
 import { loadOf } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { practise } from './learn.ts';
@@ -31,9 +31,6 @@ export const takenBy = (ctx: SystemContext, p: EntityRow): Set<number> =>
       .filter((q) => q.id !== p.id && q['job'] === 'mine' && q['task'] !== 'sink')
       .map((q) => q['target'] as number),
   );
-
-export const nameOf = (content: EngineContent, id: string): string =>
-  content.items.find((i) => i.id === id)?.name ?? id;
 
 /** Sets them on the task (they are not yet on their way): minutes scaled by the mining skill. */
 export function start(ctx: SystemContext, p: EntityRow, t: Task): void {

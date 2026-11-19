@@ -49,8 +49,7 @@ export const harvestNow = (world: WorldState, content: EngineContent): boolean =
   monthName(world, content) === content.lamp.bees.harvest.month;
 
 /** The colony's year and the day number now. */
-export const yearNow = (world: WorldState, content: EngineContent): number =>
-  clockAt(world.tick, content.calendar).year;
+export { yearNow } from '../core/index.ts';
 export const dayNow = (world: WorldState): number => Math.floor(world.tick / 1440);
 
 /** Whether a swarm is caught on this visit: `swarm.chance` per cent, from the `bees` stream. */
