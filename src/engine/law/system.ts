@@ -2,18 +2,16 @@
 // is the player's only say; everyone weighs it themselves. Each hour it sees whether a held memory
 // changes an answer, and at the hour a refuser's day differs from the law's, it writes that they
 // kept the customary hours and who saw it, who then remember it (and may lean the same way).
-import { clockAt, type EntityRow, type LawSettingDef } from '../core/index.ts';
-import { houseAt } from '../build/index.ts';
+import { clockAt, type LawSettingDef } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
-import { answerAll, answersOf, LAW_TABLES, reweigh } from './answer.ts';
+import { answerAll, answered, answersOf, LAW_TABLES, reweigh } from './answer.ts';
+import { flout } from './flout.ts';
+import { rationsHour } from './rations.ts';
 import { customaryHours, hoursFor, lawDef, lawRow, settingOf } from './hours.ts';
 
 const hh = (h: number): string => `${String(h % 24).padStart(2, '0')}:00`;
-
-const list = (names: string[]): string =>
-  names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)!}`;
 
 /** The `setLaw` lever: `{ law, setting }`. */
 function setLaw(ctx: SystemContext, data: Readonly<Record<string, unknown>>, cause: number): void {
@@ -36,17 +34,6 @@ function setLaw(ctx: SystemContext, data: Readonly<Record<string, unknown>>, cau
   answerAll(ctx, def.id, s, line);
 }
 
-/** Whether `q` can see `p` keep the customary hours: the same level within sight, or the same house. */
-function sees(ctx: SystemContext, p: EntityRow, q: EntityRow): boolean {
-  const at = (r: EntityRow, k: string) => r[k] as number;
-  if (at(p, 'z') !== at(q, 'z')) return false;
-  const far = Math.max(Math.abs(at(p, 'x') - at(q, 'x')), Math.abs(at(p, 'y') - at(q, 'y')));
-  if (far <= ctx.content.laws.answer.sight) return true;
-  if (at(p, 'z') !== 0) return false;
-  const house = houseAt(ctx.world, at(p, 'x'), at(p, 'y'));
-  return !!house && house === houseAt(ctx.world, at(q, 'x'), at(q, 'y'));
-}
-
 /** At the hour a refuser's day and the law's part, they keep the customary hours with a line;
  * whoever sees it remembers it. A grumbler's day ends with the memory of it refreshed. */
 function partings(ctx: SystemContext, law: string, s: LawSettingDef, hour: number): void {
@@ -66,25 +53,7 @@ function partings(ctx: SystemContext, law: string, s: LawSettingDef, hour: numbe
       mine.workTo > custom.workTo
         ? `downed tools at ${hh(custom.workTo)} and went home`
         : `worked on past ${hh(mine.workTo)}`;
-    const kept = ctx.emit('law.keptCustom', {
-      causes: [a['line'] as number],
-      actors: [p.id],
-      data: { name: p['name'] as string, did, days: s.days },
-    });
-    const saw = people.filter(
-      (q) => q.id !== p.id && q['status'] === 'alive' && q['doing'] !== 'sleep' && sees(ctx, p, q),
-    );
-    if (!saw.length || !s.saw) continue;
-    const line = ctx.emit('law.saw', {
-      causes: [kept],
-      actors: saw.map((q) => q.id),
-      data: {
-        names: list(saw.map((q) => q['name'] as string)),
-        name: p['name'] as string,
-        days: s.days,
-      },
-    });
-    for (const q of saw) addMemory(ctx, q.id, s.saw, line, p.id);
+    flout(ctx, s, a, p, did);
   }
 }
 
@@ -98,8 +67,9 @@ export const lawSystem: System = {
     const hour = clockAt(ctx.world.tick, ctx.content.calendar).hour;
     for (const def of ctx.content.laws.laws) {
       const s = settingOf(ctx.world, ctx.content, def.id);
-      if (!s.hours) continue;
-      partings(ctx, def.id, s, hour);
+      if (!answered(ctx, def.id, s)) continue;
+      if (s.hours) partings(ctx, def.id, s, hour);
+      if (s.share) rationsHour(ctx, def.id, s);
       reweigh(ctx, def.id, s);
     }
   },

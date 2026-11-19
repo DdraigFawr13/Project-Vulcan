@@ -22,6 +22,7 @@ import {
   type WorldState,
 } from '../engine/index.ts';
 import { answerView, lawView } from './law.ts';
+import { RULED, ruledView } from './lawsheet.ts';
 import type { HouseView } from './protocol-build.ts';
 import type { AnswerView, LawView, StrangersLawView } from './protocol-law.ts';
 import type { LedgerLine } from './protocol.ts';
@@ -375,8 +376,9 @@ export function homeRows(
   };
 }
 
-/** The Laws page: the work-hours law, then the Strangers law. */
+/** The Laws page: the work-hours law, the Strangers law, then the 6A laws (P6.5). */
 export const lawsOf = (world: WorldState): LawView => ({
   ...lawView(world),
   strangers: strangersLawView(world),
+  ruled: RULED.map((id) => ruledView(world, id)),
 });

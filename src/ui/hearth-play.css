@@ -626,3 +626,13 @@ table.grid th small {
   border-bottom-color: var(--oak-dark);
   border-top: 0;
 }
+/* P6.5: every law folds to one line, its setting and how the band answers; an opened law comes
+   to the top, below the sheet's pinned title. */
+.lawfold {
+  border-top: 1px solid var(--rule);
+  padding-top: 2px;
+  scroll-margin-top: 64px;
+}
+.lawfold small {
+  font-size: 14px;
+}

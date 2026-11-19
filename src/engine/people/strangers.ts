@@ -8,7 +8,7 @@ import { expose, illDef } from '../health/index.ts';
 import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { bedSpot, houseAt, mainOf, piecesOf } from '../build/index.ts';
 import { isWinter } from '../law/index.ts';
-import { putOn } from '../goods/index.ts';
+import { foodDays, putOn } from '../goods/index.ts';
 import { neighboursOf, type Neighbour } from '../region/index.ts';
 import type { RngStream } from '../core/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
@@ -16,7 +16,6 @@ import { bringKnown, drawStranger, knownOf } from './band.ts';
 import { addPerson } from './row.ts';
 import { drawSmithing } from './smithing.ts';
 import { stepAlong } from './walk.ts';
-import { foodDays } from './welcome.ts';
 import { decide, list, namesOf } from './verdict.ts';
 import { edgeSpot, toGreen } from './edge.ts';
 

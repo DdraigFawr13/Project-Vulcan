@@ -1,7 +1,7 @@
 // Shape of Vulcan's laws file (src/content/data/laws.json, P4.8, V-091): each law's settings and
 // what weighs on a person's answer to each. One setting is the custom (no `hours`): the colony's
 // own day, short in winter.
-import { list, map, num, obj, opt, ref, str } from './schema';
+import { bool, list, map, num, obj, opt, ref, str } from './schema';
 import { count, id, text } from './schema-fields';
 
 const hours = obj({ from: num({ min: 1, max: 23 }), to: num({ min: 2, max: 24 }) });
@@ -20,9 +20,13 @@ export const LAWS_SCHEMAS = {
       low: num(),
       needs: list(ref('needs')),
       sight: count,
+      // P6.5: once someone changes their answer, they hold the new one at least `settle` days.
+      settle: count,
+      // P6.5: a refuser openly flouting Rations is a line at most once in `every` days.
+      every: count,
     }),
     // The verb each answer takes in its ledger line ("refuses the long days").
-    words: obj({ obeys: text, grumbles: text, refuses: text }),
+    words: obj({ obeys: text, grumbles: text, refuses: text, store: text }),
     laws: list(
       obj({
         id,
@@ -30,15 +34,31 @@ export const LAWS_SCHEMAS = {
         /** The law named in a line: "the work-hours law". */
         law: text,
         start: id,
+        // Answered only when a case splits the band (the Strangers law), not when set.
+        split: opt(bool()),
+        // P6.5: each answer as the Laws sheet words it ("{name} keeps {days}.").
+        say: opt(obj({ obeys: text, grumbles: text, refuses: text })),
+        // P6.5: a line the Laws sheet adds after what the setting does.
+        note: opt(text),
         settings: list(
           obj({
             id,
             name: text,
             days: text,
+            // P6.5: what the setting does, in words for the Laws sheet.
+            about: opt(text),
             ask: num(),
             hours: opt(hours),
             winter: opt(hours),
             winterLean: opt(num()),
+            // P6.5 Rations: a keeper eats at most `share` per cent of a full day's food a day and
+            // holds `kept` each day it bites; `store` leans when the store lasts to the harvest
+            // or falls short of it.
+            share: opt(num({ min: 1, max: 99 })),
+            kept: opt(ref('memories')),
+            // Needs the setting is known to leave low (hunger under rations): not held against it.
+            expects: opt(list(ref('needs'))),
+            store: opt(obj({ lasts: num(), short: num() })),
             // The Strangers law (P5.9): the reason kinds (strangers.json) a split band lets in.
             lets: opt(list(str())),
             saw: opt(ref('memories')),
