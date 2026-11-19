@@ -12,7 +12,7 @@ Phase 6 (People) in two halves (V-153): 6A "Word and law" (P6.2 to P6.7) here; 6
 - [x] Bundle 4, new laws and the Laws sheet: P6.5 (V-171, V-172). Mock-up https://claude.ai/artifact/MFdwxPXir9LMmj4rWUZRiR. Part 1 (the laws, Rations, the sheet, #113) done-when in `src/engine/law/laws6.test.ts`; part 2 (the Sickness settings at work) in `src/engine/people/apart.test.ts`.
 - [x] Bundle 5, standing, the elder, factions, petitions, the mood word: P6.6
 - [x] Bundle 6, defiance: P6.7
-- [x] 6A balance and review, 2026-11-19: thefts a winter 13-20 to 4-13 (take every 21 days, a sentence steps the offender down), the unfair-sentence memory only for those who saw, a first answer settles 14 days, the midden search waits a day after a miss (a year on anvil 57 s to 46 s, check:full 123.7 s). Review page https://claude.ai/artifact/E6fqG3wgjraSnqDVQWx7FE
+- [x] 6A balance and review
 
 ## Design (VR-62)
 
