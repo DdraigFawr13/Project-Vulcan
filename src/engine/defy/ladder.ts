@@ -86,8 +86,8 @@ function climb(
   else if (step.id === 'leave') row['line'] = leave(ctx, p, g, why);
 }
 
-/** Down one step; leaving an act step is a line. */
-function cool(ctx: SystemContext, p: EntityRow, row: EntityRow): void {
+/** Down one step; leaving an act step is a line. A sentence served does it too (punish.ts). */
+export function stepDown(ctx: SystemContext, p: EntityRow, row: EntityRow): void {
   const k = row['step'] as number;
   const step = ctx.content.defy.steps[k - 1]!;
   Object.assign(row, { step: k - 1, since: ctx.world.tick, under: 0 });
@@ -119,7 +119,7 @@ function settle(
       row['under'] = (row['under'] as number) + 1;
       if ((row['under'] as number) < content.defy.cool) return false;
     }
-    cool(ctx, p, row);
+    stepDown(ctx, p, row);
   }
   return true;
 }

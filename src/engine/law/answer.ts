@@ -77,7 +77,8 @@ function record(
       person: p.id,
       law,
       ...fields,
-      at: 0,
+      // A first answer settles too, so one sighting the same day can't turn it (6A review).
+      at: ctx.world.tick,
       left: shareOf(ctx, s),
       flouted: -1,
     });

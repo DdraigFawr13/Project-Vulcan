@@ -3,7 +3,7 @@
 // water, as it does the burial ground. Haulers carry offal, and nothing else, there, where it is
 // used up with no line (people/haul.ts). The pack's hungry nights bring it to the midden first
 // (wild `setLures`, called by the people system from `middensOf`). Sited once; never sent back.
-import type { EntityRow, WorldState } from '../core/index.ts';
+import { TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { dryAt, freeTile, itemsOf } from '../goods/index.ts';
 import { reachFrom, walkAt, type Spot } from '../paths/index.ts';
@@ -84,15 +84,23 @@ function siteMidden(ctx: SystemContext, green: Spot): Spot | undefined {
   return undefined;
 }
 
-/** Each hour: the first offal lies about and there is no midden yet: site one. */
+/** Each hour: the first offal lies about and there is no midden yet: site one. A search that
+ * finds no tile waits a day before the next (it was a fifth of a valley's year, 6A review). */
 export function planMidden(ctx: SystemContext, green: Spot): void {
   const { world, content } = ctx;
-  if (rowsOf(world).length) return;
+  if (
+    rowsOf(world).length ||
+    (ctx.state['middenTried'] && world.tick < ctx.state['middenTried'] + TICKS_PER_DAY)
+  )
+    return;
   const waste = content.work.haul.midden;
   const first = itemsOf(world).find((i) => waste.includes(i['kind'] as string));
   if (!first) return;
   const at = siteMidden(ctx, green);
-  if (!at) return;
+  if (!at) {
+    ctx.state['middenTried'] = world.tick;
+    return;
+  }
   const line = ctx.emit('build.middenSited', {
     causes: [first['made'] as number].filter((c) => c > 0),
     data: {

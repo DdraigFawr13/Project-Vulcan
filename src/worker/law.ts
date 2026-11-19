@@ -32,7 +32,8 @@ const words = (s: unknown): string[] => (typeof s === 'string' && s ? s.split('|
 /** One person's answer in words: "Hrakmar refuses the long days and keeps the customary hours." */
 export function answerView(world: WorldState, a: EntityRow): AnswerView | undefined {
   const p = (world.entities['person'] ?? []).find((q) => q.id === a['person']);
-  if (!p) return undefined;
+  // The dead and those gone from the valley answer no more (6A review).
+  if (!p || p['status'] === 'dead' || p['status'] === 'gone') return undefined;
   const s = settingOf(world, content, a['law'] as string);
   const name = p['name'] as string;
   const answer = a['answer'] as AnswerView['answer'];

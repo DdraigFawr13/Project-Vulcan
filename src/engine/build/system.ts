@@ -196,6 +196,8 @@ export const buildSystem: System = {
     homeTried: 0,
     // P5.10: the tick the colony last looked for a stretch of road to lay.
     roadTried: 0,
+    // 6A review: the tick a midden last found no tile, to look again a day later.
+    middenTried: 0,
     // Phase 5B Bundle 2: the game day (1 + its index) the soil was last worked, and the loads of muck left.
     ...{ soilDay: 0, muck: 0 },
     // Blight: the game day it was last worked, the wet days of the last window as bits, and 1 if yesterday was dry.

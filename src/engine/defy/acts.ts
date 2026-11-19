@@ -44,7 +44,7 @@ function caught(ctx: SystemContext, p: EntityRow, act: string, saw: EntityRow[],
   });
   const memory = act === 'took' ? d.memories['sawTheft']! : d.memories['sawBrawl']!;
   for (const q of saw) addMemory(ctx, q.id, memory, at, p.id);
-  punish(ctx, p, at);
+  punish(ctx, p, at, saw);
 }
 
 const due = (ctx: SystemContext, last: number, days: number): boolean =>
