@@ -1,10 +1,10 @@
 // The catching-sick kept apart (P6.5, V-144). While the Sickness law in force has `sick`, each
 // hour someone newly sick with a catching illness is weighed once: if they or anyone who shares
 // their house refuses the law, they stay at home with a line naming who kept them. Otherwise,
-// under `house`, the bout is marked `sent` (the law's line) and care.ts lays them in the
-// sick-house once one stands (a bed elsewhere is left for it); under `away` they leave the valley
-// by their home's road with a line and nobody nurses them. Someone away comes back once it has
-// passed; who dies out there is not brought home (health/death.ts, body `away`).
+// under `house`, a line marks the bout `sent` and care.ts lays them in the sick-house once one
+// stands (a bed elsewhere is left once one there is free and reachable); under `away` they leave
+// the valley by their home's road with a line and nobody nurses them. Someone away comes back
+// once it has passed; who dies out there is not brought home (health/death.ts, body `away`).
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { greenOf, houseAt, piecesOf } from '../build/index.ts';
 import {
@@ -19,9 +19,10 @@ import {
   stopFor,
 } from '../health/index.ts';
 import { answerTo, sickRule } from '../law/index.ts';
-import type { Spot } from '../paths/index.ts';
+import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { edgeSpot } from './edge.ts';
+import { spotOf } from './spots.ts';
 import { list } from './verdict.ts';
 
 const people = (world: WorldState): EntityRow[] => world.entities['person'] ?? [];
@@ -105,7 +106,11 @@ function weigh(
     return;
   }
   if (rule.s.sick === 'house') {
-    bout['sent'] = rule.line;
+    bout['sent'] = ctx.emit('people.sentToHouse', {
+      causes: [bout['line'] as number, rule.line].filter((l) => l > 0),
+      actors: [p.id],
+      data: { name: p['name'] as string, ill },
+    });
     return;
   }
   bout['sent'] = ctx.emit('people.sentAway', {
@@ -129,7 +134,12 @@ function moveOver(ctx: SystemContext, p: EntityRow): void {
   const at = piecesOf(world, 'bed').find((b) => b.id === body['bed']);
   if (body['roll'] === 0 && at && inSickHouse(world, at)) return;
   const taken = new Set(bodiesOf(world).map((b) => b['bed']));
-  const free = piecesOf(world, 'bed').some((b) => inSickHouse(world, b) && !taken.has(b.id));
+  const free = piecesOf(world, 'bed').some(
+    (b) =>
+      inSickHouse(world, b) &&
+      !taken.has(b.id) &&
+      canReach(ctx.content, world.map, spotOf(p), spotOf(b)),
+  );
   if (free) Object.assign(body, { bed: 0, roll: 0 });
 }
 

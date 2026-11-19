@@ -183,7 +183,7 @@ export const peopleSystem: System = {
     'craft.firstFine',
     ...['work.tookUpTanning', 'pits.built', 'tan.laidIn', 'tan.tanned', 'tan.cured'],
     ...['mine.sank', 'mine.dug', 'mine.veinMined', 'mine.clayDug', 'mine.noLadder'],
-    ...['people.keptHome', 'people.sentAway', 'people.cameBack'],
+    ...['people.keptHome', 'people.sentToHouse', 'people.sentAway', 'people.cameBack'],
     ...['health.hurt', 'health.found', 'health.missed', 'health.carried', 'health.bound'],
     'work.tookUpBurial',
     'keep.cellarDug',

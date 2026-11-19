@@ -95,7 +95,9 @@ describe('the Sickness law', () => {
     step(w, sim, 3 * 60);
     const sited = lines(w, 'build.sickHouse')[0]!;
     expect(sited.actors).toEqual([p.id]);
-    expect(sited.causes).toContain(lines(w, 'law.set').at(-1)!.id);
+    const sent = lines(w, 'people.sentToHouse').find((e) => e.actors[0] === p.id)!;
+    expect(sent.causes).toContain(lines(w, 'law.set').at(-1)!.id);
+    expect(sited.causes).toContain(sent.id);
     const houses = w.entities['house'] ?? [];
     const sh = houses.find((h) => h['sick'] === 2)!;
     expect(sh['line']).toBe(sited.id);

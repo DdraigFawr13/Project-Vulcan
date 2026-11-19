@@ -65,7 +65,7 @@ const unbound = (ctx: SystemContext, person: number): EntityRow[] =>
 
 /** Where a hurt person is laid: a free sickroom bed, else their own bed, else their bedroll; one
  * someone carrying them can reach. Someone sent to the sick-house (P6.5, apart.ts) is laid there
- * first, and nobody else is. */
+ * first, and nobody else is; until one stands or has a bed free, they lie at home. */
 function bedFor(
   ctx: SystemContext,
   p: EntityRow,

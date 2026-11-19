@@ -25,8 +25,12 @@ export function planSickHouse(ctx: SystemContext, green: Spot): void {
   const { world, content, state } = ctx;
   if (housesOf(world).some((h) => h['sick'] === 2 && h['state'] !== 'sent')) return;
   if (!wantsSickHouse(world, content)) return;
-  const bout = (world.entities['ill'] ?? []).find((r) => r['state'] === 'sick' && r['sent']);
-  const p = bout && (world.entities['person'] ?? []).find((q) => q.id === bout['person']);
+  // Someone sent to it and here: not someone sent away under an earlier setting.
+  const people = (world.entities['person'] ?? []).filter((q) => q['status'] === 'alive');
+  const bout = (world.entities['ill'] ?? []).find(
+    (r) => r['state'] === 'sick' && r['sent'] && people.some((q) => q.id === r['person']),
+  );
+  const p = bout && people.find((q) => q.id === bout['person']);
   if (!bout || !p) return;
   if (world.tick < (state['sickTried'] ?? -TICKS_PER_DAY) + TICKS_PER_DAY) return;
   state['sickTried'] = world.tick;
