@@ -1,6 +1,7 @@
 // Drift counts: on a `git commit` call, write this session's guard counts to
-// docs/harness/drift/<date>-<session_id>.json and stage the file, so the commit carries them,
-// with each warning's one-line detail.
+// docs/harness/drift/<date>-<session_id>--<branch>.json and stage the file, so the commit carries them,
+// with each warning's one-line detail. The branch is in the name so one session committing on two
+// branches writes two files, and merging both PRs never conflicts (issue #94).
 // Opt-in: only runs where that folder exists. Called by lib.mjs; it throws on failure and the
 // caller logs an error line and lets the call through. No dependencies; Node 18 or newer.
 // Synced from AI-Master-Instructions (hook/guards); edit it there.
@@ -28,9 +29,11 @@ export function writeCounts(facts, input, dir, clock) {
   if (!top) return null;
   const folder = path.join(top, DRIFT_DIR);
   if (!fs.existsSync(folder) || !fs.statSync(folder).isDirectory()) return null;
+  // Detached HEAD has no branch: the name then has no branch part.
+  const branch = facts.git(['symbolic-ref', '--short', '-q', 'HEAD'], top)?.trim() || null;
 
-  // This session's earlier file, if any: its name, date and numbers carry over.
-  const suffix = `-${id}.json`;
+  // This session's earlier file on this branch, if any: its name, date and numbers carry over.
+  const suffix = `-${id}${branch ? `--${branchSlug(branch)}` : ''}.json`;
   const earlierName = fs.readdirSync(folder).sort().find((n) => n.endsWith(suffix) && /^\d{4}-\d{2}-\d{2}$/.test(n.slice(0, -suffix.length)));
   let earlier = null;
   if (earlierName) {
@@ -50,12 +53,17 @@ export function writeCounts(facts, input, dir, clock) {
   const date = typeof earlier?.date === 'string' ? earlier.date : new Date(Number.isFinite(session.ts) ? session.ts * 1000 : Date.now()).toISOString().slice(0, 10);
   const name = earlierName ?? `${date}${suffix}`;
   const warnings = mergeWarnings(Array.isArray(earlier?.warnings) ? earlier.warnings : [], fresh);
-  const body = { date, session: sessionId, ...(agentId ? { agent: agentId } : {}), commit_calls: prior + 1, counts: sorted, ...(warnings.length ? { warnings } : {}) };
+  const body = { date, session: sessionId, ...(agentId ? { agent: agentId } : {}), ...(branch ? { branch } : {}), commit_calls: prior + 1, counts: sorted, ...(warnings.length ? { warnings } : {}) };
 
   fs.writeFileSync(path.join(folder, name), JSON.stringify(body) + '\n');
   const rel = `${DRIFT_DIR}/${name}`;
   if (facts.git(['add', '--', rel], top) === null) throw new Error(`git add ${rel} failed (is it ignored?)`);
   return rel;
+}
+
+/** A branch name as a file-name part: runs of characters outside [A-Za-z0-9_.-] become one '-'. */
+export function branchSlug(branch) {
+  return branch.replace(/[^\w.-]+/g, '-');
 }
 
 /** How many warning details a drift file keeps. */

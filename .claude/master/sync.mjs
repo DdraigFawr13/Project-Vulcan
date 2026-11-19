@@ -43,12 +43,14 @@ export class SyncError extends Error {}
 
 /** Parse one rule file into { title, rules: [{ id, text, neverOverride, superseded, why, source }] }. */
 export function parseRules(text, file = 'rules') {
-  const lines = text.split('\n');
+  // A Windows checkout can have CRLF line ends; without this every rule line fails to match (issue #94).
+  const lines = text.replace(/\r\n?/g, '\n').split('\n');
   const title = (lines.find((l) => l.startsWith('# ')) ?? '').slice(2).trim();
   if (!title) throw new SyncError(`${file}: missing "# Title" line`);
   const rules = [];
   lines.forEach((line, i) => {
     const m = RULE_LINE.exec(line);
+    if (!m && line.startsWith('- **')) throw new SyncError(`${file}:${i + 1}: rule line does not parse (expected "- **AB-01** text"): ${line.slice(0, 60)}`);
     if (!m) return;
     const why = WHY_LINE.exec(lines[i + 1] ?? '');
     rules.push({
@@ -233,7 +235,7 @@ export function plan(sourceDir, catalog, manifest, scriptSource) {
       const dest = rel === '' ? item.dest : path.posix.join(item.dest, rel);
       const abs = rel === '' ? src : path.join(src, rel);
       files.set(dest, fs.readFileSync(abs));
-      if (dest.endsWith('.sh') || dest.endsWith('.py')) executable.add(dest);
+      if (isExecutable(dest)) executable.add(dest);
     }
   }
   const enforced = new Set(items.flatMap((i) => i.enforces ?? []));
@@ -242,6 +244,11 @@ export function plan(sourceDir, catalog, manifest, scriptSource) {
   files.set(SCRIPT_OUT, fs.readFileSync(scriptSource));
   executable.add(SCRIPT_OUT);
   return { files, executable, items };
+}
+
+/** Whether sync makes a synced file executable (mode 755). */
+export function isExecutable(rel) {
+  return rel === SCRIPT_OUT || rel.endsWith('.sh') || rel.endsWith('.py');
 }
 
 /** Relative file paths under a file or directory ('' for a single file). */
@@ -513,10 +520,40 @@ export function check({ targetDir }) {
     if (!fs.existsSync(abs)) problems.push(`missing ${rel}`);
     else if (sha256(fs.readFileSync(abs)) !== hash) problems.push(`modified ${rel} (synced files are edited in the master, rule SRC-06)`);
   }
+  problems.push(...modeProblems(targetDir, Object.keys(lock.files).filter((rel) => isExecutable(rel) && fs.existsSync(path.join(targetDir, rel)))));
   problems.push(...settingsProblems(targetDir, lock));
   problems.push(...loaderProblems(targetDir));
   const over = budgetProblems(measure(targetDir), lock.budget);
   if (over.length) problems.push(`start-up size over budget: ${over.join(', ')}`);
+  return problems;
+}
+
+/**
+ * Synced scripts that lost their exec bit (issue #94: a Windows clone committed them as 100644, and the
+ * SessionStart hook then failed with exit 126). Git's index decides for tracked files, since that is what
+ * a fresh clone gets; untracked ones are checked on disk, except on Windows, which has no exec bit.
+ */
+export function modeProblems(targetDir, rels) {
+  if (!rels.length) return [];
+  const tracked = new Map();
+  try {
+    const out = execFileSync('git', ['-C', targetDir, 'ls-files', '-s', '-z', '--', ...rels], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    for (const entry of out.split('\0').filter(Boolean)) {
+      const tab = entry.indexOf('\t');
+      tracked.set(entry.slice(tab + 1), entry.slice(0, 6));
+    }
+  } catch {
+    // not a git repo: check the files on disk only
+  }
+  const problems = [];
+  for (const rel of rels) {
+    const mode = tracked.get(rel);
+    if (mode !== undefined) {
+      if (mode !== '100755') problems.push(`not executable in git (mode ${mode}): ${rel}; run git update-index --chmod=+x -- ${rel} and commit`);
+    } else if (process.platform !== 'win32' && (fs.statSync(path.join(targetDir, rel)).mode & 0o111) === 0) {
+      problems.push(`not executable: ${rel}; run node ${SCRIPT_OUT} or chmod +x ${rel}`);
+    }
+  }
   return problems;
 }
 
@@ -559,7 +596,8 @@ function updatePrettierIgnore(targetDir, synced, log) {
     (fs.existsSync(pkgFile) && /"prettier"/.test(fs.readFileSync(pkgFile, 'utf8')));
   if (!usesPrettier) return;
 
-  const entries = new Set([LOCK, '.claude/master/']);
+  // The guard hook writes one-line JSON drift files that Prettier would reject (issue #94).
+  const entries = new Set([LOCK, '.claude/master/', 'docs/harness/drift/']);
   for (const rel of synced) {
     const skill = /^(\.claude\/skills\/[^/]+\/)/.exec(rel);
     entries.add(skill ? skill[1] : rel);

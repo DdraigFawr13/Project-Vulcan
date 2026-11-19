@@ -40,10 +40,12 @@ src/content/data/
 .claude/skills/brainstorm/
 .claude/skills/efficient-github-actions/
 .claude/skills/planning-interview/
+.claude/skills/refactor/
 .claude/skills/routing/
 .claude/skills/test-design/
 .claude/skills/ui-mockups/
 .claude/skills/ui-style/
 .claude/skills/write-spec/
 .github/workflows/prune-merged-branches.yml
+docs/harness/drift/
 # ai-master:end

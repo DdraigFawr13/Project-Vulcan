@@ -69,7 +69,7 @@ export const checks = [
     id: 'synced.edit',
     rule: 'SRC-06',
     tools: ['Edit', 'Write', 'NotebookEdit', 'Bash'],
-    mode: 'ask', // D-037
+    mode: 'deny', // D-074
     test(input, facts) {
       const synced = facts.synced;
       if (!synced) return null;
