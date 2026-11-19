@@ -1,0 +1,41 @@
+{
+  "hour": 6,
+  "standing": {
+    "start": 50,
+    "per": 5,
+    "words": [
+      { "word": "High", "at": 75 },
+      { "word": "Good", "at": 60 },
+      { "word": "Steady", "at": 40 },
+      { "word": "Low", "at": 25 },
+      { "word": "Broken", "at": 0 }
+    ],
+    "trusts": "trusts the colony",
+    "distrusts": "distrusts the colony",
+    "fedWinter": { "by": 8, "days": 336, "most": 2, "text": "a winter nobody went hungry" },
+    "kept": { "by": 1, "days": 28, "every": 7, "share": 67, "text": "the laws are kept" },
+    "harsh": { "days": 56, "every": 7, "text": "{days} in hard times" },
+    "answered": { "by": 6, "days": 168, "text": "{faction} were heard" },
+    "stood": { "by": -3, "days": 84, "text": "the law stood against {faction}" },
+    "ignored": { "by": -6, "days": 112, "text": "{faction} were not answered" },
+    "elderDied": { "by": -10, "days": 84, "text": "{name}, the elder, died" }
+  },
+  "elder": {
+    "every": 7,
+    "least": 6,
+    "margin": 2,
+    "sway": 8,
+    "friendDays": 56,
+    "founder": 3,
+    "listener": 1,
+    "listeners": 4,
+    "keeps": 1,
+    "traits": { "steady": 2, "sociable": 2, "devout": 1, "cheerful": 1, "hot-tempered": -2, "greedy": -2, "solitary": -1 },
+    "roles": { "provider": 2, "guard": 2, "faithful": 2, "wronged": -1, "outsider": -2, "rebel": -3 },
+    "follows": "follows {name}'s lead",
+    "sides": "sides with {name}"
+  },
+  "faction": { "least": 3, "share": 20, "strong": 10, "lean": 10, "stands": "stands with {faction}" },
+  "petition": { "days": 7 },
+  "mood": { "causes": 3 }
+}

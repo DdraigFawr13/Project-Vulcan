@@ -147,7 +147,11 @@ describe('building', () => {
   });
 
   it('has only indirect levers and test-mode tools (V-041)', () => {
-    const levers = ['setStock', 'setPriority', 'setBuild', 'sendBack', 'sendBackShaft', 'setLaw'];
+    // `letStand` turns down a faction's petition: a say on a law, never on a person (P6.6).
+    const levers = [
+      ...['setStock', 'setPriority', 'setBuild', 'sendBack', 'sendBackShaft', 'setLaw'],
+      'letStand',
+    ];
     const testTools = TEST_TOOLS;
     const kinds = SYSTEMS.flatMap((s) => Object.keys(s.commands ?? {}));
     expect(kinds.filter((k) => !levers.includes(k) && !testTools.includes(k))).toEqual([]);

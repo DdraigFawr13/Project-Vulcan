@@ -13,6 +13,7 @@ import type { LampDefs } from './lamp.ts';
 import type { ClothesDefs } from './clothes.ts';
 import type { TalesDefs } from './tales.ts';
 import type { SelfDefs } from './self.ts';
+import type { ColonyDefs } from './colony.ts';
 import type { BiomesDef } from './climate.ts';
 import type { CalendarDef } from './clock.ts';
 
@@ -363,7 +364,8 @@ export interface EngineContent
     LampDefs,
     ClothesDefs,
     TalesDefs,
-    SelfDefs {
+    SelfDefs,
+    ColonyDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */
   events: readonly { id: string; template: string; notable?: Readonly<Record<string, string>> }[];

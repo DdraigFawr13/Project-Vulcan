@@ -37,6 +37,10 @@ export interface LawSettingDef {
   /** P6.4: how each role and life ambition leans on it. */
   roles?: Readonly<Record<string, number>>;
   ambitions?: Readonly<Record<string, number>>;
+  /** P6.6: what it costs the colony's standing each `standing.harsh.every` days in hard times,
+   * and the names a faction against it takes. */
+  harsh?: number;
+  faction?: readonly string[];
 }
 
 export interface LawDef {

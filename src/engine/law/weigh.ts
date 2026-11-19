@@ -1,11 +1,12 @@
 // How a person weighs a law's setting (P4.8, V-091): willingness from mood, low needs, traits,
-// held memories, their roles and ambition (P6.4) and the season, each named for and against so the reason can be read. All the
-// numbers are content (laws.json).
+// held memories, their roles and ambition (P6.4), the colony (P6.6) and the season, each named
+// for and against so the reason can be read. All the numbers are content (laws.json).
 import type { EngineContent, LawSettingDef, WorldState } from '../core/index.ts';
 import { storeLasts } from '../goods/index.ts';
 import { memoriesOf, moodOf, needOf } from '../needs/index.ts';
 import { ambitionOf, ambitionText, rolesOf } from '../self/index.ts';
 import { isWinter } from './hours.ts';
+import { colonyLeans } from './leans.ts';
 
 export type Answer = 'obeys' | 'grumbles' | 'refuses';
 
@@ -22,80 +23,122 @@ export interface Weighed {
 
 const lower = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
 
-export function weigh(
+/** What weighed so far: willingness, the words on each side, the lines and the signature. */
+interface Tally {
+  will: number;
+  pro: string[];
+  con: string[];
+  cites: number[];
+  mems: string[];
+}
+
+/** Adds `by` to the tally, named `word` on its side, with its signature `key` and line. */
+function add(t: Tally, by: number, word: string, key?: string, cite?: number): void {
+  t.will += by;
+  if (by > 0) t.pro.push(word);
+  else if (by < 0) t.con.push(word);
+  if (key) t.mems.push(key);
+  if (cite) t.cites.push(cite);
+}
+
+/** P6.4: the roles they see themselves in, and an ambition not yet reached. */
+function selfParts(
+  t: Tally,
   world: WorldState,
   content: EngineContent,
   person: number,
   s: LawSettingDef,
-): Weighed {
-  const { answer: dial } = content.laws;
-  const pro: string[] = [];
-  const con: string[] = [];
-  const side = (by: number, word: string) => (by > 0 ? pro : by < 0 ? con : []).push(word);
-  let will = dial.start - s.ask;
-  const cites: number[] = [];
-  const mems: string[] = [];
-  // P6.4: the roles they see themselves in, and an ambition not yet reached, weighed first so
-  // the answer's line names them.
+): void {
   for (const r of rolesOf(world, person)) {
     const by = s.roles?.[r['role'] as string] ?? 0;
     if (!by) continue;
-    will += by;
     const name = content.self.roles.find((d) => d.id === r['role'])?.name ?? '';
-    side(by, `sees themselves as ${name}`);
-    mems.push(`role.${r['role'] as string}:${r['line'] as number}`);
+    add(t, by, `sees themselves as ${name}`, `role.${r['role'] as string}:${r['line'] as number}`);
   }
   const goal = ambitionOf(world, person);
   const byGoal = goal && !goal['done'] ? (s.ambitions?.[goal['ambition'] as string] ?? 0) : 0;
   if (goal && byGoal) {
-    will += byGoal;
-    side(byGoal, `wants ${ambitionText(content, goal)}`);
-    mems.push(`ambition.${goal['ambition'] as string}:${goal['line'] as number}`);
+    const key = `ambition.${goal['ambition'] as string}:${goal['line'] as number}`;
+    add(t, byGoal, `wants ${ambitionText(content, goal)}`, key);
   }
+}
+
+/** Mood, low needs (but those the setting expects), traits and held memories. */
+function heldParts(
+  t: Tally,
+  world: WorldState,
+  content: EngineContent,
+  person: number,
+  s: LawSettingDef,
+): void {
+  const { answer: dial } = content.laws;
   const mood = (moodOf(world, person)?.['value'] as number | undefined) ?? content.life.scale / 2;
   const byMood = Math.round((mood - content.life.scale / 2) / dial.moodPer);
-  will += byMood;
-  side(byMood, byMood > 0 ? 'in good spirits' : 'in low spirits');
+  add(t, byMood, byMood > 0 ? 'in good spirits' : 'in low spirits');
   for (const need of dial.needs) {
     if (!needOf(world, person, need)?.['low'] || s.expects?.includes(need)) continue;
-    will += dial.low;
     const def = content.life.needs.find((n) => n.id === need);
-    con.push(lower(def?.lowWord ?? need));
+    add(t, dial.low, lower(def?.lowWord ?? need));
   }
-  const traits = (world.entities['trait'] ?? []).filter((t) => t['person'] === person);
-  for (const t of traits) {
-    const by = s.traits[t['trait'] as string] ?? 0;
-    will += by;
-    const name = content.traits.find((d) => d.id === t['trait'])?.name ?? (t['trait'] as string);
-    side(by, name);
+  for (const r of (world.entities['trait'] ?? []).filter((x) => x['person'] === person)) {
+    const name = content.traits.find((d) => d.id === r['trait'])?.name ?? (r['trait'] as string);
+    add(t, s.traits[r['trait'] as string] ?? 0, name);
   }
   const people = world.entities['person'] ?? [];
   for (const m of memoriesOf(world, person)) {
     const id = m['memory'] as string;
     const by = s.memories[id] ?? 0;
     if (!by) continue;
-    will += by;
     const def = content.memories.find((d) => d.id === id);
     const about = people.find((p) => p.id === m['about'])?.['name'] as string | undefined;
-    side(by, lower((def?.text ?? id).replace('{about}', about ?? 'someone')));
-    cites.push(m['line'] as number);
-    mems.push(`${id}:${m['line'] as number}`);
+    const word = lower((def?.text ?? id).replace('{about}', about ?? 'someone'));
+    add(t, by, word, `${id}:${m['line'] as number}`, m['line'] as number);
   }
-  // P6.5: whether the store lasts to the harvest leans on a law of the store (Rations).
+}
+
+/** P6.5: whether the store lasts to the harvest (Rations), and the season. */
+function seasonParts(t: Tally, world: WorldState, content: EngineContent, s: LawSettingDef): void {
   if (s.store) {
     const lasts = storeLasts(world, content, 0);
-    const by = lasts ? s.store.lasts : s.store.short;
-    will += by;
-    side(by, lasts ? 'the store lasts to the harvest' : 'the store will not last to the harvest');
-    mems.push(`store:${lasts ? 'lasts' : 'short'}`);
+    const word = lasts
+      ? 'the store lasts to the harvest'
+      : 'the store will not last to the harvest';
+    add(t, lasts ? s.store.lasts : s.store.short, word, `store:${lasts ? 'lasts' : 'short'}`);
   }
-  if (s.winterLean && isWinter(world, content)) {
-    will += s.winterLean;
-    side(s.winterLean, s.winterLean < 0 ? 'the dark winter days' : 'the short winter days');
-  }
+  if (s.winterLean && isWinter(world, content))
+    add(t, s.winterLean, s.winterLean < 0 ? 'the dark winter days' : 'the short winter days');
+}
+
+export function weigh(
+  world: WorldState,
+  content: EngineContent,
+  person: number,
+  s: LawSettingDef,
+  opts: { alone?: boolean } = {},
+): Weighed {
+  const { answer: dial } = content.laws;
+  const t: Tally = { will: dial.start - s.ask, pro: [], con: [], cites: [], mems: [] };
+  // P6.6: the elder's answer for their friends and a faction's for its members, first so the
+  // line names them (`alone` leaves both out: how the person weighs it by themself); then their
+  // roles and ambition; the colony's standing after the rest.
+  const law = content.laws.laws.find((l) => l.settings.includes(s))?.id ?? '';
+  const leans = colonyLeans(world, content, person, law, !!opts.alone);
+  const isStanding = (key: string) => key.startsWith('standing');
+  for (const l of leans.filter((x) => !isStanding(x.key))) add(t, l.by, l.word, l.key, l.cite);
+  selfParts(t, world, content, person, s);
+  heldParts(t, world, content, person, s);
+  for (const l of leans.filter((x) => isStanding(x.key))) add(t, l.by, l.word, l.key, l.cite);
+  seasonParts(t, world, content, s);
   const answer: Answer =
-    will >= dial.obey ? 'obeys' : will >= dial.grumble ? 'grumbles' : 'refuses';
-  return { will, answer, for: pro, against: con, cites, mems: mems.sort().join(',') };
+    t.will >= dial.obey ? 'obeys' : t.will >= dial.grumble ? 'grumbles' : 'refuses';
+  return {
+    will: t.will,
+    answer,
+    for: t.pro,
+    against: t.con,
+    cites: t.cites,
+    mems: t.mems.sort().join(','),
+  };
 }
 
 /** What a memory leans on a setting, in words ("leans against long days"), or none. */

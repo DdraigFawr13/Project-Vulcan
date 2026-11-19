@@ -1,0 +1,54 @@
+// What the colony system reads from content (colony.json, P6.6, V-158, V-159): standing and its
+// causes, the elder, factions and their petitions.
+
+/** A cause of standing: how much it moves it, for how many days, and its words. */
+export interface StandingCause {
+  by: number;
+  days: number;
+  text: string;
+}
+
+export interface ColonyDef {
+  /** The hour of the day the colony is worked out. */
+  hour: number;
+  standing: {
+    start: number;
+    /** Each `per` points from the start lean every law answer one point. */
+    per: number;
+    words: readonly { word: string; at: number }[];
+    trusts: string;
+    distrusts: string;
+    /** A winter with at most `most` hungry days a person. */
+    fedWinter: StandingCause & { most: number };
+    /** Each `every` days, when `share` per cent of the answers keep the laws. */
+    kept: StandingCause & { every: number; share: number };
+    /** Each `every` days a harsh setting stands in hard times, its `harsh` (laws.json). */
+    harsh: { days: number; every: number; text: string };
+    answered: StandingCause;
+    stood: StandingCause;
+    ignored: StandingCause;
+    elderDied: StandingCause;
+  };
+  elder: {
+    every: number;
+    least: number;
+    margin: number;
+    sway: number;
+    friendDays: number;
+    founder: number;
+    listener: number;
+    listeners: number;
+    keeps: number;
+    traits: Readonly<Record<string, number>>;
+    roles: Readonly<Record<string, number>>;
+    follows: string;
+    sides: string;
+  };
+  faction: { least: number; share: number; strong: number; lean: number; stands: string };
+  petition: { days: number };
+  mood: { causes: number };
+}
+
+export interface ColonyDefs {
+  colony: ColonyDef;
+}

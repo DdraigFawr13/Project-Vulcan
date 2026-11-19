@@ -113,7 +113,8 @@ export function answerAll(ctx: SystemContext, law: string, s: LawSettingDef, cau
 /** Answers for whoever joined since `s` was set, and again for whoever holds a memory that weighs
  * on `s` and was not weighed yet. A changed
  * answer is a line; the same one keeps its reasons, which match that line, and only notes what
- * was weighed. Someone who changed their answer holds it `settle` days first (P6.5). */
+ * was weighed. Someone who changed their answer holds it `settle` days first (P6.5), unless they
+ * have just come to stand with a faction (P6.6). */
 export function reweigh(ctx: SystemContext, law: string, s: LawSettingDef): void {
   const settle = ctx.content.laws.answer.settle * TICKS_PER_DAY;
   const band = alive(ctx);
@@ -127,9 +128,13 @@ export function reweigh(ctx: SystemContext, law: string, s: LawSettingDef): void
     const p = band.find((q) => q.id === row['person']);
     if (!p) continue;
     const at = (row['at'] as number | undefined) ?? 0;
-    if (at && ctx.world.tick < at + settle) continue;
     const w = weigh(ctx.world, ctx.content, p.id, s);
     if (w.mems === row['mems']) continue;
+    // Standing with a faction is answering afresh, together (P6.6): it does not wait to settle.
+    const joined = w.mems
+      .split(',')
+      .some((k) => k.startsWith('faction:') && !(row['mems'] as string).split(',').includes(k));
+    if (at && ctx.world.tick < at + settle && !joined) continue;
     if (w.answer !== row['answer']) record(ctx, law, s, p, w, [], row);
     else row['mems'] = w.mems;
   }
