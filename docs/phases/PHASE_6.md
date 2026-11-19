@@ -13,7 +13,6 @@ Phase 6 (People) in two halves (V-153): 6A "Word and law" (P6.2 to P6.7) here; 6
 - [x] Bundle 5, standing, the elder, factions, petitions, the mood word: P6.6
 - [x] Bundle 6, defiance: P6.7
 - [x] 6A balance and review
-- [x] Review P3, "why?" past the week (V-177), 2026-11-19: held lines keep their words; done-when in `src/engine/log/seal.test.ts`. V-175 to V-180 record the review's six proposals.
 
 ## Design (VR-62)
 
