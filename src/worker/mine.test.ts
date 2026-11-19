@@ -11,6 +11,7 @@ import {
   submitCommand,
   type SimEvent,
   type Stub,
+  type WorldState,
 } from '../engine/index.ts';
 import { goodsOf, stockView } from './goods.ts';
 import { miningShown } from './mine.ts';
@@ -18,13 +19,48 @@ import { walkersOf } from './people.ts';
 import { tileView } from './views.ts';
 
 const sim = createSim(content);
-const DAY = 1440;
+// One smoke world is made per file; a test that changes it takes a clone (~5 ms, a world is
+// ~0.3 s). The last three tests start alike (iron raised at once, then days of stepping), so they
+// share one run in half-hour steps and read it where each used to read its own.
+let base: WorldState | undefined;
+const fresh = () => structuredClone((base ??= createWorld(sim, 'smoke')));
+const run = (() => {
+  let w: WorldState | undefined;
+  let steps = 0;
+  const doing = new Set<string>();
+  let dayAfter: WorldState | undefined;
+  let sinking: WorldState | undefined;
+  /** Steps the run on to half-hour `n` (a day is 48), or until `stop()`, keeping what each test reads. */
+  const advance = (n: number, stop: () => boolean = () => false) => {
+    if (!w) {
+      w = fresh();
+      submitCommand(w, {
+        tick: w.tick + 1,
+        kind: 'setStock',
+        data: { good: 'iron-ingot', level: 'some' },
+      });
+    }
+    while (steps < n && !stop()) {
+      step(w, sim, 30);
+      steps += 1;
+      if (steps === 48) dayAfter = structuredClone(w);
+      if (!sinking && (w.entities['person'] ?? []).some((p) => p['task'] === 'sink'))
+        sinking = structuredClone(w);
+      if (steps % 2 === 0) for (const p of walkersOf(w)) doing.add(p.now.text);
+    }
+  };
+  return {
+    day: () => (advance(48), dayAfter!),
+    sink: () => (advance(12 * 48, () => !!sinking), sinking),
+    words: () => (advance(12 * 24 * 2), doing),
+  };
+})();
 const lineOf = (e: SimEvent | Stub) =>
   ({ id: e.id, tick: e.tick, type: e.type, text: e.type }) as never;
 
 describe('shaft views', () => {
   it('shows no Mining row and no plate ore until a plate is raised', () => {
-    const w = createWorld(sim, 'smoke');
+    const w = fresh();
     expect(miningShown(w)).toBe(false);
     expect(goodsOf(w).shafts).toEqual([]);
     const notes = Object.fromEntries(stockView(w).map((s) => [s.good, s.note]));
@@ -35,13 +71,7 @@ describe('shaft views', () => {
   });
 
   it('gives a planned shaft its page, a faint plan and one Send back', () => {
-    const w = createWorld(sim, 'smoke');
-    submitCommand(w, {
-      tick: w.tick + 1,
-      kind: 'setStock',
-      data: { good: 'iron-ingot', level: 'some' },
-    });
-    step(w, sim, DAY);
+    const w = run.day();
     const row = shaftsOf(w)[0]!;
     expect(miningShown(w)).toBe(true);
     const [x, y] = [row['x'] as number, row['y'] as number];
@@ -65,16 +95,9 @@ describe('shaft views', () => {
   });
 
   it('offers no Send back once a miner has taken up sinking', () => {
-    const w = createWorld(sim, 'smoke');
-    submitCommand(w, {
-      tick: w.tick + 1,
-      kind: 'setStock',
-      data: { good: 'iron-ingot', level: 'some' },
-    });
-    for (let n = 0; n < 12 * 48; n += 1) {
-      step(w, sim, 30);
-      const miner = (w.entities['person'] ?? []).find((p) => p['task'] === 'sink');
-      if (!miner) continue;
+    const w = run.sink();
+    if (w) {
+      const miner = (w.entities['person'] ?? []).find((p) => p['task'] === 'sink')!;
       const row = shaftsOf(w).find((s) => s.id === miner['plan'])!;
       const page = tileView(w, row['x'] as number, row['y'] as number, 0, lineOf)!.shaft!;
       expect(page.here).toBeDefined();
@@ -85,17 +108,7 @@ describe('shaft views', () => {
   });
 
   it('says what the miners are doing in words, never a raw key', () => {
-    const w = createWorld(sim, 'smoke');
-    submitCommand(w, {
-      tick: w.tick + 1,
-      kind: 'setStock',
-      data: { good: 'iron-ingot', level: 'some' },
-    });
-    const doing = new Set<string>();
-    for (let n = 0; n < 12 * 24; n += 1) {
-      step(w, sim, 60);
-      for (const p of walkersOf(w)) doing.add(p.now.text);
-    }
+    const doing = run.words();
     const mining = [...doing].filter((t) => /shaft|vein|ore/i.test(t));
     expect(mining.length).toBeGreaterThan(0);
     for (const t of mining) expect(t).not.toMatch(/[{}]|^(sink|tunnel|mine|clay)$/);

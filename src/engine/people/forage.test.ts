@@ -56,6 +56,8 @@ function buildTimeline(seed: string) {
   const cause = allLines(world).find((e) => e.id === first.causes[0])?.type;
   return { world, tally, orders: world.commandLog.length, good: first.data['good'], cause };
 }
+// Each seed's colony as the day-35 test leaves it; the bush test carries ledger/1's on.
+const fedRuns = new Map<string, World>();
 const timeline = (seed: string) => {
   let t = timelines.get(seed);
   if (!t) timelines.set(seed, (t = buildTimeline(seed)));
@@ -73,6 +75,7 @@ describe('foraging', () => {
 
     it(`stocks berries unordered and keeps the band fed to day 35 on ${seed}`, () => {
       const world = createWorld(sim, seed);
+      fedRuns.set(seed, world);
       let stored = 0;
       for (let day = 1; day <= 35; day += 1) {
         step(world, sim, DAY);
@@ -98,8 +101,8 @@ describe('foraging', () => {
     expect(allLines(world).filter((e) => e.type === 'work.picked')).toEqual([]);
     expect(foraging(world)).toEqual([]);
 
-    // The same short-of-food colony the timeline made, carried on to day 40.
-    const warm = timeline('ledger/1').world;
+    // The fed colony of the day-35 test above, carried on to day 40.
+    const warm = fedRuns.get('ledger/1') ?? createWorld(sim, 'ledger/1');
     step(warm, sim, 40 * DAY - warm.tick);
     const picked = allLines(warm).filter((e) => e.type === 'work.picked');
     expect(picked.length).toBeGreaterThan(0);

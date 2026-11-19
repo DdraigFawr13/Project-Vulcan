@@ -31,15 +31,49 @@ const sim = createSim(winter);
 const nobody = () => ({}) as never;
 type World = ReturnType<typeof createWorld>;
 
+// Both tests run the same hard winter from 'ledger', so they share one run: the first steps it
+// a minute at a time for 6 days, and from the first hour on each hour's warmth rows are read as
+// the second used to read them (it carries on hourly to day 12 if it needs to). The world as it
+// stood when the second test's search ended is kept for its reads.
+let shared:
+  | {
+      w: World;
+      hours: number;
+      room?: { x: number; y: number; warmth: string };
+      says: string[];
+      found?: World;
+    }
+  | undefined;
+const run = () => (shared ??= { w: createWorld(sim, 'ledger'), hours: 0, says: [] });
+/** Reads the warmth rows at the end of an hour, until the search is done. */
+function hourRead(r: NonNullable<typeof shared>) {
+  r.hours += 1;
+  if (r.found) return;
+  for (const house of housesOf(r.w).filter((q) => q['state'] === 'built')) {
+    const q = rectOf(house);
+    const row = tileHouse(r.w, q.x + 2, q.y + 1, nobody).room;
+    if (row && /no hearth/.test(row.warmth)) r.says.push(row.warmth);
+  }
+  for (const f of furnitureOf(r.w).filter((p) => p['kind'] === 'hearth')) {
+    const [x, y] = [f['x'] as number, f['y'] as number];
+    if (!roomAt(r.w, winter, x, y)) continue;
+    const row = tileHouse(r.w, x, y, nobody).room;
+    if (row && /hearth lit/.test(row.warmth)) r.room = { x, y, warmth: row.warmth };
+  }
+  if (r.room && r.says.length) r.found = structuredClone(r.w);
+}
+
 describe('fire views', () => {
   it('says what the fire is, its fuel and the room it warms, and never falls back to hauling', () => {
-    const w = createWorld(sim, 'ledger');
+    const r = run();
+    const w = r.w;
     const words = new Set<string>();
     const arts = new Set<string>();
     const bars: Record<string, number[]> = {};
     const starts: Record<string, number> = {};
     for (let minute = 0; minute < 6 * 1440; minute += 1) {
       step(w, sim, 1);
+      if (minute % 60 === 59) hourRead(r);
       if (minute % 3) continue;
       const goods = goodsOf(w);
       for (const f of goods.furniture) arts.add(f.art);
@@ -92,23 +126,13 @@ describe('fire views', () => {
   });
 
   it('gives a room a warmth row with its degrees and its hearth', () => {
-    const w: World = createWorld(sim, 'ledger');
-    let room: { x: number; y: number; warmth: string } | undefined;
-    const says: string[] = [];
-    for (let h = 0; h < 12 * 24 && !(room && says.length); h += 1) {
-      step(w, sim, 60);
-      for (const house of housesOf(w).filter((r) => r['state'] === 'built')) {
-        const r = rectOf(house);
-        const row = tileHouse(w, r.x + 2, r.y + 1, nobody).room;
-        if (row && /no hearth/.test(row.warmth)) says.push(row.warmth);
-      }
-      for (const f of furnitureOf(w).filter((p) => p['kind'] === 'hearth')) {
-        const [x, y] = [f['x'] as number, f['y'] as number];
-        if (!roomAt(w, winter, x, y)) continue;
-        const row = tileHouse(w, x, y, nobody).room;
-        if (row && /hearth lit/.test(row.warmth)) room = { x, y, warmth: row.warmth };
-      }
+    const r = run();
+    while (r.hours < 12 * 24 && !r.found) {
+      step(r.w, sim, 60);
+      hourRead(r);
     }
+    const w: World = r.found ?? r.w;
+    const { room, says } = r;
     expect(room).toBeDefined();
     const degrees = feltAt(w, winter, room!.y * w.map.width + room!.x);
     expect(room!.warmth).toMatch(/^(Warm|Cold), −?\d+ °C · hearth lit$/);

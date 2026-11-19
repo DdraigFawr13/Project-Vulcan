@@ -55,11 +55,22 @@ const far = (w: World, i: number) => {
   return Math.max(Math.abs((i % w.map.width) - g.x), Math.abs(Math.floor(i / w.map.width) - g.y));
 };
 
+/** A world one day in, built once per seed; the tests that share it only read it. */
+const dayOnes = new Map<string, World>();
+function dayOne(seed: string): World {
+  let w = dayOnes.get(seed);
+  if (!w) {
+    w = createWorld(sim, seed);
+    step(w, sim, DAY);
+    dayOnes.set(seed, w);
+  }
+  return w;
+}
+
 describe('fields', () => {
   for (const seed of SEEDS) {
     it(`lays out a field outside the ring with a reason, unordered, on ${seed}`, () => {
-      const world = createWorld(sim, seed);
-      step(world, sim, DAY);
+      const world = dayOne(seed);
       expect(world.commandLog).toHaveLength(0);
       const sited = lines(world, 'field.sited')[0]!;
       expect(sited.data['why']).toContain('good soil outside the town ring');
@@ -109,8 +120,9 @@ describe('fields', () => {
     const done = () => remembered !== undefined && most.grain > 0 && most.seed > before;
     for (let hour = 0; hour < 20 * 24 && !done(); hour += 1) {
       step(world, fast, 60);
-      const home = lines(world, 'farm.harvestHome')[0];
-      if (home && remembered === undefined)
+      // Once read, the ledger is not scanned again.
+      const home = remembered === undefined ? lines(world, 'farm.harvestHome')[0] : undefined;
+      if (home)
         remembered = home.actors.every((id) =>
           memoriesOf(world, id).some((m) => m['memory'] === 'harvested' && m['line'] === home.id),
         );
@@ -138,8 +150,7 @@ describe('fields', () => {
   });
 
   it('lays a field as one compact block just outside the ring', () => {
-    const world = createWorld(sim, SEEDS[0]!);
-    step(world, sim, DAY);
+    const world = dayOne(SEEDS[0]!);
     const tiles = fieldsOf(world)[0]!['tiles'] as number[];
     const w = world.map.width;
     const xs = tiles.map((i) => i % w);

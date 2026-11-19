@@ -53,6 +53,15 @@ const at = (w: WorldState, month: number, day: number, hh = 0, mm = 0) => {
 
 /** A world with a built pasture on open ground near the green and its flock row. */
 function pastureWorld(seed = 'anvil/1') {
+  // Built once per seed; each test gets its own clone, so none changes what another reads.
+  let built = pastureWorlds.get(seed);
+  if (!built) pastureWorlds.set(seed, (built = buildPastureWorld(seed)));
+  const w = structuredClone(built.w);
+  return { w, flock: w.entities['flock']![0]!, pasture: built.pasture };
+}
+const pastureWorlds = new Map<string, ReturnType<typeof buildPastureWorld>>();
+
+function buildPastureWorld(seed: string) {
   const w = createWorld(sim, seed);
   const map = w.map;
   const free = (x: number, y: number, ww: number, hh: number) => {
