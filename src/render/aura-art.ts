@@ -2,14 +2,7 @@
 // ring by ring, and a bright core on the spot itself (frames `aura.<school>.1` and `.core`, drawn
 // by tools/draw-ice.mjs). Picture only: the strength a tile has comes from the worker's inspector.
 import { content } from '../content/index.ts';
-import type { AuraView } from '../worker/index.ts';
-
-/** The same rounded ring distance the engine uses (src/engine/map/aura.ts), no roots. */
-const ringOf = (dx: number, dy: number): number => {
-  const a = Math.abs(dx);
-  const b = Math.abs(dy);
-  return a > b ? a + (b >> 1) : b + (a >> 1);
-};
+import { roughDistance, type AuraView } from '../worker/index.ts';
 
 /** Each tile a spot on level `z` reaches: its frame name and opacity, strongest spot first. */
 export function glowTiles(
@@ -21,7 +14,7 @@ export function glowTiles(
   for (const s of [...spots].filter((s) => s.z === z).sort((a, b) => b.strength - a.strength))
     for (let dy = -radius; dy <= radius; dy += 1)
       for (let dx = -radius; dx <= radius; dx += 1) {
-        const ring = ringOf(dx, dy);
+        const ring = roughDistance(dx, dy);
         const key = `${s.x + dx},${s.y + dy}`;
         if (ring > radius || out.has(key)) continue;
         out.set(key, {

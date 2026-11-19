@@ -18,7 +18,7 @@ import {
   type WorldState,
   itemName,
 } from '../engine/index.ts';
-import { nowOf } from './people.ts';
+import { nowOf } from './doing.ts';
 import type { LedgerLine } from './protocol.ts';
 import type { GoodsView, WorksView } from './protocol-goods.ts';
 

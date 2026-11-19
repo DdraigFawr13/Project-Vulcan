@@ -3,31 +3,18 @@
 import { content } from '../content/index.ts';
 import {
   clockAt,
-  cropNow,
   declinedLine,
-  fieldsOf,
-  itemsOf,
   levelOf,
-  loadOf,
   moodOf,
   needOf,
-  nextNeed,
-  partOf,
-  plansOf,
   progressOf,
-  stationsOf,
-  stockOf,
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
 import { wearingRows } from './clothesview.ts';
 import { feedsOf } from './comfort.ts';
-import { careNow } from './health.ts';
-import { deadNow, healthOf } from './healthview.ts';
-import { boutOf, illDef } from './illview.ts';
-import { hearthDoing, tendDoing } from './fires.ts';
-import { herdDoing } from './herd.ts';
-import { carpentryDoing } from './furniture.ts';
+import { healthOf } from './healthview.ts';
+import { doingOf, nowOf } from './doing.ts';
 import { lawOfWalker } from './law.ts';
 import { memoriesView, thoughtView } from './memoryview.ts';
 import { selfView } from './selfview.ts';
@@ -105,149 +92,6 @@ export function peopleFeed() {
 /** Everyone the page shows: the colony and strangers coming or waiting, not those who left. */
 const shown = (world: WorldState): EntityRow[] =>
   (world.entities['person'] ?? []).filter((p) => p['status'] !== 'gone');
-
-/** What a person is doing, in words (P2.2). */
-function doingOf(p: EntityRow): string {
-  const walking = (p['path'] as number[]).length > 0;
-  if (p['status'] === 'dead') return 'Dead';
-  if (p['status'] === 'away') return 'Away';
-  if (p['doing'] === 'hurt') return 'Lying hurt';
-  if (p['doing'] === 'work' && p['job'] === 'carry') return 'Carrying the hurt';
-  if (p['doing'] === 'work' && ['bind', 'dress', 'feed', 'draught'].includes(p['job'] as string))
-    return 'Tending the hurt';
-  if (p['doing'] === 'work' && p['job'] === 'bury') return 'Burying the dead';
-  if (p['doing'] === 'sleep') return walking ? 'Going to bed' : 'Sleeping';
-  if (p['doing'] === 'eat') return walking ? 'Going to eat' : 'Eating';
-  if (p['doing'] === 'relax') return 'Taking it easy';
-  if (p['doing'] === 'work' && p['job'] === 'fell')
-    return walking ? 'Going to fell a tree' : 'Felling';
-  if (p['doing'] === 'work' && p['job'] === 'quarry')
-    return walking ? 'Going to a boulder' : 'Quarrying';
-  if (p['doing'] === 'work' && p['job'] === 'build') return walking ? 'Going to build' : 'Building';
-  if (p['doing'] === 'work' && p['job'] === 'carpentry')
-    return walking ? 'Going to make furniture' : 'Making furniture';
-  if (p['doing'] === 'work' && p['job'] === 'hearth')
-    return walking ? 'Going to make a hearth' : 'Making a hearth';
-  if (p['doing'] === 'work' && p['job'] === 'tend')
-    return walking ? 'Going to a fire' : 'Tending a fire';
-  if (p['doing'] === 'warm') return 'Warming up';
-  if (p['doing'] === 'watch') return walking ? 'Going to the fold' : 'Keeping watch';
-  if (p['doing'] === 'work') return walking ? 'Carrying to the store' : 'Hauling';
-  return walking ? 'Strolling' : 'Idle';
-}
-
-/** What a person is doing and why, in the words of content `work.doing` (P2.9): the sentence,
- * and the line where they took the work up when it has one. */
-export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
-  const words = content.work.doing;
-  const walking = (p['path'] as number[]).length > 0;
-  const say = (key: string, vars: Record<string, string> = {}): string =>
-    (words[key] ?? '').replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? '');
-  const doing = p['doing'] as string;
-  const gone = deadNow(world, p);
-  if (gone) return gone;
-  // Sent away by the Sickness law (P6.5): out of the valley until it passes.
-  if (p['status'] === 'away') {
-    const bout = boutOf(world, p.id);
-    const ill = illDef(bout?.['ill'])?.name ?? 'a sickness';
-    const sent = (bout?.['sent'] as number) ?? 0;
-    return { text: say('away', { ill }), ...(sent > 0 && { why: sent }) };
-  }
-  const care = careNow(world, p, say);
-  if (care) return { text: care };
-  if (doing === 'sleep') return { text: say(walking ? 'goSleep' : 'sleep') };
-  if (doing === 'eat') return { text: say(walking ? 'goEat' : 'eat') };
-  if (doing === 'relax') return { text: say('relax') };
-  if (doing === 'warm') return { text: say('warm') };
-  if (doing === 'watch') return { text: say(walking ? 'goWatch' : 'watch') };
-  if (doing !== 'work') return { text: say(walking ? 'stroll' : 'idle') };
-  const job = p['job'] as string;
-  const took = p['took'] as number;
-  const why = took !== undefined && took > 0 ? { why: took } : {};
-  if (job === 'build') {
-    const plan = plansOf(world).find((r) => r.id === p['plan']);
-    const part = plan && partOf(content, plan['part'] as string);
-    const carrying = loadOf(world, p.id);
-    const next = plan && nextNeed(content, plan);
-    const key = plan?.['state'] === 'down' ? 'takeDown' : next && !carrying ? 'fetch' : 'build';
-    const what = nameOf(content.items, next ? next.material : (part?.material ?? ''));
-    return { text: say(key, { part: part?.name ?? '', what }), ...why };
-  }
-  if (job === 'carpentry') {
-    const { key, vars } = carpentryDoing(world, p);
-    return { text: say(key, vars), ...why };
-  }
-  if (job === 'tend') {
-    const { key, vars } = tendDoing(world, p);
-    return { text: say(key, vars), ...why };
-  }
-  if (job === 'cook' || job === 'charcoal' || job === 'smelt') return { text: say(job), ...why };
-  if (job === 'station') {
-    const kind = stationsOf(world).find((s) => s.id === p['plan'])?.['kind'] as string | undefined;
-    const what = kind === 'pits' ? content.clothes.pits.name : (kind ?? 'smelter');
-    return { text: say(job, { what }), ...why };
-  }
-  if (job === 'cure')
-    return { text: say(job, { what: nameOf(content.items, p['what'] as string) }), ...why };
-  if (job === 'potter')
-    return {
-      text: say(p['make'] === 'carry' ? 'potted' : job, {
-        what: p['make'] === 'brick' ? 'bricks' : 'a pot',
-      }),
-      ...why,
-    };
-  if (job === 'cooper') return { text: say(p['make'] === 'carry' ? 'coopered' : job), ...why };
-  if (job === 'smith') {
-    const [tool = ''] = String(p['making']).split(':');
-    const who = (world.entities['person'] ?? []).find((q) => q.id === p['plan']);
-    return { text: say('smith', { tool, who: (who?.['name'] as string) ?? '' }), ...why };
-  }
-  if (job === 'farm') {
-    const f = fieldsOf(world).find((r) => r.id === p['plan']);
-    const crop =
-      f &&
-      (content.buildings.field.crops.find((c) => c.id === f['crop']) ?? cropNow(world, content, f));
-    const seed = loadOf(world, p.id)?.['kind'] === content.buildings.field.seed;
-    const key = f?.['state'] === 'ripe' ? 'reap' : seed ? 'sow' : 'fetchSeed';
-    return { text: say(key, { crop: crop?.name ?? '' }), ...why };
-  }
-  if (job === 'herd') {
-    const { key, vars } = herdDoing(world, p);
-    return { text: say(key, vars), ...why };
-  }
-  if (job === 'hearth') return { text: say('hearth', hearthDoing(world, p)), ...why };
-  if (job === 'mine') {
-    // Sinking, tunnelling or mining for a metal's ingot plate, or digging clay for a wall.
-    const task = p['task'] as string;
-    const what = p['what'] as string;
-    const plate = content.work.stock.find((s) => s.good === `${what}-ingot`);
-    const level = plate && (stockOf(world, plate.good)?.['level'] as string | undefined);
-    const vars = { metal: what, part: what, good: plate?.name ?? '', level: level ?? '' };
-    return { text: say(task === 'sink' ? 'shaft' : task, vars), ...why };
-  }
-  if (job === 'fell' || job === 'forage' || job === 'quarry') {
-    const tile = p['target'] as number;
-    const feature = job === 'forage' && tile >= 0 ? world.map.features[tile] : 0;
-    const herbs = !!feature && content.features[feature - 1]?.kind === 'herb';
-    const good =
-      job === 'fell'
-        ? content.work.stock[0]?.good
-        : job === 'quarry'
-          ? content.work.quarry.good
-          : herbs
-            ? content.work.forage.herbs.good
-            : content.work.forage.good;
-    const def = content.work.stock.find((s) => s.good === good);
-    const level = (good && stockOf(world, good)?.['level']) as string | undefined;
-    return {
-      text: say(herbs ? 'forageHerbs' : job, { good: def?.name ?? good ?? '', level: level ?? '' }),
-      ...why,
-    };
-  }
-  const items = itemsOf(world);
-  const item = loadOf(world, p.id) ?? items.find((i) => i.id === (p['target'] as number));
-  return { text: say('haul', { what: item ? nameOf(content.items, item['kind'] as string) : '' }) };
-}
 
 /** A person's mood and needs as bars. */
 function barsOf(world: WorldState, p: EntityRow): { mood: NeedView; needs: NeedView[] } {

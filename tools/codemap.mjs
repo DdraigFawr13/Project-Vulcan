@@ -18,9 +18,13 @@ function purpose(folder) {
   return (line ?? '').trim();
 }
 
-function exportsOf(folder) {
-  const file = path.join(folder, 'index.ts');
-  if (!existsSync(file)) return [];
+const exportsOf = (folder) => namesIn(path.join(folder, 'index.ts'), new Set());
+
+// The names a file exports; `export * from` and `export type * from` are followed into the file
+// they name, so a hub that passes a system's surface on whole still lists its names.
+function namesIn(file, seen) {
+  if (!existsSync(file) || seen.has(file)) return [];
+  seen.add(file);
   const text = readFileSync(file, 'utf8');
   const names = [
     ...text.matchAll(
@@ -40,8 +44,11 @@ function exportsOf(folder) {
         )
         .filter(Boolean),
     );
-  for (const m of text.matchAll(/export\s+\*\s+(?:as\s+(\w+)\s+)?from\s+'([^']+)'/g))
-    names.push(m[1] ?? `* from ${m[2]}`);
+  for (const m of text.matchAll(/export\s+(?:type\s+)?\*\s+(?:as\s+(\w+)\s+)?from\s+'([^']+)'/g))
+    if (m[1]) names.push(m[1]);
+    else if (m[2].startsWith('.'))
+      names.push(...namesIn(path.resolve(path.dirname(file), m[2]), seen));
+    else names.push(`* from ${m[2]}`);
   return [...new Set(names)].sort();
 }
 

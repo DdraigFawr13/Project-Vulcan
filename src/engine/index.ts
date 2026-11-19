@@ -1,31 +1,24 @@
 // The engine's one public surface. The engine is pure: same seed, content and commands, same
 // ledger, tick for tick (DECISIONS V-002, V-006). The worker is the only place it is run.
+// Each system's index.ts is its public surface, passed on whole: a system that exports a new name
+// needs no line here. A new system adds one export line and its entry in SYSTEMS.
 import { beesSystem } from './bees/index.ts';
 import { buildSystem } from './build/index.ts';
 import { calendarSystem } from './calendar/index.ts';
 import { fireSystem } from './fire/index.ts';
 import { flockSystem } from './flock/index.ts';
-import { lampSystem } from './lamp/index.ts';
-export { barrelsAt, floorsOf, potsAt, rateOf } from './keep/index.ts';
-import { keepSystem } from './keep/index.ts';
 import { goodsSystem } from './goods/index.ts';
 import { healthSystem } from './health/index.ts';
+import { keepSystem } from './keep/index.ts';
+import { lampSystem } from './lamp/index.ts';
+import { lawSystem } from './law/index.ts';
 import { mapSystem } from './map/index.ts';
 import { mineSystem } from './mine/index.ts';
 import { needsSystem } from './needs/index.ts';
-import { lawSystem } from './law/index.ts';
 import { peopleSystem, strangersSystem } from './people/index.ts';
 import { regionSystem } from './region/index.ts';
-import { talesSystem } from './tales/index.ts';
-export {
-  ambitionOf,
-  ambitionText,
-  practiceOf,
-  rolesOf,
-  scoresOf,
-  selfSystem,
-} from './self/index.ts';
 import { selfSystem } from './self/index.ts';
+import { talesSystem } from './tales/index.ts';
 import { weatherSystem } from './weather/index.ts';
 import { wildSystem } from './wild/index.ts';
 import type { EngineContent } from './core/index.ts';
@@ -36,242 +29,28 @@ export * from './log/index.ts';
 export * from './entity/index.ts';
 export { applyDue, createWorld, replay, step, submitCommand } from './sim/index.ts';
 export type { Cadence, Sim, SimHooks, System, SystemContext } from './sim/index.ts';
-export {
-  bedOwnedBy,
-  bedsOf,
-  burialGround,
-  middensOf,
-  burialsOf,
-  freePlots,
-  gravesOf,
-  inBurial,
-  benchOf,
-  buildSystem,
-  buildWantOf,
-  dirFrom,
-  furnitureKind,
-  furnitureOf,
-  greenOf,
-  cropNow,
-  courseNow,
-  farFromWater,
-  meanSoil,
-  wetDays,
-  ringOf,
-  cropOf,
-  fieldDone,
-  fieldsOf,
-  fieldTiles,
-  foldRect,
-  foldTiles,
-  grazingTiles,
-  hurdleTiles,
-  livePastures,
-  nextRoad,
-  roadAt,
-  roadsOf,
-  meadowTiles,
-  pasturesOf,
-  homeless,
-  houseAt,
-  housesOf,
-  mainOf,
-  nextWant,
-  nthOf,
-  partOf,
-  pieceAt,
-  piecesOf,
-  planAt,
-  nextNeed,
-  planPart,
-  plansOf,
-  qualityOf,
-  rectOf,
-  roomAt,
-  roomLacks,
-  roomName,
-  roomsOf,
-  rowsOf,
-  sizeOf,
-  waterSpots,
-  wellsOf,
-  ingotInStore,
-  sendBackBlock,
-  smithiesOf,
-  millOf,
-  millRefusal,
-  turning,
-  stationAt,
-  stationOf,
-  stationsOf,
-  type Room,
-  hallOf,
-  homeFor,
-  householdOf,
-  sleepsIn,
-  whoseOf,
-} from './build/index.ts';
-export { calendarSystem } from './calendar/index.ts';
-export {
-  armOut,
-  bedWords,
-  bodiesOf,
-  bodyOf,
-  healthSystem,
-  herbedNow,
-  isDown,
-  markPercent,
-  openWounds,
-  pronouns,
-  scarsOf,
-  severityOf,
-  withoutAccidents,
-  woundName,
-  woundsOf,
-  woundWords,
-} from './health/index.ts';
-export { SHAFT_STATES } from './mine/index.ts';
-export { ashIn, fireOf, fireSystem, heatAt, placeOf } from './fire/index.ts';
-export { daylightAt, litRooms } from './lamp/index.ts';
-export { skepsOf } from './bees/index.ts';
-export { shaftFor, shaftsOf } from './mine/index.ts';
-export {
-  freeTile,
-  garmentOf,
-  leftOf,
-  wornOf,
-  goodsSystem,
-  daysToHarvest,
-  foodDays,
-  depotsOf,
-  depotTiles,
-  insideDepot,
-  haveOf,
-  heldBy,
-  ingotWant,
-  inStore,
-  isTree,
-  itemsAt,
-  itemsOf,
-  lifeFor,
-  loadOf,
-  marksOf,
-  sparesOf,
-  speedOf,
-  stockOf,
-  storeOf,
-  toolOf,
-  trailOf,
-  wantOf,
-} from './goods/index.ts';
-export {
-  addMemories,
-  addMemory,
-  bandOf,
-  feltAt,
-  goesAt,
-  heldMemoriesOf,
-  memoriesOf,
-  memoryName,
-  moodOf,
-  needOf,
-  needsSystem,
-  strongestFirst,
-  thoughtOf,
-  warmLineOf,
-  type Band,
-  type Thought,
-} from './needs/index.ts';
-export {
-  customaryHours,
-  hoursOf,
-  lawDef,
-  lawHours,
-  lawSystem,
-  leanOf,
-  settingOf,
-  weigh,
-  WORK_HOURS,
-  type Answer,
-} from './law/index.ts';
-export {
-  byAFire,
-  dayOf,
-  declinedLine,
-  drawBand,
-  levelOf,
-  peopleSystem,
-  PEOPLE_TABLES,
-  progressOf,
-  setLineHook,
-  tradeOf,
-  winterEvening,
-  yesterdayOf,
-} from './people/index.ts';
-export type { Day, Tally, Home, Person, LineHook, LineNeed } from './people/index.ts';
-export { makeRegion, regionSystem, siteOf, valleyOf } from './region/index.ts';
-export { beliefsOf, storiesOf, taleDef, talesOf, taleText, talesSystem } from './tales/index.ts';
-export type { Region, RegionNeighbour, RegionSite, RegionValley } from './region/index.ts';
-export { isFrozen, tileTemperature, weatherSystem, weatherWords } from './weather/index.ts';
-export {
-  addToRick,
-  animalWord,
-  butcher,
-  canTame,
-  daysTo,
-  flockOf,
-  flocksOf,
-  flockSystem,
-  FLOCK_TABLES,
-  foldFlock,
-  headOf,
-  keptOf,
-  kindDef,
-  marked,
-  mowable,
-  mowTile,
-  noteLeftOut,
-  openFlock,
-  pastureOf,
-  readySwaths,
-  shear,
-  shearable,
-  takeHay,
-  takeIn,
-  tameTargets,
-} from './flock/index.ts';
-export {
-  animalsOf,
-  herdOf,
-  herdsOf,
-  wildHerdsOf,
-  feedPack,
-  huntable,
-  killAnimal,
-  markAttack,
-  packArrival,
-  packOf,
-  predatorsNear,
-  printsAt,
-  setLures,
-  spareCount,
-  tameAnimal,
-  WILD_TABLES,
-  wildSystem,
-  withoutWild,
-  woundPredator,
-} from './wild/index.ts';
-export {
-  auraAt,
-  CHUNK,
-  chunksAcross,
-  chunksDown,
-  chunkTiles,
-  walksADay,
-  layerOf,
-  mapSystem,
-  setTile,
-} from './map/index.ts';
+export * from './bees/index.ts';
+export * from './build/index.ts';
+export * from './calendar/index.ts';
+export * from './fire/index.ts';
+export * from './flock/index.ts';
+export * from './goods/index.ts';
+export * from './health/index.ts';
+export * from './keep/index.ts';
+export * from './lamp/index.ts';
+export * from './law/index.ts';
+export * from './map/index.ts';
+export * from './mine/index.ts';
+export * from './needs/index.ts';
+export * from './people/index.ts';
+export * from './region/index.ts';
+export * from './self/index.ts';
+export * from './tales/index.ts';
+export * from './weather/index.ts';
+export * from './wild/index.ts';
+// Two names more than one system exports: the engine's surface takes these.
+export { placeOf } from './fire/index.ts';
+export type { Hours } from './core/index.ts';
 
 /** The test-mode tools (V-041): direct orders on a tile, never levers. The worker refuses them
  * unless the page opened in test mode. */

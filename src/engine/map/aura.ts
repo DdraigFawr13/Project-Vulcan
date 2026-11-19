@@ -11,7 +11,7 @@ import type {
   MapState,
   RngStream,
 } from '../core/index.ts';
-import { WATER } from '../core/index.ts';
+import { roughDistance, WATER } from '../core/index.ts';
 import { bake, fractalNoise, quantile } from './noise.ts';
 
 const LAKE = WATER.indexOf('lake');
@@ -28,13 +28,6 @@ const AROUND = [
 ] as const;
 /** Picks give up after this many tries per site kind. */
 const TRIES = 30;
-
-/** Distance in whole tiles, near enough to round: the long side plus half the short (no roots). */
-export const ringOf = (dx: number, dy: number): number => {
-  const a = Math.abs(dx);
-  const b = Math.abs(dy);
-  return a > b ? a + (b >> 1) : b + (a >> 1);
-};
 
 /** How many tiles in the square of side 2 * reach + 1 around `i` pass `test`. */
 function around(i: number, W: number, reach: number, test: (j: number) => boolean): number {
@@ -168,7 +161,7 @@ export function auraAt(
   let spot: AuraSpot | undefined;
   for (const s of map.auraSpots) {
     if (s.z !== z) continue;
-    const ring = ringOf(s.x - x, s.y - y);
+    const ring = roughDistance(s.x - x, s.y - y);
     if (ring > dials.radius) continue;
     const value = s.strength - dials.falloff * ring;
     if (value > aura) {
