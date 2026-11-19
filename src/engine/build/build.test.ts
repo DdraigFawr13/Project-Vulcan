@@ -24,6 +24,9 @@ const content = withoutAccidents(game);
 
 const sim = createSim(content);
 const DAY = 1440;
+// One ledger world per file (~0.3 s each to make); every test works on its own clone (~5 ms).
+let base: WorldState | undefined;
+const fresh = () => structuredClone((base ??= createWorld(sim, 'ledger')));
 
 /** Free open tiles with nothing growing on them, nearest the start first, in a block `n` wide
  * and `rows` deep (row by row). */
@@ -53,7 +56,7 @@ const place = (world: WorldState, part: string, tiles: { x: number; y: number }[
 
 describe('building', () => {
   it('builds a planned stone wall from quarried stone, unordered, and takes it down', () => {
-    const world = createWorld(sim, 'ledger');
+    const world = fresh();
     const wall = rowOfFree(world, 3);
     place(world, 'wall-stone', wall);
     step(world, sim, 10);
@@ -94,7 +97,7 @@ describe('building', () => {
   });
 
   it('refuses a plan on water, on a tree or twice on one tile', () => {
-    const world = createWorld(sim, 'ledger');
+    const world = fresh();
     const map = world.map;
     const water = map.tiles.findIndex((t) => content.terrain.kinds[t]!.water);
     const tree = [...map.features].findIndex((f) => f && content.features[f - 1]!.kind === 'tree');
@@ -117,7 +120,7 @@ describe('building', () => {
   });
 
   it('leaves the last wall of a ring round the store unbuilt, and says why', () => {
-    const world = createWorld(sim, 'ledger');
+    const world = fresh();
     const block = rowOfFree(world, 3, 3);
     const [inside] = block.splice(4, 1);
     submitCommand(world, { tick: world.tick + 1, kind: 'markStore', data: inside! });
@@ -134,7 +137,7 @@ describe('building', () => {
   });
 
   it('builds a wooden stair down that reaches level 1', () => {
-    const world = createWorld(sim, 'ledger');
+    const world = fresh();
     const [at] = rowOfFree(world, 1);
     place(world, 'stair-wood', [at!]);
     step(world, sim, 2 * DAY);

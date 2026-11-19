@@ -23,9 +23,14 @@ const firstHouse = (w: World) => housesOf(w).find((h) => !h['of'])!;
 // A seed's first ten days, run once and shared by the read-only tests below (they must not step
 // or change it). `early` is what day 1 showed: the log is sealed by day 10, so the cottage's
 // reason is read then.
+// `day3` is a copy of the world on day 3, for the tests that read or carry on from there.
 const tenDays = new Map<
   string,
-  { world: World; early: { size: unknown; chain: string[]; why: unknown; orders: number } }
+  {
+    world: World;
+    day3: World;
+    early: { size: unknown; chain: string[]; why: unknown; orders: number };
+  }
 >();
 function ranWith(seed: string) {
   let r = tenDays.get(seed);
@@ -39,8 +44,10 @@ function ranWith(seed: string) {
       why: firstHouse(world)['why'],
       orders: world.commandLog.length,
     };
-    step(world, sim, 9 * DAY);
-    r = { world, early };
+    step(world, sim, 2 * DAY);
+    const day3 = structuredClone(world);
+    step(world, sim, 7 * DAY);
+    r = { world, day3, early };
     tenDays.set(seed, r);
   }
   return r;
@@ -82,16 +89,18 @@ describe('houses', () => {
   });
 
   it('carries goods lying where a room goes aside, then builds the room there', () => {
-    const world = createWorld(sim, 'ledger/1');
     // Just as the cottage's last part stands, before it is counted built and grows a room.
-    const done = () => {
-      const h = housesOf(world).find((o) => !o['of']);
-      const mine = plansOf(world).filter((p) => p['house'] === h?.id);
+    const done = (w: World) => {
+      const h = housesOf(w).find((o) => !o['of']);
+      const mine = plansOf(w).filter((p) => p['house'] === h?.id);
       return !!mine.length && mine.every((p) => p['state'] === 'built');
     };
-    while (!done() && world.tick < 9 * DAY) step(world, sim, 1);
+    // Tick by tick from day 3 of the shared run if the cottage is not finished by then.
+    const { day3 } = ranWith('ledger/1');
+    const world = done(day3) ? createWorld(sim, 'ledger/1') : structuredClone(day3);
+    while (!done(world) && world.tick < 9 * DAY) step(world, sim, 1);
     const house = firstHouse(world);
-    expect(done()).toBe(true);
+    expect(done(world)).toBe(true);
     // Felled logs lie on every tile round the house, as on a cleared forest site.
     const [x0, y0] = [house['x'] as number, house['y'] as number];
     for (let y = y0 - 6; y < y0 + (house['h'] as number) + 6; y += 1)
@@ -140,8 +149,7 @@ describe('houses', () => {
   }
 
   it('works out a room from its walls and door', () => {
-    const world = createWorld(sim, 'ledger/1');
-    step(world, sim, 3 * DAY);
+    const world = structuredClone(ranWith('ledger/1').day3);
     const h = firstHouse(world);
     const [x, y] = [h['x'] as number, h['y'] as number];
     // Outside the house and on its wall there is no room; inside, the cottage's 4 by 2 floor.

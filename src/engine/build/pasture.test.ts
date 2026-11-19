@@ -60,6 +60,8 @@ function siteOne(w: World): number {
 describe('pasture', () => {
   const world = createWorld(sim, SEED);
   const sitedDay = siteOne(world);
+  // The world the day it was sited, for the send-back test (the others step `world` on).
+  const sited = structuredClone(world);
 
   it('is sited unordered, outside the ring, with a reason that leads back to the need', () => {
     expect(world.commandLog).toHaveLength(0);
@@ -145,8 +147,7 @@ describe('pasture', () => {
   });
 
   it('takes the Pasture row and one send-back, then chooses again', () => {
-    const w = createWorld(sim, SEED);
-    siteOne(w);
+    const w = sited;
     const first = pasturesOf(w)[0]!;
     submitCommand(w, { tick: w.tick + 1, kind: 'setBuild', data: { kind: 'pasture', level: 4 } });
     submitCommand(w, { tick: w.tick + 2, kind: 'sendBack', data: { pasture: first.id } });
