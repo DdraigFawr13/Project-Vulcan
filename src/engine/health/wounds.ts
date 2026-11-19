@@ -51,7 +51,8 @@ export const HEALTH_TABLES: Schemas = {
    * `bed` the furniture piece or bedroll they were laid on (0 for
    * none) and `roll` 1 when it is a bedroll; `died` the death line (0 while alive) and `diedAt`
    * its tick; `alerted` 1
-   * once an unburied body has been said; `missed` 1 once someone went to look for them. */
+   * once an unburied body has been said; `missed` 1 once someone went to look for them; `away` 1
+   * for someone who died away from the valley (P6.5), with no body to bring home or bury. */
   body: {
     person: 'entity',
     blood: 'count',
@@ -66,6 +67,7 @@ export const HEALTH_TABLES: Schemas = {
     diedAt: 'int',
     alerted: 'count',
     missed: 'count',
+    away: 'count',
   },
 };
 
@@ -142,7 +144,7 @@ export function ensureBody(world: WorldState, content: EngineContent, p: EntityR
   if (had) return had;
   addEntity(world, 'body', {
     ...{ person: p.id, blood: content.health.blood.full, down: 0, carrier: 0, healer: 0 },
-    ...{ finder: 0, found: 0, bed: 0, roll: 0, died: 0, diedAt: 0, alerted: 0, missed: 0 },
+    ...{ finder: 0, found: 0, bed: 0, roll: 0, died: 0, diedAt: 0, alerted: 0, missed: 0, away: 0 },
   });
   return bodyOf(world, p.id)!;
 }

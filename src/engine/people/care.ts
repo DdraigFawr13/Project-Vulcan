@@ -23,6 +23,7 @@ import {
 } from '../health/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { inSickHouse, toSickHouse } from './apart.ts';
 import { feeding, seekFeeders } from './feed.ts';
 import { predatorRung } from './flee.ts';
 import { sew } from './surgery.ts';
@@ -63,7 +64,8 @@ const unbound = (ctx: SystemContext, person: number): EntityRow[] =>
   );
 
 /** Where a hurt person is laid: a free sickroom bed, else their own bed, else their bedroll; one
- * someone carrying them can reach. */
+ * someone carrying them can reach. Someone sent to the sick-house (P6.5, apart.ts) is laid there
+ * first, and nobody else is; until one stands or has a bed free, they lie at home. */
 function bedFor(
   ctx: SystemContext,
   p: EntityRow,
@@ -74,8 +76,12 @@ function bedFor(
       .filter((b) => b['person'] !== p.id && b['bed'])
       .map((b) => b['bed']),
   );
+  const apart = toSickHouse(ctx, p);
   const sick = piecesOf(world, 'bed').filter(
-    (b) => b['z'] === 0 && !!houseAt(world, b['x'] as number, b['y'] as number)?.['sick'],
+    (b) =>
+      b['z'] === 0 &&
+      !!houseAt(world, b['x'] as number, b['y'] as number)?.['sick'] &&
+      inSickHouse(world, b) === apart,
   );
   const own = bedOwnedBy(world, p.id);
   const roll = itemsOf(world).find(

@@ -237,7 +237,7 @@ export function deadNow(
   const when = same
     ? say('today')
     : say('onDay', { day: `${c.day} ${content.calendar.monthNames[c.month]!}` });
-  const doing = content.work.doing['dead'] ?? '';
+  const doing = content.work.doing[bodyOf(world, p.id)?.['away'] ? 'diedAway' : 'dead'] ?? '';
   const text = doing
     .replace('{time}', `${pad(c.hour)}:${pad(c.minute)}`)
     .replace('{when}', when)

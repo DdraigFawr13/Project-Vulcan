@@ -33,7 +33,8 @@ export const HOUSE_TABLES: Schemas = {
    * last looked for where to add a room, and `full` 1 when no side of it had ground for one;
    * `wall` the id of the wall part it is built in (a room keeps its house's, V-097);
    * `cold` the line saying a cold room of it had no floor free for a hearth (phase review);
-   * `sick` 1 for a room added as the sickroom (P5.6), whose beds are the hurt's, nobody's own;
+   * `sick` 1 for a room added as the sickroom (P5.6), whose beds are the hurt's, nobody's own,
+   * and 2 for the sick-house the Sickness law asks for (P6.5, sickhouse.ts);
    * `owner` the person whose home it is (P5.14, beds.ts), 0 for the band's houses; `hall` the
    * line the first house became the hall under (homes.ts). */
   house: {

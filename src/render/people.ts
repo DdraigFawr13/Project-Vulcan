@@ -25,6 +25,9 @@ const CARRIED = { x: 4, y: 7 };
 
 const colour = (hex: string): number => Number.parseInt(hex.slice(1), 16);
 
+/** Not drawn on the map: the buried, and anyone away from the valley (P6.5). */
+const hidden = (lying: string | undefined): boolean => lying === 'buried' || lying === 'away';
+
 type Facing = 'n' | 'e' | 's' | 'w';
 
 interface Shown {
@@ -101,14 +104,14 @@ export class PeopleSprites {
   /** The person standing on a tile of the level on screen, if any. */
   at(x: number, y: number): PersonView | undefined {
     return this.people.find(
-      (p) => p.x === x && p.y === y && p.z === this.z && this.lying.get(p.id)?.lying !== 'buried',
+      (p) => p.x === x && p.y === y && p.z === this.z && !hidden(this.lying.get(p.id)?.lying),
     );
   }
 
   /** Where a person stands now (their tile and level), for the camera to find them. */
   place(id: number): { x: number; y: number; z: number } | undefined {
     const p = this.people.find((q) => q.id === id);
-    return p && this.lying.get(id)?.lying !== 'buried' ? { x: p.x, y: p.y, z: p.z } : undefined;
+    return p && !hidden(this.lying.get(id)?.lying) ? { x: p.x, y: p.y, z: p.z } : undefined;
   }
 
   /** Everyone drawn on the level on screen, at the middle of the tile their sprite is at now. */
@@ -165,13 +168,13 @@ export class PeopleSprites {
   }
 
   /** Lying people (P5.6, P5.8): the stacked body, clothes and hair turn 90 degrees about the tile's
-   * middle; the dead go grey, the buried are not drawn, and a carried person lies over their
+   * middle; the dead go grey, the buried and those away are not drawn, and a carried person lies over their
    * carrier a few pixels off. A picture choice only. */
   private restyle(s: Shown): void {
     const st = this.lying.get(s.view.id);
     const lying = st?.lying;
     s.off = st?.carried ? CARRIED : { x: 0, y: 0 };
-    s.box.setVisible(lying !== 'buried').setDepth(st?.carried ? 8.2 : lying ? 7.9 : 8);
+    s.box.setVisible(!hidden(lying)).setDepth(st?.carried ? 8.2 : lying ? 7.9 : 8);
     const dead = lying === 'dead' || lying === 'buried';
     const tints: [Phaser.GameObjects.Image | undefined, number | undefined][] = [
       [s.body, undefined],

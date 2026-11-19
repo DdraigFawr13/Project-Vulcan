@@ -35,6 +35,7 @@ import { planSmithy, SMITHY_TABLES, sendBackSmithy } from './smithy.ts';
 import { BURIAL_TABLES, planBurial, sendBackBurial } from './burial.ts';
 import { HERB_TABLES, planHerbGarden } from './herbs.ts';
 import { MIDDEN_TABLES, planMidden } from './midden.ts';
+import { planSickHouse } from './sickhouse.ts';
 import { planSickroom } from './sickroom.ts';
 import { finishRoads, planRoads, ROAD_TABLES } from './roads.ts';
 
@@ -165,7 +166,13 @@ export const buildSystem: System = {
     ...['pasture.needed', 'pasture.sited', 'pasture.sentBack', 'pasture.noGround', 'pasture.built'],
     ...['smithy.sited', 'smithy.noGround', 'smithy.built', 'smithy.sentBack'],
     ...['pits.planned', 'pits.noGround', 'pits.sentBack'],
-    ...['build.sickroom', 'build.burialSited', 'build.burialSentBack', 'build.middenSited'],
+    ...[
+      'build.sickroom',
+      'build.sickHouse',
+      'build.burialSited',
+      'build.burialSentBack',
+      'build.middenSited',
+    ],
     ...['build.roadPlanned', 'build.roadLaid'],
     ...['build.quernPlanned', 'build.millNeeded', 'build.millBuilt', 'build.millSentBack'],
     ...['build.ovenPlanned', 'mill.stood', 'mill.turns'],
@@ -275,6 +282,8 @@ export const buildSystem: System = {
     planPits(ctx, green);
     // P5.6, P5.8: a sickroom once enough lie hurt; a burial ground at the first death.
     planSickroom(ctx, green);
+    // P6.5: a sick-house at the edge while the Sickness law lays the catching-sick apart.
+    planSickHouse(ctx, green);
     planBurial(ctx, green);
     // P5.4a: a midden at the first offal.
     planMidden(ctx, green);

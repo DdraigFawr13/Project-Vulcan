@@ -25,6 +25,8 @@ export interface LawSettingDef {
   /** Needs the setting is known to leave low, not held against it (hunger under rations). */
   expects?: readonly string[];
   store?: { lasts: number; short: number };
+  /** P6.5 Sickness: the catching-sick lie in the sick-house (`house`) or leave the valley. */
+  sick?: 'house' | 'away';
   /** For the Strangers law (P5.9): the reason kinds a split band lets in. */
   lets?: readonly string[];
   /** The memory a refusal leaves on those who see it, and the one a grumbler keeps. */
