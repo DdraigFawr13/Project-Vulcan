@@ -16,6 +16,7 @@ import { needsSystem } from './needs/index.ts';
 import { lawSystem } from './law/index.ts';
 import { peopleSystem, strangersSystem } from './people/index.ts';
 import { regionSystem } from './region/index.ts';
+import { talesSystem } from './tales/index.ts';
 import { weatherSystem } from './weather/index.ts';
 import { wildSystem } from './wild/index.ts';
 import type { EngineContent } from './core/index.ts';
@@ -183,6 +184,7 @@ export {
   type Answer,
 } from './law/index.ts';
 export {
+  byAFire,
   dayOf,
   declinedLine,
   drawBand,
@@ -192,10 +194,12 @@ export {
   progressOf,
   setLineHook,
   tradeOf,
+  winterEvening,
   yesterdayOf,
 } from './people/index.ts';
 export type { Day, Tally, Home, Person, LineHook, LineNeed } from './people/index.ts';
 export { makeRegion, regionSystem, siteOf, valleyOf } from './region/index.ts';
+export { beliefsOf, storiesOf, taleDef, talesOf, taleText, talesSystem } from './tales/index.ts';
 export type { Region, RegionNeighbour, RegionSite, RegionValley } from './region/index.ts';
 export { isFrozen, tileTemperature, weatherSystem, weatherWords } from './weather/index.ts';
 export {
@@ -285,6 +289,7 @@ export const SYSTEMS: readonly System[] = [
   lampSystem,
   needsSystem,
   lawSystem,
+  talesSystem,
   calendarSystem,
   weatherSystem,
   wildSystem,

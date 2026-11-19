@@ -1,5 +1,12 @@
 // Game time from a tick count: one tick is one game minute (docs/ARCHITECTURE.md "Tick").
-import type { CalendarDef } from './types.ts';
+
+/** The forked calendar (src/content/data/calendar.json). */
+export interface CalendarDef {
+  daysPerMonth: number;
+  monthsPerYear: number;
+  seasons: readonly string[];
+  monthNames: readonly string[];
+}
 
 export const TICKS_PER_HOUR = 60;
 export const TICKS_PER_DAY = 1440;

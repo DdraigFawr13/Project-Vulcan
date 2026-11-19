@@ -28,7 +28,7 @@ function warmAt(ctx: SystemContext, i: number): boolean {
 }
 
 /** The nearest warm tile `p` can reach that is not a hearth itself. */
-function nearestWarm(ctx: SystemContext, p: EntityRow): Spot | undefined {
+export function nearestWarm(ctx: SystemContext, p: EntityRow): Spot | undefined {
   const { world, content } = ctx;
   const width = world.map.width;
   const here = spotOf(p);

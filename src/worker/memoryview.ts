@@ -20,7 +20,7 @@ import type { MemoryView } from './protocol-people.ts';
 const BANDS = { light: 'Light', heavy: 'Heavy', lasting: 'Lasting' } as const;
 
 /** A game day in words: "6 Thawmonth". */
-function dayWords(day: number): string {
+export function dayWords(day: number): string {
   const c = clockAt(day * TICKS_PER_DAY, content.calendar);
   return `${c.day} ${content.calendar.monthNames[c.month]}`;
 }
