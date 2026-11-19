@@ -9,7 +9,7 @@ import { armOut } from '../health/index.ts';
 import { needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { isDark } from '../lamp/index.ts';
-import { hoursOf } from '../law/index.ts';
+import { hoursOf, rationed } from '../law/index.ts';
 import { bedOwnedBy, fieldTiles, liveFields } from '../build/index.ts';
 import { bankFire } from '../fire/index.ts';
 import { reachFrom } from '../paths/index.ts';
@@ -160,7 +160,9 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   // A tamer sits far from the store, so goes back sooner (flock.json `tame.back`, herdtask.ts).
   const taming = p['job'] === content.flock.job && p['task'] === 'tame';
   const seek = taming ? content.flock.tame.back : lineOf(ctx, p, 'food');
-  if (valueOf(ctx, p, 'food') < seek && world.tick >= (p['retry'] as number)) {
+  // Keeping the Rations law (P6.5), they eat no more once today's share is eaten.
+  const held = rationed(world, content, p);
+  if (valueOf(ctx, p, 'food') < seek && !held && world.tick >= (p['retry'] as number)) {
     // Seed grain only when under the warning line with nothing else to reach (P4.7).
     if (goEat(ctx, p, false) || (valueOf(ctx, p, 'food') <= life.seedAt && goEat(ctx, p, true))) {
       p['doing'] = 'eat';

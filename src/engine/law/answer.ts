@@ -1,10 +1,12 @@
 // The band's answers to a law (P4.8, V-091): worked out for everyone when its setting changes,
 // and again for someone when a memory that weighs on it is added. Obeys keeps the law's hours;
 // grumbles keeps them and remembers it; refuses keeps the customary hours.
-import type { EntityRow, LawSettingDef } from '../core/index.ts';
+import { TICKS_PER_DAY, type EntityRow, type LawSettingDef } from '../core/index.ts';
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { lawDef } from './hours.ts';
+import { shareOf } from './share.ts';
 import { weigh, type Weighed } from './weigh.ts';
 
 export const LAW_TABLES: Schemas = {
@@ -12,7 +14,7 @@ export const LAW_TABLES: Schemas = {
   law: { law: 'text', setting: 'text', line: 'event', changed: 'int' },
   /** A person's answer to a law: obeys, grumbles or refuses, the willingness behind it, what
    * weighed for and against (words joined by `|`), the memory lines that weighed (`cites`), their
-   * signature (`mems`) and the line where they last answered. */
+   * signature (`mems`), the line where they last answered and the tick they last changed it. */
   answer: {
     person: 'entity',
     law: 'text',
@@ -23,6 +25,11 @@ export const LAW_TABLES: Schemas = {
     cites: 'events',
     mems: 'text',
     line: 'event',
+    at: 'int',
+    /** The Rations law (P6.5): food worth left of their share, filled each midnight, and the tick
+     * a refuser last took a full plate in a line (rations.ts). */
+    left: 'int',
+    flouted: 'int',
   },
 };
 
@@ -64,26 +71,44 @@ function record(
     mems: w.mems,
     line,
   };
-  if (row) Object.assign(row, fields);
-  else addEntity(ctx.world, 'answer', { person: p.id, law, ...fields });
+  if (row) Object.assign(row, fields, { at: ctx.world.tick });
+  else
+    addEntity(ctx.world, 'answer', {
+      person: p.id,
+      law,
+      ...fields,
+      at: 0,
+      left: shareOf(ctx, s),
+      flouted: -1,
+    });
   if (w.answer === 'grumbles' && s.grumbled) addMemory(ctx, p.id, s.grumbled, line);
 }
 
-/** Everyone answers the law's new setting `s`, set by line `cause`; the custom asks nothing. */
+/** Whether everyone weighs `s` while it stands: not the law's start (the custom asks nothing), nor
+ * a law answered only when a case splits the band (P6.5). */
+export const answered = (ctx: SystemContext, law: string, s: LawSettingDef): boolean => {
+  const def = lawDef(ctx.content, law);
+  return !!def && s.id !== def.start && !def.split;
+};
+
+/** Everyone answers the law's new setting `s`, set by line `cause`. */
 export function answerAll(ctx: SystemContext, law: string, s: LawSettingDef, cause: number): void {
   for (const a of answersOf(ctx, law)) removeEntity(ctx.world, 'answer', a.id);
-  if (!s.hours) return;
+  if (!answered(ctx, law, s)) return;
   for (const p of alive(ctx))
     record(ctx, law, s, p, weigh(ctx.world, ctx.content, p.id, s), [cause], undefined);
 }
 
 /** Answers again for whoever holds a memory that weighs on `s` and was not weighed yet. A changed
  * answer is a line; the same one keeps its reasons, which match that line, and only notes what
- * was weighed. */
+ * was weighed. Someone who changed their answer holds it `settle` days first (P6.5). */
 export function reweigh(ctx: SystemContext, law: string, s: LawSettingDef): void {
+  const settle = ctx.content.laws.answer.settle * TICKS_PER_DAY;
   for (const row of answersOf(ctx, law)) {
     const p = alive(ctx).find((q) => q.id === row['person']);
     if (!p) continue;
+    const at = (row['at'] as number | undefined) ?? 0;
+    if (at && ctx.world.tick < at + settle) continue;
     const w = weigh(ctx.world, ctx.content, p.id, s);
     if (w.mems === row['mems']) continue;
     if (w.answer !== row['answer']) record(ctx, law, s, p, w, [], row);

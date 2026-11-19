@@ -170,10 +170,12 @@ test('the Build sheet and the Laws page are levels and laws, 44 px each', async 
   await houses.getByRole('button', { name: 'Houses: lower' }).click();
   await expect(houses).toContainText('second');
   expect(await phoneRules(page)).toEqual([]);
-  // P5.9: the Laws page folds Work hours to one line and holds the Strangers law, Those in need
-  // from the start (V-117). It names no stranger and admits no one.
+  // P5.9, P6.5: the Laws page folds every law to one line, one open at a time. The Strangers law
+  // is Those in need from the start (V-117); it names no stranger and admits no one.
   await more('laws');
+  await expect(p.locator('.lawfold')).toHaveCount(5);
   await expect(p.getByRole('group', { name: 'Work hours law' })).toHaveCount(0);
+  await p.getByRole('button', { name: 'Show the strangers law' }).click();
   const strangers = p.getByRole('group', { name: 'Strangers law' }).getByRole('button');
   await expect(strangers).toHaveText(['Open door', 'Those in need', 'Closed']);
   await expect(strangers.nth(1)).toHaveAttribute('aria-pressed', 'true');
@@ -182,9 +184,25 @@ test('the Build sheet and the Laws page are levels and laws, 44 px each', async 
   await expect(strangers.nth(2)).toHaveAttribute('aria-pressed', 'true');
   await expect(p).toContainText('Set to Closed on');
   await p.getByRole('button', { name: 'Show the work hours law' }).click();
+  await expect(p.getByRole('group', { name: 'Strangers law' })).toHaveCount(0);
   const hours = p.getByRole('group', { name: 'Work hours law' }).getByRole('button');
   expect(await hours.count()).toBeGreaterThanOrEqual(3);
   expect(await phoneRules(page)).toEqual([]);
+  // P6.5: Short rations is answered by everyone, and the fold line carries the tally.
+  await p.getByRole('button', { name: 'Show the rations law' }).click();
+  await p
+    .getByRole('group', { name: 'Rations law' })
+    .getByRole('button', { name: 'Short rations' })
+    .click();
+  await expect(p.locator('.lawfold[data-law="rations"]')).toContainText(/obey|grumble|refuse/);
+  await expect(p).toContainText('days for everyone at full plates');
+  expect(await phoneRules(page)).toEqual([]);
+  // Back to the custom, so the later tests' valley runs at full plates: nobody answers it.
+  await p
+    .getByRole('group', { name: 'Rations law' })
+    .getByRole('button', { name: 'Full plates' })
+    .click();
+  await expect(p.locator('.lawfold[data-law="rations"]')).not.toContainText(/obey|grumble|refuse/);
   await page.getByTestId('open-ledger').click();
   await expect(p).toContainText(/ now puts Houses second\./);
 });

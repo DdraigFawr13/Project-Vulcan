@@ -46,6 +46,21 @@ export interface LawView {
   answers: AnswerView[];
   /** The Strangers law (P5.9), below the work-hours law. */
   strangers: StrangersLawView;
+  /** P6.5: Rations, Sickness and Punishment, below it. */
+  ruled: RuledLawView[];
+}
+
+/** One of the 6A laws (P6.5, V-157): its setting, what it does in words and everyone's answer. */
+export interface RuledLawView {
+  id: string;
+  name: string;
+  setting: string;
+  settings: { id: string; name: string }[];
+  /** What the setting does; for Rations, what the store holds and how long it lasts. */
+  about: string;
+  since: string;
+  why: number;
+  answers: AnswerView[];
 }
 
 /** The Strangers law (P5.9, V-117): its setting, what each does, the band's last word on a

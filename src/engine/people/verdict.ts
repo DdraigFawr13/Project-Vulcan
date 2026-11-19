@@ -7,14 +7,14 @@
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { greenOf, hallOf, housesOf, sizeOf } from '../build/index.ts';
 import { bringIn } from '../flock/index.ts';
-import { itemsOf, layItem, takeFrom } from '../goods/index.ts';
+import { itemsOf, layItem, storeLasts, takeFrom } from '../goods/index.ts';
 import { pronouns } from '../health/index.ts';
 import { answerNow, settingOf } from '../law/index.ts';
 import { addMemory, seedPerson } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { edgeSpot } from './edge.ts';
 import { walkTo } from './walk.ts';
-import { stanceOf, storeLasts, type Stance } from './welcome.ts';
+import { stanceOf, type Stance } from './welcome.ts';
 
 export const list = (items: readonly string[]): string =>
   items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;

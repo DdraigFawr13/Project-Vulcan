@@ -7,6 +7,7 @@ import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { eatFrom } from '../goods/index.ts';
 import { expose } from '../health/index.ts';
 import { floorsOf, rateOf } from '../keep/index.ts';
+import { ateFood } from '../law/index.ts';
 import { addMemory, changeNeed, crossed, needOf, tasted } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { tallyAdd } from './tally.ts';
@@ -59,4 +60,5 @@ export function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
   tallyAdd(ctx, 'eaten', 1);
   changeNeed(ctx.content, row, gives);
   crossed(ctx, p, row, def);
+  ateFood(ctx, p, gives);
 }
