@@ -7,7 +7,7 @@ Phase 6 (People) in two halves (V-153): 6A "Word and law" (P6.2 to P6.7) here; 6
 - [x] Spec approved by Morgan, 2026-11-18 (workshop answers, V-153 to V-163)
 - [x] Bundle 0, leftovers: check:full under 120 s, a hungry winter breaks new ground, newcomers bring goods, the seed corn kept back (V-165), 2026-11-18. Three years on four valley seeds: tallow/1 cold person-hours in year 2 fell 8,785 to 1,511, its year-3 field grew 48 to 122 tiles and its hungry person-days 3,545 to 1,766 (16 people, not 13); anvil/1, smoke/1 and ledger/1 stay fed.
 - [x] Bundle 1, memory ledger and thought line: P6.2 (V-167), 2026-11-18. Mock-up https://claude.ai/artifact/85sfNF6JgAnjQCNuR2WLHg, the first through the `ui-mockups` skill. Done-when in `src/worker/memoryview.test.ts`.
-- [ ] Bundle 2, tales and beliefs: P6.3, winter evenings by the hearth (V-168). Mock-up https://claude.ai/artifact/Dpeyo3R6Sq5HQ7rNCNSzey. Done-when in `src/engine/tales/tales.test.ts`.
+- [ ] Bundle 2, tales and beliefs: P6.3, winter evenings by the hearth (V-169). Mock-up https://claude.ai/artifact/Dpeyo3R6Sq5HQ7rNCNSzey. Done-when in `src/engine/tales/tales.test.ts`.
 - [ ] Bundle 3, the self and ambitions: P6.4
 - [ ] Bundle 4, new laws and the Laws sheet: P6.5
 - [ ] Bundle 5, standing, the elder, factions, petitions, the mood word: P6.6
