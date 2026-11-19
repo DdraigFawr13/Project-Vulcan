@@ -1,7 +1,7 @@
 // Shape of Vulcan's health file (src/content/data/health.json, P5.6, P5.8, V-114 to V-116): blood,
 // body parts, wound severities and kinds, the accidents of risky work, healing, festering, lasting
 // marks, care, the sickroom, mourning and burial. Chances are per cent unless named `per`.
-import { bool, list, map, num, obj, opt, ref } from './schema';
+import { bool, list, map, num, obj, opt, ref, str } from './schema';
 import { count, id, text, texts } from './schema-fields';
 
 const pair = list(num({ min: 0, max: 100 }), 2);
@@ -145,6 +145,8 @@ export const HEALTH_SCHEMAS = {
       missing: count,
     }),
     sickroom: obj({ hurt: num({ min: 1 }), beds: num({ min: 1 }) }),
+    // The sick-house under the Sickness law (P6.5): its house size and beds.
+    sickhouse: obj({ size: str(), beds: num({ min: 1 }) }),
     mourn: obj({
       close: ref('memories'),
       band: ref('memories'),

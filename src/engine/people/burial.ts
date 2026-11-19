@@ -4,7 +4,7 @@
 // sets a carved wooden marker if the store has a log for it. The grave is filled at day's end
 // with everyone free there (health). Taking it up is one line; the digging is not.
 import type { EntityRow } from '../core/index.ts';
-import { burialGround, freePlots, gravesOf } from '../build/index.ts';
+import { burialGround, freePlots, gravesOf, toBury } from '../build/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
@@ -39,8 +39,8 @@ export function takeUpBurial(ctx: SystemContext, p: EntityRow): boolean {
     ...gravesOf(world).map((g) => g['person']),
   ]);
   const from = spotOf(p);
-  const dead = people(world)
-    .filter((d) => d['status'] === 'dead' && !taken.has(d.id))
+  const dead = toBury(world)
+    .filter((d) => !taken.has(d.id))
     .filter((d) => canReach(content, world.map, from, spotOf(d)))
     .sort(
       (a, b) =>

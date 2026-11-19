@@ -9,7 +9,7 @@ Phase 6 (People) in two halves (V-153): 6A "Word and law" (P6.2 to P6.7) here; 6
 - [x] Bundle 1, memory ledger and thought line: P6.2 (V-167), 2026-11-18. Mock-up https://claude.ai/artifact/85sfNF6JgAnjQCNuR2WLHg, the first through the `ui-mockups` skill. Done-when in `src/worker/memoryview.test.ts`.
 - [x] Bundle 2, tales and beliefs: P6.3, winter evenings by the hearth (V-169). Mock-up https://claude.ai/artifact/Dpeyo3R6Sq5HQ7rNCNSzey. Done-when in `src/engine/tales/tales.test.ts`. 2026-11-19.
 - [x] Bundle 3, the self and ambitions: P6.4 (V-170), 2026-11-19. Mock-up https://claude.ai/artifact/6tcyiHZ5VkpDums9BDRoBV. Done-when in `src/engine/self/self.test.ts`.
-- [ ] Bundle 4, new laws and the Laws sheet: P6.5 (V-171). Mock-up https://claude.ai/artifact/MFdwxPXir9LMmj4rWUZRiR. Part 1 (the laws, Rations, the sheet) done-when in `src/engine/law/laws6.test.ts`; part 2 the Sickness settings' effects.
+- [x] Bundle 4, new laws and the Laws sheet: P6.5 (V-171, V-172). Mock-up https://claude.ai/artifact/MFdwxPXir9LMmj4rWUZRiR. Part 1 (the laws, Rations, the sheet, #113) done-when in `src/engine/law/laws6.test.ts`; part 2 (the Sickness settings at work) in `src/engine/people/apart.test.ts`.
 - [ ] Bundle 5, standing, the elder, factions, petitions, the mood word: P6.6
 - [ ] Bundle 6, defiance: P6.7
 - [ ] 6A balance and review

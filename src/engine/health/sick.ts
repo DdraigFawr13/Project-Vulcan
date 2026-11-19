@@ -23,7 +23,9 @@ export const SICK_TABLES: Schemas = {
    * cause in words; `water` the tile drunk from + 1 (a flux) or 0; `from` who gave it (0 none);
    * `cause` the line it was caught under, `line` the line it showed under, `turned` the grave
    * line; `healer` who last gave a draught, at `draught` (tick), and `cut` the per cent it takes
-   * off a grave case's death chance; `herbless` the tick a draught found no herbs (0 never). */
+   * off a grave case's death chance; `herbless` the tick a draught found no herbs (0 never);
+   * under the Sickness law (P6.5, people/apart.ts) `sent` the line that sent a catching case to
+   * the sick-house or away, `kept` the line where kin kept them at home. */
   ill: {
     person: 'entity',
     ill: 'text',
@@ -43,6 +45,8 @@ export const SICK_TABLES: Schemas = {
     draught: 'int',
     cut: 'count',
     herbless: 'int',
+    sent: 'event',
+    kept: 'event',
   },
   /** Hours today with warmth at nothing, per person (`day` the game day counted). */
   chilled: { person: 'entity', day: 'int', hours: 'count' },
@@ -57,6 +61,16 @@ export const boutOf = (world: WorldState, person: number): EntityRow | undefined
   illsOf(world).find(
     (r) => r['person'] === person && (r['state'] === 'coming' || r['state'] === 'sick'),
   );
+
+/** Their bout of a catching illness (one with a `spread`), once it shows. */
+export function catching(
+  world: WorldState,
+  content: EngineContent,
+  person: number,
+): EntityRow | undefined {
+  const r = boutOf(world, person);
+  return r && r['state'] === 'sick' && illDef(content, r['ill'] as string)?.spread ? r : undefined;
+}
 
 /** Showing an illness that keeps them abed. */
 export function abedSick(world: WorldState, content: EngineContent, person: number): boolean {
@@ -108,7 +122,7 @@ export function expose(
     ...{ person: p.id, ill: def.id, state: 'coming', caught: world.tick, shows, ends: 0 },
     ...{ crisis: 0, grave: 0, how, water: opts.water ?? 0, from: opts.from ?? 0 },
     ...{ cause: causes.find((c) => c > 0) ?? 0, line: 0, turned: 0, healer: 0, draught: 0 },
-    ...{ cut: 0, herbless: 0 },
+    ...{ cut: 0, herbless: 0, sent: 0, kept: 0 },
   });
   const bout = illsOf(world).find((r) => r.id === row)!;
   if (shows <= world.tick) show(ctx, p, bout, def);
@@ -241,7 +255,9 @@ export function sickHour(ctx: SystemContext): void {
     if (state !== 'coming' && state !== 'sick') continue;
     const p = (world.entities['person'] ?? []).find((q) => q.id === r['person']);
     const def = illDef(content, r['ill'] as string);
-    if (!p || !def || (p['status'] !== 'alive' && p['status'] !== 'stranger')) {
+    // Someone sent away (P6.5) is still ill out there.
+    const ill = p && ['alive', 'stranger', 'away'].includes(p['status'] as string);
+    if (!p || !def || !ill) {
       r['state'] = 'closed';
       continue;
     }
