@@ -75,12 +75,33 @@ export function siteFor(
   rr: RoomRow,
   kind: string,
 ): { x: number; y: number; facing: string } | undefined {
+  const f = floorOf(world, content, rr, kind);
+  if (!f.free.length || !leavesBedRoom(f)) return undefined;
+  const place = content.buildings.furniture.kinds.find((k) => k.id === kind)!.place;
+  const pick = pickTile(f, place);
+  if (pick === undefined) return undefined;
+  const { x, y } = xyOf(f, pick);
+  return { x, y, facing: facingOf(f, pick) };
+}
+
+/** A room's floor as one piece of `kind` sees it: the pieces and items on it and its free tiles. */
+interface Floor {
+  world: WorldState;
+  content: EngineContent;
+  room: Room;
+  kind: string;
+  width: number;
+  pieces: EntityRow[];
+  lying: EntityRow[];
+  free: number[];
+}
+
+const xyOf = (f: Floor, i: number) => ({ x: i % f.width, y: Math.floor(i / f.width) });
+const idxOf = (f: Floor, e: EntityRow) => (e['y'] as number) * f.width + (e['x'] as number);
+
+function floorOf(world: WorldState, content: EngineContent, rr: RoomRow, kind: string): Floor {
   const { room } = rr;
   const width = world.map.width;
-  const place = content.buildings.furniture.kinds.find((k) => k.id === kind)!.place;
-  const xy = (i: number) => ({ x: i % width, y: Math.floor(i / width) });
-  const cheb = (a: number, b: number) =>
-    Math.max(Math.abs(xy(a).x - xy(b).x), Math.abs(xy(a).y - xy(b).y));
   const inside = new Set(room.tiles);
   // The tile just inside each door stays clear: it is the way in.
   const wayIn = new Set(
@@ -88,90 +109,116 @@ export function siteFor(
       .flatMap((d) => [d - 1, d + 1, d - width, d + width])
       .filter((i) => inside.has(i)),
   );
-  const isWall = (i: number) => content.buildings.parts[world.map.built[i]! - 1]?.kind === 'wall';
-  const pieces = furnitureOf(world).filter(
-    (f) => f['z'] === 0 && inside.has((f['y'] as number) * width + (f['x'] as number)),
-  );
-  const idx = (f: EntityRow) => (f['y'] as number) * width + (f['x'] as number);
+  const f: Floor = { world, content, room, kind, width, pieces: [], lying: [], free: [] };
+  f.pieces = furnitureOf(world).filter((p) => p['z'] === 0 && inside.has(idxOf(f, p)));
   // What lies on the room's tiles (a bedroll, a pile) and the pieces: those tiles are taken.
-  const lying = itemsOf(world).filter((i) => !i['holder'] && i['z'] === 0 && inside.has(idx(i)));
+  f.lying = itemsOf(world).filter((i) => !i['holder'] && i['z'] === 0 && inside.has(idxOf(f, i)));
   // A bed may stand where a sleeper's bedroll lies: the roll goes when they claim it.
-  const blocking = lying.filter((i) => kind !== 'bed' || i['kind'] !== content.life.cart.bedroll);
-  const taken = new Set([...blocking.map(idx), ...pieces.map(idx)]);
-  // A room keeps its hearth's tile free until it has one (P3.6, V-068): nothing else takes the
-  // floor the hearth would stand on, or a room furnished in summer has no tile left for one when
-  // the cold comes. Every house size leaves room for its beds beside it (buildings.json).
-  const keep =
-    kind !== HEARTH && !pieces.some((f) => f['kind'] === HEARTH)
-      ? siteFor(world, content, rr, HEARTH)
-      : undefined;
-  const hearthTile = keep ? keep.y * width + keep.x : -1;
-  const free = room.tiles
+  const blocking = f.lying.filter((i) => kind !== 'bed' || i['kind'] !== content.life.cart.bedroll);
+  const taken = new Set([...blocking.map((e) => idxOf(f, e)), ...f.pieces.map((e) => idxOf(f, e))]);
+  const hearthTile = keptForHearth(f, rr);
+  f.free = room.tiles
     .filter((i) => !wayIn.has(i) && !taken.has(i) && i !== hearthTile)
     .sort((a, b) => a - b);
-  if (!free.length) return undefined;
-  // Beds first (P3.4): other pieces (not the bench beds are made at) leave a tile for each
-  // sleeper here without a bed, and one more while anyone in the colony has none, or a late
-  // sleeper finds the floor full.
-  if (kind !== 'bed' && kind !== 'bench' && kind !== HEARTH) {
-    const bedless = (world.entities['person'] ?? []).some(
-      (p) => p['status'] === 'alive' && !bedOwnedBy(world, p.id),
-    );
-    if (free.length <= Math.max(0, room.sleepers - room.bedPieces) + (bedless ? 1 : 0))
-      return undefined;
+  return f;
+}
+
+/** A room keeps its hearth's tile free until it has one (P3.6, V-068): nothing else takes the
+ * floor the hearth would stand on, or a room furnished in summer has no tile left for one when
+ * the cold comes. Every house size leaves room for its beds beside it (buildings.json). */
+function keptForHearth(f: Floor, rr: RoomRow): number {
+  if (f.kind === HEARTH || f.pieces.some((p) => p['kind'] === HEARTH)) return -1;
+  const keep = siteFor(f.world, f.content, rr, HEARTH);
+  return keep ? keep.y * f.width + keep.x : -1;
+}
+
+/** Beds first (P3.4): other pieces (not the bench beds are made at) leave a tile for each
+ * sleeper here without a bed, and one more while anyone in the colony has none, or a late
+ * sleeper finds the floor full. */
+function leavesBedRoom(f: Floor): boolean {
+  if (f.kind === 'bed' || f.kind === 'bench' || f.kind === HEARTH) return true;
+  const bedless = (f.world.entities['person'] ?? []).some(
+    (p) => p['status'] === 'alive' && !bedOwnedBy(f.world, p.id),
+  );
+  return f.free.length > Math.max(0, f.room.sleepers - f.room.bedPieces) + (bedless ? 1 : 0);
+}
+
+function wallSide(f: Floor, i: number) {
+  const isWall = (j: number) =>
+    f.content.buildings.parts[f.world.map.built[j]! - 1]?.kind === 'wall';
+  return DIRS.find(([, dx, dy]) => isWall(i + dx + dy * f.width));
+}
+
+function cheb(f: Floor, a: number, b: number): number {
+  const [p, q] = [xyOf(f, a), xyOf(f, b)];
+  return Math.max(Math.abs(p.x - q.x), Math.abs(p.y - q.y));
+}
+
+const apart = (f: Floor, i: number, from: number[]) =>
+  Math.min(99, ...from.map((j) => cheb(f, i, j)));
+const awayDoor = (f: Floor, i: number) => Math.min(3, apart(f, i, f.room.doorTiles));
+const ofKind = (f: Floor, k: string) =>
+  f.pieces.filter((p) => p['kind'] === k).map((p) => idxOf(f, p));
+
+function best(list: number[], score: (i: number) => number): number | undefined {
+  return list.reduce<number | undefined>(
+    (b, i) => (b === undefined || score(i) > score(b) ? i : b),
+    undefined,
+  );
+}
+
+/** Free tiles beside a piece of kind `k`. */
+function beside(f: Floor, k: string): number[] {
+  const near = ofKind(f, k).flatMap((j) => [j - 1, j + 1, j - f.width, j + f.width]);
+  return f.free.filter((i) => near.includes(i));
+}
+
+/** The tile the piece takes, by its kind's `place` hint. */
+function pickTile(f: Floor, place: string): number | undefined {
+  if (place === 'beside table' && beside(f, 'table').length) return beside(f, 'table')[0];
+  if (place === 'bed foot' && beside(f, 'bed').length) return beside(f, 'bed')[0];
+  if (place === 'middle' || place === 'beside table' || place === 'centre')
+    return middleTile(f, place);
+  // Against a wall, as far from the door (and, but for a bed, from the beds) as it can be.
+  const walls = f.free.filter((i) => wallSide(f, i));
+  const rolls = f.lying
+    .filter((it) => it['kind'] === f.content.life.cart.bedroll)
+    .map((e) => idxOf(f, e));
+  const beds = [...ofKind(f, 'bed'), ...rolls];
+  return best(
+    walls.length ? walls : f.free,
+    (i) => 1000 * awayDoor(f, i) + (f.kind === 'bed' ? 0 : apart(f, i, beds)),
+  );
+}
+
+/** Away from the walls and door, nearest the middle; a hearth ('centre') takes the free tile
+ * nearest the middle, wall or not. */
+function middleTile(f: Floor, place: string): number | undefined {
+  const open = f.free.filter((i) => !wallSide(f, i));
+  const list = open.length && place !== 'centre' ? open : f.free;
+  const tiles = f.room.tiles;
+  const sx = tiles.reduce((s, i) => s + xyOf(f, i).x, 0);
+  const sy = tiles.reduce((s, i) => s + xyOf(f, i).y, 0);
+  const n = tiles.length;
+  return best(
+    list,
+    (i) =>
+      (place === 'centre' ? 0 : 100 * awayDoor(f, i)) -
+      Math.abs(xyOf(f, i).x * n - sx) -
+      Math.abs(xyOf(f, i).y * n - sy),
+  );
+}
+
+/** A bed lies along its wall; a chair faces the table; anything else faces away from its wall. */
+function facingOf(f: Floor, pick: number): string {
+  const { x, y } = xyOf(f, pick);
+  const wall = wallSide(f, pick);
+  if (f.kind === 'bed') return wall && (wall[0] === 'n' || wall[0] === 's') ? 'v' : 'h';
+  if (f.kind === 'chair') {
+    const t = ofKind(f, 'table')[0];
+    return t === undefined ? 's' : dirOf(xyOf(f, t).x - x, xyOf(f, t).y - y);
   }
-  const wallSide = (i: number) => DIRS.find(([, dx, dy]) => isWall(i + dx + dy * width));
-  const apart = (i: number, from: number[]) => Math.min(99, ...from.map((j) => cheb(i, j)));
-  const awayDoor = (i: number) => Math.min(3, apart(i, room.doorTiles));
-  const ofKind = (k: string) => pieces.filter((f) => f['kind'] === k).map(idx);
-  const best = (list: number[], score: (i: number) => number) =>
-    list.reduce<number | undefined>(
-      (b, i) => (b === undefined || score(i) > score(b) ? i : b),
-      undefined,
-    );
-  const beside = (k: string) => {
-    const near = ofKind(k).flatMap((j) => [j - 1, j + 1, j - width, j + width]);
-    return free.filter((i) => near.includes(i));
-  };
-  const walls = free.filter((i) => wallSide(i));
-  const rolls = lying.filter((it) => it['kind'] === content.life.cart.bedroll).map(idx);
-  const beds = [...ofKind('bed'), ...rolls];
-  let pick: number | undefined;
-  if (place === 'beside table' && beside('table').length) pick = beside('table')[0];
-  else if (place === 'bed foot' && beside('bed').length) pick = beside('bed')[0];
-  else if (place === 'middle' || place === 'beside table' || place === 'centre') {
-    const open = free.filter((i) => !wallSide(i));
-    // A hearth ('centre') takes the free tile nearest the middle, wall or not.
-    const list = open.length && place !== 'centre' ? open : free;
-    const [sx, sy] = [
-      room.tiles.reduce((s, i) => s + xy(i).x, 0),
-      room.tiles.reduce((s, i) => s + xy(i).y, 0),
-    ];
-    const n = room.tiles.length;
-    pick = best(
-      list,
-      (i) =>
-        (place === 'centre' ? 0 : 100 * awayDoor(i)) -
-        Math.abs(xy(i).x * n - sx) -
-        Math.abs(xy(i).y * n - sy),
-    );
-  } else {
-    // Against a wall, as far from the door (and, but for a bed, from the beds) as it can be.
-    pick = best(
-      walls.length ? walls : free,
-      (i) => 1000 * awayDoor(i) + (kind === 'bed' ? 0 : apart(i, beds)),
-    );
-  }
-  if (pick === undefined) return undefined;
-  const { x, y } = xy(pick);
-  const wall = wallSide(pick);
-  let facing = 's';
-  if (kind === 'bed') facing = wall && (wall[0] === 'n' || wall[0] === 's') ? 'v' : 'h';
-  else if (kind === 'chair') {
-    const t = ofKind('table')[0];
-    facing = t === undefined ? 's' : dirOf(xy(t).x - x, xy(t).y - y);
-  } else if (wall) facing = DIRS[(DIRS.indexOf(wall) + 2) % 4]![0];
-  return { x, y, facing };
+  return wall ? DIRS[(DIRS.indexOf(wall) + 2) % 4]![0] : 's';
 }
 
 /** What a room lacks, in the order of its role's wants: counts include pieces still planned. */

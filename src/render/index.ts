@@ -98,6 +98,13 @@ export function startRenderer(
     input: { keyboard: { capture: [] } },
     scene: [scene],
   });
+  const l = layersOf(game, scene, parent);
+  watchAnimalFinder(l);
+  return { ...viewHandle(l), ...peopleHandle(l), ...goodsHandle(l) };
+}
+
+/** The scene and every sprite layer drawn over it, made in drawing order. */
+function layersOf(game: Phaser.Game, scene: ValleyScene, parent: HTMLElement) {
   const people = new PeopleSprites(game, scene);
   const goods = new GoodsSprites(game, scene);
   const build = new BuildSprites(game, scene);
@@ -112,8 +119,25 @@ export function startRenderer(
   const wear = new WearLayer(game, scene);
   const finder = new Finder(game, scene, () => people.spots());
   const bubbles = new Bubbles(game, scene, parent, () => people.spots());
-  // The smoke has no handle on the renderer: this event centres the view on an animal and writes
-  // where it stands on screen (canvas px) to `data-animal-at`.
+  return {
+    ...{ game, scene, parent, people, goods, build, fields, shafts, burial, furniture },
+    ...{ green, light, bars, wild, wear, finder, bubbles },
+  };
+}
+
+type Layers = ReturnType<typeof layersOf>;
+
+/** Where a world point stands on screen, in canvas px, as "x,y". */
+function onScreen(scene: ValleyScene, at: { x: number; y: number }): string {
+  const cam = scene.cameras.main;
+  return [(at.x - cam.worldView.x) * cam.zoom, (at.y - cam.worldView.y) * cam.zoom]
+    .map(Math.round)
+    .join(',');
+}
+
+/** The smoke has no handle on the renderer: this event centres the view on an animal and writes
+ * where it stands on screen (canvas px) to `data-animal-at`. */
+function watchAnimalFinder({ game, scene, parent, wild }: Layers): void {
   parent.addEventListener('vulcan:find-animal', (e) => {
     const kind = (e as CustomEvent<string | undefined>).detail;
     const first = wild.first(kind);
@@ -122,14 +146,16 @@ export function startRenderer(
     delete parent.dataset['animalAt'];
     // The camera's view is brought up to date as a frame is drawn.
     game.events.once(Phaser.Core.Events.POST_RENDER, () => {
-      const at = wild.first(kind) ?? first;
-      const cam = scene.cameras.main;
-      const px = [(at.x - cam.worldView.x) * cam.zoom, (at.y - cam.worldView.y) * cam.zoom];
-      parent.dataset['animalAt'] = px.map(Math.round).join(',');
+      parent.dataset['animalAt'] = onScreen(scene, wild.first(kind) ?? first);
     });
   });
+}
+
+/** The map, the camera and the level on screen. */
+function viewHandle(l: Layers) {
+  const { game, scene, build, fields, light, wild, wear, bubbles } = l;
   return {
-    setMapSize: (width, height, on) => {
+    setMapSize: (width: number, height: number, on?: { x: number; y: number }) => {
       scene.setMapSize(width, height, on);
       build.setMapSize(width, height);
       fields.setMapSize(width);
@@ -137,37 +163,39 @@ export function startRenderer(
       wild.setMapSize(width, height);
       wear.setMapSize(width, height);
     },
-    applyChunks: (chunks) => {
+    applyChunks: (chunks: readonly ChunkView[]) => {
       scene.applyChunks(chunks);
       build.applyChunks(chunks);
       wild.applyChunks(chunks);
       wear.applyChunks(chunks);
     },
-    setAura: (spots) => scene.setAura(spots),
-    zoomStep: (direction) => scene.zoomStep(direction),
-    lookAt: (x, y) => scene.controls?.lookAt((x + 0.5) * TILE, (y + 0.5) * TILE),
-    setTopInset: (px) => {
+    setAura: (spots: readonly AuraView[]) => scene.setAura(spots),
+    zoomStep: (direction: 1 | -1) => scene.zoomStep(direction),
+    lookAt: (x: number, y: number) => scene.controls?.lookAt((x + 0.5) * TILE, (y + 0.5) * TILE),
+    setTopInset: (px: number) => {
       scene.setTopInset(px);
       bubbles.setTopInset(px);
     },
-    setLevel: (z) => {
+    setLevel: (z: number) => {
       scene.setLevel(z);
-      people.setLevel(z);
-      goods.setLevel(z);
-      build.setLevel(z);
-      fields.setLevel(z);
-      shafts.setLevel(z);
-      burial.setLevel(z);
-      furniture.setLevel(z);
-      green.setLevel(z);
-      light.setLevel(z);
-      bars.setLevel(z);
-      wild.setLevel(z);
-      wear.setLevel(z);
+      for (const layer of [l.people, l.goods, build, fields, l.shafts, l.burial, l.furniture])
+        layer.setLevel(z);
+      for (const layer of [l.green, light, l.bars, wild, wear]) layer.setLevel(z);
     },
-    placeOf: (id) => people.place(id),
-    focus: (x, y, below) => scene.controls?.focus((x + 0.5) * TILE, (y + 0.5) * TILE, below),
-    follow: (id, pulse) => {
+    focus: (x: number, y: number, below: number) =>
+      scene.controls?.focus((x + 0.5) * TILE, (y + 0.5) * TILE, below),
+    mark: (tile: { x: number; y: number } | undefined) => scene.mark(tile),
+    thumbnail: () => thumbnailOf(game),
+    fps: () => game.loop.actualFps,
+    destroy: () => game.destroy(true),
+  };
+}
+
+/** The people and animals on screen, and finding them. */
+function peopleHandle({ game, scene, parent, people, wild, finder, bubbles }: Layers) {
+  return {
+    placeOf: (id: number) => people.place(id),
+    follow: (id: number | undefined, pulse?: boolean) => {
       finder.follow(id, pulse);
       bubbles.follow(id);
       // For the find check: where the person stands on screen (canvas px) once the view is drawn.
@@ -175,44 +203,39 @@ export function startRenderer(
       if (id !== undefined)
         game.events.once(Phaser.Core.Events.POST_RENDER, () => {
           const at = people.spots().find((s) => s.id === id);
-          const cam = scene.cameras.main;
-          if (at)
-            parent.dataset['found'] = [
-              (at.x - cam.worldView.x) * cam.zoom,
-              (at.y - cam.worldView.y) * cam.zoom,
-            ]
-              .map(Math.round)
-              .join(',');
+          if (at) parent.dataset['found'] = onScreen(scene, at);
         });
     },
-    showNames: (on) => finder.showNames(on),
-    setPeople: (list) => people.set(list),
-    personAt: (x, y) => people.at(x, y),
-    movePeople: (walkers) => {
+    showNames: (on: boolean) => finder.showNames(on),
+    setPeople: (list: readonly PersonView[]) => people.set(list),
+    personAt: (x: number, y: number) => people.at(x, y),
+    movePeople: (walkers: readonly WalkerView[]) => {
       people.move(walkers);
       bubbles.setThoughts(walkers);
     },
-    setAnimals: (list) => {
+    setAnimals: (list: readonly AnimalView[]) => {
       wild.set(list);
       parent.dataset['animals'] = String(list.length);
     },
-    animalAt: (x, y) => wild.at(x, y),
-    setGoods: (view, sky) => {
-      goods.set(view);
-      build.setPlans(view.plans);
-      fields.set(view.fields);
-      shafts.set(view.shafts);
-      burial.set(view);
-      furniture.set(view.furniture);
-      light.set(view.fires, view.lit, sky.clock);
-      bars.set(view.work, sky.skipping ? 3 : sky.speed);
-      wild.setMiddens(view.middens);
+    animalAt: (x: number, y: number) => wild.at(x, y),
+  };
+}
+
+/** The goods, plans, buildings and fires each snapshot carries. */
+function goodsHandle(l: Layers) {
+  return {
+    setGoods: (view: GoodsView, sky: { speed: Speed; skipping: boolean; clock: ClockView }) => {
+      l.goods.set(view);
+      l.build.setPlans(view.plans);
+      l.fields.set(view.fields);
+      l.shafts.set(view.shafts);
+      l.burial.set(view);
+      l.furniture.set(view.furniture);
+      l.light.set(view.fires, view.lit, sky.clock);
+      l.bars.set(view.work, sky.skipping ? 3 : sky.speed);
+      l.wild.setMiddens(view.middens);
     },
-    setBuild: (view) => green.set(view),
-    mark: (tile) => scene.mark(tile),
-    thumbnail: () => thumbnailOf(game),
-    fps: () => game.loop.actualFps,
-    destroy: () => game.destroy(true),
+    setBuild: (view: BuildView) => l.green.set(view),
   };
 }
 
