@@ -1,6 +1,6 @@
 // Shape of Vulcan's colony file (src/content/data/colony.json, P6.6, V-158, V-159): the colony's
 // standing and its causes, the elder, factions and their petitions, and the mood word's causes.
-import { list, map, num, obj } from './schema';
+import { list, map, num, obj, ref } from './schema';
 import { count, text } from './schema-fields';
 
 // A cause of standing: `by` points for `days` days, in words.
@@ -22,6 +22,9 @@ export const COLONY_SCHEMAS = {
       kept: obj({ ...cause, every: num({ min: 1 }), share: num({ min: 0, max: 100 }) }),
       // Every `every` days a setting with `harsh` (laws.json) stands in winter or a short store.
       harsh: obj({ days: num({ min: 1 }), every: num({ min: 1 }), text }),
+      // Every `every` days that someone holds the `hungry` memory and the store has `food` days
+      // of food or less: hard times speak without a law.
+      storeOut: obj({ ...cause, every: num({ min: 1 }), food: count, hungry: ref('memories') }),
       answered: obj(cause),
       stood: obj(cause),
       ignored: obj(cause),
@@ -57,13 +60,16 @@ export const COLONY_SCHEMAS = {
       }),
     }),
     // A faction: at least `least` people and `share` per cent of the colony each `strong` points
-    // short of keeping one law; its members' answers lean `lean` more against it.
+    // short of keeping one law; its members' answers lean `lean` more against it. It holds
+    // together `hold` days, and one formed again within `keepName` days keeps its old name.
     faction: obj({
       least: num({ min: 2 }),
       share: num({ min: 0, max: 100 }),
       strong: count,
       lean: count,
       stands: text,
+      hold: count,
+      keepName: count,
     }),
     petition: obj({ days: num({ min: 1 }) }),
     mood: obj({ causes: num({ min: 1 }) }),

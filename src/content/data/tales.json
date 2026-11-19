@@ -70,6 +70,11 @@
       "{count} ate {meal} together {where}.",
       "The feast went on all night, and nobody went home hungry."
     ] },
+    { "id": "store-out", "event": "colony.standing", "only": { "cause": "storeOut" }, "truth": 1, "belief": "valley-hungry", "from": 1, "word": true, "levels": [
+      "The store is running low.",
+      "The store ran out, and folk went to bed hungry.",
+      "The store is bare and we will all starve."
+    ] },
     { "id": "hungry-winter", "event": "field.hungryWinter", "truth": 1, "belief": "valley-hungry", "from": 2, "word": true, "levels": [
       "Food ran a little short last winter.",
       "Last winter was a hungry one: {days} days short.",

@@ -33,6 +33,9 @@ export interface DefyDef {
     what: string;
   };
   leave: { misery: number; mood: number; household: boolean; every: number };
+  /** Hard times without a law (6A review P2): the memory and the belief that let someone take
+   * from a store that will not last, at any Rations setting. */
+  starving: { memory: string; belief: string };
   memories: Readonly<Record<string, string>>;
   /** The sentence in words for each Punishment `punish`. */
   punish: { work: string; stocks: string; away: string };

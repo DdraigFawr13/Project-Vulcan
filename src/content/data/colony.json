@@ -15,6 +15,7 @@
     "fedWinter": { "by": 8, "days": 336, "most": 2, "text": "a winter nobody went hungry" },
     "kept": { "by": 1, "days": 28, "every": 7, "share": 67, "text": "the laws are kept" },
     "harsh": { "days": 56, "every": 7, "text": "{days} in hard times" },
+    "storeOut": { "by": -4, "days": 28, "every": 7, "food": 1, "hungry": "went-hungry", "text": "the store ran out" },
     "answered": { "by": 6, "days": 168, "text": "{faction} were heard" },
     "stood": { "by": -3, "days": 84, "text": "the law stood against {faction}" },
     "ignored": { "by": -6, "days": 112, "text": "{faction} were not answered" },
@@ -46,7 +47,7 @@
       "fallen": "standing fell under {name}"
     }
   },
-  "faction": { "least": 3, "share": 20, "strong": 10, "lean": 10, "stands": "stands with {faction}" },
+  "faction": { "least": 3, "share": 20, "strong": 10, "lean": 10, "stands": "stands with {faction}", "hold": 28, "keepName": 84 },
   "petition": { "days": 7 },
   "mood": { "causes": 3 }
 }

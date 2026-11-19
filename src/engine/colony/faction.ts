@@ -5,7 +5,9 @@
 // back towards the custom. Members lean `lean` more against the law (law `weigh.ts`), and stay
 // while they would not keep it alone. The petition is answered only through the law: changed to
 // what it asks (or milder) it is heard; let stand (`letStand`), or left `days` unanswered, it is
-// not. A faction breaks up when fewer than `least` still hold the grievance, or the law changes.
+// not. A faction breaks up when fewer than `least` still hold the grievance, or the law changes;
+// it holds together `hold` days once formed whatever its members feel (6A review P5), and one
+// that forms again against the same setting within `keepName` days takes its old name.
 import {
   list,
   TICKS_PER_DAY,
@@ -55,7 +57,8 @@ function form(ctx: SystemContext, def: LawDef, members: number[]): void {
   const taken = new Set(factionsOf(world).map((f) => f['name'] as string));
   const names = (s.faction ?? []).filter((n) => !taken.has(n));
   const day = Math.floor(world.tick / TICKS_PER_DAY);
-  const name = names[day % Math.max(1, names.length)] ?? `Those against ${s.days}`;
+  const old = pastName(ctx, def.id, s.id);
+  const name = old ?? names[day % Math.max(1, names.length)] ?? `Those against ${s.days}`;
   const people = alive(world).filter((p) => members.includes(p.id));
   const line = ctx.emit('colony.faction', {
     causes: members.map((m) => answerLine(world, def.id, m)).filter((l) => l > 0),
@@ -80,7 +83,29 @@ function form(ctx: SystemContext, def: LawDef, members: number[]): void {
   });
 }
 
+/** State keys for the name a faction against `law`'s `setting` last went by and when it broke up. */
+const nameKey = (law: string, setting: string): string => `faction:${law}.${setting}`;
+
+/** The name of a faction against this setting that broke up within `keepName` days, if it is
+ * free. */
+function pastName(ctx: SystemContext, law: string, setting: string): string | undefined {
+  const key = nameKey(law, setting);
+  const at = ctx.state[`${key}:at`];
+  const k = ctx.state[key];
+  if (at === undefined || !k) return undefined;
+  if (ctx.world.tick - at > ctx.content.colony.faction.keepName * TICKS_PER_DAY) return undefined;
+  const def = lawDef(ctx.content, law)?.settings.find((x) => x.id === setting);
+  const name = def?.faction?.[k - 1];
+  return name && !factionsOf(ctx.world).some((f) => f['name'] === name) ? name : undefined;
+}
+
 function breakUp(ctx: SystemContext, f: EntityRow, why: string, causes: number[]): void {
+  const key = nameKey(f['law'] as string, f['setting'] as string);
+  const names = lawDef(ctx.content, f['law'] as string)?.settings.find(
+    (x) => x.id === f['setting'],
+  )?.faction;
+  ctx.state[key] = (names ?? []).indexOf(f['name'] as string) + 1;
+  ctx.state[`${key}:at`] = ctx.world.tick;
   ctx.emit('colony.disbanded', {
     causes: [f['line'] as number, ...causes],
     actors: f['members'] as number[],
@@ -147,11 +172,15 @@ export function factionsDay(ctx: SystemContext): void {
       );
     }
     const g = grudges(world, content, f['law'] as string);
-    const held = (f['members'] as number[]).filter((m) => (g.get(m) ?? 0) > 0);
+    // In its first `hold` days a faction keeps every living member, whatever they feel today.
+    const young = world.tick - (f['since'] as number) < fd.hold * TICKS_PER_DAY;
+    const held = (f['members'] as number[]).filter(
+      (m) => g.has(m) && (young || (g.get(m) ?? 0) > 0),
+    );
     const joining = [...g]
       .filter(([p, by]) => by >= fd.strong && !held.includes(p))
       .map(([p]) => p);
-    if (held.length + joining.length < fd.least) {
+    if (!young && held.length + joining.length < fd.least) {
       breakUp(ctx, f, 'the grievance has faded', []);
       continue;
     }

@@ -39,6 +39,8 @@ export const DEFY_SCHEMAS = {
     // Leaving: `misery` days under `mood`, housemates with them, nobody within `every` days of the
     // last to leave.
     leave: obj({ misery: num({ min: 1 }), mood: count, household: bool(), every: num({ min: 1 }) }),
+    // Taking with no law behind it: who went hungry (`memory`) and believes `belief`.
+    starving: obj({ memory: ref('memories'), belief: str() }),
     memories: map(ref('memories')),
     // What each Punishment setting's `punish` (laws.json) does to someone caught, in words.
     punish: obj({ work: text, stocks: text, away: text }),
