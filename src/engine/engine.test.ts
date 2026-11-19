@@ -41,6 +41,7 @@ const fixtureContent: EngineContent = {
   band: content.band,
   clothes: content.clothes,
   tales: content.tales,
+  self: content.self,
   strangers: content.strangers,
   health: content.health,
   traits: content.traits,

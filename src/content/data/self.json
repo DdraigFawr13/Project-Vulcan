@@ -1,0 +1,21 @@
+{
+  "at": 3,
+  "most": 2,
+  "keep": 3,
+  "skillStep": 3,
+  "hour": 5,
+  "roles": [
+    { "id": "provider", "name": "the provider", "traits": { "steady": 2, "hardy": 1 }, "memories": { "harvested": 2, "cooked-fine": 2, "ate-well": 1, "feasted": 1 }, "skills": ["farming", "cooking", "foraging", "hunting", "fishing"], "beliefs": { "valley-feeds": 1 } },
+    { "id": "wronged", "name": "the wronged one", "traits": { "melancholic": 2, "hot-tempered": 1 }, "memories": { "went-hungry": 2, "short-meals-hard": 2, "grumbled-long": 2, "grumbled-short": 2, "wronged": 3, "humiliated": 3, "ragged": 1, "cold-night": 1, "slept-rough": 1 }, "beliefs": { "valley-hungry": 1, "work-dangerous": 1 } },
+    { "id": "outsider", "name": "the outsider", "traits": { "solitary": 3 }, "newcomer": 4, "memories": { "grumbled-strangers": 1 }, "beliefs": { "strangers-hard": 1 } },
+    { "id": "faithful", "name": "the faithful", "traits": { "devout": 4 }, "memories": { "worshipped": 2, "mourned-together": 1 } },
+    { "id": "guard", "name": "the guard", "traits": { "hardy": 2, "hot-tempered": 1 }, "memories": { "fought-off": 3, "stood-together": 2, "saw-attack": 1 }, "skills": ["hunting"], "beliefs": { "woods-dangerous": 1 } },
+    { "id": "rebel", "name": "the rebel", "traits": { "restless": 3, "hot-tempered": 2 }, "memories": { "vented": 1, "grumbled-long": 1, "grumbled-short": 1 }, "beliefs": { "law-flouted": 1 } }
+  ],
+  "ambition": { "checkDays": 28, "chance": 40, "every": 3, "memory": "fulfilled" },
+  "ambitions": [
+    { "id": "masterwork", "text": "to make a masterwork in {skill}", "kind": "master", "skills": ["smithing", "crafting", "cooking", "building", "stoneworking"], "from": 4, "to": 8 },
+    { "id": "trade", "text": "to learn {skill}", "kind": "learn", "skills": ["smithing", "crafting", "cooking", "building", "stoneworking", "herbalism", "farming"], "from": 6, "under": 2, "to": 4 },
+    { "id": "house", "text": "to have a house of their own", "kind": "house" }
+  ]
+}

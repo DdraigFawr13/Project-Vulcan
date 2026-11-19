@@ -1,7 +1,8 @@
 // The Memories tab (P6.2, V-154): every memory a person holds, strongest first, each with its
 // band, its name, a why? to the line that made it and the worker's line on why it matters and
 // how long it stays; then the tales they know, their version beside the truth, and what they
-// believe (P6.3, V-155). Read only: nothing here is a lever (V-041).
+// believe (P6.3, V-155). Above them, who they are: the roles they see themselves in and their
+// ambition (P6.4, V-156). Read only: nothing here is a lever (V-041).
 import type { WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
@@ -34,6 +35,26 @@ function taleRows(w: WalkerView): HTMLElement[] {
   return out;
 }
 
+/** Who they are: their roles, strongest first, then their ambition. */
+function selfRows(w: WalkerView): HTMLElement[] {
+  const { roles, ambition } = w.self;
+  if (!roles.length && !ambition) return [];
+  const out: HTMLElement[] = [el('h3', {}, 'Who they are')];
+  for (const r of roles) {
+    const row = el('div', { class: 'memrow belief', 'data-testid': 'role' });
+    row.append(el('span', { class: 't' }, r.text), why(r.why));
+    if (r.note) row.append(el('span', { class: 'r' }, r.note));
+    out.push(row);
+  }
+  if (ambition) {
+    const row = el('div', { class: 'memrow belief', 'data-testid': 'ambition' });
+    row.append(el('span', { class: 't' }, ambition.text), why(ambition.why));
+    out.push(row);
+  }
+  out.push(el('h3', {}, 'Memories'));
+  return out;
+}
+
 export function memoryRows(w: WalkerView | undefined): HTMLElement[] {
   const intro = el(
     'p',
@@ -42,10 +63,12 @@ export function memoryRows(w: WalkerView | undefined): HTMLElement[] {
   );
   if (!w) return [intro];
   const tales = taleRows(w);
+  const self = selfRows(w);
   if (!w.memories.length)
-    return [intro, el('p', { class: 'muted' }, 'Nothing weighs on them now.'), ...tales];
+    return [intro, ...self, el('p', { class: 'muted' }, 'Nothing weighs on them now.'), ...tales];
   return [
     intro,
+    ...self,
     ...w.memories.map((m) => {
       const row = el('div', {
         class: 'memrow',

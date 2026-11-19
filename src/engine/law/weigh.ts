@@ -1,8 +1,9 @@
 // How a person weighs a law's setting (P4.8, V-091): willingness from mood, low needs, traits,
-// held memories and the season, each named for and against so the reason can be read. All the
+// held memories, their roles and ambition (P6.4) and the season, each named for and against so the reason can be read. All the
 // numbers are content (laws.json).
 import type { EngineContent, LawSettingDef, WorldState } from '../core/index.ts';
 import { memoriesOf, moodOf, needOf } from '../needs/index.ts';
+import { ambitionOf, ambitionText, rolesOf } from '../self/index.ts';
 import { isWinter } from './hours.ts';
 
 export type Answer = 'obeys' | 'grumbles' | 'refuses';
@@ -31,6 +32,25 @@ export function weigh(
   const con: string[] = [];
   const side = (by: number, word: string) => (by > 0 ? pro : by < 0 ? con : []).push(word);
   let will = dial.start - s.ask;
+  const cites: number[] = [];
+  const mems: string[] = [];
+  // P6.4: the roles they see themselves in, and an ambition not yet reached, weighed first so
+  // the answer's line names them.
+  for (const r of rolesOf(world, person)) {
+    const by = s.roles?.[r['role'] as string] ?? 0;
+    if (!by) continue;
+    will += by;
+    const name = content.self.roles.find((d) => d.id === r['role'])?.name ?? '';
+    side(by, `sees themselves as ${name}`);
+    mems.push(`role.${r['role'] as string}:${r['line'] as number}`);
+  }
+  const goal = ambitionOf(world, person);
+  const byGoal = goal && !goal['done'] ? (s.ambitions?.[goal['ambition'] as string] ?? 0) : 0;
+  if (goal && byGoal) {
+    will += byGoal;
+    side(byGoal, `wants ${ambitionText(content, goal)}`);
+    mems.push(`ambition.${goal['ambition'] as string}:${goal['line'] as number}`);
+  }
   const mood = (moodOf(world, person)?.['value'] as number | undefined) ?? content.life.scale / 2;
   const byMood = Math.round((mood - content.life.scale / 2) / dial.moodPer);
   will += byMood;
@@ -49,8 +69,6 @@ export function weigh(
     side(by, name);
   }
   const people = world.entities['person'] ?? [];
-  const cites: number[] = [];
-  const mems: string[] = [];
   for (const m of memoriesOf(world, person)) {
     const id = m['memory'] as string;
     const by = s.memories[id] ?? 0;

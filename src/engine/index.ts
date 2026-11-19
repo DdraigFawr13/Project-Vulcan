@@ -17,6 +17,15 @@ import { lawSystem } from './law/index.ts';
 import { peopleSystem, strangersSystem } from './people/index.ts';
 import { regionSystem } from './region/index.ts';
 import { talesSystem } from './tales/index.ts';
+export {
+  ambitionOf,
+  ambitionText,
+  practiceOf,
+  rolesOf,
+  scoresOf,
+  selfSystem,
+} from './self/index.ts';
+import { selfSystem } from './self/index.ts';
 import { weatherSystem } from './weather/index.ts';
 import { wildSystem } from './wild/index.ts';
 import type { EngineContent } from './core/index.ts';
@@ -288,6 +297,7 @@ export const SYSTEMS: readonly System[] = [
   fireSystem,
   lampSystem,
   needsSystem,
+  selfSystem,
   lawSystem,
   talesSystem,
   calendarSystem,

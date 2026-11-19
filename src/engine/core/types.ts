@@ -12,6 +12,8 @@ import type { StrangersDefs } from './strangers.ts';
 import type { LampDefs } from './lamp.ts';
 import type { ClothesDefs } from './clothes.ts';
 import type { TalesDefs } from './tales.ts';
+import type { SelfDefs } from './self.ts';
+import type { BiomesDef } from './climate.ts';
 import type { CalendarDef } from './clock.ts';
 
 export type { CalendarDef } from './clock.ts';
@@ -351,24 +353,17 @@ export interface TerrainDef {
   wear: WearDef;
 }
 
-/** The forked biome table (src/content/data/biomes.json); only the fields the map reads. */
-export interface BiomesDef {
-  biomes: readonly { id: string; name: string; fertility: number; forest?: boolean }[];
-  rules: {
-    temperatureBands: readonly number[];
-    rainfallBands: readonly number[];
-    table: readonly (readonly string[])[];
-    alpineElevation: number;
-    swampRainfall: number;
-    swampMinTemp: number;
-    /** Biomes that need frost-free winters, and what they become without them. */
-    frostFree: { fallback: Readonly<Record<string, string>> };
-  };
-}
-
 /** The content the engine core reads. The worker passes the content layer's `content`. */
 export interface EngineContent
-  extends PeopleDefs, WildDefs, FlockDefs, StrangersDefs, LampDefs, ClothesDefs, TalesDefs {
+  extends
+    PeopleDefs,
+    WildDefs,
+    FlockDefs,
+    StrangersDefs,
+    LampDefs,
+    ClothesDefs,
+    TalesDefs,
+    SelfDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */
   events: readonly { id: string; template: string; notable?: Readonly<Record<string, string>> }[];

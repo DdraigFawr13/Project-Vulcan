@@ -45,6 +45,9 @@ export const LAWS_SCHEMAS = {
             grumbled: opt(ref('memories')),
             traits: map(num(), 'traits'),
             memories: map(num(), 'memories'),
+            // P6.4: how each role (self.json) and life ambition leans on it.
+            roles: opt(map(num())),
+            ambitions: opt(map(num())),
           }),
         ),
       }),
