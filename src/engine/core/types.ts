@@ -62,7 +62,7 @@ export interface SimEvent {
 
 /** An older line the world still points at, kept after its day was sealed (ARCHITECTURE "Event
  * log"): enough for "why?" to end at "older record" with its date. The whole line is in the
- * day's segment. */
+ * day's segment; a line a held memory, belief or tale cites stays whole in `stubs` (V-177). */
 export interface Stub {
   id: number;
   tick: number;
@@ -112,8 +112,9 @@ export interface WorldState {
   pending: Command[];
   /** The ledger's recent days in full, oldest first; older days are sealed into segments. */
   log: SimEvent[];
-  /** Older lines still cited by the world, by rising id (sealed days keep no other trace here). */
-  stubs: Stub[];
+  /** Older lines still cited by the world, by rising id (sealed days keep no other trace here):
+   * stubs, or whole lines where a held memory, belief or tale still needs their words. */
+  stubs: Array<Stub | SimEvent>;
   /** The sealed days, oldest first, as archive keys: the save names its archive, never holds it. */
   segments: SegmentRef[];
   /** Days sealed since the worker last took them; empty between the worker's runs. */

@@ -78,6 +78,20 @@ function cited(world: WorldState, sim: Sim): Set<number> {
   return ids;
 }
 
+/** What a person holds in mind: memories, beliefs, tales, their answer to a law and their place
+ * on the defiance ladder. The lines these cite keep their words (V-177). */
+const HELD = ['memory', 'belief', 'tale', 'answer', 'defy'] as const;
+
+/** Every ledger id a row of a `HELD` table cites. */
+function held(world: WorldState, sim: Sim): Set<number> {
+  const ids = new Set<number>();
+  const tables = Object.fromEntries(
+    HELD.flatMap((k) => (sim.tables[k] ? [[k, sim.tables[k]]] : [])),
+  );
+  citedByEntities(world, tables, ids);
+  return ids;
+}
+
 // Whether a line from id `from` on is one `stop` names, looking back from the newest.
 function wrote(log: WorldState['log'], from: number, stop: StopAt): boolean {
   const hit = typeof stop === 'function' ? stop : (e: SimEvent) => stop.has(e.type);
@@ -123,7 +137,8 @@ export function step(world: WorldState, sim: Sim, ticks = 1, stopAt?: StopAt): W
     for (const system of sim.systems)
       if (system.run && due(system.every, world.tick, sim))
         system.run(contextFor(world, sim, system));
-    if (world.tick % TICKS_PER_DAY === 0) sealDays(world, cited(world, sim), sim.recentDays);
+    if (world.tick % TICKS_PER_DAY === 0)
+      sealDays(world, cited(world, sim), sim.recentDays, held(world, sim));
     if (stopAt && wrote(world.log, before, stopAt)) break;
   }
   // Lines written this call that are still recent: a run over a week returns the last week.

@@ -192,7 +192,7 @@ const weatherSound = (state: unknown, kinds: number): boolean =>
   isCount(state['kind']) &&
   (state['kind'] as number) < kinds;
 
-/** Stubs then recent lines, ids rising throughout; days sealed and archived are well formed. */
+/** Stubs (a kept line with its causes, V-177) then recent lines, ids rising throughout; days sealed and archived are well formed. */
 function ledgerSound(world: WorldState): boolean {
   let last = 0;
   const rises = (id: number) => id > last && ((last = id), true);
@@ -203,6 +203,7 @@ function ledgerSound(world: WorldState): boolean {
         isCount(e.id) &&
         isCount(e.tick) &&
         typeof e.type === 'string' &&
+        (!('causes' in e) || (Array.isArray(e.causes) && e.causes.every(isCount))) &&
         rises(e.id),
     ) &&
     world.log.every((e) => isObject(e) && isCount(e.id) && rises(e.id)) &&
