@@ -115,6 +115,30 @@ describe('standing, the elder and factions', () => {
     expect(lines(w, 'colony.standing').at(-1)!.data['text']).toMatch(/the elder, died/);
   });
 
+  it('holds a faction together for its first days, and one formed again keeps its name', () => {
+    const { w } = hungerWorld('anvil');
+    const f = factionsOf(w)[0]!;
+    const name = f['name'] as string;
+    // The same valley under content where Hunger rations ask nothing: every grievance fades.
+    const soft = structuredClone(content) as typeof content;
+    const rations = soft.laws.laws.find((l) => l.id === 'rations')!;
+    (rations.settings.find((x) => x.id === 'hunger') as { ask: number }).ask = -200;
+    const easy = createSim(soft);
+    const faded = () => lines(w, 'colony.disbanded').some((e) => e.data['faction'] === name);
+    let days = 0;
+    while (!faded() && days < fd.hold + 3) {
+      step(w, easy, TICKS_PER_DAY);
+      days += 1;
+    }
+    expect(faded()).toBe(true);
+    const formed = lines(w, 'colony.faction').at(-1)!;
+    expect(days * TICKS_PER_DAY).toBeGreaterThanOrEqual(fd.hold * TICKS_PER_DAY - TICKS_PER_DAY);
+    expect(w.tick - formed.tick).toBeGreaterThanOrEqual(fd.hold * TICKS_PER_DAY);
+    // The grievance back within a season: the faction forms again under its old name.
+    for (let d = 0; d < 6 && !factionsOf(w).length; d++) toReckoning(w);
+    expect(factionsOf(w)[0]?.['name']).toBe(name);
+  });
+
   it('makes every law easier to refuse when standing is low', () => {
     const w = createWorld(sim, 'smoke');
     const s = content.laws.laws.find((l) => l.id === 'work-hours')!.settings[2]!;

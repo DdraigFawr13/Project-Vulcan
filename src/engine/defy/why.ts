@@ -2,6 +2,7 @@
 // how much, the memory that weighs most against it and the belief that carries it into acts.
 // Every act's line cites all three: the answer, the memory and the belief.
 import type { EngineContent, EntityRow, LawSettingDef, WorldState } from '../core/index.ts';
+import { storeLasts } from '../goods/index.ts';
 import { settingOf } from '../law/index.ts';
 import { memoriesOf } from '../needs/index.ts';
 import { beliefsOf } from '../tales/index.ts';
@@ -56,6 +57,21 @@ export function reasonsOf(
       (b['strength'] as number) >= content.defy.belief,
   );
   return { mem, belief };
+}
+
+/** Hard times without a law (6A review P2): someone who went hungry and holds the defy.json
+ * `starving` belief strongly enough has the memory and belief to take from a store that will not
+ * last to the harvest, at any Rations setting. */
+export function hungerWhy(world: WorldState, content: EngineContent, person: number): Why {
+  const st = content.defy.starving;
+  if (storeLasts(world, content, 0)) return {};
+  const mem = memoriesOf(world, person)
+    .filter((m) => m['memory'] === st.memory)
+    .sort((a, b) => (b['line'] as number) - (a['line'] as number))[0];
+  const belief = beliefsOf(world, person).find(
+    (b) => b['belief'] === st.belief && (b['strength'] as number) >= content.defy.belief,
+  );
+  return mem && belief ? { mem, belief } : {};
 }
 
 const lower = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);

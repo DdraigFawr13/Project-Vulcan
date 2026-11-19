@@ -44,6 +44,7 @@
     "what": "was hurt in a brawl with {other}"
   },
   "leave": { "misery": 28, "mood": 4000, "household": true, "every": 28 },
+  "starving": { "memory": "went-hungry", "belief": "valley-hungry" },
   "memories": {
     "sawTheft": "saw-theft",
     "sawBrawl": "saw-brawl",

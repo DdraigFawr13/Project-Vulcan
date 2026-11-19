@@ -1,5 +1,6 @@
-// The acts past refusing (P6.7, V-160). Taking: someone at the `take` step who eats from the
-// store pockets `take.count` more of it, at most once in `take.every` days, for later (a held
+// The acts past refusing (P6.7, V-160). Taking: someone at the `take` step (or, 6A review P2,
+// someone who went hungry and believes the valley cannot feed them, in hard times) who eats from
+// the store pockets `take.count` more of it, at most once in `take.every` days, for later (a held
 // stash, state `hid`; people `defy.ts`). Brawling: someone at the `brawl` step, at a meal, at
 // leisure or at work, comes to blows with the one their memory is about (who took a full plate),
 // else the nearest keeper of the law, within `brawl.reach`, at
@@ -12,7 +13,7 @@ import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { punish } from './punish.ts';
 import { atLeast, defyOf, leavingOf } from './tables.ts';
-import { citesOf, grievanceOf, reasonsOf, whyWords } from './why.ts';
+import { citesOf, grievanceOf, hungerWhy, reasonsOf, whyWords, type Why } from './why.ts';
 
 const far = (a: EntityRow, b: EntityRow): number =>
   a['z'] !== b['z']
@@ -57,25 +58,41 @@ const storeFood = (ctx: SystemContext, food: EntityRow): boolean =>
   !ctx.content.life.lastResort.includes(food['kind'] as string) &&
   inStore(ctx.world, food['x'] as number, food['y'] as number, food['z'] as number);
 
-/** After `p` eats from `food`: at the `take` step, they pocket more of it from the store. */
+/** The answer, memory and belief behind `p` taking now: their grievance at the `take` step, else
+ * hunger with no law behind it (`hungerWhy`). */
+function takeWhy(ctx: SystemContext, p: EntityRow): { cites: number[]; why: Why } | undefined {
+  const { world, content } = ctx;
+  let g = atLeast(world, content, p.id, 'take') ? grievanceOf(world, content, p.id) : undefined;
+  let why = g ? reasonsOf(world, content, p.id, g.setting) : {};
+  // A grievance without its memory and belief still leaves hunger as a reason.
+  if (!why.mem || !why.belief) {
+    g = undefined;
+    why = hungerWhy(world, content, p.id);
+  }
+  // No act without the memory and the belief behind it, at the moment of the act too.
+  if (!why.mem || !why.belief) return undefined;
+  const cites = g
+    ? citesOf(g, why)
+    : [...new Set([why.mem['line'] as number, why.belief['line'] as number])].filter((l) => l > 0);
+  return { cites, why };
+}
+
+/** After `p` eats from `food`: at the `take` step, or starving in hard times, they pocket more
+ * of it from the store. */
 export function pilfer(ctx: SystemContext, p: EntityRow, food: EntityRow): void {
   const { world, content } = ctx;
   const row = defyOf(world, p.id);
   const t = content.defy.take;
-  if (!row || !atLeast(world, content, p.id, 'take') || !due(ctx, row['took'] as number, t.every))
-    return;
-  if (!storeFood(ctx, food)) return;
-  const g = grievanceOf(world, content, p.id);
-  if (!g) return;
-  const why = reasonsOf(world, content, p.id, g.setting);
-  // No act without the memory and the belief behind it, at the moment of the act too.
-  if (!why.mem || !why.belief) return;
+  if (!row || !due(ctx, row['took'] as number, t.every) || !storeFood(ctx, food)) return;
+  const reason = takeWhy(ctx, p);
+  if (!reason) return;
+  const { why } = reason;
   const kind = food['kind'] as string;
   const n = takeFrom(world, food, t.count);
   if (!n) return;
   const spot = { x: p['x'] as number, y: p['y'] as number, z: p['z'] as number };
   const line = ctx.emit('defy.took', {
-    causes: citesOf(g, why),
+    causes: reason.cites,
     actors: [p.id],
     data: {
       name: p['name'] as string,

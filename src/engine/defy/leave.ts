@@ -1,17 +1,19 @@
 // Leaving the valley (P6.7, V-160): at the top of the ladder, or sent away under the Punishment
 // law, someone walks out by their home's road for good, taking what is theirs (people
-// `defy.ts` walks them out; they take their clothes, bedroll and stash, and leave tools behind). Housemates who refuse the same
-// law or stand in the same faction, and are as far up the ladder as taking, go with them (defy.json `leave.household`). Those left behind
-// remember it, and the colony's standing falls for a season.
+// `defy.ts` walks them out; they take their clothes, bedroll and stash, and leave tools behind).
+// Housemates go with them only if they share the grievance (6A review P4): the same law is the
+// one they are furthest from keeping, they hold a memory and a belief against it, and they are
+// as far up the ladder as taking (defy.json `leave.household`). Those left behind remember it,
+// and the colony's standing falls for a season.
 import { list, type EntityRow } from '../core/index.ts';
-import { addCause, factionOf } from '../colony/index.ts';
+import { addCause } from '../colony/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { itemsOf } from '../goods/index.ts';
 import { homeHouse } from '../health/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { atLeast, leavingOf, takesWith } from './tables.ts';
-import { citesOf, whyWords, type Grievance, type Why } from './why.ts';
+import { citesOf, grievanceOf, reasonsOf, whyWords, type Grievance, type Why } from './why.ts';
 
 const alive = (ctx: SystemContext): EntityRow[] =>
   (ctx.world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
@@ -28,8 +30,8 @@ function goodsWords(ctx: SystemContext, p: EntityRow): string {
   return named.length ? list([...new Set(named)]) : 'nothing';
 }
 
-/** Housemates who go with `p`: as far up the ladder as taking, refusing the same law or standing
- * in its faction. */
+/** Housemates who go with `p`: those who share the grievance with `law`, as far up the ladder
+ * as taking. */
 function household(ctx: SystemContext, p: EntityRow, law: string): EntityRow[] {
   const { world, content } = ctx;
   const home = homeHouse(world, content, p);
@@ -37,13 +39,11 @@ function household(ctx: SystemContext, p: EntityRow, law: string): EntityRow[] {
   return alive(ctx).filter((q) => {
     if (q.id === p.id || leavingOf(world, q.id) || homeHouse(world, content, q) !== home)
       return false;
-    const a = (world.entities['answer'] ?? []).find(
-      (r) => r['person'] === q.id && r['law'] === law,
-    );
-    return (
-      atLeast(world, content, q.id, 'take') &&
-      (a?.['answer'] === 'refuses' || !!factionOf(world, q.id, law))
-    );
+    if (!atLeast(world, content, q.id, 'take')) return false;
+    const g = grievanceOf(world, content, q.id);
+    if (g?.law !== law) return false;
+    const why = reasonsOf(world, content, q.id, g.setting);
+    return !!why.mem && !!why.belief;
   });
 }
 

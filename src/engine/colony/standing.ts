@@ -9,9 +9,9 @@ import {
   type WorldState,
 } from '../core/index.ts';
 import { addEntity, removeEntity } from '../entity/index.ts';
-import { storeLasts } from '../goods/index.ts';
+import { foodDays, foodGoneLine, storeLasts } from '../goods/index.ts';
 import { isWinter, lawRow, settingOf } from '../law/index.ts';
-import { needOf } from '../needs/index.ts';
+import { memoriesOf, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { causesOf, colonyRow } from './tables.ts';
 
@@ -48,6 +48,7 @@ export function addCause(
       text: text.charAt(0).toUpperCase() + text.slice(1),
       way: def.by > 0 ? 'rises' : 'falls',
       standing: now,
+      cause: kind,
     },
   });
   addEntity(ctx.world, 'cause', { cause: kind, by: def.by, text, line, until });
@@ -85,6 +86,7 @@ export function weekly(ctx: SystemContext, day: number): void {
         keep.slice(-3).map((a) => a['line'] as number),
       );
   }
+  storeOut(ctx, day);
   if (day % harsh.every !== 0 || !hardTimes(world, content)) return;
   for (const def of content.laws.laws) {
     const s = settingOf(world, content, def.id);
@@ -93,6 +95,23 @@ export function weekly(ctx: SystemContext, day: number): void {
     const cause: StandingCause = { by: -s.harsh, days: harsh.days, text: harsh.text };
     addCause(ctx, 'harsh', cause, harsh.text.replace('{days}', s.days), set ? [set] : []);
   }
+}
+
+/** Every `storeOut.every` days: an empty store while someone goes hungry lowers standing, at any
+ * law (6A review P2). The line cites the last food eaten, when the band ran out of it. */
+function storeOut(ctx: SystemContext, day: number): void {
+  const { world, content } = ctx;
+  const out = content.colony.standing.storeOut;
+  if (day % out.every !== 0) return;
+  const band = alive(world);
+  if (!band.length || foodDays(world, content, band.length).days > out.food) return;
+  const hungry = band
+    .map((p) => memoriesOf(world, p.id).find((m) => m['memory'] === out.hungry))
+    .filter((m) => m !== undefined);
+  if (!hungry.length) return;
+  const gone = foodGoneLine(world);
+  const causes = [gone, ...hungry.slice(-2).map((m) => m['line'] as number)];
+  addCause(ctx, 'storeOut', out, out.text, [...new Set(causes.filter((l) => l > 0))]);
 }
 
 /** Counts the hungry each winter day; at its end, a winter with at most `most` hungry days a

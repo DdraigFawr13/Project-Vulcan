@@ -24,6 +24,9 @@ export interface ColonyDef {
     kept: StandingCause & { every: number; share: number };
     /** Each `every` days a harsh setting stands in hard times, its `harsh` (laws.json). */
     harsh: { days: number; every: number; text: string };
+    /** Each `every` days (6A review P2), when someone holds the `hungry` memory and the store
+     * holds `food` days of food or less, whatever the laws. */
+    storeOut: StandingCause & { every: number; food: number; hungry: string };
     answered: StandingCause;
     stood: StandingCause;
     ignored: StandingCause;
@@ -58,7 +61,17 @@ export interface ColonyDef {
       fallen: string;
     };
   };
-  faction: { least: number; share: number; strong: number; lean: number; stands: string };
+  faction: {
+    least: number;
+    share: number;
+    strong: number;
+    lean: number;
+    stands: string;
+    /** Days a new faction holds together whatever its members feel (6A review P5). */
+    hold: number;
+    /** Days after breaking up within which a faction against the same setting keeps its name. */
+    keepName: number;
+  };
   petition: { days: number };
   mood: { causes: number };
 }
