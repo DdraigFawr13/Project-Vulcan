@@ -3,6 +3,7 @@
 import { check, type RefTarget, type RefUse } from './schema';
 import { SCHEMAS } from './schemas';
 import { checkBees } from './validate-lamp';
+import { checkPunish } from './validate-defy';
 import { checkTales } from './validate-tales';
 
 type Files = Readonly<Record<string, unknown>>;
@@ -88,6 +89,7 @@ export function validateContent(files: Files): string[] {
       ...checkStrangers(files),
       ...checkBees(files),
       ...checkTales(files),
+      ...checkPunish(files),
     );
   errors.push(...checkBand(files));
   return errors;

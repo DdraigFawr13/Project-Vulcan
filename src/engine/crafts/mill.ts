@@ -13,6 +13,7 @@ import { canReach, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, besideReachable, busy, goBeside, layAround, outranked } from '../band/index.ts';
 import { people, practise, priorityLine, same, skillOf, spotOf, walkTo } from '../band/index.ts';
+import { alive } from '../entity/index.ts';
 
 /** Where `p` would work and on what: the piece, the stack to fetch, the batch and its minutes. */
 interface Pick {
@@ -29,9 +30,6 @@ function stop(p: EntityRow): false {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0, task: '' });
   return false;
 }
-
-const alive = (world: WorldState): number =>
-  people(world).filter((q) => q['status'] === 'alive').length;
 
 const countOf = (world: WorldState, kind: string): number =>
   itemsOf(world)
@@ -130,7 +128,7 @@ function pickBake(ctx: SystemContext, p: EntityRow): Pick | undefined {
   const { world, content } = ctx;
   const def = content.buildings.mill;
   const bake = def.bake;
-  const want = alive(world) * bake.perPerson;
+  const want = alive(world).length * bake.perPerson;
   const have = countOf(world, bake.bread);
   const oven = builtPiece(ctx, p, (f) => f['kind'] === bake.oven.kind);
   const how = oven ? bake.oven : bake.hearth;

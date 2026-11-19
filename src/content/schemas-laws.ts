@@ -77,7 +77,7 @@ export const LAWS_SCHEMAS = {
             // P6.7: the beliefs that carry a grievance with it into acts (tales.json), and what a
             // Punishment setting does to a thief or brawler caught (defy.json `punish`).
             beliefs: opt(list(str())),
-            punish: opt(oneOf('work', 'stocks', 'away')),
+            punish: opt(str()),
           }),
         ),
       }),

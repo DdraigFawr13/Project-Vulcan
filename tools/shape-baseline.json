@@ -4,7 +4,7 @@
     "longFunctions": 25,
     "complexOver25": 20,
     "complexOver15": 120,
-    "copiedHelpers": 2
+    "copiedHelpers": 0
   },
   "modules": {
     "src/engine/build/MODULE.md": 13175,

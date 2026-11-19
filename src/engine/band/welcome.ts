@@ -5,6 +5,7 @@
 // greedy when food is short. Memories of earlier newcomers shift it. All numbers are content.
 import { type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { memoriesOf } from '../needs/index.ts';
+import { alive } from '../entity/index.ts';
 
 export interface Stance {
   for: boolean;
@@ -14,9 +15,6 @@ export interface Stance {
   pros: string[];
   cons: string[];
 }
-
-const alive = (world: WorldState): EntityRow[] =>
-  (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
 
 const skillOf = (world: WorldState, person: number, skill: string): number =>
   ((world.entities['skill'] ?? []).find((r) => r['person'] === person && r['skill'] === skill)?.[

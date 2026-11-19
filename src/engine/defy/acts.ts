@@ -7,6 +7,7 @@
 // most once in `brawl.every` days: both take a light wound (`deep` per cent a deep one). Anyone
 // awake within `take.sight` who sees it catches them (punish.ts).
 import { list, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
+import { awake, far } from '../entity/index.ts';
 import { inStore, layItem, takeFrom } from '../goods/index.ts';
 import { wound } from '../health/index.ts';
 import { addMemory } from '../needs/index.ts';
@@ -15,23 +16,10 @@ import { punish } from './punish.ts';
 import { atLeast, defyOf, leavingOf } from './tables.ts';
 import { citesOf, grievanceOf, hungerWhy, reasonsOf, whyWords, type Why } from './why.ts';
 
-const far = (a: EntityRow, b: EntityRow): number =>
-  a['z'] !== b['z']
-    ? Infinity
-    : Math.max(
-        Math.abs((a['x'] as number) - (b['x'] as number)),
-        Math.abs((a['y'] as number) - (b['y'] as number)),
-      );
-
-const awake = (ctx: SystemContext): EntityRow[] =>
-  (ctx.world.entities['person'] ?? []).filter(
-    (q) => q['status'] === 'alive' && q['doing'] !== 'sleep',
-  );
-
 /** The awake (but `p` and `but`) who see `p` now. */
 function seenBy(ctx: SystemContext, p: EntityRow, but: number[] = []): EntityRow[] {
   const sight = ctx.content.defy.take.sight;
-  return awake(ctx).filter((q) => q.id !== p.id && !but.includes(q.id) && far(p, q) <= sight);
+  return awake(ctx.world).filter((q) => q.id !== p.id && !but.includes(q.id) && far(p, q) <= sight);
 }
 
 /** `p` is caught at `act` by `saw`, who remember it: the line, then the Punishment law. */
@@ -117,7 +105,7 @@ export function pilfer(ctx: SystemContext, p: EntityRow, food: EntityRow): void 
 export function brawls(ctx: SystemContext): void {
   const { world, content } = ctx;
   const b = content.defy.brawl;
-  for (const p of awake(ctx)) {
+  for (const p of awake(ctx.world)) {
     const row = defyOf(world, p.id);
     if (
       !row ||
@@ -137,7 +125,7 @@ export function brawls(ctx: SystemContext): void {
         (a) => a['person'] === q.id && a['law'] === g.law && a['answer'] !== 'refuses',
       );
     const rank = (q: EntityRow) => (q.id === why.mem!['about'] ? -1 : far(p, q));
-    const other = awake(ctx)
+    const other = awake(ctx.world)
       .filter((q) => q.id !== p.id && far(p, q) <= b.reach && keeps(q))
       .sort((x, y) => rank(x) - rank(y) || x.id - y.id)[0];
     if (!other) continue;

@@ -21,6 +21,7 @@ import { canReach, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, besideReachable, busy, goBeside, layAround, outranked } from '../band/index.ts';
 import { people, practise, priorityLine, same, skillOf, spotOf, walkTo } from '../band/index.ts';
+import { alive } from '../entity/index.ts';
 
 const JOB = 'cook';
 
@@ -41,9 +42,6 @@ function stop(p: EntityRow): false {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0 });
   return false;
 }
-
-const alive = (world: WorldState): EntityRow[] =>
-  people(world).filter((q) => q['status'] === 'alive');
 
 /** Cooked meals anywhere (stored, lying, carried). */
 export const mealsOf = (world: WorldState, content: EngineContent): number =>

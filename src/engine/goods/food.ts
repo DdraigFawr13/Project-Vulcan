@@ -10,6 +10,7 @@ import {
 import type { SystemContext } from '../sim/index.ts';
 import { haveOf } from './store.ts';
 import { itemsOf, takeFrom } from './stacks.ts';
+import { alive } from '../entity/index.ts';
 
 /** Takes one from food stack `item` for `eater`; the last food in the valley writes a line. */
 export function eatFrom(ctx: SystemContext, item: EntityRow, eater: EntityRow): void {
@@ -33,9 +34,6 @@ export function eatFrom(ctx: SystemContext, item: EntityRow, eater: EntityRow): 
 /** The line where the last food was eaten, or 0 if the band has never run out. */
 export const foodGoneLine = (world: WorldState): number =>
   world.systems['goods']?.['foodGone'] ?? 0;
-
-const alive = (world: WorldState): EntityRow[] =>
-  (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
 
 /** Food in the store, and the days it lasts `mouths` at `strangers.draw.eat` a head. */
 export function foodDays(world: WorldState, content: EngineContent, mouths: number) {

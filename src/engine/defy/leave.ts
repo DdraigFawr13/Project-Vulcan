@@ -7,16 +7,13 @@
 // and the colony's standing falls for a season.
 import { list, type EntityRow } from '../core/index.ts';
 import { addCause } from '../colony/index.ts';
-import { addEntity } from '../entity/index.ts';
+import { addEntity, alive } from '../entity/index.ts';
 import { itemsOf } from '../goods/index.ts';
 import { homeHouse } from '../health/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { atLeast, leavingOf, takesWith } from './tables.ts';
 import { citesOf, grievanceOf, reasonsOf, whyWords, type Grievance, type Why } from './why.ts';
-
-const alive = (ctx: SystemContext): EntityRow[] =>
-  (ctx.world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
 
 /** What `p` takes (their clothes, bedroll and stash), in words. */
 function goodsWords(ctx: SystemContext, p: EntityRow): string {
@@ -36,7 +33,7 @@ function household(ctx: SystemContext, p: EntityRow, law: string): EntityRow[] {
   const { world, content } = ctx;
   const home = homeHouse(world, content, p);
   if (!home || !content.defy.leave.household) return [];
-  return alive(ctx).filter((q) => {
+  return alive(ctx.world).filter((q) => {
     if (q.id === p.id || leavingOf(world, q.id) || homeHouse(world, content, q) !== home)
       return false;
     if (!atLeast(world, content, q.id, 'take')) return false;
@@ -75,7 +72,7 @@ export function leave(
   });
   for (const q of [p, ...going]) addEntity(world, 'leaving', { person: q.id, line });
   const gone = new Set([p.id, ...going.map((q) => q.id)]);
-  for (const q of alive(ctx))
+  for (const q of alive(ctx.world))
     if (!gone.has(q.id)) addMemory(ctx, q.id, content.defy.memories['left']!, line, p.id);
   const st = content.defy.standing;
   addCause(ctx, 'left', st, st.text.replace('{name}', p['name'] as string), [line]);

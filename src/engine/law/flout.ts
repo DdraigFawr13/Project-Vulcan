@@ -1,12 +1,9 @@
 // A refuser seen keeping the custom (P4.8, V-091; P6.5 for every law): one line saying what they
 // did, and whoever sees it remembers it about them (and may lean the same way).
-import type { EntityRow, LawSettingDef } from '../core/index.ts';
+import { list, type EntityRow, type LawSettingDef } from '../core/index.ts';
 import { houseAt } from '../build/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-
-const list = (names: string[]): string =>
-  names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)!}`;
 
 /** Whether `q` can see `p`: the same level within sight, or the same house. */
 function sees(ctx: SystemContext, p: EntityRow, q: EntityRow): boolean {

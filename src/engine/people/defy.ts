@@ -1,7 +1,7 @@
 // The people's side of defiance (P6.7, V-160; engine defy decides, this acts): working slowly
 // idles one work minute in `slow.every`; someone held back by nothing eats their stash first;
-// a sentence of the stocks keeps them on the green through the working day, and one of extra
-// work keeps them working to bedtime; someone leaving walks out by their home's road and, once
+// a sentence sat on the green (the stocks) keeps them there through the working day, and one of
+// extra work keeps them working to bedtime; someone leaving walks out by their home's road and, once
 // off the map, is gone with their clothes, bedroll and stash; tools and loads are left behind.
 import type { EntityRow } from '../core/index.ts';
 import { leavingOf, sentenceOf, slacks, stashOf, takesWith } from '../defy/index.ts';
@@ -27,11 +27,11 @@ export function eatStash(ctx: SystemContext, p: EntityRow): boolean {
 
 /** Whether `p` works on to bedtime today (a sentence of extra work). */
 export const extraWork = (ctx: SystemContext, p: EntityRow): boolean =>
-  !!sentenceOf(ctx.world, p.id, 'work');
+  !!sentenceOf(ctx.world, ctx.content, p.id, 'work');
 
 /** In working hours on a day in the stocks: to the green and stay there. */
 export function inStocks(ctx: SystemContext, p: EntityRow, hours: boolean): boolean {
-  if (!hours || !sentenceOf(ctx.world, p.id, 'stocks')) return false;
+  if (!hours || !sentenceOf(ctx.world, ctx.content, p.id, 'green')) return false;
   if (p['doing'] !== 'stocks') stopFor(ctx, p, false);
   p['doing'] = 'stocks';
   const g = greenOf(ctx.world);

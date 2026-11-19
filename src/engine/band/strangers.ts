@@ -24,9 +24,8 @@ import { drawSmithing } from './smithing.ts';
 import { stepAlong } from './walk.ts';
 import { decide, namesOf } from './verdict.ts';
 import { edgeSpot, toGreen } from './edge.ts';
-import { people } from '../entity/index.ts';
+import { people, alive } from '../entity/index.ts';
 
-const alive = (world: WorldState) => people(world).filter((p) => p['status'] === 'alive');
 const strangersOf = (world: WorldState) => people(world).filter((p) => p['status'] === 'stranger');
 
 /** Free beds where a newcomer would sleep (the band's houses, not anyone's home), and whether a

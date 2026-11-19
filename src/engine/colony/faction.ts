@@ -16,14 +16,11 @@ import {
   type LawDef,
   type WorldState,
 } from '../core/index.ts';
-import { addEntity, removeEntity } from '../entity/index.ts';
+import { addEntity, removeEntity, alive } from '../entity/index.ts';
 import { lawDef, settingOf, weigh } from '../law/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addCause } from './standing.ts';
 import { factionsOf } from './tables.ts';
-
-const alive = (world: WorldState): EntityRow[] =>
-  (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
 
 /** Laws everyone answers while they stand away from the custom. */
 const asking = (world: WorldState, content: EngineContent): LawDef[] =>

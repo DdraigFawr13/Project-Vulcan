@@ -16,9 +16,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { addCause } from './standing.ts';
 import { colonyRow, elderOf, standingOf } from './tables.ts';
 import { tally, type Candidate } from './vote.ts';
-
-const alive = (world: WorldState): EntityRow[] =>
-  (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
+import { alive } from '../entity/index.ts';
 
 /** Everyone `p` told a tale or heard one from since `day`. */
 function talkedWith(world: WorldState, p: number, day: number): Set<number> {

@@ -8,3 +8,6 @@ export const list = (items: readonly string[]): string =>
 /** An item's name from content, or its id when content has no entry for it. */
 export const itemName = (content: EngineContent, id: string): string =>
   content.items.find((i) => i.id === id)?.name ?? id;
+
+/** The same words with a small first letter, to go mid-sentence. */
+export const lower = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);

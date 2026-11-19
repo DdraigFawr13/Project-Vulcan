@@ -1,8 +1,9 @@
 // The colony's mood (P6.6, V-146): one word, the mean of everyone's mood worded as a person's is
 // (life.json `mood`), and its biggest causes: each need under its line (how far under, by its
 // weight) and each memory moving mood, summed over everyone, biggest first.
-import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import type { EngineContent, WorldState } from '../core/index.ts';
 import { memoriesOf, moodOf, needOf } from '../needs/index.ts';
+import { alive } from '../entity/index.ts';
 
 export interface MoodCause {
   /** `need` or `memory`, and its id. */
@@ -24,9 +25,6 @@ export interface ColonyMood {
   rank: number;
   causes: MoodCause[];
 }
-
-const alive = (world: WorldState): EntityRow[] =>
-  (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
 
 export function colonyMood(world: WorldState, content: EngineContent): ColonyMood {
   const { life } = content;

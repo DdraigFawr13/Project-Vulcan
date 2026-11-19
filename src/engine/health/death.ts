@@ -15,9 +15,7 @@ import { itemsOf, restOf, toolsChanged } from '../goods/index.ts';
 import { addMemories, addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bodyOf, ensureBody, openWounds, pronouns, stopFor, worstOf } from './wounds.ts';
-
-const alive = (world: WorldState): EntityRow[] =>
-  (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
+import { alive } from '../entity/index.ts';
 
 const list = (names: readonly string[]): string =>
   names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;

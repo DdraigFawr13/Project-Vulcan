@@ -49,15 +49,19 @@ export const atLeast = (
 export const slacks = (world: WorldState, content: EngineContent, person: number): boolean =>
   atLeast(world, content, person, 'slow') && world.tick % content.defy.slow.every === 0;
 
-/** The sentence of kind `kind` `person` serves today, if any. */
+/** The sentence `person` serves today whose day is `what` (defy.json `punish` `day`), if any. */
 export const sentenceOf = (
   world: WorldState,
+  content: EngineContent,
   person: number,
-  kind: string,
+  what: 'work' | 'green',
 ): EntityRow | undefined => {
   const day = Math.floor(world.tick / TICKS_PER_DAY);
   return (world.entities['sentence'] ?? []).find(
-    (r) => r['person'] === person && r['kind'] === kind && r['day'] === day,
+    (r) =>
+      r['person'] === person &&
+      r['day'] === day &&
+      content.defy.punish[r['kind'] as string]?.day === what,
   );
 };
 

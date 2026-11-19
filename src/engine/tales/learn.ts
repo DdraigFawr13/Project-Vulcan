@@ -4,11 +4,9 @@
 // (no one to see it) one awake person, by the tales' dice, brings word. Seeing it feeds the
 // tale's belief.
 import { TICKS_PER_DAY, type EntityRow, type SimEvent, type TaleDef } from '../core/index.ts';
-import { addEntity } from '../entity/index.ts';
+import { addEntity, alive } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { feedBelief } from './belief.ts';
-
-const alive = (p: EntityRow): boolean => p['status'] === 'alive';
 
 /** The ledger lines after `seen`, oldest first. */
 function linesAfter(log: readonly SimEvent[], seen: number): SimEvent[] {
@@ -20,7 +18,7 @@ function linesAfter(log: readonly SimEvent[], seen: number): SimEvent[] {
 /** Who saw line `e`: its living actors and the awake within sight of one, or for word of it one
  * awake person. */
 function witnesses(ctx: SystemContext, def: TaleDef, e: SimEvent): EntityRow[] {
-  const people = (ctx.world.entities['person'] ?? []).filter(alive);
+  const people = alive(ctx.world);
   if (def.word) {
     const awake = people.filter((p) => p['doing'] !== 'sleep');
     return awake.length ? [ctx.rng().pick(awake)] : people.slice(0, 1);

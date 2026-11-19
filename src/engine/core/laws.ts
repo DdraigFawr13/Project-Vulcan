@@ -44,7 +44,7 @@ export interface LawSettingDef {
   /** P6.7: the beliefs (tales.json) that carry a grievance against it into acts, and what a
    * Punishment setting does to someone caught. */
   beliefs?: readonly string[];
-  punish?: 'work' | 'stocks' | 'away';
+  punish?: string;
 }
 
 export interface LawDef {

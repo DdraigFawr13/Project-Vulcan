@@ -49,14 +49,13 @@
     "sawTheft": "saw-theft",
     "sawBrawl": "saw-brawl",
     "brawled": "brawled",
-    "stocks": "sat-stocks",
     "unfair": "saw-unfair-punishment",
     "left": "saw-leave"
   },
   "punish": {
-    "work": "will work on to bedtime tomorrow",
-    "stocks": "will sit tomorrow in the stocks on the green",
-    "away": "is sent out of the valley"
+    "work": { "text": "will work on to bedtime tomorrow", "day": "work" },
+    "stocks": { "text": "will sit tomorrow in the stocks on the green", "day": "green", "memory": "sat-stocks" },
+    "away": { "text": "is sent out of the valley", "leave": true }
   },
   "standing": { "by": -4, "days": 84, "text": "{name} left the valley" }
 }
