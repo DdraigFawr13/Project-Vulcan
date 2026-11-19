@@ -1,21 +1,11 @@
-// The Larder rows of the Work sheet (5B Bundle 3): curing, coopering and pottery, as jobs.ts dispatches them.
-import type { EntityRow } from '../core/index.ts';
-import type { SystemContext } from '../sim/index.ts';
+// The Larder rows of the Work sheet (5B Bundle 3): curing, coopering and pottery, as their rows of
+// the job table (jobtable.ts). Each keeps what it fetched overnight.
 import { coopering, takeUpCoopering } from './cooper.ts';
 import { curing, takeUpCuring } from './cure.ts';
 import { potting, takeUpPottery } from './potter.ts';
 
-/** How each Larder row is taken up. */
-export const LARDER_TAKE_UP = {
-  cure: takeUpCuring,
-  cooper: takeUpCoopering,
-  potter: takeUpPottery,
-};
-
-/** One work-hours minute of curing, coopering or pottery for someone at it; false for anyone else. */
-export const larderWork = (ctx: SystemContext, p: EntityRow): boolean =>
-  p['job'] === 'cure'
-    ? curing(ctx, p)
-    : p['job'] === 'cooper'
-      ? coopering(ctx, p)
-      : p['job'] === 'potter' && potting(ctx, p);
+export const LARDER_JOBS = {
+  cure: { takeUp: takeUpCuring, work: curing, holds: true },
+  cooper: { takeUp: takeUpCoopering, work: coopering, holds: true },
+  potter: { takeUp: takeUpPottery, work: potting, holds: true },
+} as const;

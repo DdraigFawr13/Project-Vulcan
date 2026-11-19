@@ -132,7 +132,7 @@ function aside(ctx: SystemContext, p: EntityRow, load: EntityRow, here: Spot): b
 }
 
 /** Picks up what lies on their tile: all of it, or a load. */
-export function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
+function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
   const load = ctx.content.work.haul.load;
   const count = item['count'] as number;
   const [x, y, z] = [item['x'] as number, item['y'] as number, item['z'] as number];
@@ -154,6 +154,20 @@ export function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void 
   );
   const carried = itemsOf(ctx.world).find((i) => i.id === id)!;
   carried['holder'] = p.id;
+}
+
+/** A minute towards the load they chose: picked up once they stand on it; false when it has
+ * gone or cannot be reached (and they let it go). */
+export function haulMinute(ctx: SystemContext, p: EntityRow): boolean {
+  const item = itemsOf(ctx.world).find((i) => i.id === p['target'] && !i['holder']);
+  if (item && same(spotOf(item), spotOf(p))) {
+    pickUp(ctx, p, item);
+    p['target'] = -1;
+    return true;
+  }
+  if (item && walkTo(ctx, p, spotOf(item))) return true;
+  p['target'] = -1;
+  return false;
 }
 
 /** The nearest load counting food past its plate, found by the last plain look (one scan serves
