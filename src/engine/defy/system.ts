@@ -1,7 +1,7 @@
 // The defiance system (P6.7, V-160): each hour brawls break out among those at that step; at
 // defy.json `hour` each day everyone alive takes their day on the ladder; old sentences go. The
 // people's side (working slowly, pocketing from the store, the stocks, extra work and walking
-// out) is people `defy.ts` and `depart.ts`.
+// out) is people `defy.ts`.
 import { clockAt, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { removeEntity } from '../entity/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';

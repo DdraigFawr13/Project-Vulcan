@@ -57,6 +57,8 @@ export function leave(
   sent = 0,
 ): number {
   const { world, content } = ctx;
+  const already = leavingOf(world, p.id);
+  if (already) return already;
   const going = g ? household(ctx, p, g.law) : [];
   const causes = g ? citesOf(g, why) : [];
   if (sent) causes.unshift(sent);

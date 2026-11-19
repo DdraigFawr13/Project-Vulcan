@@ -192,11 +192,11 @@ export function markFor(content: EngineContent, part: string) {
   );
 }
 
-/** A hurt person stops: what they carried is put down where they stand, their work is dropped
+/** A hurt person stops: what they carried (not a pocketed stash, P6.7) is put down where they stand, their work is dropped
  * and, when they cannot stand, they lie where they are. */
 export function stopFor(ctx: SystemContext, p: EntityRow, down: boolean): void {
   for (const i of ctx.world.entities['item'] ?? [])
-    if (i['holder'] === p.id && i['state'] !== 'worn' && i['state'] !== 'held')
+    if (i['holder'] === p.id && !['worn', 'held', 'hid'].includes(i['state'] as string))
       Object.assign(i, { holder: 0, x: p['x'], y: p['y'], z: p['z'] });
   Object.assign(p, { job: '', target: -1, work: 0, task: '', what: '', plan: 0 });
   if (!down) return;

@@ -92,7 +92,8 @@ export function feeding(ctx: SystemContext, q: EntityRow): boolean {
   if (!lying(world, p)) return stop(q);
   if ((q['path'] as number[]).length) return true;
   const kind = q['what'] as string;
-  const held = () => itemsOf(world).find((i) => i['holder'] === q.id && i['kind'] === kind);
+  const held = () =>
+    itemsOf(world).find((i) => i['holder'] === q.id && i['kind'] === kind && i['state'] !== 'hid');
   const got = fetchKind(ctx, q, kind, Math.max(1, q['work'] as number));
   if (got === 'walking') return true;
   // No more lies about: what they already carry is still brought.

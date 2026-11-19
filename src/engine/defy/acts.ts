@@ -11,7 +11,7 @@ import { wound } from '../health/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { punish } from './punish.ts';
-import { atLeast, defyOf } from './tables.ts';
+import { atLeast, defyOf, leavingOf } from './tables.ts';
 import { citesOf, grievanceOf, reasonsOf, whyWords } from './why.ts';
 
 const far = (a: EntityRow, b: EntityRow): number =>
@@ -50,6 +50,13 @@ function caught(ctx: SystemContext, p: EntityRow, act: string, saw: EntityRow[],
 const due = (ctx: SystemContext, last: number, days: number): boolean =>
   last < 0 || ctx.world.tick - last >= days * TICKS_PER_DAY;
 
+/** A stack still lying in a store, of food that is not of last resort (seed). */
+const storeFood = (ctx: SystemContext, food: EntityRow): boolean =>
+  (food['count'] as number) > 0 &&
+  !food['holder'] &&
+  !ctx.content.life.lastResort.includes(food['kind'] as string) &&
+  inStore(ctx.world, food['x'] as number, food['y'] as number, food['z'] as number);
+
 /** After `p` eats from `food`: at the `take` step, they pocket more of it from the store. */
 export function pilfer(ctx: SystemContext, p: EntityRow, food: EntityRow): void {
   const { world, content } = ctx;
@@ -57,12 +64,7 @@ export function pilfer(ctx: SystemContext, p: EntityRow, food: EntityRow): void 
   const t = content.defy.take;
   if (!row || !atLeast(world, content, p.id, 'take') || !due(ctx, row['took'] as number, t.every))
     return;
-  if (
-    (food['count'] as number) <= 0 ||
-    food['holder'] ||
-    !inStore(world, food['x'] as number, food['y'] as number, food['z'] as number)
-  )
-    return;
+  if (!storeFood(ctx, food)) return;
   const g = grievanceOf(world, content, p.id);
   if (!g) return;
   const why = reasonsOf(world, content, p.id, g.setting);
@@ -106,7 +108,7 @@ export function brawls(ctx: SystemContext): void {
       !due(ctx, row['brawled'] as number, b.every)
     )
       continue;
-    if (!b.doing.includes(p['doing'] as string)) continue;
+    if (!b.doing.includes(p['doing'] as string) || leavingOf(world, p.id)) continue;
     const g = grievanceOf(world, content, p.id);
     if (!g) continue;
     const why = reasonsOf(world, content, p.id, g.setting);

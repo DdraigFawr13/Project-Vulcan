@@ -19,7 +19,7 @@ export const DEFY_TABLES: Schemas = {
   /** A sentence under the Punishment law: who, its kind (`work`, `stocks`), the day (index) it
    * is served on and the line that gave it. */
   sentence: { person: 'entity', kind: 'text', day: 'int', line: 'event' },
-  /** Someone leaving the valley for good, and the line that says so (people `depart.ts`). */
+  /** Someone leaving the valley for good, and the line that says so (people `defy.ts`). */
   leaving: { person: 'entity', line: 'event' },
 };
 

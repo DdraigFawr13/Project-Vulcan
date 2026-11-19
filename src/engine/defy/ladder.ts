@@ -79,6 +79,8 @@ function climb(
     days: g.setting.days,
     why: whyWords(ctx.world, ctx.content, why),
   };
+  // Taking and brawling show when done; until then the step's line is the answer's.
+  row['line'] = g.answer['line'] as number;
   if (step.id === 'slow')
     row['line'] = ctx.emit('defy.slow', { causes: citesOf(g, why), actors: [p.id], data });
   else if (step.id === 'leave') row['line'] = leave(ctx, p, g, why);
@@ -91,7 +93,7 @@ function cool(ctx: SystemContext, p: EntityRow, row: EntityRow): void {
   Object.assign(row, { step: k - 1, since: ctx.world.tick, under: 0 });
   if (step.answer) return;
   ctx.emit('defy.cooled', {
-    causes: [row['line'] as number].filter((l) => l > 0),
+    causes: [row['line'], row['mem'], row['why']].filter((l): l is number => (l as number) > 0),
     actors: [p.id],
     data: { name: p['name'] as string, step: step.name },
   });

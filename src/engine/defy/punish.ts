@@ -10,6 +10,7 @@ import { settingOf } from '../law/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { leave } from './leave.ts';
+import { leavingOf } from './tables.ts';
 
 /** The law whose settings punish, and its setting in force. */
 function punishing(ctx: SystemContext): { def: LawDef; s: LawSettingDef } | undefined {
@@ -22,7 +23,7 @@ function punishing(ctx: SystemContext): { def: LawDef; s: LawSettingDef } | unde
 export function punish(ctx: SystemContext, p: EntityRow, cause: number): void {
   const { world, content } = ctx;
   const law = punishing(ctx);
-  if (!law?.s.punish) return;
+  if (!law?.s.punish || leavingOf(world, p.id)) return;
   const kind = law.s.punish;
   const set = (world.entities['law'] ?? []).find((r) => r['law'] === law.def.id)?.['line'];
   const line = ctx.emit('defy.punished', {

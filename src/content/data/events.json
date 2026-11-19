@@ -292,7 +292,7 @@
 {"id":"defy.caught","importance":2,"template":"{names} caught {name} {did}.","notable":{}},
 {"id":"defy.punished","importance":2,"template":"{name} {sentence}, by {days}.","notable":{}},
 {"id":"defy.brawled","importance":3,"template":"{name} came to blows with {other} over {days} ({why}).","notable":{}},
-{"id":"defy.left","importance":3,"template":"{name} left the valley by the {dir} road{with}, taking {goods} ({why}).","notable":{}},
+{"id":"defy.left","importance":3,"template":"{name} sets out from the valley by the {dir} road{with}, taking {goods} ({why}).","notable":{}},
 {"id":"tale.told","importance":1,"template":"{teller} told {listener}{where}: “{tale}”{bent}"},
 {"id":"hall.feast","importance":3,"template":"Harvest home: {count} ate {meal} together {where}. Everyone will remember the feast.","notable":{}},
 {"id":"hall.mourned","importance":1,"template":"The mourners gathered in the hall after {name}'s burial."},
