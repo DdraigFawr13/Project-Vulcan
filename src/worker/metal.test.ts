@@ -15,6 +15,9 @@ import { itemView, personTools } from './items.ts';
 import { walkersOf } from './people.ts';
 
 const sim = createSim(content);
+// One ledger/1 world per file (~0.3 s each to make); every test works on its own clone (~5 ms).
+let base: WorldState | undefined;
+const fresh = () => structuredClone((base ??= createWorld(sim, 'ledger/1')));
 const nobody = () => ({}) as never;
 const rows = (world: WorldState) => walkersOf(world)[0]!.work.map((j) => j.job);
 
@@ -30,7 +33,7 @@ function smelter(world: WorldState, state: string) {
 
 describe('the metal screens', () => {
   it('keeps the Charcoal, Smelting and Smithing rows off the Work sheet until their station exists', () => {
-    const world = createWorld(sim, 'ledger/1');
+    const world = fresh();
     for (const job of ['charcoal', 'smelt', 'smith']) expect(rows(world)).not.toContain(job);
     smelter(world, 'plan');
     expect(rows(world)).not.toContain('smelt');
@@ -40,7 +43,7 @@ describe('the metal screens', () => {
   });
 
   it('shows the four ingot plates, Bronze with its note, and the Smithy row once an ingot is stored', () => {
-    const world = createWorld(sim, 'ledger/1');
+    const world = fresh();
     const plates = stockView(world).filter((s) => s.good.endsWith('-ingot'));
     expect(plates.map((s) => s.good).sort()).toEqual(
       ['bronze-ingot', 'copper-ingot', 'iron-ingot', 'tin-ingot'].sort(),
@@ -58,7 +61,7 @@ describe('the metal screens', () => {
   });
 
   it('draws the smelter and words its tile page: what, why here, makes and what is in the store', () => {
-    const world = createWorld(sim, 'ledger/1');
+    const world = fresh();
     const { x, y } = smelter(world, 'built');
     expect(goodsOf(world).furniture.map((f) => f.art)).toContain('furn.smelter');
     const page = tileGoods(world, x, y, 0, nobody).works!;
@@ -69,7 +72,7 @@ describe('the metal screens', () => {
   });
 
   it('walks a tool\'s trail back to the ore, with a tile button and "ore tile not recorded"', () => {
-    const world = createWorld(sim, 'ledger/1');
+    const world = fresh();
     const trail: Record<string, unknown>[] = [
       { s: 'mined', who: 'Kolbur', tick: 3000, x: 108, y: 110, z: 3, k: 'iron-ore' },
       { s: 'mined', who: '', tick: 0, k: 'copper-ore' },
@@ -103,7 +106,7 @@ describe('the metal screens', () => {
   });
 
   it("lists a person's tools with their hours left and gives tools and ingots a page link", () => {
-    const world = createWorld(sim, 'ledger/1');
+    const world = fresh();
     const [person] = world.entities['person']!;
     const tool = itemsOf(world).find((i) => i['kind'] === 'stone-axe')!;
     Object.assign(tool, { owner: person!.id, state: 'held', x: -1, y: -1 });
@@ -122,7 +125,7 @@ describe('the metal screens', () => {
         Object.keys(JSON.parse(readFileSync(`public/art/${sheet}.json`, 'utf8')).frames as object),
       );
     const [buildings, items] = [frames('buildings'), frames('items')];
-    const world = createWorld(sim, 'ledger/1');
+    const world = fresh();
     smelter(world, 'built');
     const clamp = { kind: 'clamp', x: 5, y: 5, z: 0, w: 2, h: 2, line: 0, have: 0, work: -1 };
     for (const state of ['idle', 'lit'])

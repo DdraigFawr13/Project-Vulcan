@@ -21,6 +21,18 @@ import { chooseHouse, costOf, partsOf, withinReach } from './site.ts';
 
 const SEEDS = ['ledger/1', 'tallow/2'];
 
+/** A fresh copy of a seed's day-one world, built once per seed. The tests change only part costs,
+ * which a new world does not read, so one base world serves them all; each gets its own clone. */
+const firstDays = new Map<string, WorldState>();
+function fresh(seed: string): WorldState {
+  let w = firstDays.get(seed);
+  if (!w) {
+    w = createWorld(createSim(base), seed);
+    firstDays.set(seed, w);
+  }
+  return structuredClone(w);
+}
+
 /** The content with one wall part costing `cost` (more than any valley holds, to make it short). */
 const scarce = (wall: string, cost: number): Content => ({
   ...base,
@@ -32,7 +44,7 @@ const scarce = (wall: string, cost: number): Content => ({
 
 /** For a fresh world: the walls that can finish the chosen house, and what the colony picks. */
 function options(content: Content, seed: string) {
-  const world = createWorld(createSim(content), seed);
+  const world = fresh(seed);
   const pick = chooseHouse(world, content, greenOf(world), 5)!;
   const walls = content.buildings.house.walls.map((id) => partOf(content, id)!);
   const fits = walls.filter((w) =>
@@ -64,7 +76,7 @@ describe('house walls', () => {
         parts: base.buildings.parts.map((p) => (p.kind === 'wall' ? { ...p, cost: 100000 } : p)),
       },
     };
-    const world = createWorld(createSim(content), SEEDS[0]!);
+    const world = fresh(SEEDS[0]!);
     const pick = chooseHouse(world, content, greenOf(world), 5)!;
     const walls = content.buildings.house.walls.map((id) => partOf(content, id)!);
     const have = (w: (typeof walls)[number]) =>
@@ -99,9 +111,9 @@ describe('house walls', () => {
   });
 });
 
-/** A fresh world with `count` of a kind laid on the green. */
-function stocked(content: Content, seed: string, lay: Record<string, number>): WorldState {
-  const world = createWorld(createSim(content), seed);
+/** A fresh world with `count` of a kind laid on the green (the content only shapes the later choice). */
+function stocked(_content: Content, seed: string, lay: Record<string, number>): WorldState {
+  const world = fresh(seed);
   const green = greenOf(world);
   for (const [kind, count] of Object.entries(lay))
     layItem(world, { kind, count, x: green.x, y: green.y, z: 0, made: 0 });
@@ -147,7 +159,7 @@ describe('wattle and daub walls', () => {
   });
 
   it('count known clay tiles on level 1 within reach', () => {
-    const world = createWorld(createSim(base), SEEDS[0]!);
+    const world = fresh(SEEDS[0]!);
     const before = withinReach(world, base, 'clay', true);
     expect(before).toBe(0);
     const { startX: x, startY: y } = world.map;
@@ -165,7 +177,7 @@ describe('wattle and daub walls', () => {
 
   it('count no clay a miner could not get beside, from the green', () => {
     const sim = createSim(base);
-    const world = createWorld(sim, SEEDS[0]!);
+    const world = fresh(SEEDS[0]!);
     const map = world.map;
     const { startX: x, startY: y } = map;
     submitCommand(world, { tick: world.tick + 1, kind: 'cutStairs', data: { x, y, z: 0 } });

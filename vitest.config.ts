@@ -59,6 +59,19 @@ const slowFiles = [
   'src/engine/people/loom.test.ts',
   'src/engine/build/well.test.ts',
   'src/engine/people/priority.test.ts',
+  // Refactor plan proposal 3 (2026-11-19): colony runs of 1 to 15 days that share what they can inside
+  // each file but still held the quick tier at 40 s (5 to 8 s each with their worlds).
+  'src/worker/memoryview.test.ts',
+  'src/worker/build.test.ts',
+  'src/worker/metal.test.ts',
+  'src/worker/mine.test.ts',
+  'src/engine/build/build.test.ts',
+  'src/engine/people/smelt.test.ts',
+  'src/engine/people/cure.test.ts',
+  'src/engine/build/blight.test.ts',
+  'src/worker/fires.test.ts',
+  'src/engine/build/fieldsoil.test.ts',
+  'src/engine/build/pasture.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).

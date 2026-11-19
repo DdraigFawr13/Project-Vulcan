@@ -52,16 +52,37 @@ function run(seed: string, days: number, content: Content = base, level = 'some'
   return { sim, world };
 }
 
-/** A world with the iron plate raised, run until someone has taken up sinking the first shaft. */
+// One sim for the runs on the base content: a sim holds no world's state, so runs can share it.
+const plateSim = createSim(base);
+// Each seed's world with the iron plate raised, a day on: the siting test reads it, and the ore
+// and send-back tests carry a copy on, so the first day is run once a seed (refactor plan 3).
+const firstDays = new Map<string, WorldState>();
+function plateDay(seed: string): WorldState {
+  let world = firstDays.get(seed);
+  if (!world) {
+    world = createWorld(plateSim, seed);
+    send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
+    step(world, plateSim, DAY);
+    firstDays.set(seed, world);
+  }
+  return structuredClone(world);
+}
+
+/** A world with the iron plate raised, run until someone has taken up sinking the first shaft.
+ * Run once for the file; each caller gets its own copy. */
+let sinking: WorldState | undefined;
 function untilSinking() {
-  const sim = createSim(base);
-  const world = createWorld(sim, SINK_SEED);
-  send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
-  const sinker = () =>
-    (world.entities['person'] ?? []).some((q) => q['job'] === 'mine' && q['task'] === 'sink');
-  for (let m = 0; m < (8 * DAY) / 10 && !sinker(); m += 1) step(world, sim, 10);
-  expect(sinker()).toBe(true);
-  return { sim, world };
+  const sim = plateSim;
+  if (!sinking) {
+    const world = createWorld(sim, SINK_SEED);
+    send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
+    const sinker = () =>
+      (world.entities['person'] ?? []).some((q) => q['job'] === 'mine' && q['task'] === 'sink');
+    for (let m = 0; m < (8 * DAY) / 10 && !sinker(); m += 1) step(world, sim, 10);
+    expect(sinker()).toBe(true);
+    sinking = world;
+  }
+  return { sim, world: structuredClone(sinking) };
 }
 
 const linesOf = (world: WorldState, type: string) => allLines(world).filter((l) => l.type === type);
@@ -75,7 +96,7 @@ const oreStacks = (world: WorldState) =>
 describe('mining', () => {
   it('sites one shaft by the metal stain past the ring, on dry ground, with the reason', () => {
     for (const seed of SEEDS) {
-      const { world } = run(seed, 1);
+      const world = plateDay(seed);
       const shafts = shaftsOf(world);
       expect(shafts).toHaveLength(1);
       const s = shafts[0]!;
@@ -105,10 +126,10 @@ describe('mining', () => {
   it.each(ORE_SEEDS)(
     'gets iron ore to the store with only the plate raised, each line tracing to it (%s)',
     (seed) => {
-      const sim = createSim(base);
-      const world = createWorld(sim, seed);
-      send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
-      let days = 0;
+      const sim = plateSim;
+      // No ore is in the store on the first day (the siting test reads that day).
+      const world = plateDay(seed);
+      let days = 1;
       while (!oreStacks(world).length && days < 40) {
         step(world, sim, DAY);
         days += 1;
@@ -130,10 +151,8 @@ describe('mining', () => {
   );
 
   it('sends a shaft plan back once; the replacement cannot be sent back', () => {
-    const sim = createSim(base);
-    const world = createWorld(sim, 'tallow');
-    send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
-    step(world, sim, 1 * DAY);
+    const sim = plateSim;
+    const world = plateDay('tallow');
     const first = shaftsOf(world)[0]!;
     send(world, 'sendBackShaft', { shaft: first.id });
     step(world, sim, 60);
