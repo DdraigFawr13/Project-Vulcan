@@ -151,6 +151,8 @@ export interface HealthDef {
     missing: number;
   };
   sickroom: { hurt: number; beds: number };
+  /** The sick-house under the Sickness law (P6.5): a house size id and its beds. */
+  sickhouse: { size: string; beds: number };
   mourn: {
     close: string;
     band: string;

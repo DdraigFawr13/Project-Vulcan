@@ -186,7 +186,7 @@ export function tileHouse(
       why: h['why'] as string,
       back: canSendBack(world, h),
       roof: planned ? `${def.roof}, laid with the walls` : `${def.roof} (not drawn)`,
-      ...(h['sick'] ? { sick: word('sickTitle') } : {}),
+      ...(h['sick'] ? { sick: word(h['sick'] === 2 ? 'sickHouseTitle' : 'sickTitle') } : {}),
       ...(sited && { sited: lineOf(sited) }),
       ...homeRows(world, mainOf(world, h), lineOf),
     },
@@ -195,7 +195,7 @@ export function tileHouse(
         name: roomWords(world, room, name),
         tiles: room.tiles.length,
         role: h['sick']
-          ? word('sickRole')
+          ? word(h['sick'] === 2 ? 'sickHouseRole' : 'sickRole')
           : (room.role?.name ?? `none yet: a bed makes it a ${bed.name}`),
         beauty: `${room.beauty}, ${room.look}`,
         impressiveness: `${room.impressiveness} of ${def.top}`,

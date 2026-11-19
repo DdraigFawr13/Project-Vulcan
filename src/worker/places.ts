@@ -48,14 +48,24 @@ export function burialGoods(world: WorldState): Pick<GoodsView, 'graves' | 'buri
   };
 }
 
-/** Who lies down, who is dead and who is buried, for the map: each snapshot's walkers get these. */
+/** Who lies down, who is dead, buried or away, for the map: each snapshot's walkers get these. */
 export function withLying(world: WorldState, walkers: WalkerView[]): WalkerView[] {
   const bodies = new Map(bodiesOf(world).map((b) => [b['person'], b]));
   const status = new Map(people(world).map((p) => [p.id, p['status']]));
   return walkers.map((w) => {
     const body = bodies.get(w.id);
     const s = status.get(w.id);
-    const lying = s === 'buried' ? 'buried' : s === 'dead' ? 'dead' : body?.['down'] ? 'down' : '';
+    // Away from the valley (P6.5), or died out there, they are not on the map.
+    const away = s === 'away' || !!body?.['away'];
+    const lying = away
+      ? 'away'
+      : s === 'buried'
+        ? 'buried'
+        : s === 'dead'
+          ? 'dead'
+          : body?.['down']
+            ? 'down'
+            : '';
     if (!lying) return w;
     return { ...w, lying, ...(body?.['carrier'] ? { carried: true as const } : {}) };
   });

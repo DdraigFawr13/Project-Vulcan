@@ -27,7 +27,7 @@ export function planSickroom(ctx: SystemContext, green: Spot): void {
   const { world, content } = ctx;
   const hurt = lyingHurt(world);
   if (hurt.length < content.health.sickroom.hurt) return;
-  if (housesOf(world).some((h) => h['sick'] && h['state'] !== 'sent')) return;
+  if (housesOf(world).some((h) => h['sick'] === 1 && h['state'] !== 'sent')) return;
   const main = housesOf(world).find((h) => !h['of'] && h['state'] === 'built');
   if (!main) return;
   const site = stageSite(ctx, main, green);

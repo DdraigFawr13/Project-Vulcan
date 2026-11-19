@@ -41,6 +41,14 @@ export const BURIAL_TABLES: Schemas = {
   },
 };
 
+/** The dead lying in the valley: not those who died away from it (P6.5, body `away`). */
+export const toBury = (world: WorldState): EntityRow[] => {
+  const away = new Set(
+    (world.entities['body'] ?? []).filter((b) => b['away']).map((b) => b['person']),
+  );
+  return (world.entities['person'] ?? []).filter((p) => p['status'] === 'dead' && !away.has(p.id));
+};
+
 export const burialsOf = (world: WorldState): EntityRow[] => world.entities['burial'] ?? [];
 export const gravesOf = (world: WorldState): EntityRow[] => world.entities['grave'] ?? [];
 
@@ -133,7 +141,7 @@ function layBurial(ctx: SystemContext, green: Spot, dead: EntityRow, cause: numb
 export function planBurial(ctx: SystemContext, green: Spot): void {
   const { world } = ctx;
   if (burialGround(world)) return;
-  const dead = (world.entities['person'] ?? []).find((p) => p['status'] === 'dead');
+  const dead = toBury(world)[0];
   if (!dead) return;
   const body = (world.entities['body'] ?? []).find((b) => b['person'] === dead.id);
   const sentBack = burialsOf(world).some((b) => b['state'] === 'sent');
@@ -163,6 +171,6 @@ export function sendBackBurial(
   }
   const line = ctx.emit('build.burialSentBack', { causes: [cause, b!['line'] as number] });
   b!['state'] = 'sent';
-  const dead = (world.entities['person'] ?? []).find((p) => p['status'] === 'dead');
+  const dead = toBury(world)[0];
   if (dead) layBurial(ctx, green, dead, line, 1);
 }

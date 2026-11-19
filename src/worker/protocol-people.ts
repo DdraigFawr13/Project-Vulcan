@@ -81,9 +81,10 @@ export interface WalkerView {
     word: string;
     declined?: number;
   }[];
-  /** Lying on the ground (P5.6, P5.8): `down` (hurt), `dead` (unburied) or `buried` (not drawn);
+  /** Lying on the ground (P5.6, P5.8): `down` (hurt), `dead` (unburied), `buried` or `away` (out
+   * of the valley, P6.5), neither drawn;
    * `carried` when someone carries them, so they are drawn over the carrier. */
-  lying?: 'down' | 'dead' | 'buried';
+  lying?: 'down' | 'dead' | 'buried' | 'away';
   carried?: true;
   /** The tools they hold, each with its hours left (V-088); owned like a bed, no lever. */
   tools: { id: number; kind: string; text: string }[];
