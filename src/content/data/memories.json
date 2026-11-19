@@ -22,6 +22,7 @@
   {"id":"short-meals-hard","mood":-12,"decayDays":3,"text":"On very short meals"},
   {"id":"cold-night","mood":-5,"decayDays":5,"text":"A cold night","heavy":{"name":"The cold {season}","came":"Cold"},"thoughts":["I can't get the cold out of my bones.","Another cold night."],"heavyThoughts":["I still feel the cold of that {season}."]},
   {"id":"saw-fire","mood":-8,"decayDays":10,"text":"Saw a home burn","weight":2},
+  {"id":"fulfilled","mood":10,"decayDays":28,"weight":3,"text":"Did what they set out to do","thoughts":["I did it. I said I would, and I did."]},
   {"id":"harvested","mood":4,"decayDays":12,"text":"Brought in the harvest","thoughts":["The harvest is in. We'll eat this winter."]},
   {"id":"grief","mood":-20,"decayDays":30,"text":"Mourning {about}","weight":8,"thoughts":["I keep thinking of {about}.","{about} should still be here."]},
   {"id":"married","mood":15,"decayDays":30,"text":"Was married to {about}","weight":8},

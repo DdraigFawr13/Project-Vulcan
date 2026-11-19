@@ -23,6 +23,9 @@ export interface LawSettingDef {
   grumbled?: string;
   traits: Readonly<Record<string, number>>;
   memories: Readonly<Record<string, number>>;
+  /** P6.4: how each role and life ambition leans on it. */
+  roles?: Readonly<Record<string, number>>;
+  ambitions?: Readonly<Record<string, number>>;
 }
 
 export interface LawDef {

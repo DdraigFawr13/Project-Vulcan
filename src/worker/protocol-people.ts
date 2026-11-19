@@ -94,6 +94,8 @@ export interface WalkerView {
   /** The tales they hold, newest first, and what they believe, strongest first (P6.3, V-155). */
   tales: TaleView[];
   beliefs: BeliefView[];
+  /** Who they see themselves as, and what they want of life (P6.4, V-156). */
+  self: SelfView;
   /** What is on their mind (V-154), in quotes, and the line it comes from (0 for none). */
   thought: { text: string; why: number };
   /** Their answer to the work-hours law (P4.8); none while the law is Customary. */
@@ -157,4 +159,11 @@ export interface TaleView {
 export interface BeliefView {
   text: string;
   why: number;
+}
+
+/** Who someone is (V-156): each role in words ("Sees themselves as the provider.") with what most
+ * made it and its line, and their ambition, if any, with the line that set it. */
+export interface SelfView {
+  roles: { text: string; note: string; why: number }[];
+  ambition?: { text: string; why: number };
 }

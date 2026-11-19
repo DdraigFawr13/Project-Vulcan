@@ -1,4 +1,4 @@
-// Winter evenings by the hearth (P6.3, V-162): after dark in winter, someone at leisure on the
+// Free time (P6.3, P6.4). Winter evenings by the hearth (V-162): after dark in winter, someone at leisure on the
 // surface goes to the nearest tile a lit fire warms (warm.ts `nearestWarm`) and stays there,
 // relaxing, until morning or bed. Each hour by the fire they mend what they wear, tales.json
 // `evening.mend` hours of wear a garment, up to its life when new. Tales pass most there (engine
@@ -9,6 +9,8 @@ import { lifeOf, wornOf } from '../goods/index.ts';
 import { isDark } from '../lamp/index.ts';
 import { isWinter } from '../law/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { practiceOf } from '../self/index.ts';
+import { practise } from './learn.ts';
 import { nearestWarm } from './warm.ts';
 import { walkTo } from './walk.ts';
 
@@ -50,4 +52,13 @@ export function gathering(ctx: SystemContext, p: EntityRow): boolean {
   if ((world.tick + p.id) % LOOK !== 0) return false;
   const spot = nearestWarm(ctx, p);
   return !!spot && walkTo(ctx, p, spot);
+}
+
+/** A minute of free time: one in every self.json `ambition.every` goes to the skill of `p`'s
+ * ambition (P6.4, V-146), citing the line that set it. */
+export function practising(ctx: SystemContext, p: EntityRow): void {
+  const { world, content } = ctx;
+  if ((world.tick + p.id) % content.self.ambition.every !== 0) return;
+  const goal = practiceOf(world, content, p.id);
+  if (goal) practise(ctx, p, goal.skill, goal.line);
 }

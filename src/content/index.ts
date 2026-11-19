@@ -36,6 +36,7 @@ import schools from './data/schools.json';
 import seasons from './data/seasons.json';
 import strangers from './data/strangers.json';
 import tales from './data/tales.json';
+import self from './data/self.json';
 import terrain from './data/terrain.json';
 import tiers from './data/tiers.json';
 import tools from './data/tools.json';
@@ -90,6 +91,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   seasons,
   strangers,
   tales,
+  self,
   terrain,
   tiers,
   tools,

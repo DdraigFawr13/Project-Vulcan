@@ -64,3 +64,18 @@ export interface AuraSpot {
   z: number;
   strength: number;
 }
+
+/** The forked biome table (src/content/data/biomes.json); only the fields the map reads. */
+export interface BiomesDef {
+  biomes: readonly { id: string; name: string; fertility: number; forest?: boolean }[];
+  rules: {
+    temperatureBands: readonly number[];
+    rainfallBands: readonly number[];
+    table: readonly (readonly string[])[];
+    alpineElevation: number;
+    swampRainfall: number;
+    swampMinTemp: number;
+    /** Biomes that need frost-free winters, and what they become without them. */
+    frostFree: { fallback: Readonly<Record<string, string>> };
+  };
+}

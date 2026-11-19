@@ -24,7 +24,7 @@ import { drinking } from './drink.ts';
 import { walkTo, wander } from './walk.ts';
 import { tendInEvening } from './tend.ts';
 import { warming } from './warm.ts';
-import { gathering } from './evening.ts';
+import { gathering, practising } from './evening.ts';
 import { feasting, HARD_STOP } from './feast.ts';
 import { lateUntil, watching } from './watch.ts';
 
@@ -203,6 +203,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     isDark(content, world.tick) ||
     valueOf(ctx, p, 'recreation') < lineOf(ctx, p, 'recreation');
   p['doing'] = leisure ? 'relax' : '';
+  // Free time given to an ambition's skill (P6.4, V-146), a minute in every `every`.
+  if (leisure) practising(ctx, p);
   // On a winter evening, free time is spent by a lit fire (P6.3, V-162).
   if (leisure && gathering(ctx, p)) return;
   wander(ctx, p);
