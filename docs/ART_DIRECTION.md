@@ -34,3 +34,15 @@ Morgan chose this look on 2026-11-18 in two PixelLab rounds (V-166): [round 1, f
 | Winter or night repaint | `edit-image-pro-flash`, up to 208 px, "keep every object in place" | 6 |
 
 The style suffix used for every prompt was "muted earthy palette, soft warm light from the top left, selective dark outline, hand-crafted artistic pixel art with careful clusters and a readable silhouette". Avoid PixelLab's building kit (`create-tiles-pro`, `tile_feature` building), which draws chunky walls two tiles tall. Scripts, prompts, the generation log and the raw output are in the project files under `vulcan/art-round1/` and `vulcan/art-round2/`. Each batch's cost is approved before it runs (V-034).
+
+## Blending Morgan's Gemini pack
+
+Morgan also made a 143-sprite pack with Gemini, and on 2026-11-19 took every recommendation in the [comparison round](https://claude.ai/artifact/R4Xt6XUJSzDurFA2SNHvRV) (V-168). Gemini draws pixel-art-looking paintings (0.1% of its pixels on the palette, a median of 421 colours a sprite), so its files are never final art. Its designs are kept and PixelLab redraws them:
+
+- **People:** the Gemini colonists (tools and loads in hand, clearer human and elf) are the designs; `create-character-v3` turns each from a palette-cleaned 32 px sprite, then PixelLab animates them. The PixelLab giant stays, as Gemini has none.
+- **Items:** Gemini's icons are the designs, redrawn by PixelLab with each one as its reference. Palette-cleaned Gemini files may stand in until then.
+- **Animals:** Gemini's animals are the designs; PixelLab turns them to the facings the game walks.
+- **Ores and magic:** Gemini's ore chunks are the ore icon designs; its six glowing rings are the model for the schools' aura glow.
+- **Buildings and ground:** PixelLab's open-wall buildings and joined ground edges stay. Gemini's thatch, timber framing and stonework are material references for new building types.
+
+The palette cleanup is a box downscale of Gemini's raw sprite followed by the nearest `art/palette.gpl` colour; it and the cleaned pack are in the project files under `vulcan/art-gemini/`. Before any Gemini file, or a redraw made from one, enters `art/src`, `art/PROVENANCE.md` records it with the terms it was made under.
