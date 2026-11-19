@@ -24,6 +24,7 @@ import { wearingRows } from './clothesview.ts';
 import { feedsOf } from './comfort.ts';
 import { careNow } from './health.ts';
 import { deadNow, healthOf } from './healthview.ts';
+import { boutOf, illDef } from './illview.ts';
 import { hearthDoing, tendDoing } from './fires.ts';
 import { herdDoing } from './herd.ts';
 import { carpentryDoing } from './furniture.ts';
@@ -109,6 +110,7 @@ const shown = (world: WorldState): EntityRow[] =>
 function doingOf(p: EntityRow): string {
   const walking = (p['path'] as number[]).length > 0;
   if (p['status'] === 'dead') return 'Dead';
+  if (p['status'] === 'away') return 'Away';
   if (p['doing'] === 'hurt') return 'Lying hurt';
   if (p['doing'] === 'work' && p['job'] === 'carry') return 'Carrying the hurt';
   if (p['doing'] === 'work' && ['bind', 'dress', 'feed', 'draught'].includes(p['job'] as string))
@@ -144,6 +146,13 @@ export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   const doing = p['doing'] as string;
   const gone = deadNow(world, p);
   if (gone) return gone;
+  // Sent away by the Sickness law (P6.5): out of the valley until it passes.
+  if (p['status'] === 'away') {
+    const bout = boutOf(world, p.id);
+    const ill = illDef(bout?.['ill'])?.name ?? 'a sickness';
+    const sent = (bout?.['sent'] as number) ?? 0;
+    return { text: say('away', { ill }), ...(sent > 0 && { why: sent }) };
+  }
   const care = careNow(world, p, say);
   if (care) return { text: care };
   if (doing === 'sleep') return { text: say(walking ? 'goSleep' : 'sleep') };

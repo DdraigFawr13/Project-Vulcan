@@ -23,7 +23,7 @@ const list = (names: readonly string[]): string =>
   names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
 
 /** The main house a person sleeps in (their bed's or bedroll's), if any. */
-function homeHouse(world: WorldState, content: EngineContent, p: EntityRow): number {
+export function homeHouse(world: WorldState, content: EngineContent, p: EntityRow): number {
   const bed =
     bedOwnedBy(world, p.id) ??
     itemsOf(world).find(
@@ -43,7 +43,7 @@ export function bedWords(world: WorldState, content: EngineContent, p: EntityRow
   const bed = (world.entities['furniture'] ?? []).find((f) => f.id === body['bed']);
   const h = bed && houseAt(world, bed['x'] as number, bed['y'] as number);
   if (!bed || !h) return `${their} bed`;
-  if (h['sick']) return 'the sickroom';
+  if (h['sick']) return h['sick'] === 2 ? 'the sick-house' : 'the sickroom';
   const room = roomName(world, content, h);
   return bed['owner'] === p.id ? `${their} bed in the ${room}` : `a bed in the ${room}`;
 }
@@ -51,6 +51,7 @@ export function bedWords(world: WorldState, content: EngineContent, p: EntityRow
 /** Where someone is, for a line: abed ("in the sickroom"), else where their worst wound was
  * taken ("in the shaft"). */
 export function whereWords(world: WorldState, content: EngineContent, p: EntityRow): string {
+  if (p['status'] === 'away') return 'away from the valley';
   const bed = bedWords(world, content, p);
   if (bed) return `in ${bed}`;
   const w = worstOf(content, openWounds(world, p.id));
@@ -69,8 +70,10 @@ export function die(ctx: SystemContext, p: EntityRow, cause: string, causes: num
     data: { name: p['name'] as string, where, cause },
   });
   stopFor(ctx, p, false);
+  const away = p['status'] === 'away' ? 1 : 0;
   Object.assign(p, { status: 'dead', doing: '', path: [], stride: 0 });
   Object.assign(body, {
+    away,
     died: line,
     diedAt: world.tick,
     down: 1,
@@ -116,7 +119,7 @@ export function unburiedHour(ctx: SystemContext): void {
   for (const d of world.entities['person'] ?? []) {
     if (d['status'] !== 'dead') continue;
     const body = bodyOf(world, d.id);
-    if (!body) continue;
+    if (!body || body['away']) continue;
     for (const q of alive(world)) {
       if (q['doing'] === 'sleep' || q['doing'] === 'hurt' || q['z'] !== d['z']) continue;
       const far = Math.max(

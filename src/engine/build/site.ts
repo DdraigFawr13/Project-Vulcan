@@ -1,7 +1,6 @@
-// Siting (P3.7, V-049, V-050): colonists choose where a house goes and how big it is; the player
-// only says the colony needs one. Every footprint near the green is scored when asked, never
-// drawn from a stream: metres of rise across it, plus tiles from the green, plus trees to fell.
-// The lowest wins and ties go in tile order, so the same seed gives the same town.
+// Siting (P3.7, V-049, V-050): colonists choose where a house goes and how big; the player only
+// says one is needed. Each footprint near the green is scored, never drawn from a stream (rise,
+// tiles from the green, trees to fell); the lowest wins, ties in tile order.
 import type { EngineContent, EntityRow, PartDef, SizeDef, WorldState } from '../core/index.ts';
 import { depotsOf, haveOf, itemsOf, storeOf } from '../goods/index.ts';
 import { withBuiltAll } from '../map/index.ts';
@@ -21,12 +20,8 @@ import { pastureTiles } from './pasturerows.ts';
 export const onEdge = (r: Rect, x: number, y: number): boolean =>
   inRect(r, x, y) && (x === r.x || y === r.y || x === r.x + r.w - 1 || y === r.y + r.h - 1);
 
-const tilesOf = (r: Rect): [number, number][] => {
-  const out: [number, number][] = [];
-  for (let y = r.y; y < r.y + r.h; y += 1)
-    for (let x = r.x; x < r.x + r.w; x += 1) out.push([x, y]);
-  return out;
-};
+const tilesOf = (r: Rect): [number, number][] =>
+  Array.from({ length: r.w * r.h }, (_, i) => [r.x + (i % r.w), r.y + Math.floor(i / r.w)]);
 
 /** Houses (and added rooms) standing or planned, and sites sent back, as footprints. */
 export const housesOf = (world: WorldState): EntityRow[] => world.entities['house'] ?? [];
@@ -190,7 +185,7 @@ export function outsideOf(r: Rect, d: Spot): Spot {
 
 /** The best site for a w by h house within `near` tiles of the green that can be reached from
  * it, felling trees on the way if need be (they count with the site's own), or undefined when
- * no ground there fits. */
+ * no ground there fits; sited `apart` (P6.5), as far from those spots as the ground allows. */
 export function siteFor(
   world: WorldState,
   content: EngineContent,
@@ -199,6 +194,7 @@ export function siteFor(
   way: Way = wayFrom(world, content, green),
   ground: Ground = groundOf(world),
   toward?: Spot,
+  apart: readonly Spot[] = [],
 ): Site | undefined {
   const near = Math.max(content.buildings.house.near, ringOf(world, content));
   const width = world.map.width;
@@ -215,9 +211,11 @@ export function siteFor(
       if (path < 0) continue;
       const s = scoreRect(world, content, r, undefined, ground);
       if (!s) continue;
-      // A home leans toward its owner's work (P5.14, strangers.json `home.toward`).
+      // A home leans toward its owner's work (P5.14, strangers.json `home.toward`); the
+      // sick-house away from the homes (P6.5).
       const lean = toward ? Math.floor(far(toward, r) / content.strangers.home.toward) : 0;
-      const score = s.rise + d + s.trees.length + path + lean;
+      const gap = Math.min(...apart.map((a) => far(a, r)), near);
+      const score = s.rise + d + s.trees.length + path + lean - (apart.length ? 2 * gap : 0);
       found.push({ site: { ...r, ...s, far: d, door }, score });
     }
   // Lowest score first, ties in tile order; the way in must not cross the site itself.
@@ -313,25 +311,24 @@ function affords(
   return [...costOf(parts)].every(([good, n]) => withinReach(world, content, good, ground) >= n);
 }
 
-/** The house to build for `sleepers` people, and where. The size is the largest the colony has
- * or could get the material for in some wall material that sleeps no more than them (start
- * small and grow: a house adds rooms as its sleepers outgrow it, grow.ts), else the smallest
- * that can be finished. The walls are of the MOST PLENTIFUL material (stock plus what lies
- * within `reach`) among those that can finish a house of that size; ties keep content order
- * (Morgan, 2026-10-19, amending V-096). With material for none, the smallest with ground for it
- * and the most plentiful wall material, ties to the first (its plans wait for material). `why` says which. Undefined when no ground near the green fits any size. A home is sited
- * leaning `toward` its owner's work (P5.14). */
+/** The house for `sleepers`, and where: the largest size the colony could get the material for
+ * that sleeps no more than them (it grows by rooms, grow.ts), else the smallest that can be
+ * finished, in the MOST PLENTIFUL wall material that finishes it, ties in content order (Morgan,
+ * 2026-10-19, amending V-096); with material for none, the smallest with ground and the most
+ * plentiful wall (its plans wait). `why` says which; undefined with no ground. A home leans
+ * `toward` its owner's work (P5.14); the sick-house (P6.5) is one size, sited `apart`. */
 export function chooseHouse(
   world: WorldState,
   content: EngineContent,
   green: Spot,
   sleepers: number,
   toward?: Spot,
+  only: { sizes?: readonly SizeDef[]; apart?: readonly Spot[] } = {},
 ): { size: SizeDef; site: Site; wall: PartDef; why: string } | undefined {
   const way = wayFrom(world, content, green);
   const ground = groundOf(world);
-  const sited = content.buildings.house.sizes.flatMap((size) => {
-    const site = siteFor(world, content, green, size, way, ground, toward);
+  const sited = (only.sizes ?? content.buildings.house.sizes).flatMap((size) => {
+    const site = siteFor(world, content, green, size, way, ground, toward, only.apart);
     return site ? [{ size, site }] : [];
   });
   if (!sited.length) return undefined;

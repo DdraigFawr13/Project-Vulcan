@@ -14,4 +14,5 @@ export {
   type Hours,
 } from './hours.ts';
 export { ateFood, rationed, RATIONS } from './rations.ts';
+export { answerTo, sickRule } from './sickness.ts';
 export { leanOf, weigh, type Answer, type Weighed } from './weigh.ts';

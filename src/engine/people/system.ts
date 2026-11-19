@@ -25,6 +25,7 @@ import { TOOL_TABLES, toolsDaily } from './tools.ts';
 import { rollTally, TALLY_START } from './tally.ts';
 import { stepAlong, WALK_FIELDS } from './walk.ts';
 import { risk } from './accident.ts';
+import { apartHour } from './apart.ts';
 import { careMinute } from './care.ts';
 import { attacksMinute, syncLures } from './fight.ts';
 import { tracksMinute } from './hunt.ts';
@@ -182,6 +183,7 @@ export const peopleSystem: System = {
     'craft.firstFine',
     ...['work.tookUpTanning', 'pits.built', 'tan.laidIn', 'tan.tanned', 'tan.cured'],
     ...['mine.sank', 'mine.dug', 'mine.veinMined', 'mine.clayDug', 'mine.noLadder'],
+    ...['people.keptHome', 'people.sentAway', 'people.cameBack'],
     ...['health.hurt', 'health.found', 'health.missed', 'health.carried', 'health.bound'],
     'work.tookUpBurial',
     'keep.cellarDug',
@@ -238,6 +240,8 @@ export const peopleSystem: System = {
     markUsed(ctx);
     toolsDaily(ctx);
     const hour = hourNow(ctx);
+    // P6.5: the catching-sick kept apart, before care finds them a bed this hour.
+    if (ctx.world.tick % 60 === 0) apartHour(ctx);
     careMinute(ctx);
     herdWatch(ctx);
     for (const p of ctx.world.entities['person'] ?? []) {
