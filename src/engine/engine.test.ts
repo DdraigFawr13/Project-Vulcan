@@ -42,6 +42,7 @@ const fixtureContent: EngineContent = {
   clothes: content.clothes,
   tales: content.tales,
   self: content.self,
+  colony: content.colony,
   strangers: content.strangers,
   health: content.health,
   traits: content.traits,

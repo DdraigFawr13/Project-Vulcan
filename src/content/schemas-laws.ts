@@ -70,6 +70,10 @@ export const LAWS_SCHEMAS = {
             // P6.4: how each role (self.json) and life ambition leans on it.
             roles: opt(map(num())),
             ambitions: opt(map(num())),
+            // P6.6: standing lost each `standing.harsh.every` days it stands in hard times, and
+            // the names a faction against it takes (colony.json).
+            harsh: opt(num({ min: 1 })),
+            faction: opt(list(text)),
           }),
         ),
       }),

@@ -186,7 +186,11 @@ describe('carpentry and furniture', () => {
   }
 
   it('keeps carpentry an indirect lever: a Work sheet row after Building, no command to place or assign', () => {
-    const levers = ['setStock', 'setPriority', 'setLaw', 'setBuild', 'sendBack', 'sendBackShaft'];
+    // `letStand` turns down a faction's petition: a say on a law, never on a person (P6.6).
+    const levers = [
+      ...['setStock', 'setPriority', 'setLaw', 'setBuild', 'sendBack', 'sendBackShaft'],
+      'letStand',
+    ];
     const tools = [
       'placeBuilding',
       'deconstruct',
