@@ -2,13 +2,10 @@
 // cook, and where the band stopped the cart (the green) and why. Arrive closes it on the paused
 // valley; Look elsewhere, offered once, has the band take the cart to its second choice (V-083).
 // Shows the worker's views; decides nothing.
-import type { PersonView } from '../worker/index.ts';
+import { list, type PersonView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { ableWord, personCard } from './person.ts';
 import { portrait } from './portrait.ts';
-
-const list = (items: readonly string[]): string =>
-  items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 
 export interface ArrivalView {
   place: string;

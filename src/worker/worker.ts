@@ -9,10 +9,8 @@ import {
   createSim,
   createWorld,
   lawHours,
-  entityOf,
   layerOf,
   makeRegion,
-  renderEvent,
   siteOf,
   START_TICK,
   step,
@@ -21,8 +19,6 @@ import {
   SYSTEMS,
   TEST_TOOLS,
   ticksPerMonth,
-  toNdjson,
-  whyOf,
   yesterdayOf,
   type SimEvent,
   type Stub,
@@ -32,17 +28,18 @@ import { createPace, jump, setSpeed, SKIP_MS, skipEnds, stopSkip, ticksDue } fro
 import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type { ChunkView, FromWorker, LedgerLine, ToWorker } from './protocol.ts';
 import { pickerBuffers, previewOf, regionView } from './region.ts';
-import { checkSave, saveOf } from './save.ts';
+import { checkSave } from './save.ts';
+import { ANSWERS, isRead } from './answers.ts';
+import { lineOf } from './lines.ts';
 import { buildView } from './build.ts';
 import { goodsOf, stockView } from './goods.ts';
 import { lawsOf } from './strangers.ts';
-import { itemView } from './items.ts';
 import { miningShown } from './mine.ts';
 import { peopleFeed, peopleOf, walkersOf } from './people.ts';
 import { withLying } from './places.ts';
 import { sunOf } from './lampview.ts';
-import { clockView, greenOf, placeWords, tileView, weatherOf } from './views.ts';
-import { animalFeed, animalPage, leftoversView } from './wild.ts';
+import { clockView, greenOf, weatherOf } from './views.ts';
+import { animalFeed, leftoversView } from './wild.ts';
 
 /** How often the worker wakes (ms). Timing comes from the clock, not from this interval. */
 const WAKE_MS = 10;
@@ -109,43 +106,8 @@ function run(ticks: number): void {
   }
 }
 
-/** Where the person a notable line is about stands as it is sent, in words from the camp; for a
- * shaft plan, where the shaft is to be. */
-function whereOf(e: SimEvent): Pick<LedgerLine, 'where'> {
-  const p = world && e.actors[0] !== undefined ? entityOf(world, 'person', e.actors[0]) : undefined;
-  const shaft = e.type === 'mine.shaftPlanned';
-  if (!world || !(p || shaft)) return {};
-  const [x, y, z] = p
-    ? [p['x'] as number, p['y'] as number, p['z'] as number]
-    : [e.data['x'] as number, e.data['y'] as number, 0];
-  return { where: { x, y, z, words: placeWords(world.map, x, y, z) } };
-}
-
-function lineOf(e: SimEvent | Stub): LedgerLine {
-  const clock = clockView(e.tick);
-  if (!('causes' in e))
-    return {
-      id: e.id,
-      tick: e.tick,
-      type: e.type,
-      text: `An older record, from Day ${clock.day} of ${clock.monthName}, year ${clock.year}.`,
-      causes: [],
-      why: false,
-      clock,
-      older: true,
-    };
-  return {
-    id: e.id,
-    tick: e.tick,
-    type: e.type,
-    text: renderEvent(e, sim.templates),
-    causes: [...e.causes],
-    why: e.causes.some((c) => c !== world?.begunEvent),
-    clock,
-    ...(e.actors.length > 0 && { actors: [...e.actors] }),
-    ...(sim.notable(e) && { notable: true as const, ...whereOf(e) }),
-  };
-}
+/** Line `e` for the page, as the running world sees it. */
+const line = (e: SimEvent | Stub): LedgerLine => lineOf(world, sim, e);
 
 function snapshot(w: WorldState): void {
   const yesterday = yesterdayOf(w, content);
@@ -157,7 +119,7 @@ function snapshot(w: WorldState): void {
   const people = peopleSent.next(w);
   const moved = animals.next(w);
   if (unposted.length) {
-    post({ type: 'events', batch: unposted.map(lineOf) });
+    post({ type: 'events', batch: unposted.map(line) });
     unposted = [];
   }
   const chunks: ChunkView[] = [];
@@ -242,136 +204,97 @@ function offer(seed: string): void {
   post({ type: 'picker', seed, region, valleys }, pickerBuffers(region, valleys));
 }
 
+type Control = Exclude<ToWorker, { type: AnswerType }>;
+type AnswerType = keyof typeof ANSWERS;
+/** What each message that steers the worker does; the read-only ones are answers.ts's. */
+const CONTROLS: { [K in Control['type']]: (m: Extract<Control, { type: K }>) => void } = {
+  init(m) {
+    if (m.contentHash !== contentHash)
+      throw new Error(
+        `The page's content (${m.contentHash}) differs from the worker's (${contentHash}).`,
+      );
+    // A valley seed begins at once; one naming a valley the region does not have opens its picker.
+    if (valleyOf(m.seed, content)) adopt(createWorld(sim, m.seed), 'seed');
+    else offer(siteOf(m.seed)?.region ?? m.seed);
+  },
+  settle(m) {
+    const chosen = offered[m.site - 1];
+    if (!chosen) throw new Error(`No valley ${m.site} is on offer.`);
+    offered = [];
+    adopt(chosen, 'seed');
+  },
+  region() {
+    if (!world) return;
+    const at = siteOf(world.seed);
+    post({
+      type: 'region',
+      ...(at && { region: regionView(makeRegion(at.region, content, true)) }),
+      site: at?.site ?? 0,
+    });
+  },
+  load(m) {
+    // Checked before anything is replaced: a refused save leaves the running world as it was.
+    let loaded: WorldState;
+    try {
+      loaded = checkSave(m.save, contentHash, content, sim.tables);
+    } catch (error) {
+      post({ type: 'loadRefused', reason: error instanceof Error ? error.message : String(error) });
+      return;
+    }
+    adopt(loaded, 'save');
+  },
+  setSpeed: (m) => run(setSpeed(pace, m.speed, performance.now())),
+  skip() {
+    if (world) pace.skip = true;
+  },
+  lookAgain() {
+    // Only on arrival and only once: the same seed made again with the band's second choice.
+    if (world && greenOf(world, sim.templates).green?.again)
+      adopt(createWorld(sim, world.seed, 1), 'seed');
+  },
+  jump(m) {
+    // A time jump is a test tool: a page not in test mode gets nothing (V-041).
+    if (!world || !testMode) return;
+    const { monthsPerYear, seasons } = content.calendar;
+    const months = m.span === 'month' ? 1 : monthsPerYear / seasons.length;
+    jump(pace, world.tick, months * ticksPerMonth(content.calendar));
+  },
+  requestSnapshot() {
+    if (world) snapshot(world);
+  },
+  testMode(m) {
+    testMode = m.on;
+  },
+  command(m) {
+    if (!world) throw new Error('A command arrived before the world began.');
+    // A test tool from a page not in test mode is dropped before the command log (V-041).
+    if (!testMode && TEST_TOOLS.includes(m.kind)) return;
+    submitCommand(world, m);
+    // Paused, a lever takes effect at once (stamped for the next tick, as it would apply), and
+    // the page sees it now rather than once time runs.
+    if (pace.speed === 0 && !pace.skip) {
+      unposted.push(...applyDue(world, sim));
+      // One snapshot for a burst of levers (a heading's stepper sends a command per row).
+      snapSoon ??= setTimeout(() => {
+        snapSoon = undefined;
+        if (world) guarded(() => snapshot(world!));
+      }, 0);
+    }
+  },
+};
+
 function handle(message: ToWorker): void {
-  switch (message.type) {
-    case 'init':
-      if (message.contentHash !== contentHash)
-        throw new Error(
-          `The page's content (${message.contentHash}) differs from the worker's (${contentHash}).`,
-        );
-      // A valley seed begins at once; one naming a valley the region does not have opens its picker.
-      if (valleyOf(message.seed, content)) adopt(createWorld(sim, message.seed), 'seed');
-      else offer(siteOf(message.seed)?.region ?? message.seed);
-      return;
-    case 'settle': {
-      const chosen = offered[message.site - 1];
-      if (!chosen) throw new Error(`No valley ${message.site} is on offer.`);
-      offered = [];
-      adopt(chosen, 'seed');
-      return;
-    }
-    case 'region': {
-      if (!world) return;
-      const at = siteOf(world.seed);
-      post({
-        type: 'region',
-        ...(at && { region: regionView(makeRegion(at.region, content, true)) }),
-        site: at?.site ?? 0,
-      });
-      return;
-    }
-    case 'load': {
-      // Checked before anything is replaced: a refused save leaves the running world as it was.
-      let loaded: WorldState;
-      try {
-        loaded = checkSave(message.save, contentHash, content, sim.tables);
-      } catch (error) {
-        post({
-          type: 'loadRefused',
-          reason: error instanceof Error ? error.message : String(error),
-        });
-        return;
-      }
-      adopt(loaded, 'save');
-      return;
-    }
-    case 'setSpeed':
-      run(setSpeed(pace, message.speed, performance.now()));
-      return;
-    case 'skip':
-      if (world) pace.skip = true;
-      return;
-    case 'lookAgain':
-      // Only on arrival and only once: the same seed made again with the band's second choice.
-      if (world && greenOf(world, sim.templates).green?.again)
-        adopt(createWorld(sim, world.seed, 1), 'seed');
-      return;
-    case 'jump': {
-      // A time jump is a test tool: a page not in test mode gets nothing (V-041).
-      if (!world || !testMode) return;
-      const { monthsPerYear, seasons } = content.calendar;
-      const months = message.span === 'month' ? 1 : monthsPerYear / seasons.length;
-      jump(pace, world.tick, months * ticksPerMonth(content.calendar));
-      return;
-    }
-    case 'requestSnapshot':
-      if (world) snapshot(world);
-      return;
-    case 'testMode':
-      testMode = message.on;
-      return;
-    case 'command':
-      if (!world) throw new Error('A command arrived before the world began.');
-      // A test tool from a page not in test mode is dropped before the command log (V-041).
-      if (!testMode && TEST_TOOLS.includes(message.kind)) return;
-      submitCommand(world, message);
-      // Paused, a lever takes effect at once (stamped for the next tick, as it would apply), and
-      // the page sees it now rather than once time runs.
-      if (pace.speed === 0 && !pace.skip) {
-        unposted.push(...applyDue(world, sim));
-        // One snapshot for a burst of levers (a heading's stepper sends a command per row).
-        snapSoon ??= setTimeout(() => {
-          snapSoon = undefined;
-          if (world) guarded(() => snapshot(world!));
-        }, 0);
-      }
-      return;
-    // The rest only read the world, between ticks; with no world (stopped) they go unanswered.
-    case 'save':
-      if (world)
-        post({
-          type: 'saved',
-          auto: message.auto,
-          ...(message.standby && { standby: true }),
-          save: saveOf(world, contentHash),
-          clock: clockView(world.tick),
-        });
-      return;
-    case 'export':
-      if (world)
-        post({
-          type: 'exported',
-          kind: message.kind,
-          name: `${world.seed.replace(/[^\w-]+/g, '-')}-tick-${world.tick}.ndjson`,
-          segments: world.segments.map((s) => s.key),
-          text: toNdjson(world.log),
-        });
-      return;
-    case 'inspect':
-      if (world)
-        post({
-          type: 'inspected',
-          tile: tileView(world, message.x, message.y, message.z ?? 0, lineOf),
-        });
-      return;
-    case 'item':
-      if (world) post({ type: 'item', item: itemView(world, message.id, lineOf) });
-      return;
-    case 'animal':
-      if (world) post({ type: 'animalPage', page: animalPage(world, message.id, lineOf) });
-      return;
-    case 'why':
-      if (world)
-        post({
-          type: 'causes',
-          id: message.id,
-          lines: whyOf(world, message.id).map(({ event, depth }) => ({
-            ...lineOf(event),
-            depth,
-          })),
-        });
-      return;
+  if (isRead(message)) {
+    // These only read the world, between ticks; with no world (stopped) they go unanswered.
+    const answer = ANSWERS[message.type] as (
+      w: WorldState,
+      m: ToWorker,
+      l: typeof line,
+    ) => FromWorker;
+    if (world) post(answer(world, message, line));
+    return;
   }
+  (CONTROLS[message.type] as ((m: Control) => void) | undefined)?.(message);
 }
 
 // Any throw stops the simulation and reports it: nothing keeps running half-broken.

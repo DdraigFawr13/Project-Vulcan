@@ -14,14 +14,10 @@ import { el } from './dom.ts';
 import { regionRows } from './regionmap.ts';
 import { drawStock } from './stock.ts';
 import { testMode } from './testmode.ts';
-import { landFacts } from './landrows.ts';
-import { placeHead, placeTitle } from './placerows.ts';
-import { shaftBack, shaftTitle } from './shaftrows.ts';
-import { STAIN_NOTE, standingFacts, standingLines } from './tilerows.ts';
 import { animalRows } from './animalsheet.ts';
-import { worksBack, worksDoing } from './worksrows.ts';
-import { versionLine } from './version.ts';
-import { testTools, type TestOrder } from './testtools.ts';
+import { saveRows } from './savesheet.ts';
+import { tileRows, tileTitle } from './tilepanel.ts';
+import type { TestOrder } from './testtools.ts';
 
 export type PanelKind =
   | 'tile'
@@ -116,91 +112,22 @@ export class Panel {
     this.root.hidden = true;
   }
 
-  /** The tile's record, its ways up and down, and the test levers. `notice` is what became of the
-   * last dig order here: a line saying it waits for time to run, or the ledger line refusing it. */
+  /** The tile's record (tilepanel.ts); a pasture, fold, hay meadow or rick tile opens that page
+   * (Bundle 3), read-only. */
   showTile(tile: TileView, depth: number, notice?: string | LedgerLine): void {
-    // A pasture, fold, hay meadow or rick tile opens that page (Bundle 3), read-only.
     if (tile.pasture)
       return this.showView(
         'tile',
         tile.pasture.title,
         animalRows(tile.pasture, (l) => this.lineRow(l)),
       );
-    const where = tile.z === 0 ? '' : ` · ${tile.z} level${tile.z > 1 ? 's' : ''} down`;
-    this.open(
-      'tile',
-      tile.works?.name ??
-        (placeTitle(tile) || undefined) ??
-        tile.field?.name ??
-        tile.store?.name ??
-        (shaftTitle(tile) || `Tile ${tile.x}, ${tile.y}${where}`),
-    );
-    const facts = el('dl', { class: 'kv' });
-    // What lies here comes first: it is usually what a tap was after (Morgan, Phase 3 playtest).
-    for (const [key, value] of [
-      ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
-      ...(tile.piece || tile.field || tile.shaft || tile.works || tile.place
-        ? []
-        : landFacts(tile)),
-      ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
-      ...(tile.store
-        ? [
-            ['store', `${tile.store.name.toLowerCase()}: ${tile.store.takes}`],
-            ['holds', tile.store.holds],
-            ...(tile.store.spoiled ? [['spoiled', tile.store.spoiled]] : []),
-          ]
-        : []),
-      ...standingFacts(tile),
-      ...(tile.below && !tile.piece && !tile.works ? [['below', tile.below]] : []),
-      ...(this.debug
-        ? [['chunk', `${tile.chunkX}, ${tile.chunkY} · version ${tile.version}`]]
-        : []),
-    ])
-      facts.append(el('dt', {}, key), el('dd', {}, value));
-    this.body.replaceChildren(...placeHead(tile), facts);
-    this.body.append(...worksDoing(tile, (id) => this.actions.item(id)));
-    if (tile.stain && !tile.piece && !tile.field && !tile.shaft)
-      this.body.append(el('p', { class: 'aside' }, STAIN_NOTE));
-    if (tile.ways) {
-      const go = el('div', { class: 'row' });
-      if (tile.ways.down) {
-        const down = el('button', { type: 'button', class: 'solid' }, `Go down to −${tile.z + 1}`);
-        down.addEventListener('click', () => this.actions.go(tile, tile.z + 1));
-        go.append(down);
-      }
-      if (tile.ways.up) {
-        const label = tile.z === 1 ? 'Go up to the surface' : `Go up to −${tile.z - 1}`;
-        const up = el('button', { type: 'button', class: 'solid' }, label);
-        up.addEventListener('click', () => this.actions.go(tile, tile.z - 1));
-        go.append(up);
-      }
-      this.body.append(go);
-    }
-    if (tile.house?.back) {
-      const back = el('button', { type: 'button', 'data-testid': 'send-back-tile' }, 'Send back');
-      back.addEventListener('click', () => this.actions.sendBack(tile, tile.house!.id, 'sendBack'));
-      const row = el('div', { class: 'row' });
-      row.append(back);
-      this.body.append(row);
-    }
-    this.body.append(
-      ...shaftBack(tile, () => this.actions.sendBack(tile, tile.shaft!.id, 'sendBackShaft')),
-      ...worksBack(tile, (id) => this.actions.sendBack(tile, id, 'sendBackMill')),
-    );
-    if (this.debug)
-      this.body.append(
-        ...testTools(tile, depth, (kind, arg) => this.actions.test(tile, kind, arg)),
-      );
-    if (typeof notice === 'string') this.body.append(el('p', { class: 'note' }, notice));
-    else if (notice) this.body.append(this.lineRow(notice, 'Not done · '));
-    for (const [line, label] of standingLines(tile)) this.body.append(this.lineRow(line, label));
-    for (const g of tile.goods ?? [])
-      if (g.made) this.body.append(this.lineRow(g.made, 'Made by · '));
-    if (tile.store?.made) this.body.append(this.lineRow(tile.store.made, 'Store · '));
-    if (tile.store?.built) this.body.append(this.lineRow(tile.store.built, 'Built · '));
-    if (tile.piece || tile.works || tile.place) return;
-    if (tile.changedBy) this.body.append(this.lineRow(tile.changedBy, 'Last changed · '));
-    else this.body.append(el('p', { class: 'muted' }, 'The line that last changed it is gone.'));
+    this.open('tile', tileTitle(tile));
+    const deps = {
+      actions: this.actions,
+      debug: this.debug,
+      lineRow: (l: LedgerLine, prefix?: string) => this.lineRow(l, prefix),
+    };
+    this.body.replaceChildren(...tileRows(tile, depth, notice, deps));
   }
 
   /** The region map, read-only, with the settled valley marked; a tapped site shows who lives there. */
@@ -272,85 +199,7 @@ export class Panel {
 
   showSaves(seed: string, saves: readonly SaveMeta[], problem = ''): void {
     this.open('saves', 'Saves');
-    const now = el('div', { class: 'row' });
-    now.append(
-      el('button', { type: 'button', class: 'solid', 'data-act': 'save' }, 'Save now'),
-      el('button', { type: 'button', 'data-act': 'export' }, 'Export ledger'),
-    );
-    const form = el('form', { class: 'row', 'aria-label': 'New game' });
-    const input = el('input', {
-      name: 'seed',
-      value: seed,
-      'aria-label': 'Seed',
-      autocomplete: 'off',
-      spellcheck: 'false',
-    });
-    form.append(input, el('button', { type: 'submit' }, 'New game'));
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (input.value.trim()) this.actions.newGame(input.value.trim());
-    });
-    // Test mode is a switch you can find on a phone (Morgan's playtest), off by default.
-    const test = el('div', { class: 'row' });
-    test.append(
-      el(
-        'button',
-        {
-          type: 'button',
-          'data-act': 'testmode',
-          'data-testid': 'test-switch',
-          'aria-pressed': String(this.debug),
-        },
-        this.debug ? 'Test mode: on' : 'Test mode: off',
-      ),
-    );
-    const about = el(
-      'p',
-      { class: 'aside' },
-      'Direct tools for trying things out: dig down, mark a tree, add a store tile, jump ahead in time. Your colonists choose their own work in the normal game.',
-    );
-    // Jumps run every tick on the way, as a skip does, so what follows is what play would give.
-    if (this.debug)
-      for (const span of ['month', 'season'] as const) {
-        const go = el(
-          'button',
-          { type: 'button', 'data-testid': `jump-${span}` },
-          `Jump a ${span}`,
-        );
-        go.addEventListener('click', () => {
-          this.actions.jump(span);
-          this.actions.close();
-        });
-        test.append(go);
-      }
-    this.body.replaceChildren(now, form, versionLine(), el('h3', {}, 'Test mode'), about, test);
-    if (problem) this.body.append(el('p', { class: 'problem', role: 'alert' }, problem));
-    if (!saves.length) this.body.append(el('p', { class: 'muted' }, 'No saves yet.'));
-    for (const meta of saves) {
-      const row = el('div', { class: 'save', 'data-testid': 'save' });
-      const picture = el('img', { class: 'thumb', alt: '', src: meta.thumbnail || 'data:,' });
-      const text = el('div', { class: 'meta' });
-      const name = el('b', {}, meta.name);
-      if (meta.auto) name.append(el('span', { class: 'tag' }, 'AUTO'));
-      if (meta.rescue) name.append(el('span', { class: 'tag', title: meta.rescue }, 'RESCUE'));
-      const saved = new Date(meta.savedAt).toLocaleString([], {
-        dateStyle: 'short',
-        timeStyle: 'short',
-      });
-      text.append(name, el('span', {}, `${meta.auto ? 'Autosaved' : 'Saved'} ${saved}`));
-      const acts = el('div', { class: 'row' });
-      const load = el('button', { type: 'button' }, 'Load');
-      load.addEventListener('click', () => this.actions.load(meta));
-      acts.append(load);
-      if (!meta.auto) {
-        const remove = el('button', { type: 'button', class: 'dim' }, 'Delete');
-        remove.addEventListener('click', () => this.actions.remove(meta));
-        acts.append(remove);
-      }
-      text.append(acts);
-      row.append(picture, text);
-      this.body.append(row);
-    }
+    this.body.replaceChildren(...saveRows(seed, saves, problem, this.actions, this.debug));
   }
 
   private open(kind: PanelKind, title: string): void {

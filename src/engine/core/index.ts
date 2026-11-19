@@ -29,4 +29,4 @@ export * from './clothes.ts';
 export * from './tales.ts';
 export * from './self.ts';
 export { list, itemName } from './words.ts';
-export { clamp, smooth, cheb, dice } from './maths.ts';
+export { clamp, smooth, cheb, dice, roughDistance } from './maths.ts';
