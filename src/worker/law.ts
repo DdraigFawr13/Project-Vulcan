@@ -36,11 +36,13 @@ export function answerView(world: WorldState, a: EntityRow): AnswerView | undefi
   const s = settingOf(world, content, a['law'] as string);
   const name = p['name'] as string;
   const answer = a['answer'] as AnswerView['answer'];
-  const text = {
-    obeys: `${name} keeps ${s.days}.`,
-    grumbles: `${name} keeps ${s.days}, grumbling.`,
-    refuses: `${name} refuses ${s.days} and keeps the customary hours.`,
-  }[answer];
+  // P6.5: a law words its answers in content; the work-hours law keeps its own.
+  const say = lawDef(content, a['law'] as string)?.say ?? {
+    obeys: '{name} keeps {days}.',
+    grumbles: '{name} keeps {days}, grumbling.',
+    refuses: '{name} refuses {days} and keeps the customary hours.',
+  };
+  const text = say[answer].replace('{name}', name).replace('{days}', s.days);
   const memories = (world.entities['memory'] ?? []).filter((m) => m['person'] === p.id);
   const links = (a['cites'] as number[]).flatMap((line) => {
     const m = memories.find((r) => r['line'] === line);
@@ -67,7 +69,7 @@ export function answerView(world: WorldState, a: EntityRow): AnswerView | undefi
 }
 
 /** The Laws page: the work-hours law, this season's hours and everyone's answer, refusals first. */
-export function lawView(world: WorldState): Omit<LawView, 'strangers'> {
+export function lawView(world: WorldState): Omit<LawView, 'strangers' | 'ruled'> {
   const def = lawDef(content, WORK_HOURS)!;
   const s = settingOf(world, content, def.id);
   const row = (world.entities['law'] ?? []).find((r) => r['law'] === def.id);

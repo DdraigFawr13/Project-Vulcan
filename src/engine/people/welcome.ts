@@ -3,13 +3,7 @@
 // someone fleeing trouble, food that lasts until the next harvest. Against: another people (more
 // so for a people who value kin), sickness where they come from, a short store, being solitary or
 // greedy when food is short. Memories of earlier newcomers shift it. All numbers are content.
-import {
-  TICKS_PER_DAY,
-  type EngineContent,
-  type EntityRow,
-  type WorldState,
-} from '../core/index.ts';
-import { haveOf } from '../goods/index.ts';
+import { type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { memoriesOf } from '../needs/index.ts';
 
 export interface Stance {
@@ -23,28 +17,6 @@ export interface Stance {
 
 const alive = (world: WorldState): EntityRow[] =>
   (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
-
-/** Food in the store, and the days it lasts `mouths` at `strangers.draw.eat` a head. */
-export function foodDays(world: WorldState, content: EngineContent, mouths: number) {
-  const food = haveOf(world, content, 'food');
-  return { food, days: Math.floor(food / (content.strangers.draw.eat * Math.max(1, mouths))) };
-}
-
-/** Days until the first day of the harvest month (`weigh.harvest`), next coming. */
-export function daysToHarvest(world: WorldState, content: EngineContent): number {
-  const { calendar } = content;
-  const month = calendar.monthNames.indexOf(content.strangers.weigh.harvest);
-  const perYear = calendar.daysPerMonth * calendar.monthsPerYear;
-  const today = Math.floor(world.tick / TICKS_PER_DAY) % perYear;
-  return (month * calendar.daysPerMonth - today + perYear) % perYear || perYear;
-}
-
-/** Whether the store lasts everyone, with `coming` more, until the harvest. */
-export function storeLasts(world: WorldState, content: EngineContent, coming: number): boolean {
-  return (
-    foodDays(world, content, alive(world).length + coming).days >= daysToHarvest(world, content)
-  );
-}
 
 const skillOf = (world: WorldState, person: number, skill: string): number =>
   ((world.entities['skill'] ?? []).find((r) => r['person'] === person && r['skill'] === skill)?.[

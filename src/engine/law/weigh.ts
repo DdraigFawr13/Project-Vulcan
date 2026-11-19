@@ -2,6 +2,7 @@
 // held memories, their roles and ambition (P6.4) and the season, each named for and against so the reason can be read. All the
 // numbers are content (laws.json).
 import type { EngineContent, LawSettingDef, WorldState } from '../core/index.ts';
+import { storeLasts } from '../goods/index.ts';
 import { memoriesOf, moodOf, needOf } from '../needs/index.ts';
 import { ambitionOf, ambitionText, rolesOf } from '../self/index.ts';
 import { isWinter } from './hours.ts';
@@ -56,7 +57,7 @@ export function weigh(
   will += byMood;
   side(byMood, byMood > 0 ? 'in good spirits' : 'in low spirits');
   for (const need of dial.needs) {
-    if (!needOf(world, person, need)?.['low']) continue;
+    if (!needOf(world, person, need)?.['low'] || s.expects?.includes(need)) continue;
     will += dial.low;
     const def = content.life.needs.find((n) => n.id === need);
     con.push(lower(def?.lowWord ?? need));
@@ -79,6 +80,14 @@ export function weigh(
     side(by, lower((def?.text ?? id).replace('{about}', about ?? 'someone')));
     cites.push(m['line'] as number);
     mems.push(`${id}:${m['line'] as number}`);
+  }
+  // P6.5: whether the store lasts to the harvest leans on a law of the store (Rations).
+  if (s.store) {
+    const lasts = storeLasts(world, content, 0);
+    const by = lasts ? s.store.lasts : s.store.short;
+    will += by;
+    side(by, lasts ? 'the store lasts to the harvest' : 'the store will not last to the harvest');
+    mems.push(`store:${lasts ? 'lasts' : 'short'}`);
   }
   if (s.winterLean && isWinter(world, content)) {
     will += s.winterLean;

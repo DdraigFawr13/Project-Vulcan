@@ -1,16 +1,32 @@
 {
-"answer":{"start":50,"obey":50,"grumble":35,"moodPer":200,"low":-15,"needs":["food","rest","warmth"],"sight":8},
-"words":{"obeys":"keeps","grumbles":"grumbles at","refuses":"refuses"},
+"answer":{"start":50,"obey":50,"grumble":35,"moodPer":200,"low":-15,"needs":["food","rest","warmth"],"sight":8,"settle":14,"every":7},
+"words":{"obeys":"keeps","grumbles":"grumbles at","refuses":"refuses","store":"The store holds {food} food: {full} days for everyone at full plates{rationed}. The harvest is {harvest} days away."},
 "laws":[
 {"id":"work-hours","name":"Work hours","law":"work-hours law","start":"customary","settings":[
 {"id":"short","name":"Short days","days":"the short days","ask":5,"hours":{"from":8,"to":16},"winter":{"from":9,"to":15},"winterLean":0,"saw":"saw-refused-short","grumbled":"grumbled-short","traits":{"restless":-12,"greedy":-10,"steady":5,"cheerful":5,"hardy":3},"memories":{"went-hungry":-8,"short-meals":-8,"short-meals-hard":-12,"saw-refused-short":-6},"roles":{"provider":-8,"wronged":5,"rebel":5},"ambitions":{"masterwork":6,"trade":6,"house":-5}},
 {"id":"customary","name":"Customary","days":"the customary hours","ask":0,"winterLean":0,"traits":{},"memories":{}},
 {"id":"long","name":"Long days","days":"the long days","ask":15,"hours":{"from":5,"to":20},"winter":{"from":6,"to":20},"winterLean":-8,"saw":"saw-refused-long","grumbled":"grumbled-long","traits":{"hardy":10,"restless":8,"steady":5,"cheerful":5,"greedy":-4,"melancholic":-8,"hot-tempered":-10},"memories":{"went-hungry":-10,"short-meals":-8,"short-meals-hard":-15,"cold-night":-6,"slept-rough":-6,"ate-well":3,"harvested":8,"saw-refused-long":-6},"roles":{"provider":8,"guard":3,"wronged":-10,"rebel":-10},"ambitions":{"house":6,"masterwork":-6,"trade":-6}}
 ]},
-{"id":"strangers","name":"Strangers","law":"Strangers law","start":"need","settings":[
+{"id":"strangers","name":"Strangers","law":"Strangers law","start":"need","split":true,"settings":[
 {"id":"open","name":"Open door","days":"the Strangers law","ask":5,"lets":["hunger","sickness","feud","war","move","wander"],"grumbled":"grumbled-strangers","traits":{"sociable":8,"devout":4,"solitary":-8,"greedy":-10},"memories":{"went-hungry":-8,"short-meals":-8,"short-meals-hard":-12},"roles":{"outsider":10,"faithful":5,"provider":-5}},
 {"id":"need","name":"Those in need","days":"the Strangers law","ask":0,"lets":["hunger","sickness","feud","war"],"grumbled":"grumbled-strangers","traits":{"devout":5,"greedy":-4},"memories":{"short-meals-hard":-8}},
 {"id":"closed","name":"Closed","days":"the Strangers law","ask":5,"lets":[],"grumbled":"grumbled-strangers","traits":{"solitary":8,"greedy":4,"sociable":-8,"devout":-8},"memories":{"turned-away":-6},"roles":{"outsider":-10,"faithful":-5,"guard":5}}
+]},
+{"id":"rations","name":"Rations","law":"Rations law","start":"full","say":{"obeys":"{name} keeps {days}.","grumbles":"{name} keeps {days}, grumbling.","refuses":"{name} refuses {days} and eats their fill."},"settings":[
+{"id":"full","name":"Full plates","about":"Everyone eats their fill.","days":"full plates","ask":0,"traits":{},"memories":{}},
+{"id":"short","name":"Short rations","about":"Those who keep it eat three quarters of a full day's food, and go hungry for it.","days":"short rations","ask":10,"share":75,"expects":["food"],"kept":"short-meals","saw":"saw-refused-rations","grumbled":"grumbled-rations","store":{"lasts":-15,"short":15},"traits":{"greedy":-12,"hot-tempered":-6,"restless":-4,"hardy":8,"steady":6,"devout":3},"memories":{"went-hungry":-8,"short-meals":-4,"short-meals-hard":-8,"saw-refused-rations":-6,"harvested":-5},"roles":{"provider":10,"guard":4,"wronged":-8,"rebel":-10,"outsider":-4},"ambitions":{"house":-3}},
+{"id":"hunger","name":"Hunger rations","about":"Those who keep it eat half a full day's food, and go hungry for it.","days":"hunger rations","ask":25,"share":50,"expects":["food"],"kept":"short-meals-hard","saw":"saw-refused-rations","grumbled":"grumbled-rations","store":{"lasts":-25,"short":20},"traits":{"greedy":-15,"hot-tempered":-8,"restless":-6,"melancholic":-4,"hardy":8,"steady":6,"devout":3},"memories":{"went-hungry":-12,"short-meals":-6,"short-meals-hard":-10,"saw-refused-rations":-8,"harvested":-8},"roles":{"provider":10,"guard":4,"wronged":-12,"rebel":-12,"outsider":-6},"ambitions":{"house":-5,"masterwork":-3}}
+]},
+{"id":"punishment","name":"Punishment","law":"Punishment law","start":"none","note":"Nobody has been caught stealing or brawling yet.","say":{"obeys":"{name} stands by {days}.","grumbles":"{name} stands by {days}, grumbling.","refuses":"{name} refuses {days} and would not see it done."},"settings":[
+{"id":"none","name":"None","about":"A thief or a brawler is not punished.","days":"no punishment","ask":0,"traits":{},"memories":{}},
+{"id":"work","name":"Extra work","about":"A thief or a brawler works an extra day.","days":"extra work for thieves and brawlers","ask":0,"grumbled":"grumbled-punishment","traits":{"steady":5,"hardy":3,"restless":-4},"memories":{},"roles":{"guard":6,"provider":4,"rebel":-6}},
+{"id":"stocks","name":"The stocks","about":"A thief or a brawler sits a day in the stocks on the green.","days":"the stocks for thieves and brawlers","ask":10,"grumbled":"grumbled-punishment","traits":{"hot-tempered":4,"steady":3,"sociable":-6,"cheerful":-4,"devout":-3},"memories":{},"roles":{"guard":10,"wronged":-6,"rebel":-12,"outsider":-6}},
+{"id":"away","name":"Send away","about":"A thief or a brawler is sent out of the valley.","days":"sending thieves and brawlers away","ask":20,"grumbled":"grumbled-punishment","traits":{"solitary":4,"hot-tempered":3,"sociable":-10,"devout":-6,"cheerful":-4},"memories":{},"roles":{"guard":8,"outsider":-14,"wronged":-6,"rebel":-10,"faithful":-4}}
+]},
+{"id":"sickness","name":"Sickness","law":"Sickness law","start":"home","say":{"obeys":"{name} stands by {days}.","grumbles":"{name} stands by {days}, grumbling.","refuses":"{name} refuses {days} and would keep their own sick at home."},"settings":[
+{"id":"home","name":"Tend at home","about":"The sick lie in the sickroom or their own bed and are nursed there. A catching illness can pass to those who sleep in the same room.","days":"tending the sick at home","ask":0,"traits":{},"memories":{}},
+{"id":"sickhouse","name":"Sick-house","about":"Those sick with a catching illness are laid in a sick-house the builders put at the edge of the settlement, away from the homes.","days":"the sick-house at the edge","ask":5,"grumbled":"grumbled-sickness","traits":{"sociable":-5,"devout":-3,"steady":4,"solitary":3},"memories":{"grief-band":6},"roles":{"guard":5,"provider":3,"faithful":-3}},
+{"id":"away","name":"Send them away","about":"Those sick with a catching illness leave the valley until it passes, with nobody to nurse them.","days":"sending the sick away","ask":25,"grumbled":"grumbled-sickness","traits":{"sociable":-10,"devout":-10,"cheerful":-5,"solitary":4,"hot-tempered":3},"memories":{"grief-band":8},"roles":{"guard":6,"faithful":-12,"outsider":-10,"wronged":-6}}
 ]}
 ]
 }

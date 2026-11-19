@@ -141,6 +141,8 @@ export {
   leftOf,
   wornOf,
   goodsSystem,
+  daysToHarvest,
+  foodDays,
   depotsOf,
   depotTiles,
   insideDepot,

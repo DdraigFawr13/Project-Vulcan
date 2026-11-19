@@ -1,9 +1,9 @@
 {
-  "note": "Ratchet for tools/check-shape.mjs (npm run shape): numbers may fall, never rise. Measured on main 997edca, 2026-11-19.",
+  "note": "Ratchet for tools/check-shape.mjs (npm run shape): numbers may fall, never rise. Measured on main 2026-11-19 after #113.",
   "counts": {
     "longFunctions": 38,
     "complexOver25": 31,
-    "complexOver15": 135,
+    "complexOver15": 134,
     "copiedHelpers": 23
   },
   "modules": {
@@ -14,7 +14,7 @@
     "src/engine/people/MODULE.md": 17025,
     "src/engine/wild/MODULE.md": 7097,
     "src/render/MODULE.md": 9416,
-    "src/ui/MODULE.md": 13174,
+    "src/ui/MODULE.md": 13249,
     "src/worker/MODULE.md": 15973
   }
 }

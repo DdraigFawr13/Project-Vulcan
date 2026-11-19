@@ -57,7 +57,7 @@ export {
   wornAsk,
   wornTools,
 } from './tools.ts';
-export { eatFrom, foodGoneLine } from './food.ts';
+export { daysToHarvest, eatFrom, foodDays, foodGoneLine, storeLasts } from './food.ts';
 export { isTree, markedTree, marksOf, unmark } from './marks.ts';
 export {
   charcoalNeeded,
