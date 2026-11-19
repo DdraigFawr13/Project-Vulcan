@@ -2,7 +2,7 @@
 // band, its name, a why? to the line that made it and the worker's line on why it matters and
 // how long it stays; then the tales they know, their version beside the truth, and what they
 // believe (P6.3, V-155). Above them, who they are: the roles they see themselves in and their
-// ambition (P6.4, V-156). Read only: nothing here is a lever (V-041).
+// ambition (P6.4, V-156), and how far a grievance has carried them (P6.7). Read only: nothing here is a lever (V-041).
 import type { WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
@@ -37,8 +37,8 @@ function taleRows(w: WalkerView): HTMLElement[] {
 
 /** Who they are: their roles, strongest first, then their ambition. */
 function selfRows(w: WalkerView): HTMLElement[] {
-  const { roles, ambition } = w.self;
-  if (!roles.length && !ambition) return [];
+  const { roles, ambition, defiance } = w.self;
+  if (!roles.length && !ambition && !defiance) return [];
   const out: HTMLElement[] = [el('h3', {}, 'Who they are')];
   for (const r of roles) {
     const row = el('div', { class: 'memrow belief', 'data-testid': 'role' });
@@ -49,6 +49,13 @@ function selfRows(w: WalkerView): HTMLElement[] {
   if (ambition) {
     const row = el('div', { class: 'memrow belief', 'data-testid': 'ambition' });
     row.append(el('span', { class: 't' }, ambition.text), why(ambition.why));
+    out.push(row);
+  }
+  // Defiance (P6.7): how far a grievance has carried them, and the memory and belief behind it.
+  if (defiance) {
+    const row = el('div', { class: 'memrow belief', 'data-testid': 'defiance' });
+    row.append(el('span', { class: 't' }, defiance.text), why(defiance.why));
+    if (defiance.note) row.append(el('span', { class: 'r' }, defiance.note));
     out.push(row);
   }
   out.push(el('h3', {}, 'Memories'));
