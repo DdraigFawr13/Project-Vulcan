@@ -5,7 +5,11 @@ import { content } from '../content/index.ts';
 import {
   ambitionOf,
   ambitionText,
+  defyOf,
+  grievanceOf,
+  reasonsOf,
   rolesOf,
+  whyWords,
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
@@ -13,7 +17,23 @@ import type { SelfView } from './protocol-people.ts';
 
 const upper = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** `p`'s roles, strongest first, and ambition. */
+/** The act step a grievance holds `p` on (working slowly or past it), with the memory and belief
+ * behind it; none on a law answer's step (grumbling, refusing: the Laws sheet shows those). */
+function defianceOf(world: WorldState, p: EntityRow): SelfView['defiance'] {
+  const row = defyOf(world, p.id);
+  const steps = content.defy.steps;
+  const step = steps[((row?.['step'] as number | undefined) ?? 0) - 1];
+  const g = grievanceOf(world, content, p.id);
+  if (!row || !step || step.answer || !g) return undefined;
+  const why = whyWords(world, content, reasonsOf(world, content, p.id, g.setting));
+  return {
+    text: `${upper(step.name)}, against ${g.setting.days} (step ${row['step'] as number} of ${steps.length}).`,
+    note: why ? `${upper(why)}.` : '',
+    why: row['line'] as number,
+  };
+}
+
+/** `p`'s roles, strongest first, ambition and defiance. */
 export function selfView(world: WorldState, p: EntityRow): { self: SelfView } {
   const roles = rolesOf(world, p.id).flatMap((r) => {
     const def = content.self.roles.find((d) => d.id === r['role']);
@@ -36,5 +56,6 @@ export function selfView(world: WorldState, p: EntityRow): { self: SelfView } {
         why: a['line'] as number,
       }
     : undefined;
-  return { self: { roles, ...(ambition ? { ambition } : {}) } };
+  const defiance = defianceOf(world, p);
+  return { self: { roles, ...(ambition ? { ambition } : {}), ...(defiance ? { defiance } : {}) } };
 }

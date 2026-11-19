@@ -167,4 +167,6 @@ export interface BeliefView {
 export interface SelfView {
   roles: { text: string; note: string; why: number }[];
   ambition?: { text: string; why: number };
+  /** P6.7: how far a grievance has carried them past refusing (an act step), and why. */
+  defiance?: { text: string; note: string; why: number };
 }
