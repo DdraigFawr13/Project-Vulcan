@@ -2,7 +2,7 @@
 // care it had, the fever). The dead keep their row with status `dead`: what they carried is put
 // down, their tools go back to the cart, their bed is free. Everyone grieves, the close (the
 // same home, or the same house) the most. An unburied body unsettles anyone who passes it and is
-// said after a day. A grave dug (people/burial.ts) is filled at the end of the working day with
+// said after a day. A grave dug (care/burial.ts) is filled at the end of the working day with
 // everyone free there, and the dead are `buried`.
 import {
   TICKS_PER_DAY,

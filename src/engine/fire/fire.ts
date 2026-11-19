@@ -1,7 +1,7 @@
 // Fire (P3.6, V-042): a hearth is a furniture piece (build/furniture.ts) and a fire is the row
 // keyed to it: whether it is lit, the fuel it has left in minutes, which fuel, whether it is banked
 // (burning low and slow for the night) and the tick it was last used, which the people mark
-// (people/hearth.ts `markUsed`): a fire knows no people (V-042). Its heat reaches its room's tiles,
+// (crafts/hearth.ts `markUsed`): a fire knows no people (V-042). Its heat reaches its room's tiles,
 // worked out when asked (heat.ts), and nothing about a room's warmth is stored (V-043).
 import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';

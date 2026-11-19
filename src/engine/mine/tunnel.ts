@@ -17,7 +17,7 @@ const SIDES = [
 /** The next tile to dig on level `z` on the cheapest way from the shaft foot at (x, y) to a vein
  * tile of `metal`, and the open tile it is dug from; undefined when no such way exists. The next
  * tile is the first on the way that is not known open ground, so it may turn out to be open
- * (a cave, water) when reached: the miner then only shows it (people/mine.ts) and the way is
+ * (a cave, water) when reached: the miner then only shows it (land/mine.ts) and the way is
  * found again. `taken` are tile indices others are working, which the way goes round. */
 export function nextDig(
   world: WorldState,

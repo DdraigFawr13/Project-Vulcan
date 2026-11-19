@@ -13,24 +13,16 @@ import {
 import type { Schemas } from '../entity/index.ts';
 import { valleyOf } from '../region/index.ts';
 import type { System } from '../sim/index.ts';
-import { drawBand, type Home } from './band.ts';
-import { drawSmithing } from './smithing.ts';
-import { addPerson, ATTRIBUTES, NEWCOMER_FIELDS } from './row.ts';
-import { FORAGE_TABLES } from './forage.ts';
+import { addPerson, ATTRIBUTES, drawBand, drawSmithing, type Home } from '../band/index.ts';
+import { NEWCOMER_FIELDS, PRIORITY_TABLES, rollTally, setPriority } from '../band/index.ts';
+import { stepAlong, TALLY_START, TOOL_TABLES, toolsDaily, WALK_FIELDS } from '../band/index.ts';
+import { FORAGE_TABLES } from '../land/index.ts';
 import { JOB_FIELDS } from './jobfields.ts';
 import { DRINK_FIELDS } from './drink.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
-import { markUsed } from './hearth.ts';
-import { PRIORITY_TABLES, setPriority } from './priority.ts';
-import { TOOL_TABLES, toolsDaily } from './tools.ts';
-import { rollTally, TALLY_START } from './tally.ts';
-import { stepAlong, WALK_FIELDS } from './walk.ts';
-import { risk } from './accident.ts';
-import { apartHour } from './apart.ts';
-import { careMinute } from './care.ts';
-import { attacksMinute, syncLures } from './fight.ts';
-import { tracksMinute } from './hunt.ts';
-import { herdWatch } from './herd.ts';
+import { markUsed } from '../crafts/index.ts';
+import { risk, apartHour, careMinute } from '../care/index.ts';
+import { attacksMinute, syncLures, tracksMinute, herdWatch } from '../herding/index.ts';
 
 export const PEOPLE_TABLES: Schemas = {
   person: {

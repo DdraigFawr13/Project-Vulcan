@@ -9,9 +9,8 @@ import { changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { isFrozen } from '../weather/index.ts';
 import { shunned } from '../health/index.ts';
-import { drankAt } from './foul.ts';
-import { lineOf } from './lines.ts';
-import { goBeside, spotOf } from './spots.ts';
+import { drankAt } from '../care/index.ts';
+import { lineOf, goBeside, spotOf } from '../band/index.ts';
 
 export const DRINK_FIELDS = {
   /** While drinking: the tile (index + 1) they drink from, else 0. */

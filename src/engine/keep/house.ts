@@ -2,7 +2,7 @@
 // game and fish (`cure.from`) lost over the kept weeks reaches `cure.need.count` and no smokehouse
 // stands or is planned, the colony plans a square of `cure.house.size` on the free ground nearest
 // the larder (else the home store), within `cure.house.near` tiles, that someone can walk to from
-// the green; ties go in tile order. Builders build it (people/station.ts).
+// the green; ties go in tile order. Builders build it (crafts/station.ts).
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { freeBlock, greenOf, sizeOfStation, stationOf } from '../build/index.ts';

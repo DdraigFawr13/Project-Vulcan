@@ -11,10 +11,8 @@ import { loadOf } from '../goods/index.ts';
 import { feltAt, needOf } from '../needs/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { lineOf } from './lines.ts';
-import { spotOf } from './spots.ts';
-import { coldPick, tendForWarmth } from './tend.ts';
-import { walkTo } from './walk.ts';
+import { lineOf, spotOf, walkTo } from '../band/index.ts';
+import { coldPick, tendForWarmth } from '../crafts/index.ts';
 
 const LOOK_AGAIN = 30;
 

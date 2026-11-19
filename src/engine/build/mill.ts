@@ -1,6 +1,6 @@
 // The quern, the mill and the oven (5B Bundle 4, P5.11, V-133): nobody orders any of them. Once
 // grain is in store a quern is planned by the hall's hearth (else the first house's). Each day
-// the colony reads the last `mill.days` days of grinding (table `grind`, people/mill.ts): when the
+// the colony reads the last `mill.days` days of grinding (table `grind`, crafts/mill.ts): when the
 // quern took more than `mill.want` minutes a day, a mill is sited on the running water nearest the
 // granary (`build.millNeeded`), its walls by the house wall rule, its millstones inside and its
 // wheel in the water. Its wheel stands while that water is frozen (V-150): `mill.stood`, then

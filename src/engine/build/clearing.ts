@@ -1,7 +1,7 @@
 // Goods lying where a house or room goes (V-078 review): loose goods do not block a site, any
-// more than a tree does. Haulers carry them off first (people/haul.ts: to the store if it has
+// more than a tree does. Haulers carry them off first (band/haul.ts: to the store if it has
 // room, else set down beside the footprint), and the part waits until its tile is clear
-// (people/build.ts). The plan says so once, citing its line.
+// (crafts/build.ts). The plan says so once, citing its line.
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { itemsOf } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';

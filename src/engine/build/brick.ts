@@ -1,7 +1,7 @@
 // Bricks and the wall rule (5B Bundle 3, V-096, V-132): once a kiln stands, brick is one of the
 // wall materials a house may be built of, counted by the bricks in hand plus what the clay in the
 // stores would fire into (`potter.brick.per` bricks for `potter.clay` clay). The potter fires
-// bricks while the planned walls want more than the colony has (people/potter.ts).
+// bricks while the planned walls want more than the colony has (crafts/potter.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { haveOf } from '../goods/index.ts';
 import { planPart, plansOf } from './plans.ts';

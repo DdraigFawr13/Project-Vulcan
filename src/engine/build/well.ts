@@ -3,7 +3,7 @@
 // day the colony reads the last `well.days` days: when a person spends more than `well.walk`
 // minutes a day walking to drink, or the water most drunk from has frozen, and no well stands or
 // is planned, it plans one on the green beside the first hearth (`build.wellNeeded`). Builders
-// make it of stone then logs (people/hearth.ts); `build.wellBuilt`. One well, never sent back,
+// make it of stone then logs (crafts/hearth.ts); `build.wellBuilt`. One well, never sent back,
 // and it never freezes.
 import {
   TICKS_PER_DAY,

@@ -1,7 +1,7 @@
 // Stations (Phase 4 Bundle 3, V-041, V-061): the smelter and the charcoal clamp's spot. Like a
 // furniture piece a station blocks no one's way and leaves `map.built` alone; unlike one it is
 // not in a room. The colony plans them from need (metalsite.ts); builders build the smelter
-// (people/station.ts); burners and smelters work them (people/charcoal.ts, people/smelt.ts).
+// (crafts/station.ts); burners and smelters work them (crafts/charcoal.ts, crafts/smelt.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import type { Schemas } from '../entity/index.ts';
 

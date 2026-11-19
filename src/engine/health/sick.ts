@@ -4,7 +4,7 @@
 // meal or a world disease. Caught, it shows after the illness's own days; an abed illness lays
 // them down (body `down`), so the people find a bed for them, the sickroom first, and feed them.
 // Some cases turn grave halfway; a grave case may die at its end, less often for each skill point
-// of the healer who gave it a draught (people/draught.ts). Each night the sick give a catching
+// of the healer who gave it a draught (care/draught.ts). Each night the sick give a catching
 // illness to whoever is in the same room. Once over, it cannot come back for `immune` days.
 import { TICKS_PER_DAY, WATER, clockAt, type EntityRow, type WorldState } from '../core/index.ts';
 import type { EngineContent, IllDef } from '../core/index.ts';
@@ -24,7 +24,7 @@ export const SICK_TABLES: Schemas = {
    * `cause` the line it was caught under, `line` the line it showed under, `turned` the grave
    * line; `healer` who last gave a draught, at `draught` (tick), and `cut` the per cent it takes
    * off a grave case's death chance; `herbless` the tick a draught found no herbs (0 never);
-   * under the Sickness law (P6.5, people/apart.ts) `sent` the line that sent a catching case to
+   * under the Sickness law (P6.5, care/apart.ts) `sent` the line that sent a catching case to
    * the sick-house or away, `kept` the line where kin kept them at home. */
   ill: {
     person: 'entity',

@@ -18,7 +18,7 @@ import { itemsOf } from '../goods/index.ts';
 import { feltAt } from '../needs/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { spotOf } from './spots.ts';
+import { spotOf } from '../band/index.ts';
 
 /** Someone crowded (privacy under its line) who owns a bed moves to a free bed in an empty room
  * of the same house, one built for them (build/grow.ts); their old bed is free again. */

@@ -3,7 +3,7 @@
 // for each living person and no field waits to be sown, the colony sites one outside the town
 // ring (fieldsite.ts: one compact block, the nearest good soil); its trees are marked to fell when sowing needs the ground (fieldlife.ts). A plan may be sent back once. Growing,
 // frost, ripening and leaving the ground to grass are fieldlife.ts; sowing and reaping are
-// people/farm.ts.
+// land/farm.ts.
 import {
   clockAt,
   TICKS_PER_DAY,

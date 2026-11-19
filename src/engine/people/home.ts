@@ -9,8 +9,7 @@ import { bedOwnedBy, bedSpot, builtHome, homeOf, houseAt, mainOf, roomAt } from 
 import { itemsOf, layItem } from '../goods/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { same, spotOf } from './spots.ts';
-import { walkTo } from './walk.ts';
+import { same, spotOf, walkTo } from '../band/index.ts';
 
 const ownBed = (ctx: SystemContext, p: EntityRow, held: boolean): EntityRow | undefined =>
   itemsOf(ctx.world).find(

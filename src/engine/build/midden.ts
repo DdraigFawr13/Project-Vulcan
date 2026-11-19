@@ -1,7 +1,7 @@
 // The midden (P5.4a, V-072). When the first offal lies about (the waste of a kill), the colony
 // sites a one-tile midden just past the town ring, on flat dry ground away from houses, fields and
 // water, as it does the burial ground. Haulers carry offal, and nothing else, there, where it is
-// used up with no line (people/haul.ts). The pack's hungry nights bring it to the midden first
+// used up with no line (band/haul.ts). The pack's hungry nights bring it to the midden first
 // (wild `setLures`, called by the people system from `middensOf`). Sited once; never sent back.
 import { TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';

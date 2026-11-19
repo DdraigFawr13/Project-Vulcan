@@ -1,7 +1,7 @@
 // Salt (5B Bundle 3, V-041, V-132): nobody orders it. The curer salts meat when salt lies in the
 // stores. With a smokehouse standing, no salt in the stores and `cure.salt.want` fresh meat, game
 // and fish there, the colony wants a salt seam: the mine plans a shaft by the nearest white stain
-// like an ore shaft (system.ts), and miners dig it under the mine row (people/mine.ts).
+// like an ore shaft (system.ts), and miners dig it under the mine row (land/mine.ts).
 import { stationsOf } from '../build/index.ts';
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { haveOf, inStore, itemsOf } from '../goods/index.ts';

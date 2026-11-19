@@ -1,7 +1,7 @@
 // The smithy (Bundle 3, V-041, V-049, V-061): once the first ingot is in the store, the colony
 // plans a smithy on the house of its best smith, on that house's outer side nearest water, 3 deep
 // by 4 along the wall it shares, open-sided (no walls): a stone floor under a forge, an anvil block
-// and a quench tub (furniture kinds that builders make, people/hearth.ts). Nobody places it; the
+// and a quench tub (furniture kinds that builders make, crafts/hearth.ts). Nobody places it; the
 // Build sheet's Smithy level is the colony's want, and the plan can be sent back once. When its
 // floors and pieces stand it is built and smiths work at the forge.
 import {

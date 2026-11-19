@@ -1,6 +1,6 @@
 # The mill and harvest home
 
-5B Bundle 4 (P5.11, proposal P1; V-041, V-133, V-150). Engine code in `src/engine/build/mill.ts`, `build/feast.ts`, `people/mill.ts` and `people/feast.ts`; content `buildings.mill`. Nobody is ordered: the levers are the Mill heading's Miller and Baker rows, the Flour plate, and one Send back for the mill.
+5B Bundle 4 (P5.11, proposal P1; V-041, V-133, V-150). Engine code in `src/engine/build/mill.ts`, `build/feast.ts`, `crafts/mill.ts` and `people/feast.ts`; content `buildings.mill`. Nobody is ordered: the levers are the Mill heading's Miller and Baker rows, the Flour plate, and one Send back for the mill.
 
 ## Build side
 

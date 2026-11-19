@@ -2,7 +2,7 @@
 // once, the colony adds a room (content `house.stage`) to its first cottage, on its flattest
 // side and in its own wall material, with a line naming them; it wants `health.sickroom.beds`
 // beds (wants.ts) and nobody claims one (people/claim.ts). The hurt are carried to a free one
-// first (people/care.ts). The build system reads the health tables; it imports nothing of health.
+// first (care/care.ts). The build system reads the health tables; it imports nothing of health.
 import type { EntityRow, WorldState } from '../core/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';

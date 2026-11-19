@@ -10,9 +10,7 @@ import { itemsOf } from '../goods/index.ts';
 import { stopFor } from '../health/index.ts';
 import { removeEntity } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { edgeSpot, toGreen } from './edge.ts';
-import { eat } from './eat.ts';
-import { walkTo } from './walk.ts';
+import { edgeSpot, toGreen, eat, walkTo } from '../band/index.ts';
 
 /** A minute idled at work by someone working slowly. */
 export const slacking = (ctx: SystemContext, p: EntityRow): boolean =>

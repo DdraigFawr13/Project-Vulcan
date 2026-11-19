@@ -1,6 +1,6 @@
 // What the beekeeper's work does to a skep (P5.13, V-135): each is a state change and its ledger
 // line, citing the beekeeper's taking up and the skep's own latest line, so every line leads back to
-// the siting. Who walks where, and for how many minutes, is people/beekeep.ts.
+// the siting. Who walks where, and for how many minutes, is crafts/beekeep.ts.
 import type { EntityRow } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { dayNow, swarmComes, yearNow } from './skeps.ts';

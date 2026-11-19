@@ -1,7 +1,7 @@
 // The skep stand (P5.13, V-135): once a field stands the colony wants skeps at its edge, on the side
 // nearest the woods, for the swarms that come out of them. Nobody places them: the bees system
 // sites the stand (`siteStand`, scored never drawn: the nearest tree, then the free run of tiles
-// nearest the middle of the side), and a beekeeper (people/beekeep.ts) makes, tends and robs them.
+// nearest the middle of the side), and a beekeeper (crafts/beekeep.ts) makes, tends and robs them.
 import {
   clockAt,
   streamFor,

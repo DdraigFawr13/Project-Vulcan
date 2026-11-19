@@ -7,12 +7,11 @@
     "copiedHelpers": 2
   },
   "modules": {
-    "src/engine/build/MODULE.md": 13177,
+    "src/engine/build/MODULE.md": 13175,
     "src/engine/flock/MODULE.md": 7897,
-    "src/engine/health/MODULE.md": 8110,
+    "src/engine/health/MODULE.md": 8103,
     "src/engine/map/MODULE.md": 10591,
-    "src/engine/people/MODULE.md": 17629,
-    "src/engine/wild/MODULE.md": 7097,
+    "src/engine/wild/MODULE.md": 7084,
     "src/render/MODULE.md": 9416,
     "src/ui/MODULE.md": 13413,
     "src/worker/MODULE.md": 16153

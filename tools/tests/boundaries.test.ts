@@ -47,13 +47,13 @@ describe('boundaries check', () => {
     expect(checkModule(at('worker/loop.ts'), "import Phaser from 'phaser';")).not.toEqual([]);
   });
 
-  // Vulcan bench S1 (Phobos spec vulcan-bench J1), moved from people/lines.test.ts.
+  // Vulcan bench S1 (Phobos spec vulcan-bench J1), moved from band/lines.test.ts.
   it('lines-only-reader: only lines.ts and needs/ read a seek line or call warmLineOf', () => {
     const engine = `${src}engine`;
     const files = (readdirSync(engine, { recursive: true }) as string[])
       .filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))
       .map((f) => f.split(path.sep).join('/'))
-      .filter((f) => f !== 'people/lines.ts' && !f.startsWith('needs/'));
+      .filter((f) => f !== 'band/lines.ts' && !f.startsWith('needs/'));
     const readers = files.filter((f) =>
       readFileSync(path.join(engine, f), 'utf8')
         .replace(/\/\*[\s\S]*?\*\//g, '')

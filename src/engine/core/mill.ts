@@ -1,6 +1,6 @@
 // The mill and the bakery (5B Bundle 4, P5.11, V-133): buildings.json `mill`.
 
-/** Grinding grain to flour, the quern, the water mill and baking (build/mill.ts, people/mill.ts). */
+/** Grinding grain to flour, the quern, the water mill and baking (build/mill.ts, crafts/mill.ts). */
 export interface MillDef {
   /** The jobs.json job of the Miller row; the grains ground (`from`, in order), one flour each. */
   job: string;

@@ -3,30 +3,17 @@
 // jobs.ts reads only this table, so a new kind of work is a row here, not a branch there.
 import type { EntityRow } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { building, takeUpBuilding } from './build.ts';
-import { burying, takeUpBurial } from './burial.ts';
-import { TRADE_JOBS } from './trades.ts';
-import { takeUpNursing } from './nurse.ts';
-import { burning, takeUpCharcoal } from './charcoal.ts';
-import { mining, takeUpMining } from './mine.ts';
-import { cooking, takeUpCooking } from './cook.ts';
-import { chandling, takeUpChandling } from './chandle.ts';
-import { LARDER_JOBS } from './larder.ts';
-import { MILL_JOBS } from './mill.ts';
-import { haulMinute, takeUpHauling } from './haul.ts';
-import { coldHearth, takeUpHearth } from './hearth.ts';
-import { takeUpTending, tending } from './tend.ts';
-import { furnishing, takeUpCarpentry } from './carpentry.ts';
-import { farming, takeUpFarming } from './farm.ts';
-import { fishing, takeUpFishing } from './fish.ts';
-import { hunting, takeUpHunting } from './hunt.ts';
-import { takeUpHerding } from './herd.ts';
-import { foraging, takeUpForaging } from './forage.ts';
-import { beekeeping, takeUpBeekeeping } from './beekeep.ts';
-import { gatherMinute, takeUpGathering, takeUpMarked } from './gather.ts';
-import { smelting, takeUpSmelting } from './smelt.ts';
-import { stationing, takeUpStation } from './station.ts';
-import { smithing, takeUpSmithing } from './smith.ts';
+import { beekeeping, building, burning, chandling, coldHearth, cooking } from '../crafts/index.ts';
+import { furnishing, LARDER_JOBS, MILL_JOBS, smelting, smithing } from '../crafts/index.ts';
+import { stationing, takeUpBeekeeping, takeUpBuilding, takeUpCarpentry } from '../crafts/index.ts';
+import { takeUpChandling, takeUpCharcoal, takeUpCooking, takeUpHearth } from '../crafts/index.ts';
+import { takeUpSmelting, takeUpSmithing, takeUpStation, takeUpTending } from '../crafts/index.ts';
+import { tending, TRADE_JOBS } from '../crafts/index.ts';
+import { burying, takeUpBurial, takeUpNursing } from '../care/index.ts';
+import { farming, foraging, gatherMinute, mining, takeUpFarming } from '../land/index.ts';
+import { takeUpForaging, takeUpGathering, takeUpMarked, takeUpMining } from '../land/index.ts';
+import { haulMinute, takeUpHauling } from '../band/index.ts';
+import { fishing, takeUpFishing, hunting, takeUpHunting, takeUpHerding } from '../herding/index.ts';
 
 type Step = (ctx: SystemContext, p: EntityRow) => boolean;
 

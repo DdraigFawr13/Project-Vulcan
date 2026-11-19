@@ -7,18 +7,13 @@ import type { EntityRow } from '../core/index.ts';
 import { loadOf } from '../goods/index.ts';
 import { isDark, lit } from '../lamp/index.ts';
 import { afterDusk, workableInDark } from './dusk.ts';
-import { lineOf } from './lines.ts';
+import { lineOf, deliver, LOOK_AGAIN, takeUpHauling, spotOf, jobsInOrder } from '../band/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { takeUpChange } from './trades.ts';
-import { draughtFirst, nursing } from './nurse.ts';
-import { deliver, LOOK_AGAIN, takeUpHauling } from './haul.ts';
-import { hearthFirst } from './hearth.ts';
-import { endHunt } from './hunt.ts';
-import { herding } from './herd.ts';
-import { takeUpMarked } from './gather.ts';
+import { takeUpChange, hearthFirst } from '../crafts/index.ts';
+import { draughtFirst, nursing } from '../care/index.ts';
+import { endHunt, herding } from '../herding/index.ts';
+import { takeUpMarked } from '../land/index.ts';
 import { JOBS } from './jobtable.ts';
-import { spotOf } from './spots.ts';
-import { jobsInOrder } from './priority.ts';
 
 const rowOf = (p: EntityRow) => JOBS[p['job'] as string];
 

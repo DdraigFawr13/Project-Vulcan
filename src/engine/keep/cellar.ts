@@ -2,7 +2,7 @@
 // larder lost over the kept weeks reach `keep.cellar.need` and it has no cellar, the colony plans
 // one: a stair at the larder's inside tile nearest the green (by its door) and the larder's inside
 // tiles dug out one level down. The plan is a `shaft` row of the cellar's kind (so the miners'
-// sinking and digging are reused, people/cellar.ts); when the last tile is dug the cellar is a
+// sinking and digging are reused, land/cellar.ts); when the last tile is dug the cellar is a
 // store of its own kind, a `depot` row at z = 1 under the larder, taking its goods before the
 // larder does (goods/store.ts) and keeping at the steady underground temperature (spoil.ts).
 import { greenOf } from '../build/index.ts';

@@ -2,7 +2,7 @@
 // on the green, planned in the first hour on the nearest free open tile; after that a built room
 // gets one only when someone is in it while it is under `rooms.hearthBelow` without a fire
 // (V-068), sited by the hearth kind's `place` hint (wants.ts). A planned hearth is
-// a furniture piece in state `plan`; builders make it where it stands (people/hearth.ts).
+// a furniture piece in state `plan`; builders make it where it stands (crafts/hearth.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { inStore, itemsAt, raiseStock } from '../goods/index.ts';

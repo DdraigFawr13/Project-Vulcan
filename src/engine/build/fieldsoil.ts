@@ -1,6 +1,6 @@
 // Field soil and the rotation (Phase 5B Bundle 2, V-130): pure reads. A tile's fertility
 // (`map.fertility`) is its soil; the dials are content `buildings.field.soil` and `rotation`. The
-// lines that change soil are soillife.ts; sowing and reaping are people/farm.ts.
+// lines that change soil are soillife.ts; sowing and reaping are land/farm.ts.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 
 /** The mean fertility of a field's tiles (whole). */

@@ -35,7 +35,7 @@ export const KEEP = obj({
 
 // Cooking (V-090): the jobs.json `job`, the `meal` item laid, the `fuel` item burnt (one a
 // batch), raw foods in order of preference (`from`), enough of one for `batch` meals at `gain` times
-// its food value (rawFor in people/cook.ts) used for them in
+// its food value (rawFor in crafts/cook.ts) used for them in
 // `minutes` at skill `skilled`; meals under `perPerson` for each person make a cook take it up,
 // and a meal at most `prefer` tiles further than the nearest food is preferred to eat.
 export const COOK = obj({
