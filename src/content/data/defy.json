@@ -33,7 +33,7 @@
     }
   ],
   "slow": { "every": 4 },
-  "take": { "count": 3, "every": 7, "sight": 6 },
+  "take": { "count": 3, "every": 21, "sight": 6 },
   "brawl": {
     "every": 7,
     "reach": 2,

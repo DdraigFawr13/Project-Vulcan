@@ -13,7 +13,7 @@ import { storeLasts } from '../goods/index.ts';
 import { isWinter, lawRow, settingOf } from '../law/index.ts';
 import { needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { causesOf, colonyRow, standingOf } from './tables.ts';
+import { causesOf, colonyRow } from './tables.ts';
 
 const alive = (world: WorldState) =>
   (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
@@ -38,9 +38,10 @@ export function addCause(
   text: string,
   causes: number[],
 ): number {
-  const was = standingOf(ctx.world, ctx.content);
   const until = ctx.world.tick + def.days * TICKS_PER_DAY;
-  const now = clamp(was + def.by);
+  // The line states what standing will be once this cause counts, from all the causes (6A review).
+  const sum = causesOf(ctx.world).reduce((n, c) => n + (c['by'] as number), def.by);
+  const now = clamp(ctx.content.colony.standing.start + sum);
   const line = ctx.emit('colony.standing', {
     causes,
     data: {

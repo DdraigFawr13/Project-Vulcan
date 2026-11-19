@@ -70,7 +70,11 @@ describe('defiance (P6.7)', () => {
       remembered.push(
         saw.every((q) =>
           (x.entities['memory'] ?? []).some(
-            (m) => m['person'] === q && m['memory'] === 'saw-theft' && m['about'] === thief,
+            // Held of this thief, or refreshed since by a later theft seen the same day.
+            (m) =>
+              m['person'] === q &&
+              m['memory'] === 'saw-theft' &&
+              (m['about'] === thief || (m['line'] as number) > c.id),
           ),
         ),
       );

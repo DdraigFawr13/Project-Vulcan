@@ -70,6 +70,10 @@ export function die(ctx: SystemContext, p: EntityRow, cause: string, causes: num
     data: { name: p['name'] as string, where, cause },
   });
   stopFor(ctx, p, false);
+  // A pocketed stash (P6.7) is dropped where they fall, food for whoever finds it (6A review).
+  for (const i of itemsOf(world))
+    if (i['holder'] === p.id && i['state'] === 'hid')
+      Object.assign(i, { holder: 0, owner: 0, state: '', x: p['x'], y: p['y'], z: p['z'] });
   const away = p['status'] === 'away' ? 1 : 0;
   Object.assign(p, { status: 'dead', doing: '', path: [], stride: 0 });
   Object.assign(body, {
