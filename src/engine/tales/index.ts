@@ -1,0 +1,4 @@
+// Public surface of the tales system.
+export { talesSystem } from './system.ts';
+export { feedBelief } from './belief.ts';
+export { beliefsOf, storiesOf, TALES_TABLES, taleDef, talesOf, taleText } from './tables.ts';

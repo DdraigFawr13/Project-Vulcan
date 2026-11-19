@@ -1,8 +1,38 @@
 // The Memories tab (P6.2, V-154): every memory a person holds, strongest first, each with its
 // band, its name, a why? to the line that made it and the worker's line on why it matters and
-// how long it stays. Read only: nothing here is a lever (V-041).
+// how long it stays; then the tales they know, their version beside the truth, and what they
+// believe (P6.3, V-155). Read only: nothing here is a lever (V-041).
 import type { WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
+
+const why = (line: number): HTMLElement =>
+  line
+    ? el('button', { type: 'button', class: 'why', 'data-why': String(line) }, 'why?')
+    : el('span');
+
+/** The tales they know, newest first, and what they believe, strongest first. */
+function taleRows(w: WalkerView): HTMLElement[] {
+  const out: HTMLElement[] = [];
+  if (w.tales.length) out.push(el('h3', {}, 'Tales they know'));
+  for (const t of w.tales) {
+    const row = el('div', { class: 'memrow', 'data-testid': 'tale', 'data-line': String(t.why) });
+    const note = t.truth ? `${t.from}. What happened: ${t.truth}` : `${t.from}.`;
+    row.append(
+      el('span', { class: 'band' }, t.how),
+      el('span', { class: 't' }, t.text),
+      why(t.why),
+      el('span', { class: 'r' }, note),
+    );
+    out.push(row);
+  }
+  if (w.beliefs.length) out.push(el('h3', {}, 'What they believe'));
+  for (const b of w.beliefs) {
+    const row = el('div', { class: 'memrow belief', 'data-testid': 'belief' });
+    row.append(el('span', { class: 't' }, b.text), why(b.why));
+    out.push(row);
+  }
+  return out;
+}
 
 export function memoryRows(w: WalkerView | undefined): HTMLElement[] {
   const intro = el(
@@ -10,8 +40,10 @@ export function memoryRows(w: WalkerView | undefined): HTMLElement[] {
     { class: 'aside' },
     'Strongest first. Light memories fade in days, heavy ones over a season, the heaviest stay for life.',
   );
-  if (!w?.memories.length)
-    return [intro, el('p', { class: 'muted' }, 'Nothing weighs on them now.')];
+  if (!w) return [intro];
+  const tales = taleRows(w);
+  if (!w.memories.length)
+    return [intro, el('p', { class: 'muted' }, 'Nothing weighs on them now.'), ...tales];
   return [
     intro,
     ...w.memories.map((m) => {
@@ -23,13 +55,12 @@ export function memoryRows(w: WalkerView | undefined): HTMLElement[] {
       row.append(
         el('span', { class: `band ${m.band.toLowerCase()}` }, m.band),
         el('span', { class: 't' }, m.text),
-        m.why
-          ? el('button', { type: 'button', class: 'why', 'data-why': String(m.why) }, 'why?')
-          : el('span'),
+        why(m.why),
         el('span', { class: 'r' }, m.note),
       );
       return row;
     }),
+    ...tales,
   ];
 }
 

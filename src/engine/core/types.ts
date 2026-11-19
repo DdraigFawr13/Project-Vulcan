@@ -11,6 +11,10 @@ import type { WildDefs } from './wild.ts';
 import type { StrangersDefs } from './strangers.ts';
 import type { LampDefs } from './lamp.ts';
 import type { ClothesDefs } from './clothes.ts';
+import type { TalesDefs } from './tales.ts';
+import type { CalendarDef } from './clock.ts';
+
+export type { CalendarDef } from './clock.ts';
 
 /** The named RNG streams (docs/ARCHITECTURE.md "RNG"). A system draws only from its own. */
 export const STREAMS = [
@@ -362,17 +366,9 @@ export interface BiomesDef {
   };
 }
 
-/** The forked calendar (src/content/data/calendar.json). */
-export interface CalendarDef {
-  daysPerMonth: number;
-  monthsPerYear: number;
-  seasons: readonly string[];
-  monthNames: readonly string[];
-}
-
 /** The content the engine core reads. The worker passes the content layer's `content`. */
 export interface EngineContent
-  extends PeopleDefs, WildDefs, FlockDefs, StrangersDefs, LampDefs, ClothesDefs {
+  extends PeopleDefs, WildDefs, FlockDefs, StrangersDefs, LampDefs, ClothesDefs, TalesDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */
   events: readonly { id: string; template: string; notable?: Readonly<Record<string, string>> }[];

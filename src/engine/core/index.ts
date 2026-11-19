@@ -19,3 +19,4 @@ export * from './strangers.ts';
 export * from './lamp.ts';
 export * from './mill.ts';
 export * from './clothes.ts';
+export * from './tales.ts';

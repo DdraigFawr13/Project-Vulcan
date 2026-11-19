@@ -29,6 +29,7 @@ import { herdDoing } from './herd.ts';
 import { carpentryDoing } from './furniture.ts';
 import { lawOfWalker } from './law.ts';
 import { memoriesView, thoughtView } from './memoryview.ts';
+import { talesView } from './taleview.ts';
 import { personTools } from './items.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 import { jobShown } from './jobrows.ts';
@@ -284,6 +285,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     ...wearingOf(world, p),
     ...withHealth(healthOf(world, p)),
     memories: memoriesView(world, p),
+    ...talesView(world, p),
     thought: thoughtView(world, p),
     ...lawOfWalker(world, p),
     tools: personTools(world, p.id),

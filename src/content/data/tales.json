@@ -1,0 +1,80 @@
+{
+  "see": 6,
+  "pass": { "meal": 25, "leisure": 20, "work": 6, "hearth": 50, "perDay": 2 },
+  "places": { "meal": " over a meal", "leisure": "", "work": " at work", "hearth": " by the fire" },
+  "bend": { "chance": 25, "traits": { "hot-tempered": 15, "melancholic": 15, "sociable": 10, "greedy": 10 }, "softer": 30 },
+  "beliefFadeDays": 56,
+  "forgetDays": 112,
+  "strength": ["Doubts that", "Thinks", "Is sure", "Is certain"],
+  "evening": { "mend": 6 },
+  "beliefs": [
+    { "id": "woods-dangerous", "about": "place", "text": "the woods around the valley are dangerous" },
+    { "id": "valley-deadly", "about": "colony", "text": "this valley kills its own" },
+    { "id": "work-dangerous", "about": "colony", "text": "the work here maims people" },
+    { "id": "strangers-hard", "about": "law", "text": "turning folk away is hard-hearted" },
+    { "id": "valley-feeds", "about": "colony", "text": "we eat well in this valley" },
+    { "id": "valley-hungry", "about": "colony", "text": "this valley cannot feed us" },
+    { "id": "fields-cursed", "about": "place", "text": "the fields are cursed" },
+    { "id": "valley-sickly", "about": "colony", "text": "this valley breeds sickness" },
+    { "id": "law-flouted", "about": "law", "text": "the work-hours law is not kept here" }
+  ],
+  "tales": [
+    { "id": "beast", "event": "wild.attacked", "truth": 1, "belief": "woods-dangerous", "from": 1, "levels": [
+      "A {species} snapped at {name} and ran off.",
+      "A {species} went for {name}.",
+      "A {species} went for {name}, who only just got away.",
+      "A whole pack set on {name}, who by rights should be dead."
+    ] },
+    { "id": "pack", "event": "wild.packAtEdge", "truth": 1, "belief": "woods-dangerous", "from": 2, "word": true, "levels": [
+      "Wolves were seen near {where}.",
+      "{name} came down to {where}.",
+      "{name} came down to {where}, hungry for one of us."
+    ] },
+    { "id": "sick", "event": "health.sick", "truth": 1, "belief": "valley-sickly", "from": 2, "levels": [
+      "{name} is a little poorly.",
+      "{name} has taken {a}.",
+      "{name} has taken {a}, and it will go through us all."
+    ] },
+    { "id": "kept-custom", "event": "law.keptCustom", "truth": 1, "belief": "law-flouted", "from": 1, "levels": [
+      "{name} kept the old hours.",
+      "{name} {did}.",
+      "{name} {did}, and laughs at the law."
+    ] },
+    { "id": "death", "event": "health.died", "truth": 1, "belief": "valley-deadly", "from": 2, "levels": [
+      "{name} died. It comes to us all.",
+      "{name} died {where}.",
+      "{name} died {where}, and it need not have happened.",
+      "{name} died {where}, and someone let it happen."
+    ] },
+    { "id": "hurt", "event": "health.hurt", "only": { "serious": "yes" }, "truth": 1, "belief": "work-dangerous", "from": 2, "levels": [
+      "{name} took a knock.",
+      "{name} {what}.",
+      "{name} {what}, and will carry it for life."
+    ] },
+    { "id": "turned-away", "event": "people.strangerTurnedAway", "truth": 1, "belief": "strangers-hard", "from": 2, "word": true, "levels": [
+      "Some strangers were sent on their way.",
+      "{names} were turned away at the green.",
+      "{names} were driven off with nothing, into the cold."
+    ] },
+    { "id": "feast", "event": "hall.feast", "truth": 1, "belief": "valley-feeds", "from": 1, "levels": [
+      "There was a meal in the hall.",
+      "{count} ate {meal} together {where}.",
+      "The feast went on all night, and nobody went home hungry."
+    ] },
+    { "id": "hungry-winter", "event": "field.hungryWinter", "truth": 1, "belief": "valley-hungry", "from": 2, "word": true, "levels": [
+      "Food ran a little short last winter.",
+      "Last winter was a hungry one: {days} days short.",
+      "Last winter nearly starved us all."
+    ] },
+    { "id": "blight", "event": "field.blight", "truth": 1, "belief": "fields-cursed", "from": 2, "word": true, "levels": [
+      "Some of the {crop} spoiled.",
+      "Blight took the {crop}.",
+      "The {crop} rotted where it stood: that ground is cursed."
+    ] },
+    { "id": "frost", "event": "field.frostKilled", "truth": 1, "belief": "fields-cursed", "from": 2, "word": true, "levels": [
+      "A frost nipped the {crop}.",
+      "A frost killed the {crop}: {tiles} tiles lost.",
+      "The frost took every last {crop}: that ground is cursed."
+    ] }
+  ]
+}

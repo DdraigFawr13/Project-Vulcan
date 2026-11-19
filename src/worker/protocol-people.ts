@@ -91,6 +91,9 @@ export interface WalkerView {
   wearing?: WearingRow[];
   /** Every memory they hold, strongest first (V-091, V-154): see MemoryView. */
   memories: MemoryView[];
+  /** The tales they hold, newest first, and what they believe, strongest first (P6.3, V-155). */
+  tales: TaleView[];
+  beliefs: BeliefView[];
   /** What is on their mind (V-154), in quotes, and the line it comes from (0 for none). */
   thought: { text: string; why: number };
   /** Their answer to the work-hours law (P4.8); none while the law is Customary. */
@@ -135,5 +138,23 @@ export interface MemoryView {
   text: string;
   band: 'Light' | 'Heavy' | 'Lasting';
   note: string;
+  why: number;
+}
+
+/** A tale held (V-155): how they came by it, their version, what happened when it differs,
+ * where they got it ("Saw it", "Brought word of it, 6 Thawmonth" or "Heard from Cai, 6 Thawmonth")
+ * and the line they got it from, for "why?". */
+export interface TaleView {
+  how: 'Saw' | 'Word' | 'Heard';
+  text: string;
+  truth?: string;
+  from: string;
+  why: number;
+}
+
+/** A belief held (V-155): "Is sure the woods around the valley are dangerous", and the line
+ * that last fed it. */
+export interface BeliefView {
+  text: string;
   why: number;
 }
