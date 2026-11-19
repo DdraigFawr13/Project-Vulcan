@@ -6,8 +6,8 @@
 // same fields. Nothing is drawn from a stream.
 import type { EngineContent, WorldState } from '../core/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
-import { groundOf, housesOf, rectOf, type Ground } from './site.ts';
-import { depotsOf } from '../goods/index.ts';
+import { groundOf, type Ground } from './site.ts';
+import { besideBuilt } from './sitegrid.ts';
 import { ringOf } from './ring.ts';
 
 export interface FieldSite {
@@ -78,6 +78,19 @@ function shapes(n: number, least: number): [number, number][] {
   return out;
 }
 
+/** What every block is weighed against: the green, the ring and each tile's fitness and water. */
+interface FieldSurvey {
+  world: WorldState;
+  content: EngineContent;
+  green: Spot;
+  def: EngineContent['buildings']['field'];
+  ring: number;
+  lo: { x: number; y: number };
+  hi: { x: number; y: number };
+  kinds: Map<number, 'tree' | 'ok'>;
+  wet: Map<number, number>;
+}
+
 /** The nearest block of good soil outside the ring that holds at least `field.least` and, if the
  * soil allows, `want` tiles, or undefined. `avoid` are tiles never chosen (fields sent back). */
 export function chooseField(
@@ -87,37 +100,33 @@ export function chooseField(
   want: number,
   avoid: ReadonlySet<number>,
 ): FieldSite | undefined {
+  const s = surveyField(world, content, green, avoid);
+  const target = Math.max(want, s.def.least);
+  for (const [bw, bh] of shapes(target, s.def.least)) {
+    const blocks = blocksOf(s, bw, bh);
+    blocks.sort((a, b) => b.score - a.score || a.i - b.i);
+    const site = blocks.slice(0, s.def.weigh.tries).find((b) => reachable(s, b.tiles));
+    if (site) return fieldFrom(s, site.tiles);
+  }
+  return undefined;
+}
+
+/** Chebyshev distance from the green. */
+const farOf = (s: FieldSurvey, i: number): number => {
+  const width = s.world.map.width;
+  return Math.max(Math.abs((i % width) - s.green.x), Math.abs(Math.floor(i / width) - s.green.y));
+};
+
+/** What each tile of the search area is, once, and how far the water is. */
+function surveyField(
+  world: WorldState,
+  content: EngineContent,
+  green: Spot,
+  avoid: ReadonlySet<number>,
+): FieldSurvey {
   const map = world.map;
   const def = content.buildings.field;
   const ring = ringOf(world, content);
-  const ground: Ground = groundOf(world);
-  // Tiles on or beside a house (or its plan) are left alone; so are those on or beside a store.
-  const houses = new Set<number>();
-  for (const h of housesOf(world).filter((r) => r['state'] !== 'sent')) {
-    const r = rectOf(h);
-    for (let y = r.y - 1; y <= r.y + r.h; y += 1)
-      for (let x = r.x - 1; x <= r.x + r.w; x += 1) houses.add(y * map.width + x);
-  }
-  for (const d of depotsOf(world))
-    for (let y = (d['y'] as number) - 1; y <= (d['y'] as number) + (d['h'] as number); y += 1)
-      for (let x = (d['x'] as number) - 1; x <= (d['x'] as number) + (d['w'] as number); x += 1)
-        houses.add(y * map.width + x);
-  const far = (i: number) =>
-    Math.max(Math.abs((i % map.width) - green.x), Math.abs(Math.floor(i / map.width) - green.y));
-  /** `no`, a tree to fell first, or open good soil, for a tile that may be field. */
-  const fit = (i: number): 'no' | 'tree' | 'ok' => {
-    const [x, y] = [i % map.width, Math.floor(i / map.width)];
-    if (x < 1 || y < 1 || x >= map.width - 1 || y >= map.height - 1) return 'no';
-    const d = far(i);
-    if (d <= ring || d > def.reach || avoid.has(i) || houses.has(i)) return 'no';
-    if (map.fertility[i]! < def.good) return 'no';
-    const kind = content.terrain.kinds[map.tiles[i]!]!;
-    if (!kind.buildable || kind.water || kind.solid || map.built[i]) return 'no';
-    if (ground.items.has(i) || ground.taken.has(i)) return 'no';
-    const f = map.features[i]! ? content.features[map.features[i]! - 1]!.kind : '';
-    if (f === 'tree' || f === 'log') return 'tree';
-    return f ? 'no' : 'ok';
-  };
   const pad = def.reach + def.water;
   const box = {
     x0: Math.max(0, green.x - pad),
@@ -126,54 +135,102 @@ export function chooseField(
     y1: Math.min(map.height - 1, green.y + pad),
   };
   const wet = waterDistance(world, content, box, def.water);
-  // What each tile of the search area is, once.
   const lo = { x: Math.max(1, green.x - def.reach), y: Math.max(1, green.y - def.reach) };
   const hi = { x: green.x + def.reach, y: green.y + def.reach };
-  const kinds = new Map<number, 'tree' | 'ok'>();
+  const s: FieldSurvey = { world, content, green, def, ring, lo, hi, kinds: new Map(), wet };
+  const fit = fitTest(s, avoid);
   for (let y = lo.y; y <= hi.y; y += 1)
     for (let x = lo.x; x <= hi.x; x += 1) {
       const i = y * map.width + x;
       const k = fit(i);
-      if (k !== 'no') kinds.set(i, k);
+      if (k !== 'no') s.kinds.set(i, k);
     }
-  const w = def.weigh;
-  const target = Math.max(want, def.least);
-  for (const [bw, bh] of shapes(target, def.least)) {
-    // Every origin whose block is all good soil, scored; best first, ties in tile order.
-    const blocks: { i: number; score: number; tiles: number[] }[] = [];
-    for (let y = lo.y; y + bh - 1 <= hi.y; y += 1)
-      for (let x = lo.x; x + bw - 1 <= hi.x; x += 1) {
-        const tiles: number[] = [];
-        for (let dy = 0; dy < bh && tiles.length === dy * bw; dy += 1)
-          for (let dx = 0; dx < bw; dx += 1) {
-            const i = (y + dy) * map.width + x + dx;
-            if (!kinds.has(i)) break;
-            tiles.push(i);
-          }
-        if (tiles.length < bw * bh) continue;
-        const gap = Math.min(...tiles.map(far)) - ring - 1;
-        const fert = Math.round(tiles.reduce((n, i) => n + map.fertility[i]!, 0) / tiles.length);
-        const water = Math.min(...tiles.map((i) => wet.get(i) ?? def.water + 1));
-        const trees = tiles.filter((i) => kinds.get(i) === 'tree').length;
-        blocks.push({
-          i: y * map.width + x,
-          score: fert * w.fertility - water * w.water - gap * w.near - trees,
-          tiles,
-        });
-      }
-    blocks.sort((a, b) => b.score - a.score || a.i - b.i);
-    for (const b of blocks.slice(0, w.tries)) {
-      const at = { x: b.tiles[0]! % map.width, y: Math.floor(b.tiles[0]! / map.width), z: 0 };
-      if (!canReach(content, map, green, at)) continue;
-      const water = Math.min(...b.tiles.map((i) => wet.get(i) ?? def.water + 1));
-      return {
-        tiles: b.tiles,
-        trees: b.tiles.filter((i) => kinds.get(i) === 'tree'),
-        fert: Math.round(b.tiles.reduce((n, i) => n + map.fertility[i]!, 0) / b.tiles.length),
-        far: Math.min(...b.tiles.map(far)),
-        wet: water,
-      };
+  return s;
+}
+
+/** `no`, a tree to fell first, or open good soil, for a tile that may be field. */
+function fitTest(s: FieldSurvey, avoid: ReadonlySet<number>) {
+  const map = s.world.map;
+  const ground: Ground = groundOf(s.world);
+  // Tiles on or beside a house (or its plan) are left alone; so are those on or beside a store.
+  const houses = besideBuilt(s.world);
+  return (i: number): 'no' | 'tree' | 'ok' => {
+    const [x, y] = [i % map.width, Math.floor(i / map.width)];
+    if (x < 1 || y < 1 || x >= map.width - 1 || y >= map.height - 1) return 'no';
+    const d = farOf(s, i);
+    if (d <= s.ring || d > s.def.reach || avoid.has(i) || houses.has(i)) return 'no';
+    if (ground.items.has(i) || ground.taken.has(i)) return 'no';
+    return soilAt(s, i);
+  };
+}
+
+/** Good, open, buildable soil (`ok`), a tree or log on it (`tree`), or `no`. */
+function soilAt(s: FieldSurvey, i: number): 'no' | 'tree' | 'ok' {
+  const { map } = s.world;
+  if (map.fertility[i]! < s.def.good) return 'no';
+  const kind = s.content.terrain.kinds[map.tiles[i]!]!;
+  if (!kind.buildable || kind.water || kind.solid || map.built[i]) return 'no';
+  const f = map.features[i]! ? s.content.features[map.features[i]! - 1]!.kind : '';
+  if (f === 'tree' || f === 'log') return 'tree';
+  return f ? 'no' : 'ok';
+}
+
+/** Every origin whose `bw` by `bh` block is all good soil, scored. */
+function blocksOf(s: FieldSurvey, bw: number, bh: number) {
+  const width = s.world.map.width;
+  const blocks: { i: number; score: number; tiles: number[] }[] = [];
+  for (let y = s.lo.y; y + bh - 1 <= s.hi.y; y += 1)
+    for (let x = s.lo.x; x + bw - 1 <= s.hi.x; x += 1) {
+      const tiles = blockTiles(s, x, y, bw, bh);
+      if (tiles.length < bw * bh) continue;
+      blocks.push({ i: y * width + x, score: scoreOf(s, tiles), tiles });
     }
-  }
-  return undefined;
+  return blocks;
+}
+
+/** The block's tiles in row order, stopping at the first that is not soil. */
+function blockTiles(s: FieldSurvey, x: number, y: number, bw: number, bh: number): number[] {
+  const width = s.world.map.width;
+  const tiles: number[] = [];
+  for (let dy = 0; dy < bh && tiles.length === dy * bw; dy += 1)
+    for (let dx = 0; dx < bw; dx += 1) {
+      const i = (y + dy) * width + x + dx;
+      if (!s.kinds.has(i)) break;
+      tiles.push(i);
+    }
+  return tiles;
+}
+
+const fertOf = (s: FieldSurvey, tiles: readonly number[]): number =>
+  Math.round(tiles.reduce((n, i) => n + s.world.map.fertility[i]!, 0) / tiles.length);
+const waterOf = (s: FieldSurvey, tiles: readonly number[]): number =>
+  Math.min(...tiles.map((i) => s.wet.get(i) ?? s.def.water + 1));
+const treesIn = (s: FieldSurvey, tiles: readonly number[]): number[] =>
+  tiles.filter((i) => s.kinds.get(i) === 'tree');
+
+function scoreOf(s: FieldSurvey, tiles: readonly number[]): number {
+  const w = s.def.weigh;
+  const gap = Math.min(...tiles.map((i) => farOf(s, i))) - s.ring - 1;
+  return (
+    fertOf(s, tiles) * w.fertility -
+    waterOf(s, tiles) * w.water -
+    gap * w.near -
+    treesIn(s, tiles).length
+  );
+}
+
+function reachable(s: FieldSurvey, tiles: readonly number[]): boolean {
+  const width = s.world.map.width;
+  const at = { x: tiles[0]! % width, y: Math.floor(tiles[0]! / width), z: 0 };
+  return canReach(s.content, s.world.map, s.green, at);
+}
+
+function fieldFrom(s: FieldSurvey, tiles: number[]): FieldSite {
+  return {
+    tiles,
+    trees: treesIn(s, tiles),
+    fert: fertOf(s, tiles),
+    far: Math.min(...tiles.map((i) => farOf(s, i))),
+    wet: waterOf(s, tiles),
+  };
 }
