@@ -180,7 +180,7 @@ export function factionsDay(ctx: SystemContext): void {
     const joining = [...g]
       .filter(([p, by]) => by >= fd.strong && !held.includes(p))
       .map(([p]) => p);
-    if (!young && held.length + joining.length < fd.least) {
+    if (held.length + joining.length === 0 || (!young && held.length + joining.length < fd.least)) {
       breakUp(ctx, f, 'the grievance has faded', []);
       continue;
     }

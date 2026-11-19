@@ -62,8 +62,13 @@ const storeFood = (ctx: SystemContext, food: EntityRow): boolean =>
  * hunger with no law behind it (`hungerWhy`). */
 function takeWhy(ctx: SystemContext, p: EntityRow): { cites: number[]; why: Why } | undefined {
   const { world, content } = ctx;
-  const g = atLeast(world, content, p.id, 'take') ? grievanceOf(world, content, p.id) : undefined;
-  const why = g ? reasonsOf(world, content, p.id, g.setting) : hungerWhy(world, content, p.id);
+  let g = atLeast(world, content, p.id, 'take') ? grievanceOf(world, content, p.id) : undefined;
+  let why = g ? reasonsOf(world, content, p.id, g.setting) : {};
+  // A grievance without its memory and belief still leaves hunger as a reason.
+  if (!why.mem || !why.belief) {
+    g = undefined;
+    why = hungerWhy(world, content, p.id);
+  }
   // No act without the memory and the belief behind it, at the moment of the act too.
   if (!why.mem || !why.belief) return undefined;
   const cites = g
