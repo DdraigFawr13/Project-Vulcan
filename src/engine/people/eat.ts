@@ -39,8 +39,8 @@ function turning(ctx: SystemContext, p: EntityRow, item: EntityRow, hunger: Enti
   expose(ctx, p, 'gripes', `ate ${name} that was turning, hungry`, [hunger['line'] as number]);
 }
 
-/** Eats one of the stack they stand on. */
-export function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
+/** Eats one of the stack they stand on; `chose` false when fed at a supper or by a carer. */
+export function eat(ctx: SystemContext, p: EntityRow, item: EntityRow, chose = true): void {
   const def = ctx.content.life.needs.find((n) => n.id === 'food');
   const row = needOf(ctx.world, p.id, 'food');
   if (!def || !row) return;
@@ -60,5 +60,5 @@ export function eat(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
   tallyAdd(ctx, 'eaten', 1);
   changeNeed(ctx.content, row, gives);
   crossed(ctx, p, row, def);
-  ateFood(ctx, p, gives);
+  ateFood(ctx, p, gives, chose);
 }

@@ -103,7 +103,7 @@ export function feeding(ctx: SystemContext, q: EntityRow): boolean {
   for (let item = held(); item; item = held()) {
     const value = (needOf(world, p.id, 'food')?.['value'] as number) ?? scale;
     if (value > scale - gives / 2) break;
-    eat(ctx, p, item);
+    eat(ctx, p, item, false);
   }
   // Whatever is left over is laid by the bed for the next meal.
   const left = held();

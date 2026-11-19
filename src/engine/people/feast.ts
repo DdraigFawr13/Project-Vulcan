@@ -67,7 +67,7 @@ function eatTogether(ctx: SystemContext, feast: EntityRow, words: string): void 
     if (!item) break;
     const name = content.items.find((i) => i.id === item['kind'])?.name ?? (item['kind'] as string);
     if (!names.includes(name)) names.push(name);
-    eat(ctx, q, item);
+    eat(ctx, q, item, false);
   }
   const meal = names.length
     ? names.length === 1

@@ -36,15 +36,15 @@ export function rationed(world: WorldState, content: EngineContent, p: EntityRow
   return !!a && a['answer'] !== 'refuses' && (a['left'] as number) <= 0;
 }
 
-/** After `p` ate food worth `gives`, it comes off their share; a refuser eating past it today
- * flouts the law. */
-export function ateFood(ctx: SystemContext, p: EntityRow, gives: number): void {
+/** After `p` ate food worth `gives`, it comes off their share; a refuser who chose to eat past it
+ * today flouts the law (a supper or a carer's feeding is not their choice). */
+export function ateFood(ctx: SystemContext, p: EntityRow, gives: number, chose = true): void {
   const s = rationsOf(ctx.world, ctx.content);
   const a = s?.share ? answerOf(ctx.world, p) : undefined;
   if (!s || !a) return;
   const before = a['left'] as number;
   a['left'] = before - gives;
-  if (a['answer'] !== 'refuses' || before < 0 || before - gives >= 0) return;
+  if (!chose || a['answer'] !== 'refuses' || before < 0 || before - gives >= 0) return;
   // Taking a full plate is a line at most once in `every` days; the plates between go unsaid.
   const last = (a['flouted'] as number | undefined) ?? -1;
   if (last >= 0 && ctx.world.tick < last + ctx.content.laws.answer.every * TICKS_PER_DAY) return;

@@ -78,4 +78,25 @@ describe('the 6A laws', () => {
     for (const q of seen.actors!)
       expect(memoriesOf(w, q).some((m) => m['memory'] === 'saw-refused-rations')).toBe(true);
   });
+
+  it('carries the share over a change of setting, and a newcomer answers the law', () => {
+    const w = createWorld(sim, 'tallow');
+    step(w, sim, 60);
+    const [late, other] = alive(w);
+    // `late` stands for someone who joins after the law is set.
+    late!['status'] = 'stranger';
+    setLaw(w, 'rations', 'hunger');
+    const set = lines(w, 'law.set').at(-1)!;
+    expect(answersTo(w, 'rations').some((a) => a['person'] === late!.id)).toBe(false);
+    const rowOf = (id: number) => answersTo(w, 'rations').find((a) => a['person'] === id)!;
+    rowOf(other!.id)['left'] = -100;
+    // Moving the law to another share fills no plates.
+    setLaw(w, 'rations', 'short');
+    expect(rowOf(other!.id)['left']).toBe(-100);
+    late!['status'] = 'alive';
+    step(w, sim, 60);
+    const line = lines(w, 'law.answered').find((e) => e.id === rowOf(late!.id)['line'])!;
+    expect(line.causes).toContain(lines(w, 'law.set').at(-1)!.id);
+    expect(set.id).not.toBe(lines(w, 'law.set').at(-1)!.id);
+  });
 });

@@ -5,7 +5,7 @@ import { TICKS_PER_DAY, type EntityRow, type LawSettingDef } from '../core/index
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { lawDef } from './hours.ts';
+import { lawDef, lawRow } from './hours.ts';
 import { shareOf } from './share.ts';
 import { weigh, type Weighed } from './weigh.ts';
 
@@ -93,19 +93,38 @@ export const answered = (ctx: SystemContext, law: string, s: LawSettingDef): boo
 
 /** Everyone answers the law's new setting `s`, set by line `cause`. */
 export function answerAll(ctx: SystemContext, law: string, s: LawSettingDef, cause: number): void {
-  for (const a of answersOf(ctx, law)) removeEntity(ctx.world, 'answer', a.id);
+  // What is left of today's share, and the last full plate, carry over a change of setting, so
+  // moving the law back and forth fills no plates (P6.5).
+  const kept = new Map<number, { left: number; flouted: number }>();
+  for (const a of answersOf(ctx, law)) {
+    kept.set(a['person'] as number, { left: a['left'] as number, flouted: a['flouted'] as number });
+    removeEntity(ctx.world, 'answer', a.id);
+  }
   if (!answered(ctx, law, s)) return;
-  for (const p of alive(ctx))
+  for (const p of alive(ctx)) {
     record(ctx, law, s, p, weigh(ctx.world, ctx.content, p.id, s), [cause], undefined);
+    const was = kept.get(p.id);
+    const row = answersOf(ctx, law).find((a) => a['person'] === p.id);
+    if (was && row)
+      Object.assign(row, { left: Math.min(was.left, shareOf(ctx, s)), flouted: was.flouted });
+  }
 }
 
-/** Answers again for whoever holds a memory that weighs on `s` and was not weighed yet. A changed
+/** Answers for whoever joined since `s` was set, and again for whoever holds a memory that weighs
+ * on `s` and was not weighed yet. A changed
  * answer is a line; the same one keeps its reasons, which match that line, and only notes what
  * was weighed. Someone who changed their answer holds it `settle` days first (P6.5). */
 export function reweigh(ctx: SystemContext, law: string, s: LawSettingDef): void {
   const settle = ctx.content.laws.answer.settle * TICKS_PER_DAY;
-  for (const row of answersOf(ctx, law)) {
-    const p = alive(ctx).find((q) => q.id === row['person']);
+  const band = alive(ctx);
+  const rows = answersOf(ctx, law);
+  // Someone who joined since the law was set answers it now, citing the line that set it.
+  const set = lawRow(ctx.world, law)?.['line'] as number | undefined;
+  for (const p of band)
+    if (!rows.some((r) => r['person'] === p.id))
+      record(ctx, law, s, p, weigh(ctx.world, ctx.content, p.id, s), set ? [set] : [], undefined);
+  for (const row of rows) {
+    const p = band.find((q) => q.id === row['person']);
     if (!p) continue;
     const at = (row['at'] as number | undefined) ?? 0;
     if (at && ctx.world.tick < at + settle) continue;
