@@ -194,9 +194,16 @@ function takeUp(ctx: SystemContext, p: EntityRow, job: 'mill' | 'bake'): boolean
 }
 
 /** The Miller and Baker rows' take-up, for jobs.ts's table. */
-export const MILL_TAKE_UP = {
-  mill: (ctx: SystemContext, p: EntityRow): boolean => takeUp(ctx, p, 'mill'),
-  bake: (ctx: SystemContext, p: EntityRow): boolean => takeUp(ctx, p, 'bake'),
+/** The Miller and Baker rows of the job table (jobtable.ts). */
+export const MILL_JOBS = {
+  mill: {
+    takeUp: (ctx: SystemContext, p: EntityRow): boolean => takeUp(ctx, p, 'mill'),
+    work: millWork,
+  },
+  bake: {
+    takeUp: (ctx: SystemContext, p: EntityRow): boolean => takeUp(ctx, p, 'bake'),
+    work: millWork,
+  },
 };
 
 /** At the stack: take up to a batch, at least `least` (and, for baking, a firewood from the store). */
@@ -225,7 +232,7 @@ function gather(ctx: SystemContext, p: EntityRow, most: number, least: number): 
 
 /** One minute of grinding or baking: false when it is done or cannot go on (the mill's water froze,
  * the quern's minutes for today are spent); what they carry then goes back. */
-export function millWork(ctx: SystemContext, p: EntityRow): boolean {
+function millWork(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
   const def = content.buildings.mill;
   const task = p['task'] as Pick['task'];
