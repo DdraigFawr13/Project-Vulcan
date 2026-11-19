@@ -14,6 +14,7 @@ import { COLONY_TABLES } from './tables.ts';
 function begin(ctx: SystemContext): void {
   addEntity(ctx.world, 'standing', {
     ...{ standing: ctx.content.colony.standing.start, elder: 0, line: 0, friends: [] },
+    ...{ took: ctx.content.colony.standing.start, why: '' },
   });
 }
 

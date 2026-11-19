@@ -69,7 +69,7 @@ export function answerView(world: WorldState, a: EntityRow): AnswerView | undefi
 }
 
 /** The Laws page: the work-hours law, this season's hours and everyone's answer, refusals first. */
-export function lawView(world: WorldState): Omit<LawView, 'strangers' | 'ruled'> {
+export function lawView(world: WorldState): Omit<LawView, 'strangers' | 'ruled' | 'colony'> {
   const def = lawDef(content, WORK_HOURS)!;
   const s = settingOf(world, content, def.id);
   const row = (world.entities['law'] ?? []).find((r) => r['law'] === def.id);

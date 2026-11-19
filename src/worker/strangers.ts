@@ -25,6 +25,7 @@ import {
   people,
 } from '../engine/index.ts';
 import { answerView, lawView } from './law.ts';
+import { colonyView } from './colonyview.ts';
 import { RULED, ruledView } from './lawsheet.ts';
 import type { HouseView } from './protocol-build.ts';
 import type { AnswerView, LawView, StrangersLawView } from './protocol-law.ts';
@@ -380,4 +381,5 @@ export const lawsOf = (world: WorldState): LawView => ({
   ...lawView(world),
   strangers: strangersLawView(world),
   ruled: RULED.map((id) => ruledView(world, id)),
+  colony: colonyView(world),
 });

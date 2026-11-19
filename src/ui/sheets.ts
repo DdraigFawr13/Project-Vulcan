@@ -5,6 +5,7 @@ import type {
   BuildView,
   FromWorker,
   LawView,
+  MoodView,
   AnimalPage,
   ItemView,
   LedgerLine,
@@ -20,6 +21,7 @@ import { Dawn } from './dawn.ts';
 import { el } from './dom.ts';
 import type { Panel } from './panel.ts';
 import { LawSheet } from './laws.ts';
+import { moodRows } from './moodsheet.ts';
 import { PersonSheet } from './personsheet.ts';
 import { Play } from './play.ts';
 import { testModeOn } from './testmode.ts';
@@ -57,6 +59,8 @@ export class Sheets {
   private buildKey = '';
   private lawView: LawView | undefined;
   private lawKey = '';
+  private moodView: MoodView | undefined;
+  private moodKey = '';
   /** The item page open: its id, what it shows (as JSON) and whether a fresh copy is asked for. */
   private itemOpen: { id: number; key: string; asked: boolean } | undefined;
   /** A world just began or loaded; its first batch of lines is not news. */
@@ -91,6 +95,7 @@ export class Sheets {
     });
     this.laws = new LawSheet({
       setLaw: (law, setting) => command('setLaw', { law, setting }),
+      letStand: (faction) => command('letStand', { faction }),
       refresh: () => this.refreshLaws(),
     });
     this.person = new PersonSheet(deps.panel, {
@@ -176,8 +181,12 @@ export class Sheets {
     this.refresh(true);
   }
 
-  /** ⋯ → Work, Build, Laws or Yesterday (the dawn page at any time). */
-  open(kind: 'work' | 'build' | 'laws' | 'dawn'): void {
+  /** ⋯ → Work, Build, Laws or Yesterday (the dawn page at any time), or the mood word. */
+  open(kind: 'work' | 'build' | 'laws' | 'dawn' | 'mood'): void {
+    if (kind === 'mood') {
+      this.moodKey = '';
+      return this.refreshMood(true);
+    }
     if (kind === 'work') return this.showWork();
     if (kind === 'build') {
       this.buildKey = '';
@@ -237,6 +246,7 @@ export class Sheets {
     this.walkers = walkers;
     this.day = day;
     this.lawView = law;
+    this.moodView = law.colony.mood;
     const food = message.stock.find((s) => s.good === content.work.forage.good)?.have;
     this.dawn.snapshot(message.yesterday, food, message.speed === 1 && !message.skipping);
     this.play.setWalkers(walkers);
@@ -248,6 +258,7 @@ export class Sheets {
     if (message.build) this.buildView = message.build;
     this.refreshBuild();
     this.refreshLaws();
+    this.refreshMood();
     // The item page redraws from each snapshot (its wear and holder move), one ask in flight.
     const item = this.itemOpen;
     if (item && panel.kind === 'item' && !item.asked) {
@@ -296,6 +307,17 @@ export class Sheets {
     if (key === this.lawKey) return;
     this.lawKey = key;
     this.deps.panel.showView('laws', 'Laws', this.laws.rows(view));
+    this.select(undefined);
+  }
+
+  /** Redraws an open mood page when its causes change (or `open`s it). */
+  private refreshMood(open = false): void {
+    const view = this.moodView;
+    if (!view || (!open && this.deps.panel.kind !== 'mood')) return;
+    const key = JSON.stringify(view);
+    if (key === this.moodKey) return;
+    this.moodKey = key;
+    this.deps.panel.showView('mood', "The colony's mood", moodRows(view));
     this.select(undefined);
   }
 

@@ -23,7 +23,6 @@
   "elder": {
     "every": 7,
     "least": 6,
-    "margin": 2,
     "sway": 8,
     "friendDays": 56,
     "founder": 3,
@@ -33,7 +32,19 @@
     "traits": { "steady": 2, "sociable": 2, "devout": 1, "cheerful": 1, "hot-tempered": -2, "greedy": -2, "solitary": -1 },
     "roles": { "provider": 2, "guard": 2, "faithful": 2, "wronged": -1, "outsider": -2, "rebel": -3 },
     "follows": "follows {name}'s lead",
-    "sides": "sides with {name}"
+    "sides": "sides with {name}",
+    "vote": {
+      "least": 2,
+      "friend": 2,
+      "shared": 1,
+      "plight": 3,
+      "plights": { "food": "provider", "water": "provider", "warmth": "provider", "hurt": "guard", "afraid": "guard" },
+      "afraid": ["fear-attack", "saw-attack", "lost-to-wolves"],
+      "incumbent": 3,
+      "drop": 10,
+      "looks": "{votes} of {people} look to them",
+      "fallen": "standing fell under {name}"
+    }
   },
   "faction": { "least": 3, "share": 20, "strong": 10, "lean": 10, "stands": "stands with {faction}" },
   "petition": { "days": 7 },

@@ -6,9 +6,12 @@
 import type { AnswerView, LawView, RuledLawView, StrangersLawView } from '../worker/index.ts';
 import { dayStrip } from './daystrip.ts';
 import { el } from './dom.ts';
+import { colonyRows } from './standingrows.ts';
 
 export interface LawActions {
   setLaw(law: string, setting: string): void;
+  /** P6.6: a faction's petition is turned down; the law stands. */
+  letStand(faction: number): void;
   /** The sheet changed on its own (a lever sent): draw it again. */
   refresh(): void;
 }
@@ -132,13 +135,28 @@ export class LawSheet {
     this.actions.refresh();
   }
 
+  /** The faction standing against a law, for its fold line. */
+  private faction?: (law: string) => string;
+
   rows(view: LawView): HTMLElement[] {
+    this.faction = (law) => {
+      const f = view.colony.factions.find((x) => x.law === law);
+      return f ? ` · ${f.name} (${f.count})` : '';
+    };
     return [
       el(
         'p',
         { class: 'aside' },
         'A law says what the colony expects. Each person weighs it for themselves: they obey, grumble, or refuse. Nobody is made to.',
       ),
+      ...colonyRows(view.colony, {
+        setLaw: (law, setting) => this.pick(law, setting),
+        letStand: (faction) => {
+          this.actions.letStand(faction);
+          this.actions.refresh();
+        },
+      }),
+      el('h4', {}, 'The laws'),
       ...this.law(
         view,
         () => this.hours(view),
@@ -178,7 +196,7 @@ export class LawSheet {
     const head = el('div', { class: 'lawfold', 'data-law': l.id });
     const said = l.answers.length ? tally(l.answers) : '';
     const what = el('span', {}, name);
-    if (said) what.append(el('small', {}, ` · ${said}`));
+    if (said) what.append(el('small', {}, ` · ${said}${this.faction?.(l.id) ?? ''}`));
     head.append(el('h3', {}, l.name), what, fold);
     if (!isOpen) return [head];
     const since = el('p', { class: 'lawset', 'data-line': String(l.why) });
