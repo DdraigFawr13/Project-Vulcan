@@ -1,7 +1,7 @@
-// The elder (P6.6, proposal P1, V-158): the most trusted colonist, worked out every `every` days.
-// Trust comes from being of the founding band, traits, the roles they hold, how many have heard a
-// tale from them lately and how many laws they keep. Held, an elder gives way only to someone
-// `margin` more trusted. Their friends (those they told a tale or heard one from in `friendDays`,
+// The elder (P6.6, proposal P1, V-158, V-173): every `every` days each villager looks to the one
+// they trust most (`vote.ts`), and whoever most look to, with `vote.least` at least and nobody
+// level, is elder. Trust everyone sees comes from being of the founding band, traits, the roles
+// they hold, how many have heard a tale from them lately and how many laws they keep. Their friends (those they told a tale or heard one from in `friendDays`,
 // and those they share a house with) lean their way on every law (law `weigh.ts`). An elder's
 // death shakes standing for a season.
 import {
@@ -14,7 +14,8 @@ import { homeHouse } from '../health/index.ts';
 import { rolesOf } from '../self/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addCause } from './standing.ts';
-import { colonyRow, elderOf } from './tables.ts';
+import { colonyRow, elderOf, standingOf } from './tables.ts';
+import { tally, type Candidate } from './vote.ts';
 
 const alive = (world: WorldState): EntityRow[] =>
   (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
@@ -71,40 +72,67 @@ export function trustOf(
   return { trust, why };
 }
 
-/** The elder's friends: those they talked with in `friendDays`, and their housemates. */
-export function friendsOf(ctx: SystemContext, elder: EntityRow): number[] {
-  const { world, content } = ctx;
+/** `p`'s friends: those they talked with in `friendDays`, and their housemates. */
+function nearOf(world: WorldState, content: EngineContent, p: EntityRow): number[] {
   const day = Math.floor(world.tick / TICKS_PER_DAY) - content.colony.elder.friendDays;
-  const out = talkedWith(world, elder.id, day);
-  const home = homeHouse(world, content, elder);
-  if (home) for (const q of alive(world)) if (homeHouse(world, content, q) === home) out.add(q.id);
-  out.delete(elder.id);
-  return [...out].filter((q) => alive(world).some((p) => p.id === q)).sort((a, b) => a - b);
+  const out = talkedWith(world, p.id, day);
+  const home = homeHouse(world, content, p);
+  const people = alive(world);
+  if (home) for (const q of people) if (homeHouse(world, content, q) === home) out.add(q.id);
+  out.delete(p.id);
+  return [...out].filter((q) => people.some((x) => x.id === q)).sort((a, b) => a - b);
 }
 
-/** Works out who the elder is; a new one is a line. */
+/** The elder's friends, who lean their way on every law. */
+export const friendsOf = (ctx: SystemContext, elder: EntityRow): number[] =>
+  nearOf(ctx.world, ctx.content, elder);
+
+/** The words for why they were chosen: how many look to them, their trust, and a fallen elder. */
+function whyWords(
+  content: EngineContent,
+  best: Candidate & { votes: number; why: string[] },
+  people: number,
+  fallen: string,
+): string {
+  const v = content.colony.elder.vote;
+  const looks = v.looks.replace('{votes}', String(best.votes)).replace('{people}', String(people));
+  const trust = best.why.length ? `, ${best.why.join(' and ')}` : '';
+  return `${looks}${trust}${fallen ? `; ${v.fallen.replace('{name}', fallen)}` : ''}`;
+}
+
+/** Works out who the elder is by everyone's vote; a new one is a line. */
 export function pickElder(ctx: SystemContext): void {
   const { world, content } = ctx;
   const e = content.colony.elder;
   const row = colonyRow(world)!;
   const held = elderOf(world);
-  const scored = alive(world)
+  const people = alive(world);
+  const standing = standingOf(world, content);
+  const fell =
+    !!held && ((row['took'] as number | undefined) ?? standing) - standing >= e.vote.drop;
+  const cands = people
     .map((p) => ({ p, ...trustOf(world, content, p) }))
-    .map((s) => ({ ...s, score: s.trust + (s.p.id === held ? e.margin : 0) }))
-    .sort((a, b) => b.score - a.score || a.p.id - b.p.id);
-  const [best, next] = scored;
-  const firm =
-    best &&
-    best.trust >= e.least &&
-    (!next || best.score >= next.score + (best.p.id === held ? 0 : e.margin));
+    .filter((c) => c.trust >= e.least);
+  const near = (p: EntityRow) => new Set(nearOf(world, content, p));
+  const boost = (c: Candidate) => (c.p.id === held && !fell ? e.vote.incumbent : 0);
+  const votes = tally(world, content, people, cands, near, boost);
+  const ranked = cands
+    .map((c) => ({ ...c, votes: votes.get(c.p.id) ?? 0 }))
+    .sort((a, b) => b.votes - a.votes || b.trust - a.trust || a.p.id - b.p.id);
+  const [best, next] = ranked;
+  const firm = best && best.votes >= e.vote.least && (!next || best.votes > next.votes);
   if (best && firm && best.p.id !== held) {
+    const was = people.find((p) => p.id === held);
+    const why = whyWords(content, best, people.length, fell && was ? (was['name'] as string) : '');
     row['elder'] = best.p.id;
+    row['took'] = standing;
+    row['why'] = why;
     row['line'] = ctx.emit('colony.elder', {
       actors: [best.p.id],
-      data: { name: best.p['name'] as string, why: best.why.join(' and ') || 'trusted' },
+      data: { name: best.p['name'] as string, why },
     });
   }
-  const elder = alive(world).find((p) => p.id === row['elder']);
+  const elder = people.find((p) => p.id === row['elder']);
   row['friends'] = elder ? friendsOf(ctx, elder) : [];
 }
 

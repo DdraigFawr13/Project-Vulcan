@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import {
+  addEntity,
   allLines,
   createSim,
   createWorld,
@@ -18,9 +19,11 @@ import {
   submitCommand,
   TICKS_PER_DAY,
   TICKS_PER_HOUR,
+  trustOf,
   weigh,
   type EntityRow,
 } from '../index.ts';
+import { trustBy } from './vote.ts';
 
 const sim = createSim(content);
 type World = ReturnType<typeof createWorld>;
@@ -121,5 +124,33 @@ describe('standing, the elder and factions', () => {
     const low = weigh(w, content, p.id, s);
     expect(low.will).toBe(high - 6);
     expect(low.against).toContain('distrusts the colony');
+  });
+
+  it('picks the elder by vote, each through their own eyes: a fright looks to the guard', () => {
+    const w = createWorld(sim, 'smoke');
+    while (!elderOf(w)) toReckoning(w);
+    expect(lines(w, 'colony.elder').at(-1)!.data['why']).toMatch(/^\d+ of \d+ look to them/);
+    const [voter, other] = alive(w) as [EntityRow, EntityRow];
+    const c = { p: other, trust: trustOf(w, content, other).trust };
+    const near = new Set<number>();
+    const before = trustBy(w, content, voter, c, near, 0);
+    addEntity(w, 'role', {
+      person: other.id,
+      role: 'guard',
+      points: 10,
+      why: '',
+      line: 0,
+      since: 0,
+    });
+    expect(trustBy(w, content, voter, c, near, 0)).toBe(before);
+    addEntity(w, 'memory', {
+      ...{ person: voter.id, memory: 'fear-attack', until: w.tick + TICKS_PER_DAY, line: 0 },
+      ...{ about: 0, weight: 1, since: w.tick, first: 0, last: 0, days: 1, mask: 1, fresh: 1 },
+    });
+    const { vote } = content.colony.elder;
+    expect(trustBy(w, content, voter, c, near, 0)).toBe(before + vote.plight);
+    expect(trustBy(w, content, voter, c, new Set([other.id]), vote.incumbent)).toBe(
+      before + vote.plight + vote.friend + vote.incumbent,
+    );
   });
 });

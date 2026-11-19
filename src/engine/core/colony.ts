@@ -32,7 +32,6 @@ export interface ColonyDef {
   elder: {
     every: number;
     least: number;
-    margin: number;
     sway: number;
     friendDays: number;
     founder: number;
@@ -43,6 +42,21 @@ export interface ColonyDef {
     roles: Readonly<Record<string, number>>;
     follows: string;
     sides: string;
+    /** Each villager's vote (V-173): `least` votes to be elder; `friend`, `shared` (a trait) and
+     * `plight` (a role a plight calls for) through the voter's eyes; the sitting elder's
+     * `incumbent` boost, lost once standing has fallen `drop` since they took over. */
+    vote: {
+      least: number;
+      friend: number;
+      shared: number;
+      plight: number;
+      plights: Readonly<Record<string, string>>;
+      afraid: readonly string[];
+      incumbent: number;
+      drop: number;
+      looks: string;
+      fallen: string;
+    };
   };
   faction: { least: number; share: number; strong: number; lean: number; stands: string };
   petition: { days: number };

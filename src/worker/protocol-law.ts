@@ -1,4 +1,5 @@
 // The wire shapes of the Laws page and a person's answer (P4.8), split from protocol.ts.
+import type { ColonyView } from './protocol-colony.ts';
 
 /** Hours of work and bed, in whole hours. */
 export interface HoursView {
@@ -48,6 +49,8 @@ export interface LawView {
   strangers: StrangersLawView;
   /** P6.5: Rations, Sickness and Punishment, below it. */
   ruled: RuledLawView[];
+  /** P6.6: standing, the elder and petitions, at the sheet's head. */
+  colony: ColonyView;
 }
 
 /** One of the 6A laws (P6.5, V-157): its setting, what it does in words and everyone's answer. */

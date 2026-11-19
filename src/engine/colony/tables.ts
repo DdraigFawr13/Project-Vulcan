@@ -6,7 +6,10 @@ import type { Schemas } from '../entity/index.ts';
 export const COLONY_TABLES: Schemas = {
   /** One row (kind `standing`; region owns `colony`): the colony's standing (0 to 100), the elder (0 for none), the line that named them
    * and their friends when last worked out. */
-  standing: { standing: 'int', elder: 'entity', line: 'event', friends: 'ints' },
+  standing: {
+    ...{ standing: 'int', elder: 'entity', line: 'event', friends: 'ints' },
+    ...{ took: 'int', why: 'text' },
+  },
   /** A cause of standing: its kind (colony.json `standing`), points, words, the line it came
    * with, and the tick it stops counting. */
   cause: { cause: 'text', by: 'int', text: 'text', line: 'event', until: 'int' },

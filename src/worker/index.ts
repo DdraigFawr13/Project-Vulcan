@@ -4,6 +4,7 @@ export { TICKS_PER_SECOND } from './protocol.ts';
 // Every view type of the protocol files, passed on whole: a new view needs no line here.
 export type * from './protocol.ts';
 export type * from './protocol-build.ts';
+export type * from './protocol-colony.ts';
 export type * from './protocol-flock.ts';
 export type * from './protocol-goods.ts';
 export type * from './protocol-law.ts';

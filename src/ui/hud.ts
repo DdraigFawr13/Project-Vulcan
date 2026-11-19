@@ -2,13 +2,13 @@
 // game is paused, with no word, per the taste board), the tile readout, level and zoom buttons, a
 // debug line, and the starting, loading and error screens. Shows what it is given; it computes no
 // game rule (GAME-02).
-import type { ClockView, Speed, TimingView, WeatherView } from '../worker/index.ts';
+import type { ClockView, MoodView, Speed, TimingView, WeatherView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { versionTag } from './version.ts';
 
 /** The panels the bar opens. */
 export type PanelButton =
-  'ledger' | 'work' | 'build' | 'laws' | 'stock' | 'saves' | 'region' | 'dawn';
+  'ledger' | 'work' | 'build' | 'laws' | 'stock' | 'saves' | 'region' | 'dawn' | 'mood';
 
 const SPEED_LABELS: Record<Speed, string> = { 0: '❚❚', 1: '1×', 2: '2×', 3: '3×' };
 
@@ -30,6 +30,13 @@ export class Hud {
   private readonly clock = el('div', { class: 'clock', 'data-testid': 'clock' });
   /** The build's version, quiet at the end of the clock's second line. */
   private readonly version = versionTag();
+  /** The colony's mood in a word (P6.6), after the season under the clock; opens its causes. */
+  private readonly mood = el('button', {
+    type: 'button',
+    class: 'moodword',
+    'data-testid': 'mood',
+    hidden: '',
+  });
   private readonly speeds = new Map<Speed, HTMLButtonElement>();
   /** Skip ahead (P2.7), lit while a skip runs. */
   private readonly skip = el(
@@ -87,6 +94,7 @@ export class Hud {
       group.append(button);
     }
     this.skip.addEventListener('click', () => actions.skip());
+    this.mood.addEventListener('click', () => actions.togglePanel('mood'));
     group.append(this.skip);
     // Ledger stays in the bar; the rest fold under ⋯ on a phone (UI_STYLE.md) and sit in the bar on
     // a desktop, where the menu is laid out inline.
@@ -153,14 +161,16 @@ export class Hud {
     this.showScreen('Waking the valley', 'Making the world and its 250 years of history.');
   }
 
-  showClock(
-    clock: ClockView,
-    tick: number,
-    speed: Speed,
-    at: number,
-    weather?: WeatherView,
-    skipping = false,
-  ): void {
+  showClock(s: {
+    clock: ClockView;
+    tick: number;
+    speed: Speed;
+    at: number;
+    weather?: WeatherView;
+    skipping?: boolean;
+    mood?: MoodView;
+  }): void {
+    const { clock, tick, speed, at, weather, skipping = false, mood } = s;
     const pad = (n: number) => String(n).padStart(2, '0');
     const season = clock.season.charAt(0).toUpperCase() + clock.season.slice(1);
     const sky = weather ? ` · ${weather.words}, ${weather.temperature} °C` : '';
@@ -174,6 +184,13 @@ export class Hud {
       );
     const line = el('small', {}, `${season}${sky} · ${this.where}`);
     line.prepend(this.version);
+    if (mood) {
+      this.mood.hidden = false;
+      this.mood.dataset['rank'] = String(mood.rank);
+      this.mood.textContent = mood.word;
+      this.mood.setAttribute('aria-label', `The colony's mood: ${mood.word}`);
+      line.append(' · ', this.mood);
+    }
     this.clock.append(line);
     for (const [s, button] of this.speeds)
       button.setAttribute('aria-pressed', String(!skipping && s === speed));
@@ -241,7 +258,8 @@ export class Hud {
           kind === 'dawn' ||
           kind === 'stock' ||
           kind === 'region' ||
-          kind === 'saves',
+          kind === 'saves' ||
+          kind === 'mood',
       ),
     );
   }

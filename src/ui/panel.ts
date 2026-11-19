@@ -32,7 +32,8 @@ export type PanelKind =
   | 'item'
   | 'animal'
   | 'alerts'
-  | 'dawn';
+  | 'dawn'
+  | 'mood';
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;

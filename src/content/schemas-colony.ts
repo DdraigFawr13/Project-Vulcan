@@ -27,13 +27,12 @@ export const COLONY_SCHEMAS = {
       ignored: obj(cause),
       elderDied: obj(cause),
     }),
-    // The elder: the most trusted, from `least` points and `margin` ahead (weighed every `every`
-    // days); their answer leans friends' (those they shared a tale or a house with in
+    // The elder: whoever most villagers trust, each through their own eyes (`vote`), from `least`
+    // points (weighed every `every` days); their answer leans friends' (those they shared a tale or a house with in
     // `friendDays`) by `sway`.
     elder: obj({
       every: num({ min: 1 }),
       least: count,
-      margin: count,
       sway: count,
       friendDays: num({ min: 1 }),
       founder: count,
@@ -44,6 +43,18 @@ export const COLONY_SCHEMAS = {
       roles: map(num()),
       follows: text,
       sides: text,
+      vote: obj({
+        least: num({ min: 1 }),
+        friend: count,
+        shared: count,
+        plight: count,
+        plights: map(text),
+        afraid: list(text),
+        incumbent: count,
+        drop: count,
+        looks: text,
+        fallen: text,
+      }),
     }),
     // A faction: at least `least` people and `share` per cent of the colony each `strong` points
     // short of keeping one law; its members' answers lean `lean` more against it.

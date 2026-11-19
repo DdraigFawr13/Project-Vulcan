@@ -1,0 +1,93 @@
+/* Hearth and Page (docs/UI_STYLE.md), P6.6: the colony's mood word under the clock and its page,
+   and the Laws sheet's head (standing, the elder, petitions). Tokens only (tokens.css). */
+
+/* The mood word: a word in its mood's colour after the season. Its box is 44 px (the tap rule),
+   pulled back by negative margins so the clock's line keeps its height. */
+#hud button.moodword {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  min-height: var(--tap);
+  min-width: var(--tap);
+  margin: -14px -4px;
+  padding: 0 6px;
+  border: 0;
+  border-image: none;
+  background: none;
+  font: italic 700 13px/1 var(--read);
+  color: var(--mood-ok);
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  text-shadow: 1px 1px 0 var(--oak-dark);
+}
+#hud button.moodword[data-rank='1'] {
+  color: var(--bone);
+}
+#hud button.moodword[data-rank='2'] {
+  color: var(--mood-low);
+}
+#hud button.moodword[data-rank='3'] {
+  color: var(--mood-bad);
+}
+.moodhead {
+  font: 700 22px/1.2 var(--name);
+  color: var(--mood-ok);
+  margin: 4px 0;
+}
+.moodhead[data-rank='1'] {
+  color: var(--ink);
+}
+.moodhead[data-rank='2'] {
+  color: var(--ink-soft);
+}
+.moodhead[data-rank='3'] {
+  color: var(--rubric);
+}
+
+/* Standing: the number and word, a bar on the track, then its causes. */
+.standing {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.standing h3 {
+  margin: 0;
+}
+.standing .sword {
+  font: 700 16px/1.2 var(--name);
+  color: var(--ink);
+}
+.sbar {
+  height: 8px;
+  margin: 4px 0;
+  background: var(--track);
+  border: 1px solid var(--oak);
+}
+.sbar span {
+  display: block;
+  height: 100%;
+  background: var(--ember);
+}
+.scause {
+  margin: 2px 0;
+}
+.scause b {
+  display: inline-block;
+  min-width: 32px;
+  font: 700 14px/1.3 var(--name);
+}
+.elder {
+  margin: 10px 0;
+}
+
+/* A petition: a rubric rule like the Strangers verdict, its two answers as 44 px plates. */
+.petition {
+  border-left: 3px solid var(--rubric);
+  padding-left: 8px;
+  margin: 8px 0 12px;
+}
+.petition .row button {
+  min-height: var(--tap);
+}
