@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { gitSubcommand, parse } from './parse.mjs';
 
-/** The default mode. A check sets its own: 'ask' or 'deny' (D-034, D-037); Stop never emits a decision. */
+/** The default mode. A check sets its own: 'ask' or 'deny' (D-034, D-074); Stop never emits a decision. */
 export const MODE = 'warn';
 export const DEADLINE_MS = 6000;
 export const GIT_TIMEOUT_MS = 2000;
@@ -223,7 +223,9 @@ export function withDirs(commands, cwd) {
 // ---------- running checks ----------
 
 export function note({ check, mode, message, rule }) {
-  return `${PREFIX} ${check} (${mode}): ${message} (${rule})`;
+  // A deny reaches the agent only, never the owner (D-074): it says what to do instead.
+  const after = mode === 'deny' ? '. Blocked: do it another way; if there is none, stop and tell the owner what is needed' : '';
+  return `${PREFIX} ${check} (${mode}): ${message} (${rule})${after}`;
 }
 
 /** The log outcome: the mode when PreToolUse acts on it, else warn. */

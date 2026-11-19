@@ -14,6 +14,7 @@ const steps = [
   ['typecheck', 'npx tsc --noEmit'],
   ['boundaries', 'node tools/check-boundaries.mjs'],
   ['limits', 'node tools/check-limits.mjs'],
+  ['shape', 'node tools/check-shape.mjs'],
   ['codemap', 'node tools/codemap.mjs --check'],
   ['reading', 'node tools/reading-cost.mjs'],
   ['unit', full ? 'npx vitest run' : 'VULCAN_TESTS=quick npx vitest run'],

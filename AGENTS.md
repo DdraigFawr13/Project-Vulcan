@@ -16,7 +16,9 @@ Open [docs/RULES.md](docs/RULES.md), [docs/DECISIONS.md](docs/DECISIONS.md), [do
 ## Local checks (run before pushing)
 
 - While iterating: `npm run test:related -- <changed files>`.
-- Every push: `npm run check` (test-traps warnings, drift, format, types, boundaries, limits, code map, reading, quick tests, build). Before ready: `npm run check:full` and `npm run test:browser` once (VR-67).
+- Every push: `npm run check` (test-traps warnings, drift, format, types, boundaries, limits, shape ratchet, code map, reading, quick tests, build). Before ready: `npm run check:full` and `npm run test:browser` once (VR-67).
+- Shape ratchet (`npm run shape`, `-- --list` names the offenders): long or tangled functions, copied helpers and contracts over 6 KB may not grow in number; after a refactor lowers one, run `npm run shape -- --update`. Before adding a helper, search for an existing one (the `refactor` skill).
+- Coverage: `npm run coverage` (full suite with V8 coverage, then one line per system) at each phase review; not part of `npm run check` or CI.
 - Test time budgets (VR-67): `npm run check` under 40 s; `npm run check:full` under 120 s (measured 136 s on 2026-11-18, OVER; Phase 6 Bundle 0 brings it back).
 - UI or render changes: also `npm run test:browser`.
 - Map or terrain changes: `npm run map:stats` (the seed table against Phase 1's done-whens; seeds in `src/engine/map/seeds.ts`) and `npm run map:render` (PNGs in `tmp/maps/`, not committed), as the `map-check` skill says.

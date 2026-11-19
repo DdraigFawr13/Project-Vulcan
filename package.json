@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit",
     "boundaries": "node tools/check-boundaries.mjs",
     "limits": "node tools/check-limits.mjs",
+    "shape": "node tools/check-shape.mjs",
     "codemap": "node tools/codemap.mjs",
     "reading-cost": "node tools/reading-cost.mjs",
     "map:stats": "node tools/map-stats.mjs",
@@ -28,6 +29,7 @@
     "test": "vitest run",
     "test:related": "vitest related --run",
     "test:browser": "playwright test",
+    "coverage": "vitest run --coverage && node tools/coverage-summary.mjs",
     "format": "prettier --write --cache .",
     "format:check": "prettier --check --cache ."
   },
@@ -35,6 +37,7 @@
     "@babel/parser": "8.0.7",
     "@playwright/test": "1.64.0",
     "@types/node": "24.19.1",
+    "@vitest/coverage-v8": "5.0.3",
     "prettier": "3.9.9",
     "typescript": "7.0.2",
     "vite": "8.3.4",

@@ -123,7 +123,7 @@ export const checks = [
     id: 'tests.weaken',
     rule: 'VER-01',
     tools: ['Edit', 'Write'],
-    mode: 'ask', // D-034
+    // Warned, not asked: test edits are routine, and CI and review catch a weakened test (D-074).
     test(input, facts) {
       const t = input.tool_input ?? {};
       if (typeof t.file_path !== 'string') return null;
@@ -140,7 +140,7 @@ export const checks = [
     id: 'tests.delete',
     rule: 'VER-01',
     tools: ['Bash'],
-    mode: 'ask', // D-034
+    // Warned, not asked: test edits are routine, and CI and review catch a weakened test (D-074).
     test(input, facts) {
       for (const c of facts.commands()) {
         if (c.name === 'find') {

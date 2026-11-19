@@ -44,4 +44,4 @@ Surface 150 by 150 plus 4 underground levels of 150 by 150 (112,500 tiles at ful
 
 ## Reading in pieces
 
-Each layer and each system folder has a `MODULE.md` contract (at most 40 lines, template in `docs/templates/MODULE.md`); `docs/CODEMAP.md` lists them all with their exports. Read a neighbour's contract, not its code. `npm run limits` caps source files at 400 lines.
+Each layer and each system folder has a `MODULE.md` contract (at most 40 lines and 6 KB, template in `docs/templates/MODULE.md`; older contracts over 6 KB may only shrink, `npm run shape`); `docs/CODEMAP.md` lists them all with their exports. Read a neighbour's contract, not its code. `npm run limits` caps source files at 400 lines.

@@ -81,5 +81,14 @@ export default defineConfig({
     isolate: false,
     // The Story Generator package ships TypeScript source (V-031), so Vite transforms it.
     server: { deps: { inline: ['story-generator'] } },
+    // `npm run coverage` only (refactor plan proposal 2): run at each phase review, never in
+    // `npm run check` or CI. `tools/coverage-summary.mjs` prints one line per system from the JSON.
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.test.ts', 'src/content/data/**'],
+      reporter: ['text-summary', 'json-summary'],
+      reportsDirectory: 'coverage',
+    },
   },
 });

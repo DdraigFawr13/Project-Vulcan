@@ -167,7 +167,7 @@ export const checks = [
     id: 'secrets.print',
     rule: 'SAFE-02',
     tools: ['Bash'],
-    mode: 'ask', // D-037
+    mode: 'deny', // D-074
     test(input, facts) {
       const commands = facts.commands();
       for (const c of commands) {
@@ -189,7 +189,7 @@ export const checks = [
     id: 'secrets.read',
     rule: 'SAFE-02',
     tools: ['Read', 'Grep'],
-    mode: 'ask', // D-054
+    mode: 'deny', // D-074
     test(input, facts) {
       const t = input.tool_input ?? {};
       const file = input.tool_name === 'Read' ? t.file_path : t.path;
@@ -202,7 +202,7 @@ export const checks = [
     id: 'secrets.stage',
     rule: 'SAFE-02',
     tools: ['Bash'],
-    mode: 'ask', // D-037
+    mode: 'deny', // D-074
     test(input, facts) {
       for (const c of facts.commands()) {
         if (c.name !== 'git') continue;
@@ -216,7 +216,7 @@ export const checks = [
     id: 'secrets.write',
     rule: 'SAFE-02',
     tools: ['Edit', 'Write', 'NotebookEdit'],
-    mode: 'ask', // D-037
+    mode: 'deny', // D-074
     test(input, facts) {
       const t = input.tool_input ?? {};
       const file = t.file_path ?? t.notebook_path;

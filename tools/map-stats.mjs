@@ -4,7 +4,7 @@
 // P1.3's, then runs a year of weather on each (P1.4, tools/map-weather.mjs), then rolls each seed's
 // region (P1.5, from its Story Generator world since P1.6) and prints its neighbours and valleys. With --render,
 // writes one PNG per seed and level to tmp/maps/ (not committed).
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { root } from './lib.mjs';
 import { createImage, encodePng } from './png.mjs';
@@ -22,21 +22,8 @@ const {
   makeLevel,
 } = engine;
 
-const json = (name) => JSON.parse(readFileSync(path.join(root, 'src/content/data', name), 'utf8'));
-const content = {
-  calendar: json('calendar.json'),
-  events: json('events.json'),
-  terrain: json('terrain.json'),
-  biomes: json('biomes.json'),
-  features: json('features.json'),
-  weather: json('weather.json'),
-  seasons: json('seasons.json'),
-  schools: json('schools.json'),
-  region: json('region.json'),
-  cultures: json('cultures.json'),
-  races: json('races.json'),
-  names: json('names.json'),
-};
+// The full content the game loads: the people system needs the band, homes and more at world start.
+const { content } = engine;
 const render = process.argv.includes('--render');
 const sim = createSim(content);
 const need = content.terrain.generator.start;

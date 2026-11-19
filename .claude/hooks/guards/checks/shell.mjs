@@ -151,7 +151,7 @@ export const checks = [
     rule: 'lesson adventure-manager :12',
     tools: ['Bash'],
     // Denied, not warned: a warning arrives after the command, and by then the shell is dead (D-023).
-    mode: 'ask', // D-037
+    mode: 'deny', // D-074
     test(input) {
       const command = input.tool_input?.command;
       if (typeof command !== 'string') return null;
