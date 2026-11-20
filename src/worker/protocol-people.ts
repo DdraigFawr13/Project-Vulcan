@@ -98,6 +98,9 @@ export interface WalkerView {
   /** The tales they hold, newest first, and what they believe, strongest first (P6.3, V-155). */
   tales: TaleView[];
   beliefs: BeliefView[];
+  /** Their byname (6B Bundle 5): the word, the tale as told when it stuck, what happened, and
+   * the line that named them. */
+  byname?: { word: string; text: string; truth: string; why: number };
   /** Who they see themselves as, and what they want of life (P6.4, V-156). */
   self: SelfView;
   /** What is on their mind (V-154), in quotes, and the line it comes from (0 for none). */

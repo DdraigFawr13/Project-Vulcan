@@ -2,6 +2,7 @@
 // put into words from content. A pure read of the world, like views.ts.
 import { content } from '../content/index.ts';
 import {
+  bynameOf,
   clockAt,
   declinedLine,
   levelOf,
@@ -42,9 +43,11 @@ export function peopleOf(world: WorldState): PersonView[] {
       const [level, potential] = [row['level'] as number, row['potential'] as number];
       return [{ id, name: nameOf(content.abilities, id), level, potential }];
     });
+    const byname = bynameOf(world, p.id)?.['word'] as string | undefined;
     return {
       id: p.id,
       name: p['name'] as string,
+      ...(byname && { byname }),
       race: p['race'] as string,
       raceName: nameOf(content.races, p['race'] as string),
       cultureName: nameOf(content.cultures, p['culture'] as string),

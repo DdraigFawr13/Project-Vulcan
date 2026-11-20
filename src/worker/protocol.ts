@@ -285,6 +285,7 @@ export interface ValleyPreview {
 export interface PersonView {
   id: number;
   name: string;
+  byname?: string; // once a tale gave them one (6B Bundle 5)
   race: string;
   raceName: string;
   cultureName: string;
@@ -296,8 +297,7 @@ export interface PersonView {
   trade: string; // the trade's skill name
   known: string; // the skill their home is known for, '' if none
   skills: { id: string; name: string; level: number; potential: number }[];
-  /** Their three best skills, best first. */
-  best: { id: string; name: string; level: number; potential: number }[];
+  best: PersonView['skills']; // their three best skills, best first
   /** The band's must-have skills (building, cooking) they are able in. */
   able: string[];
   traits: { name: string; description: string }[];

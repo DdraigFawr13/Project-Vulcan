@@ -22,6 +22,7 @@ import {
   rateOf,
   recordOf,
   stockOf,
+  cupsHeld,
   storeOf,
   wantOf,
   type EntityRow,
@@ -108,7 +109,8 @@ export const stockView = (world: WorldState): StockView[] =>
     ...keptOf(world, def.good),
     good: def.good,
     name: def.name,
-    have: haveOf(world, content, def.good),
+    // Ale is kept in the tavern's casks, not the store (6B Bundle 5).
+    have: def.good === content.tavern.stock ? cupsHeld(world) : haveOf(world, content, def.good),
     want: wantOf(world, content, def.good),
     level: (stockOf(world, def.good)?.['level'] as string) ?? def.start,
     levels: def.levels.map((l) => ({ id: l.id, word: l.word, count: l.count })),

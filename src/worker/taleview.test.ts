@@ -2,7 +2,11 @@
 // differs and who told it, and beliefs read as one sentence with their strength.
 import { describe, expect, it } from 'vitest';
 import { content } from '../content/index.ts';
-import { addEntity, createSim, createWorld } from '../engine/index.ts';
+import { addEntity, createSim, createWorld, talesSystem } from '../engine/index.ts';
+import { giveByname } from '../engine/tales/bynames.ts';
+import { contextFor } from '../engine/sim/system.ts';
+import { lineOf } from './lines.ts';
+import { peopleOf } from './people.ts';
 import { talesView } from './taleview.ts';
 
 describe('tales on the Memories tab', () => {
@@ -40,5 +44,34 @@ describe('tales on the Memories tab', () => {
     expect(heard.beliefs).toEqual([
       { text: 'Is sure the woods around the valley are dangerous.', why: w.begunEvent },
     ]);
+  });
+
+  it('shows a byname with its tale and the truth, on the sheet and in later lines', () => {
+    const sim = createSim(content);
+    const w = createWorld(sim, 'anvil');
+    const [bran] = (w.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
+    const name = bran!['name'] as string;
+    const words = JSON.stringify({ species: 'wolf', name });
+    const story = addEntity(w, 'story', {
+      tale: 'beast',
+      event: w.begunEvent,
+      words,
+      about: bran!.id,
+    });
+    const row = (w.entities['story'] ?? []).find((s) => s.id === story)!;
+    const ctx = contextFor(w, sim, talesSystem);
+    giveByname(ctx, bran!, 'Wolfbait', row, 3, w.begunEvent);
+    const named = ctx.world.log.at(-1)!;
+    expect(talesView(w, bran!).byname).toEqual({
+      word: 'Wolfbait',
+      text: `A whole pack set on ${name}, who by rights should be dead.`,
+      truth: `A wolf went for ${name}.`,
+      why: named.id,
+    });
+    expect(peopleOf(w).find((p) => p.id === bran!.id)?.byname).toBe('Wolfbait');
+    // The naming line keeps the plain name; lines after it carry the byname.
+    expect(lineOf(w, sim, named).text).not.toContain('“Wolfbait”');
+    const later = { ...named, id: named.id + 1, type: 'tale.byname' };
+    expect(lineOf(w, sim, later).text).toContain(`${name} “Wolfbait”`);
   });
 });

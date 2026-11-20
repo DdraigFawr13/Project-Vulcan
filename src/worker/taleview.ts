@@ -4,6 +4,8 @@
 import { content } from '../content/index.ts';
 import {
   beliefsOf,
+  bynameOf,
+  recordOf,
   storiesOf,
   taleDef,
   talesOf,
@@ -13,13 +15,13 @@ import {
   personName,
 } from '../engine/index.ts';
 import { dayWords } from './memoryview.ts';
-import type { BeliefView, TaleView } from './protocol-people.ts';
+import type { TaleView, WalkerView } from './protocol-people.ts';
 
 /** `p`'s tales, newest first, and beliefs, strongest first. */
 export function talesView(
   world: WorldState,
   p: EntityRow,
-): { tales: TaleView[]; beliefs: BeliefView[] } {
+): Pick<WalkerView, 'tales' | 'beliefs' | 'byname'> {
   const stories = new Map(storiesOf(world).map((s) => [s.id, s]));
   const tales = talesOf(world, p.id).flatMap((t) => {
     const story = stories.get(t['story'] as number);
@@ -44,5 +46,19 @@ export function talesView(
     const strength = words[Math.min(words.length, b['strength'] as number) - 1];
     return def && strength ? [{ text: `${strength} ${def.text}.`, why: b['line'] as number }] : [];
   });
-  return { tales, beliefs };
+  return { tales, beliefs, ...bynameView(world, p) };
+}
+
+/** `p`'s byname: the word, the tale as told when it stuck and what happened (6B Bundle 5). */
+function bynameView(world: WorldState, p: EntityRow): Pick<WalkerView, 'byname'> {
+  const b = bynameOf(world, p.id);
+  if (!b) return {};
+  const story = storiesOf(world).find((s) => s.id === b['story']);
+  const def = story && taleDef(content, story['tale'] as string);
+  const line = recordOf(world, b['line'] as number);
+  const told = line && 'data' in line ? String(line.data['tale'] ?? '') : '';
+  const truth = story && def ? taleText(content, story, def.truth) : '';
+  return {
+    byname: { word: b['word'] as string, text: told, truth, why: b['line'] as number },
+  };
 }
