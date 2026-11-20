@@ -1,10 +1,10 @@
 # Seen at work
 
-A side track built beside 6B and 6C: colonists who are interesting to watch. Morgan's message of 2026-11-20 ("clothes that show on people, tools and weapons they carry, certain things not possible without tools, small animations when doing work") and their answers on the design form https://claude.ai/artifact/Buu8aQ7NZo9mpEFdik4AK1 (V-188). Speed, jump buttons and recaps are a separate thread.
+A side track built beside 6B and 6C: colonists who are interesting to watch. Morgan's message of 2026-11-20 ("clothes that show on people, tools and weapons they carry, certain things not possible without tools, small animations when doing work") and their answers on the design form https://claude.ai/artifact/Buu8aQ7NZo9mpEFdik4AK1 (V-190). Speed, jump buttons and recaps are a separate thread.
 
 ## Status
 
-- [x] Design form answered, 2026-11-20 (V-188)
+- [x] Design form answered, 2026-11-20 (V-190)
 - [ ] Part 1, tools in hand, carried loads and work motions (screens)
 - [ ] Part 2, required tools, knapping and five new tools (engine)
 - [ ] Part 3, outer clothes that show (screens)
@@ -28,16 +28,16 @@ Each part is built in a fresh thread with a mock-up first: Parts 1 and 3 send a 
 
 Mock-up: UI. Done when: a person felling shows an axe swinging with chips at 1x and 2x speed, a hauler shows their load, the motion of every job comes from `jobs.json`, and `npm run test:browser` passes.
 
-- Reading list: `docs/DECISIONS.md` V-041 V-088 V-095 V-168 V-188; `src/render/MODULE.md`; `src/worker/MODULE.md`; `docs/UI_STYLE.md`; `docs/ART.md`
+- Reading list: `docs/DECISIONS.md` V-041 V-088 V-095 V-168 V-190; `src/render/MODULE.md`; `src/worker/MODULE.md`; `docs/UI_STYLE.md`; `docs/ART.md`
 
 ### Part 2: required tools, knapping and five new tools
 
 Mock-up: Engine. Done when: the four-seed table above, a test that a valley with no pick takes up no mining and writes the waiting line, a test that a knapped pick restarts it, and the new tools as data entries only.
 
-- Reading list: `docs/DECISIONS.md` V-088 V-100 V-134 V-185 V-188; `docs/TOOLS_AND_SMITHY.md`; `src/engine/goods/MODULE.md`; `src/engine/people/MODULE.md`; `src/engine/crafts/MODULE.md`
+- Reading list: `docs/DECISIONS.md` V-088 V-100 V-134 V-185 V-190; `docs/TOOLS_AND_SMITHY.md`; `src/engine/goods/MODULE.md`; `src/engine/people/MODULE.md`; `src/engine/crafts/MODULE.md`
 
 ### Part 3: outer clothes that show
 
 Mock-up: UI. Done when: each race shows the three outer garments at 390 px, outdoors in the cold only, with ragged and fine looks, and `npm run test:browser` passes.
 
-- Reading list: `docs/DECISIONS.md` V-134 V-168 V-184 V-188; `docs/CLOTHES_AND_LOOM.md`; `src/render/MODULE.md`; `src/engine/needs/MODULE.md`; `docs/ART.md`
+- Reading list: `docs/DECISIONS.md` V-134 V-168 V-184 V-190; `docs/CLOTHES_AND_LOOM.md`; `src/render/MODULE.md`; `src/engine/needs/MODULE.md`; `docs/ART.md`
