@@ -72,7 +72,7 @@ function told(content: EngineContent, groups: readonly Group[]): Sentence[] {
       out.push({
         section: s.id,
         text: sentenceOf(content, g.def, g.type, g.rows.map(wordsOf)),
-        lines: g.rows.map((r) => r['event'] as number),
+        lines: g.rows.slice(0, content.annals.year.cite).map((r) => r['event'] as number),
         weight: g.def.weight,
       });
   });

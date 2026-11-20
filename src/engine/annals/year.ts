@@ -87,10 +87,10 @@ export function writeYear(ctx: SystemContext, year: number): number {
   const { world, content, state } = ctx;
   const rows = tableOf(world, 'annalLine').filter((r) => r['year'] === year);
   const { head } = headOf(groupsOf(content, rows), content.annals.titles.quietYear);
-  const line = state['yearOpened'] ?? 0;
+  const line = turnLine(world, state['yearOpened'] ?? 0);
   const sentences = [
     ...seasonsOf(world, content, year),
-    numbersOf(content, rows, turnLine(world, line)),
+    numbersOf(content, rows, line),
     ...sayOf(world, content, line),
     ...whoseOf(world, content, rows),
   ];

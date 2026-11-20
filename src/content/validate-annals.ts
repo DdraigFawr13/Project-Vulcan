@@ -26,6 +26,8 @@ export function checkAnnals(files: Files): string[] {
       if (line.many !== undefined && line.item === undefined) errors.push(`${at}: many needs item`);
       told.add(line.event);
     }
+  // The engine adds the elder to `leads` when no line says who leads.
+  if (!a.sections.some((s) => s.id === 'leads')) errors.push('annals.sections: no "leads"');
   for (const id of a.skip) if (!ids.has(id)) errors.push(`annals.skip: "${id}" is no event`);
   for (const e of events)
     if ((e.importance === 3 || e.notable) && !told.has(e.id) && !a.skip.includes(e.id))

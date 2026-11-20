@@ -58,7 +58,7 @@ export const ANNALS_SCHEMAS = {
       numbers: text,
       nouns,
       whose: text,
-      // At most this many lines cited by the whose-year sentence.
+      // At most this many lines cited by one sentence.
       cite: num({ min: 1 }),
     }),
   }),

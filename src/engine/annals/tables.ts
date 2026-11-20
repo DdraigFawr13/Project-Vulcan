@@ -13,7 +13,8 @@ export const ANNALS_TABLES: Schemas = {
     ...{ year: 'int', season: 'int' },
   },
   /** A recap: `kind` `season` or `year`, its year and season (the year's last, for a year), the
-   * tick it was written, its `title` and bare `head`, and the season line written at its turn. */
+   * tick it was written, its `title` and bare `head`, and the season line written at its turn
+   * (the one that opens the next span). */
   annal: {
     ...{ kind: 'text', year: 'int', season: 'int', tick: 'int' },
     ...{ title: 'text', head: 'text', line: 'event' },
