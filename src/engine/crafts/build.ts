@@ -138,7 +138,7 @@ const AROUND = [
 ] as const;
 
 /** The tiles round a plan `p` could stand on and reach, nearest them first. */
-function standsFor(ctx: SystemContext, p: EntityRow, x: number, y: number) {
+export function standsFor(ctx: SystemContext, p: EntityRow, x: number, y: number) {
   const map = ctx.world.map;
   const here = spotOf(p);
   return AROUND.map(([dx, dy]) => ({ x: x + dx, y: y + dy, z: 0 }))
@@ -157,8 +157,9 @@ function besideReachable(ctx: SystemContext, p: EntityRow, plan: EntityRow): boo
   return standsFor(ctx, p, plan['x'] as number, plan['y'] as number).length > 0;
 }
 
-/** Sets off to stand next to the plan's tile; false when nowhere next to it can be reached. */
-function goBeside(ctx: SystemContext, p: EntityRow, x: number, y: number): boolean {
+/** Sets off to stand next to the plan's tile; false when nowhere next to it can be reached. The
+ * mason sets walls the same way (mason.ts). */
+export function goBeside(ctx: SystemContext, p: EntityRow, x: number, y: number): boolean {
   for (const s of standsFor(ctx, p, x, y)) if (same(s, spotOf(p)) || walkTo(ctx, p, s)) return true;
   return false;
 }

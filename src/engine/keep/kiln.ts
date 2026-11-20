@@ -11,6 +11,9 @@ import {
   digsFor,
   freeBlock,
   greenOf,
+  housesOf,
+  limeCanBeHad,
+  limeWanted,
   planPart,
   plansOf,
   sizeOfStation,
@@ -61,7 +64,10 @@ export function planKiln(ctx: SystemContext): void {
   if (stationOf(world, 'kiln')) return;
   const lost = lostOf(world, def.kinds, 'walled');
   const wall = lost < def.kiln.need ? lacking(ctx) : undefined;
-  if (lost < def.kiln.need && !wall) return;
+  // 6B: lime the walls want, with limestone to be had (build/stages.ts).
+  const lime =
+    !wall && lost < def.kiln.need && limeWanted(world, content) > 0 && limeCanBeHad(world, content);
+  if (lost < def.kiln.need && !wall && !lime) return;
   const green = greenOf(world);
   if (!clayCanBeHad(ctx, green)) return;
   const map = world.map;
@@ -81,12 +87,21 @@ export function planKiln(ctx: SystemContext): void {
   found.sort((a, b) => a.score - b.score || a.at.y - b.at.y || a.at.x - b.at.x);
   const at = found.find((f) => canReach(content, map, green, f.at))?.at;
   if (!at) return;
-  const cause = wall ? (wall['line'] as number) : lostLine(world, def.kinds, 'walled');
+  const staged = lime
+    ? housesOf(world).find((h) => h['stage'] === 'stone' || h['stage'] === 'wash')
+    : undefined;
+  const cause = wall
+    ? (wall['line'] as number)
+    : staged
+      ? (staged['stageLine'] as number)
+      : lostLine(world, def.kinds, 'walled');
   const line = ctx.emit('potter.kilnPlanned', {
     causes: cause ? [cause] : [],
     data: {
       where: 'at the edge of town',
-      why: (wall ? def.kiln.whyWalls : def.kiln.why).replace('{count}', String(lost)),
+      why: lime
+        ? content.buildings.masonry.lime.kiln
+        : (wall ? def.kiln.whyWalls : def.kiln.why).replace('{count}', String(lost)),
     },
   });
   const s = sizeOfStation(content, 'kiln');

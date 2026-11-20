@@ -38,6 +38,7 @@ import { MIDDEN_TABLES, planMidden } from './midden.ts';
 import { planSickHouse } from './sickhouse.ts';
 import { planSickroom } from './sickroom.ts';
 import { finishRoads, planRoads, ROAD_TABLES } from './roads.ts';
+import { startStages } from './stages.ts';
 
 function refuse(ctx: SystemContext, kind: string, reason: string, cause: number): void {
   ctx.emit('command.refused', { causes: [cause], data: { kind, reason } });
@@ -146,6 +147,7 @@ export const buildSystem: System = {
     'build.grows',
     'build.growsPrivate',
     'build.growBlocked',
+    ...['build.stageWanted', 'build.stageWaits'],
     'furniture.benchPlaced',
     'fire.planned',
     'fire.plannedCold',
@@ -294,6 +296,8 @@ export const buildSystem: System = {
     // P5.10: a road on the most worn way, as stone allows.
     finishRoads(ctx);
     planRoads(ctx, green);
+    // 6B: houses grow in stages from need (stages.ts).
+    startStages(ctx);
     checkBuilders(ctx);
   },
 };

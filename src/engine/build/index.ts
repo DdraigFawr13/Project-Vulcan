@@ -109,3 +109,15 @@ export {
   thatchSpots,
   wornThatch,
 } from './roofs.ts';
+export {
+  bouldersBy,
+  clayMortarWanted,
+  housesAt,
+  limeCanBeHad,
+  limeWanted,
+  noteBurn,
+  sayStageWaits,
+  slateCanBeHad,
+  slateFor,
+  wallsOf,
+} from './stages.ts';

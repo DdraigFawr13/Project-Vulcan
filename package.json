@@ -28,6 +28,7 @@
     "families": "node tools/families.mjs",
     "heat": "node tools/heat.mjs",
     "paths": "node tools/paths.mjs",
+    "stages": "node tools/stages.mjs",
     "test": "vitest run",
     "test:related": "vitest related --run",
     "test:browser": "playwright test",

@@ -9,7 +9,7 @@
 // ledger lines; trips are not. The miner digs clay for it when the stores hold too little
 // (`clayWanted`, clay.ts).
 import type { EntityRow, WorldState } from '../core/index.ts';
-import { bricksWanted, kilnOf } from '../build/index.ts';
+import { bricksWanted, clayMortarWanted, kilnOf } from '../build/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { potsAt } from '../keep/index.ts';
 import { depotAt, inStore, itemsOf, layItem, takeFrom } from '../goods/index.ts';
@@ -78,10 +78,12 @@ function potsWanted(ctx: SystemContext): number {
 export function clayWanted(ctx: SystemContext): number {
   const { world, content } = ctx;
   const def = content.work.potter;
-  if (!kilnOf(world)) return 0;
+  // 6B: a clay-mortared stone wall still to set takes clay too (build/stages.ts).
+  const mortar = clayMortarWanted(world, content);
+  if (!kilnOf(world)) return mortar;
   const pots = neediest(ctx) ? Math.max(0, potsWanted(ctx)) : 0;
   const batches = Math.ceil(bricksWanted(world, content).count / def.brick.per);
-  return (pots + batches) * def.clay;
+  return (pots + batches) * def.clay + mortar;
 }
 
 type Task = 'carry' | 'pot' | 'brick';
