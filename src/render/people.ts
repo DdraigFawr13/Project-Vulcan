@@ -1,8 +1,8 @@
 // The people on the map (P2.1): each a body from the `sprites-people` sheet with their clothes and
 // hair laid over it, tinted to the colours drawn for them. Since P2.3 they walk: each snapshot
 // moves them to the tile their row says, and on screen they walk there at the pace they really
-// walked (trail.ts), facing the way they go with their two walk frames, then stand. The walk is a
-// picture choice, never game state.
+// walked (trail.ts), facing the way they go and stepping through their walk frames, then stand.
+// The walk is a picture choice, never game state.
 import Phaser from 'phaser';
 import type { CoatView, PersonView, WalkerView } from '../worker/index.ts';
 import type { Spot } from './finder.ts';
@@ -22,11 +22,27 @@ const TALLER: Readonly<Record<string, number>> = { giant: 4 / 3 };
 /** Where the sprite's corner sits from its tile's corner, for a person drawn `scale` times a
  * tile: centred across the tile with their feet on its lower edge. */
 const liftOf = (scale: number) => ({ x: -(TILE * (scale - 1)) / 2, y: -TILE * (scale - 1) });
-/** Milliseconds per walk frame. */
+/** Milliseconds per walk frame: the drawn two-frame walk, and the whole villagers' PixelLab walks
+ * (Morgan's walk form, Q3 A: steady, 140 ms a step). */
 const STRIDE = 160;
+const STEP = 140;
 /** The unburied dead are drawn grey (P5.8); a carried person lies a few pixels off their carrier. */
 const GREY = 0x8a8a8a;
 const CARRIED = { x: 4, y: 7 };
+
+/** How many walk frames follow a body's standing frame on the sheet. */
+const stepsOf = (tex: Phaser.Textures.Texture, stem: string): number => {
+  let n = 1;
+  while (tex.has(`${stem}.s.${n + 1}`)) n++;
+  return n;
+};
+
+/** The walk frame for how far someone has walked, and whether the drawn two-frame walk lifts
+ * their held tool a pixel. */
+const stepOf = (s: { walked: number; steps: number }): { frame: number; bob: number } => {
+  const frame = 1 + (Math.floor(s.walked / (s.steps > 2 ? STEP : STRIDE)) % s.steps);
+  return { frame, bob: s.steps === 2 && frame === 2 ? 1 : 0 };
+};
 
 const colour = (hex: string): number => Number.parseInt(hex.slice(1), 16);
 
@@ -50,6 +66,8 @@ interface Shown extends Dressed {
   /** The side they last walked towards: they work facing it (V-194). */
   side: 'e' | 'w';
   walked: number;
+  /** How many walk frames the body has after its standing frame 0 (2 drawn, 7 for PixelLab). */
+  steps: number;
   /** Where a carried person lies from their carrier's tile, in pixels. */
   off: { x: number; y: number };
   /** The sprite's corner from its tile's corner (liftOf). */
@@ -224,6 +242,7 @@ export class PeopleSprites {
         frame: 0,
         side: p.id % 2 ? 'w' : 'e',
         walked: 0,
+        steps: stepsOf(this.scene.textures.get(PEOPLE), stem),
         off: { x: 0, y: 0 },
         lift,
       };
@@ -286,11 +305,11 @@ export class PeopleSprites {
         Math.abs(d.dx) > Math.abs(d.dy) ? (d.dx > 0 ? 'e' : 'w') : d.dy > 0 ? 's' : 'n';
       if (d.dx) s.side = d.dx > 0 ? 'e' : 'w';
       s.walked += delta;
-      const frame = 1 + (Math.floor(s.walked / STRIDE) % 2);
+      const { frame, bob } = stepOf(s);
       this.pose(s, facing, frame);
       // The screen runs behind the world: no stroke is drawn until they have walked there.
       const walking = seen && { held: seen.held, load: seen.load };
-      this.work?.draw(s, walking, { facing, bob: frame === 2 ? 1 : 0 });
+      this.work?.draw(s, walking, { facing, bob });
     }
   }
 
@@ -330,7 +349,7 @@ export class PeopleSprites {
     else if (body.key !== s.body.texture.key) s.body.setTexture(body.key, body.frame);
     else if (body.frame) s.body.setFrame(body.frame);
     s.body.setFlipX(side.flip);
-    s.clothes.setFrame(`clothes.${race}.${facing}.${frame}`);
+    if (s.clothes.visible) s.clothes.setFrame(`clothes.${race}.${facing}.${frame}`);
     s.hair?.setFrame(`hair.${look.hair}.${race}.${facing}`);
   }
 }
