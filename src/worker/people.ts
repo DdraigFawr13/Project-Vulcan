@@ -56,12 +56,15 @@ export function peopleOf(world: WorldState): PersonView[] {
       // Best first: by level, then potential; the list order breaks ties (the trade's rule).
       best: [...own].sort((a, b) => b.level - a.level || b.potential - a.potential).slice(0, 3),
       able: band.must.filter((m) => own.some((s) => s.id === m && s.level >= band.able)),
-      traits: traits
-        .filter((t) => t['person'] === p.id)
-        .map((t) => {
-          const def = content.traits.find((d) => d.id === t['trait']);
-          return { name: def?.name ?? String(t['trait']), description: def?.description ?? '' };
-        }),
+      traits: [
+        ...traits
+          .filter((t) => t['person'] === p.id)
+          .map((t) => {
+            const def = content.traits.find((d) => d.id === t['trait']);
+            return { name: def?.name ?? String(t['trait']), description: def?.description ?? '' };
+          }),
+        ...orientationOf(p),
+      ],
       look: {
         hair: p['hair'] as string,
         hairColour: p['hairColour'] as string,
@@ -76,12 +79,22 @@ export function peopleOf(world: WorldState): PersonView[] {
   });
 }
 
-/** Everyone, again, when anyone came, stayed or left since the last call; else none. */
+/** Whom they are drawn to (P6.1), shown as a trait once the family system has drawn it. */
+function orientationOf(p: EntityRow): { name: string; description: string }[] {
+  const def = content.family.orientations.find((o) => o.id === p['orientation']);
+  if (!def) return [];
+  return [{ name: (p['sex'] === 'f' && def.woman) || def.name, description: def.description }];
+}
+
+/** Everyone, again, when anyone came, stayed or left (or was first drawn, P6.1) since the last
+ * call; else none. */
 export function peopleFeed() {
   let sent = '';
   return {
     next(world: WorldState): PersonView[] | undefined {
-      const who = JSON.stringify((world.entities['person'] ?? []).map((p) => [p.id, p['status']]));
+      const who = JSON.stringify(
+        (world.entities['person'] ?? []).map((p) => [p.id, p['status'], p['orientation']]),
+      );
       if (who === sent) return undefined;
       sent = who;
       return peopleOf(world);

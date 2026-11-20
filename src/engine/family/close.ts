@@ -9,9 +9,10 @@ import {
   type WorldState,
 } from '../core/index.ts';
 import { addEntity, alive, far } from '../entity/index.ts';
+import { drawnTo } from './drawn.ts';
 import { bondOf, bondsOf, unwed } from './tables.ts';
 
-/** Whether two may court: both unwed and grown, and a woman and a man unless `anySex`. */
+/** Whether two may court: both unwed and grown, and each drawn to the other (drawn.ts). */
 export function mayCourt(
   world: WorldState,
   content: EngineContent,
@@ -19,7 +20,7 @@ export function mayCourt(
   q: EntityRow,
 ): boolean {
   if (!unwed(world, content, p) || !unwed(world, content, q)) return false;
-  return content.family.court.anySex || p['sex'] !== q['sex'];
+  return drawnTo(content, p, q) && drawnTo(content, q, p);
 }
 
 /** Each person's traits, by id. */

@@ -30,6 +30,7 @@ function couple(seed: string): { w: World; p: EntityRow; q: EntityRow } {
   step(w, sim, 60);
   const p = alive(w).find((x) => x['sex'] === 'f')!;
   const q = alive(w).find((x) => x['sex'] === 'm')!;
+  for (const x of [p, q]) x['orientation'] = 'straight';
   return { w, p, q };
 }
 
@@ -52,6 +53,23 @@ describe('families: courtship and weddings', () => {
     Object.assign(q, { y: (p['y'] as number) + fam.near + 1 });
     hourTogether(w, sim.content);
     expect(bondOf(w, p.id, q.id)?.['close'] ?? 0).toBe(like);
+  });
+
+  it('everyone is drawn to someone or no one, and only two drawn to each other grow close', () => {
+    const { w, p, q } = couple('smoke');
+    const kinds = fam.orientations.map((o) => o.id);
+    for (const x of alive(w)) expect(kinds).toContain(x['orientation']);
+    for (const x of [p, q]) Object.assign(x, { doing: 'relax', z: 0, x: 10, y: 10 });
+    // He is drawn to men: nothing grows between them.
+    q['orientation'] = 'gay';
+    hourTogether(w, sim.content);
+    expect(bondOf(w, p.id, q.id)).toBeUndefined();
+    // Drawn to both, he and she grow closer.
+    q['orientation'] = 'bisexual';
+    hourTogether(w, sim.content);
+    const like = likeOf(w, sim.content, p.id, q.id);
+    expect(like).toBeGreaterThan(0);
+    expect(bondOf(w, p.id, q.id)?.['close']).toBe(like);
   });
 
   it('two grown close court, wed after the courting days and feast on the green', () => {

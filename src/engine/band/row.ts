@@ -33,6 +33,8 @@ export const NEWCOMER_FIELDS = {
   /** The tick from which they want a home of their own (P5.14), and the line that said so. */
   wantsFrom: 'int',
   wants: 'event',
+  /** Whom they are drawn to (family.json `orientations`), drawn by the family system; '' until. */
+  orientation: 'text',
 } as const;
 
 /** Adds `p` standing at (x, y) with `status`, their skills (smithing drawn apart) and traits. */
@@ -87,7 +89,7 @@ export function addPerson(
       knownWhy: '',
       waits: 0,
     },
-    ...{ wantsFrom: 0, wants: 0, ...extra },
+    ...{ wantsFrom: 0, wants: 0, orientation: '', ...extra },
   });
   for (const skill of content.band.skills)
     addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0 });

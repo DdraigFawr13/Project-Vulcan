@@ -5,7 +5,13 @@
   "like": {"base": 1, "shared": 1, "clash": 2},
   "told": 3,
   "fade": 2,
-  "court": {"from": 50, "days": 28, "part": 20, "anySex": false},
+  "court": {"from": 50, "days": 28, "part": 20},
+  "orientations": [
+    {"id": "straight", "name": "Straight", "drawn": "other", "weight": 905, "description": "Drawn to the other sex."},
+    {"id": "bisexual", "name": "Bisexual", "drawn": "both", "weight": 52, "description": "Drawn to women and men alike."},
+    {"id": "gay", "name": "Gay", "woman": "Lesbian", "drawn": "same", "weight": 34, "description": "Drawn to their own sex."},
+    {"id": "asexual", "name": "Asexual", "drawn": "none", "weight": 9, "description": "Drawn to no one; they will not court."}
+  ],
   "feastDays": 3,
   "words": {"together": "spend their evenings together", "alike": "are of a like mind", "tales": "trade tales", "want": "They want a home of their own.", "live": "They will live in {whose} home."},
   "memories": {"wed": "married", "feast": "wedding-feast"}

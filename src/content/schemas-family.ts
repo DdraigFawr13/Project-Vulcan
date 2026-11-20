@@ -1,6 +1,6 @@
 // Shape of Vulcan's family file (src/content/data/family.json, P6.1, V-145, V-161): how closeness
 // grows between two unwed adults, when they court and when they wed.
-import { bool, num, obj, ref } from './schema';
+import { list, num, obj, oneOf, opt, ref } from './schema';
 import { count, text, texts } from './schema-fields';
 
 export const FAMILY_SCHEMAS = {
@@ -18,8 +18,20 @@ export const FAMILY_SCHEMAS = {
     // Closeness lost each day, per cent.
     fade: num({ min: 0, max: 100 }),
     // At `from` closeness two court; after `days` days courting they wed, unless closeness fell
-    // to `part`. `anySex`: any two may court, else a woman and a man.
-    court: obj({ from: num({ min: 1 }), days: num({ min: 1 }), part: count, anySex: bool() }),
+    // to `part`. Two court only when each is drawn to the other (`orientations`).
+    court: obj({ from: num({ min: 1 }), days: num({ min: 1 }), part: count }),
+    // Whom a person is drawn to, one drawn per person by `weight` (per thousand, after the
+    // Gallup 2025 US shares): the `other` sex, the `same`, `both` or `none`. `woman`: her word.
+    orientations: list(
+      obj({
+        id: text,
+        name: text,
+        woman: opt(text),
+        drawn: oneOf('other', 'same', 'both', 'none'),
+        weight: count,
+        description: text,
+      }),
+    ),
     // A wedding feast only while the store holds `feastDays` days of food for everyone.
     feastDays: count,
     // Words for the courting and wedding lines; {whose} is filled with the home's owner.

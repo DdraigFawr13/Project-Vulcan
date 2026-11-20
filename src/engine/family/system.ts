@@ -4,6 +4,7 @@
 import { clockAt } from '../core/index.ts';
 import type { System } from '../sim/index.ts';
 import { hourTogether } from './close.ts';
+import { drawOrientations } from './drawn.ts';
 import { courtingDay } from './court.ts';
 import { FAMILY_TABLES } from './tables.ts';
 
@@ -11,9 +12,11 @@ export const familySystem: System = {
   id: 'family',
   every: 'hour',
   emits: ['family.courting', 'family.parted', 'family.wed', 'family.noFeast'],
+  stream: 'kin',
   tables: FAMILY_TABLES,
   run(ctx) {
     const { world, content } = ctx;
+    drawOrientations(world, content, ctx.rng());
     hourTogether(world, content);
     if (clockAt(world.tick, content.calendar).hour === content.family.hour) courtingDay(ctx);
   },

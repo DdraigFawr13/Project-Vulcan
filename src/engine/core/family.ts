@@ -14,7 +14,16 @@ export interface FamilyDef {
   told: number;
   /** Closeness lost each day, per cent. */
   fade: number;
-  court: { from: number; days: number; part: number; anySex: boolean };
+  court: { from: number; days: number; part: number };
+  /** Whom a person is drawn to, one drawn per person by `weight`; `woman` is her word for it. */
+  orientations: readonly {
+    id: string;
+    name: string;
+    woman?: string;
+    drawn: 'other' | 'same' | 'both' | 'none';
+    weight: number;
+    description: string;
+  }[];
   /** A wedding feast only while the store holds this many days of food for everyone. */
   feastDays: number;
   /** Words for the courting and wedding lines ({whose}: the kept home's owner). */
