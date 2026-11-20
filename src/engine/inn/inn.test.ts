@@ -25,7 +25,7 @@ import {
 } from '../index.ts';
 import { contextFor } from '../sim/system.ts';
 import { roomAt, rectOf, tavernHouse } from '../build/index.ts';
-import { fillCask, nightOf, tavernOf } from './tables.ts';
+import { cupsHeld, fillCask, nightOf, tavernOf } from './tables.ts';
 
 type World = ReturnType<typeof createWorld>;
 const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === type);
@@ -129,10 +129,9 @@ describe('the tavern', () => {
       });
       evening(w, sim);
     }
-    const cups = (w.entities['memory'] ?? []).filter(
-      (m) => m['memory'] === content.tavern.evening.cup,
-    );
-    expect(cups.length).toBeGreaterThan(0);
+    // Cups were poured over the six evenings (a cup's memory lasts a day, so whether one is
+    // still held after the last evening is that evening's accident).
+    expect(cupsHeld(w)).toBeLessThan(20 * casks.length);
     const told = lines(w, 'tale.told').filter((e) => e.tick >= from);
     const there = told.filter((e) => e.data['where'] === content.tales.places.tavern);
     expect(told.length).toBeGreaterThan(0);

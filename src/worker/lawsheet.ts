@@ -16,7 +16,14 @@ import { feastDaysView } from './faithview.ts';
 import type { AnswerView, RuledLawView } from './protocol-law.ts';
 
 /** The laws shown this way, in the sheet's order. */
-export const RULED = ['rations', 'sickness', 'punishment', 'hearths', 'feasts'] as const;
+export const RULED = [
+  'rations',
+  'sickness',
+  'punishment',
+  'hearths',
+  'feasts',
+  'apprentices',
+] as const;
 
 const ORDER = ['refuses', 'grumbles', 'obeys'];
 const fill = (t: string, vars: Record<string, string | number>): string =>

@@ -60,6 +60,8 @@ export interface LawSettingDef {
   values?: Readonly<Record<string, number>>;
   /** 6B Feasts: the feast days a year kept beyond the harvest home. */
   feasts?: number;
+  /** 6B Apprentices (P6.13): every master takes one (`all`), by choice, or none. */
+  apprentices?: 'all' | 'choice' | 'none';
 }
 
 export interface LawDef {
