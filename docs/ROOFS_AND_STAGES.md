@@ -23,3 +23,12 @@ Masonry (`mason`, stoneworking, strength 9): one mason per staged house (`mason`
 ## Seeds
 
 Measured with `node tmp` probes on 2026-11-20, within 40 tiles of the start: anvil and smoke have marsh, tallow much marsh, ledger-1 none, so ledger-1 stands roofless until its first harvest's straw.
+
+Ten years, default levers (`npm run stages`, 2026-11-20): stages wanted / walls rebuilt / roofs slated / stages still open.
+
+- anvil: 5 / 3 / 0 / 2 (no slate boulder reachable; stone set in clay, waits on the miner's clay)
+- smoke: 8 / 1 / 2 / 5 (lime mortar; 15 lime burnings could not keep up)
+- tallow: 4 / 4 / 0 / 0 (lime mortar)
+- ledger-1: 8 / 4 / 4 / 0 (clay mortar; slate waited a day for the mason's split)
+
+No seed builds in daub, so limewash is shown only by `crafts/mason.test.ts`.
