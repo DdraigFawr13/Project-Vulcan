@@ -36,7 +36,7 @@ export function leakOf(world: WorldState, content: EngineContent, piece: EntityR
     const part = content.buildings.parts[built[n]! - 1];
     sum += (part && leak[part.id]) ?? open;
   }
-  return Math.floor(sum / edge.size);
+  return Math.max(1, Math.floor(sum / edge.size));
 }
 
 /** The heat (tenths of a degree) a fire drives its room's air towards now. */

@@ -118,6 +118,7 @@ export const peopleSystem: System = {
     'fire.lit',
     'fire.built',
     'fire.banked',
+    'fire.stoked',
     'furniture.made',
     'work.felled',
     'work.tookUpBuilding',
