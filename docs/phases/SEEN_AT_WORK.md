@@ -8,7 +8,7 @@ A side track built beside 6B and 6C: colonists who are interesting to watch. Mor
 - [ ] Part 1, tools in hand, carried loads and work motions (screens); mock-up approved 2026-11-20 (V-194)
 - [ ] Part 2, required tools, knapping and five new tools (engine)
 - [x] Part 3 mock-up answered, 2026-11-20 (https://claude.ai/artifact/FSWME24XACU6aYDSz66UX8, every recommendation)
-- [ ] Part 3, outer clothes that show (screens)
+- [x] Part 3, outer clothes that show (screens), 2026-11-20
 
 ## Design (VR-62)
 

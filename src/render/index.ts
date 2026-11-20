@@ -6,6 +6,7 @@ import {
   type AnimalView,
   type AuraView,
   type BuildView,
+  type CoatView,
   type ChunkView,
   type ClockView,
   type GoodsView,
@@ -108,6 +109,7 @@ export function startRenderer(
   });
   const l = layersOf(game, scene, parent);
   watchAnimalFinder(l);
+  watchCoatTrial(l);
   return { ...viewHandle(l), ...peopleHandle(l), ...goodsHandle(l) };
 }
 
@@ -201,6 +203,18 @@ function viewHandle(l: Layers) {
     fps: () => game.loop.actualFps,
     destroy: () => game.destroy(true),
   };
+}
+
+/** The browser check of the coats (V-190) has no cold to wait for: this event dresses everyone
+ * drawn in one coat and look (`detail` a CoatView, none to undress), a picture only, and writes
+ * how many are drawn in it to `data-coats`. */
+function watchCoatTrial({ game, parent, people }: Layers): void {
+  parent.addEventListener('vulcan:try-coat', (e) => {
+    const coat = (e as CustomEvent<CoatView | undefined>).detail;
+    game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+      parent.dataset['coats'] = String(people.tryCoat(coat));
+    });
+  });
 }
 
 /** The people and animals on screen, and finding them. */

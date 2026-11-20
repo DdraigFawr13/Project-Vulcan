@@ -16,5 +16,10 @@ export {
   changeNeed,
   coldOutdoors,
   crossed,
-  feltAt, moodOf, needOf, NEEDS_TABLES, seedPerson } from './needs.ts';
+  feltAt,
+  moodOf,
+  needOf,
+  NEEDS_TABLES,
+  seedPerson,
+} from './needs.ts';
 export { sees, seenBy } from './sight.ts';

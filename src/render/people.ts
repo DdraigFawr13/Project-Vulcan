@@ -66,6 +66,8 @@ export class PeopleSprites {
   /** The coat each person wears on the map now (V-190), as the worker last said. */
   private coat = new Map<number, CoatView>();
   private coats: CoatTextures | undefined;
+  /** One coat everyone is drawn in, for the browser check (index.ts `vulcan:try-coat`). */
+  private tried: CoatView | undefined;
   private z = 0;
   private live = false;
   private readonly trails = new Trails();
@@ -126,6 +128,19 @@ export class PeopleSprites {
     else this.coat.delete(w.id);
     const s = this.shown.get(w.id);
     if (s?.coats) this.pose(s, s.facing, s.frame);
+  }
+
+  /** Draws everyone in `coat` (none: as the worker says again); returns how many are drawn in it. */
+  tryCoat(coat: CoatView | undefined): number {
+    this.tried = coat;
+    let dressed = 0;
+    for (const s of this.shown.values()) {
+      if (!s.coats) continue;
+      this.pose(s, s.facing, s.frame);
+      const frame = s.body.frame.name;
+      if (coat && (s.body.texture.key !== PEOPLE || frame.includes(`.${coat.art}.`))) dressed++;
+    }
+    return dressed;
   }
 
   setLevel(z: number): void {
@@ -258,7 +273,7 @@ export class PeopleSprites {
     const { race, look } = s.view;
     s.facing = facing;
     s.frame = frame;
-    const coat = s.coats ? this.coat.get(s.view.id) : undefined;
+    const coat = s.coats ? (this.tried ?? this.coat.get(s.view.id)) : undefined;
     const body = this.coats?.body(s.stem, coat, facing, frame);
     if (!body) s.body.setFrame(`${s.stem}.${facing}.${frame}`);
     else if (body.key !== s.body.texture.key) s.body.setTexture(body.key, body.frame);

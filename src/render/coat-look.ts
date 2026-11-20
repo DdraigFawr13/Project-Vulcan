@@ -29,6 +29,15 @@ export function readPalette(gpl: string): Rgb[] {
     .map((p) => [Number(p[0]), Number(p[1]), Number(p[2])] as const);
 }
 
+/** The distinct opaque colours of an RGBA image: the packed people sheet is snapped to the game's
+ * palette, so its colours are a palette the looks can snap to (render cannot read `art/`). */
+export function sheetColours(data: Uint8ClampedArray): Rgb[] {
+  const seen = new Set<number>();
+  for (let i = 0; i < data.length; i += 4)
+    if (data[i + 3]! >= 128) seen.add((data[i]! << 16) | (data[i + 1]! << 8) | data[i + 2]!);
+  return [...seen].map((k) => [k >> 16, (k >> 8) & 255, k & 255] as const);
+}
+
 /** The nearest palette colour, weighted for the eye as the art scripts weigh it. */
 function snapper(palette: readonly Rgb[]): (c: Rgb) => Rgb {
   const cache = new Map<number, Rgb>();
@@ -157,7 +166,16 @@ export function coatLook(
     hem.set(x, Math.max(hem.get(x) ?? -1, y));
     neck.set(x, Math.min(neck.get(x) ?? Infinity, y));
   }
-  const k: Work = { base, out: new Uint8ClampedArray(coat), mask, cells, w, hem, neck, snap: snapper(palette) };
+  const k: Work = {
+    base,
+    out: new Uint8ClampedArray(coat),
+    mask,
+    cells,
+    w,
+    hem,
+    neck,
+    snap: snapper(palette),
+  };
   if (look === 'ragged') ragged(k, seed);
   else fine(k);
   return k.out;

@@ -114,7 +114,10 @@ export function feltAt(world: WorldState, content: EngineContent, i: number): nu
 }
 
 /** The temperature a person feels where they stand, before their clothes. */
-function feelsBare({ world, content }: Pick<SystemContext, 'world' | 'content'>, p: EntityRow): number {
+function feelsBare(
+  { world, content }: Pick<SystemContext, 'world' | 'content'>,
+  p: EntityRow,
+): number {
   if ((p['z'] as number) > 0) return content.life.warmth.below;
   return feltAt(world, content, (p['y'] as number) * world.map.width + (p['x'] as number));
 }

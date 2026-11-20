@@ -68,7 +68,11 @@ export function coatOf(world: WorldState, p: EntityRow): CoatView | undefined {
   const worth = item['quality'] as string;
   // The worth list runs finest first.
   const look =
-    left < content.clothes.ragged ? 'ragged' : worth === content.clothes.worth[0]?.id ? 'fine' : 'plain';
+    left < content.clothes.ragged
+      ? 'ragged'
+      : worth === content.clothes.worth[0]?.id
+        ? 'fine'
+        : 'plain';
   return { art, left, worth, look };
 }
 

@@ -4,12 +4,9 @@
 // small canvas texture of its own the first time anyone needs it. Which coat and look come from the
 // worker's people view (GAME-02); this only draws them.
 import Phaser from 'phaser';
-import gpl from '../../art/palette.gpl?raw';
 import type { CoatView } from '../worker/index.ts';
-import { coatLook, readPalette } from './coat-look.ts';
+import { coatLook, sheetColours } from './coat-look.ts';
 import { PEOPLE } from './sheets.ts';
-
-const palette = readPalette(gpl);
 
 /** A texture and frame to draw a body with. */
 export interface BodyFrame {
@@ -26,6 +23,8 @@ const hashOf = (s: string): number => {
 
 export class CoatTextures {
   private pixels: ImageData | undefined;
+  /** The sheet's own colours: all from the game's palette, so every look stays on it. */
+  private palette: ReturnType<typeof sheetColours> = [];
   private readonly scene: Phaser.Scene;
 
   constructor(scene: Phaser.Scene) {
@@ -44,7 +43,8 @@ export class CoatTextures {
     const drawn = `${stem}.${coat.art}.${facing}.${frame}`;
     if (coat.look === 'plain') return { key: PEOPLE, frame: drawn };
     const key = `coat|${drawn}|${coat.look}`;
-    if (!this.scene.textures.exists(key)) this.make(key, bare, drawn, coat.look, `${stem}.${facing}`);
+    if (!this.scene.textures.exists(key))
+      this.make(key, bare, drawn, coat.look, `${stem}.${facing}`);
     return this.scene.textures.exists(key) ? { key } : { key: PEOPLE, frame: drawn };
   }
 
@@ -54,13 +54,19 @@ export class CoatTextures {
     if (!base || !coat) return;
     const canvas = this.scene.textures.createCanvas(key, coat.width, coat.height);
     if (!canvas) return;
-    const out = coatLook(base.data, coat.data, coat.width, look, palette, hashOf(seed));
-    canvas.context.putImageData(new ImageData(Uint8ClampedArray.from(out), coat.width, coat.height), 0, 0);
+    const out = coatLook(base.data, coat.data, coat.width, look, this.palette, hashOf(seed));
+    canvas.context.putImageData(
+      new ImageData(Uint8ClampedArray.from(out), coat.width, coat.height),
+      0,
+      0,
+    );
     canvas.refresh();
   }
 
   /** One frame's pixels, read from the sheet's image (drawn into a canvas once). */
-  private read(name: string): { data: Uint8ClampedArray; width: number; height: number } | undefined {
+  private read(
+    name: string,
+  ): { data: Uint8ClampedArray; width: number; height: number } | undefined {
     const texture = this.scene.textures.get(PEOPLE);
     if (!texture.has(name)) return undefined;
     if (!this.pixels) {
@@ -71,6 +77,7 @@ export class CoatTextures {
       if (!ctx) return undefined;
       ctx.drawImage(img, 0, 0);
       this.pixels = ctx.getImageData(0, 0, c.width, c.height);
+      this.palette = sheetColours(this.pixels.data);
     }
     const f = texture.get(name);
     const [w, h] = [f.cutWidth, f.cutHeight];

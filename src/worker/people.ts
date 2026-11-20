@@ -185,10 +185,7 @@ const withHome = (home: WalkerView['home'], stranger: WalkerView['stranger']) =>
 });
 
 /** What a person wears, a row per garment (V-092, V-134); see clothesview.ts. */
-const wearingOf = (
-  world: WorldState,
-  p: EntityRow,
-): Pick<WalkerView, 'wearing' | 'coat'> => {
+const wearingOf = (world: WorldState, p: EntityRow): Pick<WalkerView, 'wearing' | 'coat'> => {
   const wearing = wearingRows(world, p);
   const coat = coatOf(world, p);
   return { ...(wearing.length && { wearing }), ...(coat && { coat }) };
