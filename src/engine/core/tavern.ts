@@ -6,6 +6,7 @@ export interface TavernDef {
     start: number;
     size: string;
     names: readonly string[];
+    sign: string;
     wants: readonly { kind: string; count: number }[];
   };
   brew: {
