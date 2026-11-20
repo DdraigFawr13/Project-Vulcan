@@ -15,6 +15,17 @@ Morgan's answers (form 2026-11-20):
 - **PixelLab** (Q7 B, with a note): keep the game-drawn work motions now and plan PixelLab work animations for the final art pass. Add PixelLab walk animations now: each whole villager (15, plus the giant) in 4 directions with `animate-with-text-v3`, replacing the two walk frames. Estimate about 160 generations (16 × 4 at the trial's 2 to 3 each); 321 left on 2026-11-20. Shown to Morgan as a before and after before it lands (ART.md).
 - **Side frames.** Some whole villagers' east and west frames face the same way (several halflings and elves, from a quick look). The build checks each and mirrors the wrong ones so a swing strikes towards its work.
 
+## Part 2
+
+Numbers form answered 2026-11-20 (https://claude.ai/artifact/HJaWXaSVTfGZ4ATbD8sgRi, every recommendation, no notes; V-195). Numbers from five years on each test seed with today's code (scripts and results in the project files under `vulcan/seen-at-work-p2/`): picks and spears never ran out; with today's tool life Anvil's last axe broke on day 108 and it made no metal tool in five years, while at half life its first metal tool came on day 116 (Smoke 20, Tallow 52, Ledger-1 25); axe work was taken up while every axe was held by others 10 to 111 times per seed. The build's output mock-up re-runs these with the rule in place.
+
+- **Busy tools (Q1).** Someone who would take up a needed kind's work while every tool of it is held by others knaps their own if they can, else does other work.
+- **Half life (Q2).** All stone tools, the cart's included: stone `life` 3600 to 1800 work minutes in `tools.json`.
+- **Hammer (Q3).** Gains smithing in its `serves` and is needed only there; building keeps the 75% speed without one.
+- **New tools (Q4 to Q8).** Needed: the bone needle for tailoring, and the chisel for dressed stone only (rough stone walls go up without one). Speed only: the sickle (reaping, cutting thatch), the fishing line, and the saw, which takes carpentry over from the hammer.
+- **Cart (Q9).** One of each new tool, beside its three stone tools of each old kind.
+- **Hunting bow (Q10).** Stays with Phase 8 (P8.1).
+
 ## Part 3
 
 Mock-up answered 2026-11-20 (https://claude.ai/artifact/FSWME24XACU6aYDSz66UX8, every recommendation; sources and raw art in the project files under `vulcan/saw-clothes/`):
