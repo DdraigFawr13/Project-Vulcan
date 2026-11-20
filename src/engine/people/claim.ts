@@ -41,6 +41,7 @@ function moveForPrivacy(ctx: SystemContext, p: EntityRow, owned: EntityRow): voi
     return (
       h?.['state'] === 'built' &&
       !h['sick'] &&
+      !h['inn'] &&
       mainOf(world, h).id === home &&
       roomAt(world, content, x, y)?.sleepers === 0 &&
       canReach(content, world.map, spotOf(p), spotOf(b))
@@ -84,7 +85,7 @@ export function claimBed(ctx: SystemContext, p: EntityRow): void {
   const free = piecesOf(world, 'bed').filter((b) => {
     const h = houseAt(world, b['x'] as number, b['y'] as number);
     const main = h && mainOf(world, h);
-    if (b['owner'] || b['z'] !== 0 || h?.['sick']) return false;
+    if (b['owner'] || b['z'] !== 0 || h?.['sick'] || h?.['inn']) return false;
     return own
       ? main?.id === own.id && h!['state'] === 'built'
       : !main || !othersHome(world, main, p.id);

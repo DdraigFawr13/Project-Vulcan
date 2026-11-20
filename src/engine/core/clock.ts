@@ -26,6 +26,9 @@ export interface Clock {
   season: number;
 }
 
+/** The game day a world is on, counted from 0. */
+export const today = (world: WorldState): number => Math.floor(world.tick / TICKS_PER_DAY);
+
 export const ticksPerMonth = (calendar: CalendarDef): number =>
   calendar.daysPerMonth * TICKS_PER_DAY;
 

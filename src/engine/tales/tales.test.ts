@@ -26,7 +26,7 @@ const tuned = {
   ...content,
   tales: {
     ...content.tales,
-    pass: { meal: 100, leisure: 100, work: 100, hearth: 100, perDay: 2 },
+    pass: { meal: 100, leisure: 100, work: 100, hearth: 100, tavern: 100, perDay: 2 },
     bend: { chance: 100, traits: {}, softer: 0 },
   },
 };
