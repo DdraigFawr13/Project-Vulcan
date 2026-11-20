@@ -147,7 +147,6 @@ export function keptDays(world: WorldState, content: EngineContent): EntityRow[]
     .slice(0, n);
 }
 
-
 /** The feast day's supper called for today, if any. */
 export const holyToday = (world: WorldState): EntityRow | undefined =>
   (world.entities['feast'] ?? []).find(

@@ -22,7 +22,6 @@ export const FEAST_TABLES: Schemas = {
   },
 };
 
-
 /** The supper called for this evening and not yet eaten, if any. */
 export const feastOf = (world: WorldState): EntityRow | undefined =>
   (world.entities['feast'] ?? []).find((f) => f['state'] === 'called' && f['on'] === today(world));

@@ -7,11 +7,8 @@ export {
   cupsTonight,
   fillCask,
   inTavern,
-  INN_TABLES,
   keeperOf,
   kegsOf,
-  nightOf,
-  readyKeg,
   tavernName,
   tavernOf,
 } from './tables.ts';

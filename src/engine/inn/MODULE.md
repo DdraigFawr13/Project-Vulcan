@@ -1,8 +1,8 @@
 # inn
 
-The tavern (6B, V-188): its keeper, evenings, ale, brawls and hangovers.
+The tavern (6B, V-188): evenings, ale, brawls, hangovers.
 
-- **Public API:** `index.ts`: `innSystem` (in `SYSTEMS` after faith, hourly, stream `inn`), `INN_TABLES`, `atTheInn(ctx, p, evening)` (people mind, at leisure), `hungOver(ctx, p)` (people mind, a lost minute at work), reads `tavernOf`, `tavernName`, `inTavern`, `keeperOf`, `nightOf`, `cupsTonight`, `kegsOf`, `readyKeg`, `cupsHeld`, and `fillCask` (crafts brew).
+- **Public API:** `index.ts`: `innSystem` (in `SYSTEMS` after faith, hourly, stream `inn`), `atTheInn(ctx, p, evening)` (people mind, at leisure), `hungOver(ctx, p)` (people mind, a lost minute at work), reads `tavernOf`, `tavernName`, `inTavern`, `keeperOf`, `cupsTonight`, `kegsOf`, `cupsHeld`, and `fillCask` (crafts brew).
 - **Content:** `tavern.json`: `build` (the Tavern row's `start`, house `size`, `names`, `wants`), `brew`, `stock` (the Ale row), `evening`, `keeper`, `bend`, `brawl`, `hungOver`; memories `drank-ale`, `hung-over`; tales.json `pass.tavern`, `places.tavern`, tale `tavern-brawl`.
 - **Naming and keeper (`keeper.ts`):** a built tavern house with no row is named from `build.names` (`tavern.named`, citing the house built). The innkeeper is the living grown-up who puts Inn-keeping highest, ties to the sociable, then the lowest id (`tavern.keeper` on each change, citing the priority).
 - **Evenings (`evening.ts`):** once an evening, as each grown-up's work ends, `evening.go` per cent plus traits say whether they go; the keeper always does, and on a winter evening everyone at leisure does, in place of the gathering by a lit hearth (they still mend by its fire). In the tavern they relax until bed, on a chair first. Each hour the keeper, when there, pours a cup from the fullest ready cask to each with fewer than `evening.cups` (`lowCups` when mood is under `low`): the `drank-ale` memory. When the ale runs out or no keeper is there they leave after `evening.leave` minutes, and once gone get no more.
