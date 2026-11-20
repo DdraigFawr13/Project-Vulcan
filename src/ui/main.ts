@@ -6,7 +6,6 @@ import {
   spawnSimWorker,
   type FromWorker,
   type PersonView,
-  type Speed,
   type TileView,
   type ToWorker,
 } from '../worker/index.ts';
@@ -20,6 +19,8 @@ import { Panel } from './panel.ts';
 import { Picker } from './picker.ts';
 import { Saves } from './saves.ts';
 import { Sheets } from './sheets.ts';
+import { SpeedState } from './speed.ts';
+import { Stops } from './stops.ts';
 import { OLD_SAVE, Title } from './title.ts';
 
 const parent = document.getElementById('game');
@@ -31,10 +32,6 @@ const site = params.get('site');
 const debug = testModeOn(params); // test tools and developer readouts (testmode.ts)
 const worker = spawnSimWorker(debug);
 const send = (message: ToWorker): void => worker.postMessage(message);
-let speed: Speed = 0;
-/** The speed Space resumes to. */
-let lastRunning: Exclude<Speed, 0> = 1;
-let skipping = false; // skipping ahead (P2.7), as of the last snapshot
 let ready = false;
 /** The level on screen (0 the surface), how many lie below, and which of them are reached. */
 let level = 0;
@@ -58,13 +55,8 @@ let title: Title | undefined;
 let titleWaits = false;
 /** The title or the arrival screen covers the game: its bar and keys are hidden until closed. */
 const cover = (on: boolean): void => void hudRoot.classList.toggle('covered', on);
-const setSpeed = (next: Speed): void => {
-  // Until a world is ready, or while a save loads, the worker resets the speed itself.
-  if (stopped || !ready || saves.loading) return;
-  speed = next;
-  if (next !== 0) lastRunning = next;
-  send({ type: 'setSpeed', speed: next });
-};
+const pace = new SpeedState(send, () => !stopped && ready && !saves.loading);
+const setSpeed = pace.set;
 const renderer = startRenderer(parent, {
   onHover: (tile) => hud.showTile(tile),
   onSelect: (tile) => {
@@ -81,7 +73,7 @@ const hud = new Hud(
   hudRoot,
   {
     setSpeed,
-    skip: () => ready && !stopped && !saves.loading && void send({ type: 'skip' }),
+    jump: (span) => ready && !stopped && !saves.loading && void send({ type: 'jump', span }),
     zoom: (direction) => renderer.zoomStep(direction),
     level: (direction) => setLevel(level + direction),
     reload: () => location.reload(),
@@ -113,11 +105,14 @@ const panel = new Panel(
       if (level === z) send({ type: 'inspect', x: tile.x, y: tile.y, z });
     },
     newGame: (next) => roll(next),
-    jump: (span) => ready && !stopped && !saves.loading && void send({ type: 'jump', span }),
     close: () => closePanel(),
   },
   debug,
 );
+const stops = new Stops(panel, (settings, pauseWords) => {
+  send({ type: 'setStops', stops: settings });
+  hud.time.pauseKinds(pauseWords);
+});
 const sheets = new Sheets({
   bar: hud.bar,
   panel,
@@ -155,7 +150,7 @@ const saves = new Saves({
   hud,
   panel,
   send,
-  speed: () => speed,
+  speed: () => pace.speed,
   setSpeed,
   running: () => ready && !stopped,
 });
@@ -173,6 +168,7 @@ function openPanel(kind: PanelButton): void {
   if (kind === 'ledger') panel.showLedger(saves.ledger);
   else if (kind === 'region') send({ type: 'region' });
   else if (kind === 'stock') panel.showStock();
+  else if (kind === 'stops') stops.show();
   else if (kind !== 'saves') sheets.open(kind);
   else void saves.showList();
   hud.showPanel(kind);
@@ -202,7 +198,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       arriving = message.from === 'seed' && message.fresh && people.length > 0;
       sheets.setPeople(people);
       // A loaded world starts paused, like a new one.
-      speed = 0;
+      pace.reset();
       if (message.from === 'save') {
         closePanel();
         saves.loaded();
@@ -222,9 +218,8 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
         skipping: message.skipping,
       });
       if (message.animals) renderer.setAnimals(message.animals);
-      // A skip ends paused in the worker; the bar's speed follows it.
-      if (skipping && !message.skipping) speed = message.speed;
-      skipping = message.skipping;
+      // The worker changes speed itself (a jump ends, a line stops play); the bar follows it.
+      pace.snapshot(message);
       sheets.snapshot(message);
       renderer.setGoods(message.goods, message);
       if (message.build) renderer.setBuild(message.build);
@@ -303,6 +298,7 @@ function fail(message: string): void {
 function tick(): void {
   if (ready && !waiting && !stopped) {
     waiting = true;
+    pace.requested();
     send({ type: 'requestSnapshot' });
   }
   frame = requestAnimationFrame(tick);
@@ -322,23 +318,23 @@ function lookAgain(): void {
 }
 const onKey = (e: KeyboardEvent): void =>
   gameKey(e, hudRoot!, {
-    close: closePanel,
-    pause: () => setSpeed(speed === 0 ? lastRunning : 0),
+    close: () => (hud.time.fold(), closePanel()),
+    pause: pace.toggle,
     speed: setSpeed,
     zoom: (direction) => renderer.zoomStep(direction),
     level: (d) => (debug || reached[level + d - 1] || level + d === 0) && setLevel(level + d),
   });
 
 // A hidden tab pauses, so no game time passes unseen, and resumes at its speed when shown again.
-let hiddenAt: Speed | undefined;
+let hiddenAt: typeof pace.speed | undefined;
 function onVisibility(): void {
   if (document.hidden && hiddenAt === undefined) {
     // Hiding is the last sure moment before a tab is closed or discarded: write the standby copy
     // now, and ask for a fresh autosave in case the tab is only switched away.
     saves.flush();
     saves.autosave();
-    hiddenAt = speed;
-    if (speed !== 0 || skipping) send({ type: 'setSpeed', speed: 0 });
+    hiddenAt = pace.speed;
+    if (pace.speed !== 0 || pace.skipping) send({ type: 'setSpeed', speed: 0 });
   } else if (!document.hidden && hiddenAt !== undefined) {
     if (!stopped && hiddenAt !== 0) send({ type: 'setSpeed', speed: hiddenAt });
     hiddenAt = undefined;

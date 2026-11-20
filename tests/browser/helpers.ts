@@ -10,8 +10,34 @@ export const tick = async (page: Page) =>
 export const alertText = async (page: Page) =>
   (await page.getByTestId('alert').getAttribute('aria-label')) ?? '';
 
-/** Opens `/?seed=<seed>` at 390 x 844, settles valley `site` and arrives, paused on Day 1. */
-export async function settle(page: Page, seed: string, site: number, debug = true) {
+/** Sets every stop kind on this page's device (V-191) before it loads: `slow` makes Next event
+ * stop at every notable line, as these specs were written for; `note` lets play run unpaused. */
+export const stopsAll = (page: Page, act: 'pause' | 'slow' | 'note') =>
+  page.addInitScript((a) => {
+    const kinds = ['death', 'attack', 'food', 'family', 'comings', 'sickness', 'quarrel'];
+    const all = [...kinds, 'danger', 'mood', 'works', 'world'];
+    localStorage.setItem(
+      'vulcan.stops',
+      JSON.stringify(Object.fromEntries(all.map((k) => [k, a]))),
+    );
+  }, act);
+
+/** Chooses a running speed from the speed plate's list. */
+export async function chooseSpeed(page: Page, speed: number, how: 'click' | 'tap' = 'click') {
+  await page.getByTestId('speed-plate')[how]();
+  await page.getByTestId(`speed-${speed}`)[how]();
+}
+
+/** Opens `/?seed=<seed>` at 390 x 844, settles valley `site` and arrives, paused on Day 1. Every
+ * stop kind is set to `stops` (Slow unless named: Next event stops at every notable line). */
+export async function settle(
+  page: Page,
+  seed: string,
+  site: number,
+  debug = true,
+  stops: 'pause' | 'slow' | 'note' = 'slow',
+) {
+  await stopsAll(page, stops);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/?seed=${seed}${debug ? '&debug' : ''}`);
   // The picker waits on the seed's Story Generator world and its history (P1.6): about 5 s here.
@@ -22,15 +48,18 @@ export async function settle(page: Page, seed: string, site: number, debug = tru
   await expect(page.locator('.pslot').first()).toBeVisible();
 }
 
-/** Skip once: runs to the next notable line and waits until it has stopped there, paused. */
+/** Next event once: runs to the next notable line set to Pause or Slow (with `settle`'s Slow, any
+ * notable line) and waits until it has stopped there, paused. */
 export async function skipOnce(page: Page) {
   const from = await tick(page);
-  // The button is in place (the bar never moves), so the click skips Playwright's wait for two
-  // still frames, and the tick is polled every 50 ms: on a slow runner mid-skip frames are slow, and
-  // those waits cost about a second a skip, which took the smoke past its CI limit (PR #69).
-  await page.getByTestId('speed-skip').click({ force: true });
+  // The buttons are in place (the bar never moves, the tray opens at once), so the clicks skip
+  // Playwright's wait for two still frames, and the tick is polled every 50 ms: on a slow runner
+  // mid-skip frames are slow, and those waits cost about a second a skip, which took the smoke past
+  // its CI limit (PR #69).
+  await page.getByTestId('jump-open').click({ force: true });
+  await page.getByTestId('jump-next').click({ force: true });
   await expect.poll(() => tick(page), { intervals: [50] }).toBeGreaterThan(from);
-  await expect(page.getByTestId('speed-skip')).toHaveAttribute('aria-pressed', 'false', {
+  await expect(page.getByTestId('jump-open')).toHaveAttribute('aria-pressed', 'false', {
     timeout: 30_000,
   });
 }

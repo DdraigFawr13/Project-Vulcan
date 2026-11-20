@@ -2,7 +2,7 @@
 // on at the sim speed, holds when paused, never goes backwards, and starts over when the total
 // changes.
 import { describe, expect, it } from 'vitest';
-import { TICKS_PER_SECOND } from '../worker/protocol.ts';
+import { TICKS_PER_SECOND } from '../worker/protocol-time.ts';
 import { advance, reconcile, type Bar } from './progress-math.ts';
 
 const FRAME = 1 / 60;

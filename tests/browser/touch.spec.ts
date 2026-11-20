@@ -1,4 +1,5 @@
 import { expect, test, type CDPSession, type Page } from '@playwright/test';
+import { chooseSpeed, stopsAll } from './helpers';
 
 // A bug that reached Morgan (VR-23), Phase 3 playtest: "I got the zoom and pan stuck somehow and
 // couldn't select any tiles or move except zooming in and out." A finger lifted from a line the
@@ -37,6 +38,7 @@ test('pan and tile taps keep working after a pinch and after a lift off a redraw
     isMobile: true,
   });
   const page = await context.newPage();
+  await stopsAll(page, 'note');
   await page.goto('/?seed=smoke');
   await expect(page.locator('[data-card]')).toHaveCount(3, { timeout: 20_000 });
   await page.getByTestId('valley-2').tap();
@@ -78,7 +80,7 @@ test('pan and tile taps keep working after a pinch and after a lift off a redraw
   await expect(sheet).toBeHidden();
 
   // A finger held on the clock while it redraws, then lifted.
-  await page.getByTestId('speed-1').tap();
+  await chooseSpeed(page, 1, 'tap');
   const clock = await page.evaluate(() => {
     const r = document.querySelector('.clock .time')!.getBoundingClientRect();
     (window as unknown as { held: Element }).held = document.elementFromPoint(r.x + 4, r.y + 4)!;

@@ -1,6 +1,6 @@
 // Public surface of the worker layer: the message protocol and a way to start the worker.
 import type { ToWorker } from './protocol.ts';
-export { TICKS_PER_SECOND } from './protocol.ts';
+export { SPEEDS, TICKS_PER_SECOND } from './protocol-time.ts';
 // Every view type of the protocol files, passed on whole: a new view needs no line here.
 export type * from './protocol.ts';
 export type * from './protocol-build.ts';
@@ -9,6 +9,7 @@ export type * from './protocol-flock.ts';
 export type * from './protocol-goods.ts';
 export type * from './protocol-law.ts';
 export type * from './protocol-people.ts';
+export type * from './protocol-time.ts';
 export type * from './protocol-wild.ts';
 // Small words and sums the page shares with the engine, from its pure core only.
 export { list, roughDistance } from '../engine/core/index.ts';
