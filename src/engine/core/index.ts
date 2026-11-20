@@ -29,6 +29,7 @@ export * from './clothes.ts';
 export * from './tales.ts';
 export * from './self.ts';
 export * from './colony.ts';
+export * from './family.ts';
 export * from './defy.ts';
 export { list, itemName, lower } from './words.ts';
 export { clamp, smooth, cheb, dice, roughDistance } from './maths.ts';

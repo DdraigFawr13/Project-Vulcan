@@ -137,7 +137,7 @@ export const peopleSystem: System = {
       'field.harvested',
       'farm.harvestHome',
     ],
-    ...['hall.feast', 'people.movedHome'],
+    ...['hall.feast', 'family.feast', 'people.movedHome'],
     ...[
       'people.changed',
       'work.tookUpWeaving',

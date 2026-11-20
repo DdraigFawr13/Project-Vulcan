@@ -139,9 +139,13 @@ function drawPerson(rng: RngStream, content: EngineContent, homes: readonly Home
 const able = (band: BandDef, people: readonly Person[], skill: string): boolean =>
   people.some((p) => p.skills[skill]!.level >= band.able);
 
+const bothSexes = (people: readonly Person[]): boolean =>
+  people.some((p) => p.sex === 'f') && people.some((p) => p.sex === 'm');
+
 /**
  * Draws the band from `homes` (nearer ones more often), with no two given names alike. Whole bands
- * are drawn up to `band.tries` times until someone is able in every `band.must` skill; if none is,
+ * are drawn up to `band.tries` times until it holds a woman and a man and someone is able in every
+ * `band.must` skill; if none is,
  * the person with the most potential in a missing skill is trained up to `band.able` instead.
  */
 export function drawBand(rng: RngStream, content: EngineContent, homes: readonly Home[]): Person[] {
@@ -153,7 +157,13 @@ export function drawBand(rng: RngStream, content: EngineContent, homes: readonly
       const p = drawPerson(rng, content, homes);
       if (!people.some((o) => o.name === p.name)) people.push(p);
     }
-    if (band.must.every((m) => able(band, people, m))) return people;
+    if (bothSexes(people) && band.must.every((m) => able(band, people, m))) return people;
+  }
+  // P6.1: a band always holds a woman and a man; one drawn wholly of one sex swaps its last.
+  for (let guard = 0; !bothSexes(people) && guard < 50; guard += 1) {
+    const p = drawPerson(rng, content, homes);
+    if (p.sex !== people[0]!.sex && !people.some((o) => o.name === p.name))
+      people[people.length - 1] = p;
   }
   for (const m of band.must) {
     if (able(band, people, m)) continue;

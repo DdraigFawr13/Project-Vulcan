@@ -19,7 +19,7 @@ export {
 } from './houses.ts';
 export { bedSpot, builtHome, homeFor, householdOf, othersHome, sleepsIn } from './beds.ts';
 export { hallOf, mournInHall, whoseOf } from './homes.ts';
-export { feastOf } from './feast.ts';
+export { callWedding, feastOf } from './feast.ts';
 export { roomAt, type Room } from './rooms.ts';
 export { atMidden, middensOf } from './midden.ts';
 export { courseNow, meanSoil, yieldAt } from './fieldsoil.ts';

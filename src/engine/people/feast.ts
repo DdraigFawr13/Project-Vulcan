@@ -3,6 +3,7 @@
 // When all who can come are there, or at the last call before bed, they eat the best
 // food in store together: the most filling cooked food first (stew, pottage, bread), else whatever
 // food gives most. One line names what was eaten and where; everyone there remembers the feast.
+// A wedding feast (P6.1, engine family) is the same supper round the fire on the green.
 import { HEARTH, feastOf, furnitureOf, hallOf, roomsOf } from '../build/index.ts';
 import { clockAt, type EntityRow } from '../core/index.ts';
 import { hoursOf } from '../law/index.ts';
@@ -19,11 +20,15 @@ import { eat, people, spotOf, walkTo } from '../band/index.ts';
 const LAST_CALL = 15;
 export const HARD_STOP = 60;
 
-/** Where the supper is: the hall's floor tiles, else the tiles round the first hearth. */
-function placeOfFeast(ctx: SystemContext): { tiles: number[]; words: string } | undefined {
+/** Where the supper is: the hall's floor tiles (not for a wedding), else the tiles round the first
+ * hearth. */
+function placeOfFeast(
+  ctx: SystemContext,
+  wedding: boolean,
+): { tiles: number[]; words: string } | undefined {
   const { world, content } = ctx;
   const width = world.map.width;
-  const hall = hallOf(world);
+  const hall = wedding ? undefined : hallOf(world);
   const room = hall && roomsOf(world, content).find((r) => r.h.id === hall.id)?.room;
   if (room?.tiles.length) return { tiles: [...room.tiles], words: 'in the hall' };
   const fire = furnitureOf(world)
@@ -72,16 +77,25 @@ function eatTogether(ctx: SystemContext, feast: EntityRow, words: string): void 
       ? names[0]!
       : `${names.slice(0, -1).join(', ')} and ${names.at(-1)!}`
     : 'what little there was';
-  const line = ctx.emit('hall.feast', {
+  const couple = (feast['couple'] as number[] | undefined) ?? [];
+  const wed = couple.map((id) => people(world).find((q) => q.id === id)?.['name'] as string);
+  const line = ctx.emit(couple.length ? 'family.feast' : 'hall.feast', {
     causes: [feast['line'] as number],
     actors: there.map((q) => q.id),
-    data: { count: there.length, meal, where: words },
+    data: {
+      count: there.length,
+      meal,
+      where: words,
+      ...(couple.length ? { a: wed[0]!, b: wed[1]! } : {}),
+    },
   });
+  const memory = couple.length ? content.family.memories.feast : content.strangers.memories.feast;
   addMemories(
     ctx,
     there.map((q) => q.id),
-    content.strangers.memories.feast,
+    memory,
     line,
+    couple[0] ?? 0,
   );
   Object.assign(feast, { state: 'eaten', eaten: line });
 }
@@ -92,7 +106,7 @@ export function feasting(ctx: SystemContext, p: EntityRow): boolean {
   const { world } = ctx;
   const feast = feastOf(world);
   if (!feast) return false;
-  const place = placeOfFeast(ctx);
+  const place = placeOfFeast(ctx, !!(feast['couple'] as number[] | undefined)?.length);
   if (!place) return false;
   const width = world.map.width;
   const here = spotOf(p);
