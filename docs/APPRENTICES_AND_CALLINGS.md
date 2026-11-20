@@ -31,7 +31,7 @@ This spec thread ran a throwaway prototype of rules 1 to 6 plus the balance pace
 
 ## Build (part 1, 2026-11-20)
 
-The prototype's teacher had to be idle (`doing === ''`) rather than at work, so nobody was ever taught; fixed, and a bond is now made in the skill the master has practised most (skill row `used`), with a learner able for that work, who works beside the master (teach `help.ts`) when their Priorities put it level with their best. Two years per seed (`npm run teach`): taught rises anvil 1, smoke 6, ledger-1 13, tallow 17; 8+ 4 / 4 / 4 / 5; 12+ 0 / 0 / 0 / 1 (was 2 each).
+The prototype's teacher had to be idle (`doing === ''`) rather than at work, so nobody was ever taught; fixed, and a bond is now made in the skill the master has practised most (skill row `used`), with a learner able for that work, who works beside the master (teach `help.ts`) when their Priorities put it level with their best. Working beside the master is a daily lesson of up to 120 minutes (teach.json `lesson`), so an apprentice still does their own work. Two years per seed (`npm run teach`): taught rises anvil 1, smoke 7, ledger-1 11, tallow 10; 8+ 4 / 4 / 5 / 4; 12+ 0 / 0 / 0 / 1 (was 2 each).
 
 ## Build order
 
