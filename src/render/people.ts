@@ -6,8 +6,9 @@
 import Phaser from 'phaser';
 import type { CoatView, PersonView, WalkerView } from '../worker/index.ts';
 import type { Spot } from './finder.ts';
+import { AtWork, type Dressed, type Seen } from './at-work.ts';
 import { CoatTextures } from './coats.ts';
-import { bodyStem, variantCounts } from './look.ts';
+import { bodyStem, sideFrame, variantCounts } from './look.ts';
 import { PEOPLE } from './sheets.ts';
 import { Trails, type TrailClock } from './trail.ts';
 
@@ -34,7 +35,7 @@ const hidden = (lying: string | undefined): boolean => lying === 'buried' || lyi
 
 type Facing = 'n' | 'e' | 's' | 'w';
 
-interface Shown {
+interface Shown extends Dressed {
   view: PersonView;
   box: Phaser.GameObjects.Container;
   body: Phaser.GameObjects.Image;
@@ -46,6 +47,8 @@ interface Shown {
   coats: boolean;
   facing: Facing;
   frame: number;
+  /** The side they last walked towards: they work facing it (V-194). */
+  side: 'e' | 'w';
   walked: number;
   /** Where a carried person lies from their carrier's tile, in pixels. */
   off: { x: number; y: number };
@@ -71,6 +74,9 @@ export class PeopleSprites {
   private z = 0;
   private live = false;
   private readonly trails = new Trails();
+  /** What each walker is seen doing (V-194), from the latest snapshot. */
+  private readonly seen = new Map<number, Seen>();
+  private work: AtWork | undefined;
 
   private readonly scene: Phaser.Scene;
   private readonly clock: TrailClock;
@@ -84,6 +90,7 @@ export class PeopleSprites {
       scene.events.once(Phaser.Scenes.Events.CREATE, () => {
         this.live = true;
         this.coats = new CoatTextures(scene);
+        this.work = new AtWork(scene);
         this.draw();
         scene.events.on(Phaser.Scenes.Events.UPDATE, (_: number, delta: number) =>
           this.glide(delta),
@@ -104,6 +111,7 @@ export class PeopleSprites {
     for (const w of walkers) {
       // A change of level is a leap: they appear on the new level's tile at once.
       this.trails.note(w.id, this.clock.latest, w.x + w.z * 1000, w.y);
+      this.seen.set(w.id, { act: w.act, held: w.held, load: w.load });
       const p = this.people.find((q) => q.id === w.id);
       if (!p) continue;
       if (p.z !== w.z) level = true;
@@ -200,7 +208,9 @@ export class PeopleSprites {
         .container(0, 0, hair ? [body, clothes, hair] : [body, clothes])
         .setScale(scale)
         .setDepth(8);
-      const s = {
+      const s: Shown = {
+        id: p.id,
+        images: hair ? [body, clothes, hair] : [body, clothes],
         view: p,
         box,
         body,
@@ -210,6 +220,7 @@ export class PeopleSprites {
         coats: !overlays,
         facing: 's' as Facing,
         frame: 0,
+        side: p.id % 2 ? 'w' : 'e',
         walked: 0,
         off: { x: 0, y: 0 },
         lift,
@@ -228,6 +239,7 @@ export class PeopleSprites {
     const st = this.lying.get(s.view.id);
     const lying = st?.lying;
     s.off = st?.carried ? CARRIED : { x: 0, y: 0 };
+    if (lying) this.work?.clear(s);
     s.box.setVisible(!hidden(lying)).setDepth(st?.carried ? 8.2 : lying ? 7.9 : 8);
     const dead = lying === 'dead' || lying === 'buried';
     const tints: [Phaser.GameObjects.Image | undefined, number | undefined][] = [
@@ -253,31 +265,69 @@ export class PeopleSprites {
    * they go and stepping their frames while they move. */
   private glide(delta: number): void {
     const now = this.clock.at(this.scene.game.loop.time);
+    this.work?.tick(delta / 1000, this.clock.paused);
     for (const s of this.shown.values()) {
       const d = this.trails.at(s.view.id, now);
       const [x, y] = d ? [d.x - s.view.z * 1000, d.y] : [s.view.x, s.view.y];
       s.box.setPosition(x * TILE + s.lift.x + s.off.x, y * TILE + s.lift.y + s.off.y);
+      if (this.lying.get(s.view.id)?.lying) continue;
+      const seen = this.seen.get(s.view.id);
       if (!d?.moving) {
-        if (s.walked) this.pose(s, s.facing, 0);
+        // At work they face the side they came from, so the stroke lands on the work (V-194).
+        const facing = seen?.act ? s.side : s.facing;
+        if (s.walked || facing !== s.facing) this.pose(s, facing, 0);
         s.walked = 0;
+        this.work?.draw(s, seen, { facing, bob: 0 });
         continue;
       }
       const facing: Facing =
         Math.abs(d.dx) > Math.abs(d.dy) ? (d.dx > 0 ? 'e' : 'w') : d.dy > 0 ? 's' : 'n';
+      if (d.dx) s.side = d.dx > 0 ? 'e' : 'w';
       s.walked += delta;
-      this.pose(s, facing, 1 + (Math.floor(s.walked / STRIDE) % 2));
+      const frame = 1 + (Math.floor(s.walked / STRIDE) % 2);
+      this.pose(s, facing, frame);
+      // The screen runs behind the world: no stroke is drawn until they have walked there.
+      const walking = seen && { held: seen.held, load: seen.load };
+      this.work?.draw(s, walking, { facing, bob: frame === 2 ? 1 : 0 });
     }
+  }
+
+  /** The first person on the level on screen standing at work with `motion` (any motion when
+   * none is named; `load` finds someone carrying one), for the browser check. */
+  working(motion?: string): Spot | undefined {
+    const hit = [...this.shown.values()].find((s) => {
+      if (motion === 'load') return s.box.visible && !!s.load?.visible;
+      const act = this.seen.get(s.id)?.act;
+      return s.box.visible && !!act && (!motion || act.motion === motion);
+    });
+    return hit && this.spots().find((p) => p.id === hit.id);
+  }
+
+  /** How many people on the level on screen carry a load or hold a tool (the browser check). */
+  get carrying(): { loads: number; tools: number } {
+    const shown = [...this.shown.values()].filter((s) => s.box.visible);
+    return {
+      loads: shown.filter((s) => s.load?.visible).length,
+      tools: shown.filter((s) => s.hand?.visible).length,
+    };
+  }
+
+  /** How many work bits are in the air (the browser check reads it). */
+  get bits(): number {
+    return this.work?.bits ?? 0;
   }
 
   private pose(s: Shown, facing: Facing, frame: number): void {
     const { race, look } = s.view;
     s.facing = facing;
     s.frame = frame;
+    const side = sideFrame(s.stem, facing);
     const coat = s.coats ? (this.tried ?? this.coat.get(s.view.id)) : undefined;
-    const body = this.coats?.body(s.stem, coat, facing, frame);
-    if (!body) s.body.setFrame(`${s.stem}.${facing}.${frame}`);
+    const body = this.coats?.body(s.stem, coat, side.facing, frame);
+    if (!body) s.body.setFrame(`${s.stem}.${side.facing}.${frame}`);
     else if (body.key !== s.body.texture.key) s.body.setTexture(body.key, body.frame);
     else if (body.frame) s.body.setFrame(body.frame);
+    s.body.setFlipX(side.flip);
     s.clothes.setFrame(`clothes.${race}.${facing}.${frame}`);
     s.hair?.setFrame(`hair.${look.hair}.${race}.${facing}`);
   }
