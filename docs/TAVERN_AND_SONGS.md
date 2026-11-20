@@ -61,7 +61,7 @@ Measured, year 2, default levers (tellings at the tavern of all tellings; before
 
 Engine part 2 (V-197): `tales/songs.ts` and `tales/bynames.ts` (`src/engine/tales/MODULE.md`). Departures: a song counts as a telling to each hearer (eight tellings are out of reach in a colony of five otherwise); a bard makes or sings once a free evening. Measured over two years: anvil 1 song and 24 singings, smoke 2 and 190, tallow 2 and 330 with two bynames ("Scar"); every song so far is of a harvest home, since bards rarely hold another big event in its season.
 
-Screens: `src/worker/tavern.ts` (the tavern page and the Build sheet's Tavern row), bynames in `taleview.ts`, `people.ts` and `lines.ts`, and `src/ui/build.ts` (one `siteRows` for the Pasture and Tavern rows). Screenshots at 390 px from a tallow save at day 22 of Harvestmonth: `/mnt/project-files/vulcan/tavern-shots/`. Art still placeholder (a chest for a cask).
+Screens: `src/worker/tavern.ts` (the tavern page and the Build sheet's Tavern row), bynames in `taleview.ts`, `people.ts` and `lines.ts`, and `src/ui/build.ts` (one `siteRows` for the Pasture and Tavern rows). Screenshots at 390 px from a tallow save at day 22 of Harvestmonth: `/mnt/project-files/vulcan/tavern-shots/`. Art: PixelLab casks, brewing tub, counter and a hanging sign outside the door (`tavernSign` in `src/worker/tavern.ts`), 6 generations; `art/PROVENANCE.md`.
 
 ## Build order
 

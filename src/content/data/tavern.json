@@ -3,6 +3,7 @@
     "name": "Tavern",
     "start": 3,
     "size": "longhouse",
+    "sign": "furn.sign",
     "names": ["The Barley Sheaf", "The Plough", "The Bell", "The Oak and Ivy", "The Wheatsheaf", "The Drover's Rest", "The Green Man", "The Old Hearth"],
     "wants": [
       { "kind": "counter", "count": 1 },

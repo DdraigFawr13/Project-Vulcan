@@ -8,12 +8,14 @@ const percent = num({ min: 0, max: 100 });
 export const TAVERN_SCHEMAS = {
   tavern: obj({
     // The Build sheet's Tavern row (`start` level), the house size it is (buildings.house.sizes),
-    // the names it may take and what it wants inside: furniture kinds and how many of each.
+    // the names it may take, what it wants inside (furniture kinds and how many of each) and the
+    // art of the sign hung by its door once built.
     build: obj({
       name: text,
       start: num({ min: 1 }),
       size: str(),
       names: texts,
+      sign: str(),
       wants: list(obj({ kind: str(), count: num({ min: 1 }) })),
     }),
     // Brewing: the jobs.json job, the brewing tub and cask furniture kinds, minutes a brew takes at

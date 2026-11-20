@@ -24,7 +24,7 @@ import {
 } from '../engine/index.ts';
 import { contextFor } from '../engine/sim/system.ts';
 import { stockView } from './goods.ts';
-import { tavernPlace, tavernRow } from './tavern.ts';
+import { tavernPlace, tavernRow, tavernSign } from './tavern.ts';
 
 const lineOf = (e: SimEvent | Stub) => ({ id: e.id, text: e.type }) as never;
 
@@ -43,6 +43,7 @@ describe('the tavern on the page', () => {
     const h = tavernHouse(w)!;
     expect(tavernRow(w).plan).toMatchObject({ id: h.id, sent: false });
     expect(tavernRow(w).plan!.words).toMatch(/^A longhouse .+ of the green: planned\.$/);
+    expect(tavernSign(w)).toEqual([]);
     const ctx = contextFor(w, sim, buildSystem);
     for (const p of plansOf(w).filter((r) => r['house'] === h.id))
       finishPlan(ctx, p, h['line'] as number);
@@ -75,6 +76,14 @@ describe('the tavern on the page', () => {
     expect(rows['innkeeper']).not.toBe('');
     expect(rows['this week']).toMatch(/^\d+ tales? told, \d+ songs? sung$/);
     expect(page.lines.map((l) => l.label)).toContain('Named · ');
+    // Its sign stands just outside its door, one tile along the wall: diagonal to the door.
+    const door = h['door'] as number;
+    const [sign] = tavernSign(w);
+    expect(sign).toMatchObject({ art: content.tavern.build.sign, z: 0, plan: false });
+    expect(Math.abs(sign!.x - (door % w.map.width))).toBe(1);
+    expect(Math.abs(sign!.y - Math.floor(door / w.map.width))).toBe(1);
+    const inside = sign!.x >= r.x && sign!.x < r.x + r.w && sign!.y >= r.y && sign!.y < r.y + r.h;
+    expect(inside).toBe(false);
     // Outside the tavern, no tavern page.
     expect(tavernPlace(w, r.x - 2, r.y - 2, lineOf)).toEqual({});
     // The Ale line counts the cups in the casks, not the store.

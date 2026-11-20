@@ -81,9 +81,9 @@
 {"id":"chest","name":"chest","cost":2,"minutes":60,"art":"furn.chest","beds":0,"seats":0,"place":"bed foot"},
 {"id":"shelf","name":"shelf","cost":1,"minutes":40,"art":"furn.shelf","beds":0,"seats":0,"place":"wall"},
 {"id":"loom","name":"loom","cost":6,"minutes":180,"art":"furn.loom","beds":0,"seats":0,"place":"wall"},
-{"id":"counter","name":"counter","cost":4,"minutes":120,"art":"furn.bench","beds":0,"seats":0,"place":"wall"},
-{"id":"ale-cask","name":"ale cask","cost":3,"minutes":90,"art":"furn.chest","beds":0,"seats":0,"place":"wall"},
-{"id":"brew-tub","name":"brewing tub","cost":4,"minutes":90,"art":"furn.tub","beds":0,"seats":0,"place":"wall"}],
+{"id":"counter","name":"counter","cost":4,"minutes":120,"art":"furn.counter","beds":0,"seats":0,"place":"wall"},
+{"id":"ale-cask","name":"ale cask","cost":3,"minutes":90,"art":"furn.ale-cask","beds":0,"seats":0,"place":"wall"},
+{"id":"brew-tub","name":"brewing tub","cost":4,"minutes":90,"art":"furn.brew-tub","beds":0,"seats":0,"place":"wall"}],
 "quality":[
 {"id":"masterwork","word":"masterwork","at":13,"beauty":3},
 {"id":"excellent","word":"excellent","at":10,"beauty":2},
