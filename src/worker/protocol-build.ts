@@ -264,6 +264,9 @@ export interface PieceView {
     last?: LedgerLine;
     lastLabel?: string;
   };
+  /** A shrine (6B): its faith and how many hold it, its keeper, who prayed this week, and the
+   * line that named the keeper. */
+  shrine?: { faith: string; keeper: string; prayed: string; named?: LedgerLine };
   /** The lines behind it: placed, made, and a bed's claiming. */
   placed?: LedgerLine;
   made?: LedgerLine;

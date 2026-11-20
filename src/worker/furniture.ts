@@ -23,6 +23,7 @@ import {
   type WorldState,
 } from '../engine/index.ts';
 import { fireView, hearthArt, hearthName } from './fires.ts';
+import { shrineView } from './faithview.ts';
 import type { GoodsView, LedgerLine } from './protocol.ts';
 import type { PieceView } from './protocol-build.ts';
 
@@ -148,6 +149,7 @@ export function tilePiece(
   const room = built && kind.beds > 0 ? roomAt(world, content, x, y) : undefined;
   const claim = claimOf(world, f);
   const fire = built ? fireView(world, f, lineOf) : undefined;
+  const shrine = shrineView(world, f, lineOf);
   const claimed = claim && lineOf(claim);
   const quality = qualityOf(content, f['quality'] as number);
   const maker = f['maker'] ? `, made by ${personName(world, f['maker'])}` : '';
@@ -176,6 +178,7 @@ export function tilePiece(
         maker: makingOf(world, f),
       }),
       ...(fire && { fire }),
+      ...(shrine && { shrine }),
       ...(f === benchOf(world) && { bench: benchOfView(world) }),
       ...(placed && { placed }),
       ...(made && { made }),

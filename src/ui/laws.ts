@@ -244,8 +244,23 @@ export class LawSheet {
     ];
   }
 
-  /** Rations, Sickness and Punishment (P6.5): the custom asks nothing of anyone. */
+  /** Rations, Sickness and Punishment (P6.5): the custom asks nothing of anyone. The Feasts law
+   * (6B) lists its feast days first, each with why it is kept and a why? to its asking. */
   private ruled(view: RuledLawView): HTMLElement[] {
+    const days = (view.days ?? []).map((d) => {
+      const row = el('div', { class: 'memrow belief', 'data-testid': 'feastday' });
+      row.append(
+        el('span', { class: 't' }, d.text),
+        d.why ? why(d.why) : el('span'),
+        el('span', { class: 'r' }, d.note),
+      );
+      return row;
+    });
+    if (days.length) days.unshift(el('h4', {}, 'Feast days'));
+    return [...days, ...this.answersOf(view)];
+  }
+
+  private answersOf(view: RuledLawView): HTMLElement[] {
     return view.answers.length
       ? [el('h4', {}, "The band's answers"), ...answerRows(view.answers)]
       : [

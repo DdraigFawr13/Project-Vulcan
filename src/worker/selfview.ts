@@ -14,6 +14,7 @@ import {
   type WorldState,
 } from '../engine/index.ts';
 import type { SelfView } from './protocol-people.ts';
+import { faithSelf } from './faithview.ts';
 
 const upper = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -57,5 +58,13 @@ export function selfView(world: WorldState, p: EntityRow): { self: SelfView } {
       }
     : undefined;
   const defiance = defianceOf(world, p);
-  return { self: { roles, ...(ambition ? { ambition } : {}), ...(defiance ? { defiance } : {}) } };
+  const faith = faithSelf(world, p);
+  return {
+    self: {
+      roles,
+      ...(ambition ? { ambition } : {}),
+      ...(defiance ? { defiance } : {}),
+      ...(faith ? { faith } : {}),
+    },
+  };
 }

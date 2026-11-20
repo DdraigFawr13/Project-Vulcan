@@ -171,4 +171,7 @@ export interface SelfView {
   ambition?: { text: string; why: number };
   /** P6.7: how far a grievance has carried them past refusing (an act step), and why. */
   defiance?: { text: string; note: string; why: number };
+  /** 6B: their faith, devotion and title ("The Wells · devout · Wellkeeper"), what it holds
+   * sacred, and the line that named them priest (0 otherwise). */
+  faith?: { text: string; note: string; why: number };
 }

@@ -64,6 +64,16 @@ export interface RuledLawView {
   since: string;
   why: number;
   answers: AnswerView[];
+  /** The Feasts law (6B): the feast days, the harvest home first. */
+  days?: FeastDayView[];
+}
+
+/** A feast day on the Laws page (6B): "Cart Day, 1 Thawmonth", why it is kept and whether the law
+ * keeps it, and the line that asked for it. */
+export interface FeastDayView {
+  text: string;
+  note: string;
+  why: number;
 }
 
 /** The Strangers law (P5.9, V-117): its setting, what each does, the band's last word on a
