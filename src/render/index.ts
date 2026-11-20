@@ -128,7 +128,6 @@ function layersOf(game: Phaser.Game, scene: ValleyScene, parent: HTMLElement) {
   const wild = new WildSprites(game, scene, clock);
   const wear = new WearLayer(scene);
   const canopy = new CanopyLayer(scene);
-  // Tile layers kept only near the camera follow the scene's window (tile-window.ts).
   scene.window.layers.push(wear, canopy, wild);
   scene.spots = () => people.spots();
   const finder = new Finder(game, scene, () => people.spots());
