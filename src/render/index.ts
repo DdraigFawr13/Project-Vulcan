@@ -108,6 +108,7 @@ export function startRenderer(
   });
   const l = layersOf(game, scene, parent);
   watchAnimalFinder(l);
+  watchWorkFinder(l);
   return { ...viewHandle(l), ...peopleHandle(l), ...goodsHandle(l) };
 }
 
@@ -160,6 +161,26 @@ function watchAnimalFinder({ game, scene, parent, wild }: Layers): void {
     // The camera's view is brought up to date as a frame is drawn.
     game.events.once(Phaser.Core.Events.POST_RENDER, () => {
       parent.dataset['animalAt'] = onScreen(scene, wild.first(kind) ?? first);
+    });
+  });
+}
+
+/** Seen at work (V-194): this event centres the view on someone working with the motion named
+ * in its detail and, once a frame is drawn, writes where they stand (`data-worker-at`), the work
+ * bits in the air (`data-bits`) and how many hold a tool or carry a load (`data-tools`,
+ * `data-loads`). */
+function watchWorkFinder({ game, scene, parent, people }: Layers): void {
+  parent.addEventListener('vulcan:find-worker', (e) => {
+    const motion = (e as CustomEvent<string | undefined>).detail;
+    const first = people.working(motion);
+    if (first) scene.controls?.lookAt(first.x, first.y);
+    game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+      const now = people.working(motion);
+      if (now) parent.dataset['workerAt'] = onScreen(scene, now);
+      else delete parent.dataset['workerAt'];
+      parent.dataset['bits'] = String(people.bits);
+      parent.dataset['tools'] = String(people.carrying.tools);
+      parent.dataset['loads'] = String(people.carrying.loads);
     });
   });
 }

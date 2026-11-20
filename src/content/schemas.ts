@@ -1,5 +1,6 @@
 // The shape of every forked content file (src/content/data/<file>.json), one spec per file.
 // References name the file whose ids they must match; validate.ts resolves them.
+import { ANNALS_SCHEMAS } from './schemas-annals';
 import { CLIMATE_SCHEMAS } from './schemas-climate';
 import { CLOTHES_SCHEMAS } from './schemas-clothes';
 import { GROUND_SCHEMAS } from './schemas-ground';
@@ -45,6 +46,7 @@ export const SCHEMAS = {
   ...FAMILY_SCHEMAS,
   ...WORSHIP_SCHEMAS,
   ...CLOTHES_SCHEMAS,
+  ...ANNALS_SCHEMAS,
   ...TIME_SCHEMAS,
 };
 
