@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { phoneRules, tick } from './helpers';
+import { chooseSpeed, phoneRules, stopsAll, tick } from './helpers';
 
 // The one browser smoke (RULES.md VR-23): the bare link shows the title, a seed opens the site
 // picker, a valley is settled, the band's arrival screen names who can build and cook, the game
@@ -20,6 +20,8 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
+  // Play runs on through every line, as it did before stop kinds (V-191): time.spec.ts has them.
+  await stopsAll(page, 'note');
   // The bare link with no save: the title offers a new game only.
   await page.goto('/');
   await expect(page.getByRole('button', { name: 'New game' })).toBeVisible();
@@ -50,7 +52,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // Paused at the start, 3x moves the clock, and Space stops it dead: one snapshot may still be on
   // its way, then nothing moves. The rates themselves are src/worker/pace.test.ts.
   const start = await tick(page);
-  await page.getByTestId('speed-3').click();
+  await chooseSpeed(page, 3);
   await expect.poll(() => tick(page)).toBeGreaterThan(start);
   await page.keyboard.press('Space');
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
@@ -114,7 +116,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await panel.getByRole('button', { name: 'Load' }).first().click();
   await expect.poll(() => tick(page)).toBe(paused);
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
-  await page.getByTestId('speed-3').click();
+  await chooseSpeed(page, 3);
   await expect.poll(() => tick(page)).toBeGreaterThan(paused);
 
   // The levels below: level 1 is blank until a shaft reaches it, then it opens and inspects.
@@ -163,7 +165,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   await panel.getByRole('button', { name: 'Cut stairs down' }).click();
   await panel.getByRole('button', { name: 'Go down to −1' }).click();
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
-  await page.getByTestId('speed-3').click();
+  await chooseSpeed(page, 3);
   await expect(page.getByTestId('level')).toHaveText('−1');
   await expect(panel).toContainText('1 level down');
   await expect(panel).toContainText('stairs up');
@@ -175,7 +177,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   const copies = async () =>
     Number(await page.evaluate(() => document.documentElement.dataset['standby'] ?? 0));
   const copiesBefore = await copies();
-  await page.getByTestId('speed-3').click();
+  await chooseSpeed(page, 3);
   await page.setViewportSize({ width: 1280, height: 720 });
 
   // Closing or reloading keeps the play since the last save: the page holds a standby copy taken

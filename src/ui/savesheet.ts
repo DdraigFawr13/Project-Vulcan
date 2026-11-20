@@ -1,5 +1,5 @@
 // The Saves sheet (panel.ts `showSaves`): Save now and Export, a new game from a seed, the version,
-// the test mode switch and jumps, and a row per save with Load and Delete. Shows the save store's
+// the test mode switch, and a row per save with Load and Delete. Shows the save store's
 // list; decides nothing (GAME-02).
 import type { SaveMeta } from '../persist/index.ts';
 import { el } from './dom.ts';
@@ -49,18 +49,8 @@ export function saveRows(
   const about = el(
     'p',
     { class: 'aside' },
-    'Direct tools for trying things out: dig down, mark a tree, add a store tile, jump ahead in time. Your colonists choose their own work in the normal game.',
+    'Direct tools for trying things out: dig down, mark a tree, add a store tile. Your colonists choose their own work in the normal game.',
   );
-  // Jumps run every tick on the way, as a skip does, so what follows is what play would give.
-  if (debug)
-    for (const span of ['month', 'season'] as const) {
-      const go = el('button', { type: 'button', 'data-testid': `jump-${span}` }, `Jump a ${span}`);
-      go.addEventListener('click', () => {
-        actions.jump(span);
-        actions.close();
-      });
-      test.append(go);
-    }
   const rows = [now, form, versionLine(), el('h3', {}, 'Test mode'), about, test];
   if (problem) rows.push(el('p', { class: 'problem', role: 'alert' }, problem));
   if (!saves.length) rows.push(el('p', { class: 'muted' }, 'No saves yet.'));
