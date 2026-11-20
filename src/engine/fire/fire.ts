@@ -2,7 +2,7 @@
 // keyed to it: whether it is lit, the fuel it has left in minutes, which fuel, whether it is banked
 // (burning low and slow for the night) and the tick it was last used, which the people mark
 // (crafts/hearth.ts `markUsed`): a fire knows no people (V-042). Its heat reaches its room's tiles,
-// worked out when asked (heat.ts), and nothing about a room's warmth is stored (V-043).
+// worked out when asked (heat.ts) from the room air kept on the row (air.ts, 6B, amends V-043).
 import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { furnitureOf, greenOf, houseAt, roomAt, roomName } from '../build/index.ts';
@@ -14,7 +14,8 @@ export const FIRE_TABLES: Schemas = {
    * left; `kind`: the fuel (work.json `fire.fuels`), '' before any; `banked`: 1 while it burns
    * low; `used`: the tick someone was last in its room or reach; `line`: its last line (built,
    * lit, banked, tended), which the next one cites; `ash`: minutes burned into its ash pit,
-   * a whole ash each `lamp.ash.every`, at most `keep` (system.ts; the soap-maker takes it). */
+   * a whole ash each `lamp.ash.every`, at most `keep` (system.ts; the soap-maker takes it);
+   * `air`: its closed room's air heat in tenths of a degree (air.ts, 6B). */
   fire: {
     piece: 'entity',
     lit: 'count',
@@ -24,6 +25,7 @@ export const FIRE_TABLES: Schemas = {
     used: 'int',
     line: 'event',
     ash: 'count',
+    air: 'count',
   },
 };
 
@@ -42,7 +44,7 @@ export const fuelOf = (content: EngineContent, id: string) =>
 /** A new, unlit fire for a hearth just built; `cause` is the line that built it. */
 export function createFire(ctx: SystemContext, piece: EntityRow, cause: number): void {
   addEntity(ctx.world, 'fire', {
-    ...{ piece: piece.id, lit: 0, fuel: 0, kind: '', banked: 0, ash: 0 },
+    ...{ piece: piece.id, lit: 0, fuel: 0, kind: '', banked: 0, ash: 0, air: 0 },
     ...{ used: ctx.world.tick, line: cause },
   });
 }

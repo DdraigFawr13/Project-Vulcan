@@ -13,6 +13,7 @@ export {
   WORK_HOURS,
   type Hours,
 } from './hours.ts';
+export { flout } from './flout.ts';
 export { ateFood, rationed, RATIONS } from './rations.ts';
 export { answerTo, sickRule } from './sickness.ts';
 export { leanOf, weigh, type Answer, type Weighed } from './weigh.ts';

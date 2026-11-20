@@ -6,7 +6,7 @@ The second half of Phase 6 (V-153): P6.1 and P6.8 to P6.13, with callings (V-175
 
 - [x] Spec, 2026-11-20 (V-182, V-183)
 - [x] Bundle 1, families, 2026-11-20 (#131, part 2)
-- [ ] Bundle 2, heat and the Hearths law
+- [x] Bundle 2, heat and the Hearths law, 2026-11-20 (V-184)
 - [ ] Bundle 3, mason, lime and thatch; buildings grow
 - [ ] Bundle 4, faith, shrines and feasts
 - [ ] Bundle 5, the tavern, songs and bynames

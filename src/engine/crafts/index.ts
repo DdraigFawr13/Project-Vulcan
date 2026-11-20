@@ -6,6 +6,7 @@ export { chandling, takeUpChandling } from './chandle.ts';
 export { burning, takeUpCharcoal } from './charcoal.ts';
 export { cooking, takeUpCooking } from './cook.ts';
 export { coldHearth, hearthFirst, markUsed, takeUpHearth } from './hearth.ts';
+export { banks, HEARTHS, tendRule, type TendRule } from './hearthlaw.ts';
 export { LARDER_JOBS } from './larder.ts';
 export { MILL_JOBS } from './mill.ts';
 export { clayWanted } from './potter.ts';

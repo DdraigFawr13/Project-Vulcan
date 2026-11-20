@@ -11,6 +11,7 @@ import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { furnitureOf } from '../build/index.ts';
 import { fireOf, firesOf, fuelOf, pieceOfFire, placeOf } from '../fire/index.ts';
 import { occupied } from './hearth.ts';
+import { fedPastLaw, tendRule } from './hearthlaw.ts';
 import { isWatchFire } from '../herding/index.ts';
 import {
   haveOf,
@@ -89,6 +90,8 @@ function fuelFor(ctx: SystemContext, p: EntityRow, fire: EntityRow): string | un
 function pick(ctx: SystemContext, p: EntityRow, cold = false): Pick | undefined {
   const { world, content } = ctx;
   const t = content.work.fire.tend;
+  // The Hearths law, as `p` answers it (hearthlaw.ts): its top-ups and the cold it waits for.
+  const rule = tendRule(world, content, p, cold);
   const from = spotOf(p);
   const on = new Set(
     people(world)
@@ -100,14 +103,17 @@ function pick(ctx: SystemContext, p: EntityRow, cold = false): Pick | undefined 
     .filter(({ piece }) => !on.has(piece.id) && !isWatchFire(world, piece))
     .sort((a, b) => cheb(from, spotOf(a.piece)) - cheb(from, spotOf(b.piece)) || a.f.id - b.f.id);
   const recent = (f: EntityRow) => world.tick - (f['used'] as number) < t.idle;
-  // A fire is lit or fed only where its tile is under the hearth line without one (V-068).
+  // A fire is lit or fed only where its tile is under the hearth line without one (V-068), moved
+  // by the Hearths law; a keeper holds to it even when cold, the rest light theirs when cold.
   const chilly = (piece: EntityRow) =>
     tileTemperature(
       content,
       world.map,
       world.systems['weather']?.['temp'] ?? 0,
       (piece['y'] as number) * world.map.width + (piece['x'] as number),
-    ) < content.buildings.rooms.hearthBelow;
+    ) <
+    content.buildings.rooms.hearthBelow + rule.below;
+  const wants = (piece: EntityRow) => (cold && !rule.strict) || chilly(piece);
   const tendIt = (f: EntityRow, piece: EntityRow, why: string): Pick | undefined => {
     const item = fuelFor(ctx, p, f);
     return item
@@ -122,12 +128,16 @@ function pick(ctx: SystemContext, p: EntityRow, cold = false): Pick | undefined 
   };
   const left = (f: EntityRow) => `has ${f['fuel'] as number} minutes of fuel left`;
   for (const { f, piece } of fires)
-    if (f['lit'] && (f['fuel'] as number) < t.low && (cold || (recent(f) && chilly(piece)))) {
+    if (
+      f['lit'] &&
+      (f['fuel'] as number) < t.low &&
+      (cold ? wants(piece) : recent(f) && chilly(piece))
+    ) {
       const got = tendIt(f, piece, `is low: it ${left(f)}`);
       if (got) return got;
     }
   for (const { f, piece } of fires) {
-    if (f['lit'] || (!cold && !chilly(piece))) continue;
+    if (f['lit'] || !wants(piece)) continue;
     const near = people(world).some(
       (q) =>
         q['status'] === 'alive' &&
@@ -167,7 +177,7 @@ function pick(ctx: SystemContext, p: EntityRow, cold = false): Pick | undefined 
     };
   }
   for (const { f, piece } of fires)
-    if (f['lit'] && recent(f) && chilly(piece) && (f['fuel'] as number) < t.topBelow) {
+    if (f['lit'] && recent(f) && chilly(piece) && (f['fuel'] as number) < rule.topBelow) {
       const got = tendIt(f, piece, `${left(f)}`);
       if (got) return got;
     }
@@ -255,10 +265,10 @@ export function tending(ctx: SystemContext, p: EntityRow): boolean {
   const piece = furnitureOf(world).find((f) => f.id === p['plan']);
   const fire = piece && fireOf(world, piece.id);
   if (!piece || !fire) return stop(p);
-  const t = content.work.fire.tend;
+  const rule = tendRule(world, content, p, isCold(world, content, p));
   const load = loadOf(world, p.id);
   const fuel = content.work.fire.fuels.find((f) => f.item === load?.['kind']);
-  const room = (minutes: number) => Math.floor((t.top - (fire['fuel'] as number)) / minutes);
+  const room = (minutes: number) => Math.floor((rule.top - (fire['fuel'] as number)) / minutes);
   if (!load) {
     const first =
       content.work.fire.fuels.find((f) => f.id === fire['kind']) ?? content.work.fire.fuels[0]!;
@@ -275,6 +285,7 @@ export function tending(ctx: SystemContext, p: EntityRow): boolean {
   fire['fuel'] = (fire['fuel'] as number) + n * fuel.minutes;
   fire['kind'] = fuel.id;
   fire['line'] = p['took'] as number;
+  fedPastLaw(ctx, p, piece, rule);
   if (!fire['lit']) {
     const cold = isCold(world, content, p);
     const row = needOf(world, p.id, 'warmth');

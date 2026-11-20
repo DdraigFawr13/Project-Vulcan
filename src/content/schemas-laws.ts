@@ -60,6 +60,10 @@ export const LAWS_SCHEMAS = {
             store: opt(obj({ lasts: num(), short: num() })),
             // P6.5 Sickness: the catching-sick lie in the sick-house, or leave the valley.
             sick: opt(oneOf('house', 'away')),
+            // 6B Hearths (P6.10): a tender who keeps it tops a used fire under `topBelow` minutes of
+            // fuel up to `top`, lights one only under the hearth line plus `below` degrees, and
+            // banks it at night only when `bank`. Steady (no `hearth`) is work.json `fire.tend`.
+            hearth: opt(obj({ top: count, topBelow: count, below: num(), bank: bool() })),
             // The Strangers law (P5.9): the reason kinds (strangers.json) a split band lets in.
             lets: opt(list(str())),
             saw: opt(ref('memories')),

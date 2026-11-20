@@ -22,7 +22,7 @@ import {
   SYSTEMS,
   whyOf,
 } from '../index.ts';
-import { firesOf } from './index.ts';
+import { airOf, firesOf } from './index.ts';
 
 // Accidents (P5.6) are left out: this tests fires, not injury (health.test.ts does).
 const content = withoutAccidents(game);
@@ -116,7 +116,7 @@ describe('hearth and firewood', () => {
     expect(lines.filter((e) => e.type === 'fire.planned')).toHaveLength(1);
   });
 
-  it('heats a room from its hearth, falling with distance, and the open only to its radius', () => {
+  it('heats a room evenly from its air, and the open from its fire, falling with distance', () => {
     const w = createWorld(sim, 'ledger');
     step(w, sim, 4 * DAY);
     const fire = firesOf(w).find((f) => f['lit'] && f['banked'] === 0);
@@ -125,8 +125,13 @@ describe('hearth and firewood', () => {
     const [x, y] = [piece['x'] as number, piece['y'] as number];
     const at = (dx: number) => heatAt(w, winter, y * w.map.width + x + dx);
     const { fuels, fall, radius } = content.work.fire;
-    expect(at(0)).toBe(fuels[0]!.heat);
-    if (!roomAt(w, winter, x, y)) {
+    const room = roomAt(w, winter, x, y);
+    if (room) {
+      // Room air (6B): the same heat on every tile of the room, from the air the fire has warmed.
+      expect(airOf(fire!)).toBeGreaterThan(0);
+      for (const i of room.tiles) expect(heatAt(w, winter, i)).toBe(airOf(fire!));
+    } else {
+      expect(at(0)).toBe(fuels[0]!.heat);
       expect(at(1)).toBe(fuels[0]!.heat - fall);
       expect(at(radius + 1)).toBe(0);
     }

@@ -5,6 +5,15 @@ export interface Hours {
   to: number;
 }
 
+/** How a keeper of a Hearths setting tends (laws.json `hearth`). */
+export interface HearthRule {
+  top: number;
+  topBelow: number;
+  /** Degrees added to the hearth line under which a fire is lit or fed. */
+  below: number;
+  bank: boolean;
+}
+
 /** One setting of a law: its hours (none for the custom), what it asks and what leans on it. */
 export interface LawSettingDef {
   id: string;
@@ -27,6 +36,8 @@ export interface LawSettingDef {
   store?: { lasts: number; short: number };
   /** P6.5 Sickness: the catching-sick lie in the sick-house (`house`) or leave the valley. */
   sick?: 'house' | 'away';
+  /** 6B Hearths (P6.10): a keeper's tending numbers; none is the custom (`fire.tend`). */
+  hearth?: HearthRule;
   /** For the Strangers law (P5.9): the reason kinds a split band lets in. */
   lets?: readonly string[];
   /** The memory a refusal leaves on those who see it, and the one a grumbler keeps. */

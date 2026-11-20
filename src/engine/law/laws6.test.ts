@@ -1,4 +1,4 @@
-// P6.5, V-157: the Rations, Punishment and Sickness laws. Setting a law is the player's only say,
+// P6.5, V-157: the Rations, Punishment and Sickness laws (and 6B's Hearths). Setting a law is the player's only say,
 // and every answer to it is a ledger line citing the setting. Under short rations a keeper stops
 // eating at the day's share; a refuser eats a full plate, and whoever sees it remembers it.
 import { describe, expect, it } from 'vitest';
@@ -29,7 +29,7 @@ describe('the 6A laws', () => {
   it('answers every new setting with a line per person, citing the setting', () => {
     const w = createWorld(sim, 'anvil');
     step(w, sim, 60);
-    for (const id of ['rations', 'punishment', 'sickness']) {
+    for (const id of ['rations', 'punishment', 'sickness', 'hearths']) {
       const def = content.laws.laws.find((l) => l.id === id)!;
       for (const s of def.settings.filter((x) => x.id !== def.start)) {
         setLaw(w, id, s.id);

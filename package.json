@@ -26,6 +26,7 @@
     "budget": "node tools/budget.mjs",
     "balance": "node tools/balance.mjs",
     "families": "node tools/families.mjs",
+    "heat": "node tools/heat.mjs",
     "paths": "node tools/paths.mjs",
     "test": "vitest run",
     "test:related": "vitest related --run",

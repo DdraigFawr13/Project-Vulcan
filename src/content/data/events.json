@@ -128,6 +128,7 @@
 {"id":"bees.swarm","importance":2,"template":"{name} caught a swarm from the woods into a skep by the {field}."},
 {"id":"bees.harvest","importance":2,"template":"{name} took {honey} honey and {wax} beeswax from the skeps by the {field}."},
 {"id":"work.tookUpBees","importance":1,"template":"{name} took up {what} for the skeps by the {field}."},
+{"id":"fire.stoked","importance":2,"template":"{name} was cold and stoked the fire {where} past {days}.","notable":{}},
 {"id":"fire.banked","importance":1,"template":"{name} banked the fire {where} for the night."},
 {"id":"fire.unbanked","importance":1,"template":"The banked fire {where} burns up again at dawn."},
 {"id":"build.quernPlanned","importance":2,"template":"A quern is planned {where}: there is grain in store to grind into flour for bread."},

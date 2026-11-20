@@ -19,7 +19,7 @@ import { working } from './jobs.ts';
 import { spotOf, cooked, eat, lineOf, walkTo, wander } from '../band/index.ts';
 import { danger } from '../care/index.ts';
 import { drinking } from './drink.ts';
-import { tendInEvening } from '../crafts/index.ts';
+import { banks, tendInEvening } from '../crafts/index.ts';
 import { warming } from './warm.ts';
 import { gathering, practising } from './evening.ts';
 import { feasting, HARD_STOP } from './feast.ts';
@@ -123,7 +123,8 @@ function goToBed(ctx: SystemContext, p: EntityRow, night: boolean): void {
     walkTo(ctx, p, { x: bed['x'] as number, y: bed['y'] as number, z: bed['z'] as number });
   else p['path'] = [];
   // Going to bed for the night, they bank the fire that warms their bed (P3.6, V-048).
-  if (night) bankFire(ctx, p, bed ? spotOf(bed) : spotOf(p));
+  // Under Roaring hearths (6B), those who keep it leave it burning high.
+  if (night && banks(ctx.world, ctx.content, p)) bankFire(ctx, p, bed ? spotOf(bed) : spotOf(p));
 }
 
 /** One minute of choosing, after the minute's steps. */

@@ -352,6 +352,8 @@ export interface FireDef {
   }[];
   split: { from: string; fuel: string; per: number; minutes: number };
   tend: { low: number; top: number; topBelow: number; idle: number; near: number };
+  /** 6B room air (P6.10): tenths of a degree; `rise` and `leak` per mille an hour. */
+  air: { rise: number; open: number; leak: Readonly<Record<string, number>> };
 }
 
 /** Carpentry and furniture (buildings.json `furniture`, P3.4). */

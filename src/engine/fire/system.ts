@@ -4,6 +4,7 @@
 import { clockAt } from '../core/index.ts';
 import { stockOf, wantOf } from '../goods/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
+import { airHour } from './air.ts';
 import { FIRE_TABLES, firesOf, fuelOf, pieceOfFire, placeOf, timeWords } from './fire.ts';
 
 function runFires(ctx: SystemContext): void {
@@ -11,6 +12,8 @@ function runFires(ctx: SystemContext): void {
   const hour = clockAt(world.tick, content.calendar).hour;
   // Dawn is when the colony's work starts (content's `work.hours`).
   const dawn = content.work.hours.from;
+  // Room air first, from how each fire burned over the hour just gone (6B, P6.10).
+  airHour(world, content);
   for (const f of firesOf(world)) {
     if (!f['lit']) continue;
     const piece = pieceOfFire(world, f);

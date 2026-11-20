@@ -14,4 +14,5 @@ export {
   reachOf,
   takeAsh,
 } from './fire.ts';
+export { airHour, airOf, leakOf } from './air.ts';
 export { heatAt, heatMap } from './heat.ts';
