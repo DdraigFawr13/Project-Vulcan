@@ -1,23 +1,8 @@
 // World state and event shapes. The whole world is plain data (numbers, strings, arrays and typed
 // arrays), so the worker can post it, P0.5 can save it and tests can compare it.
-import type { PeopleDefs } from './people.ts';
-import type { AuraDials, AuraSpot, BiomesDef, SeasonsDef, WeatherDef } from './climate.ts';
-import type { FeatureDef, UndergroundDials, WalkingDef, WearDef } from './ground.ts';
-import type { BuildingsDef, ItemDef, JobDef, LifeDef, MemoryDef, WorkDef } from './life.ts';
+import type { AuraDials, AuraSpot } from './climate.ts';
+import type { UndergroundDials, WalkingDef, WearDef } from './ground.ts';
 import type { RngState } from './rng.ts';
-import type { CultureDef, NamesDef, RegionDef } from './region.ts';
-import type { FlockDefs } from './flock.ts';
-import type { WildDefs } from './wild.ts';
-import type { StrangersDefs } from './strangers.ts';
-import type { LampDefs } from './lamp.ts';
-import type { ClothesDefs } from './clothes.ts';
-import type { TalesDefs } from './tales.ts';
-import type { SelfDefs } from './self.ts';
-import type { ColonyDefs } from './colony.ts';
-import type { FamilyDefs } from './family.ts';
-import type { WorshipDefs } from './worship.ts';
-import type { DefyDefs } from './defy.ts';
-import type { CalendarDef } from './clock.ts';
 export type { CalendarDef } from './clock.ts';
 
 /** The named RNG streams (docs/ARCHITECTURE.md "RNG"). A system draws only from its own. */
@@ -46,6 +31,7 @@ export const STREAMS = [
   'bees',
   'kin',
   'faith',
+  'inn',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 
@@ -358,43 +344,4 @@ export interface TerrainDef {
   wear: WearDef;
 }
 
-/** The content the engine core reads. The worker passes the content layer's `content`. */
-export interface EngineContent
-  extends
-    PeopleDefs,
-    WildDefs,
-    FlockDefs,
-    StrangersDefs,
-    LampDefs,
-    ClothesDefs,
-    TalesDefs,
-    SelfDefs,
-    ColonyDefs,
-    FamilyDefs,
-    WorshipDefs,
-    DefyDefs {
-  calendar: CalendarDef;
-  /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */
-  events: readonly { id: string; template: string; notable?: Readonly<Record<string, string>> }[];
-  terrain: TerrainDef;
-  biomes: BiomesDef;
-  features: readonly FeatureDef[];
-  weather: readonly WeatherDef[];
-  seasons: SeasonsDef;
-  /** The six schools of magic (forked schools.json): aura spots name theirs. */
-  schools: readonly { id: string; name: string }[];
-  /** The region around the valley (P1.5): its dials, and the forked cultures, races and names. */
-  region: RegionDef;
-  cultures: readonly CultureDef[];
-  names: NamesDef;
-  /** P2.2: needs, the daily round and the cart (life.json), and the forked items. */
-  life: LifeDef;
-  /** P4 (V-091): the memories a person can hold (memories.json). */
-  memories: readonly MemoryDef[];
-  items: readonly ItemDef[];
-  /** P2.4: the colony's work (work.json) and the forked jobs. */
-  work: WorkDef;
-  jobs: readonly JobDef[];
-  /** P3.1 and P3.2: the parts colonists build (buildings.json). */
-  buildings: BuildingsDef;
-}
+export type { EngineContent } from './content.ts';

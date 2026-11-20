@@ -4,9 +4,10 @@
 // walked (trail.ts), facing the way they go and stepping through their walk frames, then stand.
 // The walk is a picture choice, never game state.
 import Phaser from 'phaser';
-import type { PersonView, WalkerView } from '../worker/index.ts';
+import type { CoatView, PersonView, WalkerView } from '../worker/index.ts';
 import type { Spot } from './finder.ts';
 import { AtWork, type Dressed, type Seen } from './at-work.ts';
+import { CoatTextures, watchCoatTrial } from './coats.ts';
 import { bodyStem, sideFrame, variantCounts } from './look.ts';
 import { PEOPLE } from './sheets.ts';
 import { Trails, type TrailClock } from './trail.ts';
@@ -58,7 +59,10 @@ interface Shown extends Dressed {
   hair: Phaser.GameObjects.Image | undefined;
   /** The body's frame-name stem (look.ts): the race's body, or one whole villager. */
   stem: string;
+  /** Whole villagers wear their coat outdoors in the cold (V-190); overlay bodies never do. */
+  coats: boolean;
   facing: Facing;
+  frame: number;
   /** The side they last walked towards: they work facing it (V-194). */
   side: 'e' | 'w';
   walked: number;
@@ -80,6 +84,11 @@ export class PeopleSprites {
   private people: PersonView[] = [];
   private shown = new Map<number, Shown>();
   private lying = new Map<number, Lying>();
+  /** The coat each person wears on the map now (V-190), as the worker last said. */
+  private coat = new Map<number, CoatView>();
+  private coats: CoatTextures | undefined;
+  /** One coat everyone is drawn in, for the browser check (coats.ts `vulcan:try-coat`). */
+  private tried: CoatView | undefined;
   private z = 0;
   private live = false;
   private readonly trails = new Trails();
@@ -98,6 +107,9 @@ export class PeopleSprites {
     game.events.once(Phaser.Core.Events.READY, () =>
       scene.events.once(Phaser.Scenes.Events.CREATE, () => {
         this.live = true;
+        this.coats = new CoatTextures(scene);
+        const parent = game.canvas.parentElement;
+        if (parent) watchCoatTrial(game, parent, this);
         this.work = new AtWork(scene);
         this.draw();
         scene.events.on(Phaser.Scenes.Events.UPDATE, (_: number, delta: number) =>
@@ -124,6 +136,7 @@ export class PeopleSprites {
       if (!p) continue;
       if (p.z !== w.z) level = true;
       [p.x, p.y, p.z] = [w.x, w.y, w.z];
+      this.dress(w);
       const was = this.lying.get(w.id);
       const now = { lying: w.lying, carried: !!w.carried };
       if (was && was.lying === now.lying && was.carried === now.carried) continue;
@@ -133,6 +146,29 @@ export class PeopleSprites {
       if (s) this.restyle(s);
     }
     if (level) this.draw();
+  }
+
+  /** A coat put on, taken off or changed in look: the villager is drawn again in it. */
+  private dress(w: WalkerView): void {
+    const was = this.coat.get(w.id);
+    if (JSON.stringify(was) === JSON.stringify(w.coat)) return;
+    if (w.coat) this.coat.set(w.id, w.coat);
+    else this.coat.delete(w.id);
+    const s = this.shown.get(w.id);
+    if (s?.coats) this.pose(s, s.facing, s.frame);
+  }
+
+  /** Draws everyone in `coat` (none: as the worker says again); returns how many are drawn in it. */
+  tryCoat(coat: CoatView | undefined): number {
+    this.tried = coat;
+    let dressed = 0;
+    for (const s of this.shown.values()) {
+      if (!s.coats) continue;
+      this.pose(s, s.facing, s.frame);
+      const frame = s.body.frame.name;
+      if (coat && (s.body.texture.key !== PEOPLE || frame.includes(`.${coat.art}.`))) dressed++;
+    }
+    return dressed;
   }
 
   setLevel(z: number): void {
@@ -201,7 +237,9 @@ export class PeopleSprites {
         clothes,
         hair,
         stem,
+        coats: !overlays,
         facing: 's' as Facing,
+        frame: 0,
         side: p.id % 2 ? 'w' : 'e',
         walked: 0,
         steps: stepsOf(this.scene.textures.get(PEOPLE), stem),
@@ -209,6 +247,7 @@ export class PeopleSprites {
         lift,
       };
       this.shown.set(p.id, s);
+      if (s.coats) this.pose(s, 's', 0);
       this.restyle(s);
       box.setPosition(p.x * TILE + lift.x + s.off.x, p.y * TILE + lift.y + s.off.y);
     }
@@ -302,8 +341,14 @@ export class PeopleSprites {
   private pose(s: Shown, facing: Facing, frame: number): void {
     const { race, look } = s.view;
     s.facing = facing;
+    s.frame = frame;
     const side = sideFrame(s.stem, facing);
-    s.body.setFrame(`${s.stem}.${side.facing}.${frame}`).setFlipX(side.flip);
+    const coat = s.coats ? (this.tried ?? this.coat.get(s.view.id)) : undefined;
+    const body = this.coats?.body(s.stem, coat, side.facing, frame);
+    if (!body) s.body.setFrame(`${s.stem}.${side.facing}.${frame}`);
+    else if (body.key !== s.body.texture.key) s.body.setTexture(body.key, body.frame);
+    else if (body.frame) s.body.setFrame(body.frame);
+    s.body.setFlipX(side.flip);
     if (s.clothes.visible) s.clothes.setFrame(`clothes.${race}.${facing}.${frame}`);
     s.hair?.setFrame(`hair.${look.hair}.${race}.${facing}`);
   }

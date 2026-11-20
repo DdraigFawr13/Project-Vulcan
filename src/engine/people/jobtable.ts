@@ -3,7 +3,8 @@
 // jobs.ts reads only this table, so a new kind of work is a row here, not a branch there.
 import type { EntityRow } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { beekeeping, building, burning, chandling, coldHearth, cooking } from '../crafts/index.ts';
+import { beekeeping, brewing, building, burning, chandling, coldHearth } from '../crafts/index.ts';
+import { cooking, takeUpBrewing } from '../crafts/index.ts';
 import { furnishing, LARDER_JOBS, MILL_JOBS, smelting, smithing } from '../crafts/index.ts';
 import { stationing, takeUpBeekeeping, takeUpBuilding, takeUpCarpentry } from '../crafts/index.ts';
 import { takeUpChandling, takeUpCharcoal, takeUpCooking, takeUpHearth } from '../crafts/index.ts';
@@ -67,6 +68,7 @@ export const JOBS: Readonly<Record<string, JobRow>> = {
   heal: { takeUp: takeUpNursing },
   chandle: { takeUp: takeUpChandling, work: chandling },
   beekeep: { takeUp: takeUpBeekeeping, work: beekeeping },
+  brew: { takeUp: takeUpBrewing, work: brewing, holds: true },
   ...LARDER_JOBS,
   ...MILL_JOBS,
   ...TRADE_JOBS,

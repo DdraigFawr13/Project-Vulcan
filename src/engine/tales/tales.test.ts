@@ -8,6 +8,7 @@ import { content } from '../../content/index.ts';
 import {
   allLines,
   beliefsOf,
+  bynameOf,
   createSim,
   createWorld,
   emit,
@@ -26,8 +27,9 @@ const tuned = {
   ...content,
   tales: {
     ...content.tales,
-    pass: { meal: 100, leisure: 100, work: 100, hearth: 100, perDay: 2 },
+    pass: { meal: 100, leisure: 100, work: 100, hearth: 100, tavern: 100, perDay: 2 },
     bend: { chance: 100, traits: {}, softer: 0 },
+    byname: { ...content.tales.byname, told: 3 },
   },
 };
 const full = createSim(tuned);
@@ -168,5 +170,38 @@ describe('tales', () => {
     expect(talesOf(w, bran.id)).toEqual([]);
     expect(talesOf(w, cai.id)).toHaveLength(1);
     expect(storiesOf(w)).toHaveLength(1);
+  });
+
+  it('names someone by the version most hold, the line citing the latest telling', () => {
+    const { w, people, meet, nextTelling, attack } = setUp();
+    const [bran, cai, dilys, ewan] = people as [EntityRow, EntityRow, EntityRow, EntityRow];
+    attack(bran);
+    step(w, talesOnly, 1);
+    for (const [a, b] of [
+      [bran, cai],
+      [cai, dilys],
+      [dilys, ewan],
+    ] as const) {
+      meet(a, b);
+      nextTelling();
+    }
+    people.forEach((p) => (p['doing'] = 'sleep'));
+    expect(allLines(w).filter((e) => e.type === 'tale.byname')).toEqual([]);
+    step(w, talesOnly, TICKS_PER_DAY);
+    const named = allLines(w).filter((e) => e.type === 'tale.byname');
+    const told = allLines(w).filter((e) => e.type === 'tale.told');
+    expect(named).toHaveLength(1);
+    expect(named[0]!.actors).toEqual([bran.id]);
+    expect(named[0]!.data['word']).toBe('Wolfbait');
+    expect(named[0]!.causes).toEqual([told.at(-1)!.id]);
+    expect(bynameOf(w, bran.id)!['word']).toBe('Wolfbait');
+    expect(
+      (w.entities['memory'] ?? []).some(
+        (m) => m['person'] === bran.id && m['memory'] === 'byname-stung',
+      ),
+    ).toBe(true);
+    // One for life: another day brings no second.
+    step(w, talesOnly, TICKS_PER_DAY);
+    expect(allLines(w).filter((e) => e.type === 'tale.byname')).toHaveLength(1);
   });
 });

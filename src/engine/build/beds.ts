@@ -114,7 +114,7 @@ export function bedSpot(
       ? rowsOf(world, leavingRoom)
       : housesOf(world);
   for (const h of rows) {
-    if (h['state'] !== 'built' || h['sick']) continue;
+    if (h['state'] !== 'built' || h['sick'] || h['inn']) continue;
     if (!own && who && othersHome(world, mainOf(world, h), who)) continue;
     const r = rectOf(h);
     const room = roomAt(world, content, r.x + 1, r.y + 1);

@@ -15,6 +15,10 @@ export interface TaleDef {
   from: number;
   /** No one sees it (a blight, a pack at the edge): one awake person brings word of it. */
   word?: boolean;
+  /** The title of a song made of it, filled from the event's data. */
+  song?: string;
+  /** The byname each level gives the one it is about ("" for none). */
+  bynames?: readonly string[];
 }
 
 export interface BeliefDef {
@@ -24,13 +28,21 @@ export interface BeliefDef {
 }
 
 export interface TalesDef {
-  pass: { meal: number; leisure: number; work: number; hearth: number; perDay: number };
-  places: { meal: string; leisure: string; work: string; hearth: string };
+  pass: {
+    meal: number;
+    leisure: number;
+    work: number;
+    hearth: number;
+    tavern: number;
+    perDay: number;
+  };
+  places: { meal: string; leisure: string; work: string; hearth: string; tavern: string };
   bend: { chance: number; traits: Readonly<Record<string, number>>; softer: number };
   beliefFadeDays: number;
   forgetDays: number;
   strength: readonly string[];
   evening: { mend: number };
+  byname: { share: number; told: number; proud: readonly string[] };
   beliefs: readonly BeliefDef[];
   tales: readonly TaleDef[];
 }

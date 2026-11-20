@@ -21,9 +21,10 @@ import { danger } from '../care/index.ts';
 import { drinking } from './drink.ts';
 import { banks, tendInEvening } from '../crafts/index.ts';
 import { warming } from './warm.ts';
-import { gathering, practising } from './evening.ts';
+import { gathering, mendByAFire, practising } from './evening.ts';
 import { feasting, HARD_STOP } from './feast.ts';
 import { holyHours, praying } from '../faith/index.ts';
+import { atTheInn, hungOver } from '../inn/index.ts';
 import { lateUntil, watching } from '../herding/index.ts';
 import { pilfer } from '../defy/index.ts';
 import { departing, eatStash, extraWork, inStocks, slacking } from './defy.ts';
@@ -205,7 +206,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   const hours = hour >= day.workFrom && hour < workTo && !armOut(world, content, p.id);
   // A day in the stocks is the working day on the green; working slowly idles a minute in a few.
   if (inStocks(ctx, p, hours)) return;
-  if (hours && p['doing'] === 'work' && slacking(ctx, p)) return;
+  // Hung over (6B), a minute in a few is lost until noon.
+  if (hours && p['doing'] === 'work' && (slacking(ctx, p) || hungOver(ctx, p))) return;
   if (working(ctx, p, hours)) {
     p['doing'] = 'work';
     return;
@@ -221,6 +223,11 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     valueOf(ctx, p, 'recreation') < lineOf(ctx, p, 'recreation');
   // Prayer at their faith's shrine (6B), now and then, before other leisure.
   if (leisure && praying(ctx, p)) return;
+  // The tavern of an evening (6B Bundle 5), once it stands.
+  if (leisure && atTheInn(ctx, p, hour >= day.workTo)) {
+    mendByAFire(ctx, p);
+    return;
+  }
   p['doing'] = leisure ? 'relax' : '';
   // Free time given to an ambition's skill (P6.4, V-146), a minute in every `every`.
   if (leisure) practising(ctx, p);

@@ -10,6 +10,7 @@ import {
   clockAt,
   START_TICK,
   TICKS_PER_DAY,
+  today,
   type EngineContent,
   type EntityRow,
   type WorldState,
@@ -145,8 +146,6 @@ export function keptDays(world: WorldState, content: EngineContent): EntityRow[]
     .sort((a, b) => (a['line'] as number) - (b['line'] as number))
     .slice(0, n);
 }
-
-const today = (world: WorldState): number => Math.floor(world.tick / TICKS_PER_DAY);
 
 /** The feast day's supper called for today, if any. */
 export const holyToday = (world: WorldState): EntityRow | undefined =>

@@ -1,6 +1,6 @@
 # The tavern, songs and bynames (spec)
 
-6B Bundle 5 (P6.12; V-041, V-128, V-140, V-155, V-169 amended, V-183, V-188). Morgan's mock-up form, 2026-11-20: every recommendation, two notes (form https://claude.ai/artifact/47iEEFpRCuYa9ogJD7Tn2o, db `answers`, docs t1 to t9). This is the build spec; nothing here is built yet. Numbers marked (est) are starting values to tune in the build.
+6B Bundle 5 (P6.12; V-041, V-128, V-140, V-155, V-169 amended, V-183, V-188). Morgan's mock-up form, 2026-11-20: every recommendation, two notes (form https://claude.ai/artifact/47iEEFpRCuYa9ogJD7Tn2o, db `answers`, docs t1 to t9). This is the build spec; engine part 1 is built (see Built). Numbers marked (est) are starting values to tune in the build.
 
 ## Measured before the tavern
 
@@ -52,6 +52,14 @@ Today's build, two years, default levers (script `/mnt/project-files/vulcan/p6b-
 ## 8. Art (t9)
 
 PixelLab, about 8 generations: ale cask on a stand, brewing tub with a paddle, a counter, and a hanging sign. Morgan's note: "Make sure it looks and feels like a tavern. None of the houses or rooms have enough character or personality." Check the result beside the walls, tables and hearth at game zoom before it goes in.
+
+## Built
+
+Engine part 1 (V-196): `build/tavern.ts` sites the tavern (a house with `inn` 1; Build row `tavern`), plans its hearth and wants `tavern.build.wants` (wants.ts); `crafts/brew.ts` is the Brewing row; engine `inn` names it, picks the innkeeper, decides evenings, pours, brawls and hangovers (`src/engine/inn/MODULE.md`); tales tell at the tavern. Departures, all est values or small defaults: evening odds 60 per cent (measured below, Morgan's standing rule on routine cards); on a winter evening everyone at leisure goes, in place of the lit-hearth gathering, and still mends by its fire; the tavern fire is lit by tenders (its room is in use), not by the innkeeper; a brew is 120 minutes at skill 10 and the brewer keeps the grain overnight; counter, casks and tub use placeholder art until the art step; brawl wounds are `cut` or `crush` (defy's brawl `break`s bones, too heavy for a tavern scuffle), so `tavern.brawl` keeps its own lists; the spec's `tavern.built` line is `tavern.named`, which cites the house built.
+
+Measured, year 2, default levers (tellings at the tavern of all tellings; before had no tavern): anvil 2 of 77 (before 0 of 81; its folk work far out and spend evenings on chores), smoke 50 of 68 (0 of 49), tallow 53 of 118 (0 of 92). At 40 per cent: anvil 6 of 72, smoke 15 of 36, tallow 38 of 97.
+
+Engine part 2 (V-197): `tales/songs.ts` and `tales/bynames.ts` (`src/engine/tales/MODULE.md`). Departures: a song counts as a telling to each hearer (eight tellings are out of reach in a colony of five otherwise); a bard makes or sings once a free evening. Measured over two years: anvil 1 song and 24 singings, smoke 2 and 190, tallow 2 and 330 with two bynames ("Scar"); every song so far is of a harvest home, since bards rarely hold another big event in its season.
 
 ## Build order
 

@@ -33,7 +33,13 @@ const strangersOf = (world: WorldState) => people(world).filter((p) => p['status
 export function freeBeds(world: WorldState, content: EngineContent) {
   const beds = piecesOf(world, 'bed').filter((b) => {
     const h = houseAt(world, b['x'] as number, b['y'] as number);
-    return !b['owner'] && h?.['state'] === 'built' && !h['sick'] && !mainOf(world, h)['owner'];
+    return (
+      !b['owner'] &&
+      h?.['state'] === 'built' &&
+      !h['sick'] &&
+      !h['inn'] &&
+      !mainOf(world, h)['owner']
+    );
   }).length;
   // As someone with no home (-1): floor anywhere but in another's home.
   return { beds, floor: !!bedSpot(world, content, undefined, [], -1) };
