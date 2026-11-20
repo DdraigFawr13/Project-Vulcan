@@ -12,6 +12,7 @@ import {
   homeless,
   houseAt,
   kegsOf,
+  list,
   personOf,
   plansOf,
   recordOf,
@@ -32,9 +33,6 @@ export type TavernRow = PastureRow;
 
 const nameOf = (world: WorldState, id: unknown): string =>
   (personOf(world, id)?.['name'] as string | undefined) ?? '';
-
-const list = (names: readonly string[]): string =>
-  names.length < 2 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
 
 /** "14 cups ready in 2 casks; 20 brewing, ready in 3 days", or "the casks are dry". */
 function aleWords(world: WorldState): string {

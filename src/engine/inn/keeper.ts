@@ -33,7 +33,8 @@ export function highestOn(
   job: string,
   trait: string,
 ): EntityRow | undefined {
-  const rank = (p: EntityRow) => levelOf(world, content, p.id, job) * 2 - +hasTrait(world, p, trait);
+  const rank = (p: EntityRow) =>
+    levelOf(world, content, p.id, job) * 2 - +hasTrait(world, p, trait);
   return (world.entities['person'] ?? [])
     .filter((p) => p['status'] === 'alive' && !p['stranger'] && grown(world, content, p))
     .sort((a, b) => rank(a) - rank(b) || a.id - b.id)[0];
