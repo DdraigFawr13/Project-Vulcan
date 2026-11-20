@@ -5,7 +5,9 @@ import {
   attribute,
   attributes,
   count,
+  effect,
   id,
+  motion,
   season,
   share,
   text,
@@ -236,6 +238,9 @@ export const PEOPLE_SCHEMAS = {
       risk: opt(share),
       heavy: opt(bool()),
       rawFood: opt(count),
+      // Seen at work (V-194): the motion drawn while the job is worked, and what flies from it.
+      motion,
+      effect: opt(effect),
     }),
   ),
   conditions: list(

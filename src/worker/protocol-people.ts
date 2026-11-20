@@ -111,6 +111,19 @@ export interface WalkerView {
   kin?: { band: string; text: string; why?: number }[];
   /** A stranger's page while the band speaks or they walk away (P5.9); none for the colony. */
   stranger?: StrangerView;
+  /** Seen at work (V-194): the motion of the job they stand working (jobs.json `motion`, with
+   * its `effect`), none while they walk, rest or carry. */
+  act?: ActView;
+  /** The item art of the tool that serves the job they work or walk to (`item.iron-axe`). */
+  held?: string;
+  /** The item art of the load they carry (`item.logs`). */
+  load?: string;
+}
+
+/** A job's look while it is worked (V-194): the drawn motion and what flies from it. */
+export interface ActView {
+  motion: 'swing' | 'dig' | 'crouch' | 'stir' | 'bench';
+  effect?: { kind: 'specks' | 'puff' | 'drift'; colours: readonly string[]; count: number };
 }
 
 /** A worn garment: its slot, name and worth, the second line, and the line that made it. */

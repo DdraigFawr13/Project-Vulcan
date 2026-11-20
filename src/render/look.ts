@@ -27,3 +27,19 @@ export function bodyStem(
   if (n === 0) return { stem: `person.${race}`, overlays: true };
   return { stem: `person.${race}.v${(Math.abs(id) % n) + 1}`, overlays: false };
 }
+
+/** Whole villagers whose side frame faces the wrong way on the sheet (checked by eye 2026-11-20,
+ * Seen at work Part 1): that facing is drawn as the other side's frame mirrored, so they walk and
+ * strike towards where they go. */
+const MIRRORED: Readonly<Record<string, 'e' | 'w'>> = {
+  'person.elf.v1': 'w',
+  'person.halfling.v3': 'w',
+  'person.human.v1': 'w',
+  'person.orc.v1': 'e',
+};
+
+/** The frame facing to draw for a body stem facing `facing`, and whether to mirror it. */
+export function sideFrame<F extends string>(stem: string, facing: F): { facing: F; flip: boolean } {
+  if (MIRRORED[stem] !== facing) return { facing, flip: false };
+  return { facing: (facing === 'e' ? 'w' : 'e') as F, flip: true };
+}
