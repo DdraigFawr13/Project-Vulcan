@@ -59,8 +59,7 @@ export function packSheet(frames) {
 /** Final art (ART_DIRECTION.md) in `art/final/<sheet>/` replaces the script-drawn frame of the same
  * name, so the draw scripts can keep running without overwriting it. A final frame must name an
  * existing frame (the art names stay the contract, ART.md), except whole villagers
- * (`person.<race>.v<n>.<facing>.<frame>`, src/render/look.ts), their coats
- * (`person.<race>.v<n>.<coat>.<facing>.<frame>`, src/render/coats.ts) and tall trees' crowns
+ * (`person.<race>.v<n>[.<coat>].<facing>.<frame>`, src/render/look.ts, coats.ts) and tall trees' crowns
  * (`<art>.1.top`, src/render/canopy.ts), which only final art has. */
 const FINAL_ONLY = /^(person\.[a-z-]+\.v\d+(\.[a-z]+)?\.[nesw]\.[0-2]|[a-z]+\.[a-z-]+\.1\.top)$/;
 export function overrideFinal(frames, sheet) {

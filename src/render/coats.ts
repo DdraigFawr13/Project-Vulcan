@@ -89,3 +89,18 @@ export class CoatTextures {
     return { data, width: w, height: h };
   }
 }
+
+/** The browser check of the coats has no cold to wait for: `vulcan:try-coat` on the page's
+ * `#game` dresses everyone in one CoatView (none undresses), and `data-coats` says how many. */
+export function watchCoatTrial(
+  game: Phaser.Game,
+  parent: HTMLElement,
+  people: { tryCoat(coat: CoatView | undefined): number },
+): void {
+  parent.addEventListener('vulcan:try-coat', (e) => {
+    const coat = (e as CustomEvent<CoatView | undefined>).detail;
+    game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+      parent.dataset['coats'] = String(people.tryCoat(coat));
+    });
+  });
+}
