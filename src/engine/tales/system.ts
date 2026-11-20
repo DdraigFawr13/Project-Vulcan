@@ -8,13 +8,15 @@ import { fadeBeliefs } from './belief.ts';
 import { learn } from './learn.ts';
 import { TALES_TABLES } from './tables.ts';
 import { forget, tellings } from './tell.ts';
+import { bynames } from './bynames.ts';
+import { songs } from './songs.ts';
 
 export const talesSystem: System = {
   id: 'tales',
   every: 'minute',
   stream: 'social',
-  emits: ['tale.told'],
-  initialState: { seen: 0 },
+  emits: ['tale.told', 'song.made', 'song.sung', 'tale.byname'],
+  initialState: { seen: 0, sang: 0 },
   tables: TALES_TABLES,
   init(ctx) {
     ctx.state['seen'] = ctx.world.log.at(-1)?.id ?? 0;
@@ -24,10 +26,12 @@ export const talesSystem: System = {
     // Half past each hour, so tellings and the day's fading never share a minute with the hour's.
     const half = TICKS_PER_HOUR / 2;
     if (ctx.world.tick % TICKS_PER_HOUR !== half) return;
+    songs(ctx);
     tellings(ctx);
     if (ctx.world.tick % TICKS_PER_DAY === half) {
       fadeBeliefs(ctx);
       forget(ctx);
+      bynames(ctx);
     }
   },
 };

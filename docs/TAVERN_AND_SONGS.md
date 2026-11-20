@@ -59,6 +59,8 @@ Engine part 1 (V-196): `build/tavern.ts` sites the tavern (a house with `inn` 1;
 
 Measured, year 2, default levers (tellings at the tavern of all tellings; before had no tavern): anvil 2 of 77 (before 0 of 81; its folk work far out and spend evenings on chores), smoke 50 of 68 (0 of 49), tallow 53 of 118 (0 of 92). At 40 per cent: anvil 6 of 72, smoke 15 of 36, tallow 38 of 97.
 
+Engine part 2 (V-197): `tales/songs.ts` and `tales/bynames.ts` (`src/engine/tales/MODULE.md`). Departures: a song counts as a telling to each hearer (eight tellings are out of reach in a colony of five otherwise); a bard makes or sings once a free evening. Measured over two years: anvil 1 song and 24 singings, smoke 2 and 190, tallow 2 and 330 with two bynames ("Scar"); every song so far is of a harvest home, since bards rarely hold another big event in its season.
+
 ## Build order
 
 1. Engine part 1: tavern siting and furnishing, brewing, the Ale row, evenings, innkeeper, tavern tellings, brawls, hung over. Done when: the tavern-tellings test and the before/after table.

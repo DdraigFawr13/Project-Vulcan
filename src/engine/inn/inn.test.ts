@@ -234,4 +234,44 @@ describe('the tavern', () => {
       content.tavern.hungOver.until * TICKS_PER_HOUR,
     );
   });
+
+  it('the bard makes a song of a big event, and its bigger version spreads', () => {
+    const tuned: EngineContent = {
+      ...withoutAccidents(content),
+      tavern: { ...content.tavern, evening: { ...content.tavern.evening, go: 100 } },
+    };
+    const { w, sim, casks } = withTavern('tallow', tuned);
+    for (const c of casks)
+      fillCask(w, c, { drink: 'ale', cups: 20, ready: w.tick, line: w.begunEvent });
+    const bard = alive(w).find((p) => p.id !== tavernOf(w)!['keeper'])!;
+    addEntity(w, 'priority', { person: bard.id, job: 'bard', level: 1, line: 0, declined: 0 });
+    const seen = emit(w, sim.templates, 'wild.attacked', {
+      actors: [bard.id],
+      causes: [w.begunEvent],
+      data: {
+        species: 'wolf',
+        name: bard['name'] as string,
+        why: 'at the wood edge',
+        fight: '',
+        bitten: '',
+      },
+    });
+    for (let d = 0; d < 8 && !lines(w, 'song.sung').length; d += 1) evening(w, sim);
+    const made = lines(w, 'song.made')[0]!;
+    expect(made.actors).toEqual([bard.id]);
+    expect(made.causes).toEqual([seen]);
+    const sung = lines(w, 'song.sung')[0]!;
+    expect(sung.causes).toEqual([made.id]);
+    // Those who heard it hold the song's version, one level bigger than the bard's, from the song.
+    const heard = (w.entities['tale'] ?? []).filter((t) => t['line'] === sung.id);
+    expect(heard.length).toBeGreaterThan(0);
+    for (const t of heard) expect(t['level']).toBe(2);
+    expect(
+      (w.entities['memory'] ?? []).filter((m) => (m['memory'] as string).startsWith('heard-song')),
+    ).not.toEqual([]);
+    // The song's version gives the bard a byname of their own.
+    const named = lines(w, 'tale.byname')[0]!;
+    expect(named.causes).toEqual([sung.id]);
+    expect(named.data['word']).toBe('Lucky');
+  });
 });
