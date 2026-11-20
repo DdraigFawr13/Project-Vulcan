@@ -29,7 +29,7 @@ import { tileTemperature } from '../weather/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
 import { able, goBeside, outranked, people, priorityLine, same, scaled } from '../band/index.ts';
-import { couldHave, spotOf, walkTo, worked } from '../band/index.ts';
+import { couldHave, spotOf, walkTo, wantTool, worked } from '../band/index.ts';
 import { cheb } from '../core/index.ts';
 
 /** What `p` would do: tend a fire (`fire` and the fuel `item` to fetch) or split `logs`. */
@@ -212,7 +212,17 @@ export function takeUpTending(ctx: SystemContext, p: EntityRow): boolean {
   if (!able(content, p, FUEL_JOB) || outranked(ctx, p, FUEL_JOB, (q) => pick(ctx, q) !== undefined))
     return false;
   const got = pick(ctx, p);
+  if (!got && splitWanted(ctx)) wantTool(ctx, p, 'split');
   return !!got && begin(ctx, p, got);
+}
+
+/** Whether the colony wants firewood split and has logs to split (V-195: with no axe to be had,
+ * the would-be splitter's want is noted for the Toolmaking row). */
+function splitWanted(ctx: SystemContext): boolean {
+  const { world, content } = ctx;
+  const fuel = fuelOf(content, content.work.fire.split.fuel);
+  if (!fuel || wantOf(world, content, fuel.item) <= haveOf(world, content, fuel.item)) return false;
+  return itemsOf(world).some((i) => i['kind'] === content.work.fire.split.from && !i['holder']);
 }
 
 /** In the evening, after work hours and before bed, a free person may still feed a fire so it

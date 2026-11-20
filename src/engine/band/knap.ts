@@ -60,6 +60,16 @@ export function couldHave(ctx: SystemContext, p: EntityRow, use: string): boolea
   );
 }
 
+/** `p` would take up `use` but cannot have a tool for it now: their want is noted (and the line if
+ * none is left in the valley) so the Toolmaking row knaps them one, without their knapping it
+ * themself (for work taken up out of hours, such as splitting firewood). */
+export function wantTool(ctx: SystemContext, p: EntityRow, use: string): void {
+  const kind = neededKind(ctx.content, use);
+  if (!kind || couldHave(ctx, p, use)) return;
+  noteWant(ctx, p, kind.id);
+  sayNone(ctx, p, kind, use);
+}
+
 function noteWant(ctx: SystemContext, p: EntityRow, kind: string): void {
   const row = wantsOf(ctx.world).find((r) => r['person'] === p.id && r['kind'] === kind);
   if (row) row['tick'] = ctx.world.tick;

@@ -252,7 +252,7 @@
 {"id":"tool.handedDown","importance":1,"template":"{name} gave {what} to {to}, {why}.{back}"},
 {"id":"tool.worn","importance":2,"template":"{name}'s {what} is worn: a {better} {kind} would need {ingots} {ingot}, and the smith wants them."},
 {"id":"tool.broke","importance":2,"template":"{name}'s {what} broke after {hours} hours of work.","stop":"works","notable":{}},
-{"id":"tool.lastBroke","importance":3,"template":"That was the valley's last {kind}: {stops} stop until someone knaps or smiths one.","stop":"works","notable":{}},
+{"id":"tool.lastBroke","importance":3,"template":"That was the valley's last {kind}: no more {stops} until someone knaps or smiths one.","stop":"works","notable":{}},
 {"id":"tool.none","importance":2,"template":"{name} would take up {work}, but there is no {kind} in the valley."},
 {"id":"work.tookUpKnapping","importance":1,"template":"{name} took up knapping a {what} for {who}: {why}."},
 {"id":"tool.knapped","importance":2,"template":"{name} knapped {what} for {who}."},

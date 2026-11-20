@@ -78,6 +78,7 @@ export {
   readyFor,
   takeUpKnapping,
   toolWaits,
+  wantTool,
   type Ready,
 } from './knap.ts';
 export { WALK_FIELDS, stepAlong, walkTo, wander } from './walk.ts';

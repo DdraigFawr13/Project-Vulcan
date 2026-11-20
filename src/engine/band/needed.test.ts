@@ -7,6 +7,9 @@ import { allLines, createSim, createWorld, itemsOf, step } from '../index.ts';
 import { withoutAccidents } from '../index.ts';
 import { toolOf } from '../goods/index.ts';
 import { toolWaits } from './knap.ts';
+import { takeUpTending } from '../crafts/index.ts';
+import { peopleSystem } from '../people/index.ts';
+import { contextFor } from '../sim/system.ts';
 
 const content = withoutAccidents(game);
 const sim = createSim(content);
@@ -59,5 +62,17 @@ describe('a needed pick', () => {
     const took = lines(w, 'work.tookUp').filter((l) => l.tick > knapped!.tick);
     expect(took.length).toBeGreaterThan(0);
     expect(toolWaits(w, content, 'mine')).not.toBe('no pick in the valley');
+  });
+
+  it('notes the want of someone who would split firewood with no axe, for the Toolmaking row', () => {
+    const w = createWorld(sim, 'smoke');
+    // Logs are felled by the sixth hour, while no firewood is split yet.
+    step(w, sim, 8 * HOUR);
+    w.entities['item'] = itemsOf(w).filter((i) => toolOf(content, i)?.kind !== 'axe');
+    const p = people(w).find((q) => q['status'] === 'alive')!;
+    Object.assign(p, { job: '', plan: 0, target: -1 });
+    expect(takeUpTending(contextFor(w, sim, peopleSystem), p)).toBe(false);
+    const wants = (w.entities['toolWant'] ?? []).filter((r) => r['person'] === p.id);
+    expect(wants.map((r) => r['kind'])).toEqual(['axe']);
   });
 });
