@@ -28,6 +28,7 @@ export * from './lamp.ts';
 export * from './mill.ts';
 export * from './clothes.ts';
 export * from './tales.ts';
+export * from './annals.ts';
 export * from './self.ts';
 export * from './colony.ts';
 export * from './family.ts';

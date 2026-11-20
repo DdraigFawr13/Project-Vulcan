@@ -6,7 +6,7 @@ More control over the pace of play: a speed list up to 6×, jumps of a month, a 
 
 - [x] Spec, 2026-11-20 (V-191)
 - [ ] Slice 1: speeds, jumps and what stops play (worker, content, screen)
-- [ ] Slice 2: the chronicle (engine)
+- [x] Slice 2: the chronicle (engine), 2026-11-20: `src/engine/annals`, `annals.json`, `npm run annals`
 - [ ] Slice 3: recaps on screen
 
 ## Design (VR-62)
