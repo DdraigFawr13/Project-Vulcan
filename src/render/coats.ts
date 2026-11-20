@@ -38,27 +38,30 @@ export class CoatTextures {
 
   /** The body for villager `stem` in `coat`, facing and frame; the plain villager without one. */
   body(stem: string, coat: CoatView | undefined, facing: string, frame: number): BodyFrame {
-    const bare = `${stem}.${facing}.${frame}`;
-    if (!coat || !this.has(stem, coat.art)) return { key: PEOPLE, frame: bare };
-    const drawn = `${stem}.${coat.art}.${facing}.${frame}`;
+    if (!coat || !this.has(stem, coat.art))
+      return { key: PEOPLE, frame: `${stem}.${facing}.${frame}` };
+    // Coats have the two-step walk (step 1 is the standing coat a pixel up): a longer walk shows
+    // them at those two steps. The look is worked out on the standing frames, whose bodies match.
+    const step = frame === 0 ? 0 : 1 + ((frame - 1) % 2);
+    const drawn = `${stem}.${coat.art}.${facing}.${step}`;
     if (coat.look === 'plain') return { key: PEOPLE, frame: drawn };
     const key = `coat|${drawn}|${coat.look}`;
     if (!this.scene.textures.exists(key))
-      this.make(key, bare, drawn, coat.look, `${stem}.${facing}`);
+      this.make(key, `${stem}.${facing}`, `${stem}.${coat.art}.${facing}`, coat.look, step === 1);
     return this.scene.textures.exists(key) ? { key } : { key: PEOPLE, frame: drawn };
   }
 
-  private make(key: string, bare: string, drawn: string, look: 'ragged' | 'fine', seed: string) {
-    const base = this.read(bare);
-    const coat = this.read(drawn);
+  private make(key: string, bare: string, drawn: string, look: 'ragged' | 'fine', up: boolean) {
+    const base = this.read(`${bare}.0`);
+    const coat = this.read(`${drawn}.0`);
     if (!base || !coat) return;
     const canvas = this.scene.textures.createCanvas(key, coat.width, coat.height);
     if (!canvas) return;
-    const out = coatLook(base.data, coat.data, coat.width, look, this.palette, hashOf(seed));
+    const out = coatLook(base.data, coat.data, coat.width, look, this.palette, hashOf(bare));
     canvas.context.putImageData(
       new ImageData(Uint8ClampedArray.from(out), coat.width, coat.height),
       0,
-      0,
+      up ? -1 : 0,
     );
     canvas.refresh();
   }
