@@ -1,6 +1,6 @@
 # Apprentices, the schoolroom and callings
 
-The settled design for 6B Bundle 6 (P6.13, V-074, V-141, V-175, V-188). Morgan's mock-up form, 2026-11-20: https://claude.ai/artifact/8j37QAP4QUmANBnVWR5NFW (db `answers`, docs q1 to q9 and `overall`). Morgan took every recommendation (q9 left blank, so its recommendation stands) and added one note: "Make sure you balance this such that not everyone gets amazing at a job. There should maybe be caps to potential. And like trait modifiers that change learning speeds."
+The settled design for 6B Bundle 6 (P6.13, V-074, V-141, V-175, V-189). Morgan's mock-up form, 2026-11-20: https://claude.ai/artifact/8j37QAP4QUmANBnVWR5NFW (db `answers`, docs q1 to q9 and `overall`). Morgan took every recommendation (q9 left blank, so its recommendation stands) and added one note: "Make sure you balance this such that not everyone gets amazing at a job. There should maybe be caps to potential. And like trait modifiers that change learning speeds."
 
 ## What was measured first
 

@@ -10,7 +10,7 @@ The second half of Phase 6 (V-153): P6.1 and P6.8 to P6.13, with callings (V-175
 - [x] Bundle 3, mason, lime and thatch; buildings grow, 2026-11-20 (V-185 #137, V-186)
 - [x] Bundle 4, faith, shrines and feasts, 2026-11-20 (V-187 #142, part 2; form https://claude.ai/artifact/RcpMJavxqbBymmwCBHhmXS)
 - [ ] Bundle 5, the tavern, songs and bynames
-- [ ] Bundle 6, apprentices, the schoolroom and callings (design settled V-188)
+- [ ] Bundle 6, apprentices, the schoolroom and callings (design settled V-189)
 - [ ] 6B balance and review
 
 ## Design (VR-62)
@@ -64,7 +64,7 @@ Mock-up: UI (tavern, songs in the ledger, bynames). Done when: a table of tellin
 
 Mock-up: Engine (calling and teacher lines in the inspector). Done when: the apprentice table; the ledger names who taught whom; each calling's test meets its bar and shows its push.
 
-- Reading list: `docs/APPRENTICES_AND_CALLINGS.md` (settled design, V-188); `docs/DECISIONS.md` V-074 V-141 V-170 V-175; `src/engine/band/MODULE.md`; `src/engine/self/MODULE.md`; `src/engine/law/MODULE.md`
+- Reading list: `docs/APPRENTICES_AND_CALLINGS.md` (settled design, V-189); `docs/DECISIONS.md` V-074 V-141 V-170 V-175; `src/engine/band/MODULE.md`; `src/engine/self/MODULE.md`; `src/engine/law/MODULE.md`
 
 ### 6B balance and review
 
