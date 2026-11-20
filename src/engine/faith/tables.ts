@@ -30,6 +30,14 @@ export const creedsOf = (world: WorldState): EntityRow[] => world.entities['cree
 export const faithfulOf = (world: WorldState): EntityRow[] => world.entities['faithful'] ?? [];
 export const holydaysOf = (world: WorldState): EntityRow[] => world.entities['holyday'] ?? [];
 
+/** Fills `{slot}`s in `text` from `words`. */
+export const fill = (text: string, words: Readonly<Record<string, string>>): string =>
+  text.replace(/\{(\w+)\}/g, (_, k: string) => words[k] ?? '');
+
+/** A person's name, or "someone". */
+export const nameOf = (world: WorldState, id: number): string =>
+  ((world.entities['person'] ?? []).find((p) => p.id === id)?.['name'] as string) ?? 'someone';
+
 /** A creed's name inside a sentence: "the Wells" for "The Wells". */
 export const faithWords = (creed: EntityRow): string =>
   (creed['name'] as string).replace(/^The /, 'the ');

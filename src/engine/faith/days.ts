@@ -20,15 +20,9 @@ import { foodDays } from '../goods/index.ts';
 import type { Hours } from '../law/index.ts';
 import { lawDef, settingOf } from '../law/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { holydaysOf, mainCreed } from './tables.ts';
+import { fill, nameOf, holydaysOf, mainCreed } from './tables.ts';
 
 export const FEASTS = 'feasts';
-
-const fill = (text: string, words: Readonly<Record<string, string>>): string =>
-  text.replace(/\{(\w+)\}/g, (_, k: string) => words[k] ?? '');
-
-const nameOf = (world: WorldState, id: number): string =>
-  ((world.entities['person'] ?? []).find((p) => p.id === id)?.['name'] as string) ?? 'someone';
 
 const living = (world: WorldState): EntityRow[] =>
   (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');

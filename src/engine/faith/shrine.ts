@@ -16,13 +16,7 @@ import { grown } from '../family/index.ts';
 import { raiseStock } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { creedsOf, faithOf, faithWords, holdersOf, shrineOf } from './tables.ts';
-
-const fill = (text: string, words: Readonly<Record<string, string>>): string =>
-  text.replace(/\{(\w+)\}/g, (_, k: string) => words[k] ?? '');
-
-const nameOf = (world: WorldState, id: number): string =>
-  ((world.entities['person'] ?? []).find((p) => p.id === id)?.['name'] as string) ?? 'someone';
+import { fill, nameOf, creedsOf, faithOf, faithWords, holdersOf, shrineOf } from './tables.ts';
 
 /** The colony's first reason to gather, if it has had one: the earliest of the first death, the
  * first wedding and the first harvest home, with the line and the words for why. */
