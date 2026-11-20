@@ -45,7 +45,8 @@ function hourly(ctx: Parameters<NonNullable<System['run']>>[0]): void {
     addEntity(world, 'flock', {
       ...{ pasture: p.id, hay: 0, swaths: [], swathHay: [], swathDry: [], mown: [], mowDay: 0 },
       ...{ mowLog: 0, spoiled: 0, folded: 0, outLine: 0, takenAt: 0, takenLine: 0, onHay: 0 },
-      ...{ cullLine: 0, full: 0, line: p['last'] as number, births: [], watch: 0, watchPiece: 0 },
+      ...{ cullLine: 0, full: 0, line: p['last'] as number, births: [], watch: 0, watchBy: 0 },
+      watchPiece: 0,
       year: clockAt(world.tick, content.calendar).year,
     });
   const hour = clockAt(world.tick, content.calendar).hour;

@@ -92,7 +92,7 @@ export function planKiln(ctx: SystemContext): void {
   const s = sizeOfStation(content, 'kiln');
   addEntity(world, 'station', {
     ...{ kind: 'kiln', x: at.x, y: at.y, z: 0, w: s, h: s, state: 'plan', line },
-    ...{ have: 0, work: -1, made: 0, lit: 0, litLine: 0, alert: 0, waitFor: '' },
+    ...{ have: 0, work: -1, made: 0, lit: 0, litLine: 0, alert: 0, waitFor: '', sent: 0 },
   });
   raiseStock(ctx, def.kiln.material, 'kiln', line);
 }
