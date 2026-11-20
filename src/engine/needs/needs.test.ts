@@ -32,10 +32,13 @@ describe('needs', () => {
         step(world, sim, 60);
         for (const p of people)
           // Privacy (P3.5) is meant to fall in a shared room: the band's barracks cottage.
+          // A need is low below its line (needs.ts writes need.low at value < low), so at the
+          // line is still met: ledger's Ita ends a haul at exactly 3,000 and goes to relax.
           for (const def of content.life.needs.filter((n) => n.id !== 'privacy'))
-            expect(needOf(world, p.id, def.id)!['value'], `${def.id} hour ${h}`).toBeGreaterThan(
-              def.low,
-            );
+            expect(
+              needOf(world, p.id, def.id)!['value'],
+              `${def.id} hour ${h}`,
+            ).toBeGreaterThanOrEqual(def.low);
         // 02:00 each night: who is asleep on their own bedroll, or in their own bed.
         if (h % 24 === 19)
           onBeds += people.filter(

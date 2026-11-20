@@ -7,6 +7,7 @@ import { content } from '../../content/index.ts';
 import {
   addEntity,
   allLines,
+  bedOwnedBy,
   createSim,
   createWorld,
   defySystem,
@@ -107,12 +108,30 @@ describe('hard times without a law (P2)', () => {
   });
 });
 
-/** A hard winter under Hunger rations on anvil, and a house of three or more where one holds the
- * memory and belief behind their grievance. Which housemates went hungry follows the winter's
- * history, so a second is given the same memory (they already hold the belief) rather than
- * pinned, and a third is made to doubt it in the test. */
-function hardWinter(): { w: World; p: EntityRow; shares: EntityRow; doubts: EntityRow } {
-  const w = createWorld(sim, 'anvil');
+type Hard = { w: World; p: EntityRow; shares: EntityRow; doubts: EntityRow };
+
+/** Where `q` sleeps: their bed, else their laid bedroll. */
+const bedOf = (w: World, q: EntityRow) =>
+  bedOwnedBy(w, q.id) ??
+  (w.entities['item'] ?? []).find(
+    (i) => i['owner'] === q.id && i['kind'] === content.life.cart.bedroll && i['state'] === 'laid',
+  );
+
+/** A hard winter under Hunger rations, and a house of three where one holds the memory and
+ * belief behind their grievance. Who shares a house and who went hungry that winter are the
+ * seed's history (6B roofs moved anvil's), so the house is made: two others with the same
+ * grievance sleep where `p` sleeps, and the second is given `p`'s memory and belief. A third is
+ * made to doubt it in the test. */
+function hardWinter(): Hard {
+  for (const seed of ['anvil', 'smoke', 'tallow', 'ledger-1']) {
+    const found = hardWinterOn(seed);
+    if (found) return found;
+  }
+  throw new Error('no seed has a grievance held from memory and belief at home');
+}
+
+function hardWinterOn(seed: string): Hard | undefined {
+  const w = createWorld(sim, seed);
   let day = 0;
   while (!isWinter({ ...w, tick: day * TICKS_PER_DAY }, content)) day += 1;
   w.tick = day * TICKS_PER_DAY + 6 * TICKS_PER_HOUR;
@@ -127,22 +146,20 @@ function hardWinter(): { w: World; p: EntityRow; shares: EntityRow; doubts: Enti
     const g = grievanceOf(w, content, q.id);
     return g ? reasonsOf(w, content, q.id, g.setting) : {};
   };
-  const homes = new Map<number, EntityRow[]>();
-  for (const p of alive(w)) {
-    const h = homeHouse(w, content, p);
-    if (h) homes.set(h, [...(homes.get(h) ?? []), p]);
-  }
-  const house = [...homes.values()].find(
-    (ps) => ps.length >= 3 && ps.some((q) => why(q).mem && why(q).belief),
-  )!;
-  expect(house).toBeDefined();
-  const p = house.find((q) => why(q).mem && why(q).belief)!;
-  const shares = house.find((q) => q !== p && why(q).belief)!;
-  if (!why(shares).mem) {
-    const { id: _, ...mem } = why(p).mem!;
-    addEntity(w, 'memory', { ...mem, person: shares.id });
-  }
-  return { w, p, shares, doubts: house.find((q) => q !== p && q !== shares)! };
+  const p = alive(w).find((q) => why(q).mem && why(q).belief && homeHouse(w, content, q));
+  if (!p) return undefined;
+  const law = grievanceOf(w, content, p.id)!.law;
+  const [shares, doubts] = alive(w).filter(
+    (q) => q !== p && bedOf(w, q) && grievanceOf(w, content, q.id)?.law === law,
+  );
+  if (!shares || !doubts) return undefined;
+  const bed = bedOf(w, p)!;
+  for (const q of [shares, doubts]) Object.assign(bedOf(w, q)!, { x: bed['x'], y: bed['y'] });
+  const { id: _m, ...mem } = why(p).mem!;
+  if (!why(shares).mem) addEntity(w, 'memory', { ...mem, person: shares.id });
+  const { id: _b, ...belief } = why(p).belief!;
+  if (!why(shares).belief) addEntity(w, 'belief', { ...belief, person: shares.id });
+  return { w, p, shares, doubts };
 }
 
 describe('a leaver takes only those who share the grievance (P4)', () => {
