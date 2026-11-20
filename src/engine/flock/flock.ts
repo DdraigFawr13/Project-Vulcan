@@ -15,8 +15,9 @@ export const FLOCK_TABLES: Schemas = {
    * `line` the flock's latest line; `year` the year the yearly counters belong to; `births` the
    * lambs drawn for this month, four numbers each: day, species (index in `flock.kinds`), sex
    * (0 female, 1 male), days the weak one lives (0 for a healthy one); `watch` tonight's watch
-   * fire's line while it burns (Bundle 6, people `watch.ts`), `watchPiece` the hearth piece it
-   * burns in, laid at the first watch and kept. */
+   * fire's line while it burns (Bundle 6, herding `watch.ts`), `watchBy` the herder sitting up
+   * by it (0 when nobody is), `watchPiece` the hearth piece it burns in, laid at the first watch
+   * and kept. */
   flock: {
     pasture: 'entity',
     hay: 'count',
@@ -38,6 +39,7 @@ export const FLOCK_TABLES: Schemas = {
     year: 'count',
     births: 'ints',
     watch: 'event',
+    watchBy: 'entity',
     watchPiece: 'entity',
   },
 };
