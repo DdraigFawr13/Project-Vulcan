@@ -7,6 +7,7 @@ import { memoriesOf, moodOf, needOf } from '../needs/index.ts';
 import { ambitionOf, ambitionText, rolesOf } from '../self/index.ts';
 import { isWinter } from './hours.ts';
 import { colonyLeans } from './leans.ts';
+import { faithLeans } from './faith.ts';
 import { lower } from '../core/index.ts';
 
 export type Answer = 'obeys' | 'grumbles' | 'refuses';
@@ -125,6 +126,8 @@ export function weigh(
   const isStanding = (key: string) => key.startsWith('standing');
   for (const l of leans.filter((x) => !isStanding(x.key))) add(t, l.by, l.word, l.key, l.cite);
   selfParts(t, world, content, person, s);
+  // 6B: what their faith holds sacred or abhors.
+  for (const l of faithLeans(world, content, person, s)) add(t, l.by, l.word, l.key);
   heldParts(t, world, content, person, s);
   for (const l of leans.filter((x) => isStanding(x.key))) add(t, l.by, l.word, l.key, l.cite);
   seasonParts(t, world, content, s);

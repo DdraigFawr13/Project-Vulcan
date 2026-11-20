@@ -4,6 +4,7 @@
 // wood, bring it to the bench (the bench's own plan, for the bench), work there for the piece's
 // minutes (shorter with crafting skill, which they practise), and the piece is set at the spot
 // chosen when it was taken up. Its quality is their crafting level plus a seeded roll.
+import { isShrine, shrineBuilt } from '../faith/index.ts';
 import { streamFor, type EntityRow, type FurnitureKind } from '../core/index.ts';
 import {
   anyBench,
@@ -236,6 +237,7 @@ export function furnishing(ctx: SystemContext, p: EntityRow): boolean {
   if ((piece['work'] as number) > 0) return true;
   if (kind.id === HEARTH) layHearth(ctx, p, piece);
   else if (kind.id === WELL) buildWell(ctx, p, piece);
+  else if (isShrine(content, kind.id)) shrineBuilt(ctx, p, piece);
   else if (kind.job) setStation(ctx, p, piece);
   else finish(ctx, p, piece, level);
   stop(p);

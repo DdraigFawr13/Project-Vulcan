@@ -23,6 +23,7 @@ import { banks, tendInEvening } from '../crafts/index.ts';
 import { warming } from './warm.ts';
 import { gathering, practising } from './evening.ts';
 import { feasting, HARD_STOP } from './feast.ts';
+import { holyHours, praying } from '../faith/index.ts';
 import { lateUntil, watching } from '../herding/index.ts';
 import { pilfer } from '../defy/index.ts';
 import { departing, eatStash, extraWork, inStocks, slacking } from './defy.ts';
@@ -143,7 +144,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   // The harvest-home supper (5B Bundle 4) is the evening's meal: after work, unless starving, it
   // comes before eating alone (even on the way to it), the jobs that run on past work and the
   // evening's leisure.
-  const day = hoursOf(world, content, p.id);
+  // On a feast day (6B) work stops at noon for all who keep the Feasts law.
+  const day = holyHours(world, content, p.id, hoursOf(world, content, p.id));
   // Someone already on their way to it is waited for past bedtime, up to the supper's hard stop.
   const waited = p['doing'] === 'feast' ? HARD_STOP : 0;
   const minute = hour * 60 + (world.tick % 60);
@@ -217,6 +219,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     hour >= day.workTo ||
     isDark(content, world.tick) ||
     valueOf(ctx, p, 'recreation') < lineOf(ctx, p, 'recreation');
+  // Prayer at their faith's shrine (6B), now and then, before other leisure.
+  if (leisure && praying(ctx, p)) return;
   p['doing'] = leisure ? 'relax' : '';
   // Free time given to an ambition's skill (P6.4, V-146), a minute in every `every`.
   if (leisure) practising(ctx, p);

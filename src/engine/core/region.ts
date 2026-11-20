@@ -12,7 +12,8 @@ export interface CultureDef {
   government: string;
   /** What the people value, 0 to 10 (`kin` weighs on strangers, P5.9). */
   values: Readonly<Record<string, number>>;
-  religion: { name: string };
+  /** The faith (faiths.json id) and its name. */
+  religion: { id: string; name: string };
   preferredBiomes: readonly string[];
   /** river, heights, plains, forest, deposit, aura, coast. */
   sitePreferences: readonly string[];

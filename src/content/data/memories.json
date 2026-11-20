@@ -81,5 +81,13 @@
   {"id":"stood-together","mood":5,"decayDays":10,"text":"Stood against the pack side by side"},
   {"id":"saw-attack","mood":-8,"decayDays":7,"text":"Saw the pack go for {about}","weight":2},
   {"id":"saw-body","mood":-6,"decayDays":3,"text":"Saw {about}'s body","weight":2},
-  {"id":"same-food","mood":-2,"decayDays":2,"text":"The same food, day after day","thoughts":["Fare again. Always fare."]}
+  {"id":"same-food","mood":-2,"decayDays":2,"text":"The same food, day after day","thoughts":["Fare again. Always fare."]},
+  {"id":"feasted-cart","mood":10,"decayDays":14,"text":"Feasted on Cart Day"},
+  {"id":"rite-cart","mood":8,"decayDays":14,"text":"Kept Cart Day at the shrine"},
+  {"id":"feasted-day","mood":10,"decayDays":14,"text":"Feasted on {about}'s Day"},
+  {"id":"rite-day","mood":8,"decayDays":14,"text":"Kept {about}'s Day at the shrine"},
+  {"id":"feasted-wedding-day","mood":10,"decayDays":14,"text":"Feasted on {about}'s Wedding Day"},
+  {"id":"rite-wedding-day","mood":8,"decayDays":14,"text":"Kept {about}'s Wedding Day at the shrine"},
+  {"id":"remembered-dead","mood":3,"decayDays":7,"text":"Remembered {about} on their day"},
+  {"id":"grumbled-feasts","mood":-2,"decayDays":5,"text":"Grumbled at the Feasts law"}
 ]

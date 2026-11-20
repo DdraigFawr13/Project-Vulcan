@@ -56,6 +56,10 @@ export interface LawSettingDef {
    * Punishment setting does to someone caught. */
   beliefs?: readonly string[];
   punish?: string;
+  /** 6B faith (P6.8): the values it serves (+1) or harms (−1), leaned on by a faith's followers. */
+  values?: Readonly<Record<string, number>>;
+  /** 6B Feasts: the feast days a year kept beyond the harvest home. */
+  feasts?: number;
 }
 
 export interface LawDef {

@@ -335,5 +335,14 @@
 {"id":"health.draught","importance":2,"template":"{healer} gave {name} a draught of herbs for {ill}: {left} herbs left in the store."},
 {"id":"health.noDraught","importance":2,"template":"{healer} nursed {name} through {ill} without a draught: the store has no herbs."},
 {"id":"health.stitched","importance":2,"template":"{healer} {did} {name}'s {wound} {with}."},
-{"id":"health.shunned","importance":2,"template":"After {name}'s flux the band shuns the {water} for drinking for {days} days."}
+{"id":"health.shunned","importance":2,"template":"After {name}'s flux the band shuns the {water} for drinking for {days} days."},
+{"id":"faith.shrine","importance":3,"template":"The faithful of {faith} raise {a} {shrine} on the green {why}.","notable":{}},
+{"id":"faith.shrineBuilt","importance":2,"template":"{name} set up the {shrine} of {faith} on the green."},
+{"id":"faith.priest","importance":2,"template":"{name} will keep the {shrine} as {title} of {faith}{after}."},
+{"id":"faith.dayAsked","importance":2,"template":"{name} asks that {what} be kept each year as {day}."},
+{"id":"faith.feastDay","importance":2,"template":"{day}: work stops at noon."},
+{"id":"faith.rite","importance":2,"template":"{name}, {title} of {faith}, leads the rite of {day} at the {shrine}: {count} keep it."},
+{"id":"faith.feast","importance":2,"template":"{day}: {count} ate {meal} together {where}."},
+{"id":"faith.noFeast","importance":2,"template":"No feast for {day}: the store has no food to spare."},
+{"id":"faith.leanDay","importance":2,"template":"{day} is kept lean: the store is too low for a supper."}
 ]

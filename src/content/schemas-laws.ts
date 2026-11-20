@@ -81,6 +81,11 @@ export const LAWS_SCHEMAS = {
             // Punishment setting does to a thief or brawler caught (defy.json `punish`).
             beliefs: opt(list(str())),
             punish: opt(str()),
+            // 6B faith (P6.8): the values (kin, honour, war, freedom, order, wealth, learning) it
+            // serves (+1) or harms (−1); a faith's follower leans by what it holds sacred or abhors
+            // (worship.json `lean`). Feasts: the feast days a year it keeps beyond the harvest home.
+            values: opt(map(num())),
+            feasts: opt(count),
           }),
         ),
       }),

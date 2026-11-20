@@ -69,6 +69,8 @@
 {"id":"anvil","name":"anvil block","cost":3,"minutes":60,"art":"furn.anvil","beds":0,"seats":0,"place":"centre","job":"build","material":"stone"},
 {"id":"tub","name":"quench tub","cost":6,"minutes":60,"art":"furn.tub","beds":0,"seats":0,"place":"centre","job":"build","material":"logs"},
 {"id":"well","name":"well","cost":12,"minutes":240,"art":"furn.well","beds":0,"seats":0,"place":"centre","job":"build","material":"stone","also":{"material":"logs","cost":6}},
+{"id":"shrine-stone","name":"spring-stone","cost":4,"minutes":180,"art":"furn.shrine-stone","beds":0,"seats":0,"place":"centre","job":"build","material":"stone"},
+{"id":"shrine","name":"wayside shrine","cost":4,"minutes":180,"art":"furn.shrine","beds":0,"seats":0,"place":"centre","job":"build","material":"logs","also":{"material":"stone","cost":2}},
 {"id":"quern","name":"quern","cost":2,"minutes":60,"art":"furn.quern","beds":0,"seats":0,"place":"wall","job":"build","material":"stone"},
 {"id":"millstones","name":"millstones","cost":6,"minutes":180,"art":"furn.millstones","beds":0,"seats":0,"place":"centre","job":"build","material":"stone"},
 {"id":"oven","name":"oven","cost":10,"minutes":180,"art":"furn.oven","beds":0,"seats":0,"place":"centre","job":"build","material":"stone"},
