@@ -4,13 +4,13 @@
 // `tavern.brawled` line (a tale of its own). Someone who drank more than `hungOver.after` cups wakes
 // hung over: the `hungOver.memory`, and until `hungOver.until` o'clock a minute in `idle` lost at
 // work (people mind.ts asks `hungOver`).
-import { clockAt, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
+import { clockAt, TICKS_PER_DAY, today, type EntityRow } from '../core/index.ts';
 import { far } from '../entity/index.ts';
 import { wound } from '../health/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { drinkersIn } from './evening.ts';
-import { nightOf, tavernName, today } from './tables.ts';
+import { nightOf, tavernName } from './tables.ts';
 
 const hot = (ctx: SystemContext, p: EntityRow): boolean =>
   (ctx.world.entities['trait'] ?? []).some(

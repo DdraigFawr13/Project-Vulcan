@@ -11,7 +11,14 @@ import { INN_TABLES } from './tables.ts';
 export const innSystem: System = {
   id: 'inn',
   every: 'hour',
-  emits: ['tavern.named', 'tavern.keeper', 'tavern.brawled'],
+  emits: [
+    'tavern.named',
+    'tavern.keeper',
+    'tavern.brawled',
+    'tavern.tookUp',
+    'tavern.brewed',
+    'tavern.noGrain',
+  ],
   stream: 'inn',
   tables: INN_TABLES,
   run(ctx) {

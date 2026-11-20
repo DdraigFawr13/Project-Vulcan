@@ -1,7 +1,7 @@
 // The tavern's tables and their reads (6B Bundle 5, P6.12, V-188): the tavern itself (its house,
 // name and keeper), each cask's brew, and each person's evening there.
-import { TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
-import { houseAt, tavernHouse } from '../build/index.ts';
+import { today, type EntityRow, type WorldState } from '../core/index.ts';
+import { furnitureOf, houseAt, tavernHouse } from '../build/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 
 export const INN_TABLES: Schemas = {
@@ -23,8 +23,6 @@ export const INN_TABLES: Schemas = {
   },
 };
 
-export const today = (world: WorldState): number => Math.floor(world.tick / TICKS_PER_DAY);
-
 /** The tavern's row, once it stands and is named. */
 export const tavernOf = (world: WorldState): EntityRow | undefined => {
   const h = tavernHouse(world);
@@ -42,7 +40,15 @@ export function inTavern(world: WorldState, p: EntityRow): boolean {
   return !!h && !!h['inn'] && h['state'] === 'built';
 }
 
-export const kegsOf = (world: WorldState): EntityRow[] => world.entities['keg'] ?? [];
+/** Brews in casks that still stand (a keg row outlives a cask taken down, unread). */
+export function kegsOf(world: WorldState): EntityRow[] {
+  const standing = new Set(
+    furnitureOf(world)
+      .filter((f) => f['state'] === 'built')
+      .map((f) => f.id),
+  );
+  return (world.entities['keg'] ?? []).filter((k) => standing.has(k['piece'] as number));
+}
 
 /** Cups in the tavern's casks, ready or still brewing. */
 export const cupsHeld = (world: WorldState): number =>
@@ -74,7 +80,7 @@ export function fillCask(
   piece: number,
   fill: { drink: string; cups: number; ready: number; line: number },
 ): void {
-  const keg = kegsOf(world).find((k) => k['piece'] === piece);
+  const keg = (world.entities['keg'] ?? []).find((k) => k['piece'] === piece);
   if (keg) Object.assign(keg, fill);
   else addEntity(world, 'keg', { piece, ...fill });
 }

@@ -6,7 +6,7 @@
 // pours a cup from a ready cask to each who has had fewer than `evening.cups` (`lowCups` for
 // someone in a low mood): a cup is the `evening.cup` memory. With no ale or no innkeeper they
 // leave after `evening.leave` minutes. Nobody is sent: there is no lever but the Work sheet.
-import { clockAt, type EntityRow } from '../core/index.ts';
+import { clockAt, today, type EntityRow, type WorldState } from '../core/index.ts';
 import { spotOf, walkTo } from '../band/index.ts';
 import { roomAt, tavernHouse, rectOf, furnitureOf } from '../build/index.ts';
 import { addEntity } from '../entity/index.ts';
@@ -15,7 +15,7 @@ import { isDark } from '../lamp/index.ts';
 import { hoursOf, isWinter } from '../law/index.ts';
 import { addMemory, moodOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { inTavern, keeperOf, nightOf, readyKeg, tavernOf, today } from './tables.ts';
+import { inTavern, keeperOf, nightOf, readyKeg, tavernOf } from './tables.ts';
 
 /** Minutes between looks for a place in the tavern, spread across people by id. */
 const LOOK = 10;
@@ -134,6 +134,20 @@ export const drinkersIn = (ctx: SystemContext): EntityRow[] =>
     (p) => p['status'] === 'alive' && p['doing'] !== 'sleep' && inTavern(ctx.world, p),
   );
 
+/** Whether `row`'s drinker is here tonight to be served: come, not the keeper, not yet gone. */
+const served = (world: WorldState, row: EntityRow | undefined, keeper: boolean): row is EntityRow =>
+  !!row &&
+  row['day'] === today(world) &&
+  !!row['came'] &&
+  !keeper &&
+  !((row['leave'] as number) && (row['leave'] as number) <= world.tick);
+
+/** No cup to pour: wait for a keeper on the way to a ready cask, else leave after a while. */
+function dry(ctx: SystemContext, row: EntityRow, onTheWay: boolean): void {
+  if (row['leave'] || (onTheWay && readyKeg(ctx.world))) return;
+  row['leave'] = ctx.world.tick + ctx.content.tavern.evening.leave;
+}
+
 /** Each hour: the innkeeper pours a cup to each who wants one; with nothing poured, they leave
  * after `evening.leave` minutes. Returns who drank a cup, for the brawls. */
 export function pour(ctx: SystemContext): EntityRow[] {
@@ -142,13 +156,16 @@ export function pour(ctx: SystemContext): EntityRow[] {
   if (!t) return [];
   const here = drinkersIn(ctx);
   const keeper = here.find((q) => q.id === t['keeper']);
+  // The keeper still on the road: those who came wait for them.
+  const kept = nightOf(world, t['keeper'] as number);
+  const onTheWay = !keeper && !!kept && kept['day'] === today(world) && !!kept['go'];
   const drank: EntityRow[] = [];
   for (const p of here) {
     const row = nightOf(world, p.id);
-    if (!row || row['day'] !== today(world) || !row['came'] || p.id === t['keeper']) continue;
+    if (!served(world, row, p.id === t['keeper'])) continue;
     const keg = keeper && readyKeg(world);
     if (!keg) {
-      if (!row['leave'] && !row['cups']) row['leave'] = world.tick + content.tavern.evening.leave;
+      dry(ctx, row, onTheWay);
       continue;
     }
     if ((row['cups'] as number) >= most(ctx, p)) continue;

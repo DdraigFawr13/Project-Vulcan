@@ -8,11 +8,11 @@
 // (`tavern.brewed`). `p.plan` is the cask, `p.make` the drink.
 import { itemName, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { furnitureOf, roomAt, rectOf, tavernHouse } from '../build/index.ts';
-import { haveOf, inStore, itemsOf, layItem, loadOf, stockOf, takeFrom } from '../goods/index.ts';
+import { haveOf, itemsOf, layItem, loadOf, stockOf, takeFrom } from '../goods/index.ts';
 import { wantOf } from '../goods/index.ts';
 import { cupsHeld, fillCask, kegsOf, tavernName, tavernOf } from '../inn/index.ts';
-import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { stacksOf } from './chandle.ts';
 import { able, goBeside, outranked, people, practise, priorityLine } from '../band/index.ts';
 import { same, skillOf, spotOf, walkTo } from '../band/index.ts';
 
@@ -43,17 +43,6 @@ function piecesIn(ctx: SystemContext, kind: string): EntityRow[] {
       f['z'] === 0 &&
       tiles.has((f['y'] as number) * width + (f['x'] as number)),
   );
-}
-
-/** Stacks of `kind` lying in the store that `p` can get to. */
-function stacksOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow[] {
-  const { world, content } = ctx;
-  const from = spotOf(p);
-  return itemsOf(world).filter((i) => {
-    if (i['kind'] !== kind || i['holder']) return false;
-    const at = spotOf(i);
-    return inStore(world, at.x, at.y, at.z) && canReach(content, world.map, from, at);
-  });
 }
 
 interface Pick {

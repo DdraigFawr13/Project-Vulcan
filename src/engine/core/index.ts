@@ -3,6 +3,7 @@ export { RngStream, streamFor, deriveStreamState, hashString, hash128, nextUint3
 export type { RngState } from './rng.ts';
 export {
   clockAt,
+  today,
   yearNow,
   ticksPerMonth,
   START_TICK,
