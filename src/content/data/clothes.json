@@ -4,9 +4,9 @@
 "garments":[
 {"item":"smock","slot":"everyday","warmth":1,"last":4000,"from":[{"kind":"linen","count":1}],"minutes":240},
 {"item":"tunic","slot":"everyday","warmth":2,"last":4800,"from":[{"kind":"wool","count":1}],"minutes":240},
-{"item":"cloak","slot":"outer","warmth":4,"last":11000,"from":[{"kind":"wool","count":2}],"minutes":360},
-{"item":"leather-coat","slot":"outer","warmth":4,"last":22000,"from":[{"kind":"leather","count":2}],"minutes":480},
-{"item":"hide-coat","slot":"outer","warmth":6,"last":11000,"from":[{"kind":"fur","count":2}],"minutes":480}
+{"item":"cloak","slot":"outer","warmth":4,"last":11000,"from":[{"kind":"wool","count":2}],"minutes":360,"art":"cloak"},
+{"item":"leather-coat","slot":"outer","warmth":4,"last":22000,"from":[{"kind":"leather","count":2}],"minutes":480,"art":"leather"},
+{"item":"hide-coat","slot":"outer","warmth":6,"last":11000,"from":[{"kind":"fur","count":2}],"minutes":480,"art":"hide"}
 ],
 "cold":2,
 "worth":[{"id":"fine","word":"fine","at":8,"last":150},{"id":"good","word":"good","at":4,"last":125},{"id":"plain","word":"plain","at":-99,"last":100}],

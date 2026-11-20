@@ -8,6 +8,12 @@ Phase 5B Bundle 5 (P5.5, V-134). Content: `src/content/data/clothes.json`. Nobod
 - Warmth outdoors adds each worn garment's `warmth` (`clothesWarmth`).
 - The cart and each newcomer come dressed in `clothes.cart` / `clothes.newcomer` (goods `putOn`). The cart also brings 5 wool cloth (`life.cart.goods`), enough for the first tunics or cloaks before a flock or flax field.
 
+## Seen on the map (V-190)
+
+- An outer garment's `art` names its coat drawing. Outdoors below the comfort line (needs `coldOutdoors`: on the surface, not in a built house, felt temperature before clothes under `warmth.comfort`) worker `coatOf` adds `coat` to the walker view (`CoatView`: `art`, per cent of life left, worth, and look: `ragged` under `clothes.ragged`, `fine` at the finest worth, else `plain`).
+- The map (`src/render/coats.ts`) draws a whole villager in `person.<race>.v<n>.<art>.<facing>.<frame>`. A ragged or fine look is made once per frame as a small canvas texture by `coat-look.ts` from the coat drawing and the bare villager: coat pixels are those changed below the head; ragged dulls them, tears the hem and makes holes, fine brightens them and adds a brass hem and clasp; every colour snaps to the people sheet's own (palette) colours.
+- The browser check (`tests/browser/coats.spec.ts`) sends `vulcan:try-coat` on `#game` (a `CoatView` dresses everyone, none undresses) and reads `data-coats`. Unit tests: `src/render/coat-look.test.ts`, `src/worker/clothesview.test.ts`.
+
 ## Changing (people)
 
 - `change.ts`: someone whose garment in a slot is gone or under `clothes.change` per cent changes into the warmest spare in a store that nobody else is going for (`people.changed`, with why). A fine one adds `well-dressed`.

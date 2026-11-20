@@ -1,7 +1,7 @@
 // Shape of Vulcan's clothes file (src/content/data/clothes.json, Phase 5B Bundle 5, P5.5, V-134):
 // the two things a person wears, how warm each is outdoors and how long it lasts, its worth by the
 // maker's skill, and when people change. Wear is in hours.
-import { list, num, obj, ref, str } from './schema';
+import { list, num, obj, opt, ref, str } from './schema';
 import { count, id, text } from './schema-fields';
 
 const from = list(obj({ kind: ref('items'), count: num({ min: 1 }) }));
@@ -13,7 +13,9 @@ export const CLOTHES_SCHEMAS = {
     // Everyday clothes and the outer layer: one of each is worn.
     slots: list(obj({ id, name: text })),
     // Each garment: its slot, degrees it adds outdoors, hours of wear it starts with (plain), what
-    // the tailor makes it from and the minutes it takes at the tailor's skill.
+    // the tailor makes it from and the minutes it takes at the tailor's skill. An outer garment's
+    // `art` names the coat drawing a villager wears outdoors in the cold
+    // (`person.<race>.v<n>.<art>.<facing>.<frame>`, Seen at Work Part 3, V-190).
     garments: list(
       obj({
         item: ref('items'),
@@ -22,6 +24,7 @@ export const CLOTHES_SCHEMAS = {
         last: num({ min: 1 }),
         from,
         minutes: num({ min: 1 }),
+        art: opt(str()),
       }),
     ),
     // Everyday clothes wear an hour each waking hour; an outer layer an hour each hour outdoors,
