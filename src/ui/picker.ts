@@ -3,6 +3,7 @@
 // number or a card chooses; "Settle here" begins that valley. Shows what the worker sends.
 import { content } from '../content/index.ts';
 import type { FromWorker, ValleyPreview } from '../worker/index.ts';
+import { diceButton } from './dice.ts';
 import { el } from './dom.ts';
 import { raceLegend, regionMap, siteWords } from './regionmap.ts';
 
@@ -101,11 +102,10 @@ export class Picker {
       el('b', {}, 'Choose where to settle'),
       el('small', {}, `Seed ${offer.seed} · three valleys`),
     );
-    const fresh = el('button', { type: 'button' }, 'New seed');
-    fresh.addEventListener('click', () =>
-      this.actions.roll(Math.random().toString(36).slice(2, 8)),
+    head.append(
+      title,
+      diceButton((seed) => this.actions.roll(seed)),
     );
-    head.append(title, fresh);
     const map = regionMap(offer.region, {
       selected: this.selected,
       onValley: (id) => this.select(id),

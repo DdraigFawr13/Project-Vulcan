@@ -24,6 +24,9 @@ export const REGION_SCHEMAS = {
       apart: count,
       races: map(ref('races')),
     }),
+    // The words a dice seed is rolled from (6W Slice 1): one of `first`, a hyphen, one of `second`
+    // (`ember-hollow`). Read only by the page's dice button; a typed seed needs neither list.
+    seedWords: obj({ first: texts, second: texts }),
     // The height share above which ground is mountain (valley walls, the map's peaks).
     mountain: share,
     // At most `count` rivers are drawn, each with at least `minLength` world cells in the window.

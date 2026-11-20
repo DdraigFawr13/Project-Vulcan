@@ -16,6 +16,7 @@ import { Hud, type PanelButton } from './hud.ts';
 import { Orders } from './orders.ts';
 import { testModeOn } from './testmode.ts';
 import { Panel } from './panel.ts';
+import { rollSeed } from './dice.ts';
 import { Picker } from './picker.ts';
 import { Saves } from './saves.ts';
 import { Sheets } from './sheets.ts';
@@ -363,8 +364,8 @@ function begin(): void {
 }
 
 // Opening the bare link shows the title (P2.1): the newest save loads behind it, dimmed, and
-// Continue lifts the title; New game opens the region map. Reloading a settled valley continues
-// its newest save at once; a seed on its own (New game, New seed) opens the picker afresh.
+// Continue lifts the title; New game rolls a dice seed (6W) and opens its region map. Reloading a
+// settled valley continues its newest save at once; a seed on its own opens the picker afresh.
 if (!params.has('seed')) {
   cover(true);
   title = new Title(hudRoot, {
@@ -373,7 +374,7 @@ if (!params.has('seed')) {
       title = undefined;
       cover(false);
     },
-    newGame: () => roll(seed),
+    newGame: () => roll(rollSeed()),
   });
 }
 if (!params.has('seed') || site) {

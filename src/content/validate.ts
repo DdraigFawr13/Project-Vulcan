@@ -4,6 +4,7 @@ import { SCHEMAS } from './schemas';
 import { checkBees } from './validate-lamp';
 import { checkPunish } from './validate-defy';
 import { checkTales } from './validate-tales';
+import { checkSeedWords } from './validate-seeds';
 import { checkStops } from './validate-time';
 type Files = Readonly<Record<string, unknown>>;
 
@@ -90,7 +91,7 @@ export function validateContent(files: Files): string[] {
       ...checkTales(files),
       ...checkPunish(files),
     );
-  errors.push(...checkBand(files), ...checkStops(files));
+  errors.push(...checkBand(files), ...checkStops(files), ...checkSeedWords(files));
   return errors;
 }
 
