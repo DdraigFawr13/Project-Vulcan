@@ -21,6 +21,7 @@
       { "event": "health.unburied", "weight": 4, "many": "{Times} a body lay unburied for a day: {list}.", "item": "{name}" },
       { "event": "defy.left", "weight": 9, "title": "{name} left the valley" },
       { "event": "people.sentAway", "weight": 6, "title": "{name} was sent away sick" },
+      { "event": "teach.lost", "weight": 6, "title": "the best {skill} went with {name}" },
       { "event": "people.strangerTurnedAway", "weight": 4, "many": "{Times} strangers were turned away: {list}.", "item": "{names}" }
     ] },
     { "id": "family", "max": 3, "lines": [

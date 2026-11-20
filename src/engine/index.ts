@@ -25,6 +25,7 @@ import { familySystem } from './family/index.ts';
 import { faithSystem } from './faith/index.ts';
 import { innSystem } from './inn/index.ts';
 import { talesSystem } from './tales/index.ts';
+import { teachSystem } from './teach/index.ts';
 import { weatherSystem } from './weather/index.ts';
 import { wildSystem } from './wild/index.ts';
 import type { EngineContent } from './core/index.ts';
@@ -58,6 +59,7 @@ export * from './family/index.ts';
 export * from './faith/index.ts';
 export * from './inn/index.ts';
 export * from './tales/index.ts';
+export * from './teach/index.ts';
 export * from './weather/index.ts';
 export * from './wild/index.ts';
 // Two names more than one system exports: the engine's surface takes these.
@@ -98,6 +100,7 @@ export const SYSTEMS: readonly System[] = [
   talesSystem,
   familySystem,
   faithSystem,
+  teachSystem,
   innSystem,
   calendarSystem,
   weatherSystem,
