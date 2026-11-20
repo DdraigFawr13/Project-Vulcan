@@ -1,4 +1,4 @@
-// The 6A laws on the Laws page (P6.5, V-157): Rations, Punishment and Sickness, and 6B's Hearths, each its setting,
+// The 6A laws on the Laws page (P6.5, V-157): Rations, Punishment and Sickness, and 6B's Hearths and Feasts, each its setting,
 // what it does, since when and everyone's answer, refusals first. A pure read of the world; every
 // word is content (laws.json) or the engine's numbers.
 import { content } from '../content/index.ts';
@@ -12,10 +12,11 @@ import {
   type WorldState,
 } from '../engine/index.ts';
 import { answerView } from './law.ts';
+import { feastDaysView } from './faithview.ts';
 import type { AnswerView, RuledLawView } from './protocol-law.ts';
 
 /** The laws shown this way, in the sheet's order. */
-export const RULED = ['rations', 'sickness', 'punishment', 'hearths'] as const;
+export const RULED = ['rations', 'sickness', 'punishment', 'hearths', 'feasts'] as const;
 
 const ORDER = ['refuses', 'grumbles', 'obeys'];
 const fill = (t: string, vars: Record<string, string | number>): string =>
@@ -61,5 +62,6 @@ export function ruledView(world: WorldState, id: string): RuledLawView {
         : `Set to ${s.name} on ${on(tick)}.`,
     why: row ? (row['line'] as number) : world.begunEvent,
     answers,
+    ...(id === 'feasts' && { days: feastDaysView(world) }),
   };
 }

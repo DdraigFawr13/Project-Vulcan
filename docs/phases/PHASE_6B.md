@@ -8,7 +8,7 @@ The second half of Phase 6 (V-153): P6.1 and P6.8 to P6.13, with callings (V-175
 - [x] Bundle 1, families, 2026-11-20 (#131, part 2)
 - [x] Bundle 2, heat and the Hearths law, 2026-11-20 (V-184)
 - [x] Bundle 3, mason, lime and thatch; buildings grow, 2026-11-20 (V-185 #137, V-186)
-- [ ] Bundle 4, faith, shrines and feasts (V-187; form https://claude.ai/artifact/RcpMJavxqbBymmwCBHhmXS): engine part 1 done 2026-11-20, screens part 2 next
+- [x] Bundle 4, faith, shrines and feasts, 2026-11-20 (V-187 #142, part 2; form https://claude.ai/artifact/RcpMJavxqbBymmwCBHhmXS)
 - [ ] Bundle 5, the tavern, songs and bynames
 - [ ] Bundle 6, apprentices, the schoolroom and callings
 - [ ] 6B balance and review

@@ -52,6 +52,7 @@ const DOING_LABELS = new Map<string, Words>([
   ['sleep', ['Going to bed', 'Sleeping']],
   ['eat', ['Going to eat', 'Eating']],
   ['relax', 'Taking it easy'],
+  ['pray', ['Going to pray', 'Praying']],
   ['warm', 'Warming up'],
   ['watch', ['Going to the fold', 'Keeping watch']],
   // Defiance (P6.7): a day's sentence of the stocks, and walking out of the valley for good.
@@ -81,6 +82,7 @@ const NEED_KEYS = new Map<string, Words>([
   ['sleep', ['goSleep', 'sleep']],
   ['eat', ['goEat', 'eat']],
   ['relax', 'relax'],
+  ['pray', ['goPray', 'pray']],
   ['warm', 'warm'],
   ['watch', ['goWatch', 'watch']],
   ['stocks', ['goStocks', 'stocks']],

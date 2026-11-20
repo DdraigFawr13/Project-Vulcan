@@ -25,6 +25,14 @@ export function pieceFacts(tile: TileView): [string, string][] {
       ['next', piece.bench.next],
     );
   }
+  if (piece.shrine) {
+    // A shrine (6B): whose it is, who keeps it, and who came to pray this week.
+    rows.push(
+      ['faith', piece.shrine.faith],
+      ['keeper', piece.shrine.keeper],
+      ['this week', piece.shrine.prayed],
+    );
+  }
   if (piece.wood) rows.push([piece.good ?? 'logs', piece.wood]);
   if (piece.maker) rows.push(['maker', piece.maker]);
   if (piece.quality) rows.push(['quality', piece.quality]);
@@ -51,8 +59,12 @@ export function pieceLines(tile: TileView): [LedgerLine, string][] {
   const lines: [LedgerLine | undefined, string][] = [
     [piece.fire?.last, `${piece.fire?.lastLabel ?? 'Last'} · `],
     [piece.claimed, 'Claimed · '],
+    [piece.shrine?.named, 'Keeper · '],
     [piece.made, 'Made · '],
-    [!piece.made || piece.bench ? piece.placed : undefined, 'Placed · '],
+    [
+      !piece.made || piece.bench || piece.shrine ? piece.placed : undefined,
+      piece.shrine ? 'Raised · ' : 'Placed · ',
+    ],
   ];
   // The fire's last line leads; the same line is not shown again as the hearth's making.
   const seen = new Set<number>();

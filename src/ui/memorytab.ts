@@ -37,9 +37,16 @@ function taleRows(w: WalkerView): HTMLElement[] {
 
 /** Who they are: their roles, strongest first, then their ambition. */
 function selfRows(w: WalkerView): HTMLElement[] {
-  const { roles, ambition, defiance } = w.self;
-  if (!roles.length && !ambition && !defiance) return [];
+  const { roles, ambition, defiance, faith } = w.self;
+  if (!roles.length && !ambition && !defiance && !faith) return [];
   const out: HTMLElement[] = [el('h3', {}, 'Who they are')];
+  // Their faith (6B): the creed, devotion and any title, and what it holds sacred.
+  if (faith) {
+    const row = el('div', { class: 'memrow belief', 'data-testid': 'faith' });
+    row.append(el('span', { class: 't' }, faith.text), why(faith.why));
+    if (faith.note) row.append(el('span', { class: 'r' }, faith.note));
+    out.push(row);
+  }
   for (const r of roles) {
     const row = el('div', { class: 'memrow belief', 'data-testid': 'role' });
     row.append(el('span', { class: 't' }, r.text), why(r.why));
