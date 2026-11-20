@@ -8,6 +8,7 @@
 "sites": {"count":[6,8],"inset":3,"near":3},
 "history": {"importance":2,"length":110},
 "daysPerCell": 0.25,
+"seedWords": {"first":["ember","flint","moss","ash","iron","copper","alder","rowan","heather","bracken","slate","chalk","peat","wren","otter","raven","frost","amber","birch","thorn","bramble","tallow","lantern","hearth","cinder","willow","sorrel","barley","oak","hazel","elder","yew","holly","ivy","fern","reed","rush","sedge","lark","hawk","badger","fox","hare","stag","boar","crow","heron","salmon","trout","honey","wax","loam","clay","marl","tin","lead","silver","gold","cold","old","green","grey","red"],"second":["hollow","reach","ford","combe","fell","mere","dale","brook","crag","holm","scar","tarn","beck","moor","shaw","wold","glen","ridge","howe","garth","cwm","nant","pen","bryn","llyn","hope","hythe","ness","vale","field","wood","well","cross","stone","hill","gate","bank","pool","mouth","head"]},
 "kinds": {"human":"village","elf":"glade-hall","dwarf":"hold","orc":"war-camp","giant":"steading","halfling":"shire","goblin":"warren"},
 "vales": ["{n} Vale","{n}dale","the Vale of {n}"],
 "valesBy": {"gwerin":["Cwm {n}","{n} Vale"],"tylwyth":["Cwm {n}","the Vale of {n}"],"gwyllion":["Cwm {n}"],"cewri":["Cwm {n}","{n} Vale"],"brennig":["Glen {n}","{n} Vale"],"fomori":["Glen {n}"],"skarn":["{n}dale","{n} Vale"]}

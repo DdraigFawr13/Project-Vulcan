@@ -12,6 +12,10 @@ export interface LevelArrays {
   known: Uint8Array;
   /** Surface only: 0, or 1 + the features index of the vein stained below. */
   stains: Uint8Array;
+  /** Surface only: 0, or 1 + a `buildings.parts` index (the overview's colours). */
+  built: Uint8Array;
+  /** Surface only: 1 where snow lies on the ground. */
+  snowLie: Uint8Array;
 }
 
 /** Copies `chunk` into its level's arrays (made on first use) in a map `width` by `height`. */
@@ -30,6 +34,8 @@ export function storeChunk(
     things: new Uint8Array(n),
     known: new Uint8Array(n),
     stains: new Uint8Array(n),
+    built: new Uint8Array(n),
+    snowLie: new Uint8Array(n),
   });
   for (let row = 0; row < h; row += 1)
     for (let col = 0; col < w; col += 1) {
@@ -41,5 +47,7 @@ export function storeChunk(
       level.things[i] = chunk.features[from]!;
       level.known[i] = chunk.known[from]!;
       level.stains[i] = chunk.stains[from]!;
+      level.built[i] = chunk.built[from]!;
+      level.snowLie[i] = chunk.snowLie[from]!;
     }
 }

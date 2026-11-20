@@ -37,8 +37,8 @@ function taleRows(w: WalkerView): HTMLElement[] {
 
 /** Who they are: their roles, strongest first, then their ambition. */
 function selfRows(w: WalkerView): HTMLElement[] {
-  const { roles, ambition, defiance, faith } = w.self;
-  if (!roles.length && !ambition && !defiance && !faith) return [];
+  const { roles, ambition, defiance, faith, teaching = [] } = w.self;
+  if (!roles.length && !ambition && !defiance && !faith && !teaching.length) return [];
   const out: HTMLElement[] = [el('h3', {}, 'Who they are')];
   // Their faith (6B): the creed, devotion and any title, and what it holds sacred.
   if (faith) {
@@ -56,6 +56,12 @@ function selfRows(w: WalkerView): HTMLElement[] {
   if (ambition) {
     const row = el('div', { class: 'memrow belief', 'data-testid': 'ambition' });
     row.append(el('span', { class: 't' }, ambition.text), why(ambition.why));
+    out.push(row);
+  }
+  // Teaching (6B Bundle 6): their master or apprentice, who taught them and whom they taught.
+  for (const t of teaching) {
+    const row = el('div', { class: 'memrow belief', 'data-testid': 'teaching' });
+    row.append(el('span', { class: 't' }, t.text), why(t.why));
     out.push(row);
   }
   // Defiance (P6.7): how far a grievance has carried them, and the memory and belief behind it.
