@@ -63,5 +63,17 @@ export const TAVERN_SCHEMAS = {
       idle: num({ min: 2 }),
       until: num({ min: 0, max: 23 }),
     }),
+    // The bard: the jobs.json job and the skill they sing with (added when they first sing), the
+    // trait that breaks ties, free evenings a song takes to make, minutes practised a song, and
+    // the memory of hearing one by the bard's level (one step each `perHeard` levels).
+    bard: obj({
+      job: ref('jobs'),
+      skill: ref('abilities'),
+      trait: ref('traits'),
+      evenings: num({ min: 1 }),
+      practise: num({ min: 1 }),
+      heard: list(ref('memories')),
+      perHeard: num({ min: 1 }),
+    }),
   }),
 };

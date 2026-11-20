@@ -25,16 +25,23 @@ export function nameTavern(ctx: SystemContext): void {
 const hasTrait = (ctx: SystemContext, p: EntityRow, trait: string): boolean =>
   (ctx.world.entities['trait'] ?? []).some((t) => t['person'] === p.id && t['trait'] === trait);
 
+/** The living grown-up who puts `job` highest on their Work sheet; ties go to `trait`, then
+ * the lowest id (the innkeeper, the bard). */
+export function highestOn(ctx: SystemContext, job: string, trait: string): EntityRow | undefined {
+  const { world, content } = ctx;
+  const rank = (p: EntityRow) => levelOf(world, content, p.id, job) * 2 - +hasTrait(ctx, p, trait);
+  return (world.entities['person'] ?? [])
+    .filter((p) => p['status'] === 'alive' && !p['stranger'] && grown(world, content, p))
+    .sort((a, b) => rank(a) - rank(b) || a.id - b.id)[0];
+}
+
 /** Each hour: the innkeeper is whoever puts Inn-keeping highest; a change is a line. */
 export function chooseKeeper(ctx: SystemContext): void {
   const { world, content } = ctx;
   const t = tavernOf(world);
   if (!t) return;
   const { job, trait } = content.tavern.keeper;
-  const rank = (p: EntityRow) => levelOf(world, content, p.id, job) * 2 - +hasTrait(ctx, p, trait);
-  const best = (world.entities['person'] ?? [])
-    .filter((p) => p['status'] === 'alive' && !p['stranger'] && grown(world, content, p))
-    .sort((a, b) => rank(a) - rank(b) || a.id - b.id)[0];
+  const best = highestOn(ctx, job, trait);
   const id = best?.id ?? 0;
   if (id === t['keeper']) return;
   t['keeper'] = id;
