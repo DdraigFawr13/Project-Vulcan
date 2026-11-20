@@ -31,6 +31,14 @@ export class CoatTextures {
     this.scene = scene;
   }
 
+  /** How many walk steps follow a coat drawing's standing frame (2 drawn, up to 7 from PixelLab). */
+  private steps(name: string): number {
+    const tex = this.scene.textures.get(PEOPLE);
+    let n = 1;
+    while (tex.has(`${name}.${n + 1}`)) n++;
+    return n;
+  }
+
   /** Whether the sheet has coat drawings of `art` for villager `stem`. */
   has(stem: string, art: string): boolean {
     return this.scene.textures.get(PEOPLE).has(`${stem}.${art}.s.0`);
@@ -40,9 +48,12 @@ export class CoatTextures {
   body(stem: string, coat: CoatView | undefined, facing: string, frame: number): BodyFrame {
     if (!coat || !this.has(stem, coat.art))
       return { key: PEOPLE, frame: `${stem}.${facing}.${frame}` };
-    // Coats have the two-step walk (step 1 is the standing coat a pixel up): a longer walk shows
-    // them at those two steps. The look is worked out on the standing frames, whose bodies match.
-    const step = frame === 0 ? 0 : 1 + ((frame - 1) % 2);
+    // A plain coat with its own walk (PixelLab, most cloak facings) cycles its own steps. Otherwise,
+    // and always for a ragged or fine look (worked out on the standing frames, whose bodies match),
+    // a walk shows the coat's two drawn steps: step 1 is the standing coat a pixel up.
+    const steps = this.steps(`${stem}.${coat.art}.${facing}`);
+    const walks = coat.look === 'plain' && steps > 2;
+    const step = frame === 0 ? 0 : 1 + ((frame - 1) % (walks ? steps : 2));
     const drawn = `${stem}.${coat.art}.${facing}.${step}`;
     if (coat.look === 'plain') return { key: PEOPLE, frame: drawn };
     const key = `coat|${drawn}|${coat.look}`;
