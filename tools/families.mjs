@@ -52,7 +52,8 @@ for (const seed of seeds.length ? seeds : ['anvil', 'smoke', 'tallow', 'ledger-1
     const q = w.entities.person.find((x) => x.id === p.partner);
     return q?.status === 'alive' && sleeps(p.id) && sleeps(p.id) === sleeps(q.id);
   }).length;
-  const row = { seed, years, alive: byYear.join(' '), ...counts, underOneRoof: together };
+  const drawn = w.entities.person.map((p) => `${p.sex}:${p.orientation}`).join(' ');
+  const row = { seed, years, alive: byYear.join(' '), ...counts, underOneRoof: together, drawn };
   console.log(JSON.stringify(row));
   for (const f of [...firsts, ...deaths]) console.log(`  ${f}`);
 }
