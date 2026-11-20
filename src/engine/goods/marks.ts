@@ -78,5 +78,14 @@ export function markedTree(
   for (const { m, i } of marks)
     if (goTo(m['x'] as number, m['y'] as number))
       return { tree: i, line: m['line'] as number, house: m['house'] as number };
+  // A marked tree hemmed in by other trees and the walls already up (a site's corner) is reached
+  // by felling one of the trees beside it first, under the same mark's line.
+  for (const { m, i } of marks)
+    for (const j of [i - 1, i + 1, i - width, i + width]) {
+      const [x, y] = [j % width, Math.floor(j / width)];
+      if (Math.abs(x - (m['x'] as number)) + Math.abs(y - (m['y'] as number)) !== 1) continue;
+      if (isTree(world, content, j) && !taken.has(j) && goTo(x, y))
+        return { tree: j, line: m['line'] as number, house: m['house'] as number };
+    }
   return undefined;
 }
