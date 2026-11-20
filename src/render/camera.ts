@@ -24,6 +24,8 @@ export class CameraControls {
   private zoom = 1;
   /** Where a button glide is heading, or undefined when none is under way. */
   private target: number | undefined;
+  /** The map point a glide in from the overview keeps centred, while it runs. */
+  private anchor: { x: number; y: number } | undefined;
   /** The farthest zoom: the whole map on screen, or MIN_ZOOM if that is farther still. */
   private min = MIN_ZOOM;
   private mapSize = { width: 0, height: 0 };
@@ -128,6 +130,13 @@ export class CameraControls {
     this.camera.centerOn(x, y + (below - this.top) / 2 / this.zoom);
   }
 
+  /** A tap on the overview: glides in to 1× centred on map point (x, y) below the bar. */
+  glideIn(x: number, y: number): void {
+    this.lookAt(x, y);
+    this.target = this.clamp(FIND_ZOOM);
+    this.anchor = { x, y };
+  }
+
   /** Glides one step in (1) or out (-1) about the middle of the screen. */
   zoomStep(direction: 1 | -1): void {
     const from = this.target ?? this.zoom;
@@ -141,8 +150,10 @@ export class CameraControls {
       // Close enough to land: under half a percent away.
       const done = Math.abs(next - this.target) < this.target * 0.005;
       this.zoomTo(done ? this.target : next, this.camera.width / 2, this.camera.height / 2);
-      if (done) this.target = undefined;
-    }
+      if (this.anchor)
+        this.camera.centerOn(this.anchor.x, this.anchor.y - this.top / 2 / this.zoom);
+      if (done) this.target = this.anchor = undefined;
+    } else this.anchor = undefined;
     const k = this.keys;
     const dx = +!!(k.D?.isDown || k.RIGHT?.isDown) - +!!(k.A?.isDown || k.LEFT?.isDown);
     const dy = +!!(k.S?.isDown || k.DOWN?.isDown) - +!!(k.W?.isDown || k.UP?.isDown);

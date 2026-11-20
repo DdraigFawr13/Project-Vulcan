@@ -94,7 +94,7 @@ export function startRenderer(
   },
 ): Renderer {
   const scene = new ValleyScene();
-  scene.onHover = hooks.onHover;
+  scene.hover.onHover = hooks.onHover;
   scene.onSelect = hooks.onSelect;
   const game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -125,8 +125,11 @@ function layersOf(game: Phaser.Game, scene: ValleyScene, parent: HTMLElement) {
   const light = new Firelight(game, scene);
   const bars = new WorkBars(game, scene);
   const wild = new WildSprites(game, scene, clock);
-  const wear = new WearLayer(game, scene);
-  const canopy = new CanopyLayer(game, scene);
+  const wear = new WearLayer(scene);
+  const canopy = new CanopyLayer(scene);
+  // Tile layers kept only near the camera follow the scene's window (tile-window.ts).
+  scene.window.layers.push(wear, canopy, wild);
+  scene.spots = () => people.spots();
   const finder = new Finder(game, scene, () => people.spots());
   const bubbles = new Bubbles(game, scene, parent, () => people.spots());
   return {
@@ -171,8 +174,8 @@ function viewHandle(l: Layers) {
       fields.setMapSize(width);
       light.setMapSize(width, height);
       wild.setMapSize(width, height);
-      wear.setMapSize(width, height);
-      canopy.setMapSize(width, height);
+      wear.setMapSize();
+      canopy.setMapSize();
     },
     applyChunks: (chunks: readonly ChunkView[]) => {
       scene.applyChunks(chunks);
@@ -244,6 +247,7 @@ function goodsHandle(l: Layers) {
       l.goods.set(view);
       l.build.setPlans(view.plans);
       l.fields.set(view.fields);
+      l.scene.setFields(view.fields);
       l.shafts.set(view.shafts);
       l.burial.set(view);
       l.furniture.set(view.furniture);
