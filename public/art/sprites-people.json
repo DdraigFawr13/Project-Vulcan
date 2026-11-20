@@ -5220,7 +5220,7 @@
         "h": 32
       }
     },
-    "person.giant.w.0": {
+    "person.giant.v1.e.0": {
       "frame": {
         "x": 307,
         "y": 409,
@@ -5240,7 +5240,7 @@
         "h": 32
       }
     },
-    "person.giant.w.1": {
+    "person.giant.v1.e.1": {
       "frame": {
         "x": 341,
         "y": 409,
@@ -5260,7 +5260,7 @@
         "h": 32
       }
     },
-    "person.giant.w.2": {
+    "person.giant.v1.e.2": {
       "frame": {
         "x": 375,
         "y": 409,
@@ -5280,7 +5280,7 @@
         "h": 32
       }
     },
-    "person.goblin.e.0": {
+    "person.giant.v1.n.0": {
       "frame": {
         "x": 409,
         "y": 409,
@@ -5300,7 +5300,7 @@
         "h": 32
       }
     },
-    "person.goblin.e.1": {
+    "person.giant.v1.n.1": {
       "frame": {
         "x": 443,
         "y": 409,
@@ -5320,7 +5320,7 @@
         "h": 32
       }
     },
-    "person.goblin.e.2": {
+    "person.giant.v1.n.2": {
       "frame": {
         "x": 477,
         "y": 409,
@@ -5340,7 +5340,7 @@
         "h": 32
       }
     },
-    "person.goblin.n.0": {
+    "person.giant.v1.s.0": {
       "frame": {
         "x": 511,
         "y": 409,
@@ -5360,7 +5360,7 @@
         "h": 32
       }
     },
-    "person.goblin.n.1": {
+    "person.giant.v1.s.1": {
       "frame": {
         "x": 545,
         "y": 409,
@@ -5380,7 +5380,7 @@
         "h": 32
       }
     },
-    "person.goblin.n.2": {
+    "person.giant.v1.s.2": {
       "frame": {
         "x": 579,
         "y": 409,
@@ -5400,7 +5400,7 @@
         "h": 32
       }
     },
-    "person.goblin.s.0": {
+    "person.giant.v1.w.0": {
       "frame": {
         "x": 613,
         "y": 409,
@@ -5420,7 +5420,7 @@
         "h": 32
       }
     },
-    "person.goblin.s.1": {
+    "person.giant.v1.w.1": {
       "frame": {
         "x": 647,
         "y": 409,
@@ -5440,7 +5440,7 @@
         "h": 32
       }
     },
-    "person.goblin.s.2": {
+    "person.giant.v1.w.2": {
       "frame": {
         "x": 681,
         "y": 409,
@@ -5460,9 +5460,249 @@
         "h": 32
       }
     },
-    "person.goblin.v1.e.0": {
+    "person.giant.w.0": {
       "frame": {
         "x": 1,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.giant.w.1": {
+      "frame": {
+        "x": 35,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.giant.w.2": {
+      "frame": {
+        "x": 69,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.goblin.e.0": {
+      "frame": {
+        "x": 103,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.goblin.e.1": {
+      "frame": {
+        "x": 137,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.goblin.e.2": {
+      "frame": {
+        "x": 171,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.goblin.n.0": {
+      "frame": {
+        "x": 205,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.goblin.n.1": {
+      "frame": {
+        "x": 239,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.goblin.n.2": {
+      "frame": {
+        "x": 273,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.goblin.s.0": {
+      "frame": {
+        "x": 307,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.goblin.s.1": {
+      "frame": {
+        "x": 341,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.goblin.s.2": {
+      "frame": {
+        "x": 375,
+        "y": 443,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.goblin.v1.e.0": {
+      "frame": {
+        "x": 409,
         "y": 443,
         "w": 32,
         "h": 32
@@ -5482,7 +5722,7 @@
     },
     "person.goblin.v1.e.1": {
       "frame": {
-        "x": 35,
+        "x": 443,
         "y": 443,
         "w": 32,
         "h": 32
@@ -5502,7 +5742,7 @@
     },
     "person.goblin.v1.e.2": {
       "frame": {
-        "x": 69,
+        "x": 477,
         "y": 443,
         "w": 32,
         "h": 32
@@ -5522,7 +5762,7 @@
     },
     "person.goblin.v1.n.0": {
       "frame": {
-        "x": 103,
+        "x": 511,
         "y": 443,
         "w": 32,
         "h": 32
@@ -5542,7 +5782,7 @@
     },
     "person.goblin.v1.n.1": {
       "frame": {
-        "x": 137,
+        "x": 545,
         "y": 443,
         "w": 32,
         "h": 32
@@ -5562,7 +5802,7 @@
     },
     "person.goblin.v1.n.2": {
       "frame": {
-        "x": 171,
+        "x": 579,
         "y": 443,
         "w": 32,
         "h": 32
@@ -5582,7 +5822,7 @@
     },
     "person.goblin.v1.s.0": {
       "frame": {
-        "x": 205,
+        "x": 613,
         "y": 443,
         "w": 32,
         "h": 32
@@ -5602,7 +5842,7 @@
     },
     "person.goblin.v1.s.1": {
       "frame": {
-        "x": 239,
+        "x": 647,
         "y": 443,
         "w": 32,
         "h": 32
@@ -5622,7 +5862,7 @@
     },
     "person.goblin.v1.s.2": {
       "frame": {
-        "x": 273,
+        "x": 681,
         "y": 443,
         "w": 32,
         "h": 32
@@ -5642,8 +5882,8 @@
     },
     "person.goblin.v1.w.0": {
       "frame": {
-        "x": 307,
-        "y": 443,
+        "x": 1,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5662,8 +5902,8 @@
     },
     "person.goblin.v1.w.1": {
       "frame": {
-        "x": 341,
-        "y": 443,
+        "x": 35,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5682,8 +5922,8 @@
     },
     "person.goblin.v1.w.2": {
       "frame": {
-        "x": 375,
-        "y": 443,
+        "x": 69,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5702,8 +5942,8 @@
     },
     "person.goblin.w.0": {
       "frame": {
-        "x": 409,
-        "y": 443,
+        "x": 103,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5722,8 +5962,8 @@
     },
     "person.goblin.w.1": {
       "frame": {
-        "x": 443,
-        "y": 443,
+        "x": 137,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5742,8 +5982,8 @@
     },
     "person.goblin.w.2": {
       "frame": {
-        "x": 477,
-        "y": 443,
+        "x": 171,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5762,8 +6002,8 @@
     },
     "person.halfling.e.0": {
       "frame": {
-        "x": 511,
-        "y": 443,
+        "x": 205,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5782,8 +6022,8 @@
     },
     "person.halfling.e.1": {
       "frame": {
-        "x": 545,
-        "y": 443,
+        "x": 239,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5802,8 +6042,8 @@
     },
     "person.halfling.e.2": {
       "frame": {
-        "x": 579,
-        "y": 443,
+        "x": 273,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5822,8 +6062,8 @@
     },
     "person.halfling.n.0": {
       "frame": {
-        "x": 613,
-        "y": 443,
+        "x": 307,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5842,8 +6082,8 @@
     },
     "person.halfling.n.1": {
       "frame": {
-        "x": 647,
-        "y": 443,
+        "x": 341,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5862,8 +6102,8 @@
     },
     "person.halfling.n.2": {
       "frame": {
-        "x": 681,
-        "y": 443,
+        "x": 375,
+        "y": 477,
         "w": 32,
         "h": 32
       },
@@ -5882,7 +6122,7 @@
     },
     "person.halfling.s.0": {
       "frame": {
-        "x": 1,
+        "x": 409,
         "y": 477,
         "w": 32,
         "h": 32
@@ -5902,7 +6142,7 @@
     },
     "person.halfling.s.1": {
       "frame": {
-        "x": 35,
+        "x": 443,
         "y": 477,
         "w": 32,
         "h": 32
@@ -5922,7 +6162,7 @@
     },
     "person.halfling.s.2": {
       "frame": {
-        "x": 69,
+        "x": 477,
         "y": 477,
         "w": 32,
         "h": 32
@@ -5942,7 +6182,7 @@
     },
     "person.halfling.v1.e.0": {
       "frame": {
-        "x": 103,
+        "x": 511,
         "y": 477,
         "w": 32,
         "h": 32
@@ -5962,7 +6202,7 @@
     },
     "person.halfling.v1.e.1": {
       "frame": {
-        "x": 137,
+        "x": 545,
         "y": 477,
         "w": 32,
         "h": 32
@@ -5982,7 +6222,7 @@
     },
     "person.halfling.v1.e.2": {
       "frame": {
-        "x": 171,
+        "x": 579,
         "y": 477,
         "w": 32,
         "h": 32
@@ -6002,7 +6242,7 @@
     },
     "person.halfling.v1.n.0": {
       "frame": {
-        "x": 205,
+        "x": 613,
         "y": 477,
         "w": 32,
         "h": 32
@@ -6022,7 +6262,7 @@
     },
     "person.halfling.v1.n.1": {
       "frame": {
-        "x": 239,
+        "x": 647,
         "y": 477,
         "w": 32,
         "h": 32
@@ -6042,7 +6282,7 @@
     },
     "person.halfling.v1.n.2": {
       "frame": {
-        "x": 273,
+        "x": 681,
         "y": 477,
         "w": 32,
         "h": 32
@@ -6062,8 +6302,8 @@
     },
     "person.halfling.v1.s.0": {
       "frame": {
-        "x": 307,
-        "y": 477,
+        "x": 1,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6082,8 +6322,8 @@
     },
     "person.halfling.v1.s.1": {
       "frame": {
-        "x": 341,
-        "y": 477,
+        "x": 35,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6102,8 +6342,8 @@
     },
     "person.halfling.v1.s.2": {
       "frame": {
-        "x": 375,
-        "y": 477,
+        "x": 69,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6122,8 +6362,8 @@
     },
     "person.halfling.v1.w.0": {
       "frame": {
-        "x": 409,
-        "y": 477,
+        "x": 103,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6142,8 +6382,8 @@
     },
     "person.halfling.v1.w.1": {
       "frame": {
-        "x": 443,
-        "y": 477,
+        "x": 137,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6162,8 +6402,8 @@
     },
     "person.halfling.v1.w.2": {
       "frame": {
-        "x": 477,
-        "y": 477,
+        "x": 171,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6182,8 +6422,8 @@
     },
     "person.halfling.v2.e.0": {
       "frame": {
-        "x": 511,
-        "y": 477,
+        "x": 205,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6202,8 +6442,8 @@
     },
     "person.halfling.v2.e.1": {
       "frame": {
-        "x": 545,
-        "y": 477,
+        "x": 239,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6222,8 +6462,8 @@
     },
     "person.halfling.v2.e.2": {
       "frame": {
-        "x": 579,
-        "y": 477,
+        "x": 273,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6242,8 +6482,8 @@
     },
     "person.halfling.v2.n.0": {
       "frame": {
-        "x": 613,
-        "y": 477,
+        "x": 307,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6262,8 +6502,8 @@
     },
     "person.halfling.v2.n.1": {
       "frame": {
-        "x": 647,
-        "y": 477,
+        "x": 341,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6282,8 +6522,8 @@
     },
     "person.halfling.v2.n.2": {
       "frame": {
-        "x": 681,
-        "y": 477,
+        "x": 375,
+        "y": 511,
         "w": 32,
         "h": 32
       },
@@ -6302,7 +6542,7 @@
     },
     "person.halfling.v2.s.0": {
       "frame": {
-        "x": 1,
+        "x": 409,
         "y": 511,
         "w": 32,
         "h": 32
@@ -6322,7 +6562,7 @@
     },
     "person.halfling.v2.s.1": {
       "frame": {
-        "x": 35,
+        "x": 443,
         "y": 511,
         "w": 32,
         "h": 32
@@ -6342,7 +6582,7 @@
     },
     "person.halfling.v2.s.2": {
       "frame": {
-        "x": 69,
+        "x": 477,
         "y": 511,
         "w": 32,
         "h": 32
@@ -6362,7 +6602,7 @@
     },
     "person.halfling.v2.w.0": {
       "frame": {
-        "x": 103,
+        "x": 511,
         "y": 511,
         "w": 32,
         "h": 32
@@ -6382,7 +6622,7 @@
     },
     "person.halfling.v2.w.1": {
       "frame": {
-        "x": 137,
+        "x": 545,
         "y": 511,
         "w": 32,
         "h": 32
@@ -6402,7 +6642,7 @@
     },
     "person.halfling.v2.w.2": {
       "frame": {
-        "x": 171,
+        "x": 579,
         "y": 511,
         "w": 32,
         "h": 32
@@ -6422,7 +6662,7 @@
     },
     "person.halfling.v3.e.0": {
       "frame": {
-        "x": 205,
+        "x": 613,
         "y": 511,
         "w": 32,
         "h": 32
@@ -6442,7 +6682,7 @@
     },
     "person.halfling.v3.e.1": {
       "frame": {
-        "x": 239,
+        "x": 647,
         "y": 511,
         "w": 32,
         "h": 32
@@ -6462,7 +6702,7 @@
     },
     "person.halfling.v3.e.2": {
       "frame": {
-        "x": 273,
+        "x": 681,
         "y": 511,
         "w": 32,
         "h": 32
@@ -6482,8 +6722,8 @@
     },
     "person.halfling.v3.n.0": {
       "frame": {
-        "x": 307,
-        "y": 511,
+        "x": 1,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6502,8 +6742,8 @@
     },
     "person.halfling.v3.n.1": {
       "frame": {
-        "x": 341,
-        "y": 511,
+        "x": 35,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6522,8 +6762,8 @@
     },
     "person.halfling.v3.n.2": {
       "frame": {
-        "x": 375,
-        "y": 511,
+        "x": 69,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6542,8 +6782,8 @@
     },
     "person.halfling.v3.s.0": {
       "frame": {
-        "x": 409,
-        "y": 511,
+        "x": 103,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6562,8 +6802,8 @@
     },
     "person.halfling.v3.s.1": {
       "frame": {
-        "x": 443,
-        "y": 511,
+        "x": 137,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6582,8 +6822,8 @@
     },
     "person.halfling.v3.s.2": {
       "frame": {
-        "x": 477,
-        "y": 511,
+        "x": 171,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6602,8 +6842,8 @@
     },
     "person.halfling.v3.w.0": {
       "frame": {
-        "x": 511,
-        "y": 511,
+        "x": 205,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6622,8 +6862,8 @@
     },
     "person.halfling.v3.w.1": {
       "frame": {
-        "x": 545,
-        "y": 511,
+        "x": 239,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6642,8 +6882,8 @@
     },
     "person.halfling.v3.w.2": {
       "frame": {
-        "x": 579,
-        "y": 511,
+        "x": 273,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6662,8 +6902,8 @@
     },
     "person.halfling.w.0": {
       "frame": {
-        "x": 613,
-        "y": 511,
+        "x": 307,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6682,8 +6922,8 @@
     },
     "person.halfling.w.1": {
       "frame": {
-        "x": 647,
-        "y": 511,
+        "x": 341,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6702,8 +6942,8 @@
     },
     "person.halfling.w.2": {
       "frame": {
-        "x": 681,
-        "y": 511,
+        "x": 375,
+        "y": 545,
         "w": 32,
         "h": 32
       },
@@ -6722,7 +6962,7 @@
     },
     "person.human.e.0": {
       "frame": {
-        "x": 1,
+        "x": 409,
         "y": 545,
         "w": 32,
         "h": 32
@@ -6742,7 +6982,7 @@
     },
     "person.human.e.1": {
       "frame": {
-        "x": 35,
+        "x": 443,
         "y": 545,
         "w": 32,
         "h": 32
@@ -6762,7 +7002,7 @@
     },
     "person.human.e.2": {
       "frame": {
-        "x": 69,
+        "x": 477,
         "y": 545,
         "w": 32,
         "h": 32
@@ -6782,7 +7022,7 @@
     },
     "person.human.n.0": {
       "frame": {
-        "x": 103,
+        "x": 511,
         "y": 545,
         "w": 32,
         "h": 32
@@ -6802,7 +7042,7 @@
     },
     "person.human.n.1": {
       "frame": {
-        "x": 137,
+        "x": 545,
         "y": 545,
         "w": 32,
         "h": 32
@@ -6822,7 +7062,7 @@
     },
     "person.human.n.2": {
       "frame": {
-        "x": 171,
+        "x": 579,
         "y": 545,
         "w": 32,
         "h": 32
@@ -6842,7 +7082,7 @@
     },
     "person.human.s.0": {
       "frame": {
-        "x": 205,
+        "x": 613,
         "y": 545,
         "w": 32,
         "h": 32
@@ -6862,7 +7102,7 @@
     },
     "person.human.s.1": {
       "frame": {
-        "x": 239,
+        "x": 647,
         "y": 545,
         "w": 32,
         "h": 32
@@ -6882,7 +7122,7 @@
     },
     "person.human.s.2": {
       "frame": {
-        "x": 273,
+        "x": 681,
         "y": 545,
         "w": 32,
         "h": 32
@@ -6902,8 +7142,8 @@
     },
     "person.human.v1.e.0": {
       "frame": {
-        "x": 307,
-        "y": 545,
+        "x": 1,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -6922,8 +7162,8 @@
     },
     "person.human.v1.e.1": {
       "frame": {
-        "x": 341,
-        "y": 545,
+        "x": 35,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -6942,8 +7182,8 @@
     },
     "person.human.v1.e.2": {
       "frame": {
-        "x": 375,
-        "y": 545,
+        "x": 69,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -6962,8 +7202,8 @@
     },
     "person.human.v1.n.0": {
       "frame": {
-        "x": 409,
-        "y": 545,
+        "x": 103,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -6982,8 +7222,8 @@
     },
     "person.human.v1.n.1": {
       "frame": {
-        "x": 443,
-        "y": 545,
+        "x": 137,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -7002,8 +7242,8 @@
     },
     "person.human.v1.n.2": {
       "frame": {
-        "x": 477,
-        "y": 545,
+        "x": 171,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -7022,8 +7262,8 @@
     },
     "person.human.v1.s.0": {
       "frame": {
-        "x": 511,
-        "y": 545,
+        "x": 205,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -7042,8 +7282,8 @@
     },
     "person.human.v1.s.1": {
       "frame": {
-        "x": 545,
-        "y": 545,
+        "x": 239,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -7062,8 +7302,8 @@
     },
     "person.human.v1.s.2": {
       "frame": {
-        "x": 579,
-        "y": 545,
+        "x": 273,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -7082,8 +7322,8 @@
     },
     "person.human.v1.w.0": {
       "frame": {
-        "x": 613,
-        "y": 545,
+        "x": 307,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -7102,8 +7342,8 @@
     },
     "person.human.v1.w.1": {
       "frame": {
-        "x": 647,
-        "y": 545,
+        "x": 341,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -7122,8 +7362,8 @@
     },
     "person.human.v1.w.2": {
       "frame": {
-        "x": 681,
-        "y": 545,
+        "x": 375,
+        "y": 579,
         "w": 32,
         "h": 32
       },
@@ -7142,7 +7382,7 @@
     },
     "person.human.v2.e.0": {
       "frame": {
-        "x": 1,
+        "x": 409,
         "y": 579,
         "w": 32,
         "h": 32
@@ -7162,7 +7402,7 @@
     },
     "person.human.v2.e.1": {
       "frame": {
-        "x": 35,
+        "x": 443,
         "y": 579,
         "w": 32,
         "h": 32
@@ -7182,7 +7422,7 @@
     },
     "person.human.v2.e.2": {
       "frame": {
-        "x": 69,
+        "x": 477,
         "y": 579,
         "w": 32,
         "h": 32
@@ -7202,7 +7442,7 @@
     },
     "person.human.v2.n.0": {
       "frame": {
-        "x": 103,
+        "x": 511,
         "y": 579,
         "w": 32,
         "h": 32
@@ -7222,7 +7462,7 @@
     },
     "person.human.v2.n.1": {
       "frame": {
-        "x": 137,
+        "x": 545,
         "y": 579,
         "w": 32,
         "h": 32
@@ -7242,7 +7482,7 @@
     },
     "person.human.v2.n.2": {
       "frame": {
-        "x": 171,
+        "x": 579,
         "y": 579,
         "w": 32,
         "h": 32
@@ -7262,7 +7502,7 @@
     },
     "person.human.v2.s.0": {
       "frame": {
-        "x": 205,
+        "x": 613,
         "y": 579,
         "w": 32,
         "h": 32
@@ -7282,7 +7522,7 @@
     },
     "person.human.v2.s.1": {
       "frame": {
-        "x": 239,
+        "x": 647,
         "y": 579,
         "w": 32,
         "h": 32
@@ -7302,7 +7542,7 @@
     },
     "person.human.v2.s.2": {
       "frame": {
-        "x": 273,
+        "x": 681,
         "y": 579,
         "w": 32,
         "h": 32
@@ -7322,8 +7562,8 @@
     },
     "person.human.v2.w.0": {
       "frame": {
-        "x": 307,
-        "y": 579,
+        "x": 1,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7342,8 +7582,8 @@
     },
     "person.human.v2.w.1": {
       "frame": {
-        "x": 341,
-        "y": 579,
+        "x": 35,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7362,8 +7602,8 @@
     },
     "person.human.v2.w.2": {
       "frame": {
-        "x": 375,
-        "y": 579,
+        "x": 69,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7382,8 +7622,8 @@
     },
     "person.human.v3.e.0": {
       "frame": {
-        "x": 409,
-        "y": 579,
+        "x": 103,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7402,8 +7642,8 @@
     },
     "person.human.v3.e.1": {
       "frame": {
-        "x": 443,
-        "y": 579,
+        "x": 137,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7422,8 +7662,8 @@
     },
     "person.human.v3.e.2": {
       "frame": {
-        "x": 477,
-        "y": 579,
+        "x": 171,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7442,8 +7682,8 @@
     },
     "person.human.v3.n.0": {
       "frame": {
-        "x": 511,
-        "y": 579,
+        "x": 205,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7462,8 +7702,8 @@
     },
     "person.human.v3.n.1": {
       "frame": {
-        "x": 545,
-        "y": 579,
+        "x": 239,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7482,8 +7722,8 @@
     },
     "person.human.v3.n.2": {
       "frame": {
-        "x": 579,
-        "y": 579,
+        "x": 273,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7502,8 +7742,8 @@
     },
     "person.human.v3.s.0": {
       "frame": {
-        "x": 613,
-        "y": 579,
+        "x": 307,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7522,8 +7762,8 @@
     },
     "person.human.v3.s.1": {
       "frame": {
-        "x": 647,
-        "y": 579,
+        "x": 341,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7542,8 +7782,8 @@
     },
     "person.human.v3.s.2": {
       "frame": {
-        "x": 681,
-        "y": 579,
+        "x": 375,
+        "y": 613,
         "w": 32,
         "h": 32
       },
@@ -7562,7 +7802,7 @@
     },
     "person.human.v3.w.0": {
       "frame": {
-        "x": 1,
+        "x": 409,
         "y": 613,
         "w": 32,
         "h": 32
@@ -7582,7 +7822,7 @@
     },
     "person.human.v3.w.1": {
       "frame": {
-        "x": 35,
+        "x": 443,
         "y": 613,
         "w": 32,
         "h": 32
@@ -7602,7 +7842,7 @@
     },
     "person.human.v3.w.2": {
       "frame": {
-        "x": 69,
+        "x": 477,
         "y": 613,
         "w": 32,
         "h": 32
@@ -7622,7 +7862,7 @@
     },
     "person.human.w.0": {
       "frame": {
-        "x": 103,
+        "x": 511,
         "y": 613,
         "w": 32,
         "h": 32
@@ -7642,7 +7882,7 @@
     },
     "person.human.w.1": {
       "frame": {
-        "x": 137,
+        "x": 545,
         "y": 613,
         "w": 32,
         "h": 32
@@ -7662,7 +7902,7 @@
     },
     "person.human.w.2": {
       "frame": {
-        "x": 171,
+        "x": 579,
         "y": 613,
         "w": 32,
         "h": 32
@@ -7682,7 +7922,7 @@
     },
     "person.orc.e.0": {
       "frame": {
-        "x": 205,
+        "x": 613,
         "y": 613,
         "w": 32,
         "h": 32
@@ -7702,7 +7942,7 @@
     },
     "person.orc.e.1": {
       "frame": {
-        "x": 239,
+        "x": 647,
         "y": 613,
         "w": 32,
         "h": 32
@@ -7722,7 +7962,7 @@
     },
     "person.orc.e.2": {
       "frame": {
-        "x": 273,
+        "x": 681,
         "y": 613,
         "w": 32,
         "h": 32
@@ -7742,246 +7982,6 @@
     },
     "person.orc.n.0": {
       "frame": {
-        "x": 307,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.n.1": {
-      "frame": {
-        "x": 341,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.n.2": {
-      "frame": {
-        "x": 375,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.s.0": {
-      "frame": {
-        "x": 409,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.s.1": {
-      "frame": {
-        "x": 443,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.s.2": {
-      "frame": {
-        "x": 477,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.v1.e.0": {
-      "frame": {
-        "x": 511,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.v1.e.1": {
-      "frame": {
-        "x": 545,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.v1.e.2": {
-      "frame": {
-        "x": 579,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.v1.n.0": {
-      "frame": {
-        "x": 613,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.v1.n.1": {
-      "frame": {
-        "x": 647,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.v1.n.2": {
-      "frame": {
-        "x": 681,
-        "y": 613,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "person.orc.v1.s.0": {
-      "frame": {
         "x": 1,
         "y": 647,
         "w": 32,
@@ -8000,7 +8000,7 @@
         "h": 32
       }
     },
-    "person.orc.v1.s.1": {
+    "person.orc.n.1": {
       "frame": {
         "x": 35,
         "y": 647,
@@ -8020,7 +8020,7 @@
         "h": 32
       }
     },
-    "person.orc.v1.s.2": {
+    "person.orc.n.2": {
       "frame": {
         "x": 69,
         "y": 647,
@@ -8040,7 +8040,7 @@
         "h": 32
       }
     },
-    "person.orc.v1.w.0": {
+    "person.orc.s.0": {
       "frame": {
         "x": 103,
         "y": 647,
@@ -8060,7 +8060,7 @@
         "h": 32
       }
     },
-    "person.orc.v1.w.1": {
+    "person.orc.s.1": {
       "frame": {
         "x": 137,
         "y": 647,
@@ -8080,7 +8080,7 @@
         "h": 32
       }
     },
-    "person.orc.v1.w.2": {
+    "person.orc.s.2": {
       "frame": {
         "x": 171,
         "y": 647,
@@ -8100,7 +8100,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.e.0": {
+    "person.orc.v1.e.0": {
       "frame": {
         "x": 205,
         "y": 647,
@@ -8120,7 +8120,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.e.1": {
+    "person.orc.v1.e.1": {
       "frame": {
         "x": 239,
         "y": 647,
@@ -8140,7 +8140,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.e.2": {
+    "person.orc.v1.e.2": {
       "frame": {
         "x": 273,
         "y": 647,
@@ -8160,7 +8160,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.n.0": {
+    "person.orc.v1.n.0": {
       "frame": {
         "x": 307,
         "y": 647,
@@ -8180,7 +8180,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.n.1": {
+    "person.orc.v1.n.1": {
       "frame": {
         "x": 341,
         "y": 647,
@@ -8200,7 +8200,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.n.2": {
+    "person.orc.v1.n.2": {
       "frame": {
         "x": 375,
         "y": 647,
@@ -8220,7 +8220,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.s.0": {
+    "person.orc.v1.s.0": {
       "frame": {
         "x": 409,
         "y": 647,
@@ -8240,7 +8240,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.s.1": {
+    "person.orc.v1.s.1": {
       "frame": {
         "x": 443,
         "y": 647,
@@ -8260,7 +8260,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.s.2": {
+    "person.orc.v1.s.2": {
       "frame": {
         "x": 477,
         "y": 647,
@@ -8280,7 +8280,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.w.0": {
+    "person.orc.v1.w.0": {
       "frame": {
         "x": 511,
         "y": 647,
@@ -8300,7 +8300,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.w.1": {
+    "person.orc.v1.w.1": {
       "frame": {
         "x": 545,
         "y": 647,
@@ -8320,7 +8320,7 @@
         "h": 32
       }
     },
-    "person.orc.v2.w.2": {
+    "person.orc.v1.w.2": {
       "frame": {
         "x": 579,
         "y": 647,
@@ -8340,7 +8340,7 @@
         "h": 32
       }
     },
-    "person.orc.w.0": {
+    "person.orc.v2.e.0": {
       "frame": {
         "x": 613,
         "y": 647,
@@ -8360,7 +8360,7 @@
         "h": 32
       }
     },
-    "person.orc.w.1": {
+    "person.orc.v2.e.1": {
       "frame": {
         "x": 647,
         "y": 647,
@@ -8380,10 +8380,250 @@
         "h": 32
       }
     },
-    "person.orc.w.2": {
+    "person.orc.v2.e.2": {
       "frame": {
         "x": 681,
         "y": 647,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.v2.n.0": {
+      "frame": {
+        "x": 1,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.v2.n.1": {
+      "frame": {
+        "x": 35,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.v2.n.2": {
+      "frame": {
+        "x": 69,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.v2.s.0": {
+      "frame": {
+        "x": 103,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.v2.s.1": {
+      "frame": {
+        "x": 137,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.v2.s.2": {
+      "frame": {
+        "x": 171,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.v2.w.0": {
+      "frame": {
+        "x": 205,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.v2.w.1": {
+      "frame": {
+        "x": 239,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.v2.w.2": {
+      "frame": {
+        "x": 273,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.w.0": {
+      "frame": {
+        "x": 307,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.w.1": {
+      "frame": {
+        "x": 341,
+        "y": 681,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "person.orc.w.2": {
+      "frame": {
+        "x": 375,
+        "y": 681,
         "w": 32,
         "h": 32
       },
@@ -8668,6 +8908,18 @@
       "person.giant.s.0",
       "person.giant.s.1",
       "person.giant.s.2",
+      "person.giant.v1.e.0",
+      "person.giant.v1.e.1",
+      "person.giant.v1.e.2",
+      "person.giant.v1.n.0",
+      "person.giant.v1.n.1",
+      "person.giant.v1.n.2",
+      "person.giant.v1.s.0",
+      "person.giant.v1.s.1",
+      "person.giant.v1.s.2",
+      "person.giant.v1.w.0",
+      "person.giant.v1.w.1",
+      "person.giant.v1.w.2",
       "person.giant.w.0",
       "person.giant.w.1",
       "person.giant.w.2",
@@ -8832,7 +9084,7 @@
   "meta": {
     "size": {
       "w": 714,
-      "h": 680
+      "h": 714
     },
     "scale": "1",
     "image": "sprites-people.png"

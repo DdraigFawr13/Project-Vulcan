@@ -14,8 +14,12 @@ const TILE = 32;
 // People are drawn a quarter larger than a tile (V-095): centred across it, feet on its lower
 // edge, so a head may overlap the tile above.
 const SIZE = 1.25;
-const LIFT_X = -(TILE * (SIZE - 1)) / 2;
-const LIFT_Y = -TILE * (SIZE - 1);
+/** Giants stand a third taller again (Morgan's look form, 2026-11-20: "everything the right
+ * scale / height"); a picture choice only. */
+const TALLER: Readonly<Record<string, number>> = { giant: 4 / 3 };
+/** Where the sprite's corner sits from its tile's corner, for a person drawn `scale` times a
+ * tile: centred across the tile with their feet on its lower edge. */
+const liftOf = (scale: number) => ({ x: -(TILE * (scale - 1)) / 2, y: -TILE * (scale - 1) });
 /** Milliseconds per walk frame. */
 const STRIDE = 160;
 /** The unburied dead are drawn grey (P5.8); a carried person lies a few pixels off their carrier. */
@@ -41,6 +45,8 @@ interface Shown {
   walked: number;
   /** Where a carried person lies from their carrier's tile, in pixels. */
   off: { x: number; y: number };
+  /** The sprite's corner from its tile's corner (liftOf). */
+  lift: { x: number; y: number };
 }
 
 /** A person's lying state from the snapshot (P5.6, P5.8): down, dead or buried, and carried. */
@@ -128,8 +134,8 @@ export class PeopleSprites {
       .map((s) => ({
         id: s.view.id,
         name: s.view.name,
-        x: s.box.x - LIFT_X - s.off.x + TILE / 2,
-        y: s.box.y - LIFT_Y - s.off.y + TILE / 2,
+        x: s.box.x - s.lift.x - s.off.x + TILE / 2,
+        y: s.box.y - s.lift.y - s.off.y + TILE / 2,
       }));
   }
 
@@ -154,13 +160,11 @@ export class PeopleSprites {
               .setTint(colour(p.look.hairColour))
           : undefined;
       // Over the features and the aura glow, under the selection marks.
+      const scale = SIZE * (TALLER[p.race] ?? 1);
+      const lift = liftOf(scale);
       const box = this.scene.add
-        .container(
-          p.x * TILE + LIFT_X,
-          p.y * TILE + LIFT_Y,
-          hair ? [body, clothes, hair] : [body, clothes],
-        )
-        .setScale(SIZE)
+        .container(0, 0, hair ? [body, clothes, hair] : [body, clothes])
+        .setScale(scale)
         .setDepth(8);
       const s = {
         view: p,
@@ -172,10 +176,11 @@ export class PeopleSprites {
         facing: 's' as Facing,
         walked: 0,
         off: { x: 0, y: 0 },
+        lift,
       };
       this.shown.set(p.id, s);
       this.restyle(s);
-      box.setPosition(p.x * TILE + LIFT_X + s.off.x, p.y * TILE + LIFT_Y + s.off.y);
+      box.setPosition(p.x * TILE + lift.x + s.off.x, p.y * TILE + lift.y + s.off.y);
     }
   }
 
@@ -214,7 +219,7 @@ export class PeopleSprites {
     for (const s of this.shown.values()) {
       const d = this.trails.at(s.view.id, now);
       const [x, y] = d ? [d.x - s.view.z * 1000, d.y] : [s.view.x, s.view.y];
-      s.box.setPosition(x * TILE + LIFT_X + s.off.x, y * TILE + LIFT_Y + s.off.y);
+      s.box.setPosition(x * TILE + s.lift.x + s.off.x, y * TILE + s.lift.y + s.off.y);
       if (!d?.moving) {
         if (s.walked) this.pose(s, s.facing, 0);
         s.walked = 0;
