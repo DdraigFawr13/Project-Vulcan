@@ -6,7 +6,14 @@
 // or by a lit fire before there is one: everyone relaxing in earshot holds the song's version,
 // feels `bard.heard` by the bard's singing (`song.sung`), and the bard practises `bard.skill` (a
 // skill row added the first time they sing). A tale in a song still sung is never forgotten.
-import { clamp, clockAt, TICKS_PER_DAY, today, type EntityRow } from '../core/index.ts';
+import {
+  clamp,
+  clockAt,
+  TICKS_PER_DAY,
+  today,
+  type EntityRow,
+  type WorldState,
+} from '../core/index.ts';
 import { practise } from '../band/index.ts';
 import { addEntity, awake } from '../entity/index.ts';
 import { highestOn, inTavern, tavernOf } from '../inn/index.ts';
@@ -18,7 +25,7 @@ import { feedBelief } from './belief.ts';
 import { bynameFor, feltAgain, giveByname } from './bynames.ts';
 import { apart, fillWords, storiesOf, taleDef, taleText } from './tables.ts';
 
-export const songsOf = (ctx: SystemContext): EntityRow[] => ctx.world.entities['song'] ?? [];
+export const songsOf = (world: WorldState): EntityRow[] => world.entities['song'] ?? [];
 
 /** The bard's singing skill row, added (level 0) the first time they sing. */
 function singing(ctx: SystemContext, bard: EntityRow): EntityRow {
@@ -42,7 +49,7 @@ function singing(ctx: SystemContext, bard: EntityRow): EntityRow {
 function madeThisSeason(ctx: SystemContext): boolean {
   const { world, content } = ctx;
   const now = clockAt(world.tick, content.calendar);
-  return songsOf(ctx).some((s) => {
+  return songsOf(ctx.world).some((s) => {
     const c = clockAt((s['day'] as number) * TICKS_PER_DAY, content.calendar);
     return c.year === now.year && c.season === now.season;
   });
@@ -52,7 +59,7 @@ function madeThisSeason(ctx: SystemContext): boolean {
  * holds. False when there is nothing to make. */
 function makeSong(ctx: SystemContext, bard: EntityRow, day: number): boolean {
   const { world, content } = ctx;
-  const under = songsOf(ctx).find((s) => !s['made'] && s['bard'] === bard.id);
+  const under = songsOf(ctx.world).find((s) => !s['made'] && s['bard'] === bard.id);
   if (under) {
     Object.assign(under, { evenings: (under['evenings'] as number) + 1, day });
     if ((under['evenings'] as number) < content.tavern.bard.evenings) return true;
@@ -67,7 +74,7 @@ function makeSong(ctx: SystemContext, bard: EntityRow, day: number): boolean {
     return true;
   }
   if (madeThisSeason(ctx)) return false;
-  const sung = new Set(songsOf(ctx).map((s) => s['story'] as number));
+  const sung = new Set(songsOf(ctx.world).map((s) => s['story'] as number));
   const stories = storiesOf(world);
   const pick = (world.entities['tale'] ?? [])
     .filter((t) => t['person'] === bard.id && !sung.has(t['story'] as number))
@@ -126,7 +133,7 @@ function hear(
 /** The bard sings the song least lately sung to whoever is in earshot; false if they cannot. */
 function sing(ctx: SystemContext, bard: EntityRow): boolean {
   const { world, content } = ctx;
-  const song = songsOf(ctx)
+  const song = songsOf(ctx.world)
     .filter((s) => s['made'])
     .sort((a, b) => (a['sung'] as number) - (b['sung'] as number) || a.id - b.id)[0];
   const story = song && storiesOf(world).find((s) => s.id === song['story']);
@@ -163,7 +170,7 @@ export function songs(ctx: SystemContext): void {
   const { world, content, state } = ctx;
   const day = today(world);
   if (state['sang'] === day + 1) return;
-  const bard = highestOn(ctx, content.tavern.bard.job, content.tavern.bard.trait);
+  const bard = highestOn(world, content, content.tavern.bard.job, content.tavern.bard.trait);
   if (!bard || bard['doing'] !== 'relax') return;
   const hour = clockAt(world.tick, content.calendar).hour;
   if (hour < hoursOf(world, content, bard.id).workTo) return;
@@ -174,7 +181,7 @@ export function songs(ctx: SystemContext): void {
 export function sungStories(ctx: SystemContext): Set<number> {
   const keep = ctx.content.tales.forgetDays * TICKS_PER_DAY;
   return new Set(
-    songsOf(ctx)
+    songsOf(ctx.world)
       .filter((s) => s['made'] && ctx.world.tick - (s['sung'] as number) < keep)
       .map((s) => s['story'] as number),
   );

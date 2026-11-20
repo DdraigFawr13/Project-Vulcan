@@ -285,6 +285,8 @@ export interface ValleyPreview {
 export interface PersonView {
   id: number;
   name: string;
+  /** Their byname, once a tale gave them one (6B Bundle 5): shown after the name on the sheet. */
+  byname?: string;
   race: string;
   raceName: string;
   cultureName: string;

@@ -14,6 +14,19 @@ const why = (line: number): HTMLElement =>
 /** The tales they know, newest first, and what they believe, strongest first. */
 function taleRows(w: WalkerView): HTMLElement[] {
   const out: HTMLElement[] = [];
+  // Their byname (6B Bundle 5): the tale as it stuck, beside what happened.
+  if (w.byname) {
+    const { word, text, truth, why: line } = w.byname;
+    const row = el('div', { class: 'memrow', 'data-testid': 'byname' });
+    const note = truth && truth !== text ? `What happened: ${truth}` : 'It is what happened.';
+    row.append(
+      el('span', { class: 'band' }, 'Byname'),
+      el('span', { class: 't' }, `Folk call them “${word}”: ${text}`),
+      why(line),
+      el('span', { class: 'r' }, note),
+    );
+    out.push(el('h3', {}, 'What folk call them'), row);
+  }
   if (w.tales.length) out.push(el('h3', {}, 'Tales they know'));
   for (const t of w.tales) {
     const row = el('div', { class: 'memrow', 'data-testid': 'tale', 'data-line': String(t.why) });
