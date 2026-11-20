@@ -90,6 +90,8 @@
   {"id":"rite-wedding-day","mood":8,"decayDays":14,"text":"Kept {about}'s Wedding Day at the shrine"},
   {"id":"remembered-dead","mood":3,"decayDays":7,"text":"Remembered {about} on their day"},
   {"id":"grumbled-feasts","mood":-2,"decayDays":5,"text":"Grumbled at the Feasts law"},
+  {"id":"taught-apprentice","mood":6,"decayDays":28,"weight":3,"text":"Taught {about} all they could"},
+  {"id":"finished-apprentice","mood":6,"decayDays":28,"weight":3,"text":"Learned all {about} could teach"},
   {"id":"drank-ale","mood":3,"decayDays":1,"stacks":2,"text":"Had a cup at the tavern"},
   {"id":"hung-over","mood":-3,"decayDays":1,"text":"Woke hung over","thoughts":["My head. Never again."]},
   {"id":"heard-song-1","mood":2,"decayDays":3,"text":"Heard {about} sing"},

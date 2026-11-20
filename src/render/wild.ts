@@ -1,6 +1,6 @@
 // The wild valley on the map (Phase 5A Bundle 2): snow lying on the ground, the prints animals
 // leave on it and in the mud, the animals themselves and the middens. Snow is a tile layer of its
-// own over the ground and stains (depth 1.1); prints are sprites under the features (depth 1.8),
+// own over the ground and stains (depth 1.1), kept for the window near the camera; prints are sprites under the features (depth 1.8),
 // fainter as they age; animals glide between tiles like people (depth 8). Everything is redrawn
 // only when its chunk or its list changes; none of it is game state.
 import Phaser from 'phaser';
@@ -8,6 +8,7 @@ import { content } from '../content/index.ts';
 import type { AnimalView, ChunkView, Spot3 } from '../worker/index.ts';
 import { frameIndex, TILE } from './frames.ts';
 import { WILD } from './sheets.ts';
+import { HeldChunks, WindowTiles, type Area } from './tile-window.ts';
 import { Trails, type TrailClock } from './trail.ts';
 
 const GROUND = 'tiles-world';
@@ -33,8 +34,9 @@ export class WildSprites {
   private size = { width: 0, height: 0 };
   /** Chunks that arrived before the scene could draw them. */
   private waiting: ChunkView[] = [];
-  private snowMap: Phaser.Tilemaps.Tilemap | undefined;
-  private snowLayer: Phaser.Tilemaps.TilemapLayer | undefined;
+  /** Lying snow, kept for the window near the camera (tile-window.ts). */
+  private snow: WindowTiles | undefined;
+  private readonly held = new HeldChunks();
   private prints = new Map<string, Phaser.GameObjects.Image[]>();
   private animals = new Map<number, Shown>();
   private list: AnimalView[] = [];
@@ -61,6 +63,7 @@ export class WildSprites {
   setMapSize(width: number, height: number): void {
     this.size = { width, height };
     this.waiting = [];
+    this.held.clear();
     this.list = [];
     this.middenKey = '';
     this.build();
@@ -68,13 +71,14 @@ export class WildSprites {
 
   applyChunks(chunks: readonly ChunkView[]): void {
     const surface = chunks.filter((c) => c.z === 0);
-    if (!this.snowLayer) return void this.waiting.push(...surface);
+    for (const c of surface) this.held.keep(c);
+    if (!this.live) return void this.waiting.push(...surface);
     for (const c of surface) this.paint(c);
   }
 
   setLevel(z: number): void {
     this.z = z;
-    this.snowLayer?.setVisible(z === 0);
+    this.snow?.setWanted(z === 0);
     for (const images of this.prints.values()) for (const i of images) i.setVisible(z === 0);
     for (const s of this.animals.values()) s.image.setVisible(z === 0);
     for (const m of this.middens) m.setVisible(z === 0);
@@ -143,24 +147,26 @@ export class WildSprites {
       );
   }
 
-  /** Makes the snow layer for the current map size, then lays what was held. */
+  /** The window moved (tile-window.ts): lay the snow of the chunks under it. */
+  place(area: Area): void {
+    if (!this.scene.textures.exists(GROUND)) return;
+    this.snow ??= new WindowTiles(this.scene, [GROUND], [{ depth: 1.1 }]);
+    this.snow.setWanted(this.z === 0);
+    this.snow.place(area);
+    for (const c of this.held.within(area)) this.paintSnow(c);
+  }
+
+  show(on: boolean): void {
+    this.snow?.setShown(on);
+  }
+
+  /** Forgets the last world's prints and animals, then lays what was held. */
   private build(): void {
-    this.snowMap?.destroy();
     for (const images of this.prints.values()) for (const i of images) i.destroy();
     this.prints.clear();
     for (const s of this.animals.values()) s.image.destroy();
     this.animals.clear();
-    this.snowMap = this.snowLayer = undefined;
-    const { width, height } = this.size;
-    if (!this.live || !width || !this.scene.textures.exists(GROUND)) return;
-    const blank = Array.from({ length: height }, () => new Array<number>(width).fill(-1));
-    const map = this.scene.make.tilemap({ data: blank, tileWidth: TILE, tileHeight: TILE });
-    const set = map.addTilesetImage(GROUND, GROUND, TILE, TILE, 1, 2, 0);
-    const layer =
-      set && (map.createLayer(0, set, 0, 0, false) as Phaser.Tilemaps.TilemapLayer | null);
-    if (!layer) throw new Error('The snow layer could not be made.');
-    this.snowMap = map;
-    this.snowLayer = layer.setDepth(1.1).setVisible(this.z === 0);
+    if (!this.live || !this.size.width) return;
     const held = this.waiting;
     this.waiting = [];
     for (const c of held) this.paint(c);
@@ -169,14 +175,7 @@ export class WildSprites {
 
   /** Repaints a surface chunk's snow tiles and prints. */
   private paint(c: ChunkView): void {
-    const layer = this.snowLayer!;
-    const snow = frameIndex(this.scene.textures, GROUND, SNOW);
-    for (let row = 0; row < c.h; row += 1)
-      for (let col = 0; col < c.w; col += 1) {
-        const at = row * c.w + col;
-        if (c.snowLie[at]) layer.putTileAt(snow, c.x + col, c.y + row);
-        else layer.removeTileAt(c.x + col, c.y + row);
-      }
+    if (this.snow?.ready) this.paintSnow(c);
     const key = `${c.x},${c.y}`;
     for (const i of this.prints.get(key) ?? []) i.destroy();
     const images: Phaser.GameObjects.Image[] = [];
@@ -199,6 +198,13 @@ export class WildSprites {
         );
       }
     this.prints.set(key, images);
+  }
+
+  private paintSnow(c: ChunkView): void {
+    const snow = frameIndex(this.scene.textures, GROUND, SNOW);
+    for (let row = 0; row < c.h; row += 1)
+      for (let col = 0; col < c.w; col += 1)
+        this.snow!.put(0, c.snowLie[row * c.w + col] ? snow : -1, c.x + col, c.y + row);
   }
 
   /** Each frame: draw every animal where the screen's clock finds it on its trail, facing as

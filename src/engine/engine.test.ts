@@ -50,6 +50,7 @@ const fixtureContent: EngineContent = {
   family: content.family,
   worship: content.worship,
   faiths: content.faiths,
+  teach: content.teach,
   tavern: content.tavern,
   defy: content.defy,
   strangers: content.strangers,

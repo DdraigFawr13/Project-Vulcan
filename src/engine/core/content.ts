@@ -12,6 +12,7 @@ import type { SelfDefs } from './self.ts';
 import type { ColonyDefs } from './colony.ts';
 import type { FamilyDefs } from './family.ts';
 import type { WorshipDefs } from './worship.ts';
+import type { TeachDefs } from './teach.ts';
 import type { DefyDefs } from './defy.ts';
 import type { TavernDefs } from './tavern.ts';
 import type { BiomesDef, SeasonsDef, WeatherDef } from './climate.ts';
@@ -36,6 +37,7 @@ export interface EngineContent
     ColonyDefs,
     FamilyDefs,
     WorshipDefs,
+    TeachDefs,
     TavernDefs,
     DefyDefs {
   calendar: CalendarDef;
