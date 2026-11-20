@@ -17,9 +17,13 @@ import {
   tableOf,
   TICKS_PER_DAY,
   type EngineContent,
+  type SimEvent,
+  type Stub,
   type System,
   weatherSystem,
 } from '../engine/index.ts';
+import { lineOf } from './lines.ts';
+import { recapFeed, recapPauses, recapView } from './recaps.ts';
 import { checkSave, saveOf } from './save.ts';
 
 const calendar = {
@@ -118,5 +122,44 @@ describe('annals', () => {
     step(unbroken, sim, 7 * TICKS_PER_DAY + 1);
     expect(annalsOf(loaded)).toHaveLength(6);
     expect(tableOf(loaded, 'annalText')).toEqual(tableOf(unbroken, 'annalText'));
+  });
+});
+
+// Slice 3: the recaps as the page gets them, and which of them pause play (V-191).
+describe('recaps for the page', () => {
+  const line = (e: SimEvent | Stub) => lineOf(world, sim, e);
+
+  it('words a recap with its headings, each sentence with the whole lines it tells', () => {
+    const spring = recapView(world, recaps[0]!, line);
+    expect(spring).toMatchObject({ kind: 'season', title: 'Bran died' });
+    expect(spring.kicker).toBe('The chronicle · Spring, year 1');
+    expect(spring.sections.map((s) => s.head)).toEqual(['Who we lost', 'Troubles', 'In numbers']);
+    const broke = spring.sections[1]!.sentences[0]!;
+    expect(broke.lines.map((l) => l.text)).toEqual([
+      "Ann's stone axe broke after 40 hours of work.",
+      "Bryn's stone axe broke after 40 hours of work.",
+    ]);
+    // A year's season paragraphs open with their season's name, so they carry no heading.
+    const year = recapView(world, recaps[4]!, line);
+    expect(year.kicker).toBe('The chronicle · Year 1');
+    expect(year.sections[0]).toMatchObject({ id: 'spring' });
+    expect(year.sections[0]).not.toHaveProperty('head');
+  });
+
+  it('pauses play for a recap whose switch is on, the year turn for either', () => {
+    const all = { season: true, year: true };
+    expect(recapPauses(world, 0, all)).toBe(true);
+    expect(recapPauses(world, 3, { season: false, year: true })).toBe(true);
+    expect(recapPauses(world, 0, { season: false, year: false })).toBe(false);
+    expect(recapPauses(world, 4, { season: true, year: false })).toBe(false);
+    expect(recapPauses(world, 5, all)).toBe(false);
+  });
+
+  it('sends every recap after a reset, then only the new ones', () => {
+    const feed = recapFeed();
+    expect(feed.next(world, line)!.map((r) => r.id)).toEqual(recaps.map((r) => r.id));
+    expect(feed.next(world, line)).toBeUndefined();
+    feed.reset();
+    expect(feed.next(world, line)).toHaveLength(5);
   });
 });

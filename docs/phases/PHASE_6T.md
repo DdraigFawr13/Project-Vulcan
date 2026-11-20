@@ -7,7 +7,7 @@ More control over the pace of play: a speed list up to 6×, jumps of a month, a 
 - [x] Spec, 2026-11-20 (V-191)
 - [x] Slice 1: speeds, jumps and what stops play (worker, content, screen), 2026-11-20; anvil year 1: 8 Next event stops with the defaults (4 Pause, 4 Slow)
 - [x] Slice 2: the chronicle (engine), 2026-11-20: `src/engine/annals`, `annals.json`, `npm run annals`
-- [ ] Slice 3: recaps on screen
+- [x] Slice 3: recaps on screen, 2026-11-20: `src/ui/recaps.ts`, `src/worker/recaps.ts`; at 6× the summer turn paused and Carry on resumed at 6× (browser, 1.8 min, left out of the suite for time)
 
 ## Design (VR-62)
 

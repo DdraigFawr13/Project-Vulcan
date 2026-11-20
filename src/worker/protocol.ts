@@ -2,7 +2,8 @@
 // Speed and pause are worker settings, not game commands, so they never enter the command log.
 // Saving, exporting and the inspector's questions only read the world: answering them never
 // steps it, writes a ledger line or draws from an RNG stream.
-import type { Command, EventData, RegionSite, RegionValley } from '../engine/index.ts';
+import type { Command, EventData } from '../engine/index.ts';
+import type { RegionView, ValleyPreview } from './protocol-region.ts';
 import type { SaveFile } from './save.ts';
 import type { GoodsView, ItemView, StockView, StoreView, WorksView } from './protocol-goods.ts';
 export type { GoodsView, ItemView, Spot3, StockView } from './protocol-goods.ts';
@@ -23,7 +24,15 @@ import type {
   ShaftView,
 } from './protocol-build.ts';
 
-import type { JumpSpan, JumpView, LandingsView, Speed, StopSettings } from './protocol-time.ts';
+import type {
+  JumpSpan,
+  JumpView,
+  LandingsView,
+  RecapSettings,
+  RecapView,
+  Speed,
+  StopSettings,
+} from './protocol-time.ts';
 
 export type ToWorker =
   /** A plain seed rolls its region and offers its valleys (`picker`); a valley seed
@@ -42,6 +51,8 @@ export type ToWorker =
   | { type: 'setSpeed'; speed: Speed }
   /** What each stop kind does (V-191): the page's device setting, sent at start and on change. */
   | { type: 'setStops'; stops: StopSettings }
+  /** Which recaps pause play at a running speed (V-191): the page's device switches. */
+  | { type: 'setRecaps'; recaps: RecapSettings }
   /** On arrival, once, before the first tick: the band takes the cart to its second green. */
   | { type: 'lookAgain' }
   /** Jump ahead (V-191): as fast as the device allows, every tick run, then pause. */
@@ -245,42 +256,6 @@ export interface YesterdayView {
   eaten: number;
 }
 
-/** The region map as the page draws it (engine `Region` less its cells). */
-export interface RegionView {
-  seed: string;
-  width: number;
-  height: number;
-  /** Only the ranges written on the map, at their label cell. */
-  ranges: { name: string; x: number; y: number }[];
-  rivers: { name: string; path: (readonly [number, number])[] }[];
-  sites: RegionSite[];
-  valleys: RegionValley[];
-  /** The fields `scale` times per cell: biome index into content biomes, height 0 to 255. */
-  raster: { scale: number; width: number; height: number; biome: Uint8Array; height8: Uint8Array };
-}
-
-/** A valley on offer in the picker: the map its seed makes, in brief, with a thumbnail. */
-export interface ValleyPreview {
-  id: number;
-  temperature: number;
-  rainfall: number;
-  /** The two commonest biomes with their shares, e.g. "grassland 44%". */
-  biomes: string[];
-  lakes: number;
-  springs: number;
-  /** The schools of its surface aura spots, by name. */
-  aura: string[];
-  /** Surface ground as terrain indices, biome indices, 1 where a tree stands, 1 under snow. */
-  thumb: {
-    width: number;
-    height: number;
-    tiles: Uint8Array;
-    biomes: Uint8Array;
-    trees: Uint8Array;
-    snow: Uint8Array;
-  };
-}
-
 /** A person as the page shows them (P2.1): words from content, numbers from their rows. */
 export interface PersonView {
   id: number;
@@ -374,6 +349,9 @@ export type FromWorker =
       people?: PersonView[];
       /** The day before's tally for the dawn page (P2.9); none on the first day. */
       yesterday?: YesterdayView;
+      /** Recaps written since the last snapshot, oldest first (V-191); the first snapshot after
+       * `ready` carries every recap the world holds. */
+      annals?: RecapView[];
     }
   /** New ledger lines in log order, posted just before the snapshot that follows them. */
   | { type: 'events'; batch: LedgerLine[] }
