@@ -8,7 +8,7 @@
 // lies, go beside the hearth, add pieces, and light it if it is out. Splitting: work at a log stack, then carry the firewood onto its stack (haul.ts). The cold do the same for
 // themselves when no warm place is to be had (warm.ts, V-046).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { furnitureOf } from '../build/index.ts';
+import { furnitureOf, noteBurn } from '../build/index.ts';
 import { fireOf, firesOf, fuelOf, pieceOfFire, placeOf } from '../fire/index.ts';
 import { occupied } from './hearth.ts';
 import { fedPastLaw, tendRule } from './hearthlaw.ts';
@@ -283,6 +283,8 @@ export function tending(ctx: SystemContext, p: EntityRow): boolean {
   const n = Math.min(load['count'] as number, room(fuel.minutes));
   takeFrom(world, load, n);
   fire['fuel'] = (fire['fuel'] as number) + n * fuel.minutes;
+  // A winter's firewood counts against the house (6B stages: a draughty house asks for stone).
+  noteBurn(world, content, piece, n);
   fire['kind'] = fuel.id;
   fire['line'] = p['took'] as number;
   fedPastLaw(ctx, p, piece, rule);

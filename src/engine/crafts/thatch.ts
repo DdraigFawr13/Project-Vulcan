@@ -179,7 +179,8 @@ function lay(ctx: SystemContext, p: EntityRow, h: EntityRow): boolean {
     data: {
       name: p['name'] as string,
       size: roofName(world, content, h),
-      what: h['thatchWith'] as string,
+      // Bundles cut for an earlier roof were carried here: none were cut for this one.
+      what: (h['thatchWith'] as string) || 'bundles cut earlier',
     },
   });
   Object.assign(h, { roof: 'thatch', roofed: world.tick, roofLine: line, noThatch: 0 });

@@ -34,10 +34,13 @@ export function roofLeak(world: WorldState, content: EngineContent, x: number, y
   return wornThatch(world, content, h) ? def.thatch.worn : 0;
 }
 
-/** Built house rows with no roof, or worn thatch, in id order. */
+/** Built house rows with no roof, or worn thatch the mason is not to slate, in id order. */
 export const roofsWanted = (world: WorldState, content: EngineContent): EntityRow[] =>
   housesOf(world).filter(
-    (h) => h['state'] === 'built' && (!h['roof'] || wornThatch(world, content, h)),
+    (h) =>
+      h['state'] === 'built' &&
+      h['stage'] !== 'slate' &&
+      (!h['roof'] || wornThatch(world, content, h)),
   );
 
 /** Bundles of thatch a house row's roof takes. */

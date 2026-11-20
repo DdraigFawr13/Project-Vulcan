@@ -3,7 +3,7 @@
 // and a reaped field's straw thatches it; worn thatch is laid again.
 import { describe, expect, it } from 'vitest';
 import { content as game } from '../../content/index.ts';
-import { greenOf, roofLeak, roofsWanted, rectOf } from '../build/index.ts';
+import { greenOf, roofLeak, roofsWanted, rectOf, slateCanBeHad } from '../build/index.ts';
 import { addEntity } from '../entity/index.ts';
 import type { EntityRow } from '../core/index.ts';
 import {
@@ -87,13 +87,15 @@ describe('roofs and the thatcher', () => {
     ).toBeDefined();
   });
 
-  it('thatch wears over the years and is laid again', () => {
-    const w = createWorld(sim, 'anvil');
+  it('thatch wears over the years and is laid again where no slate can be had', () => {
+    // Tallow has no boulder by slate rock (where slate can be had the mason slates it: mason.test).
+    const w = createWorld(sim, 'tallow');
     const first = until(w, 'build.roofed', 30)!;
     const h = houses(w).find((r) => r['roofLine'] === first.id)!;
     expect(roofsWanted(w, content)).not.toContain(h);
     const year = content.calendar.daysPerMonth * content.calendar.monthsPerYear * DAY;
     h['roofed'] = w.tick - content.buildings.roofs.thatch.wears * year;
+    expect(slateCanBeHad(w, content)).toBe(false);
     expect(roofsWanted(w, content)).toContain(h);
     expect(inside(w, h)).toBe(content.buildings.roofs.thatch.worn);
     let again;

@@ -3,7 +3,7 @@
 import type { MillDef } from './mill.ts';
 import type { FieldDef } from './fielddef.ts';
 import type { RoadsDef, StoresDef } from './ground.ts';
-import type { RoofsDef } from './masonry.ts';
+import type { MasonryDef, RoofsDef } from './masonry.ts';
 import type { CookDef, CooperDef, CureDef, KeepDef, PotterDef } from './food.ts';
 
 export interface NeedDef {
@@ -262,6 +262,7 @@ export interface BuildingsDef {
   parts: readonly PartDef[];
   house: HouseDef;
   roofs: RoofsDef; // 6B Bundle 3 (P6.11): roofs and the thatcher (core/masonry.ts)
+  masonry: MasonryDef; // 6B Bundle 3 part 2 (P6.9, P6.11): mason, lime, stages (core/masonry.ts)
   smithy: {
     name: string;
     start: number;

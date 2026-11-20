@@ -9,6 +9,7 @@ import { stationing, takeUpBeekeeping, takeUpBuilding, takeUpCarpentry } from '.
 import { takeUpChandling, takeUpCharcoal, takeUpCooking, takeUpHearth } from '../crafts/index.ts';
 import { takeUpSmelting, takeUpSmithing, takeUpStation, takeUpTending } from '../crafts/index.ts';
 import { takeUpThatching, tending, thatching, TRADE_JOBS } from '../crafts/index.ts';
+import { limeBurning, masonry, takeUpLime, takeUpMasonry } from '../crafts/index.ts';
 import { burying, takeUpBurial, takeUpNursing } from '../care/index.ts';
 import { farming, foraging, gatherMinute, mining, takeUpFarming } from '../land/index.ts';
 import { takeUpForaging, takeUpGathering, takeUpMarked, takeUpMining } from '../land/index.ts';
@@ -57,6 +58,8 @@ export const JOBS: Readonly<Record<string, JobRow>> = {
   cook: { takeUp: takeUpCooking, work: cooking },
   carpentry: { takeUp: takeUpCarpentry, work: furnishing },
   thatch: { takeUp: takeUpThatching, work: thatching },
+  mason: { takeUp: takeUpMasonry, work: masonry },
+  limeburn: { takeUp: takeUpLime, work: limeBurning },
   mine: { takeUp: takeUpMining, work: mining },
   charcoal: { takeUp: takeUpCharcoal, work: burning, holds: true },
   smelt: { takeUp: takeUpSmelting, work: smelting, holds: true },
