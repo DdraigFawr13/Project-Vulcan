@@ -7,7 +7,15 @@ import type { EntityRow } from '../core/index.ts';
 import { loadOf } from '../goods/index.ts';
 import { isDark, lit } from '../lamp/index.ts';
 import { afterDusk, workableInDark } from './dusk.ts';
-import { lineOf, deliver, LOOK_AGAIN, takeUpHauling, spotOf, jobsInOrder } from '../band/index.ts';
+import {
+  childJobs,
+  deliver,
+  jobsInOrder,
+  lineOf,
+  LOOK_AGAIN,
+  spotOf,
+  takeUpHauling,
+} from '../band/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { takeUpChange, hearthFirst } from '../crafts/index.ts';
 import { draughtFirst, nursing } from '../care/index.ts';
@@ -74,9 +82,12 @@ export function working(ctx: SystemContext, p: EntityRow, hours: boolean): boole
  * hearth first; after dusk only work the dark or a light allows (dusk.ts). */
 function takeUp(ctx: SystemContext, p: EntityRow, dark = false): boolean {
   const { world, content } = ctx;
+  // A child (P6.1) helps only at the kinds family.json allows, and the youngest not at all.
+  const small = childJobs(world, content, p);
+  if (small && !small.length) return idle(world, p);
   if (!dark && (takeUpMarked(ctx, p, false) || draughtFirst(ctx, p) || takeUpChange(ctx, p)))
     return true;
-  for (const job of hearthFirst(ctx, p, jobsInOrder(world, content, p))) {
+  for (const job of kindsFor(ctx, p, small)) {
     if (dark && !workableInDark(ctx, job)) continue;
     const before = p['took'];
     if (JOBS[job]?.takeUp?.(ctx, p)) return true;
@@ -85,7 +96,26 @@ function takeUp(ctx: SystemContext, p: EntityRow, dark = false): boolean {
   }
   // Nothing else to do: carry in the food past its plate that would spoil out there (outdoor
   // work, so not after dusk).
-  if (!dark && takeUpHauling(ctx, p, true)) return true;
+  if (!dark && mayDo(small, 'haul') && takeUpHauling(ctx, p, true)) return true;
+  return idle(world, p);
+}
+
+/** The Work sheet's kinds in their order, a cold room's hearth first; a child's only those allowed. */
+function kindsFor(
+  ctx: SystemContext,
+  p: EntityRow,
+  small: readonly string[] | undefined,
+): string[] {
+  const kinds = hearthFirst(ctx, p, jobsInOrder(ctx.world, ctx.content, p));
+  return kinds.filter((k) => mayDo(small, k));
+}
+
+/** Whether a child's allowed kinds (none for an adult) hold `job`. */
+const mayDo = (small: readonly string[] | undefined, job: string): boolean =>
+  !small || small.includes(job);
+
+/** Nothing taken up: look again later. */
+function idle(world: SystemContext['world'], p: EntityRow): boolean {
   p['job'] = '';
   p['target'] = -1;
   p['next'] = world.tick + LOOK_AGAIN;

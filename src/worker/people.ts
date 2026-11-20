@@ -23,6 +23,7 @@ import { personTools } from './items.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 import { jobShown } from './jobrows.ts';
 import { homeOf, strangerOf } from './strangers.ts';
+import { kinView } from './kinview.ts';
 
 const nameOf = (list: readonly { id: string; name: string }[], id: string): string =>
   list.find((x) => x.id === id)?.name ?? id;
@@ -159,6 +160,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     tools: personTools(world, p.id),
     skills: skillsOf(world, p),
     ...withHome(homeOf(world, p), strangerOf(world, p)),
+    ...kinView(world, p),
     // Rows appear once their station exists (V-071).
     work: content.work.priority.jobs
       .filter((job) => jobShown(world, job))

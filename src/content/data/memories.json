@@ -27,6 +27,7 @@
   {"id":"grief","mood":-20,"decayDays":30,"text":"Mourning {about}","weight":8,"thoughts":["I keep thinking of {about}.","{about} should still be here."]},
   {"id":"married","mood":15,"decayDays":30,"text":"Was married to {about}","weight":8},
   {"id":"child-born","mood":20,"decayDays":30,"text":"A child was born","weight":8},
+  {"id":"taken-in","mood":-5,"decayDays":30,"text":"Taken in by {about}","weight":6},
   {"id":"came-of-age","mood":10,"decayDays":20,"text":"Came of age","weight":3},
   {"id":"lost-spouse","mood":-30,"decayDays":60,"text":"Lost {about}, a spouse","weight":8},
   {"id":"lost-child","mood":-25,"decayDays":45,"text":"Lost {about}, a child","weight":8},

@@ -27,9 +27,55 @@ export interface FamilyDef {
   /** A wedding feast only while the store holds this many days of food for everyone. */
   feastDays: number;
   /** Words for the courting and wedding lines ({whose}: the kept home's owner). */
-  words: { together: string; alike: string; tales: string; want: string; live: string };
-  /** Memories: the couple's on the day, and the feast's for all who ate it. */
-  memories: { wed: string; feast: string };
+  words: {
+    together: string;
+    alike: string;
+    tales: string;
+    want: string;
+    live: string;
+    girl: string;
+    boy: string;
+    like: string;
+    mother: string;
+    father: string;
+    daughter: string;
+    son: string;
+    orphan: string;
+    leftHere: string;
+  };
+  /** Births: a wed woman's daily chance per thousand (times her race's fertility) from coming of
+   * age to `until` per cent of the lifespan; days carried and between children; none while the
+   * store holds under `leanDays` days of food or she holds `hungry`. */
+  birth: {
+    perMille: number;
+    until: number;
+    carryDays: number;
+    restDays: number;
+    leanDays: number;
+    hungry: string;
+  };
+  /** A child helps from `helpFrom` per cent of coming of age, at these Work sheet kinds only. */
+  child: { helpFrom: number; jobs: readonly string[] };
+  /** Gifts and weaknesses: `by` from the race's mean; odds in per cent; `kin` adds to a weakness. */
+  inherit: { by: number; gift: number; weakness: number; kin: number };
+  gifts: Readonly<Record<string, string>>;
+  weaknesses: Readonly<Record<string, string>>;
+  /** Old age from `from` per cent of the lifespan: `per` in 100,000 a day per year past it. */
+  /** A stranger who came for one of `kinds` may leave a child aged within `ages`, `percent`%. */
+  left: { percent: number; kinds: readonly string[]; ages: readonly number[] };
+  old: { from: number; per: number; cause: string };
+  /** Memories: the couple's on the day, the feast's, a birth's, coming of age and the kin lost. */
+  memories: {
+    wed: string;
+    feast: string;
+    born: string;
+    grown: string;
+    spouse: string;
+    child: string;
+    parent: string;
+    /** An orphan's, about the one who took them in. */
+    taken: string;
+  };
 }
 
 export interface FamilyDefs {

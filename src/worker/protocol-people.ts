@@ -107,6 +107,8 @@ export interface WalkerView {
   warmLine: { line: number; usual: number; text: string };
   /** Where they sleep and whether they want a home of their own (P5.14), in words. */
   home?: { text: string; why?: number };
+  /** Family rows (P6.1): Wed, Born, Taken in, Child; each with the line that says why. */
+  kin?: { band: string; text: string; why?: number }[];
   /** A stranger's page while the band speaks or they walk away (P5.9); none for the colony. */
   stranger?: StrangerView;
 }

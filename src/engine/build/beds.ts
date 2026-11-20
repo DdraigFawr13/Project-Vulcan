@@ -26,11 +26,19 @@ export function houseAt(world: WorldState, x: number, y: number): EntityRow | un
 const person = (world: WorldState, id: number): EntityRow | undefined =>
   (world.entities['person'] ?? []).find((p) => p.id === id);
 
-/** A person and the partner they came with, living, ids in order. */
+/** A person's household, living, ids in order: the person and their partner, and the children
+ * not yet grown who share their home (P6.1); a child's is their parents'. */
 export function householdOf(world: WorldState, id: number): number[] {
-  const partner = person(world, id)?.['partner'] as number | undefined;
+  const p = person(world, id);
+  const head = (p?.['household'] as number | undefined) || 0;
+  if (head && head !== id) return householdOf(world, head);
+  const partner = p?.['partner'] as number | undefined;
   const mate = partner ? person(world, partner) : undefined;
-  return mate && mate['status'] === 'alive' ? [id, partner!].sort((a, b) => a - b) : [id];
+  const heads = mate && mate['status'] === 'alive' ? [id, partner!] : [id];
+  const kids = (world.entities['person'] ?? []).filter(
+    (q) => q['status'] === 'alive' && heads.includes(q['household'] as number) && q.id !== id,
+  );
+  return [...heads, ...kids.map((q) => q.id)].sort((a, b) => a - b);
 }
 
 /** The home of a person's household, planned or built (P5.14), if any. */

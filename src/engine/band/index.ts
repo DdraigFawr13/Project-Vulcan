@@ -1,5 +1,6 @@
 // Public surface of the band system.
 export { drawBand, tradeOf } from './band.ts';
+export { drawChild, type Inherited } from './child.ts';
 export type { Home, Person } from './band.ts';
 export { dayOf } from './day.ts';
 export type { Day } from './day.ts';
@@ -15,6 +16,7 @@ export {
   able,
   declineIfUnable,
   declinedLine,
+  childJobs,
   jobsInOrder,
   levelOf,
   outranked,

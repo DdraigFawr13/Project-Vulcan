@@ -12,9 +12,7 @@ import { foodDays } from '../goods/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { dayTogether, mayCourt, sharedTraits } from './close.ts';
-import { bondsOf, courtingOf } from './tables.ts';
-
-const nameOf = (p: EntityRow): string => p['name'] as string;
+import { bondsOf, courtingOf, nameOf } from './tables.ts';
 
 /** The newest telling between two, the line a courtship cites; 0 for none. */
 function lastTold(ctx: SystemContext, a: number, b: number): number {

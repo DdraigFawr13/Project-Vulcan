@@ -2,7 +2,7 @@
 // last, per kind of work. Nobody is assigned: a person looking for work tries the kinds in their
 // own order, leaves felling to someone free who puts it higher, and declines work they are not
 // able for, once per change, with a line that cites the change.
-import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import { yearNow, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, entityOf, type Schemas } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
@@ -28,6 +28,21 @@ export function declinedLine(world: WorldState, person: number, job: string): nu
 /** A person's level for a job, 1 first to 4 last. */
 export const levelOf = (world: WorldState, content: EngineContent, person: number, job: string) =>
   (rowOf(world, person, job)?.['level'] as number | undefined) ?? content.work.priority.start;
+
+/** The kinds a child may take up (P6.1, family.json `child`): none under `helpFrom` per cent of
+ * their race's coming of age, then `child.jobs`; undefined for anyone grown or not born here. */
+export function childJobs(
+  world: WorldState,
+  content: EngineContent,
+  p: EntityRow,
+): readonly string[] | undefined {
+  const race = content.races.find((r) => r.id === p['race']);
+  if ((!p['household'] && !p['mother'] && !p['father'] && !p['left']) || !race) return undefined;
+  const age = yearNow(world, content) - (p['born'] as number);
+  if (age >= race.maturityYears) return undefined;
+  const { child } = content.family;
+  return age * 100 >= race.maturityYears * child.helpFrom ? child.jobs : [];
+}
 
 /** The Work sheet's kinds of work in this person's order: by level, ties in content order. */
 export function jobsInOrder(world: WorldState, content: EngineContent, p: EntityRow): string[] {

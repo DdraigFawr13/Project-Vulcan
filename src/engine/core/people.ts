@@ -55,6 +55,8 @@ export interface PeopleDefs extends MetalDefs, LawDefs, HealthDefs {
     attributeRange: readonly number[];
     lifespanYears: number;
     maturityYears: number;
+    /** P6.1: how often a wed woman of the race conceives, 1 for a human. */
+    fertility: number;
   }[];
   traits: readonly { id: string; name: string; weight: number; excludes: readonly string[] }[];
   abilities: readonly { id: string; name: string; learnAttributes: readonly string[] }[];

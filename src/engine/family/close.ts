@@ -12,16 +12,37 @@ import { addEntity, alive, far } from '../entity/index.ts';
 import { drawnTo } from './drawn.ts';
 import { bondOf, bondsOf, unwed } from './tables.ts';
 
-/** Whether two may court: both unwed and grown, and each drawn to the other (drawn.ts). */
-export function mayCourt(
+/** Whether `p` still mourns a spouse: their `lost-spouse` memory is fresh (memories.json days). */
+const mourning = (world: WorldState, content: EngineContent, p: EntityRow): boolean =>
+  (world.entities['memory'] ?? []).some(
+    (m) =>
+      m['person'] === p.id &&
+      m['memory'] === content.family.memories.spouse &&
+      (m['until'] as number) > world.tick,
+  );
+
+/** Whether `p` is free to court: unwed, grown and not mourning a spouse. */
+const free = (world: WorldState, content: EngineContent, p: EntityRow): boolean =>
+  unwed(world, content, p) && !mourning(world, content, p);
+
+/** Whether two free people may court each other: not parent and child or brother and sister,
+ * and each drawn to the other (drawn.ts). */
+function match(content: EngineContent, p: EntityRow, q: EntityRow): boolean {
+  const parent = (x: EntityRow, y: EntityRow) => x['mother'] === y.id || x['father'] === y.id;
+  const siblings =
+    (!!p['mother'] && p['mother'] === q['mother']) ||
+    (!!p['father'] && p['father'] === q['father']);
+  if (parent(p, q) || parent(q, p) || siblings) return false;
+  return drawnTo(content, p, q) && drawnTo(content, q, p);
+}
+
+/** Whether two may court: both free (unwed, grown, not mourning a spouse) and a match. */
+export const mayCourt = (
   world: WorldState,
   content: EngineContent,
   p: EntityRow,
   q: EntityRow,
-): boolean {
-  if (!unwed(world, content, p) || !unwed(world, content, q)) return false;
-  return drawnTo(content, p, q) && drawnTo(content, q, p);
-}
+): boolean => free(world, content, p) && free(world, content, q) && match(content, p, q);
 
 /** Each person's traits, by id. */
 const traitsBy = (world: WorldState): Map<number, string[]> => {
@@ -66,19 +87,22 @@ function addClose(world: WorldState, p: number, q: number, by: number): void {
   else
     addEntity(world, 'bond', {
       ...{ a: Math.min(p, q), b: Math.max(p, q), close: by, state: '', since: 0, line: 0 },
+      ...{ due: 0, expect: 0, last: 0 },
     });
 }
 
 /** Each hour: the pairs who may court and are at leisure within `near` tiles grow closer. */
 export function hourTogether(world: WorldState, content: EngineContent): void {
   const fam = content.family;
-  const here = alive(world).filter((p) => fam.leisure.includes(p['doing'] as string));
+  const here = alive(world).filter(
+    (p) => fam.leisure.includes(p['doing'] as string) && free(world, content, p),
+  );
   if (here.length < 2) return;
   const by = traitsBy(world);
   for (let i = 0; i < here.length; i += 1)
     for (let j = i + 1; j < here.length; j += 1) {
       const [p, q] = [here[i]!, here[j]!];
-      if (far(p, q) > fam.near || !mayCourt(world, content, p, q)) continue;
+      if (far(p, q) > fam.near || !match(content, p, q)) continue;
       addClose(world, p.id, q.id, likeOf(world, content, p.id, q.id, by));
     }
 }
