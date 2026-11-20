@@ -6,6 +6,7 @@ A side track built beside 6B and 6C: colonists who are interesting to watch. Mor
 
 - [x] Design form answered, 2026-11-20 (V-190)
 - [ ] Part 1, tools in hand, carried loads and work motions (screens); mock-up approved 2026-11-20 (V-194)
+- [x] Part 2 numbers answered, 2026-11-20 (V-195)
 - [ ] Part 2, required tools, knapping and five new tools (engine)
 - [x] Part 3 mock-up answered, 2026-11-20 (https://claude.ai/artifact/FSWME24XACU6aYDSz66UX8, every recommendation)
 - [ ] Part 3, outer clothes that show (screens)
@@ -17,9 +18,9 @@ A side track built beside 6B and 6C: colonists who are interesting to watch. Mor
 - **Tools and loads in hand (Part 1).** The held tool shows while the person works its job and walks to it, else not (form Q3 A). Loads use the item's own art, smaller, at the shoulder or chest, never over the face. Held-tool art: one per tool kind, in each material, from the item icons (about 8 PixelLab generations if the icons do not read when held).
 - **Required tools (Part 2).** A `tools.json` kind may say `needed: true` for some of the jobs it serves: pick for mining and quarrying, axe for felling and splitting, spear for hunting large game (hares are snared by hand), hammer for smithing. Without one, nobody takes up that work, and the job's row says what it waits on ("no pick in the valley"); other kinds keep the 75% speed. A last tool breaking writes one notable line naming what stopped.
 - **Knapping (Part 2).** Anyone with some crafting skill knaps a stone tool at a chopping block (a stone and a log, about 2 hours, no forge) when a needed kind has no free tool and a person who works that kind has none; a `toolmaking` row on the Work sheet. Stone tools wear out in half today's life (form Q6 C), so metal stays wanted (V-100).
-- **Five new tools (Part 2, form Q7 B).** Data entries in `tools.json` and `items.json`, each with its jobs and drawing: bone needle (tailoring, from hunters' bones), sickle (reaping and cutting thatch), chisel (the mason's dressed stone), fishing line (fishing) and saw (carpentry). Which of them are `needed` is set at the mock-up with numbers.
+- **Five new tools (Part 2, form Q7 B).** Data entries in `tools.json` and `items.json`, each with its jobs and drawing: bone needle (tailoring, from hunters' bones), sickle (reaping and cutting thatch), chisel (the mason's dressed stone), fishing line (fishing) and saw (carpentry). Which are needed: see Part 2's answers (V-195).
 - **Clothes (Part 3).** The outer garment each person wears (cloak, leather coat, hide coat) is drawn on their villager, shown outdoors when cold (form Q9 A); worn-out ones look ragged and dull, fine ones get a trim (details under Part 3). The everyday garment stays drawn into each villager (form Q8 A).
-- **Later.** Defences grow from fear in Phase 8, P8.2 (form Q10 A): a fence after wolves take stock, a palisade after a raid, a stone wall and gatehouse after a breach, sited by the builders with a line saying why, under a Defences law (Open, Watchful, Walled). Bows and armour come with the Phase 8 combat core (P8.1); Morgan may pull a hunting bow into Part 2.
+- **Later.** Defences grow from fear in Phase 8, P8.2 (form Q10 A): a fence after wolves take stock, a palisade after a raid, a stone wall and gatehouse after a breach, sited by the builders with a line saying why, under a Defences law (Open, Watchful, Walled). Bows and armour come with the Phase 8 combat core (P8.1); the hunting bow comes with them (V-195).
 
 ## Parts
 
@@ -37,7 +38,9 @@ Morgan's answers: [SEEN_AT_WORK_ANSWERS.md](../SEEN_AT_WORK_ANSWERS.md#part-1).
 
 Mock-up: Engine. Done when: the four-seed table above, a test that a valley with no pick takes up no mining and writes the waiting line, a test that a knapped pick restarts it, and the new tools as data entries only.
 
-- Reading list: `docs/DECISIONS.md` V-088 V-100 V-134 V-185 V-190; `docs/TOOLS_AND_SMITHY.md`; `src/engine/goods/MODULE.md`; `src/engine/people/MODULE.md`; `src/engine/crafts/MODULE.md`
+Morgan's answers to the numbers form (they settle the open rules above): [SEEN_AT_WORK_ANSWERS.md](../SEEN_AT_WORK_ANSWERS.md#part-2).
+
+- Reading list: `docs/DECISIONS.md` V-088 V-100 V-134 V-185 V-190 V-195; `docs/SEEN_AT_WORK_ANSWERS.md` Part 2; `docs/TOOLS_AND_SMITHY.md`; `src/engine/goods/MODULE.md`; `src/engine/people/MODULE.md`; `src/engine/crafts/MODULE.md`
 
 ### Part 3: outer clothes that show
 
