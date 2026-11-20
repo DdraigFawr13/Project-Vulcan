@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { alertText, settle, skipOnce } from './helpers';
+import { alertText, setStop, settle, skipOnce } from './helpers';
 import life from '../../src/content/data/life.json' with { type: 'json' };
 
 // Any need's thought line (life.json `needs[].thoughts`), as the sheet shows it in quotes.
@@ -20,7 +20,12 @@ test('a hungry colonist\'s Food "why?" names the line that ate the last of the f
   test.setTimeout(150_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await settle(page, 'smoke', 2);
+  // Moods, works and firsts only note their lines on the way (V-191), so Next event runs from one
+  // food, family or danger line to the next: with every kind on Slow the band's bored, crowded and
+  // built lines made about 75 stops, about a second each, and took this past its limit in CI
+  // (PR #155, after #151 put Next event in the jump tray).
+  const quiet = { mood: 'note', works: 'note', world: 'note' } as const;
+  await settle(page, 'smoke', 2, true, 'slow', quiet);
   const panel = page.getByTestId('panel');
   await page.getByRole('button', { name: 'More' }).click();
   await page.getByTestId('open-stock').click();
@@ -32,18 +37,17 @@ test('a hungry colonist\'s Food "why?" names the line that ate the last of the f
     .locator('.need')
     .filter({ hasText: 'Food' })
     .getByRole('button', { name: 'why?' });
-  // Skip stops on every notable line, and many come before the food runs out (privacy, boredom, a
-  // second room, craft firsts), so the loop first waits for the line that ate the last of the food
-  // on the alert line, then for the hunger it causes (seed grain is eaten under the warning line
-  // first, and a stone tool breaking stops the skip too).
+  // The cart lasts about 70 days. On smoke Next event runs straight to the line that ate the last
+  // of the food; a food, family or danger line on the way may stop it first, so the loop waits for
+  // that line on the alert line.
   const foodGone = /ate the last of the band's food/;
-  // The cart lasts about 70 days; 5B Bundle 2's thirst adds a few more stops on the way (tired,
-  // bored), so the loop allows 100.
-  for (let skips = 0; skips < 100 && !foodGone.test(await alertText(page)); skips++)
+  for (let skips = 0; skips < 30 && !foodGone.test(await alertText(page)); skips++)
     await skipOnce(page);
   expect(await alertText(page)).toMatch(foodGone);
-  // Then the first "is hungry" line, and that person's sheet: who gets hungry first depends on
-  // who ate when, so the check follows the alert rather than a fixed face.
+  // Then, with moods stopping play again, the first "is hungry" line and that person's sheet: who
+  // gets hungry first depends on who ate when, so the check follows the alert rather than a fixed
+  // face (a bored line may come first).
+  await setStop(page, 'mood', 'slow');
   const isHungry = /(\S+) is hungry/;
   for (let skips = 0; skips < 10 && !isHungry.test(await alertText(page)); skips++)
     await skipOnce(page);
