@@ -44,7 +44,8 @@ export function learn(ctx: SystemContext): void {
     const saw = witnesses(ctx, def, e);
     if (!saw.length) continue;
     const words = JSON.stringify(e.data);
-    const story = addEntity(world, 'story', { tale: def.id, event: e.id, words });
+    const about = e.actors[0] ?? 0;
+    const story = addEntity(world, 'story', { tale: def.id, event: e.id, words, about, told: 0 });
     for (const p of saw) {
       addEntity(world, 'tale', {
         person: p.id,

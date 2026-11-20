@@ -39,6 +39,15 @@ export interface TavernDef {
     memory: string;
   };
   hungOver: { after: number; memory: string; idle: number; until: number };
+  bard: {
+    job: string;
+    skill: string;
+    trait: string;
+    evenings: number;
+    practise: number;
+    heard: readonly string[];
+    perHeard: number;
+  };
 }
 
 export interface TavernDefs {
