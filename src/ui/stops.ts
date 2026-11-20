@@ -33,6 +33,8 @@ export class Stops {
   private settings = load();
   private readonly panel: Panel;
   private readonly changed: (stops: StopSettings, pauseWords: string[]) => void;
+  /** Rows under the kinds: the recap switches (V-191). */
+  more: () => HTMLElement[] = () => [];
 
   /** `changed` is told the settings, and the kinds set to Pause in words (for the jump tray's
    * note), at once and after each change. */
@@ -78,7 +80,7 @@ export class Stops {
       row.append(words, acts);
       return row;
     });
-    this.panel.showView('stops', 'What stops play', [intro, ...rows]);
+    this.panel.showView('stops', 'What stops play', [intro, ...rows, ...this.more()]);
   }
 
   private set(kind: string, act: StopAct): void {

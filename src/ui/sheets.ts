@@ -10,6 +10,7 @@ import type {
   ItemView,
   LedgerLine,
   PersonView,
+  Speed,
   ToWorker,
   WalkerView,
 } from '../worker/index.ts';
@@ -24,6 +25,7 @@ import { LawSheet } from './laws.ts';
 import { moodRows } from './moodsheet.ts';
 import { PersonSheet } from './personsheet.ts';
 import { Play } from './play.ts';
+import { Recaps } from './recaps.ts';
 import { testModeOn } from './testmode.ts';
 import { WorkSheet, type Day } from './work.ts';
 
@@ -48,6 +50,8 @@ export interface SheetDeps {
   follow(id: number | undefined, pulse: boolean): void;
   /** Rings and names everyone on the map, or stops. */
   names(on: boolean): void;
+  /** Sets the speed, as the bar does: a recap's Carry on (V-191). */
+  speed(speed: Speed): void;
 }
 
 export class Sheets {
@@ -73,6 +77,7 @@ export class Sheets {
   private readonly laws: LawSheet;
   private readonly person: PersonSheet;
   private readonly dawn: Dawn;
+  private readonly recaps: Recaps;
 
   private readonly deps: SheetDeps;
 
@@ -109,6 +114,15 @@ export class Sheets {
       }),
     });
     this.dawn = new Dawn(deps.panel, deps.lines);
+    this.recaps = new Recaps({
+      panel: deps.panel,
+      send: deps.send,
+      speed: deps.speed,
+      opened: (kind) => {
+        this.select(undefined);
+        deps.opened(kind);
+      },
+    });
     this.play = new Play(deps.bar, {
       person: (p) => this.showPerson(p),
       find: (p) => deps.find(p.id),
@@ -122,6 +136,7 @@ export class Sheets {
     this.people = people;
     this.loaded = true;
     this.dawn.reset();
+    this.recaps.reset();
     this.deps.drawPeople(people);
     this.play.setPeople(people);
   }
@@ -227,6 +242,16 @@ export class Sheets {
     this.deps.opened();
   }
 
+  /** The Ledger's Chronicle tab (V-191). */
+  chronicle(): HTMLElement[] {
+    return this.recaps.chronicle();
+  }
+
+  /** The recap switches, for the What stops play sheet. */
+  recapRows(): HTMLElement[] {
+    return this.recaps.rows();
+  }
+
   /** The strip and the map ring the person whose sheet is open; a newly opened one pulses. */
   private select(id: number | undefined): void {
     this.play.select(id);
@@ -247,6 +272,8 @@ export class Sheets {
     this.day = day;
     this.lawView = law;
     this.moodView = law.colony.mood;
+    // A recap opening at a season's turn holds the dawn page back that night (V-191).
+    this.recaps.snapshot(message);
     const food = message.stock.find((s) => s.good === content.work.forage.good)?.have;
     this.dawn.snapshot(message.yesterday, food, message.speed === 1 && !message.skipping);
     this.play.setWalkers(walkers);

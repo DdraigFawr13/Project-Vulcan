@@ -14,18 +14,27 @@ type StopAct = 'pause' | 'slow' | 'note';
 
 /** Sets every stop kind on this page's device (V-191) before it loads, but for the kinds named in
  * `except`: `slow` makes Next event stop at every notable line, as these specs were written for;
- * `note` lets play run unpaused. */
-export const stopsAll = (page: Page, act: StopAct, except: Record<string, StopAct> = {}) =>
+ * `note` lets play run unpaused. Season and year recaps are off unless `recaps` (recaps.spec.ts),
+ * so a run past a season's turn is not paused by its recap. */
+export const stopsAll = (
+  page: Page,
+  act: StopAct,
+  except: Record<string, StopAct> = {},
+  recaps = false,
+) =>
   page.addInitScript(
-    ([a, but]) => {
+    ([a, but, on]) => {
       const kinds = ['death', 'attack', 'food', 'family', 'comings', 'sickness', 'quarrel'];
       const all = [...kinds, 'danger', 'mood', 'works', 'world'];
       localStorage.setItem(
         'vulcan.stops',
         JSON.stringify({ ...Object.fromEntries(all.map((k) => [k, a])), ...but }),
       );
+      // Only before the first load: a reload keeps what the spec switched since.
+      if (localStorage.getItem('vulcan.recaps') === null)
+        localStorage.setItem('vulcan.recaps', JSON.stringify({ season: on, year: on }));
     },
-    [act, except] as const,
+    [act, except, recaps] as const,
   );
 
 /** Sets one stop kind from the jump tray's "Change what stops play", as a player would. */
@@ -52,8 +61,9 @@ export async function settle(
   debug = true,
   stops: StopAct = 'slow',
   except: Record<string, StopAct> = {},
+  recaps = false,
 ) {
-  await stopsAll(page, stops, except);
+  await stopsAll(page, stops, except, recaps);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/?seed=${seed}${debug ? '&debug' : ''}`);
   // The picker waits on the seed's Story Generator world and its history (P1.6): about 5 s here.
