@@ -38,6 +38,11 @@ function mend(ctx: SystemContext, p: EntityRow): void {
   }
 }
 
+/** On a winter evening, by a lit fire (the tavern's too, 6B), what `p` wears is mended. */
+export function mendByAFire(ctx: SystemContext, p: EntityRow): void {
+  if (winterEvening(ctx.world, ctx.content) && byAFire(ctx.world, ctx.content, p)) mend(ctx, p);
+}
+
 /** One minute of someone's free time on a winter evening; true when they are by a fire (they stay
  * and mend) or have set off for one. */
 export function gathering(ctx: SystemContext, p: EntityRow): boolean {
