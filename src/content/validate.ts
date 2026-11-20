@@ -1,11 +1,10 @@
-// Checks forked content: each file's shape, unique ids, every cross-reference, and that
-// each spell stays inside the caps of its power tier. Returns one line per problem.
+// Checks content: shapes, unique ids, references and the cross-file rules; one line per problem.
 import { check, type RefTarget, type RefUse } from './schema';
 import { SCHEMAS } from './schemas';
 import { checkBees } from './validate-lamp';
 import { checkPunish } from './validate-defy';
 import { checkTales } from './validate-tales';
-
+import { checkStops } from './validate-time';
 type Files = Readonly<Record<string, unknown>>;
 
 const idsOf = (list: unknown): string[] =>
@@ -91,7 +90,7 @@ export function validateContent(files: Files): string[] {
       ...checkTales(files),
       ...checkPunish(files),
     );
-  errors.push(...checkBand(files));
+  errors.push(...checkBand(files), ...checkStops(files));
   return errors;
 }
 

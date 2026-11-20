@@ -33,7 +33,8 @@ export type PanelKind =
   | 'animal'
   | 'alerts'
   | 'dawn'
-  | 'mood';
+  | 'mood'
+  | 'stops';
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;
@@ -53,8 +54,6 @@ export interface PanelActions {
   item(id: number): void;
   /** The Stock lever: how much of `good` the colony keeps. */
   setStock(good: string, level: string): void;
-  /** Test mode: skips a month or a season, tick by tick, then pauses. */
-  jump(span: 'month' | 'season'): void;
   /** Follows the tile's stairs or shaft to level `z` and inspects the same spot there. */
   go(tile: TileView, z: number): void;
   close(): void;
