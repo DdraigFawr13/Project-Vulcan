@@ -36,7 +36,7 @@ export function planSickHouse(ctx: SystemContext, green: Spot): void {
   state['sickTried'] = world.tick;
   const size = content.buildings.house.sizes.find((s) => s.id === content.health.sickhouse.size);
   const homes = housesOf(world)
-    .filter((h) => !h['of'] && !h['sick'] && h['state'] !== 'sent')
+    .filter((h) => !h['of'] && !h['sick'] && !h['inn'] && h['state'] !== 'sent')
     .map((h) => {
       const r = rectOf(h);
       return { x: r.x + Math.floor(r.w / 2), y: r.y + Math.floor(r.h / 2), z: 0 };

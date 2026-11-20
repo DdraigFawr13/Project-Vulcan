@@ -21,6 +21,7 @@ describe('Work sheet headings', () => {
       'Loom',
       'Care',
       'Lamp',
+      'Tavern',
     ]);
   });
 
@@ -39,6 +40,7 @@ describe('Work sheet headings', () => {
       ['Loom', ['weave', 'tan', 'tailor']],
       ['Care', ['heal']],
       ['Lamp', ['chandle', 'beekeep']],
+      ['Tavern', ['brew', 'innkeep']],
     ]);
   });
 

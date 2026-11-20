@@ -23,6 +23,15 @@ import { chooseHouse, costOf, housesOf, partsOf, type Rect, type Site } from './
 
 export { houseAt, mainOf, rowsOf };
 import { sayGoodsAside } from './clearing.ts';
+import {
+  BUILD_KINDS,
+  FIELD_KIND,
+  HOUSE_KIND,
+  PASTURE_KIND,
+  PITS_KIND,
+  ROAD_KIND,
+} from './kinds.ts';
+import { sheetDef, SMITHY_KIND, TAVERN_KIND } from './kinds.ts';
 
 export const HOUSE_TABLES: Schemas = {
   /** A house, or a room added to one (`of`, the house; 0 for the house itself). `state`: `plan`,
@@ -56,6 +65,8 @@ export const HOUSE_TABLES: Schemas = {
     wall: 'text',
     cold: 'event',
     sick: 'count',
+    /** 1 for the tavern (6B Bundle 5, tavern.ts): no home, nobody's beds, no room added. */
+    inn: 'count',
     owner: 'entity',
     hall: 'event',
     /** Its roof (6B, roofs.ts): '' none yet, `thatch`; the tick and line it was laid; the line
@@ -83,26 +94,7 @@ export const HOUSE_TABLES: Schemas = {
   want: { kind: 'text', level: 'count', line: 'event' },
 };
 
-export const HOUSE_KIND = 'house';
-export const FIELD_KIND = 'field';
-export const SMITHY_KIND = 'smithy';
-export const PASTURE_KIND = 'pasture';
-export const ROAD_KIND = 'road';
-export const PITS_KIND = 'pits';
-const sheetDef = (content: EngineContent, kind: string) =>
-  kind === PASTURE_KIND
-    ? content.flock.pasture
-    : kind === PITS_KIND
-      ? content.clothes.pits
-      : content.buildings[
-          kind === FIELD_KIND
-            ? 'field'
-            : kind === SMITHY_KIND
-              ? 'smithy'
-              : kind === ROAD_KIND
-                ? 'roads'
-                : 'house'
-        ];
+export { FIELD_KIND, HOUSE_KIND, PASTURE_KIND, PITS_KIND, ROAD_KIND, SMITHY_KIND, TAVERN_KIND };
 
 /** The size (or added room) a house row is. */
 export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>
@@ -110,10 +102,14 @@ export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>
     ? content.buildings.house.stage
     : content.buildings.house.sizes.find((s) => s.id === h['size'])!;
 
+/** A main house row's name: its size's, or "tavern" (6B). */
+const mainName = (content: EngineContent, main: EntityRow): string =>
+  main['inn'] ? 'tavern' : sizeOf(content, main).name;
+
 /** The name of the house a row (by id) is or belongs to, e.g. "cottage". */
 export function houseName(world: WorldState, content: EngineContent, id: number): string {
   const h = housesOf(world).find((r) => r.id === id);
-  if (h) return sizeOf(content, mainOf(world, h)).name;
+  if (h) return mainName(content, mainOf(world, h));
   // Trees on a field's site are cleared the same way (P4.7), and on a smithy's (P4.9).
   if ((world.entities['smithy'] ?? []).some((f) => f.id === id)) return 'smithy';
   if ((world.entities['pasture'] ?? []).some((f) => f.id === id)) return 'pasture';
@@ -150,12 +146,7 @@ export function setBuild(
   const level = data['level'] as number;
   const levels = content.work.priority.words.length;
   const kind = data['kind'] as string;
-  if (
-    ![HOUSE_KIND, FIELD_KIND, SMITHY_KIND, PASTURE_KIND, ROAD_KIND, PITS_KIND].includes(kind) ||
-    !Number.isSafeInteger(level) ||
-    level < 1 ||
-    level > levels
-  ) {
+  if (!BUILD_KINDS.includes(kind) || !Number.isSafeInteger(level) || level < 1 || level > levels) {
     ctx.emit('command.refused', {
       causes: [cause],
       data: { kind: 'setBuild', reason: 'no such kind of building or level' },
@@ -219,7 +210,7 @@ export function homeless(world: WorldState, content: EngineContent): EntityRow[]
 /** Bedrolls laid in a house's rooms (with those of the colony's homeless, for its first house:
  * a house grows before another is built), and how many it has room for. */
 export function bedsOf(world: WorldState, content: EngineContent, main: EntityRow) {
-  const rows = rowsOf(world, main).filter((h) => h['state'] === 'built' && !h['sick']);
+  const rows = rowsOf(world, main).filter((h) => h['state'] === 'built' && !h['sick'] && !h['inn']);
   const first = housesOf(world).find((h) => !h['of'] && h['state'] === 'built');
   const sleepers =
     itemsOf(world).filter((i) => isBed(content, i) && homeOf(world, content, i)?.id === main.id)
@@ -261,6 +252,7 @@ export function placeHouse(
       wall: wall.id,
       cold: 0,
       sick: 0,
+      inn: 0,
       owner: extra.owner ?? 0,
       ...{
         roof: '',

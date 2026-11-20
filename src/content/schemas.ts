@@ -19,6 +19,7 @@ import { COLONY_SCHEMAS } from './schemas-colony';
 import { DEFY_SCHEMAS } from './schemas-defy';
 import { FAMILY_SCHEMAS } from './schemas-family';
 import { WORSHIP_SCHEMAS } from './schemas-worship';
+import { TAVERN_SCHEMAS } from './schemas-tavern';
 import { TIME_SCHEMAS } from './schemas-time';
 import { TOOLS_SCHEMAS } from './schemas-tools';
 import { WILD_SCHEMAS } from './schemas-wild';
@@ -45,6 +46,7 @@ export const SCHEMAS = {
   ...DEFY_SCHEMAS,
   ...FAMILY_SCHEMAS,
   ...WORSHIP_SCHEMAS,
+  ...TAVERN_SCHEMAS,
   ...CLOTHES_SCHEMAS,
   ...ANNALS_SCHEMAS,
   ...TIME_SCHEMAS,
