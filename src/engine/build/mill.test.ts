@@ -6,6 +6,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { WATER, type WorldState } from '../core/index.ts';
 import { allLines, createSim, createWorld, step, submitCommand } from '../index.ts';
+import { tablesProblem } from '../entity/index.ts';
 import { memoriesOf } from '../needs/index.ts';
 import { furnitureOf, hallOf, millOf, roomsOf, turning } from './index.ts';
 import { millsOf } from './mill.ts';
@@ -136,4 +137,10 @@ describe('the mill and harvest home', () => {
     expect(after.some((e) => e.data['where'] === 'at the quern')).toBe(true);
     expect(millsOf(world).filter((m) => m['state'] !== 'sent')).toHaveLength(1);
   }, 30000);
+
+  // The longest colony run in the suite: every row its systems wrote in some 200 days still fits
+  // its table, so a save made now loads (the smokehouse and kiln once left out their `sent`).
+  it('keeps every table sound, so a late save still loads', () => {
+    expect(tablesProblem(world, sim.tables)).toBeUndefined();
+  });
 });
