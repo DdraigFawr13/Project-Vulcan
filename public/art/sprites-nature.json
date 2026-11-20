@@ -120,9 +120,49 @@
         "h": 32
       }
     },
-    "tree.birch.1": {
+    "tree.ash.1.top": {
       "frame": {
         "x": 35,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "tree.birch.1": {
+      "frame": {
+        "x": 69,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "tree.birch.1.top": {
+      "frame": {
+        "x": 103,
         "y": 35,
         "w": 32,
         "h": 32
@@ -142,8 +182,28 @@
     },
     "tree.oak.1": {
       "frame": {
-        "x": 69,
+        "x": 137,
         "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "tree.oak.1.top": {
+      "frame": {
+        "x": 1,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -162,8 +222,28 @@
     },
     "tree.pine.1": {
       "frame": {
-        "x": 103,
-        "y": 35,
+        "x": 35,
+        "y": 69,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "tree.pine.1.top": {
+      "frame": {
+        "x": 69,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -182,8 +262,28 @@
     },
     "tree.willow.1": {
       "frame": {
+        "x": 103,
+        "y": 69,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "tree.willow.1.top": {
+      "frame": {
         "x": 137,
-        "y": 35,
+        "y": 69,
         "w": 32,
         "h": 32
       },
@@ -203,7 +303,7 @@
     "vein.copper.1": {
       "frame": {
         "x": 1,
-        "y": 69,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -223,7 +323,7 @@
     "vein.gems.1": {
       "frame": {
         "x": 35,
-        "y": 69,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -243,7 +343,7 @@
     "vein.gold.1": {
       "frame": {
         "x": 69,
-        "y": 69,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -263,7 +363,7 @@
     "vein.iron.1": {
       "frame": {
         "x": 103,
-        "y": 69,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -283,7 +383,7 @@
     "vein.obsidian.1": {
       "frame": {
         "x": 137,
-        "y": 69,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -303,7 +403,7 @@
     "vein.salt.1": {
       "frame": {
         "x": 1,
-        "y": 103,
+        "y": 137,
         "w": 32,
         "h": 32
       },
@@ -323,7 +423,7 @@
     "vein.silver.1": {
       "frame": {
         "x": 35,
-        "y": 103,
+        "y": 137,
         "w": 32,
         "h": 32
       },
@@ -343,7 +443,7 @@
     "vein.sulphur.1": {
       "frame": {
         "x": 69,
-        "y": 103,
+        "y": 137,
         "w": 32,
         "h": 32
       },
@@ -363,7 +463,7 @@
     "vein.tin.1": {
       "frame": {
         "x": 103,
-        "y": 103,
+        "y": 137,
         "w": 32,
         "h": 32
       },
@@ -393,10 +493,15 @@
       "log.fallen.1",
       "spring.1",
       "tree.ash.1",
+      "tree.ash.1.top",
       "tree.birch.1",
+      "tree.birch.1.top",
       "tree.oak.1",
+      "tree.oak.1.top",
       "tree.pine.1",
+      "tree.pine.1.top",
       "tree.willow.1",
+      "tree.willow.1.top",
       "vein.copper.1",
       "vein.gems.1",
       "vein.gold.1",
@@ -411,7 +516,7 @@
   "meta": {
     "size": {
       "w": 170,
-      "h": 136
+      "h": 170
     },
     "scale": "1",
     "image": "sprites-nature.png"
