@@ -42,7 +42,7 @@ Fields row on the Build sheet; colonists site fields on good soil near water and
 
 Surface stains above ore veins; the shaft sited from the want; tunnelling, rubble to stone, haulage up the stairs; darkness over unknown ground, caves and water revealed when mining opens next to them; Go down and Go up as view buttons; Work sheet trade headings (V-071); clay dug from level -1 makes wattle and daub walls (logs and clay, content, V-096). Mock-up: UI. Done when: with iron wanted in Stock, an iron vein below is mined and its ore reaches the surface store, with no order to a tile or a person.
 
-- Reading list: `docs/ART.md`; `src/engine/map/MODULE.md`; `src/engine/paths/MODULE.md`; `src/engine/build/MODULE.md`; `src/render/MODULE.md`; `src/ui/MODULE.md`
+- Reading list: `docs/ART.md`; `src/engine/map/MODULE.md`; `src/engine/build/MODULE.md`; `src/render/MODULE.md`; `src/ui/MODULE.md`
 
 ### Bundle 3: P4.2 charcoal, P4.3 smelter and alloys, P4.4 smithy and tools, P4.6 item inspector, craft firsts
 

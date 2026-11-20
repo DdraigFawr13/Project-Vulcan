@@ -121,7 +121,7 @@ export function stageSite(
 
 /** Whether built house row `h` is a room nobody sleeps in yet. */
 function emptyRoom(ctx: SystemContext, h: EntityRow): boolean {
-  if (h['state'] !== 'built' || h['sick']) return false;
+  if (h['state'] !== 'built' || h['sick'] || h['inn']) return false;
   const r = rectOf(h);
   return roomAt(ctx.world, ctx.content, r.x + 1, r.y + 1)?.sleepers === 0;
 }
@@ -135,8 +135,8 @@ export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: num
   let growing = false;
   for (const main of housesOf(world)) {
     if (main['of'] || main['state'] !== 'built' || (only && main.id !== only)) continue;
-    // A home (P5.14) is sized for its household and does not grow.
-    if (main['owner']) continue;
+    // A home (P5.14) is sized for its household and does not grow, nor does the tavern (6B).
+    if (main['owner'] || main['inn']) continue;
     const rows = rowsOf(world, main);
     if (rows.some((h) => h['state'] === 'plan')) {
       growing = true;

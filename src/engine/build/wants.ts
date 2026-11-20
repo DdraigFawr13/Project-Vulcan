@@ -47,6 +47,7 @@ export function roomsOf(world: WorldState, content: EngineContent): RoomRow[] {
 /** "cottage", or "cottage's second room" for a room added to it. */
 export function roomName(world: WorldState, content: EngineContent, h: EntityRow): string {
   if (h['sick']) return h['sick'] === 2 ? 'sick-house' : 'sickroom';
+  if (h['inn']) return 'tavern';
   const main = mainOf(world, h);
   // The hall, and a home of one's own (P5.14).
   const name = main['hall']
@@ -225,7 +226,10 @@ function facingOf(f: Floor, pick: number): string {
 export function lacks(world: WorldState, content: EngineContent, rr: RoomRow) {
   // The sickroom's wants are its beds alone (spareBed).
   if (rr.h['sick']) return [];
-  const def = content.buildings.rooms.wants.find((w) => w.role === rr.room.role?.id);
+  // The tavern's (6B) are its own list: a counter, casks, the brewing tub, tables and chairs.
+  const kinds = rr.h['inn']
+    ? content.tavern.build.wants
+    : (content.buildings.rooms.wants.find((w) => w.role === rr.room.role?.id)?.kinds ?? []);
   const inside = new Set(rr.room.tiles);
   const width = world.map.width;
   const have = (k: string) =>
@@ -235,8 +239,8 @@ export function lacks(world: WorldState, content: EngineContent, rr: RoomRow) {
         f['z'] === 0 &&
         inside.has((f['y'] as number) * width + (f['x'] as number)),
     ).length;
-  return (def?.kinds ?? []).map((w) => {
-    const need = w.per === 'sleeper' ? rr.room.sleepers : 1;
+  return kinds.map((w) => {
+    const need = 'count' in w ? w.count : w.per === 'sleeper' ? rr.room.sleepers : 1;
     return { kind: w.kind, have: have(w.kind), need };
   });
 }
