@@ -37,5 +37,6 @@
 "split":{"from":"logs","fuel":"firewood","per":4,"minutes":20},
 "tend":{"low":60,"top":480,"topBelow":360,"idle":720,"near":6},
 "air":{"rise":500,"open":400,"leak":{"wall-stone":40,"wall-brick":40,"wall-drystone":60,"wall-daub":80,"wall-daub-washed":60,"wall-ashlar-lime":25,"wall-ashlar-clay":35,"wall-wood":120,"door-stone":120,"door-wood":200,"hurdle":400,"gate-hurdle":400}}},
-"learn":{"start":240,"perLevel":120}
+"learn":{"start":240,"perLevel":120},
+"motions":{"bury":{"motion":"dig","effect":{"kind":"specks","colours":["#7a5634","#9a7048","#5e4026"],"count":8}},"hearth":{"motion":"bench","effect":{"kind":"specks","colours":["#d8d6cc","#a8a69c"],"count":3}},"bind":{"motion":"crouch"},"dress":{"motion":"crouch"},"feed":{"motion":"crouch"},"draught":{"motion":"crouch"},"carry":{"motion":"none"}}
 }
