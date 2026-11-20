@@ -8,15 +8,12 @@ import {
   type StandingCause,
   type WorldState,
 } from '../core/index.ts';
-import { addEntity, removeEntity } from '../entity/index.ts';
+import { addEntity, removeEntity, alive } from '../entity/index.ts';
 import { foodDays, foodGoneLine, storeLasts } from '../goods/index.ts';
 import { isWinter, lawRow, settingOf } from '../law/index.ts';
 import { memoriesOf, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { causesOf, colonyRow } from './tables.ts';
-
-const alive = (world: WorldState) =>
-  (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
 
 const clamp = (n: number): number => Math.max(0, Math.min(100, n));
 

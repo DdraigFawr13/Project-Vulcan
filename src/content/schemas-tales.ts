@@ -8,8 +8,6 @@ const percent = num({ min: 0, max: 100 });
 
 export const TALES_SCHEMAS = {
   tales: obj({
-    // Who saw it: the event's actors and anyone awake within `see` tiles of one.
-    see: count,
     // Per cent a pair passes a tale each hour: eating together, at leisure together, side by side
     // at work, or by a lit hearth on a winter evening; a person hears at most `perDay` new tales a day.
     pass: obj({

@@ -12,12 +12,10 @@ import type { SystemContext } from '../sim/index.ts';
 import { homeFor, householdOf, sleepsIn } from './beds.ts';
 import { dirFrom, placeHouse, sizeOf, wantOf } from './houses.ts';
 import { chooseHouse, housesOf } from './site.ts';
+import { alive } from '../entity/index.ts';
 
 const list = (items: readonly string[]): string =>
   items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
-
-const alive = (world: WorldState): EntityRow[] =>
-  (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
 
 const named = (world: WorldState, ids: readonly number[]): string[] =>
   ids.map((id) => (world.entities['person'] ?? []).find((p) => p.id === id)?.['name'] as string);

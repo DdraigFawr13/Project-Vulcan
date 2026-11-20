@@ -15,3 +15,20 @@ export const personOf = (world: WorldState, id: unknown): EntityRow | undefined 
 /** A person's name, or `none` when the id names nobody. */
 export const personName = (world: WorldState, id: unknown, none = ''): string =>
   (personOf(world, id)?.['name'] as string) ?? none;
+
+/** The living: every person row whose status is `alive` (not the dead, the gone or strangers). */
+export const alive = (world: WorldState): EntityRow[] =>
+  people(world).filter((p) => p['status'] === 'alive');
+
+/** The living who are not asleep. */
+export const awake = (world: WorldState): EntityRow[] =>
+  alive(world).filter((p) => p['doing'] !== 'sleep');
+
+/** How far apart two rows stand: tiles on the larger axis, Infinity on different levels. */
+export const far = (a: EntityRow, b: EntityRow): number =>
+  a['z'] !== b['z']
+    ? Infinity
+    : Math.max(
+        Math.abs((a['x'] as number) - (b['x'] as number)),
+        Math.abs((a['y'] as number) - (b['y'] as number)),
+      );

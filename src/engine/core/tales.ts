@@ -24,7 +24,6 @@ export interface BeliefDef {
 }
 
 export interface TalesDef {
-  see: number;
   pass: { meal: number; leisure: number; work: number; hearth: number; perDay: number };
   places: { meal: string; leisure: string; work: string; hearth: string };
   bend: { chance: number; traits: Readonly<Record<string, number>>; softer: number };

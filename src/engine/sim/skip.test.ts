@@ -18,12 +18,13 @@ import { itemsOf } from '../goods/index.ts';
 const sim = createSim(content);
 const DAY = 1440;
 type World = ReturnType<typeof createWorld>;
-/** The cart's rations cut to two stacks, so the food runs out in days rather than weeks (the
- * 5A review: the full cart ran this test near its 15 s limit). */
+/** The cart's rations cut to one stack, so the food runs out in days rather than weeks (the
+ * 5A review: the full cart ran this test near its 15 s limit; two stacks timed out at 16.5 s
+ * on CI's loaded runner twice in wave 3, so one stack: 6.1 s down to 3.9 s alone). */
 function shortOfFood(w: World): World {
   for (const i of itemsOf(w)
     .filter((x) => x['kind'] === 'preserved')
-    .slice(2))
+    .slice(1))
     removeEntity(w, 'item', i.id);
   return w;
 }

@@ -30,12 +30,10 @@ import { sew } from './surgery.ts';
 import { able, levelOf, people, practise, same, skillOf, spotOf, walkTo } from '../band/index.ts';
 import { worked } from '../band/index.ts';
 import { personOf } from '../entity/index.ts';
+import { far } from './far.ts';
 
 /** Care jobs that come before anything else. */
 export const CARE_JOBS = ['carry', 'bind', 'bury', 'feed'];
-
-const far = (a: Spot, b: Spot): number =>
-  Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) + Math.abs(a.z - b.z) * 100;
 
 const near = (a: Spot, b: Spot): boolean => a.z === b.z && far(a, b) <= 1;
 

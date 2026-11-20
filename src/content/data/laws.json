@@ -1,5 +1,5 @@
 {
-"answer":{"start":50,"obey":50,"grumble":35,"moodPer":200,"low":-15,"needs":["food","rest","warmth"],"sight":8,"settle":14,"every":7},
+"answer":{"start":50,"obey":50,"grumble":35,"moodPer":200,"low":-15,"needs":["food","rest","warmth"],"settle":14,"every":7},
 "words":{"obeys":"keeps","grumbles":"grumbles at","refuses":"refuses","store":"The store holds {food} food: {full} days for everyone at full plates{rationed}. The harvest is {harvest} days away."},
 "laws":[
 {"id":"work-hours","name":"Work hours","law":"work-hours law","start":"customary","settings":[

@@ -1,7 +1,7 @@
 // Shape of Vulcan's defiance file (src/content/data/defy.json, P6.7, V-160): the ladder a
 // grievance climbs (grumble, work slowly, refuse, take from the store, brawl, leave), each act's
 // dials, the memories it leaves and what leaving costs the colony's standing.
-import { bool, list, map, num, obj, opt, ref, str } from './schema';
+import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, id, text } from './schema-fields';
 
 export const DEFY_SCHEMAS = {
@@ -26,7 +26,7 @@ export const DEFY_SCHEMAS = {
       }),
     ),
     slow: obj({ every: num({ min: 2 }) }),
-    take: obj({ count: num({ min: 1 }), every: num({ min: 1 }), sight: count }),
+    take: obj({ count: num({ min: 1 }), every: num({ min: 1 }) }),
     brawl: obj({
       every: num({ min: 1 }),
       reach: count,
@@ -42,8 +42,17 @@ export const DEFY_SCHEMAS = {
     // Taking with no law behind it: who went hungry (`memory`) and believes `belief`.
     starving: obj({ memory: ref('memories'), belief: str() }),
     memories: map(ref('memories')),
-    // What each Punishment setting's `punish` (laws.json) does to someone caught, in words.
-    punish: obj({ work: text, stocks: text, away: text }),
+    // The sentences a Punishment setting's `punish` (laws.json) names: its words, and what it does
+    // to someone caught: the next `day` worked to bedtime (`work`) or sat on the `green`, a
+    // `memory` they keep, or `leave`, sent out of the valley. A new sentence is a new entry.
+    punish: map(
+      obj({
+        text,
+        day: opt(oneOf('work', 'green')),
+        memory: opt(ref('memories')),
+        leave: opt(bool()),
+      }),
+    ),
     standing: obj({ by: num(), days: num({ min: 1 }), text }),
   }),
 };

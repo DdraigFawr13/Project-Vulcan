@@ -6,7 +6,7 @@
 // down. Each telling is a `tale.told` line citing the teller's own line for it, so "why?" walks
 // back from any version to the event; the listener holds that version and may believe it.
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
-import { addEntity } from '../entity/index.ts';
+import { addEntity, awake, people } from '../entity/index.ts';
 import { byAFire, winterEvening } from '../people/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { feedBelief } from './belief.ts';
@@ -37,7 +37,7 @@ function placeOf(ctx: SystemContext, a: EntityRow, b: EntityRow): Place | undefi
   // Round one fire: both warmed by a fire and within sight of each other.
   const fire =
     winterEvening(world, content) && byAFire(world, content, a) && byAFire(world, content, b);
-  if (fire && d <= content.tales.see) return 'hearth';
+  if (fire && d <= content.life.sight) return 'hearth';
   return d <= reach ? 'leisure' : undefined;
 }
 
@@ -106,13 +106,11 @@ function tell(
 export function tellings(ctx: SystemContext): void {
   const { world } = ctx;
   const day = Math.floor(world.tick / TICKS_PER_DAY);
-  const awake = (world.entities['person'] ?? []).filter(
-    (p) => p['status'] === 'alive' && p['doing'] !== 'sleep',
-  );
+  const up = awake(world);
   if (!(world.entities['tale'] ?? []).length) return;
-  for (let i = 0; i < awake.length; i += 1)
-    for (let j = i + 1; j < awake.length; j += 1) {
-      const [a, b] = [awake[i]!, awake[j]!];
+  for (let i = 0; i < up.length; i += 1)
+    for (let j = i + 1; j < up.length; j += 1) {
+      const [a, b] = [up[i]!, up[j]!];
       const place = placeOf(ctx, a, b);
       if (!place || ctx.rng().int(100) >= ctx.content.tales.pass[place]) continue;
       const ab = toTell(ctx, a, b, day);
@@ -123,13 +121,20 @@ export function tellings(ctx: SystemContext): void {
 }
 
 /** A tale heard but neither told nor heard again for `forgetDays` is forgotten (one seen stays),
- * and a story nobody holds goes. */
+ * the tales of the dead go with them (6A review P6), and a story nobody holds goes. */
 export function forget(ctx: SystemContext): void {
   const { world, content } = ctx;
   const day = Math.floor(world.tick / TICKS_PER_DAY);
   const tales = world.entities['tale'] ?? [];
+  const dead = new Set(
+    people(world)
+      .filter((p) => p['status'] === 'dead' || p['status'] === 'buried')
+      .map((p) => p.id),
+  );
   world.entities['tale'] = tales.filter(
-    (t) => t['teller'] === 0 || day - (t['day'] as number) < content.tales.forgetDays,
+    (t) =>
+      !dead.has(t['person'] as number) &&
+      (t['teller'] === 0 || day - (t['day'] as number) < content.tales.forgetDays),
   );
   const held = new Set(world.entities['tale'].map((t) => t['story'] as number));
   world.entities['story'] = storiesOf(world).filter((s) => held.has(s.id));

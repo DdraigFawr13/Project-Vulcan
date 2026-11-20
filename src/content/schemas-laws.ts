@@ -10,8 +10,8 @@ export const LAWS_SCHEMAS = {
   laws: obj({
     // Willingness starts at `start` less the setting's `ask`, adds (mood − half the scale) ÷
     // `moodPer` and `low` for each of `needs` under its warning line, then the setting's leans;
-    // `obey` or more obeys, `grumble` or more grumbles, else refuses. Someone within `sight`
-    // tiles on the same level, or in the same house, sees a refuser keep the customary hours.
+    // `obey` or more obeys, `grumble` or more grumbles, else refuses. Whoever sees it (needs
+    // `sees`, life.json `sight`) sees a refuser keep the customary hours.
     answer: obj({
       start: num(),
       obey: num(),
@@ -19,7 +19,6 @@ export const LAWS_SCHEMAS = {
       moodPer: num({ min: 1 }),
       low: num(),
       needs: list(ref('needs')),
-      sight: count,
       // P6.5: once someone changes their answer, they hold the new one at least `settle` days.
       settle: count,
       // P6.5: a refuser openly flouting Rations is a line at most once in `every` days.
@@ -77,7 +76,7 @@ export const LAWS_SCHEMAS = {
             // P6.7: the beliefs that carry a grievance with it into acts (tales.json), and what a
             // Punishment setting does to a thief or brawler caught (defy.json `punish`).
             beliefs: opt(list(str())),
-            punish: opt(oneOf('work', 'stocks', 'away')),
+            punish: opt(str()),
           }),
         ),
       }),

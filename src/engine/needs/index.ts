@@ -13,3 +13,4 @@ export {
 export { tasted } from './diet.ts';
 export { memoryName, strongestFirst, thoughtOf, type Thought } from './thought.ts';
 export { changeNeed, crossed, feltAt, moodOf, needOf, NEEDS_TABLES, seedPerson } from './needs.ts';
+export { sees, seenBy } from './sight.ts';

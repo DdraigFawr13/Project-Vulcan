@@ -3,12 +3,12 @@
 // word is content (laws.json) or the engine's numbers.
 import { content } from '../content/index.ts';
 import {
+  alive,
   clockAt,
   daysToHarvest,
   foodDays,
   lawDef,
   settingOf,
-  type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
 import { answerView } from './law.ts';
@@ -25,9 +25,6 @@ function on(tick: number): string {
   const c = clockAt(tick, content.calendar);
   return `${c.day} ${content.calendar.monthNames[c.month]!}`;
 }
-
-const alive = (world: WorldState): EntityRow[] =>
-  (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
 
 /** What the store holds for a law of the store: days at full plates and at `share`. */
 function storeLine(world: WorldState, share: number | undefined): string {

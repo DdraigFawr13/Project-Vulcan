@@ -22,7 +22,7 @@ export interface DefyDef {
   steps: readonly DefyStep[];
   /** One work minute in `every` idled. */
   slow: { every: number };
-  take: { count: number; every: number; sight: number };
+  take: { count: number; every: number };
   brawl: {
     every: number;
     reach: number;
@@ -37,9 +37,18 @@ export interface DefyDef {
    * from a store that will not last, at any Rations setting. */
   starving: { memory: string; belief: string };
   memories: Readonly<Record<string, string>>;
-  /** The sentence in words for each Punishment `punish`. */
-  punish: { work: string; stocks: string; away: string };
+  /** The sentences a Punishment setting's `punish` names (defy.json `punish`). */
+  punish: Readonly<Record<string, SentenceDef>>;
   standing: { by: number; days: number; text: string };
+}
+
+/** A sentence: its words, and the next `day` worked to bedtime or sat on the `green`, a `memory`
+ * the sentenced keep, or `leave` (sent out of the valley). */
+export interface SentenceDef {
+  text: string;
+  day?: 'work' | 'green';
+  memory?: string;
+  leave?: boolean;
 }
 
 export interface DefyDefs {

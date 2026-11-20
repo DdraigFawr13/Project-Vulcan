@@ -10,13 +10,11 @@
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { boutOf, bodyOf, expose, illDef } from '../health/index.ts';
 import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
-import { canReach, type Spot } from '../paths/index.ts';
+import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, levelOf, outranked, people, practise, skillOf, spotOf } from '../band/index.ts';
 import { walkTo, worked } from '../band/index.ts';
-
-const far = (a: Spot, b: Spot): number =>
-  Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) + Math.abs(a.z - b.z) * 100;
+import { far } from './far.ts';
 
 const due = (ctx: SystemContext, q: EntityRow): boolean => {
   const { world, content } = ctx;

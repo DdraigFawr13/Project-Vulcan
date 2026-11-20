@@ -10,6 +10,7 @@ import { addEntity, removeEntity } from '../entity/index.ts';
 import { bandOf, heldMemoriesOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { rolesOf } from './tables.ts';
+import { lower } from '../core/index.ts';
 
 interface Score {
   role: RoleDef;
@@ -21,8 +22,6 @@ interface Score {
 
 /** Ids in a fixed order, without locale rules (engine purity). */
 const byId = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
-
-const lower = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
 
 /** The first band's arrival line: anyone who came on a later one is a newcomer. */
 const firstArrival = (world: WorldState): number =>

@@ -7,6 +7,7 @@ import { memoriesOf, moodOf, needOf } from '../needs/index.ts';
 import { ambitionOf, ambitionText, rolesOf } from '../self/index.ts';
 import { isWinter } from './hours.ts';
 import { colonyLeans } from './leans.ts';
+import { lower } from '../core/index.ts';
 
 export type Answer = 'obeys' | 'grumbles' | 'refuses';
 
@@ -20,8 +21,6 @@ export interface Weighed {
   /** The memories that weighed, as `id:line` joined, to see when one is added. */
   mems: string;
 }
-
-const lower = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
 
 /** What weighed so far: willingness, the words on each side, the lines and the signature. */
 interface Tally {

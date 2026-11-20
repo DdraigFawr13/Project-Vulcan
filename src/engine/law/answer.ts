@@ -2,7 +2,7 @@
 // and again for someone when a memory that weighs on it is added. Obeys keeps the law's hours;
 // grumbles keeps them and remembers it; refuses keeps the customary hours.
 import { TICKS_PER_DAY, type EntityRow, type LawSettingDef } from '../core/index.ts';
-import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
+import { addEntity, removeEntity, type Schemas, alive } from '../entity/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { lawDef, lawRow } from './hours.ts';
@@ -35,9 +35,6 @@ export const LAW_TABLES: Schemas = {
 
 export const answersOf = (ctx: SystemContext, law: string): EntityRow[] =>
   (ctx.world.entities['answer'] ?? []).filter((a) => a['law'] === law);
-
-const alive = (ctx: SystemContext): EntityRow[] =>
-  (ctx.world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
 
 /** Writes `p`'s answer line and row; a grumbler remembers it. */
 function record(
@@ -102,7 +99,7 @@ export function answerAll(ctx: SystemContext, law: string, s: LawSettingDef, cau
     removeEntity(ctx.world, 'answer', a.id);
   }
   if (!answered(ctx, law, s)) return;
-  for (const p of alive(ctx)) {
+  for (const p of alive(ctx.world)) {
     record(ctx, law, s, p, weigh(ctx.world, ctx.content, p.id, s), [cause], undefined);
     const was = kept.get(p.id);
     const row = answersOf(ctx, law).find((a) => a['person'] === p.id);
@@ -118,7 +115,7 @@ export function answerAll(ctx: SystemContext, law: string, s: LawSettingDef, cau
  * have just come to stand with a faction (P6.6). */
 export function reweigh(ctx: SystemContext, law: string, s: LawSettingDef): void {
   const settle = ctx.content.laws.answer.settle * TICKS_PER_DAY;
-  const band = alive(ctx);
+  const band = alive(ctx.world);
   const rows = answersOf(ctx, law);
   // Someone who joined since the law was set answers it now, citing the line that set it.
   const set = lawRow(ctx.world, law)?.['line'] as number | undefined;

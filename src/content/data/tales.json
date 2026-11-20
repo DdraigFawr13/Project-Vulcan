@@ -1,5 +1,4 @@
 {
-  "see": 6,
   "pass": { "meal": 25, "leisure": 20, "work": 6, "hearth": 50, "perDay": 2 },
   "places": { "meal": " over a meal", "leisure": "", "work": " at work", "hearth": " by the fire" },
   "bend": { "chance": 25, "traits": { "hot-tempered": 15, "melancholic": 15, "sociable": 10, "greedy": 10 }, "softer": 30 },

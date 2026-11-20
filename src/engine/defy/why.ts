@@ -6,6 +6,7 @@ import { storeLasts } from '../goods/index.ts';
 import { settingOf } from '../law/index.ts';
 import { memoriesOf } from '../needs/index.ts';
 import { beliefsOf } from '../tales/index.ts';
+import { lower } from '../core/index.ts';
 
 export interface Grievance {
   law: string;
@@ -73,8 +74,6 @@ export function hungerWhy(world: WorldState, content: EngineContent, person: num
   );
   return mem && belief ? { mem, belief } : {};
 }
-
-const lower = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
 
 /** "went to bed hungry; thinks the store is kept for the few". */
 export function whyWords(world: WorldState, content: EngineContent, why: Why): string {

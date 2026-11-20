@@ -6,7 +6,7 @@
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { bodyOf, openWounds, severityOf, woundName, woundsOf } from '../health/index.ts';
 import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
-import { canReach, type Spot } from '../paths/index.ts';
+import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bindWounds } from './care.ts';
 import { dosing, takeUpDraught } from './draught.ts';
@@ -14,9 +14,7 @@ export { draughtFirst } from './draught.ts';
 import { sew } from './surgery.ts';
 import { worked, practise, able, people, skillOf, spotOf, walkTo } from '../band/index.ts';
 import { personOf } from '../entity/index.ts';
-
-const far = (a: Spot, b: Spot): number =>
-  Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) + Math.abs(a.z - b.z) * 100;
+import { far } from './far.ts';
 
 /** Others on `job` for whom. */
 const tended = (world: WorldState, p: EntityRow, job: string, field: string): Set<number> =>
