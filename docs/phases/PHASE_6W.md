@@ -43,9 +43,9 @@ Mock-up: UI. Done when: every seed box has the dice rolling a two-word seed from
 
 ### Slice 2: the map drawn by chunk
 
-Mock-up: UI (the overview at 390 px). Done when: the slowed-phone bench (390 px, CPU 4x) at 250 tiles is within 10% of 150 for memory and frames, at both normal zoom and zoomed out, measured on a production build.
+Mock-up: UI, answered. Done when: the slowed-phone bench (390 px, CPU 4x) at 250 tiles is within 10% of 150 for memory and frames, at both normal zoom and zoomed out, on a production build.
 
-- Reading list: `docs/DECISIONS.md` V-013 V-030 V-094; `src/render/MODULE.md`; `src/worker/MODULE.md`; `docs/UI_STYLE.md`
+- Reading list: `docs/MAP_OVERVIEW.md`; `docs/DECISIONS.md` V-013 V-030 V-094; `src/render/MODULE.md`; `src/worker/MODULE.md`; `docs/UI_STYLE.md`
 
 ### Slice 3: a bigger, patchier valley
 
