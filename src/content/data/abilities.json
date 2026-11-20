@@ -6,6 +6,7 @@
   {"id":"woodcutting","name":"Woodcutting","family":"labour","requirements":{},"learnAttributes":["strength","endurance"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"timber"}},
   {"id":"stoneworking","name":"Stoneworking","family":"labour","requirements":{},"learnAttributes":["strength","endurance"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"stone"}},
   {"id":"mining","name":"Mining","family":"labour","requirements":{},"learnAttributes":["strength","endurance"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"ore"}},
+  {"id":"singing","name":"Singing","family":"social","requirements":{},"learnAttributes":["charisma","perception"],"learnFrom":["practice","teacher"],"effect":{"kind":"utility","tag":"song"}},
   {"id":"cooking","name":"Cooking","family":"craft","requirements":{},"learnAttributes":["perception","intellect"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"food"}},
   {"id":"building","name":"Building","family":"craft","requirements":{},"learnAttributes":["strength","intellect"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"building"}},
   {"id":"crafting","name":"Crafting","family":"craft","requirements":{},"learnAttributes":["agility","intellect"],"learnFrom":["practice","teacher"],"effect":{"kind":"craft","tag":"tools"}},

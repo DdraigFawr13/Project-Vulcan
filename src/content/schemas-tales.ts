@@ -31,6 +31,9 @@ export const TALES_SCHEMAS = {
     strength: list(str(), 4),
     // By the hearth on a winter evening, each worn garment is mended this much an hour.
     evening: obj({ mend: count }),
+    // A byname comes once a tale about someone is held by over `share` per cent of the grown-ups
+    // and told `told` times; the `proud` bynames please, the rest sting.
+    byname: obj({ share: percent, told: num({ min: 1 }), proud: list(str()) }),
     beliefs: list(obj({ id, about: oneOf('person', 'place', 'law', 'colony'), text })),
     // `event`: the ledger type it copies; `levels`: its words from mildest to worst, filled from the
     // event's data; `truth`: the level of what happened; `belief` forms in whoever holds it at
@@ -45,6 +48,10 @@ export const TALES_SCHEMAS = {
         belief: str(),
         from: count,
         word: opt(bool()),
+        // The title of a song made of it (a big event), filled from the event's data.
+        song: opt(str()),
+        // The byname each level gives the one it is about ("" for none).
+        bynames: opt(list(str())),
         levels: list(text),
       }),
     ),
