@@ -159,7 +159,7 @@ export class Recaps {
       'On, the turn of a season or a year pauses the game and opens its recap. Off, it goes straight to the Chronicle.',
     );
     const row = (kind: keyof RecapSettings, name: string) => {
-      const r = el('div', { class: 'stoprow', 'data-testid': `recaps-${kind}` });
+      const r = el('div', { class: 'recaprow', 'data-testid': `recaps-${kind}` });
       r.append(el('div', { class: 'stopwords' }, el('b', {}, name)));
       const acts = el('div', { class: 'stopacts', role: 'group', 'aria-label': name });
       for (const [value, label] of [

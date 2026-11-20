@@ -141,7 +141,8 @@
 }
 
 /* What stops play: a kind's name and hint, then its three plates. */
-.stoprow {
+.stoprow,
+.recaprow {
   display: flex;
   align-items: center;
   gap: 6px;
