@@ -20,6 +20,7 @@ import { regionSystem } from './region/index.ts';
 import { selfSystem } from './self/index.ts';
 import { colonySystem } from './colony/index.ts';
 import { defySystem } from './defy/index.ts';
+import { familySystem } from './family/index.ts';
 import { talesSystem } from './tales/index.ts';
 import { weatherSystem } from './weather/index.ts';
 import { wildSystem } from './wild/index.ts';
@@ -49,6 +50,7 @@ export * from './region/index.ts';
 export * from './self/index.ts';
 export * from './colony/index.ts';
 export * from './defy/index.ts';
+export * from './family/index.ts';
 export * from './tales/index.ts';
 export * from './weather/index.ts';
 export * from './wild/index.ts';
@@ -87,6 +89,7 @@ export const SYSTEMS: readonly System[] = [
   colonySystem,
   defySystem,
   talesSystem,
+  familySystem,
   calendarSystem,
   weatherSystem,
   wildSystem,

@@ -2,7 +2,8 @@
 // reaped (no other field still growing, and no crop has a month to be sown left this year), the
 // colony calls the harvest-home supper. That evening everyone free gathers in the hall (else at the
 // campfire) and eats the best food in store together (people/feast.ts); each remembers the feast.
-// Once a year; other harvests have their own lines and no feast.
+// Once a year; other harvests have their own lines and no feast. A wedding (engine family) calls
+// its own feast, round the fire on the green, through `callWedding`.
 import { clockAt, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -11,10 +12,10 @@ import { fieldsOf } from './fields.ts';
 export const FEAST_TABLES: Schemas = {
   /** A harvest-home supper: the harvest line that called it, the year, `called` until it is eaten
    * (`eaten`), the tick the first person arrived (0 before), who has arrived, the line it was
-   * eaten on. */
+   * eaten on; `couple` the two wed (P6.1), none for the harvest home. */
   feast: {
     ...{ line: 'event', year: 'int', state: 'text', start: 'int', there: 'ints' },
-    eaten: 'event',
+    ...{ eaten: 'event', couple: 'ints' },
   },
 };
 
@@ -38,6 +39,23 @@ export function lastOfYear(ctx: SystemContext, f: EntityRow): boolean {
 export function callFeast(ctx: SystemContext, cause: number): void {
   const { world, content } = ctx;
   const year = clockAt(world.tick, content.calendar).year;
-  if ((world.entities['feast'] ?? []).some((f) => f['year'] === year)) return;
-  addEntity(world, 'feast', { line: cause, year, state: 'called', start: 0, there: [], eaten: 0 });
+  const feasts = world.entities['feast'] ?? [];
+  if (feasts.some((f) => f['year'] === year && !(f['couple'] as number[] | undefined)?.length))
+    return;
+  addEntity(world, 'feast', {
+    ...{ line: cause, year, state: 'called', start: 0, there: [], eaten: 0, couple: [] },
+  });
+}
+
+/** Calls the wedding feast of `couple` for this evening, citing the wedding line; false when a
+ * supper is already called for tonight. */
+export function callWedding(ctx: SystemContext, cause: number, couple: readonly number[]): boolean {
+  const { world, content } = ctx;
+  if (feastOf(world)) return false;
+  const year = clockAt(world.tick, content.calendar).year;
+  addEntity(world, 'feast', {
+    ...{ line: cause, year, state: 'called', start: 0, there: [], eaten: 0 },
+    couple: [...couple],
+  });
+  return true;
 }

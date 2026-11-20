@@ -25,6 +25,7 @@
     "map:render": "node tools/map-stats.mjs --render",
     "budget": "node tools/budget.mjs",
     "balance": "node tools/balance.mjs",
+    "families": "node tools/families.mjs",
     "paths": "node tools/paths.mjs",
     "test": "vitest run",
     "test:related": "vitest related --run",

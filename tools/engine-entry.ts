@@ -12,6 +12,7 @@ export {
   isFrozen,
   makeRegion,
   removeEntity,
+  renderEvent,
   setLineHook,
   step,
   submitCommand,

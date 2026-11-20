@@ -1,0 +1,11 @@
+{
+  "hour": 6,
+  "leisure": ["relax", "eat", "warm", "feast"],
+  "near": 4,
+  "like": {"base": 1, "shared": 1, "clash": 2},
+  "told": 3,
+  "fade": 2,
+  "court": {"from": 50, "days": 28, "part": 20, "anySex": false},
+  "feastDays": 3,
+  "memories": {"wed": "married", "feast": "wedding-feast"}
+}

@@ -16,6 +16,7 @@ import { TALES_SCHEMAS } from './schemas-tales';
 import { SELF_SCHEMAS } from './schemas-self';
 import { COLONY_SCHEMAS } from './schemas-colony';
 import { DEFY_SCHEMAS } from './schemas-defy';
+import { FAMILY_SCHEMAS } from './schemas-family';
 import { TOOLS_SCHEMAS } from './schemas-tools';
 import { WILD_SCHEMAS } from './schemas-wild';
 import { WORLD_SCHEMAS } from './schemas-world';
@@ -39,6 +40,7 @@ export const SCHEMAS = {
   ...SELF_SCHEMAS,
   ...COLONY_SCHEMAS,
   ...DEFY_SCHEMAS,
+  ...FAMILY_SCHEMAS,
   ...CLOTHES_SCHEMAS,
 };
 
