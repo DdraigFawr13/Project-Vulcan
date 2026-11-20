@@ -61,7 +61,7 @@ export function packSheet(frames) {
  * existing frame (the art names stay the contract, ART.md), except whole villagers
  * (`person.<race>.v<n>.<facing>.<frame>`, src/render/look.ts) and tall trees' crowns
  * (`<art>.1.top`, src/render/canopy.ts), which only final art has. */
-const FINAL_ONLY = /^(person\.[a-z-]+\.v\d+\.[nesw]\.[0-2]|[a-z]+\.[a-z-]+\.1\.top)$/;
+const FINAL_ONLY = /^(person\.[a-z-]+\.v\d+\.[nesw]\.[0-7]|[a-z]+\.[a-z-]+\.1\.top)$/;
 export function overrideFinal(frames, sheet) {
   const dir = path.join(root, 'art/final', sheet);
   if (!existsSync(dir)) return;
