@@ -16,11 +16,11 @@ A short phase between 6B and 6C that makes exploring a need, from Morgan's messa
 
 ## Why
 
-Measured on main v6.144 (three game years, four seeds; tables on the form): 87 to 95% of colonist hours fall within 20 tiles of the green, 6 to 11% of the map is ever walked on, and trees, stone, water and an ore stain lie 1 to 10 tiles from the start. At 250 tiles the worker barely slows, but a slowed phone doubles screen memory and loses a third of its frames, because the render keeps whole-map layers.
+Measured on v6.144 (three years, four seeds; tables on the form): 87 to 95% of colonist hours fall within 20 tiles of the green, 6 to 11% of the map is ever walked on, and trees, stone, water and an ore stain lie 1 to 10 tiles from the start. At 250 tiles the worker barely slows, but a slowed phone doubles screen memory and loses a third of its frames, because the render keeps whole-map layers.
 
 ## Design (VR-62)
 
-- **Seed dice (Slice 1).** A dice button beside every seed box (title New game, Saves, picker) rolls a readable two-word seed from a content word list (`ember-hollow`). It replaces the picker's random letters; UI only (GAME-01).
+- **Seed dice (Slice 1).** A pixel die rolls a two-word seed (`ember-hollow`) from content. Form (https://claude.ai/artifact/Cs7zjFLjaoSsYMAb6hwn5C, every ★): the title's New game rolls one; the picker's die replaces New seed; the Saves die fills the box only.
 - **Drawing by chunk (Slice 2).** The render keeps only the chunks near the camera as tile layers. Zoomed below the overview line, it shows one small picture of the map (a pixel or two per tile, refreshed from changed chunks). Memory and frame rate at 250 tiles must sit within 10% of today's 150 on the slowed-phone bench. This lands before the map grows.
 - **The wide valley (Slice 3, V-013 amended).** The surface becomes 250 by 250, and the valley layout keeps the ranges' size, so the mountains are 60 to 100 tiles off. Resources are thin and patchy: the green keeps water and enough wood and stone for a first winter, and nothing else is placed near it. Veins lose their `near` clusters. Each valley is drawn rich in some goods and poor in others (`terrain.json` dials), and felled woods regrow slowly so near trees run out.
 - **Known land (Slice 4, V-192).** The surface gets a `known` layer, like the levels below (V-030). A tile becomes known when a colonist sees it (within `sight` tiles on open ground, farther from a height) and stays known. Every search for wood, stone, food, game, herbs, sites and veins reads known tiles only. House size counts known material (amends V-055). When the known supply of a good runs under its stock level, or a metal is wanted with no known vein, the colony wants a scout. A **Scouting** row on the Work sheet sets how keen the colony is. Curious, restless and hardy colonists take it up first, and nobody is sent by name or to a tile (V-041). The scout picks the nearest unknown edge in the direction of the need. Setting out and each find write lines naming the need.
@@ -37,15 +37,15 @@ Each slice is built in a fresh thread after its mock-up form is answered (VR-74)
 
 ### Slice 1: a dice button for seeds
 
-Mock-up: UI. Done when: every seed box has the dice rolling a two-word seed from content; `npm run test:browser` passes.
+Mock-up: UI, answered. Done when: all three give two-word seeds; `npm run test:browser` passes.
 
 - Reading list: `docs/UI_STYLE.md`; `src/ui/MODULE.md`
 
 ### Slice 2: the map drawn by chunk
 
-Mock-up: UI (the overview at 390 px). Done when: the slowed-phone bench (390 px, CPU 4x) at 250 tiles is within 10% of 150 for memory and frames, at both normal zoom and zoomed out, measured on a production build.
+Mock-up: UI, answered. Done when: the slowed-phone bench (390 px, CPU 4x) at 250 tiles is within 10% of 150 for memory and frames, at both normal zoom and zoomed out, on a production build.
 
-- Reading list: `docs/DECISIONS.md` V-013 V-030 V-094; `src/render/MODULE.md`; `src/worker/MODULE.md`; `docs/UI_STYLE.md`
+- Reading list: `docs/MAP_OVERVIEW.md`; `docs/DECISIONS.md` V-013 V-030 V-094; `src/render/MODULE.md`; `src/worker/MODULE.md`; `docs/UI_STYLE.md`
 
 ### Slice 3: a bigger, patchier valley
 

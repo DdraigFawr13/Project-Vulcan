@@ -5,8 +5,9 @@ A side track built beside 6B and 6C: colonists who are interesting to watch. Mor
 ## Status
 
 - [x] Design form answered, 2026-11-20 (V-190)
-- [ ] Part 1, tools in hand, carried loads and work motions (screens)
+- [ ] Part 1, tools in hand, carried loads and work motions (screens); mock-up approved 2026-11-20 (V-194)
 - [ ] Part 2, required tools, knapping and five new tools (engine)
+- [x] Part 3 mock-up answered, 2026-11-20 (https://claude.ai/artifact/FSWME24XACU6aYDSz66UX8, every recommendation)
 - [ ] Part 3, outer clothes that show (screens)
 
 ## Design (VR-62)
@@ -17,7 +18,7 @@ A side track built beside 6B and 6C: colonists who are interesting to watch. Mor
 - **Required tools (Part 2).** A `tools.json` kind may say `needed: true` for some of the jobs it serves: pick for mining and quarrying, axe for felling and splitting, spear for hunting large game (hares are snared by hand), hammer for smithing. Without one, nobody takes up that work, and the job's row says what it waits on ("no pick in the valley"); other kinds keep the 75% speed. A last tool breaking writes one notable line naming what stopped.
 - **Knapping (Part 2).** Anyone with some crafting skill knaps a stone tool at a chopping block (a stone and a log, about 2 hours, no forge) when a needed kind has no free tool and a person who works that kind has none; a `toolmaking` row on the Work sheet. Stone tools wear out in half today's life (form Q6 C), so metal stays wanted (V-100).
 - **Five new tools (Part 2, form Q7 B).** Data entries in `tools.json` and `items.json`, each with its jobs and drawing: bone needle (tailoring, from hunters' bones), sickle (reaping and cutting thatch), chisel (the mason's dressed stone), fishing line (fishing) and saw (carpentry). Which of them are `needed` is set at the mock-up with numbers.
-- **Clothes (Part 3).** The outer garment each person wears (cloak, leather coat, hide coat) is drawn over their villager in its own colours, per race body, shown outdoors when cold (form Q9 A); worn-out ones look ragged and dull, fine ones get a trim. The everyday garment stays drawn into each villager (form Q8 A).
+- **Clothes (Part 3).** The outer garment each person wears (cloak, leather coat, hide coat) is drawn on their villager, shown outdoors when cold (form Q9 A); worn-out ones look ragged and dull, fine ones get a trim (details under Part 3). The everyday garment stays drawn into each villager (form Q8 A).
 - **Later.** Defences grow from fear in Phase 8, P8.2 (form Q10 A): a fence after wolves take stock, a palisade after a raid, a stone wall and gatehouse after a breach, sited by the builders with a line saying why, under a Defences law (Open, Watchful, Walled). Bows and armour come with the Phase 8 combat core (P8.1); Morgan may pull a hunting bow into Part 2.
 
 ## Parts
@@ -26,7 +27,9 @@ Each part is built in a fresh thread with a mock-up first: Parts 1 and 3 send a 
 
 ### Part 1: tools in hand, carried loads and work motions
 
-Mock-up: UI. Done when: a person felling shows an axe swinging with chips at 1x and 2x speed, a hauler shows their load, the motion of every job comes from `jobs.json`, and `npm run test:browser` passes.
+Mock-up: UI, approved 2026-11-20 (V-194): https://claude.ai/artifact/QD7htqM6kKxKHNiDKtukx1 (sources `vulcan/seen-at-work-p1/` in the project files: `template.html` holds the drawing code to port). Done when: a person felling shows an axe swinging with chips at 1x and 2x speed, a hauler shows their load, the motion of every job comes from `jobs.json`, each side frame strikes towards its work, villagers walk with the PixelLab walk animations, and `npm run test:browser` passes.
+
+Morgan's answers: [SEEN_AT_WORK_ANSWERS.md](../SEEN_AT_WORK_ANSWERS.md#part-1).
 
 - Reading list: `docs/DECISIONS.md` V-041 V-088 V-095 V-168 V-190; `src/render/MODULE.md`; `src/worker/MODULE.md`; `docs/UI_STYLE.md`; `docs/ART.md`
 
@@ -39,5 +42,7 @@ Mock-up: Engine. Done when: the four-seed table above, a test that a valley with
 ### Part 3: outer clothes that show
 
 Mock-up: UI. Done when: each race shows the three outer garments at 390 px, outdoors in the cold only, with ragged and fine looks, and `npm run test:browser` passes.
+
+Mock-up answered 2026-11-20: Morgan's answers are in [SEEN_AT_WORK_ANSWERS.md](../SEEN_AT_WORK_ANSWERS.md#part-3).
 
 - Reading list: `docs/DECISIONS.md` V-134 V-168 V-184 V-190; `docs/CLOTHES_AND_LOOM.md`; `src/render/MODULE.md`; `src/engine/needs/MODULE.md`; `docs/ART.md`
