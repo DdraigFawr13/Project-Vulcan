@@ -17,7 +17,7 @@ export const MASONRY_SCHEMAS = {
       worn: count,
     }),
     reed: list(text),
-    straw: obj({ per: num({ min: 1 }) }),
+    straw: obj({ per: num({ min: 1 }), crops: list(text) }),
     open: count,
   }),
 };

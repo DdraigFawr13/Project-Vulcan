@@ -57,9 +57,8 @@ export const FIELD_TABLES: Schemas = {
     at: 'int',
     course: 'int',
     prev: 'text',
-    /** Straw bundles thatchers took from this harvest's stubble, and the `sown` tick it was of. */
+    /** Straw bundles its reapings left for the thatchers (6B, straw.ts). */
     straw: 'count',
-    strawAt: 'int',
     rested: 'int',
     blight: 'ints',
     dry: 'ints',
@@ -208,7 +207,7 @@ export function planFields(ctx: SystemContext, green: Spot, causes: number[], se
   addEntity(world, 'field', {
     ...{ crop: '', state: 'plan', tiles: site.tiles, done: [], sown: 0, line, last: line },
     ...{ took: 0, why, sent, leave: 0, got: 0, kept: 0, reapers: [], noSeed: 0 },
-    ...{ course: 0, prev: '', rested: 0, wline: 0, ...clearBlight() },
+    ...{ course: 0, prev: '', rested: 0, wline: 0, straw: 0, ...clearBlight() },
     at: site.tiles[0]!,
   });
   raiseStock(ctx, content.buildings.field.seed, content.buildings.field.name.toLowerCase(), line);

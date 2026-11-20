@@ -2,8 +2,8 @@
 // thatcher lays one (crafts/thatch.ts), and its air leaks `roofs.open` per mille more an hour
 // meanwhile (fire/air.ts). Thatch wears: past `roofs.thatch.wears` years it leaks
 // `roofs.thatch.worn` more, and the thatcher lays it again. A room placed in test mode belongs to
-// no house and keeps the old free roof. Reed comes from `roofs.reed` tiles, straw from reaped
-// fields (`roofs.straw.per` of a field's tiles a bundle, once a harvest).
+// no house and keeps the old free roof. Reed comes from `roofs.reed` tiles, straw from the fields'
+// reapings (straw.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { TICKS_PER_DAY } from '../core/index.ts';
 import type { Spot } from '../paths/index.ts';
@@ -53,18 +53,12 @@ export function roofName(world: WorldState, content: EngineContent, h: EntityRow
   return main ? `${sizeOf(content, main).name}'s room` : sizeOf(content, h).name;
 }
 
-/** Straw bundles a reaped field still holds: a share of its tiles once a harvest. */
-export function strawLeft(content: EngineContent, f: EntityRow): number {
-  if (f['state'] !== 'fallow' || !((f['got'] as number) > 0)) return 0;
-  const all = Math.floor((f['tiles'] as number[]).length / content.buildings.roofs.straw.per);
-  const taken = f['strawAt'] === f['sown'] ? ((f['straw'] as number) ?? 0) : 0;
-  return Math.max(0, all - taken);
-}
+/** Straw bundles field `f` holds from its reapings. */
+export const strawLeft = (f: EntityRow): number => (f['straw'] as number) ?? 0;
 
 /** Takes one bundle of straw from field `f`. */
 export function takeStraw(f: EntityRow): void {
-  if (f['strawAt'] !== f['sown']) Object.assign(f, { strawAt: f['sown'], straw: 0 });
-  f['straw'] = ((f['straw'] as number) ?? 0) + 1;
+  f['straw'] = Math.max(0, strawLeft(f) - 1);
 }
 
 /** Where thatch can be cut within `reach` of `from`: reed tiles, and the first tile of each
@@ -84,7 +78,7 @@ export function thatchSpots(
       if (reed.has(tiles[y * width + x]!))
         out.push({ at: { x, y, z: 0 }, d: Math.max(Math.abs(x - from.x), Math.abs(y - from.y)) });
   for (const f of fieldsOf(world)) {
-    if (strawLeft(content, f) < 1) continue;
+    if (strawLeft(f) < 1) continue;
     const i = (f['tiles'] as number[])[0]!;
     const at = { x: i % width, y: Math.floor(i / width), z: 0 };
     const d = Math.max(Math.abs(at.x - from.x), Math.abs(at.y - from.y));

@@ -26,7 +26,7 @@
 {"id":"longhouse","name":"longhouse","w":8,"h":6,"sleeps":8}
 ],
 "stage":{"id":"room","name":"room","w":5,"h":4,"sleeps":2},"private":4},
-"roofs":{"job":"thatch","skilled":10,"thatch":{"name":"thatch","per":4,"cut":20,"lay":15,"reach":40,"wears":6,"worn":40},"reed":["marsh"],"straw":{"per":4},"open":60},
+"roofs":{"job":"thatch","skilled":10,"thatch":{"name":"thatch","per":4,"cut":20,"lay":15,"reach":40,"wears":6,"worn":40},"reed":["marsh"],"straw":{"per":4,"crops":["barley","oats"]},"open":60},
 "roads":{"name":"Roads","start":4,"part":"road-stone","stretch":10,"least":192,"shortest":3,"places":12},
 "smithy":{"name":"Smithy","start":2,"depth":3,"length":4,"near":20,"floor":"floor-stone","pieces":["forge","anvil","tub"]},
 "town":{"ring":16,"step":4,"most":32},

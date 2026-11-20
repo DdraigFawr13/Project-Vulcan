@@ -5,6 +5,7 @@
 // leave when the town ring widened is left to grass once it holds no crop (after its next
 // harvest, never before). The people's sowing and reaping end in `finishSowing` and
 // `finishReaping`, which write the lines.
+import { strawOf } from './straw.ts';
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { haveOf, isTree, marksOf, stockOf } from '../goods/index.ts';
@@ -82,6 +83,9 @@ export function finishReaping(ctx: SystemContext, f: EntityRow, cause: number): 
   // The last field of the year brings the harvest-home supper in the hall (5B Bundle 4).
   if (lastOfYear(ctx, f)) callFeast(ctx, home);
   drawSoil(ctx, f, crop.id, harvested);
+  // Its stubble gives the thatchers straw (6B, roofs.ts), kept by the field until taken.
+  if (content.buildings.roofs.straw.crops.includes(crop.id))
+    f['straw'] = ((f['straw'] as number) ?? 0) + strawOf(content, f);
   Object.assign(f, { state: 'fallow', crop: '', done: [], reapers: [], got: 0, kept: 0 });
   Object.assign(f, clearBlight());
   f['last'] = harvested;

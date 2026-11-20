@@ -29,7 +29,9 @@ describe('build view', () => {
     expect(built.back).toBe(false);
     expect(buildView(world).need).toBe('none now');
     const inside = tileHouse(world, built.x + 1, built.y + 1, () => ({}) as never);
-    expect(inside.house?.roof).toMatch(/^(thatch, laid this year \(not drawn\)|none yet: it waits for a thatcher)/);
+    expect(inside.house?.roof).toMatch(
+      /^(thatch, laid this year \(not drawn\)|none yet: it waits for a thatcher)/,
+    );
     expect(inside.room?.name).toBe('the cottage');
     expect(inside.room?.impressiveness).toMatch(/ of \d+$/);
   });

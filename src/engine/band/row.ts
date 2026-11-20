@@ -90,6 +90,7 @@ export function addPerson(
       herdId: 0,
       sat: 0,
       pail: 0,
+      bundles: 0,
     },
     ...{
       partner: 0,

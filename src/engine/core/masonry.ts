@@ -3,8 +3,8 @@
 
 /** Roofs (`buildings.roofs`). The thatcher (`job`, a Priorities row) lays a built house's roof:
  * `thatch.per` floor tiles take one bundle, cut `thatch.cut` minutes each from a `reed` tile
- * kind within `thatch.reach` of the store, or taken as straw from a reaped field (`straw.per`
- * of its tiles a bundle, once a harvest), and laid `thatch.lay` minutes each at building skill
+ * kind within `thatch.reach` of the green, or straw a field of `straw.crops` left at its reaping
+ * (`straw.per` of its tiles a bundle), and laid `thatch.lay` minutes each at building skill
  * `skilled`. Air in a room under no roof leaks `open` per mille more an hour (fire/air.ts);
  * thatch older than `thatch.wears` years leaks `thatch.worn` more. */
 export interface RoofsDef {
@@ -20,6 +20,6 @@ export interface RoofsDef {
     worn: number;
   };
   reed: readonly string[];
-  straw: { per: number };
+  straw: { per: number; crops: readonly string[] };
   open: number;
 }

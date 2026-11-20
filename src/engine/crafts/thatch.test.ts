@@ -1,6 +1,6 @@
 // 6B Bundle 3 (P6.11, amends V-056): a new house stands roofless, losing warmth, until a thatcher
 // takes it up unordered and thatches it; with no reed or straw in reach it says so once and waits,
-// and a reaped field's stubble thatches it; worn thatch is laid again.
+// and a reaped field's straw thatches it; worn thatch is laid again.
 import { describe, expect, it } from 'vitest';
 import { content as game } from '../../content/index.ts';
 import { greenOf, roofLeak, roofsWanted, rectOf } from '../build/index.ts';
@@ -62,15 +62,15 @@ describe('roofs and the thatcher', () => {
     expect(
       allLines(w).filter((e) => e.type === 'build.noThatch' && e.causes.includes(built.id)),
     ).toHaveLength(1);
-    // A field reaped near the green leaves stubble.
+    // A field reaped near the green left straw.
     const g = greenOf(w);
     const tiles = [...Array(32).keys()].map(
       (i) => (g.y + 6 + (i >> 3)) * w.map.width + g.x + (i % 8) - 4,
     );
     addEntity(w, 'field', {
       ...{ crop: 'barley', state: 'fallow', tiles, done: [], sown: 5, line: 1, last: 1, took: 0 },
-      ...{ why: '', sent: 0, leave: 0, got: 40, kept: 0, reapers: [], noSeed: 0, at: tiles[0]! },
-      ...{ course: 0, prev: '', rested: 0, straw: 0, strawAt: 0 },
+      ...{ why: '', sent: 0, leave: 0, got: 0, kept: 0, reapers: [], noSeed: 0, at: tiles[0]! },
+      ...{ course: 0, prev: '', rested: 0, straw: 8 },
     });
     // The player's lever: Thatching raised for the band (V-041); nobody is told which roof.
     for (const p of w.entities['person'] ?? [])
