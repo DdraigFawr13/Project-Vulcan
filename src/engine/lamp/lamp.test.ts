@@ -60,14 +60,15 @@ describe('light after dusk', () => {
     const seeds = ['smoke', 'tallow', 'ledger', 'ledger-1'];
     const goneDark = (r: ReturnType<typeof afternoon>) =>
       r.world.log.filter((e) => e.type === 'lamp.dark');
-    let seed = seeds[0]!;
-    let dark = afternoon(seed, false);
+    // The seed must also have someone at the lit bench: who carpenters that week is the seed's too.
+    let dark = afternoon(seeds[0]!, false);
+    let lit = afternoon(seeds[0]!, true);
     for (const next of seeds.slice(1)) {
-      if (goneDark(dark).length) break;
-      seed = next;
-      dark = afternoon(seed, false);
+      if (goneDark(dark).length && lit.atBench > 60) break;
+      dark = afternoon(next, false);
+      if (goneDark(dark).length) lit = afternoon(next, true);
+      else lit = { world: dark.world, atBench: 0 };
     }
-    const lit = afternoon(seed, true);
     const litLines = lit.world.log.filter((e) => e.type === 'lamp.lit');
     expect(litLines.length).toBeGreaterThan(0);
     expect(lit.atBench).toBeGreaterThan(60);

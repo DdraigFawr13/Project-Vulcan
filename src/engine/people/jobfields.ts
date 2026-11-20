@@ -32,4 +32,6 @@ export const JOB_FIELDS = {
   sat: 'count',
   /** Watering (Bundle 2): the tiles' worth of water carried, 0 while fetching. */
   pail: 'count',
+  /** Thatching (6B): bundles of reed or straw held for the roof. */
+  bundles: 'count',
 } as const;

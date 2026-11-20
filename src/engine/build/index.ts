@@ -98,3 +98,14 @@ export {
 export { PASTURE_KIND, planPasture } from './pasture.ts';
 export { wildHerds } from './pasturesite.ts';
 export { nextRoad, placesOf, roadAt, roadsOf, ROAD_TABLES } from './roads.ts';
+export {
+  bundlesFor,
+  roofAge,
+  roofLeak,
+  roofName,
+  roofsWanted,
+  strawLeft,
+  takeStraw,
+  thatchSpots,
+  wornThatch,
+} from './roofs.ts';

@@ -4,11 +4,12 @@
 // (banked heat when banked), then the air leaks the room's `leakOf` per mille of itself, at least
 // a tenth while any is left. A fire in the open has no air: it warms only while it burns (heat.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { roomAt } from '../build/index.ts';
+import { roofLeak, roomAt } from '../build/index.ts';
 import { firesOf, fuelOf, pieceOfFire } from './fire.ts';
 
 /** Per mille of its heat a room's air loses an hour: the mean of its edge parts' `leak`
- * (work.json `fire.air`), a gap or an unlisted part counting `open`; 0 for no room. */
+ * (work.json `fire.air`), a gap or an unlisted part counting `open`, plus its roof's (build
+ * `roofLeak`, 6B); 0 for no room. */
 export function leakOf(world: WorldState, content: EngineContent, piece: EntityRow): number {
   const room = roomAt(world, content, piece['x'] as number, piece['y'] as number);
   if (!room) return 0;
@@ -36,7 +37,8 @@ export function leakOf(world: WorldState, content: EngineContent, piece: EntityR
     const part = content.buildings.parts[built[n]! - 1];
     sum += (part && leak[part.id]) ?? open;
   }
-  return Math.max(1, Math.floor(sum / edge.size));
+  const roof = roofLeak(world, content, piece['x'] as number, piece['y'] as number);
+  return Math.max(1, Math.floor(sum / edge.size) + roof);
 }
 
 /** The heat (tenths of a degree) a fire drives its room's air towards now. */

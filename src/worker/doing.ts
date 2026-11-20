@@ -38,6 +38,7 @@ const WORK_LABELS = new Map<string, Words>([
   ['quarry', ['Going to a boulder', 'Quarrying']],
   ['build', ['Going to build', 'Building']],
   ['carpentry', ['Going to make furniture', 'Making furniture']],
+  ['thatch', ['Going to thatch', 'Thatching']],
   ['hearth', ['Going to make a hearth', 'Making a hearth']],
   ['tend', ['Going to a fire', 'Tending a fire']],
 ]);
@@ -167,6 +168,7 @@ const JOB_PHRASES = new Map<string, Phrase>([
   ['carpentry', keyed(carpentryDoing)],
   ['tend', keyed(tendDoing)],
   ['cook', plain('cook')],
+  ['thatch', plain('thatch')],
   ['charcoal', plain('charcoal')],
   ['smelt', plain('smelt')],
   ['station', station],

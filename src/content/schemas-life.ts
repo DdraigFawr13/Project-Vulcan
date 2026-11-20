@@ -5,6 +5,7 @@ import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, id, text, texts } from './schema-fields';
 import { COOK, COOPER, CURE, KEEP, POTTER } from './schemas-food';
 import { TOWN_SCHEMAS } from './schemas-town';
+import { MASONRY_SCHEMAS } from './schemas-masonry';
 
 // A house size or stage: a footprint of walls round a floor, and how many it sleeps.
 const size = obj({
@@ -330,6 +331,7 @@ export const LIFE_SCHEMAS = {
       pieces: texts,
     }),
     ...TOWN_SCHEMAS,
+    ...MASONRY_SCHEMAS,
     // P3.3: rooms are worked out when asked. Impressiveness is the room's tiles over `perSize`
     // plus its beauty, out of `top`; beauty is the floors' average (`bare` where none is
     // built), less `crowd.beauty` when there is a bed for fewer than `crowd.tiles` tiles. The
@@ -339,7 +341,6 @@ export const LIFE_SCHEMAS = {
       // under `hearthBelow` degrees (a later workroom role may differ).
       hearthBelow: num(),
       most: num({ min: 1 }),
-      roof: text,
       perSize: num({ min: 1 }),
       top: num({ min: 1 }),
       crowd: obj({ tiles: num({ min: 1 }), beauty: num() }),

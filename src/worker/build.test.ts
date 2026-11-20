@@ -20,7 +20,7 @@ describe('build view', () => {
     expect(house.mats.length).toBeGreaterThan(0);
     const row = housesOf(world)[0]!;
     const tile = tileHouse(world, row['x'] as number, row['y'] as number, () => ({}) as never);
-    expect(tile.house?.roof).toBe('thatch, laid with the walls');
+    expect(tile.house?.roof).toBe('none yet: a thatcher lays it once the walls stand');
     expect(tile.room).toBeUndefined();
 
     step(world, sim, 9 * DAY);
@@ -29,7 +29,9 @@ describe('build view', () => {
     expect(built.back).toBe(false);
     expect(buildView(world).need).toBe('none now');
     const inside = tileHouse(world, built.x + 1, built.y + 1, () => ({}) as never);
-    expect(inside.house?.roof).toBe('thatch (not drawn)');
+    expect(inside.house?.roof).toMatch(
+      /^(thatch, laid this year \(not drawn\)|none yet: it waits for a thatcher)/,
+    );
     expect(inside.room?.name).toBe('the cottage');
     expect(inside.room?.impressiveness).toMatch(/ of \d+$/);
   });

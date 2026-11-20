@@ -30,7 +30,7 @@ describe('Work sheet headings', () => {
     expect(groups.map((g) => [g.name, g.jobs.map((j) => j.job)])).toEqual([
       ['Wild', ['hunt', 'fish']],
       ['Stone', ['mine', 'quarry']],
-      ['Wood', ['fell', 'carpentry']],
+      ['Wood', ['fell', 'carpentry', 'thatch']],
       ['Land', ['farm', 'herd', 'forage']],
       ['Food', ['cook']],
       ['Larder', ['cure', 'cooper', 'potter']],
