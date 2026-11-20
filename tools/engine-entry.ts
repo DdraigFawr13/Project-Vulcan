@@ -14,6 +14,7 @@ export {
   removeEntity,
   renderEvent,
   setLineHook,
+  sleepsIn,
   step,
   submitCommand,
   SYSTEMS,

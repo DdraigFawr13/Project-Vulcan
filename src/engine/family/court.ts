@@ -11,7 +11,7 @@ import { personOf, alive } from '../entity/index.ts';
 import { foodDays } from '../goods/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { dayTogether, likeOf, mayCourt } from './close.ts';
+import { dayTogether, mayCourt, sharedTraits } from './close.ts';
 import { bondsOf, courtingOf } from './tables.ts';
 
 const nameOf = (p: EntityRow): string => p['name'] as string;
@@ -28,36 +28,36 @@ function lastTold(ctx: SystemContext, a: number, b: number): number {
 /** Two begin courting. */
 function court(ctx: SystemContext, r: EntityRow, p: EntityRow, q: EntityRow): void {
   const { world, content } = ctx;
-  const shared = likeOf(world, content, p.id, q.id) > content.family.like.base;
+  const words = content.family.words;
+  const shared = sharedTraits(world, p.id, q.id) > 0;
   const told = lastTold(ctx, p.id, q.id);
-  const parts = [
-    'spend their evenings together',
-    ...(shared ? ['are of a like mind'] : []),
-    ...(told ? ['trade tales'] : []),
-  ];
+  const parts = [words.together, ...(shared ? [words.alike] : []), ...(told ? [words.tales] : [])];
   const why = `they ${parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)!}` : parts[0]!}`;
   const line = ctx.emit('family.courting', {
-    causes: told ? [told] : [],
+    // With no tale between them, the closeness goes back to their coming to the valley.
+    causes: told ? [told] : [p['arrived'] as number, q['arrived'] as number].filter((l) => l > 0),
     actors: [p.id, q.id],
     data: { a: nameOf(p), b: nameOf(q), why },
   });
   Object.assign(r, { state: 'courting', since: ctx.world.tick, line });
 }
 
-/** Where the wed will live, in words, settling their homes: the older home if either has one,
- * else a want for one of their own. Called before they are partners. */
+/** Where the wed will live, in words, settling their homes: a built home before a planned one,
+ * the older of two alike, else a want for one of their own. Called before they are partners. */
 function settleHome(
   ctx: SystemContext,
   p: EntityRow,
   q: EntityRow,
 ): { words: string; want: boolean } {
-  const { world } = ctx;
+  const { world, content } = ctx;
+  const words = content.family.words;
   const homes = [homeFor(world, p.id), homeFor(world, q.id)].filter((h): h is EntityRow => !!h);
-  if (!homes.length) return { words: 'They want a home of their own.', want: true };
-  const keep = homes.sort((a, b) => a.id - b.id)[0]!;
+  if (!homes.length) return { words: words.want, want: true };
+  const built = (h: EntityRow) => (h['state'] === 'built' ? 0 : 1);
+  const keep = homes.sort((a, b) => built(a) - built(b) || a.id - b.id)[0]!;
   const whose = whoseOf(world, [keep['owner'] as number]);
   for (const h of homes) if (h !== keep) h['owner'] = 0;
-  return { words: `They will live in ${whose} home.`, want: false };
+  return { words: words.live.replace('{whose}', whose), want: false };
 }
 
 /** Two wed: partners, the memory, the feast, the home. False when a supper is already called
@@ -121,6 +121,11 @@ function goOn(ctx: SystemContext, r: EntityRow): void {
 export function courtingDay(ctx: SystemContext): void {
   const { world, content } = ctx;
   dayTogether(world, content);
+  // A marriage ended by a death is the partner field's to remember (build householdOf).
+  const living = (id: unknown) => personOf(world, id)?.['status'] === 'alive';
+  world.entities['bond'] = bondsOf(world).filter(
+    (r) => r['state'] !== 'wed' || (living(r['a']) && living(r['b'])),
+  );
   for (const r of bondsOf(world).filter((x) => x['state'] === 'courting')) goOn(ctx, r);
   const ready = bondsOf(world)
     .filter((r) => !r['state'] && (r['close'] as number) >= content.family.court.from)

@@ -1,7 +1,7 @@
 // Shape of Vulcan's family file (src/content/data/family.json, P6.1, V-145, V-161): how closeness
 // grows between two unwed adults, when they court and when they wed.
 import { bool, num, obj, ref } from './schema';
-import { count, texts } from './schema-fields';
+import { count, text, texts } from './schema-fields';
 
 export const FAMILY_SCHEMAS = {
   family: obj({
@@ -22,6 +22,8 @@ export const FAMILY_SCHEMAS = {
     court: obj({ from: num({ min: 1 }), days: num({ min: 1 }), part: count, anySex: bool() }),
     // A wedding feast only while the store holds `feastDays` days of food for everyone.
     feastDays: count,
+    // Words for the courting and wedding lines; {whose} is filled with the home's owner.
+    words: obj({ together: text, alike: text, tales: text, want: text, live: text }),
     memories: obj({ wed: ref('memories'), feast: ref('memories') }),
   }),
 };

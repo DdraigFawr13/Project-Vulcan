@@ -22,15 +22,34 @@ export function mayCourt(
   return content.family.court.anySex || p['sex'] !== q['sex'];
 }
 
+/** Each person's traits, by id. */
+const traitsBy = (world: WorldState): Map<number, string[]> => {
+  const out = new Map<number, string[]>();
+  for (const t of world.entities['trait'] ?? []) {
+    const id = t['person'] as number;
+    out.set(id, [...(out.get(id) ?? []), t['trait'] as string]);
+  }
+  return out;
+};
+
+/** How many traits two share. */
+export function sharedTraits(world: WorldState, p: number, q: number): number {
+  const by = traitsBy(world);
+  const tq = by.get(q) ?? [];
+  return (by.get(p) ?? []).filter((t) => tq.includes(t)).length;
+}
+
 /** How well two sit together for an hour: `base`, + `shared` a trait both hold, − `clash` for
  * each trait of one that the other's excludes; never under 0. */
-export function likeOf(world: WorldState, content: EngineContent, p: number, q: number): number {
+export function likeOf(
+  world: WorldState,
+  content: EngineContent,
+  p: number,
+  q: number,
+  by: Map<number, string[]> = traitsBy(world),
+): number {
   const like = content.family.like;
-  const traits = (id: number) =>
-    (world.entities['trait'] ?? [])
-      .filter((t) => t['person'] === id)
-      .map((t) => t['trait'] as string);
-  const [tp, tq] = [traits(p), traits(q)];
+  const [tp, tq] = [by.get(p) ?? [], by.get(q) ?? []];
   const excludes = (t: string) => content.traits.find((d) => d.id === t)?.excludes ?? [];
   const shared = tp.filter((t) => tq.includes(t)).length;
   const clash =
@@ -53,11 +72,13 @@ function addClose(world: WorldState, p: number, q: number, by: number): void {
 export function hourTogether(world: WorldState, content: EngineContent): void {
   const fam = content.family;
   const here = alive(world).filter((p) => fam.leisure.includes(p['doing'] as string));
+  if (here.length < 2) return;
+  const by = traitsBy(world);
   for (let i = 0; i < here.length; i += 1)
     for (let j = i + 1; j < here.length; j += 1) {
       const [p, q] = [here[i]!, here[j]!];
       if (far(p, q) > fam.near || !mayCourt(world, content, p, q)) continue;
-      addClose(world, p.id, q.id, likeOf(world, content, p.id, q.id));
+      addClose(world, p.id, q.id, likeOf(world, content, p.id, q.id, by));
     }
 }
 
@@ -70,8 +91,8 @@ export function dayTogether(world: WorldState, content: EngineContent): void {
     const close = r['close'] as number;
     r['close'] = close - Math.ceil((close * fam.fade) / 100);
   }
-  for (const t of world.entities['tale'] ?? []) {
-    if (t['heard'] !== yesterday || !t['teller']) continue;
+  for (const t of (world.entities['tale'] ?? []).filter((x) => x['heard'] === yesterday)) {
+    if (!t['teller']) continue;
     const [p, q] = [t['teller'] as number, t['person'] as number];
     const r = bondOf(world, p, q);
     if (r) r['close'] = (r['close'] as number) + fam.told;

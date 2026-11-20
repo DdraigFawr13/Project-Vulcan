@@ -1,6 +1,6 @@
 // `npm run families` (P6.1, the Bundle 1 done-when): ten game years on each test seed with the
-// default levers, and one table of what families did: courtships, weddings, births, deaths of old
-// age, the living at the end, and the first wedding's lines. Reads state only; changes nothing.
+// default levers, and one table of what families did: courtships, weddings, feasts, the living each
+// year, wed couples sleeping under one roof at the end, and the first lines and every death. Reads state only; changes nothing.
 // About a minute a seed-year on a 4-core container; not part of `npm run check` or CI (RULES VR-25).
 // Seeds and years: `npm run families -- anvil smoke -- 10` (years after a second `--`).
 import { engine } from './engine.mjs';
@@ -18,13 +18,12 @@ const COUNTED = [
   'family.feast',
   'family.noFeast',
 ];
-const COUNTED_MORE = ['family.born', 'family.oldAge'];
 
 for (const seed of seeds.length ? seeds : ['anvil', 'smoke', 'tallow', 'ledger-1']) {
   const sim = createSim(content);
   const w = createWorld(sim, seed);
   const names = (id) => w.entities.person.find((p) => p.id === id)?.name ?? `#${id}`;
-  const counts = Object.fromEntries([...COUNTED, ...COUNTED_MORE].map((k) => [k, 0]));
+  const counts = Object.fromEntries(COUNTED.map((k) => [k, 0]));
   const firsts = [];
   const deaths = [];
   const byYear = [];
@@ -45,7 +44,15 @@ for (const seed of seeds.length ? seeds : ['anvil', 'smoke', 'tallow', 'ledger-1
     if (day % YEAR === YEAR - 1)
       byYear.push(w.entities.person.filter((p) => p.status === 'alive').length);
   }
-  const row = { seed, years, alive: byYear.join(' '), ...counts };
+  const sleeps = (id) => engine.sleepsIn(w, content, id)?.id ?? 0;
+  const wed = w.entities.person.filter(
+    (p) => p.status === 'alive' && p.partner && p.id < p.partner,
+  );
+  const together = wed.filter((p) => {
+    const q = w.entities.person.find((x) => x.id === p.partner);
+    return q?.status === 'alive' && sleeps(p.id) && sleeps(p.id) === sleeps(q.id);
+  }).length;
+  const row = { seed, years, alive: byYear.join(' '), ...counts, underOneRoof: together };
   console.log(JSON.stringify(row));
   for (const f of [...firsts, ...deaths]) console.log(`  ${f}`);
 }

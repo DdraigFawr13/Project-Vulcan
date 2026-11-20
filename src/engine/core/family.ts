@@ -17,6 +17,8 @@ export interface FamilyDef {
   court: { from: number; days: number; part: number; anySex: boolean };
   /** A wedding feast only while the store holds this many days of food for everyone. */
   feastDays: number;
+  /** Words for the courting and wedding lines ({whose}: the kept home's owner). */
+  words: { together: string; alike: string; tales: string; want: string; live: string };
   /** Memories: the couple's on the day, and the feast's for all who ate it. */
   memories: { wed: string; feast: string };
 }
