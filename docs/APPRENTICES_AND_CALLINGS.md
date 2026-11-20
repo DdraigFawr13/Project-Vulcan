@@ -1,0 +1,34 @@
+# Apprentices, the schoolroom and callings
+
+The settled design for 6B Bundle 6 (P6.13, V-074, V-141, V-175, V-189). Morgan's mock-up form, 2026-11-20: https://claude.ai/artifact/8j37QAP4QUmANBnVWR5NFW (db `answers`, docs q1 to q9 and `overall`). Morgan took every recommendation (q9 left blank, so its recommendation stands) and added one note: "Make sure you balance this such that not everyone gets amazing at a job. There should maybe be caps to potential. And like trait modifiers that change learning speeds."
+
+## What was measured first
+
+Two years of today's game per seed (main `ef1dbca`, default levers): practice alone fills a person's potential in about two years (work.json `learn` 240 + 120 per level minutes). Skill rises in year 1 / year 2: anvil 74 / 30, smoke 149 / 36, tallow 134 / 59, ledger-1 145 / 52. People with a skill at 8+ after two years: anvil 3 of 4, smoke 4 of 4, tallow 5 of 6, ledger-1 5 of 6; at 12+: 2 on each seed. Only 2 to 10 per cent of work hours fall within 6 tiles of someone 3+ levels better. Masters (8+) at the start: anvil Colm crafting 10, Aelfgifu foraging 8; smoke Caoimhe hunting 10; tallow Etain stoneworking 11, Oswin foraging 9; ledger-1 Aldith crafting 10, Deirdre cooking 8.
+
+## The rules (Morgan's answers)
+
+1. **Pace (q1).** Beside a master (level 8+, 3+ levels ahead, awake at the same work within 3 tiles): twice the pace of practice alone. Beside one's own master: three times.
+2. **Past the gift (q2).** Only teaching (a master or a book) takes someone past their potential: up to 2 levels beyond it, never above the teacher's level less 1. Practice alone stops at potential.
+3. **The Apprentices law (q3).** Every master takes one / By choice (the custom, V-183) / None, weighed like any law; a refuser keeps the custom. By choice: a master takes one if sociable or steady, or the learner is their child or a close friend. Pick: own child, then closest friend, then highest gift, among the grown 3+ levels behind who can still learn from them. One bond each way; it ends with a line when the learner is within 1 level of the master (both gain a memory), or either dies or leaves, or a master keeps None. Working beside any master still teaches under None.
+4. **Following (q4).** An apprentice takes their master's work first only among the kinds their Priorities rank level with their best; never above a higher priority (V-041).
+5. **Children (q5).** A child within 3 tiles of a parent at work learns that skill at half the practice pace, up to level 2; a master parent takes their own child first when the child comes of age.
+6. **A master's loss (q6).** When someone at 8+ dies or leaves with nobody living within 2 levels of them in that skill and no book holding it: a ledger line citing the death or leaving, a tale (belief "the old skills are dying out here"), and no teaching past the gift in that skill until a new master grows, one arrives or a book is found.
+7. **Schoolroom, teacher, books (q7).** The schoolroom is a Build sheet row (1 to 4), sited by the colonists. Teacher is a Priorities row. Mornings, the teacher teaches children: each lesson raises a child's strongest gift at the practice pace. With no children, the teacher scribes: 8 hours of sittings with a master in the master's free time write a book ("the book of smithing, Colm's method, level 10"), kept on the schoolroom shelf. Reading it there in free time teaches that skill at 2× and past the gift up to the book's level less 2. A book is lost if the schoolroom is taken down.
+8. **Callings frame (q8).** Content entries (bar, push, line), at most one holder each, checked every 28 days, the best who passes takes it with a line saying why, held for life, then passed on the same way. Keep the frame general (opening bar, stages with signs, turning points, endings) so 6E's dark paths reuse it; only one stage is used now.
+9. **The four callings (q9).** Peacemaker: steady or cheerful, not hot-tempered, among the 2 most trusted, friends with half the living; push: friends' grievances cool twice as fast (defy `cool` 7 days to 4). Lorekeeper: holds 12+ tales and has told 30+, intellect 11+; push: tales they tell count double towards beliefs, and their hearers keep them twice as long. Master (titled by trade, "the master mason"): a masterwork ambition fulfilled or 12+ in a craft, and one apprentice taught to the end; push: one named masterwork with its own line and tale, and their apprentices learn at 4× instead of 3×. Champion: holds `fought-off`, holds the guard role, hunting or fighting 6+; push: sits the watch fire first when a pack is near, and others' `woods-dangerous` belief fades twice as fast. A calling may never come on a seed.
+
+## Balance (Morgan's note)
+
+- **Trait pace:** each trait adds a per cent to every minute of practice (content, tunable): steady +25, devout +10, cheerful +10, restless −25, hot-tempered −15, solitary −10; never under 25 per cent.
+- **High levels come slowly alone:** from level 8, practice alone takes 3× as long; teaching is not slowed. So few reach 12 without a master or book.
+- **Potential stays the cap** for practice alone (q2); teaching adds at most 2.
+- **Done-when for balance:** a two-year table per seed in the PR (`npm run teach`): people at 8+ and 12+, rises a year, apprentices bound and finished, taught rises, masters lost; 12+ should fall from today's 2 a seed.
+
+## Prototype measurement (for the build thread)
+
+This spec thread ran a throwaway prototype of rules 1 to 6 plus the balance pace before handing over (patch, not merged: `/mnt/project-files/vulcan/p6b-apprentices/prototype.patch`; tables `teach-*.txt` beside it). Two years per seed: 12+ fell to 0 (anvil, smoke, ledger-1) and 1 (tallow); 8+ held at 5 a seed; 2 apprentices bound a seed. **But no taught rise happened on any seed:** bound pairs rarely stood at the same work within reach (Eadgyth took Edwin in cooking; Colm took Aelfgifu in crafting; neither cooked or crafted beside the other). The build must make rule 4 bite (for example, a free apprentice with the master's work at an equal priority walks to work beside the master, or a bond is made only in a skill the learner already works at) and show taught rises in its table.
+
+## Build order
+
+Three engine PRs, each a fresh thread (Morgan, 2026-11-20): (1) pace, apprentices, the law, children watching, a master's loss, the person-sheet lines and the Apprentices row on the Laws sheet; (2) the schoolroom, teacher, lessons and books; (3) callings. Done when: an apprentice beside a master levels faster than one alone; the ledger names who taught whom; each calling's test meets its bar and shows its push.
