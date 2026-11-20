@@ -8,13 +8,12 @@ import { content } from '../content/index.ts';
 import type { AnimalView, ChunkView, Spot3 } from '../worker/index.ts';
 import { frameIndex, TILE } from './frames.ts';
 import { WILD } from './sheets.ts';
+import { Trails, type TrailClock } from './trail.ts';
 
 const GROUND = 'tiles-world';
 const SNOW = 'tile.snow.1';
 const COMPASS = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'];
-/** Gliding, as for people: at least a tile a game minute at 1x, never about 0.1 s behind. */
-const GLIDE = 320;
-const CATCH_UP = 100;
+/** Milliseconds per walk frame; animals walk their trails as people do (trail.ts). */
 const STRIDE = 160;
 
 /** The alpha of a print `age` hours old: 1 when fresh, 0.15 at the end of its life. */
@@ -41,9 +40,12 @@ export class WildSprites {
   private list: AnimalView[] = [];
   private middens: Phaser.GameObjects.Image[] = [];
   private middenKey = '';
+  private readonly trails = new Trails();
+  private readonly clock: TrailClock;
 
-  constructor(game: Phaser.Game, scene: Phaser.Scene) {
+  constructor(game: Phaser.Game, scene: Phaser.Scene, clock: TrailClock) {
     this.scene = scene;
+    this.clock = clock;
     game.events.once(Phaser.Core.Events.READY, () =>
       scene.events.once(Phaser.Scenes.Events.CREATE, () => {
         this.live = true;
@@ -81,6 +83,8 @@ export class WildSprites {
   /** The animals now on the surface (sent when any moved). */
   set(list: readonly AnimalView[]): void {
     this.list = [...list];
+    this.trails.keep(new Set(list.map((a) => a.id)));
+    for (const a of list) this.trails.note(a.id, this.clock.latest, a.x, a.y);
     if (!this.live || !this.scene.textures.exists(WILD)) return;
     const ids = new Set(list.map((a) => a.id));
     for (const [id, s] of this.animals)
@@ -197,20 +201,19 @@ export class WildSprites {
     this.prints.set(key, images);
   }
 
-  /** Each frame: slide every animal to its tile, facing as sent, with two walk frames. */
+  /** Each frame: draw every animal where the screen's clock finds it on its trail, facing as
+   * sent, with two walk frames while it moves. */
   private glide(delta: number): void {
+    const now = this.clock.at(this.scene.game.loop.time);
     for (const s of this.animals.values()) {
-      const [tx, ty] = [s.view.x * TILE, s.view.y * TILE];
-      const [dx, dy] = [tx - s.image.x, ty - s.image.y];
-      const far = Math.hypot(dx, dy);
-      if (far < 0.5) {
+      const d = this.trails.at(s.view.id, now);
+      const [x, y] = d ? [d.x, d.y] : [s.view.x, s.view.y];
+      s.image.setPosition(x * TILE, y * TILE);
+      if (!d?.moving) {
         if (s.walked) s.image.setFrame(frameOf(s.view, 0));
         s.walked = 0;
         continue;
       }
-      const pace = Math.max((GLIDE * delta) / 1000, (far * delta) / CATCH_UP);
-      const reach = far > TILE * 20 ? far : Math.min(far, pace);
-      s.image.setPosition(s.image.x + (dx / far) * reach, s.image.y + (dy / far) * reach);
       s.walked += delta;
       s.image.setFrame(frameOf(s.view, Math.floor(s.walked / STRIDE) % 2));
     }

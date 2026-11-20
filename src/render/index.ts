@@ -1,16 +1,17 @@
 // Public surface of the render layer: boots Phaser with the valley scene and hands the page a
 // small handle to feed it snapshots and drive the camera.
 import Phaser from 'phaser';
-import type {
-  AnimalView,
-  AuraView,
-  BuildView,
-  ChunkView,
-  ClockView,
-  GoodsView,
-  PersonView,
-  Speed,
-  WalkerView,
+import {
+  TICKS_PER_SECOND,
+  type AnimalView,
+  type AuraView,
+  type BuildView,
+  type ChunkView,
+  type ClockView,
+  type GoodsView,
+  type PersonView,
+  type Speed,
+  type WalkerView,
 } from '../worker/index.ts';
 import { BuildSprites } from './build.ts';
 import { Firelight } from './firelight.ts';
@@ -27,6 +28,7 @@ import { Finder } from './finder.ts';
 import { WildSprites } from './wild.ts';
 import { WearLayer } from './wear.ts';
 import { CanopyLayer } from './canopy.ts';
+import { TrailClock } from './trail.ts';
 import { TILE, ValleyScene, type Hover } from './scene.ts';
 
 export type { Hover } from './scene.ts';
@@ -63,8 +65,12 @@ export interface Renderer {
   setAnimals(animals: readonly AnimalView[]): void;
   /** The animal standing on a tile of the surface, if any: its id. */
   animalAt(x: number, y: number): number | undefined;
-  /** Moves the people to where the latest snapshot stands them (P2.3); they glide there. */
-  movePeople(walkers: readonly WalkerView[]): void;
+  /** Moves the people to where the latest snapshot (its tick and speed) stands them (P2.3); they
+   * walk there a few game minutes behind, at the pace they really walked (trail.ts). */
+  movePeople(
+    walkers: readonly WalkerView[],
+    at: { tick: number; speed: Speed; skipping: boolean },
+  ): void;
   /** Draws the store, the items lying about and test marks (P2.4), the plans (P3.1) and the
    * furniture (P3.4); at night the firelight (P3.6), and the progress bars, which glide at the
    * snapshot's speed (a skip counts as the fastest). */
@@ -107,7 +113,8 @@ export function startRenderer(
 
 /** The scene and every sprite layer drawn over it, made in drawing order. */
 function layersOf(game: Phaser.Game, scene: ValleyScene, parent: HTMLElement) {
-  const people = new PeopleSprites(game, scene);
+  const clock = new TrailClock();
+  const people = new PeopleSprites(game, scene, clock);
   const goods = new GoodsSprites(game, scene);
   const build = new BuildSprites(game, scene);
   const fields = new FieldSprites(game, scene);
@@ -117,13 +124,13 @@ function layersOf(game: Phaser.Game, scene: ValleyScene, parent: HTMLElement) {
   const green = new GreenSprites(game, scene);
   const light = new Firelight(game, scene);
   const bars = new WorkBars(game, scene);
-  const wild = new WildSprites(game, scene);
+  const wild = new WildSprites(game, scene, clock);
   const wear = new WearLayer(game, scene);
   const canopy = new CanopyLayer(game, scene);
   const finder = new Finder(game, scene, () => people.spots());
   const bubbles = new Bubbles(game, scene, parent, () => people.spots());
   return {
-    ...{ game, scene, parent, people, goods, build, fields, shafts, burial, furniture },
+    ...{ game, scene, parent, clock, people, goods, build, fields, shafts, burial, furniture },
     ...{ green, light, bars, wild, wear, canopy, finder, bubbles },
   };
 }
@@ -197,7 +204,7 @@ function viewHandle(l: Layers) {
 }
 
 /** The people and animals on screen, and finding them. */
-function peopleHandle({ game, scene, parent, people, wild, finder, bubbles }: Layers) {
+function peopleHandle({ game, scene, parent, clock, people, wild, finder, bubbles }: Layers) {
   return {
     placeOf: (id: number) => people.place(id),
     follow: (id: number | undefined, pulse?: boolean) => {
@@ -214,7 +221,11 @@ function peopleHandle({ game, scene, parent, people, wild, finder, bubbles }: La
     showNames: (on: boolean) => finder.showNames(on),
     setPeople: (list: readonly PersonView[]) => people.set(list),
     personAt: (x: number, y: number) => people.at(x, y),
-    movePeople: (walkers: readonly WalkerView[]) => {
+    movePeople: (
+      walkers: readonly WalkerView[],
+      at: { tick: number; speed: Speed; skipping: boolean },
+    ) => {
+      clock.seen(at.tick, TICKS_PER_SECOND[at.speed], at.skipping);
       people.move(walkers);
       bubbles.setThoughts(walkers);
     },

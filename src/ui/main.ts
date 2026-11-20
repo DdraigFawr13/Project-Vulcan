@@ -216,7 +216,11 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       orders.snapshot(panel.kind === 'tile' ? shown : undefined);
       reached = message.reached;
       renderer.applyChunks(message.chunks);
-      renderer.movePeople(message.walkers);
+      renderer.movePeople(message.walkers, {
+        tick: message.tick,
+        speed: message.speed,
+        skipping: message.skipping,
+      });
       if (message.animals) renderer.setAnimals(message.animals);
       // A skip ends paused in the worker; the bar's speed follows it.
       if (skipping && !message.skipping) speed = message.speed;
