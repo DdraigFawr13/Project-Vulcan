@@ -9,6 +9,7 @@ import {
   bondOf,
   createSim,
   createWorld,
+  streamFor,
   likeOf,
   step,
   TICKS_PER_DAY,
@@ -16,6 +17,7 @@ import {
   type EntityRow,
 } from '../index.ts';
 import { hourTogether } from './close.ts';
+import { drawnTo, drawOrientations } from './drawn.ts';
 
 // Two days of courting rather than a month keeps the run short; the rule reads `court.days`.
 const fam = { ...content.family, court: { ...content.family.court, days: 2 } };
@@ -70,6 +72,18 @@ describe('families: courtship and weddings', () => {
     const like = likeOf(w, sim.content, p.id, q.id);
     expect(like).toBeGreaterThan(0);
     expect(bondOf(w, p.id, q.id)?.['close']).toBe(like);
+  });
+
+  it('the founders always hold a woman and a man drawn to each other', () => {
+    // Content where everyone is drawn to their own sex: the draw falls back to one such pair.
+    const gay = fam.orientations.map((o) => ({ ...o, weight: o.drawn === 'same' ? 1 : 0 }));
+    const only = { ...sim.content, family: { ...fam, orientations: gay } };
+    const w = createWorld(sim, 'ledger-1');
+    const band = alive(w);
+    for (const x of band) x['orientation'] = '';
+    drawOrientations(w, only, streamFor(w, 'kin'));
+    const pair = (['f', 'm'] as const).map((sex) => band.find((x) => x['sex'] === sex)!);
+    expect(drawnTo(only, pair[0]!, pair[1]!) && drawnTo(only, pair[1]!, pair[0]!)).toBe(true);
   });
 
   it('two grown close court, wed after the courting days and feast on the green', () => {
