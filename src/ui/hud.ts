@@ -2,20 +2,28 @@
 // game is paused, with no word, per the taste board), the tile readout, level and zoom buttons, a
 // debug line, and the starting, loading and error screens. Shows what it is given; it computes no
 // game rule (GAME-02).
-import type { ClockView, MoodView, Speed, TimingView, WeatherView } from '../worker/index.ts';
+import type {
+  ClockView,
+  JumpSpan,
+  JumpView,
+  LandingsView,
+  MoodView,
+  Speed,
+  TimingView,
+  WeatherView,
+} from '../worker/index.ts';
 import { el } from './dom.ts';
+import { TimeBar } from './timebar.ts';
 import { versionTag } from './version.ts';
 
 /** The panels the bar opens. */
 export type PanelButton =
-  'ledger' | 'work' | 'build' | 'laws' | 'stock' | 'saves' | 'region' | 'dawn' | 'mood';
-
-const SPEED_LABELS: Record<Speed, string> = { 0: '❚❚', 1: '1×', 2: '2×', 3: '3×' };
+  'ledger' | 'work' | 'build' | 'laws' | 'stock' | 'saves' | 'region' | 'dawn' | 'mood' | 'stops';
 
 export interface HudActions {
   setSpeed(speed: Speed): void;
-  /** Skip ahead to the next notable line (P2.7). */
-  skip(): void;
+  /** Jump ahead (V-191): to the next Pause or Slow line, or a month, a season or a year. */
+  jump(span: JumpSpan): void;
   zoom(direction: 1 | -1): void;
   /** One level down (1) or up (-1). */
   level(direction: 1 | -1): void;
@@ -37,18 +45,8 @@ export class Hud {
     'data-testid': 'mood',
     hidden: '',
   });
-  private readonly speeds = new Map<Speed, HTMLButtonElement>();
-  /** Skip ahead (P2.7), lit while a skip runs. */
-  private readonly skip = el(
-    'button',
-    {
-      type: 'button',
-      'aria-label': 'Skip ahead',
-      'aria-pressed': 'false',
-      'data-testid': 'speed-skip',
-    },
-    '▸▸',
-  );
+  /** ❚❚, the speed plate and ▸▸ with its tray, and the jump line (V-191). */
+  readonly time: TimeBar;
   private readonly panels = new Map<PanelButton, HTMLButtonElement>();
   private readonly readout = el('div', { class: 'hud readout', hidden: '' });
   /** fps and tick, for developers only (`?debug` in the URL); the smoke reads its data fields. */
@@ -81,21 +79,14 @@ export class Hud {
     // iOS Safari applies :active (the pressed plate) only when the page listens for touches.
     document.addEventListener('touchstart', () => {}, { passive: true });
     this.debug.hidden = !debug;
-    const group = el('div', { class: 'speeds', role: 'group', 'aria-label': 'Speed' });
-    for (const speed of [0, 1, 2, 3] as const) {
-      const label = speed === 0 ? 'Pause' : `Speed ${speed}`;
-      const button = el(
-        'button',
-        { type: 'button', 'aria-label': label, 'data-testid': `speed-${speed}` },
-        SPEED_LABELS[speed],
-      );
-      button.addEventListener('click', () => actions.setSpeed(speed));
-      this.speeds.set(speed, button);
-      group.append(button);
-    }
-    this.skip.addEventListener('click', () => actions.skip());
+    this.time = new TimeBar({
+      setSpeed: (speed) => actions.setSpeed(speed),
+      jump: (span) => actions.jump(span),
+      stops: () => actions.togglePanel('stops'),
+      opened: () => this.showMenu(false),
+    });
+    const group = this.time.group;
     this.mood.addEventListener('click', () => actions.togglePanel('mood'));
-    group.append(this.skip);
     // Ledger stays in the bar; the rest fold under ⋯ on a phone (UI_STYLE.md) and sit in the bar on
     // a desktop, where the menu is laid out inline.
     const panels = el('div', { class: 'speeds', role: 'group', 'aria-label': 'Panels' });
@@ -114,6 +105,7 @@ export class Hud {
       ['stock', 'Stock'],
       ['region', 'Region'],
       ['dawn', 'Yesterday'],
+      ['stops', 'Stops'],
       ['saves', 'Saves'],
     ] as const) {
       const button = el(
@@ -121,6 +113,7 @@ export class Hud {
         { type: 'button', class: 'word', 'aria-pressed': 'false', 'data-testid': `open-${kind}` },
         label,
       );
+      if (kind === 'stops') button.setAttribute('aria-label', 'What stops play');
       button.addEventListener('click', () => {
         this.showMenu(false);
         actions.togglePanel(kind);
@@ -132,7 +125,7 @@ export class Hud {
     this.menu = { root: menu, button: more };
     const status = el('div', { class: 'status' });
     status.append(group, panels);
-    bar.append(this.clock, status);
+    bar.append(this.clock, status, this.time.line, this.time.tray);
     const zoom = el('div', { class: 'hud zoom' });
     this.up.addEventListener('click', () => actions.level(-1));
     this.down.addEventListener('click', () => actions.level(1));
@@ -169,8 +162,10 @@ export class Hud {
     weather?: WeatherView;
     skipping?: boolean;
     mood?: MoodView;
+    jump?: JumpView;
+    landings: LandingsView;
   }): void {
-    const { clock, tick, speed, at, weather, skipping = false, mood } = s;
+    const { clock, tick, at, weather, mood } = s;
     const pad = (n: number) => String(n).padStart(2, '0');
     const season = clock.season.charAt(0).toUpperCase() + clock.season.slice(1);
     const sky = weather ? ` · ${weather.words}, ${weather.temperature} °C` : '';
@@ -192,9 +187,8 @@ export class Hud {
       line.append(' · ', this.mood);
     }
     this.clock.append(line);
-    for (const [s, button] of this.speeds)
-      button.setAttribute('aria-pressed', String(!skipping && s === speed));
-    this.skip.setAttribute('aria-pressed', String(skipping));
+    this.time.show({ ...s, skipping: s.skipping ?? false });
+    this.bar.classList.toggle('jumping', s.skipping ?? false);
     this.debug.dataset['tick'] = String(tick);
     this.debug.dataset['at'] = String(Math.round(at));
     this.debug.textContent = `${this.fps} fps · tick ${tick}${this.timing}`;
@@ -241,6 +235,7 @@ export class Hud {
 
   /** Opens or folds the ⋯ menu. */
   showMenu(open: boolean): void {
+    if (open) this.time.fold();
     this.menu.root.classList.toggle('open', open);
     this.menu.button.setAttribute('aria-expanded', String(open));
   }
@@ -259,6 +254,7 @@ export class Hud {
           kind === 'stock' ||
           kind === 'region' ||
           kind === 'saves' ||
+          kind === 'stops' ||
           kind === 'mood',
       ),
     );

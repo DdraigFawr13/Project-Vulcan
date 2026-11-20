@@ -1,4 +1,4 @@
-// The game's keys: Escape closes a sheet, space pauses and resumes, 1 to 3 set the speed, + and −
+// The game's keys: Escape closes a sheet, space pauses and resumes, 1 to 6 set the speed, + and −
 // zoom, > and < change level (the caller allows reached levels only). Ignored while the title or arrival screen covers the game, while
 // typing in a field, and with the browser's own modifier shortcuts.
 import type { Speed } from '../worker/index.ts';
@@ -19,7 +19,7 @@ export function gameKey(e: KeyboardEvent, hudRoot: HTMLElement, act: KeyActions)
   if ((e.target as HTMLElement).closest?.('input')) return;
   if (e.key === 'Escape') act.close();
   else if (e.key === ' ') act.pause();
-  else if (e.key === '1' || e.key === '2' || e.key === '3') act.speed(Number(e.key) as Speed);
+  else if (/^[1-6]$/.test(e.key)) act.speed(Number(e.key) as Speed);
   else if (e.key === '+' || e.key === '=') act.zoom(1);
   else if (e.key === '-' || e.key === '_') act.zoom(-1);
   else if (e.key === '>' || e.key === 'PageDown') act.level(1);

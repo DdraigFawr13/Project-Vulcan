@@ -18,15 +18,26 @@ import {
   submitCommand,
   SYSTEMS,
   TEST_TOOLS,
-  ticksPerMonth,
   yesterdayOf,
   type SimEvent,
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
-import { createPace, jump, setSpeed, SKIP_MS, skipEnds, stopSkip, ticksDue } from './pace.ts';
+import {
+  createPace,
+  jump,
+  jumpDone,
+  react,
+  setSpeed,
+  SKIP_MS,
+  skipEnds,
+  stopSkip,
+  ticksDue,
+} from './pace.ts';
+import { actOf, landing, landingsOf, stopSettings } from './stops.ts';
 import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type { ChunkView, FromWorker, LedgerLine, ToWorker } from './protocol.ts';
+import type { JumpView, StopAct } from './protocol-time.ts';
 import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave } from './save.ts';
 import { ANSWERS, isRead } from './answers.ts';
@@ -43,6 +54,9 @@ import { animalFeed, leftoversView } from './wild.ts';
 
 /** How often the worker wakes (ms). Timing comes from the clock, not from this interval. */
 const WAKE_MS = 10;
+/** A wake runs its owed ticks for at most this long (ms): a device that can't keep up with a fast
+ * speed runs as fast as it can and still answers the page between wakes. */
+const RUN_MS = 40;
 
 const timing = createTiming(SYSTEMS.length);
 const sim = createSim(
@@ -54,6 +68,8 @@ let world: WorldState | undefined;
 /** The page's test mode: test tools are applied only when it is on. */
 let testMode = false;
 let pace = createPace(performance.now());
+/** What each stop kind does (V-191), the content defaults until the page sends its own. */
+let stops = stopSettings();
 /** Chunk versions the page has already been sent, per level; empty until the first snapshot. */
 let sent: number[][] = [];
 /** The Build view last sent, as JSON; empty until the first snapshot. */
@@ -75,35 +91,44 @@ const post = (message: FromWorker, transfer: Transferable[] = []): void =>
   postMessage(message, { transfer });
 
 /** Runs one tick, timed, and collects its lines (sealing trims the log's front at midnight);
- * true when one of them is notable. */
-function tickOnce(w: WorldState): boolean {
+ * returns what the strongest of its notable lines asks of the clock (V-191). */
+function tickOnce(w: WorldState): StopAct | undefined {
   const start = performance.now();
-  let notable = false;
-  for (const line of step(w, sim, 1)) {
-    unposted.push(line);
-    notable ||= sim.notable(line);
-  }
+  const lines = step(w, sim, 1);
+  unposted.push(...lines);
   recordTick(timing, performance.now() - start, systemNames);
-  return notable;
+  return actOf(lines, sim.notable, stops);
 }
 
-/** Runs `ticks` ticks, or, skipping ahead (P2.7), as many as fit in `SKIP_MS`; then hands the
- * days sealed meanwhile to the page to archive, so a save never carries them. */
+/** Runs `ticks` ticks (for at most `RUN_MS`), or, jumping ahead, as many as fit in `SKIP_MS`; then
+ * hands the days sealed meanwhile to the page to archive, so a save never carries them. */
 function run(ticks: number): void {
   const w = world;
   if (!w) return;
   if (pace.skip) {
-    // Tick by tick, exactly as at any speed, so a skip writes the ledger a 3x run would.
+    // Tick by tick, exactly as at any speed, so a jump writes the ledger a 3x run would.
     const until = performance.now() + SKIP_MS;
     while (pace.skip && performance.now() < until) {
-      const notable = tickOnce(w);
-      if (skipEnds(pace, w.tick, notable)) stopSkip(pace);
+      const act = tickOnce(w);
+      if (skipEnds(pace, w.tick, act)) stopSkip(pace);
     }
-  } else for (let i = 0; i < ticks; i += 1) tickOnce(w);
+  } else {
+    const until = performance.now() + RUN_MS;
+    for (let i = 0; i < ticks && performance.now() < until; i += 1)
+      if (react(pace, tickOnce(w))) break;
+  }
   if (w.sealed.length) {
     post({ type: 'segments', items: w.sealed.map(({ key, text }) => ({ key, text })) });
     w.sealed = [];
   }
+}
+
+/** The jump under way: where it lands and how far it has come. */
+function jumpView(tick: number): JumpView {
+  const span = pace.span ?? 'next';
+  const done = jumpDone(pace, tick);
+  const to = span === 'next' ? 'the next event' : landingsOf(pace.from ?? tick)[span];
+  return { span, to, ...(done !== undefined && { done }) };
 }
 
 /** Line `e` for the page, as the running world sees it. */
@@ -143,6 +168,8 @@ function snapshot(w: WorldState): void {
       at: pace.last,
       speed: pace.speed,
       skipping: pace.skip,
+      ...(pace.span && { jump: jumpView(w.tick) }),
+      landings: landingsOf(w.tick),
       day: { ...lawHours(w, content), ...sunOf(w.tick) },
       law: lawsOf(w),
       clock: clockView(w.tick),
@@ -244,8 +271,8 @@ const CONTROLS: { [K in Control['type']]: (m: Extract<Control, { type: K }>) => 
     adopt(loaded, 'save');
   },
   setSpeed: (m) => run(setSpeed(pace, m.speed, performance.now())),
-  skip() {
-    if (world) pace.skip = true;
+  setStops(m) {
+    stops = stopSettings(m.stops);
   },
   lookAgain() {
     // Only on arrival and only once: the same seed made again with the band's second choice.
@@ -253,11 +280,9 @@ const CONTROLS: { [K in Control['type']]: (m: Extract<Control, { type: K }>) => 
       adopt(createWorld(sim, world.seed, 1), 'seed');
   },
   jump(m) {
-    // A time jump is a test tool: a page not in test mode gets nothing (V-041).
-    if (!world || !testMode) return;
-    const { monthsPerYear, seasons } = content.calendar;
-    const months = m.span === 'month' ? 1 : monthsPerYear / seasons.length;
-    jump(pace, world.tick, months * ticksPerMonth(content.calendar));
+    // For everyone since V-191: the player's clock, not a lever. Every tick runs on the way.
+    if (!world) return;
+    jump(pace, m.span, world.tick, m.span === 'next' ? undefined : landing(world.tick, m.span));
   },
   requestSnapshot() {
     if (world) snapshot(world);

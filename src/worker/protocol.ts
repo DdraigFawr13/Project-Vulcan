@@ -23,9 +23,7 @@ import type {
   ShaftView,
 } from './protocol-build.ts';
 
-/** 0 is paused; 1, 2 and 3 run 10, 30 and 100 game minutes a second. */
-export type Speed = 0 | 1 | 2 | 3;
-export const TICKS_PER_SECOND: Readonly<Record<Speed, number>> = { 0: 0, 1: 10, 2: 30, 3: 100 };
+import type { JumpSpan, JumpView, LandingsView, Speed, StopSettings } from './protocol-time.ts';
 
 export type ToWorker =
   /** A plain seed rolls its region and offers its valleys (`picker`); a valley seed
@@ -40,14 +38,14 @@ export type ToWorker =
   | { type: 'command'; tick: number; kind: string; data?: EventData }
   /** Whether the page opened in test mode; until it says so, test tools are refused (V-041). */
   | { type: 'testMode'; on: boolean }
-  /** Any speed, pause included, also ends a skip. */
+  /** Any speed, pause included, also ends a jump. */
   | { type: 'setSpeed'; speed: Speed }
-  /** Skip ahead (P2.7): run as fast as the device allows until a notable line, then pause. */
-  | { type: 'skip' }
+  /** What each stop kind does (V-191): the page's device setting, sent at start and on change. */
+  | { type: 'setStops'; stops: StopSettings }
   /** On arrival, once, before the first tick: the band takes the cart to its second green. */
   | { type: 'lookAgain' }
-  /** Test mode only, refused otherwise: skip a whole month or season, then pause. */
-  | { type: 'jump'; span: 'month' | 'season' }
+  /** Jump ahead (V-191): as fast as the device allows, every tick run, then pause. */
+  | { type: 'jump'; span: JumpSpan }
   /** The page asks once per screen frame, with at most one request waiting. */
   | { type: 'requestSnapshot' }
   /** The running world as a save; `auto` and `standby` (the tab-close copy) are echoed back. */
@@ -140,7 +138,7 @@ export interface LedgerLine {
   older?: true;
   /** Who the line is about (person ids), for a person's Ledger tab (P2.6). */
   actors?: number[];
-  /** A notable line (content `events`): it goes in the alert feed, and skip ahead stops on it. */
+  /** A notable line (content `events`): an alert, and play reacts as its stop kind is set. */
   notable?: true;
   /** For a notable line about someone: where they stood as it was sent, and that place in words
    * ("at the camp", "12 tiles north of the camp"), for the alert feed and its Show button. */
@@ -339,8 +337,10 @@ export type FromWorker =
        * that wake's ticks unrun. */
       at: number;
       speed: Speed;
-      /** Skipping ahead; ends paused, on the tick that wrote a notable line. */
+      /** Jumping ahead (`jump` says where to); ends paused. */
       skipping: boolean;
+      jump?: JumpView;
+      landings: LandingsView;
       /** The colony's day (P2.5): work from and until, and bedtime, in whole hours; since P4.8 the
        * hours the work-hours law sets this season. */
       day: HoursView;
