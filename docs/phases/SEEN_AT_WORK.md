@@ -8,6 +8,7 @@ A side track built beside 6B and 6C: colonists who are interesting to watch. Mor
 - [ ] Part 1, tools in hand, carried loads and work motions (screens)
 - [x] Part 2 numbers checked and answered, 2026-11-20 (V-194, form https://claude.ai/artifact/HJaWXaSVTfGZ4ATbD8sgRi)
 - [ ] Part 2, required tools, knapping and five new tools (engine)
+- [x] Part 3 mock-up answered, 2026-11-20 (https://claude.ai/artifact/FSWME24XACU6aYDSz66UX8, every recommendation)
 - [ ] Part 3, outer clothes that show (screens)
 
 ## Design (VR-62)
@@ -18,8 +19,8 @@ A side track built beside 6B and 6C: colonists who are interesting to watch. Mor
 - **Required tools (Part 2).** A `tools.json` kind may say `needed: true` for some of the jobs it serves: pick for mining and quarrying, axe for felling and splitting, spear for hunting large game (hares are snared by hand), hammer for smithing. Without one, nobody takes up that work, and the job's row says what it waits on ("no pick in the valley"); other kinds keep the 75% speed. A last tool breaking writes one notable line naming what stopped. The hammer gains smithing in its `serves` and is needed only there; building keeps the 75% speed without one (V-194).
 - **Knapping (Part 2).** Anyone with some crafting skill knaps a stone tool at a chopping block (a stone and a log, about 2 hours, no forge) when a needed kind has no free tool and a person who works that kind has none; a `toolmaking` row on the Work sheet. Stone tools, the cart's included, wear out in half today's life (form Q6 C; stone `life` 3600 to 1800 work minutes, V-194), so metal stays wanted (V-100). Someone who would take up a needed kind's work while every tool of it is held by others knaps their own if they can, else does other work (V-194).
 - **Five new tools (Part 2, form Q7 B).** Data entries in `tools.json` and `items.json`, each with its jobs and drawing: bone needle (tailoring, from hunters' bones), sickle (reaping and cutting thatch), chisel (the mason's dressed stone), fishing line (fishing) and saw (carpentry). Needed (V-194): the bone needle for tailoring, and the chisel for dressed stone only (rough stone walls go up without one). Speed only: the sickle, the fishing line and the saw, which takes carpentry over from the hammer. The cart brings one of each new tool beside its three stone tools of each old kind. The hunting bow stays with Phase 8.
-- **Clothes (Part 3).** The outer garment each person wears (cloak, leather coat, hide coat) is drawn over their villager in its own colours, per race body, shown outdoors when cold (form Q9 A); worn-out ones look ragged and dull, fine ones get a trim. The everyday garment stays drawn into each villager (form Q8 A).
-- **Later.** Defences grow from fear in Phase 8, P8.2 (form Q10 A): a fence after wolves take stock, a palisade after a raid, a stone wall and gatehouse after a breach, sited by the builders with a line saying why, under a Defences law (Open, Watchful, Walled). Bows and armour come with the Phase 8 combat core (P8.1); Morgan may pull a hunting bow into Part 2.
+- **Clothes (Part 3).** The outer garment each person wears (cloak, leather coat, hide coat) is drawn on their villager, shown outdoors when cold (form Q9 A); worn-out ones look ragged and dull, fine ones get a trim (details under Part 3). The everyday garment stays drawn into each villager (form Q8 A).
+- **Later.** Defences grow from fear in Phase 8, P8.2 (form Q10 A): a fence after wolves take stock, a palisade after a raid, a stone wall and gatehouse after a breach, sited by the builders with a line saying why, under a Defences law (Open, Watchful, Walled). Bows and armour come with the Phase 8 combat core (P8.1); the hunting bow stays with them (V-194).
 
 ## Parts
 
@@ -42,5 +43,12 @@ Numbers (2026-11-20, five years on each test seed with today's code; scripts and
 ### Part 3: outer clothes that show
 
 Mock-up: UI. Done when: each race shows the three outer garments at 390 px, outdoors in the cold only, with ragged and fine looks, and `npm run test:browser` passes.
+
+Mock-up answered 2026-11-20 (https://claude.ai/artifact/FSWME24XACU6aYDSz66UX8, every recommendation; sources and raw art in the project files under `vulcan/saw-clothes/`):
+
+- **Drawing (Q1 A).** PixelLab `edit-image-pixen` (1 generation) puts one coat on one villager's four facings at once (a 128 by 32 strip, frame 0). A sheet of all 15 villagers in one edit loses the races, so one villager a call. The edit redraws the face and hair slightly, so each edited strip is a whole drawing per coat (`person.<race>.v<n>.<coat>.<facing>.<frame>` or similar, the build picks the name): frame 1 is frame 0 moved up 1 pixel and frame 2 equals frame 0, as today. Cleaned to `art/palette.gpl` by nearest colour. 7 villagers (each race's v1) are made; 8 remain, about 24 generations plus redos. A new villager design later costs 3.
+- **Ragged (Q2 A).** A garment in its last `clothes.ragged` per cent of life: the coat's pixels dulled and darkened, a torn, uneven hem and a few small holes showing the tunic, drawn by code over the coat's pixels (those the edit changed below the head).
+- **Fine (Q3 A).** Worth `fine`: richer colour, a one-pixel brass trim along the hem and a clasp at the throat, by code. Good and plain look the same.
+- **When.** Outdoors below the warmth comfort line; indoors or warm, the villager as today. The render reads the worn outer item and its life and worth from the worker's people view and never works out a rule (GAME-02).
 
 - Reading list: `docs/DECISIONS.md` V-134 V-168 V-184 V-190; `docs/CLOTHES_AND_LOOM.md`; `src/render/MODULE.md`; `src/engine/needs/MODULE.md`; `docs/ART.md`
