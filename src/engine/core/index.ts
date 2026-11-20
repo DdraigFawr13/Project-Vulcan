@@ -3,6 +3,7 @@ export { RngStream, streamFor, deriveStreamState, hashString, hash128, nextUint3
 export type { RngState } from './rng.ts';
 export {
   clockAt,
+  today,
   yearNow,
   ticksPerMonth,
   START_TICK,
@@ -34,6 +35,7 @@ export * from './colony.ts';
 export * from './family.ts';
 export * from './worship.ts';
 export * from './teach.ts';
+export * from './tavern.ts';
 export * from './defy.ts';
 export { list, itemName, lower } from './words.ts';
 export { clamp, smooth, cheb, dice, roughDistance } from './maths.ts';

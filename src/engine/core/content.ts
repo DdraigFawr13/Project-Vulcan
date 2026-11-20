@@ -14,6 +14,7 @@ import type { FamilyDefs } from './family.ts';
 import type { WorshipDefs } from './worship.ts';
 import type { TeachDefs } from './teach.ts';
 import type { DefyDefs } from './defy.ts';
+import type { TavernDefs } from './tavern.ts';
 import type { BiomesDef, SeasonsDef, WeatherDef } from './climate.ts';
 import type { CalendarDef } from './clock.ts';
 import type { FeatureDef } from './ground.ts';
@@ -37,6 +38,7 @@ export interface EngineContent
     FamilyDefs,
     WorshipDefs,
     TeachDefs,
+    TavernDefs,
     DefyDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts); `importance` 1

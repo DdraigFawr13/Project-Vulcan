@@ -7,6 +7,7 @@
 // back from any version to the event; the listener holds that version and may believe it.
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { addEntity, awake, people } from '../entity/index.ts';
+import { cupsTonight, inTavern, keeperOf } from '../inn/index.ts';
 import { byAFire, winterEvening } from '../people/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { feedBelief } from './belief.ts';
@@ -22,7 +23,7 @@ const apart = (a: EntityRow, b: EntityRow): number =>
         Math.abs((a['y'] as number) - (b['y'] as number)),
       );
 
-type Place = 'meal' | 'leisure' | 'work' | 'hearth';
+type Place = 'meal' | 'leisure' | 'work' | 'hearth' | 'tavern';
 
 /** Where `a` and `b` are together this hour, if they are. */
 function placeOf(ctx: SystemContext, a: EntityRow, b: EntityRow): Place | undefined {
@@ -34,6 +35,8 @@ function placeOf(ctx: SystemContext, a: EntityRow, b: EntityRow): Place | undefi
   if (both('eat', 'feast') && d <= reach) return 'meal';
   if (both('work') && d <= WORK_REACH) return 'work';
   if (!both('relax')) return undefined;
+  // At the tavern (6B Bundle 5): both inside it.
+  if (inTavern(world, a) && inTavern(world, b)) return 'tavern';
   // Round one fire: both warmed by a fire and within sight of each other.
   const fire =
     winterEvening(world, content) && byAFire(world, content, a) && byAFire(world, content, b);
@@ -46,7 +49,12 @@ function toTell(ctx: SystemContext, teller: EntityRow, listener: EntityRow, day:
   const tales = ctx.world.entities['tale'] ?? [];
   const heard = tales.filter((t) => t['person'] === listener.id);
   const today = heard.filter((t) => t['teller'] !== 0 && t['heard'] === day);
-  if (today.length >= ctx.content.tales.pass.perDay) return undefined;
+  // The innkeeper hears more (6B Bundle 5).
+  const most =
+    listener.id === keeperOf(ctx.world)
+      ? ctx.content.tavern.keeper.hears
+      : ctx.content.tales.pass.perDay;
+  if (today.length >= most) return undefined;
   const known = new Set(heard.map((t) => t['story'] as number));
   return tales
     .filter((t) => t['person'] === teller.id && !known.has(t['story'] as number))
@@ -57,7 +65,12 @@ function toTell(ctx: SystemContext, teller: EntityRow, listener: EntityRow, day:
 function bent(ctx: SystemContext, teller: EntityRow, level: number, most: number): number {
   const { bend } = ctx.content.tales;
   const traits = (ctx.world.entities['trait'] ?? []).filter((t) => t['person'] === teller.id);
-  const chance = traits.reduce((c, t) => c + (bend.traits[t['trait'] as string] ?? 0), bend.chance);
+  // After a cup at the tavern (6B Bundle 5) a tale bends more often.
+  const cup = cupsTonight(ctx.world, teller.id) ? ctx.content.tavern.bend : 0;
+  const chance = traits.reduce(
+    (c, t) => c + (bend.traits[t['trait'] as string] ?? 0),
+    bend.chance + cup,
+  );
   const rng = ctx.rng();
   if (rng.int(100) >= chance) return level;
   const to = rng.int(100) < bend.softer ? level - 1 : level + 1;

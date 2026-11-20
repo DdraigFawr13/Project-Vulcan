@@ -36,6 +36,7 @@ import { BURIAL_TABLES, planBurial, sendBackBurial } from './burial.ts';
 import { HERB_TABLES, planHerbGarden } from './herbs.ts';
 import { MIDDEN_TABLES, planMidden } from './midden.ts';
 import { planSickHouse } from './sickhouse.ts';
+import { planTavern, planTavernHearth } from './tavern.ts';
 import { planSickroom } from './sickroom.ts';
 import { finishRoads, planRoads, ROAD_TABLES } from './roads.ts';
 import { startStages } from './stages.ts';
@@ -114,6 +115,7 @@ function chooseAgain(ctx: SystemContext, h: EntityRow, line: number): void {
   const green = greenOf(ctx.world);
   if (h['of']) growHouses(ctx, green, 1, h['of'] as number);
   else if (h['owner']) planHomes(ctx, green);
+  else if (h['inn']) planTavern(ctx, green, true);
   else sitingHouse(ctx, green, () => planHouse(ctx, green, [line], 1));
 }
 
@@ -171,6 +173,7 @@ export const buildSystem: System = {
     ...[
       'build.sickroom',
       'build.sickHouse',
+      'build.tavern',
       'build.burialSited',
       'build.burialSentBack',
       'build.middenSited',
@@ -200,6 +203,8 @@ export const buildSystem: System = {
     roadTried: 0,
     // 6A review: the tick a midden last found no tile, to look again a day later.
     middenTried: 0,
+    // 6B Bundle 5: the tick the tavern last found no ground.
+    tavernTried: 0,
     // Phase 5B Bundle 2: the game day (1 + its index) the soil was last worked, and the loads of muck left.
     ...{ soilDay: 0, muck: 0 },
     // Blight: the game day it was last worked, the wet days of the last window as bits, and 1 if yesterday was dry.
@@ -289,6 +294,9 @@ export const buildSystem: System = {
     // P6.5: a sick-house at the edge while the Sickness law lays the catching-sick apart.
     planSickHouse(ctx, green);
     planBurial(ctx, green);
+    // 6B Bundle 5: the tavern once the harvest is in, and its hearth.
+    planTavern(ctx, green);
+    planTavernHearth(ctx);
     // P5.4a: a midden at the first offal.
     planMidden(ctx, green);
     // P5.7: a herb garden once the herb store ran dry for someone.

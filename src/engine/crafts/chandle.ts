@@ -42,7 +42,7 @@ const total = (world: WorldState, kinds: readonly string[], keep: (i: EntityRow)
     .reduce((n, i) => n + (i['count'] as number), 0);
 
 /** Stacks of `kind` in the store that `p` can get to (not carried). */
-function stacksOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow[] {
+export function stacksOf(ctx: SystemContext, p: EntityRow, kind: string): EntityRow[] {
   const { world, content } = ctx;
   const from = spotOf(p);
   return itemsOf(world).filter((i) => {

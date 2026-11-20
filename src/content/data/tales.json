@@ -1,6 +1,6 @@
 {
-  "pass": { "meal": 25, "leisure": 20, "work": 6, "hearth": 50, "perDay": 2 },
-  "places": { "meal": " over a meal", "leisure": "", "work": " at work", "hearth": " by the fire" },
+  "pass": { "meal": 25, "leisure": 20, "work": 6, "hearth": 50, "tavern": 40, "perDay": 3 },
+  "places": { "meal": " over a meal", "leisure": "", "work": " at work", "hearth": " by the fire", "tavern": " at the tavern" },
   "bend": { "chance": 25, "traits": { "hot-tempered": 15, "melancholic": 15, "sociable": 10, "greedy": 10 }, "softer": 30 },
   "beliefFadeDays": 56,
   "forgetDays": 112,
@@ -109,6 +109,11 @@
       "Nobody here knows {skill} the way {name} did.",
       "{name} took the best {skill} with them, and nobody learned it.",
       "{name} took their {skill} to the grave on purpose, and now it's gone for good."
+    ] },
+    { "id": "tavern-brawl", "event": "tavern.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "levels": [
+      "{name} and {other} had words over their ale.",
+      "{name} came to blows with {other} at {tavern}.",
+      "{name} smashed a stool over {other}'s head at {tavern}."
     ] }
   ]
 }

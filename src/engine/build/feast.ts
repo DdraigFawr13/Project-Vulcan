@@ -5,7 +5,7 @@
 // Once a year; other harvests have their own lines and no feast. A wedding (engine family) calls
 // its own feast, round the fire on the green, through `callWedding`; a feast day (6B, engine faith)
 // its own, round the shrine, through `callHoly`.
-import { clockAt, TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
+import { clockAt, today, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { fieldsOf } from './fields.ts';
@@ -21,8 +21,6 @@ export const FEAST_TABLES: Schemas = {
     ...{ eaten: 'event', couple: 'ints', on: 'int', holy: 'int', lean: 'count' },
   },
 };
-
-const today = (world: WorldState): number => Math.floor(world.tick / TICKS_PER_DAY);
 
 /** The supper called for this evening and not yet eaten, if any. */
 export const feastOf = (world: WorldState): EntityRow | undefined =>

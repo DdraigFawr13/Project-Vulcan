@@ -1,6 +1,6 @@
 # teach
 
-Apprentices and teaching (V-189).
+Teaching (V-189).
 
 - **Public API:** `index.ts`: `teachSystem` (in `SYSTEMS` after faith, hourly, no RNG), `helping` and `takeUpHelping` (the job table's `help` row), `apprenticesOf`, `taughtOf`, `skillWord`, `withoutApprentices` (test content with no masters). Inside: bond.ts `APPRENTICES` (the law id) and `wayOf` (`all`, `choice` or `none`; a refuser keeps the custom).
 - **Content:** `teach.json` (schema `schemas-teach.ts`): `master`, `ahead`, `reach`, `bondReach`, `beside`, `apprentice`, `past`, `slow`, `traits`, `least`, `hour`, `friend`, `choose`, `end`, `child`, `near`, `memories`, `words`; law `apprentices` in `laws.json` (settings' `apprentices`); events `skill.taught`, `teach.*`; memories `taught-apprentice`, `finished-apprentice`; tale `lost-art` and belief `arts-lost`.
