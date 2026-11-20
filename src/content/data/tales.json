@@ -9,6 +9,7 @@
   "byname": { "share": 50, "told": 8, "proud": ["Lucky"] },
   "beliefs": [
     { "id": "woods-dangerous", "about": "place", "text": "the woods around the valley are dangerous" },
+    { "id": "arts-lost", "about": "colony", "text": "the old skills are dying out here" },
     { "id": "valley-deadly", "about": "colony", "text": "this valley kills its own" },
     { "id": "work-dangerous", "about": "colony", "text": "the work here maims people" },
     { "id": "strangers-hard", "about": "law", "text": "turning folk away is hard-hearted" },
@@ -104,6 +105,11 @@
       "{name} has gone off down the road.",
       "{name} left the valley{with}.",
       "{name} fled the valley{with}, and more will follow."
+    ] },
+    { "id": "lost-art", "event": "teach.lost", "truth": 1, "belief": "arts-lost", "from": 1, "word": true, "levels": [
+      "Nobody here knows {skill} the way {name} did.",
+      "{name} took the best {skill} with them, and nobody learned it.",
+      "{name} took their {skill} to the grave on purpose, and now it's gone for good."
     ] },
     { "id": "tavern-brawl", "event": "tavern.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": "The Night at {tavern}", "bynames": ["", "", "Brawler"], "levels": [
       "{name} and {other} had words over their ale.",

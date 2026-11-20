@@ -38,13 +38,16 @@ describe('winter evenings by the hearth', () => {
     expect(relaxing.length).toBeGreaterThan(0);
     const by = relaxing.filter((p) => byAFire(w, winter, p));
     expect(by.length * 2).toBeGreaterThanOrEqual(relaxing.length);
-    // Someone by the fire with a worn garment stays the hour and mends it.
-    const p = by.find((q) => wornOf(w, q.id).length)!;
-    const garment = wornOf(w, p.id)[0]!;
-    garment['wear'] = 100;
+    // Those by the fire with a worn garment who stay the hour mend it (one may get up to tend
+    // the fire instead: which one is the seed's accident).
+    const worn = by
+      .filter((q) => wornOf(w, q.id).length)
+      .map((q) => ({ q, g: wornOf(w, q.id)[0]! }));
+    for (const { g } of worn) g['wear'] = 100;
     step(w, sim, TICKS_PER_HOUR);
-    expect([byAFire(w, winter, p), p['doing']]).toEqual([true, 'relax']);
+    const stayed = worn.filter(({ q }) => byAFire(w, winter, q) && q['doing'] === 'relax');
+    expect(stayed.length).toBeGreaterThan(0);
     // It still wears an hour while worn, so mending must outrun that.
-    expect(garment['wear']).toBe(100 + winter.tales.evening.mend - 1);
+    for (const { g } of stayed) expect(g['wear']).toBe(100 + winter.tales.evening.mend - 1);
   });
 });

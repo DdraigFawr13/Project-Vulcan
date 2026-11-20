@@ -203,4 +203,6 @@ export interface SelfView {
   /** 6B: their faith, devotion and title ("The Wells · devout · Wellkeeper"), what it holds
    * sacred, and the line that named them priest (0 otherwise). */
   faith?: { text: string; note: string; why: number };
+  /** 6B Bundle 6: their master or apprentice now, and who taught them and whom they taught. */
+  teaching?: { text: string; why: number }[];
 }

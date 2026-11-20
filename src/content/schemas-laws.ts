@@ -86,6 +86,8 @@ export const LAWS_SCHEMAS = {
             // (worship.json `lean`). Feasts: the feast days a year it keeps beyond the harvest home.
             values: opt(map(num())),
             feasts: opt(count),
+            // 6B Apprentices (P6.13): every master takes one, by choice, or none (engine teach).
+            apprentices: opt(oneOf('all', 'choice', 'none')),
           }),
         ),
       }),

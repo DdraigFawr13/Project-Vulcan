@@ -29,6 +29,10 @@ Two years of today's game per seed (main `ef1dbca`, default levers): practice al
 
 This spec thread ran a throwaway prototype of rules 1 to 6 plus the balance pace before handing over (patch, not merged: `/mnt/project-files/vulcan/p6b-apprentices/prototype.patch`; tables `teach-*.txt` beside it). Two years per seed: 12+ fell to 0 (anvil, smoke, ledger-1) and 1 (tallow); 8+ held at 5 a seed; 2 apprentices bound a seed. **But no taught rise happened on any seed:** bound pairs rarely stood at the same work within reach (Eadgyth took Edwin in cooking; Colm took Aelfgifu in crafting; neither cooked or crafted beside the other). The build must make rule 4 bite (for example, a free apprentice with the master's work at an equal priority walks to work beside the master, or a bond is made only in a skill the learner already works at) and show taught rises in its table.
 
+## Build (part 1, 2026-11-20)
+
+The prototype's teacher had to be idle (`doing === ''`) rather than at work, so nobody was ever taught; fixed, and a bond is now made in the skill the master has practised most (skill row `used`), with a learner able for that work, who works beside the master (teach `help.ts`) when their Priorities put it level with their best. Working beside the master is a daily lesson of up to 120 minutes (teach.json `lesson`), so an apprentice still does their own work. Two years per seed (`npm run teach`): taught rises anvil 1, smoke 7, ledger-1 11, tallow 10; 8+ 4 / 4 / 5 / 4; 12+ 0 / 0 / 0 / 1 (was 2 each).
+
 ## Build order
 
 Three engine PRs, each a fresh thread (Morgan, 2026-11-20): (1) pace, apprentices, the law, children watching, a master's loss, the person-sheet lines and the Apprentices row on the Laws sheet; (2) the schoolroom, teacher, lessons and books; (3) callings. Done when: an apprentice beside a master levels faster than one alone; the ledger names who taught whom; each calling's test meets its bar and shows its push.

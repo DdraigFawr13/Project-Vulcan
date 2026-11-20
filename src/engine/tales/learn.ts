@@ -5,16 +5,10 @@
 // tale's belief.
 import { TICKS_PER_DAY, type EntityRow, type SimEvent, type TaleDef } from '../core/index.ts';
 import { addEntity, alive } from '../entity/index.ts';
+import { linesAfter } from '../log/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { sees } from '../needs/index.ts';
 import { feedBelief } from './belief.ts';
-
-/** The ledger lines after `seen`, oldest first. */
-function linesAfter(log: readonly SimEvent[], seen: number): SimEvent[] {
-  let k = log.length;
-  while (k > 0 && log[k - 1]!.id > seen) k -= 1;
-  return log.slice(k);
-}
 
 /** Who saw line `e`: its living actors and the awake within sight of one, or for word of it one
  * awake person. */
