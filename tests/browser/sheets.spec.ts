@@ -210,6 +210,27 @@ test('the Build sheet and the Laws page are levels and laws, 44 px each', async 
   await expect(p).toContainText(/ now puts Houses second\./);
 });
 
+test('the Saves die fills the seed box with two words and starts nothing (6W Slice 1)', async () => {
+  await more('saves');
+  const form = panel().getByRole('form', { name: 'New game' });
+  const box = form.getByRole('textbox', { name: 'Seed' });
+  await expect(box).toHaveValue('smoke');
+  const url = page.url();
+  // The die sits between the seed box and New game.
+  expect(
+    await form
+      .locator('> *')
+      .evaluateAll((all) =>
+        all.map((e) => e.tagName + (e.getAttribute('aria-label') ?? e.textContent)),
+      ),
+  ).toEqual(['INPUTSeed', 'BUTTONRoll a new seed', 'BUTTONNew game']);
+  await form.getByRole('button', { name: 'Roll a new seed' }).click();
+  await expect(box).toHaveValue(/^[a-z]+-[a-z]+$/);
+  expect(page.url()).toBe(url);
+  expect(await phoneRules(page)).toEqual([]);
+  await page.getByRole('button', { name: 'Close panel' }).click();
+});
+
 test('wanting iron plans a shaft the alert shows, and the plan can be sent back once', async () => {
   test.setTimeout(150_000);
   const p = panel();

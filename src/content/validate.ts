@@ -5,6 +5,7 @@ import { checkBees } from './validate-lamp';
 import { checkPunish } from './validate-defy';
 import { checkTales } from './validate-tales';
 import { checkAnnals } from './validate-annals';
+import { checkSeedWords } from './validate-seeds';
 import { checkStrangers } from './validate-strangers';
 import { checkStops } from './validate-time';
 
@@ -94,7 +95,7 @@ export function validateContent(files: Files): string[] {
       ...checkAnnals(files),
       ...checkPunish(files),
     );
-  errors.push(...checkBand(files), ...checkStops(files));
+  errors.push(...checkBand(files), ...checkStops(files), ...checkSeedWords(files));
   return errors;
 }
 
