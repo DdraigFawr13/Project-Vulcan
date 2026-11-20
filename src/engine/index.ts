@@ -22,6 +22,7 @@ import { colonySystem } from './colony/index.ts';
 import { defySystem } from './defy/index.ts';
 import { familySystem } from './family/index.ts';
 import { faithSystem } from './faith/index.ts';
+import { innSystem } from './inn/index.ts';
 import { talesSystem } from './tales/index.ts';
 import { weatherSystem } from './weather/index.ts';
 import { wildSystem } from './wild/index.ts';
@@ -53,6 +54,7 @@ export * from './colony/index.ts';
 export * from './defy/index.ts';
 export * from './family/index.ts';
 export * from './faith/index.ts';
+export * from './inn/index.ts';
 export * from './tales/index.ts';
 export * from './weather/index.ts';
 export * from './wild/index.ts';
@@ -94,6 +96,7 @@ export const SYSTEMS: readonly System[] = [
   talesSystem,
   familySystem,
   faithSystem,
+  innSystem,
   calendarSystem,
   weatherSystem,
   wildSystem,

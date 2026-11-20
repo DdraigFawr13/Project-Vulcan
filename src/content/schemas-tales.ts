@@ -15,10 +15,11 @@ export const TALES_SCHEMAS = {
       leisure: percent,
       work: percent,
       hearth: percent,
+      tavern: percent,
       perDay: num({ min: 1 }),
     }),
     // The words each place adds to the line: "Cai told Dilys by the fire: …".
-    places: obj({ meal: str(), leisure: str(), work: str(), hearth: str() }),
+    places: obj({ meal: str(), leisure: str(), work: str(), hearth: str(), tavern: str() }),
     // Per cent a telling bends the tale one level, plus each teller trait's own; `softer` per
     // cent of the bends tone it down instead of up.
     bend: obj({ chance: percent, traits: map(num(), 'traits'), softer: percent }),

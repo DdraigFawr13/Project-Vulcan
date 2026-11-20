@@ -46,6 +46,7 @@ const fixtureContent: EngineContent = {
   family: content.family,
   worship: content.worship,
   faiths: content.faiths,
+  tavern: content.tavern,
   defy: content.defy,
   strangers: content.strangers,
   health: content.health,

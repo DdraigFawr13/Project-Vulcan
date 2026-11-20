@@ -11,12 +11,7 @@ import type { WildDefs } from './wild.ts';
 import type { StrangersDefs } from './strangers.ts';
 import type { LampDefs } from './lamp.ts';
 import type { ClothesDefs } from './clothes.ts';
-import type { TalesDefs } from './tales.ts';
-import type { SelfDefs } from './self.ts';
-import type { ColonyDefs } from './colony.ts';
-import type { FamilyDefs } from './family.ts';
-import type { WorshipDefs } from './worship.ts';
-import type { DefyDefs } from './defy.ts';
+import type { SocietyDefs } from './society.ts';
 import type { CalendarDef } from './clock.ts';
 export type { CalendarDef } from './clock.ts';
 
@@ -46,6 +41,7 @@ export const STREAMS = [
   'bees',
   'kin',
   'faith',
+  'inn',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 
@@ -360,19 +356,7 @@ export interface TerrainDef {
 
 /** The content the engine core reads. The worker passes the content layer's `content`. */
 export interface EngineContent
-  extends
-    PeopleDefs,
-    WildDefs,
-    FlockDefs,
-    StrangersDefs,
-    LampDefs,
-    ClothesDefs,
-    TalesDefs,
-    SelfDefs,
-    ColonyDefs,
-    FamilyDefs,
-    WorshipDefs,
-    DefyDefs {
+  extends PeopleDefs, WildDefs, FlockDefs, StrangersDefs, LampDefs, ClothesDefs, SocietyDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */
   events: readonly { id: string; template: string; notable?: Readonly<Record<string, string>> }[];

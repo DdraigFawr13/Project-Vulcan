@@ -76,6 +76,8 @@ const slowFiles = [
   'src/engine/crafts/thatch.test.ts',
   // 6B Bundle 4 (P6.8): five colony runs of 1 to 5 days to a shrine and its feast days (about 8 s).
   'src/engine/faith/faith.test.ts',
+  // 6B Bundle 5 (P6.12): seven colony runs of 1 to 6 days at the tavern (about 6 s).
+  'src/engine/inn/inn.test.ts',
 ];
 
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).

@@ -24,8 +24,15 @@ export interface BeliefDef {
 }
 
 export interface TalesDef {
-  pass: { meal: number; leisure: number; work: number; hearth: number; perDay: number };
-  places: { meal: string; leisure: string; work: string; hearth: string };
+  pass: {
+    meal: number;
+    leisure: number;
+    work: number;
+    hearth: number;
+    tavern: number;
+    perDay: number;
+  };
+  places: { meal: string; leisure: string; work: string; hearth: string; tavern: string };
   bend: { chance: number; traits: Readonly<Record<string, number>>; softer: number };
   beliefFadeDays: number;
   forgetDays: number;

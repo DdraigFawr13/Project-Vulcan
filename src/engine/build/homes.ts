@@ -107,7 +107,7 @@ function becomeHall(ctx: SystemContext): void {
   const { world, content } = ctx;
   if (hallOf(world)) return;
   const first = housesOf(world).find(
-    (h) => !h['of'] && h['state'] === 'built' && !h['owner'] && !h['sick'],
+    (h) => !h['of'] && h['state'] === 'built' && !h['owner'] && !h['sick'] && !h['inn'],
   );
   const band = alive(world).filter((p) => !p['stranger']);
   if (!first || !band.length) return;

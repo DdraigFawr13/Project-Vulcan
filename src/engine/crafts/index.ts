@@ -2,6 +2,7 @@
 export { beekeeping, takeUpBeekeeping } from './beekeep.ts';
 export { building, reachableStacks, stackOf, takeUpBuilding } from './build.ts';
 export { furnishing, takeUpCarpentry } from './carpentry.ts';
+export { brewing, takeUpBrewing } from './brew.ts';
 export { chandling, takeUpChandling } from './chandle.ts';
 export { burning, takeUpCharcoal } from './charcoal.ts';
 export { cooking, takeUpCooking } from './cook.ts';

@@ -27,6 +27,8 @@
   {"id":"beekeep","name":"Beekeeping","worker":"beekeeper","skill":"farming","requirements":{},"workplace":"skeps","serves":"food"},
   {"id":"charcoal","name":"Charcoal","worker":"charcoal burner","skill":"woodcutting","requirements":{},"workplace":"clamp","serves":"materials"},
   {"id":"cure","name":"Curing","worker":"curer","skill":"cooking","requirements":{},"workplace":"smokehouse","serves":"food"},
+  {"id":"brew","name":"Brewing","worker":"brewer","skill":"cooking","requirements":{},"workplace":"brew-tub","serves":"food"},
+  {"id":"innkeep","name":"Inn-keeping","worker":"innkeeper","requirements":{},"workplace":"tavern","serves":"goods"},
   {"id":"cooper","name":"Coopering","worker":"cooper","skill":"crafting","requirements":{},"workplace":"bench","serves":"food"},
   {"id":"potter","name":"Pottery","worker":"potter","skill":"crafting","requirements":{},"workplace":"kiln","serves":"food"},
   {"id":"smelt","name":"Smelting","worker":"smelter","skill":"smithing","requirements":{},"workplace":"smelter","serves":"materials"},

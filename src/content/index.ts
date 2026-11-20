@@ -43,6 +43,7 @@ import family from './data/family.json';
 import terrain from './data/terrain.json';
 import tiers from './data/tiers.json';
 import tools from './data/tools.json';
+import tavern from './data/tavern.json';
 import traits from './data/traits.json';
 import weather from './data/weather.json';
 import wild from './data/wild.json';
@@ -103,6 +104,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   tiers,
   tools,
   traits,
+  tavern,
   weather,
   wild,
   work,

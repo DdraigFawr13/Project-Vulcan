@@ -1,6 +1,6 @@
 {
-  "pass": { "meal": 25, "leisure": 20, "work": 6, "hearth": 50, "perDay": 2 },
-  "places": { "meal": " over a meal", "leisure": "", "work": " at work", "hearth": " by the fire" },
+  "pass": { "meal": 25, "leisure": 20, "work": 6, "hearth": 50, "tavern": 40, "perDay": 3 },
+  "places": { "meal": " over a meal", "leisure": "", "work": " at work", "hearth": " by the fire", "tavern": " at the tavern" },
   "bend": { "chance": 25, "traits": { "hot-tempered": 15, "melancholic": 15, "sociable": 10, "greedy": 10 }, "softer": 30 },
   "beliefFadeDays": 56,
   "forgetDays": 112,
@@ -103,6 +103,11 @@
       "{name} has gone off down the road.",
       "{name} left the valley{with}.",
       "{name} fled the valley{with}, and more will follow."
+    ] },
+    { "id": "tavern-brawl", "event": "tavern.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "levels": [
+      "{name} and {other} had words over their ale.",
+      "{name} came to blows with {other} at {tavern}.",
+      "{name} smashed a stool over {other}'s head at {tavern}."
     ] }
   ]
 }
