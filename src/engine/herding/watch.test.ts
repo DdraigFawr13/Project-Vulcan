@@ -17,6 +17,7 @@ import {
   type SystemContext,
   type WorldState,
 } from '../index.ts';
+import { tablesProblem } from '../entity/index.ts';
 import { flockSystem, foldFlock, headOf } from '../flock/index.ts';
 import { itemsOf, layItem, storeOf } from '../goods/index.ts';
 import { findPath, walkAt } from '../paths/index.ts';
@@ -117,6 +118,12 @@ describe('the watch fire', () => {
     const warded = lines(w, 'wild.packWarded');
     expect(warded).toHaveLength(1);
     expect(warded[0]!.causes[0]).toBe(lit[0]!.id);
+    // The flock row names its watcher and still fits its table, so a save made tonight loads (the
+    // field once sat outside the table and every save after a first watch was refused). Only the
+    // flock table is checked: this test lays its pasture and animals by hand.
+    expect(flock['watchBy']).toBe(watcher.id);
+    const flocks = { ...w, entities: { flock: [flock] } };
+    expect(tablesProblem(flocks, sim.tables)).toBeUndefined();
     expect(lines(w, 'flock.brokeIn')).toHaveLength(0);
     expect(headOf(w, flock)).toBe(4);
     expect(pack['hunger']).toBe(22);
