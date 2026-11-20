@@ -40,6 +40,7 @@ import { metalStatus } from './metalstatus.ts';
 import { shaftPlans, stockNote } from './mine.ts';
 import { burialGoods } from './places.ts';
 import { furnitureGoods, tilePiece } from './furniture.ts';
+import { tavernSign } from './tavern.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
 import { candleNote, litGoods } from './lampview.ts';
@@ -82,7 +83,12 @@ export function goodsOf(world: WorldState): GoodsView {
         state: p['state'] as string,
         house: p['house'] as number,
       })),
-    furniture: [...furnitureGoods(world), ...stationGoods(world), ...millGoods(world)],
+    furniture: [
+      ...furnitureGoods(world),
+      ...stationGoods(world),
+      ...millGoods(world),
+      ...tavernSign(world),
+    ],
     fires: fireGoods(world),
     lit: litGoods(world),
     work: [...workBars(world), ...jobBars(world)],

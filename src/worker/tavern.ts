@@ -25,7 +25,7 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
-import type { LedgerLine, TileView } from './protocol.ts';
+import type { GoodsView, LedgerLine, TileView } from './protocol.ts';
 import type { PastureRow } from './protocol-flock.ts';
 
 /** The Build sheet's Tavern row: the same shape as the Pasture row. */
@@ -156,4 +156,22 @@ export function tavernRow(world: WorldState): TavernRow {
       sent: !!h['sent'],
     },
   };
+}
+
+/** The tavern's hanging sign (6B Bundle 5 art), once it stands: just outside its door, one tile
+ * along the wall (back the other way at the wall's end), where a walker sees it on the way in. */
+export function tavernSign(world: WorldState): GoodsView['furniture'] {
+  const h = tavernHouse(world);
+  if (!h || h['state'] !== 'built') return [];
+  const r = rectOf(h);
+  const width = world.map.width;
+  const door = h['door'] as number;
+  const [x, y] = [door % width, Math.floor(door / width)];
+  const side = x === r.x || x === r.x + r.w - 1;
+  const [lo, hi] = side ? [r.y + 1, r.y + r.h - 2] : [r.x + 1, r.x + r.w - 2];
+  const at = side ? y : x;
+  const along = at + 1 <= hi ? at + 1 : Math.max(lo, at - 1);
+  const out = side ? (x === r.x ? -1 : 1) : y === r.y ? -1 : 1;
+  const [sx, sy] = side ? [x + out, along] : [along, y + out];
+  return [{ x: sx, y: sy, z: 0, art: content.tavern.build.sign, facing: 's', plan: false }];
 }
