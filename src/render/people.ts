@@ -7,7 +7,7 @@ import Phaser from 'phaser';
 import type { CoatView, PersonView, WalkerView } from '../worker/index.ts';
 import type { Spot } from './finder.ts';
 import { AtWork, type Dressed, type Seen } from './at-work.ts';
-import { CoatTextures } from './coats.ts';
+import { CoatTextures, watchCoatTrial } from './coats.ts';
 import { bodyStem, sideFrame, variantCounts } from './look.ts';
 import { PEOPLE } from './sheets.ts';
 import { Trails, type TrailClock } from './trail.ts';
@@ -69,7 +69,7 @@ export class PeopleSprites {
   /** The coat each person wears on the map now (V-190), as the worker last said. */
   private coat = new Map<number, CoatView>();
   private coats: CoatTextures | undefined;
-  /** One coat everyone is drawn in, for the browser check (index.ts `vulcan:try-coat`). */
+  /** One coat everyone is drawn in, for the browser check (coats.ts `vulcan:try-coat`). */
   private tried: CoatView | undefined;
   private z = 0;
   private live = false;
@@ -90,6 +90,8 @@ export class PeopleSprites {
       scene.events.once(Phaser.Scenes.Events.CREATE, () => {
         this.live = true;
         this.coats = new CoatTextures(scene);
+        const parent = game.canvas.parentElement;
+        if (parent) watchCoatTrial(game, parent, this);
         this.work = new AtWork(scene);
         this.draw();
         scene.events.on(Phaser.Scenes.Events.UPDATE, (_: number, delta: number) =>

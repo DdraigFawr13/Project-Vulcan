@@ -22,7 +22,6 @@ import { ShaftSprites } from './shafts.ts';
 import { GoodsSprites } from './goods.ts';
 import { GreenSprites } from './green.ts';
 import { PeopleSprites } from './people.ts';
-import { watchCoatTrial } from './coats.ts';
 import { WorkBars } from './progress.ts';
 import { Bubbles } from './bubbles.ts';
 import { Finder } from './finder.ts';
@@ -109,7 +108,6 @@ export function startRenderer(
   });
   const l = layersOf(game, scene, parent);
   watchAnimalFinder(l);
-  watchCoatTrial(game, parent, l.people);
   watchWorkFinder(l);
   return { ...viewHandle(l), ...peopleHandle(l), ...goodsHandle(l) };
 }
