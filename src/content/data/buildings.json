@@ -26,6 +26,7 @@
 {"id":"longhouse","name":"longhouse","w":8,"h":6,"sleeps":8}
 ],
 "stage":{"id":"room","name":"room","w":5,"h":4,"sleeps":2},"private":4},
+"roofs":{"job":"thatch","skilled":10,"thatch":{"name":"thatch","per":4,"cut":20,"lay":15,"reach":40,"wears":6,"worn":40},"reed":["marsh"],"straw":{"per":4},"open":60},
 "roads":{"name":"Roads","start":4,"part":"road-stone","stretch":10,"least":192,"shortest":3,"places":12},
 "smithy":{"name":"Smithy","start":2,"depth":3,"length":4,"near":20,"floor":"floor-stone","pieces":["forge","anvil","tub"]},
 "town":{"ring":16,"step":4,"most":32},
@@ -50,7 +51,7 @@
 {"id":"cabbages","name":"cabbages","item":"cabbages","sow":["Highsun","Goldmonth"],"days":70,"yield":110,"frost":-4,"draw":8},
 {"id":"flax","name":"flax","item":"flax","sow":["Thawmonth","Seedmonth"],"days":90,"yield":5,"frost":-2,"draw":8}
 ]},
-"rooms":{"hearthBelow":0,"most":120,"roof":"thatch","perSize":3,"top":100,"crowd":{"tiles":2,"beauty":-2},"bare":-1,
+"rooms":{"hearthBelow":0,"most":120,"perSize":3,"top":100,"crowd":{"tiles":2,"beauty":-2},"bare":-1,
 "floors":{"floor-wood":0,"floor-stone":1},
 "roles":[{"id":"barracks","name":"barracks","beds":3},{"id":"bedroom","name":"bedroom","beds":1}],
 "looks":[{"at":1,"word":"pleasant"},{"at":0,"word":"plain"},{"at":-99,"word":"dreary"}],

@@ -57,6 +57,9 @@ export const FIELD_TABLES: Schemas = {
     at: 'int',
     course: 'int',
     prev: 'text',
+    /** Straw bundles thatchers took from this harvest's stubble, and the `sown` tick it was of. */
+    straw: 'count',
+    strawAt: 'int',
     rested: 'int',
     blight: 'ints',
     dry: 'ints',

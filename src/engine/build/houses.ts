@@ -58,6 +58,12 @@ export const HOUSE_TABLES: Schemas = {
     sick: 'count',
     owner: 'entity',
     hall: 'event',
+    /** Its roof (6B, roofs.ts): '' none yet, `thatch`; the tick and line it was laid; the line
+     * saying no thatch can be reached. */
+    roof: 'text',
+    roofed: 'int',
+    roofLine: 'event',
+    noThatch: 'event',
   },
   /** The Build sheet's level for a kind of building (1 first to 4 last) and its order. */
   want: { kind: 'text', level: 'count', line: 'event' },

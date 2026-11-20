@@ -18,6 +18,7 @@ import {
   piecesOf,
   recordOf,
   rectOf,
+  roofAge,
   roomAt,
   rowsOf,
   sendBackBlock,
@@ -25,6 +26,7 @@ import {
   smithiesOf,
   householdOf,
   whoseOf,
+  wornThatch,
   type EntityRow,
   type Room,
   type SimEvent,
@@ -162,6 +164,17 @@ function roomWords(world: WorldState, room: Room, house: string): string {
 
 /** The tile's house and room rows (surface only): which house the tile belongs to, its roof and,
  * once walls and a door close it in, its room as `roomAt` works it out. */
+/** A house row's roof in words (6B, P6.11): none yet, or thatch and its age, worn or not. */
+function roofWords(world: WorldState, h: EntityRow): string {
+  if (h['state'] === 'plan') return 'none yet: a thatcher lays it once the walls stand';
+  if (!h['roof']) return 'none yet: it waits for a thatcher, and the warmth gets out';
+  const age = roofAge(world, content, h);
+  const years = age < 1 ? 'this year' : `${age} year${age > 1 ? 's' : ''} ago`;
+  return wornThatch(world, content, h)
+    ? `worn ${h['roof']}, laid ${years}: it lets the warmth out`
+    : `${h['roof']}, laid ${years} (not drawn)`;
+}
+
 export function tileHouse(
   world: WorldState,
   x: number,
@@ -171,7 +184,6 @@ export function tileHouse(
   const id = (planAt(world, x, y)?.['house'] as number | undefined) || houseAt(world, x, y)?.id;
   const h = id ? housesOf(world).find((r) => r.id === id && r['state'] !== 'sent') : undefined;
   if (!h) return {};
-  const planned = h['state'] === 'plan';
   const sited = recordOf(world, h['line'] as number);
   const name = nameOf(world, h);
   const room = roomAt(world, content, x, y);
@@ -185,7 +197,7 @@ export function tileHouse(
       state: h['state'] as string,
       why: h['why'] as string,
       back: canSendBack(world, h),
-      roof: planned ? `${def.roof}, laid with the walls` : `${def.roof} (not drawn)`,
+      roof: roofWords(world, h),
       ...(h['sick'] ? { sick: word(h['sick'] === 2 ? 'sickHouseTitle' : 'sickTitle') } : {}),
       ...(sited && { sited: lineOf(sited) }),
       ...homeRows(world, mainOf(world, h), lineOf),
