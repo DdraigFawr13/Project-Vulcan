@@ -2,7 +2,7 @@
 // Frames of one size go on a grid in name order, each extruded by one pixel so tiles never show
 // seams when the camera zooms; the JSON is a Phaser atlas (JSON hash) plus the grid for tilesets.
 // Usage: node tools/pack-sheet.mjs <sheet> [<sheet> ...]
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { isMain, root } from './lib.mjs';
 import { createImage, decodePng, encodePng } from './png.mjs';
@@ -56,6 +56,19 @@ export function packSheet(frames) {
   };
 }
 
+/** Final art (ART_DIRECTION.md) in `art/final/<sheet>/` replaces the script-drawn frame of the same
+ * name, so the draw scripts can keep running without overwriting it. A final frame must name an
+ * existing frame: the art names stay the contract (ART.md). */
+export function overrideFinal(frames, sheet) {
+  const dir = path.join(root, 'art/final', sheet);
+  if (!existsSync(dir)) return;
+  for (const file of readdirSync(dir).filter((f) => f.endsWith('.png'))) {
+    const name = file.slice(0, -4);
+    if (!frames[name]) throw new Error(`art/final/${sheet}/${file}: no frame ${name} in art/src`);
+    frames[name] = decodePng(readFileSync(path.join(dir, file)));
+  }
+}
+
 if (isMain(import.meta.url)) {
   const sheets = process.argv.slice(2);
   if (sheets.length === 0)
@@ -67,6 +80,7 @@ if (isMain(import.meta.url)) {
     const frames = {};
     for (const file of readdirSync(dir).filter((f) => f.endsWith('.png')))
       frames[file.slice(0, -4)] = decodePng(readFileSync(path.join(dir, file)));
+    overrideFinal(frames, sheet);
     const { image, json } = packSheet(frames);
     json.meta.image = `${sheet}.png`;
     writeFileSync(path.join(out, `${sheet}.png`), encodePng(image));
