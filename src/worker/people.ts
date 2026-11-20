@@ -11,7 +11,7 @@ import {
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
-import { wearingRows } from './clothesview.ts';
+import { coatOf, wearingRows } from './clothesview.ts';
 import { feedsOf } from './comfort.ts';
 import { healthOf } from './healthview.ts';
 import { doingOf, nowOf } from './doing.ts';
@@ -188,9 +188,10 @@ const withHome = (home: WalkerView['home'], stranger: WalkerView['stranger']) =>
 const wearingOf = (
   world: WorldState,
   p: EntityRow,
-): { wearing?: NonNullable<WalkerView['wearing']> } => {
+): Pick<WalkerView, 'wearing' | 'coat'> => {
   const wearing = wearingRows(world, p);
-  return wearing.length ? { wearing } : {};
+  const coat = coatOf(world, p);
+  return { ...(wearing.length && { wearing }), ...(coat && { coat }) };
 };
 
 const withHealth = (health: WalkerView['health']) => (health ? { health } : {});

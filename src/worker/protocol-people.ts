@@ -90,6 +90,9 @@ export interface WalkerView {
   tools: { id: number; kind: string; text: string }[];
   /** What they wear, one row per garment in slot order (V-092, V-134); none when bare. */
   wearing?: WearingRow[];
+  /** The outer garment drawn on them (V-190, Seen at Work Part 3): only while they are outdoors
+   * below the warmth comfort line; none indoors, when warm or without one. */
+  coat?: CoatView;
   /** Every memory they hold, strongest first (V-091, V-154): see MemoryView. */
   memories: MemoryView[];
   /** The tales they hold, newest first, and what they believe, strongest first (P6.3, V-155). */
@@ -119,6 +122,16 @@ export interface WearingRow {
   text: string;
   detail: string;
   why?: number;
+}
+
+/** The coat drawn on a villager (V-190): its drawing (clothes.json `art`), per cent of life left,
+ * worth id and the look the engine's numbers give it: `ragged` in its last `clothes.ragged` per
+ * cent, `fine` at the finest worth, else `plain`. */
+export interface CoatView {
+  art: string;
+  left: number;
+  worth: string;
+  look: 'plain' | 'ragged' | 'fine';
 }
 
 /** The Stock sheet's Clothes lines: the spares of each slot, and what the colony holds to make

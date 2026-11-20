@@ -9,7 +9,7 @@ export type { GoodsView, ItemView, Spot3, StockView } from './protocol-goods.ts'
 import type { HoursView, LawView } from './protocol-law.ts';
 export type { AnswerView, HoursView, LawView, StrangersLawView } from './protocol-law.ts';
 import type { WalkerView } from './protocol-people.ts';
-export type { HealthView, NeedView, StrangerView, WalkerView } from './protocol-people.ts';
+export type { CoatView, HealthView, NeedView, StrangerView, WalkerView } from './protocol-people.ts';
 import type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 export type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 import type {

@@ -3,18 +3,20 @@
 // of the world; every word and number is made here (GAME-02).
 import { content } from '../content/index.ts';
 import {
+  coldOutdoors,
   garmentOf,
   haveOf,
   leftOf,
   recordOf,
   sparesOf,
+  wornIn,
   wornOf,
   type EntityRow,
   type SimEvent,
   type WorldState,
   itemName,
 } from '../engine/index.ts';
-import type { ClothesPlate, WearingRow } from './protocol-people.ts';
+import type { ClothesPlate, CoatView, WearingRow } from './protocol-people.ts';
 
 const cap = (s: string): string => `${s.charAt(0).toUpperCase()}${s.slice(1)}`;
 const worthWord = (id: unknown): string =>
@@ -52,6 +54,22 @@ export function wearingRows(world: WorldState, p: EntityRow): WearingRow[] {
       },
     ];
   });
+}
+
+/** The outer garment drawn on them (V-190): only outdoors below the comfort line (the engine's
+ * `coldOutdoors`, the same test that wears it hard), with its life left, worth and look. */
+export function coatOf(world: WorldState, p: EntityRow): CoatView | undefined {
+  const outer = content.clothes.slots[1]?.id;
+  if (!outer || !coldOutdoors(world, content, p)) return undefined;
+  const item = wornIn(world, content, p.id, outer);
+  const art = item && garmentOf(content, item['kind'] as string)?.art;
+  if (!item || !art) return undefined;
+  const left = leftOf(content, item);
+  const worth = item['quality'] as string;
+  // The worth list runs finest first.
+  const look =
+    left < content.clothes.ragged ? 'ragged' : worth === content.clothes.worth[0]?.id ? 'fine' : 'plain';
+  return { art, left, worth, look };
 }
 
 /** "1 linen smock, 2 wool cloaks" for the spares of a slot; "none" without. */

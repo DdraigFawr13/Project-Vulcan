@@ -4,8 +4,9 @@
 // walked (trail.ts), facing the way they go with their two walk frames, then stand. The walk is a
 // picture choice, never game state.
 import Phaser from 'phaser';
-import type { PersonView, WalkerView } from '../worker/index.ts';
+import type { CoatView, PersonView, WalkerView } from '../worker/index.ts';
 import type { Spot } from './finder.ts';
+import { CoatTextures } from './coats.ts';
 import { bodyStem, variantCounts } from './look.ts';
 import { PEOPLE } from './sheets.ts';
 import { Trails, type TrailClock } from './trail.ts';
@@ -41,7 +42,10 @@ interface Shown {
   hair: Phaser.GameObjects.Image | undefined;
   /** The body's frame-name stem (look.ts): the race's body, or one whole villager. */
   stem: string;
+  /** Whole villagers wear their coat outdoors in the cold (V-190); overlay bodies never do. */
+  coats: boolean;
   facing: Facing;
+  frame: number;
   walked: number;
   /** Where a carried person lies from their carrier's tile, in pixels. */
   off: { x: number; y: number };
@@ -59,6 +63,9 @@ export class PeopleSprites {
   private people: PersonView[] = [];
   private shown = new Map<number, Shown>();
   private lying = new Map<number, Lying>();
+  /** The coat each person wears on the map now (V-190), as the worker last said. */
+  private coat = new Map<number, CoatView>();
+  private coats: CoatTextures | undefined;
   private z = 0;
   private live = false;
   private readonly trails = new Trails();
@@ -74,6 +81,7 @@ export class PeopleSprites {
     game.events.once(Phaser.Core.Events.READY, () =>
       scene.events.once(Phaser.Scenes.Events.CREATE, () => {
         this.live = true;
+        this.coats = new CoatTextures(scene);
         this.draw();
         scene.events.on(Phaser.Scenes.Events.UPDATE, (_: number, delta: number) =>
           this.glide(delta),
@@ -98,6 +106,7 @@ export class PeopleSprites {
       if (!p) continue;
       if (p.z !== w.z) level = true;
       [p.x, p.y, p.z] = [w.x, w.y, w.z];
+      this.dress(w);
       const was = this.lying.get(w.id);
       const now = { lying: w.lying, carried: !!w.carried };
       if (was && was.lying === now.lying && was.carried === now.carried) continue;
@@ -107,6 +116,16 @@ export class PeopleSprites {
       if (s) this.restyle(s);
     }
     if (level) this.draw();
+  }
+
+  /** A coat put on, taken off or changed in look: the villager is drawn again in it. */
+  private dress(w: WalkerView): void {
+    const was = this.coat.get(w.id);
+    if (JSON.stringify(was) === JSON.stringify(w.coat)) return;
+    if (w.coat) this.coat.set(w.id, w.coat);
+    else this.coat.delete(w.id);
+    const s = this.shown.get(w.id);
+    if (s?.coats) this.pose(s, s.facing, s.frame);
   }
 
   setLevel(z: number): void {
@@ -173,12 +192,15 @@ export class PeopleSprites {
         clothes,
         hair,
         stem,
+        coats: !overlays,
         facing: 's' as Facing,
+        frame: 0,
         walked: 0,
         off: { x: 0, y: 0 },
         lift,
       };
       this.shown.set(p.id, s);
+      if (s.coats) this.pose(s, 's', 0);
       this.restyle(s);
       box.setPosition(p.x * TILE + lift.x + s.off.x, p.y * TILE + lift.y + s.off.y);
     }
@@ -235,7 +257,12 @@ export class PeopleSprites {
   private pose(s: Shown, facing: Facing, frame: number): void {
     const { race, look } = s.view;
     s.facing = facing;
-    s.body.setFrame(`${s.stem}.${facing}.${frame}`);
+    s.frame = frame;
+    const coat = s.coats ? this.coat.get(s.view.id) : undefined;
+    const body = this.coats?.body(s.stem, coat, facing, frame);
+    if (!body) s.body.setFrame(`${s.stem}.${facing}.${frame}`);
+    else if (body.key !== s.body.texture.key) s.body.setTexture(body.key, body.frame);
+    else if (body.frame) s.body.setFrame(body.frame);
     s.clothes.setFrame(`clothes.${race}.${facing}.${frame}`);
     s.hair?.setFrame(`hair.${look.hair}.${race}.${facing}`);
   }
