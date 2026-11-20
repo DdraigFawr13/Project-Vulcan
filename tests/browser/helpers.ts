@@ -10,17 +10,31 @@ export const tick = async (page: Page) =>
 export const alertText = async (page: Page) =>
   (await page.getByTestId('alert').getAttribute('aria-label')) ?? '';
 
-/** Sets every stop kind on this page's device (V-191) before it loads: `slow` makes Next event
- * stop at every notable line, as these specs were written for; `note` lets play run unpaused. */
-export const stopsAll = (page: Page, act: 'pause' | 'slow' | 'note') =>
-  page.addInitScript((a) => {
-    const kinds = ['death', 'attack', 'food', 'family', 'comings', 'sickness', 'quarrel'];
-    const all = [...kinds, 'danger', 'mood', 'works', 'world'];
-    localStorage.setItem(
-      'vulcan.stops',
-      JSON.stringify(Object.fromEntries(all.map((k) => [k, a]))),
-    );
-  }, act);
+type StopAct = 'pause' | 'slow' | 'note';
+
+/** Sets every stop kind on this page's device (V-191) before it loads, but for the kinds named in
+ * `except`: `slow` makes Next event stop at every notable line, as these specs were written for;
+ * `note` lets play run unpaused. */
+export const stopsAll = (page: Page, act: StopAct, except: Record<string, StopAct> = {}) =>
+  page.addInitScript(
+    ([a, but]) => {
+      const kinds = ['death', 'attack', 'food', 'family', 'comings', 'sickness', 'quarrel'];
+      const all = [...kinds, 'danger', 'mood', 'works', 'world'];
+      localStorage.setItem(
+        'vulcan.stops',
+        JSON.stringify({ ...Object.fromEntries(all.map((k) => [k, a])), ...but }),
+      );
+    },
+    [act, except] as const,
+  );
+
+/** Sets one stop kind from the jump tray's "Change what stops play", as a player would. */
+export async function setStop(page: Page, kind: string, act: StopAct) {
+  await page.getByTestId('jump-open').click();
+  await page.getByTestId('tray-stops').click();
+  await page.getByTestId(`stop-${kind}-${act}`).click();
+  await expect(page.getByTestId(`stop-${kind}-${act}`)).toHaveAttribute('aria-pressed', 'true');
+}
 
 /** Chooses a running speed from the speed plate's list. */
 export async function chooseSpeed(page: Page, speed: number, how: 'click' | 'tap' = 'click') {
@@ -29,15 +43,17 @@ export async function chooseSpeed(page: Page, speed: number, how: 'click' | 'tap
 }
 
 /** Opens `/?seed=<seed>` at 390 x 844, settles valley `site` and arrives, paused on Day 1. Every
- * stop kind is set to `stops` (Slow unless named: Next event stops at every notable line). */
+ * stop kind but those in `except` is set to `stops` (Slow unless named: Next event stops at every
+ * notable line). */
 export async function settle(
   page: Page,
   seed: string,
   site: number,
   debug = true,
-  stops: 'pause' | 'slow' | 'note' = 'slow',
+  stops: StopAct = 'slow',
+  except: Record<string, StopAct> = {},
 ) {
-  await stopsAll(page, stops);
+  await stopsAll(page, stops, except);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/?seed=${seed}${debug ? '&debug' : ''}`);
   // The picker waits on the seed's Story Generator world and its history (P1.6): about 5 s here.
