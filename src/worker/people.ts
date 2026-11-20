@@ -20,6 +20,7 @@ import { memoriesView, thoughtView } from './memoryview.ts';
 import { selfView } from './selfview.ts';
 import { talesView } from './taleview.ts';
 import { personTools } from './items.ts';
+import { seenOf } from './seen.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 import { jobShown } from './jobrows.ts';
 import { homeOf, strangerOf } from './strangers.ts';
@@ -158,6 +159,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     thought: thoughtView(world, p),
     ...lawOfWalker(world, p),
     tools: personTools(world, p.id),
+    ...seenOf(world, p),
     skills: skillsOf(world, p),
     ...withHome(homeOf(world, p), strangerOf(world, p)),
     ...kinView(world, p),

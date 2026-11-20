@@ -36,6 +36,11 @@ export class TrailClock {
     this.skipping = skipping;
   }
 
+  /** Whether the game is paused (not skipping): drawn work motions hold still. */
+  get paused(): boolean {
+    return this.rate === 0 && !this.skipping;
+  }
+
   /** The clock at real time `time` (ms); every layer asks once a frame and gets the same answer. */
   at(time: number): number {
     const delta = this.frame < 0 ? 0 : Math.min(250, time - this.frame);
