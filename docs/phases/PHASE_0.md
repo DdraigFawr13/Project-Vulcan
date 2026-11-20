@@ -23,7 +23,7 @@ Scaffold, checks, CI, docs, toolkit, agents and skills; PR #1 closed with its en
 
 `tools/fork-content` copies the Story Generator raws at a pinned revision into `src/content/data/`, recorded in `src/content/FORK.md`; schemas and validators; `contentHash`. Mock-up: engine (a table of forked files, entry counts and the hash). Done when: the validator passes on the fork and fails on a broken sample entry.
 
-- Reading list: `docs/ARCHITECTURE.md#layers`, `src/content/MODULE.md`, `docs/DECISIONS.md`
+- Reading list: `docs/ARCHITECTURE.md#layers`, `src/content/MODULE.md`, `docs/DECISIONS.md` V-006 V-007 V-008
 
 ### P0.3 Engine core
 
