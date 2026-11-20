@@ -5,7 +5,7 @@ A side track built beside 6B and 6C: colonists who are interesting to watch. Mor
 ## Status
 
 - [x] Design form answered, 2026-11-20 (V-190)
-- [ ] Part 1, tools in hand, carried loads and work motions (screens)
+- [ ] Part 1, tools in hand, carried loads and work motions (screens); mock-up approved 2026-11-20 (V-194)
 - [ ] Part 2, required tools, knapping and five new tools (engine)
 - [x] Part 3 mock-up answered, 2026-11-20 (https://claude.ai/artifact/FSWME24XACU6aYDSz66UX8, every recommendation)
 - [ ] Part 3, outer clothes that show (screens)
@@ -27,7 +27,9 @@ Each part is built in a fresh thread with a mock-up first: Parts 1 and 3 send a 
 
 ### Part 1: tools in hand, carried loads and work motions
 
-Mock-up: UI. Done when: a person felling shows an axe swinging with chips at 1x and 2x speed, a hauler shows their load, the motion of every job comes from `jobs.json`, and `npm run test:browser` passes.
+Mock-up: UI, approved 2026-11-20 (V-194): https://claude.ai/artifact/QD7htqM6kKxKHNiDKtukx1 (sources `vulcan/seen-at-work-p1/` in the project files: `template.html` holds the drawing code to port). Done when: a person felling shows an axe swinging with chips at 1x and 2x speed, a hauler shows their load, the motion of every job comes from `jobs.json`, each side frame strikes towards its work, villagers walk with the PixelLab walk animations, and `npm run test:browser` passes.
+
+Morgan's answers: [SEEN_AT_WORK_ANSWERS.md](../SEEN_AT_WORK_ANSWERS.md#part-1).
 
 - Reading list: `docs/DECISIONS.md` V-041 V-088 V-095 V-168 V-190; `src/render/MODULE.md`; `src/worker/MODULE.md`; `docs/UI_STYLE.md`; `docs/ART.md`
 
@@ -41,11 +43,6 @@ Mock-up: Engine. Done when: the four-seed table above, a test that a valley with
 
 Mock-up: UI. Done when: each race shows the three outer garments at 390 px, outdoors in the cold only, with ragged and fine looks, and `npm run test:browser` passes.
 
-Mock-up answered 2026-11-20 (https://claude.ai/artifact/FSWME24XACU6aYDSz66UX8, every recommendation; sources and raw art in the project files under `vulcan/saw-clothes/`):
-
-- **Drawing (Q1 A).** PixelLab `edit-image-pixen` (1 generation) puts one coat on one villager's four facings at once (a 128 by 32 strip, frame 0). A sheet of all 15 villagers in one edit loses the races, so one villager a call. The edit redraws the face and hair slightly, so each edited strip is a whole drawing per coat (`person.<race>.v<n>.<coat>.<facing>.<frame>` or similar, the build picks the name): frame 1 is frame 0 moved up 1 pixel and frame 2 equals frame 0, as today. Cleaned to `art/palette.gpl` by nearest colour. 7 villagers (each race's v1) are made; 8 remain, about 24 generations plus redos. A new villager design later costs 3.
-- **Ragged (Q2 A).** A garment in its last `clothes.ragged` per cent of life: the coat's pixels dulled and darkened, a torn, uneven hem and a few small holes showing the tunic, drawn by code over the coat's pixels (those the edit changed below the head).
-- **Fine (Q3 A).** Worth `fine`: richer colour, a one-pixel brass trim along the hem and a clasp at the throat, by code. Good and plain look the same.
-- **When.** Outdoors below the warmth comfort line; indoors or warm, the villager as today. The render reads the worn outer item and its life and worth from the worker's people view and never works out a rule (GAME-02).
+Mock-up answered 2026-11-20: Morgan's answers are in [SEEN_AT_WORK_ANSWERS.md](../SEEN_AT_WORK_ANSWERS.md#part-3).
 
 - Reading list: `docs/DECISIONS.md` V-134 V-168 V-184 V-190; `docs/CLOTHES_AND_LOOM.md`; `src/render/MODULE.md`; `src/engine/needs/MODULE.md`; `docs/ART.md`
