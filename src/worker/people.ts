@@ -2,6 +2,7 @@
 // put into words from content. A pure read of the world, like views.ts.
 import { content } from '../content/index.ts';
 import {
+  bynameOf,
   clockAt,
   declinedLine,
   levelOf,
@@ -12,7 +13,7 @@ import {
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
-import { wearingRows } from './clothesview.ts';
+import { coatOf, wearingRows } from './clothesview.ts';
 import { feedsOf } from './comfort.ts';
 import { healthOf } from './healthview.ts';
 import { doingOf, nowOf } from './doing.ts';
@@ -21,6 +22,7 @@ import { memoriesView, thoughtView } from './memoryview.ts';
 import { selfView } from './selfview.ts';
 import { talesView } from './taleview.ts';
 import { personTools } from './items.ts';
+import { seenOf } from './seen.ts';
 import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 import { jobShown } from './jobrows.ts';
 import { homeOf, strangerOf } from './strangers.ts';
@@ -42,9 +44,11 @@ export function peopleOf(world: WorldState): PersonView[] {
       const [level, potential] = [row['level'] as number, row['potential'] as number];
       return [{ id, name: nameOf(content.abilities, id), level, potential }];
     });
+    const byname = bynameOf(world, p.id)?.['word'] as string | undefined;
     return {
       id: p.id,
       name: p['name'] as string,
+      ...(byname && { byname }),
       race: p['race'] as string,
       raceName: nameOf(content.races, p['race'] as string),
       cultureName: nameOf(content.cultures, p['culture'] as string),
@@ -159,6 +163,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
     thought: thoughtView(world, p),
     ...lawOfWalker(world, p),
     tools: personTools(world, p.id),
+    ...seenOf(world, p),
     skills: skillsOf(world, p),
     ...withHome(homeOf(world, p), strangerOf(world, p)),
     ...kinView(world, p),
@@ -188,12 +193,10 @@ const withHome = (home: WalkerView['home'], stranger: WalkerView['stranger']) =>
 });
 
 /** What a person wears, a row per garment (V-092, V-134); see clothesview.ts. */
-const wearingOf = (
-  world: WorldState,
-  p: EntityRow,
-): { wearing?: NonNullable<WalkerView['wearing']> } => {
+const wearingOf = (world: WorldState, p: EntityRow): Pick<WalkerView, 'wearing' | 'coat'> => {
   const wearing = wearingRows(world, p);
-  return wearing.length ? { wearing } : {};
+  const coat = coatOf(world, p);
+  return { ...(wearing.length && { wearing }), ...(coat && { coat }) };
 };
 
 const withHealth = (health: WalkerView['health']) => (health ? { health } : {});

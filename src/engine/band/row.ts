@@ -117,8 +117,8 @@ export function addPerson(
     },
   });
   for (const skill of content.band.skills)
-    addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0 });
-  addEntity(world, 'skill', { person: id, skill: SMITHING, ...smithing, xp: 0 });
+    addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0, used: 0 });
+  addEntity(world, 'skill', { person: id, skill: SMITHING, ...smithing, xp: 0, used: 0 });
   for (const trait of p.traits) addEntity(world, 'trait', { person: id, trait });
   return id;
 }

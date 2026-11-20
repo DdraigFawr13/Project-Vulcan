@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { content } from '../content/index';
 import {
   allLines,
+  annalsOf,
+  annalsSystem,
   applyDue,
   calendarSystem,
   chunkTiles,
@@ -25,8 +27,9 @@ import {
 } from './index.ts';
 
 // Test-only fixtures: a system that rolls its dice every hour and a lever with no game meaning.
+// The fixture calendar turns a season every month, so the month's run writes a recap (V-191).
 const fixtureContent: EngineContent = {
-  calendar: content.calendar,
+  calendar: { ...content.calendar, seasons: content.calendar.monthNames },
   lamp: content.lamp,
   terrain: content.terrain,
   biomes: content.biomes,
@@ -41,11 +44,14 @@ const fixtureContent: EngineContent = {
   band: content.band,
   clothes: content.clothes,
   tales: content.tales,
+  annals: content.annals,
   self: content.self,
   colony: content.colony,
   family: content.family,
   worship: content.worship,
   faiths: content.faiths,
+  teach: content.teach,
+  tavern: content.tavern,
   defy: content.defy,
   strangers: content.strangers,
   health: content.health,
@@ -80,7 +86,7 @@ const dice: System = {
       void ctx.emit('test.marked', { causes: [cause], data: { place: command.data['place']! } }),
   },
 };
-const sim = createSim(fixtureContent, [mapSystem, calendarSystem, dice]);
+const sim = createSim(fixtureContent, [mapSystem, calendarSystem, dice, annalsSystem]);
 const month = ticksPerMonth(content.calendar);
 
 /** A game month from `seed`, with three levers sent at different points of the run. */
@@ -104,6 +110,9 @@ describe('engine', () => {
     expect(toNdjson(allLines(a))).toBe(toNdjson(allLines(b)));
     expect(a.rng).toEqual(b.rng);
     expect(a.map).toEqual(b.map);
+    // The recaps too: the season that turned at the month's end has one (V-191).
+    expect(annalsOf(a)).toHaveLength(1);
+    expect(a.entities).toEqual(b.entities);
     // Seed plus command log alone rebuild the whole world, not only its ledger.
     expect(replay(sim, 'hollow-oak', a.commandLog, a.tick)).toEqual(a);
     // Another seed changes the dice, not just the seed printed in the first line.

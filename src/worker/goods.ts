@@ -22,6 +22,7 @@ import {
   rateOf,
   recordOf,
   stockOf,
+  cupsHeld,
   storeOf,
   wantOf,
   type EntityRow,
@@ -39,6 +40,7 @@ import { metalStatus } from './metalstatus.ts';
 import { shaftPlans, stockNote } from './mine.ts';
 import { burialGoods } from './places.ts';
 import { furnitureGoods, tilePiece } from './furniture.ts';
+import { tavernSign } from './tavern.ts';
 import type { GoodsView, LedgerLine, StockView, TileView } from './protocol.ts';
 import type { PlanView } from './protocol-build.ts';
 import { candleNote, litGoods } from './lampview.ts';
@@ -81,7 +83,12 @@ export function goodsOf(world: WorldState): GoodsView {
         state: p['state'] as string,
         house: p['house'] as number,
       })),
-    furniture: [...furnitureGoods(world), ...stationGoods(world), ...millGoods(world)],
+    furniture: [
+      ...furnitureGoods(world),
+      ...stationGoods(world),
+      ...millGoods(world),
+      ...tavernSign(world),
+    ],
     fires: fireGoods(world),
     lit: litGoods(world),
     work: [...workBars(world), ...jobBars(world)],
@@ -108,7 +115,8 @@ export const stockView = (world: WorldState): StockView[] =>
     ...keptOf(world, def.good),
     good: def.good,
     name: def.name,
-    have: haveOf(world, content, def.good),
+    // Ale is kept in the tavern's casks, not the store (6B Bundle 5).
+    have: def.good === content.tavern.stock ? cupsHeld(world) : haveOf(world, content, def.good),
     want: wantOf(world, content, def.good),
     level: (stockOf(world, def.good)?.['level'] as string) ?? def.start,
     levels: def.levels.map((l) => ({ id: l.id, word: l.word, count: l.count })),

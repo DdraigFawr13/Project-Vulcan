@@ -1,6 +1,7 @@
 // Ledger lines as the page shows them: text, clock, why, and where a notable line's person
 // stands as it is sent. A pure read of the world.
 import {
+  bynameOf,
   entityOf,
   renderEvent,
   type SimEvent,
@@ -21,6 +22,20 @@ function whereOf(world: WorldState | undefined, e: SimEvent): Pick<LedgerLine, '
     ? [p['x'] as number, p['y'] as number, p['z'] as number]
     : [e.data['x'] as number, e.data['y'] as number, 0];
   return { where: { x, y, z, words: placeWords(world.map, x, y, z) } };
+}
+
+/** A line's text with each actor's byname after their name, from the line that named them on
+ * (6B Bundle 5): "Bran “Wolfbait” went to the tavern". */
+function withBynames(world: WorldState | undefined, e: SimEvent, text: string): string {
+  if (!world) return text;
+  let out = text;
+  for (const id of e.actors) {
+    const b = bynameOf(world, id);
+    const name = b && (entityOf(world, 'person', id)?.['name'] as string | undefined);
+    if (!b || !name || (b['line'] as number) >= e.id) continue;
+    out = out.replace(name, `${name} “${b['word'] as string}”`);
+  }
+  return out;
 }
 
 /** Line `e` for the page; a sealed day's stub says only when it was. */
@@ -45,7 +60,7 @@ export function lineOf(
     id: e.id,
     tick: e.tick,
     type: e.type,
-    text: renderEvent(e, sim.templates),
+    text: withBynames(world, e, renderEvent(e, sim.templates)),
     causes: [...e.causes],
     why: e.causes.some((c) => c !== world?.begunEvent),
     clock,

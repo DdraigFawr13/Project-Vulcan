@@ -7,22 +7,17 @@
 // back from any version to the event; the listener holds that version and may believe it.
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { addEntity, awake, people } from '../entity/index.ts';
+import { cupsTonight, inTavern, keeperOf } from '../inn/index.ts';
 import { byAFire, winterEvening } from '../people/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { feedBelief } from './belief.ts';
-import { storiesOf, taleDef, taleText } from './tables.ts';
+import { feltAgain } from './bynames.ts';
+import { apart, storiesOf, taleDef, taleText } from './tables.ts';
+import { sungStories } from './songs.ts';
 
 const WORK_REACH = 2;
 
-const apart = (a: EntityRow, b: EntityRow): number =>
-  a['z'] !== b['z']
-    ? Infinity
-    : Math.max(
-        Math.abs((a['x'] as number) - (b['x'] as number)),
-        Math.abs((a['y'] as number) - (b['y'] as number)),
-      );
-
-type Place = 'meal' | 'leisure' | 'work' | 'hearth';
+type Place = 'meal' | 'leisure' | 'work' | 'hearth' | 'tavern';
 
 /** Where `a` and `b` are together this hour, if they are. */
 function placeOf(ctx: SystemContext, a: EntityRow, b: EntityRow): Place | undefined {
@@ -34,6 +29,8 @@ function placeOf(ctx: SystemContext, a: EntityRow, b: EntityRow): Place | undefi
   if (both('eat', 'feast') && d <= reach) return 'meal';
   if (both('work') && d <= WORK_REACH) return 'work';
   if (!both('relax')) return undefined;
+  // At the tavern (6B Bundle 5): both inside it.
+  if (inTavern(world, a) && inTavern(world, b)) return 'tavern';
   // Round one fire: both warmed by a fire and within sight of each other.
   const fire =
     winterEvening(world, content) && byAFire(world, content, a) && byAFire(world, content, b);
@@ -46,7 +43,12 @@ function toTell(ctx: SystemContext, teller: EntityRow, listener: EntityRow, day:
   const tales = ctx.world.entities['tale'] ?? [];
   const heard = tales.filter((t) => t['person'] === listener.id);
   const today = heard.filter((t) => t['teller'] !== 0 && t['heard'] === day);
-  if (today.length >= ctx.content.tales.pass.perDay) return undefined;
+  // The innkeeper hears more (6B Bundle 5).
+  const most =
+    listener.id === keeperOf(ctx.world)
+      ? ctx.content.tavern.keeper.hears
+      : ctx.content.tales.pass.perDay;
+  if (today.length >= most) return undefined;
   const known = new Set(heard.map((t) => t['story'] as number));
   return tales
     .filter((t) => t['person'] === teller.id && !known.has(t['story'] as number))
@@ -57,7 +59,12 @@ function toTell(ctx: SystemContext, teller: EntityRow, listener: EntityRow, day:
 function bent(ctx: SystemContext, teller: EntityRow, level: number, most: number): number {
   const { bend } = ctx.content.tales;
   const traits = (ctx.world.entities['trait'] ?? []).filter((t) => t['person'] === teller.id);
-  const chance = traits.reduce((c, t) => c + (bend.traits[t['trait'] as string] ?? 0), bend.chance);
+  // After a cup at the tavern (6B Bundle 5) a tale bends more often.
+  const cup = cupsTonight(ctx.world, teller.id) ? ctx.content.tavern.bend : 0;
+  const chance = traits.reduce(
+    (c, t) => c + (bend.traits[t['trait'] as string] ?? 0),
+    bend.chance + cup,
+  );
   const rng = ctx.rng();
   if (rng.int(100) >= chance) return level;
   const to = rng.int(100) < bend.softer ? level - 1 : level + 1;
@@ -100,6 +107,8 @@ function tell(
     day,
   });
   feedBelief(ctx, listener.id, def, level, false, line);
+  story['told'] = (story['told'] as number) + 1;
+  feltAgain(ctx, listener.id, story.id, line);
 }
 
 /** This hour's tellings, pair by pair in id order. */
@@ -120,7 +129,8 @@ export function tellings(ctx: SystemContext): void {
     }
 }
 
-/** A tale heard but neither told nor heard again for `forgetDays` is forgotten (one seen stays),
+/** A tale heard but neither told nor heard again for `forgetDays` is forgotten (one seen or in a
+ * song still sung stays),
  * the tales of the dead go with them (6A review P6), and a story nobody holds goes. */
 export function forget(ctx: SystemContext): void {
   const { world, content } = ctx;
@@ -131,11 +141,18 @@ export function forget(ctx: SystemContext): void {
       .filter((p) => p['status'] === 'dead' || p['status'] === 'buried')
       .map((p) => p.id),
   );
+  // A tale in a song still sung is never forgotten (6B Bundle 5).
+  const sung = sungStories(ctx);
   world.entities['tale'] = tales.filter(
     (t) =>
       !dead.has(t['person'] as number) &&
-      (t['teller'] === 0 || day - (t['day'] as number) < content.tales.forgetDays),
+      (t['teller'] === 0 ||
+        sung.has(t['story'] as number) ||
+        day - (t['day'] as number) < content.tales.forgetDays),
   );
   const held = new Set(world.entities['tale'].map((t) => t['story'] as number));
   world.entities['story'] = storiesOf(world).filter((s) => held.has(s.id));
+  world.entities['song'] = (world.entities['song'] ?? []).filter((s) =>
+    held.has(s['story'] as number),
+  );
 }

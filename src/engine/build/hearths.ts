@@ -49,7 +49,11 @@ export function openGround(
 }
 
 /** A hearth plan, with its line and the stone it will need. */
-function plan(ctx: SystemContext, at: { x: number; y: number; facing: string }, line: number) {
+export function planHearthAt(
+  ctx: SystemContext,
+  at: { x: number; y: number; facing: string },
+  line: number,
+) {
   const { world, content } = ctx;
   addEntity(world, 'furniture', {
     ...{ kind: HEARTH, x: at.x, y: at.y, z: 0, facing: at.facing, quality: 0, maker: 0 },
@@ -76,7 +80,7 @@ export function planCampfire(ctx: SystemContext, g: Spot): void {
           causes: [world.begunEvent],
           data: { what: 'campfire', where: 'on the green', why: 'the band has no fire' },
         });
-        plan(ctx, { x, y, facing: 's' }, line);
+        planHearthAt(ctx, { x, y, facing: 's' }, line);
         return;
       }
 }
@@ -138,6 +142,6 @@ export function planRoomHearths(ctx: SystemContext): void {
       actors: [who.id],
       data: { name: who['name'] as string, room: roomName(world, content, h) },
     });
-    plan(ctx, site, line);
+    planHearthAt(ctx, site, line);
   }
 }

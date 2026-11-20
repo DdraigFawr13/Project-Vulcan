@@ -2,7 +2,7 @@
 // leisure, what each food gives, mood words, and the cart the band arrives with. Need values run
 // from 0 to `scale`; rates are per game hour.
 import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
-import { count, id, text, texts } from './schema-fields';
+import { count, effect, id, motion, text, texts } from './schema-fields';
 import { COOK, COOPER, CURE, KEEP, POTTER } from './schemas-food';
 import { TOWN_SCHEMAS } from './schemas-town';
 import { MASONRY_SCHEMAS } from './schemas-masonry';
@@ -265,6 +265,9 @@ export const LIFE_SCHEMAS = {
     // Skills by use (P2.5): minutes of practice from one level to the next, `start` plus
     // `perLevel` times the level now.
     learn: obj({ start: num({ min: 1 }), perLevel: count }),
+    // Seen at work (V-194): the motion and effect of work that is not a jobs.json row (a grave
+    // dug, the hurt tended, a hearth laid), by the person's `job`.
+    motions: map(obj({ motion, effect: opt(effect) })),
   }),
   // P3.1 and P3.2: the parts colonists build (buildings.json). Each part is one tile of one
   // material: `cost` of it delivered, then `minutes` of work at building skill `skilled`

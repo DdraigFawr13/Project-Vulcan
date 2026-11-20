@@ -1,7 +1,8 @@
 // The engine's one public surface. The engine is pure: same seed, content and commands, same
 // ledger, tick for tick (DECISIONS V-002, V-006). The worker is the only place it is run.
-// Each system's index.ts is its public surface, passed on whole: a system that exports a new name
-// needs no line here. A new system adds one export line and its entry in SYSTEMS.
+// Each system's index.ts is passed on whole; a new system adds one export line and its SYSTEMS
+// entry.
+import { annalsSystem } from './annals/index.ts';
 import { beesSystem } from './bees/index.ts';
 import { buildSystem } from './build/index.ts';
 import { calendarSystem } from './calendar/index.ts';
@@ -22,7 +23,9 @@ import { colonySystem } from './colony/index.ts';
 import { defySystem } from './defy/index.ts';
 import { familySystem } from './family/index.ts';
 import { faithSystem } from './faith/index.ts';
+import { innSystem } from './inn/index.ts';
 import { talesSystem } from './tales/index.ts';
+import { teachSystem } from './teach/index.ts';
 import { weatherSystem } from './weather/index.ts';
 import { wildSystem } from './wild/index.ts';
 import type { EngineContent } from './core/index.ts';
@@ -33,6 +36,7 @@ export * from './log/index.ts';
 export * from './entity/index.ts';
 export { applyDue, createWorld, replay, step, submitCommand } from './sim/index.ts';
 export type { Cadence, Sim, SimHooks, System, SystemContext } from './sim/index.ts';
+export * from './annals/index.ts';
 export * from './bees/index.ts';
 export * from './build/index.ts';
 export * from './calendar/index.ts';
@@ -53,7 +57,9 @@ export * from './colony/index.ts';
 export * from './defy/index.ts';
 export * from './family/index.ts';
 export * from './faith/index.ts';
+export * from './inn/index.ts';
 export * from './tales/index.ts';
+export * from './teach/index.ts';
 export * from './weather/index.ts';
 export * from './wild/index.ts';
 // Two names more than one system exports: the engine's surface takes these.
@@ -94,12 +100,15 @@ export const SYSTEMS: readonly System[] = [
   talesSystem,
   familySystem,
   faithSystem,
+  teachSystem,
+  innSystem,
   calendarSystem,
   weatherSystem,
   wildSystem,
   flockSystem,
   beesSystem,
   keepSystem,
+  annalsSystem,
 ];
 
 /** A simulation over `content` with the game's systems, or the given ones (tests add fixtures). */

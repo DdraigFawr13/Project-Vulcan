@@ -29,6 +29,7 @@ import { tileShaft } from './mine.ts';
 import { tilePasture } from './flockpage.ts';
 import { tileWild } from './wild.ts';
 import { tileRoad } from './roads.ts';
+import { tavernPlace } from './tavern.ts';
 import { tilePlace } from './places.ts';
 import type { ClockView, LedgerLine, TileView } from './protocol.ts';
 
@@ -135,6 +136,7 @@ export function tileView(
     ...(z === 0 && tileWild(w, i)),
     ...(z === 0 && tileRoad(w, i)),
     ...(z === 0 && tilePlace(w, x, y, lineOf)),
+    ...(z === 0 && tavernPlace(w, x, y, lineOf)),
   };
   // Unknown ground below is named only as unknown, with a vein glinting through (V-030).
   if (!dark) return rows;

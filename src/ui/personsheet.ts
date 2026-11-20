@@ -263,7 +263,8 @@ export class PersonSheet {
     this.drawn = this.key();
     this.now.dataset['shown'] = '-';
     this.thought.dataset['shown'] = '-';
-    this.panel.showView('person', p.home ? `${p.name} of ${p.home}` : p.name, [
+    const name = p.byname ? `${p.name} “${p.byname}”` : p.name;
+    this.panel.showView('person', p.home ? `${name} of ${p.home}` : name, [
       this.now,
       this.thought,
       tabs,

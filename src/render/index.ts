@@ -94,7 +94,7 @@ export function startRenderer(
   },
 ): Renderer {
   const scene = new ValleyScene();
-  scene.onHover = hooks.onHover;
+  scene.hover.onHover = hooks.onHover;
   scene.onSelect = hooks.onSelect;
   const game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -108,6 +108,7 @@ export function startRenderer(
   });
   const l = layersOf(game, scene, parent);
   watchAnimalFinder(l);
+  watchWorkFinder(l);
   return { ...viewHandle(l), ...peopleHandle(l), ...goodsHandle(l) };
 }
 
@@ -125,8 +126,10 @@ function layersOf(game: Phaser.Game, scene: ValleyScene, parent: HTMLElement) {
   const light = new Firelight(game, scene);
   const bars = new WorkBars(game, scene);
   const wild = new WildSprites(game, scene, clock);
-  const wear = new WearLayer(game, scene);
-  const canopy = new CanopyLayer(game, scene);
+  const wear = new WearLayer(scene);
+  const canopy = new CanopyLayer(scene);
+  scene.window.layers.push(wear, canopy, wild);
+  scene.spots = () => people.spots();
   const finder = new Finder(game, scene, () => people.spots());
   const bubbles = new Bubbles(game, scene, parent, () => people.spots());
   return {
@@ -161,6 +164,26 @@ function watchAnimalFinder({ game, scene, parent, wild }: Layers): void {
   });
 }
 
+/** Seen at work (V-194): this event centres the view on someone working with the motion named
+ * in its detail and, once a frame is drawn, writes where they stand (`data-worker-at`), the work
+ * bits in the air (`data-bits`) and how many hold a tool or carry a load (`data-tools`,
+ * `data-loads`). */
+function watchWorkFinder({ game, scene, parent, people }: Layers): void {
+  parent.addEventListener('vulcan:find-worker', (e) => {
+    const motion = (e as CustomEvent<string | undefined>).detail;
+    const first = people.working(motion);
+    if (first) scene.controls?.lookAt(first.x, first.y);
+    game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+      const now = people.working(motion);
+      if (now) parent.dataset['workerAt'] = onScreen(scene, now);
+      else delete parent.dataset['workerAt'];
+      parent.dataset['bits'] = String(people.bits);
+      parent.dataset['tools'] = String(people.carrying.tools);
+      parent.dataset['loads'] = String(people.carrying.loads);
+    });
+  });
+}
+
 /** The map, the camera and the level on screen. */
 function viewHandle(l: Layers) {
   const { game, scene, build, fields, light, wild, wear, canopy, bubbles } = l;
@@ -171,8 +194,8 @@ function viewHandle(l: Layers) {
       fields.setMapSize(width);
       light.setMapSize(width, height);
       wild.setMapSize(width, height);
-      wear.setMapSize(width, height);
-      canopy.setMapSize(width, height);
+      wear.setMapSize();
+      canopy.setMapSize();
     },
     applyChunks: (chunks: readonly ChunkView[]) => {
       scene.applyChunks(chunks);
@@ -244,6 +267,7 @@ function goodsHandle(l: Layers) {
       l.goods.set(view);
       l.build.setPlans(view.plans);
       l.fields.set(view.fields);
+      l.scene.setFields(view.fields);
       l.shafts.set(view.shafts);
       l.burial.set(view);
       l.furniture.set(view.furniture);

@@ -348,5 +348,20 @@
 {"id":"faith.rite","importance":2,"template":"{name}, {title} of {faith}, leads the rite of {day} at the {shrine}: {count} keep it."},
 {"id":"faith.feast","importance":2,"template":"{day}: {count} ate {meal} together {where}."},
 {"id":"faith.noFeast","importance":2,"template":"No feast for {day}: the store has no food to spare."},
-{"id":"faith.leanDay","importance":2,"template":"{day} is kept lean: the store is too low for a supper."}
+{"id":"faith.leanDay","importance":2,"template":"{day} is kept lean: the store is too low for a supper."},
+{"id":"skill.taught","importance":1,"template":"{name} got better at {skill}: now {level}, taught by {teacher}."},
+{"id":"teach.apprentice","importance":2,"template":"{master} takes {learner} as apprentice in {skill}: {why}."},
+{"id":"teach.finished","importance":2,"template":"{learner} has learned what {master} can teach of {skill}: now {level}."},
+{"id":"teach.parted","importance":1,"template":"{learner} is no longer {master}'s apprentice in {skill}."},
+{"id":"teach.lost","importance":3,"template":"{name} {how}, and the colony's best {skill} went with them: nobody came near their {level}, and nothing was written.","stop":"works","notable":{}},
+{"id":"build.tavern","importance":2,"template":"With {why}, the colony sites a tavern, a {size}, {dir} of the green: {where}."},
+{"id":"tavern.named","importance":3,"template":"The tavern is finished, and they call it {name}."},
+{"id":"tavern.keeper","importance":2,"template":"{name} keeps {tavern} now{why}."},
+{"id":"song.made","importance":2,"template":"{bard} has made a song of it: \"{song}\"."},
+{"id":"song.sung","importance":1,"template":"{bard} sang \"{song}\"{where}: {tale}"},
+{"id":"tale.byname","importance":3,"template":"Folk have taken to calling {name} \"{word}\": {tale}"},
+{"id":"tavern.tookUp","importance":1,"template":"{name} took up brewing: {why}."},
+{"id":"tavern.brewed","importance":1,"template":"{name} brewed {from} into a cask of {drink} at {tavern}; it will be ready in {days} days."},
+{"id":"tavern.noGrain","importance":1,"template":"{name} brews nothing at {tavern}: the grain is kept for eating."},
+{"id":"tavern.brawled","importance":3,"template":"{name} had a drink too many at {tavern} and came to blows with {other}.","stop":"quarrel","notable":{}}
 ]

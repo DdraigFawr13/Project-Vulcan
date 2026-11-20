@@ -2,6 +2,7 @@
 // the test mode switch, and a row per save with Load and Delete. Shows the save store's
 // list; decides nothing (GAME-02).
 import type { SaveMeta } from '../persist/index.ts';
+import { diceButton } from './dice.ts';
 import { el } from './dom.ts';
 import type { PanelActions } from './panel.ts';
 import { versionLine } from './version.ts';
@@ -27,7 +28,9 @@ export function saveRows(
     autocomplete: 'off',
     spellcheck: 'false',
   });
-  form.append(input, el('button', { type: 'submit' }, 'New game'));
+  // The die only fills the box; New game still begins the world (6W Slice 1).
+  const dice = diceButton((next) => (input.value = next));
+  form.append(input, dice, el('button', { type: 'submit' }, 'New game'));
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (input.value.trim()) actions.newGame(input.value.trim());

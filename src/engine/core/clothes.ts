@@ -9,6 +9,8 @@ export interface GarmentDef {
   last: number;
   from: readonly { kind: string; count: number }[];
   minutes: number;
+  /** The coat drawing a villager wears outdoors in the cold (outer garments, V-190). */
+  art?: string;
 }
 
 export interface ClothesDef {

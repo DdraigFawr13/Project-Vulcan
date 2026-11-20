@@ -172,9 +172,10 @@ test('the Build sheet and the Laws page are levels and laws, 44 px each', async 
   expect(await phoneRules(page)).toEqual([]);
   // P5.9, P6.5: the Laws page folds every law to one line, one open at a time. The Strangers law
   // is Those in need from the start (V-117); it names no stranger and admits no one. 6B adds
-  // the Hearths law, Steady by custom, and the Feasts law (faith.spec.ts opens it).
+  // the Hearths law, Steady by custom, the Feasts law (faith.spec.ts opens it) and the
+  // Apprentices law (V-189).
   await more('laws');
-  await expect(p.locator('.lawfold')).toHaveCount(7);
+  await expect(p.locator('.lawfold')).toHaveCount(8);
   await expect(p.locator('.lawfold[data-law="hearths"]')).toContainText('Steady');
   await expect(p.getByRole('group', { name: 'Work hours law' })).toHaveCount(0);
   await p.getByRole('button', { name: 'Show the strangers law' }).click();
@@ -207,6 +208,27 @@ test('the Build sheet and the Laws page are levels and laws, 44 px each', async 
   await expect(p.locator('.lawfold[data-law="rations"]')).not.toContainText(/obey|grumble|refuse/);
   await page.getByTestId('open-ledger').click();
   await expect(p).toContainText(/ now puts Houses second\./);
+});
+
+test('the Saves die fills the seed box with two words and starts nothing (6W Slice 1)', async () => {
+  await more('saves');
+  const form = panel().getByRole('form', { name: 'New game' });
+  const box = form.getByRole('textbox', { name: 'Seed' });
+  await expect(box).toHaveValue('smoke');
+  const url = page.url();
+  // The die sits between the seed box and New game.
+  expect(
+    await form
+      .locator('> *')
+      .evaluateAll((all) =>
+        all.map((e) => e.tagName + (e.getAttribute('aria-label') ?? e.textContent)),
+      ),
+  ).toEqual(['INPUTSeed', 'BUTTONRoll a new seed', 'BUTTONNew game']);
+  await form.getByRole('button', { name: 'Roll a new seed' }).click();
+  await expect(box).toHaveValue(/^[a-z]+-[a-z]+$/);
+  expect(page.url()).toBe(url);
+  expect(await phoneRules(page)).toEqual([]);
+  await page.getByRole('button', { name: 'Close panel' }).click();
 });
 
 test('wanting iron plans a shaft the alert shows, and the plan can be sent back once', async () => {

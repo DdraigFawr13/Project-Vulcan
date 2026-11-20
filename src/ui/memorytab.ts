@@ -14,6 +14,19 @@ const why = (line: number): HTMLElement =>
 /** The tales they know, newest first, and what they believe, strongest first. */
 function taleRows(w: WalkerView): HTMLElement[] {
   const out: HTMLElement[] = [];
+  // Their byname (6B Bundle 5): the tale as it stuck, beside what happened.
+  if (w.byname) {
+    const { word, text, truth, why: line } = w.byname;
+    const row = el('div', { class: 'memrow', 'data-testid': 'byname' });
+    const note = truth && truth !== text ? `What happened: ${truth}` : 'It is what happened.';
+    row.append(
+      el('span', { class: 'band' }, 'Byname'),
+      el('span', { class: 't' }, `Folk call them “${word}”: ${text}`),
+      why(line),
+      el('span', { class: 'r' }, note),
+    );
+    out.push(el('h3', {}, 'What folk call them'), row);
+  }
   if (w.tales.length) out.push(el('h3', {}, 'Tales they know'));
   for (const t of w.tales) {
     const row = el('div', { class: 'memrow', 'data-testid': 'tale', 'data-line': String(t.why) });
@@ -37,8 +50,8 @@ function taleRows(w: WalkerView): HTMLElement[] {
 
 /** Who they are: their roles, strongest first, then their ambition. */
 function selfRows(w: WalkerView): HTMLElement[] {
-  const { roles, ambition, defiance, faith } = w.self;
-  if (!roles.length && !ambition && !defiance && !faith) return [];
+  const { roles, ambition, defiance, faith, teaching = [] } = w.self;
+  if (!roles.length && !ambition && !defiance && !faith && !teaching.length) return [];
   const out: HTMLElement[] = [el('h3', {}, 'Who they are')];
   // Their faith (6B): the creed, devotion and any title, and what it holds sacred.
   if (faith) {
@@ -56,6 +69,12 @@ function selfRows(w: WalkerView): HTMLElement[] {
   if (ambition) {
     const row = el('div', { class: 'memrow belief', 'data-testid': 'ambition' });
     row.append(el('span', { class: 't' }, ambition.text), why(ambition.why));
+    out.push(row);
+  }
+  // Teaching (6B Bundle 6): their master or apprentice, who taught them and whom they taught.
+  for (const t of teaching) {
+    const row = el('div', { class: 'memrow belief', 'data-testid': 'teaching' });
+    row.append(el('span', { class: 't' }, t.text), why(t.why));
     out.push(row);
   }
   // Defiance (P6.7): how far a grievance has carried them, and the memory and belief behind it.

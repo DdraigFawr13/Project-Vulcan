@@ -39,6 +39,7 @@ import { burialRow, sickBeds, word } from './places.ts';
 import { roomWarmth } from './fires.ts';
 import { roomLight } from './lampview.ts';
 import { pastureRow } from './flock.ts';
+import { tavernRow } from './tavern.ts';
 import { homeRows, homesRow } from './strangers.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { BuildRow, BuildView, SmithyRow } from './protocol-build.ts';
@@ -128,12 +129,14 @@ export function buildView(world: WorldState): BuildView {
     ...(pasture && { pasture }),
     ...(homes && { homes }),
     roads: roadsRow(world),
+    tavern: tavernRow(world),
     need: needOf(world),
     noGround: !!state['noGround'] && homeless(world, content).length > 0,
     houses: housesOf(world)
       .filter((h) => h['state'] !== 'sent')
       .map((h) => ({
         id: h.id,
+        ...(h['inn'] ? { inn: true as const } : {}),
         name: nameOf(world, h),
         size: sizeOf(content, h).name,
         state: h['state'] as string,

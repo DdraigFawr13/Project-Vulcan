@@ -21,6 +21,7 @@ import { takeUpChange, hearthFirst } from '../crafts/index.ts';
 import { draughtFirst, nursing } from '../care/index.ts';
 import { endHunt, herding } from '../herding/index.ts';
 import { takeUpMarked } from '../land/index.ts';
+import { takeUpHelping } from '../teach/index.ts';
 import { JOBS } from './jobtable.ts';
 
 const rowOf = (p: EntityRow) => JOBS[p['job'] as string];
@@ -85,8 +86,7 @@ function takeUp(ctx: SystemContext, p: EntityRow, dark = false): boolean {
   // A child (P6.1) helps only at the kinds family.json allows, and the youngest not at all.
   const small = childJobs(world, content, p);
   if (small && !small.length) return idle(world, p);
-  if (!dark && (takeUpMarked(ctx, p, false) || draughtFirst(ctx, p) || takeUpChange(ctx, p)))
-    return true;
+  if (!dark && firsts(ctx, p, small)) return true;
   for (const job of kindsFor(ctx, p, small)) {
     if (dark && !workableInDark(ctx, job)) continue;
     const before = p['took'];
@@ -99,6 +99,14 @@ function takeUp(ctx: SystemContext, p: EntityRow, dark = false): boolean {
   if (!dark && mayDo(small, 'haul') && takeUpHauling(ctx, p, true)) return true;
   return idle(world, p);
 }
+
+/** Before the Work sheet: a test-mode marked tree, a draught to give, changing clothes, then (a
+ * grown apprentice, V-189) working beside their master. */
+const firsts = (ctx: SystemContext, p: EntityRow, small: readonly string[] | undefined): boolean =>
+  takeUpMarked(ctx, p, false) ||
+  draughtFirst(ctx, p) ||
+  takeUpChange(ctx, p) ||
+  (!small && takeUpHelping(ctx, p));
 
 /** The Work sheet's kinds in their order, a cold room's hearth first; a child's only those allowed. */
 function kindsFor(

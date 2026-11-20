@@ -92,11 +92,17 @@ export interface WalkerView {
   tools: { id: number; kind: string; text: string }[];
   /** What they wear, one row per garment in slot order (V-092, V-134); none when bare. */
   wearing?: WearingRow[];
+  /** The outer garment drawn on them (V-190, Seen at Work Part 3): only while they are outdoors
+   * below the warmth comfort line; none indoors, when warm or without one. */
+  coat?: CoatView;
   /** Every memory they hold, strongest first (V-091, V-154): see MemoryView. */
   memories: MemoryView[];
   /** The tales they hold, newest first, and what they believe, strongest first (P6.3, V-155). */
   tales: TaleView[];
   beliefs: BeliefView[];
+  /** Their byname (6B Bundle 5): the word, the tale as told when it stuck, what happened, and
+   * the line that named them. */
+  byname?: { word: string; text: string; truth: string; why: number };
   /** Who they see themselves as, and what they want of life (P6.4, V-156). */
   self: SelfView;
   /** What is on their mind (V-154), in quotes, and the line it comes from (0 for none). */
@@ -113,6 +119,19 @@ export interface WalkerView {
   kin?: { band: string; text: string; why?: number }[];
   /** A stranger's page while the band speaks or they walk away (P5.9); none for the colony. */
   stranger?: StrangerView;
+  /** Seen at work (V-194): the motion of the job they stand working (jobs.json `motion`, with
+   * its `effect`), none while they walk, rest or carry. */
+  act?: ActView;
+  /** The item art of the tool that serves the job they work or walk to (`item.iron-axe`). */
+  held?: string;
+  /** The item art of the load they carry (`item.logs`). */
+  load?: string;
+}
+
+/** A job's look while it is worked (V-194): the drawn motion and what flies from it. */
+export interface ActView {
+  motion: 'swing' | 'dig' | 'crouch' | 'stir' | 'bench';
+  effect?: { kind: 'specks' | 'puff' | 'drift'; colours: readonly string[]; count: number };
 }
 
 /** A worn garment: its slot, name and worth, the second line, and the line that made it. */
@@ -121,6 +140,16 @@ export interface WearingRow {
   text: string;
   detail: string;
   why?: number;
+}
+
+/** The coat drawn on a villager (V-190): its drawing (clothes.json `art`), per cent of life left,
+ * worth id and the look the engine's numbers give it: `ragged` in its last `clothes.ragged` per
+ * cent, `fine` at the finest worth, else `plain`. */
+export interface CoatView {
+  art: string;
+  left: number;
+  worth: string;
+  look: 'plain' | 'ragged' | 'fine';
 }
 
 /** The Stock sheet's Clothes lines: the spares of each slot, and what the colony holds to make
@@ -176,4 +205,6 @@ export interface SelfView {
   /** 6B: their faith, devotion and title ("The Wells · devout · Wellkeeper"), what it holds
    * sacred, and the line that named them priest (0 otherwise). */
   faith?: { text: string; note: string; why: number };
+  /** 6B Bundle 6: their master or apprentice now, and who taught them and whom they taught. */
+  teaching?: { text: string; why: number }[];
 }

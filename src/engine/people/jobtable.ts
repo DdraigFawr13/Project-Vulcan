@@ -3,7 +3,8 @@
 // jobs.ts reads only this table, so a new kind of work is a row here, not a branch there.
 import type { EntityRow } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { beekeeping, building, burning, chandling, coldHearth, cooking } from '../crafts/index.ts';
+import { beekeeping, brewing, building, burning, chandling, coldHearth } from '../crafts/index.ts';
+import { cooking, takeUpBrewing } from '../crafts/index.ts';
 import { furnishing, LARDER_JOBS, MILL_JOBS, smelting, smithing } from '../crafts/index.ts';
 import { stationing, takeUpBeekeeping, takeUpBuilding, takeUpCarpentry } from '../crafts/index.ts';
 import { takeUpChandling, takeUpCharcoal, takeUpCooking, takeUpHearth } from '../crafts/index.ts';
@@ -14,6 +15,7 @@ import { burying, takeUpBurial, takeUpNursing } from '../care/index.ts';
 import { farming, foraging, gatherMinute, mining, takeUpFarming } from '../land/index.ts';
 import { takeUpForaging, takeUpGathering, takeUpMarked, takeUpMining } from '../land/index.ts';
 import { haulMinute, knapping, takeUpHauling, takeUpKnapping } from '../band/index.ts';
+import { helping } from '../teach/index.ts';
 import { fishing, takeUpFishing, hunting, takeUpHunting, takeUpHerding } from '../herding/index.ts';
 
 type Step = (ctx: SystemContext, p: EntityRow) => boolean;
@@ -68,6 +70,9 @@ export const JOBS: Readonly<Record<string, JobRow>> = {
   heal: { takeUp: takeUpNursing },
   chandle: { takeUp: takeUpChandling, work: chandling },
   beekeep: { takeUp: takeUpBeekeeping, work: beekeeping },
+  brew: { takeUp: takeUpBrewing, work: brewing, holds: true },
+  // 6B Bundle 6 (V-189): an apprentice working beside their master (teach `help.ts`).
+  help: { work: helping },
   ...LARDER_JOBS,
   ...MILL_JOBS,
   ...TRADE_JOBS,

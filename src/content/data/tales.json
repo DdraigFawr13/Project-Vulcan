@@ -1,13 +1,15 @@
 {
-  "pass": { "meal": 25, "leisure": 20, "work": 6, "hearth": 50, "perDay": 2 },
-  "places": { "meal": " over a meal", "leisure": "", "work": " at work", "hearth": " by the fire" },
+  "pass": { "meal": 25, "leisure": 20, "work": 6, "hearth": 50, "tavern": 40, "perDay": 3 },
+  "places": { "meal": " over a meal", "leisure": "", "work": " at work", "hearth": " by the fire", "tavern": " at the tavern" },
   "bend": { "chance": 25, "traits": { "hot-tempered": 15, "melancholic": 15, "sociable": 10, "greedy": 10 }, "softer": 30 },
   "beliefFadeDays": 56,
   "forgetDays": 112,
   "strength": ["Doubts that", "Thinks", "Is sure", "Is certain"],
   "evening": { "mend": 6 },
+  "byname": { "share": 50, "told": 8, "proud": ["Lucky"] },
   "beliefs": [
     { "id": "woods-dangerous", "about": "place", "text": "the woods around the valley are dangerous" },
+    { "id": "arts-lost", "about": "colony", "text": "the old skills are dying out here" },
     { "id": "valley-deadly", "about": "colony", "text": "this valley kills its own" },
     { "id": "work-dangerous", "about": "colony", "text": "the work here maims people" },
     { "id": "strangers-hard", "about": "law", "text": "turning folk away is hard-hearted" },
@@ -22,7 +24,7 @@
     { "id": "valley-leaving", "about": "colony", "text": "folk are giving up on this valley" }
   ],
   "tales": [
-    { "id": "beast", "event": "wild.attacked", "truth": 1, "belief": "woods-dangerous", "from": 1, "levels": [
+    { "id": "beast", "event": "wild.attacked", "truth": 1, "belief": "woods-dangerous", "from": 1, "song": "The Lay of {name} and the {species}", "bynames": ["", "", "Lucky", "Wolfbait"], "levels": [
       "A {species} snapped at {name} and ran off.",
       "A {species} went for {name}.",
       "A {species} went for {name}, who only just got away.",
@@ -38,23 +40,23 @@
       "{name} has taken {a}.",
       "{name} has taken {a}, and it will go through us all."
     ] },
-    { "id": "full-plate", "event": "law.keptCustom", "only": { "did": "took a full plate" }, "truth": 1, "belief": "store-hoarded", "from": 1, "levels": [
+    { "id": "full-plate", "event": "law.keptCustom", "only": { "did": "took a full plate" }, "truth": 1, "belief": "store-hoarded", "from": 1, "bynames": ["", "", "Greedyguts"], "levels": [
       "{name} ate a little past their share.",
       "{name} {did}.",
       "{name} {did}, while the rest of us went hungry."
     ] },
-    { "id": "kept-custom", "event": "law.keptCustom", "truth": 1, "belief": "law-flouted", "from": 1, "levels": [
+    { "id": "kept-custom", "event": "law.keptCustom", "truth": 1, "belief": "law-flouted", "from": 1, "bynames": ["", "", "Old-hours"], "levels": [
       "{name} kept the old hours.",
       "{name} {did}.",
       "{name} {did}, and laughs at the law."
     ] },
-    { "id": "death", "event": "health.died", "truth": 1, "belief": "valley-deadly", "from": 2, "levels": [
+    { "id": "death", "event": "health.died", "truth": 1, "belief": "valley-deadly", "from": 2, "song": "The Lament for {name}", "levels": [
       "{name} died. It comes to us all.",
       "{name} died {where}.",
       "{name} died {where}, and it need not have happened.",
       "{name} died {where}, and someone let it happen."
     ] },
-    { "id": "hurt", "event": "health.hurt", "only": { "serious": "yes" }, "truth": 1, "belief": "work-dangerous", "from": 2, "levels": [
+    { "id": "hurt", "event": "health.hurt", "only": { "serious": "yes" }, "truth": 1, "belief": "work-dangerous", "from": 2, "bynames": ["", "Scar", "Scar"], "levels": [
       "{name} took a knock.",
       "{name} {what}.",
       "{name} {what}, and will carry it for life."
@@ -64,7 +66,7 @@
       "{names} were turned away at the green.",
       "{names} were driven off with nothing, into the cold."
     ] },
-    { "id": "feast", "event": "hall.feast", "truth": 1, "belief": "valley-feeds", "from": 1, "levels": [
+    { "id": "feast", "event": "hall.feast", "truth": 1, "belief": "valley-feeds", "from": 1, "song": "The Song of the Long Table", "levels": [
       "There was a meal in the hall.",
       "{count} ate {meal} together {where}.",
       "The feast went on all night, and nobody went home hungry."
@@ -74,7 +76,7 @@
       "The store ran out, and folk went to bed hungry.",
       "The store is bare and we will all starve."
     ] },
-    { "id": "hungry-winter", "event": "field.hungryWinter", "truth": 1, "belief": "valley-hungry", "from": 2, "word": true, "levels": [
+    { "id": "hungry-winter", "event": "field.hungryWinter", "truth": 1, "belief": "valley-hungry", "from": 2, "word": true, "song": "The Hungry Winter", "levels": [
       "Food ran a little short last winter.",
       "Last winter was a hungry one: {days} days short.",
       "Last winter nearly starved us all."
@@ -89,20 +91,30 @@
       "A frost killed the {crop}: {tiles} tiles lost.",
       "The frost took every last {crop}: that ground is cursed."
     ] },
-    { "id": "theft", "event": "defy.caught", "only": { "act": "took" }, "truth": 1, "belief": "thieves", "from": 1, "levels": [
+    { "id": "theft", "event": "defy.caught", "only": { "act": "took" }, "truth": 1, "belief": "thieves", "from": 1, "bynames": ["", "Light-fingers", "Oat-thief"], "levels": [
       "{name} was seen near the store.",
       "{name} was caught taking from the store.",
       "{name} has been robbing the store all winter."
     ] },
-    { "id": "brawl", "event": "defy.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "levels": [
+    { "id": "brawl", "event": "defy.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": "The Ballad of {name} and {other}", "bynames": ["", "", "Brawler"], "levels": [
       "{name} and {other} had words.",
       "{name} came to blows with {other}.",
       "{name} near killed {other} in a brawl."
     ] },
-    { "id": "left", "event": "defy.left", "truth": 1, "belief": "valley-leaving", "from": 1, "word": true, "levels": [
+    { "id": "left", "event": "defy.left", "truth": 1, "belief": "valley-leaving", "from": 1, "word": true, "song": "{name}'s Leaving", "levels": [
       "{name} has gone off down the road.",
       "{name} left the valley{with}.",
       "{name} fled the valley{with}, and more will follow."
+    ] },
+    { "id": "lost-art", "event": "teach.lost", "truth": 1, "belief": "arts-lost", "from": 1, "word": true, "levels": [
+      "Nobody here knows {skill} the way {name} did.",
+      "{name} took the best {skill} with them, and nobody learned it.",
+      "{name} took their {skill} to the grave on purpose, and now it's gone for good."
+    ] },
+    { "id": "tavern-brawl", "event": "tavern.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": "The Night at {tavern}", "bynames": ["", "", "Brawler"], "levels": [
+      "{name} and {other} had words over their ale.",
+      "{name} came to blows with {other} at {tavern}.",
+      "{name} smashed a stool over {other}'s head at {tavern}."
     ] }
   ]
 }

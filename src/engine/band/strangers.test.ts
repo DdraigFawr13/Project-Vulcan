@@ -13,6 +13,7 @@ import {
   submitCommand,
   whyOf,
   withoutAccidents,
+  withoutApprentices,
 } from '../index.ts';
 import { hallOf, homeFor, householdOf, sleepsIn } from '../build/index.ts';
 import { memoriesOf } from '../needs/index.ts';
@@ -20,7 +21,8 @@ import { stanceOf } from './welcome.ts';
 
 // Without accidents: someone laid up where they fell sleeps outside their home (5B Bundle 2 moved
 // anvil/1's first accident into these weeks).
-const content = withoutAccidents(game);
+// Without apprentices: one working beside their master (V-189) leaves a home unbuilt by day 20.
+const content = withoutApprentices(withoutAccidents(game));
 const DAY = 1440;
 const SEED = 'anvil/1';
 const s = content.strangers;

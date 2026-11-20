@@ -57,7 +57,11 @@ export const PEOPLE_TABLES: Schemas = {
     ...JOB_FIELDS,
   },
   /** `xp`: minutes practised towards the next level (P2.5, learn.ts). */
-  skill: { person: 'entity', skill: 'text', level: 'count', potential: 'count', xp: 'count' },
+  skill: {
+    ...{ person: 'entity', skill: 'text', level: 'count', potential: 'count', xp: 'count' },
+    /** 6B Bundle 6 (V-189): minutes practised in all, so a master teaches the skill they work at. */
+    used: 'count',
+  },
   trait: { person: 'entity', trait: 'text' },
   ...PRIORITY_TABLES,
   ...FORAGE_TABLES,
