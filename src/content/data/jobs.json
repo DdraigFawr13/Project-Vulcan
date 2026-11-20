@@ -29,6 +29,7 @@
   {"id":"cure","name":"Curing","worker":"curer","skill":"cooking","requirements":{},"workplace":"smokehouse","serves":"food","motion":"stir","effect":{"kind":"puff","colours":["#b8b4ac","#9a968e"],"count":3}},
   {"id":"brew","name":"Brewing","worker":"brewer","skill":"cooking","requirements":{},"workplace":"brew-tub","serves":"food","motion":"stir","effect":{"kind":"puff","colours":["#f4efe4","#e0d4b8"],"count":2}},
   {"id":"innkeep","name":"Inn-keeping","worker":"innkeeper","requirements":{},"workplace":"tavern","serves":"goods","motion":"none"},
+  {"id":"bard","name":"Bard","worker":"bard","requirements":{},"workplace":"tavern","serves":"goods","motion":"none"},
   {"id":"cooper","name":"Coopering","worker":"cooper","skill":"crafting","requirements":{},"workplace":"bench","serves":"food","motion":"swing","effect":{"kind":"specks","colours":["#e0b880","#b48a58"],"count":6}},
   {"id":"potter","name":"Pottery","worker":"potter","skill":"crafting","requirements":{},"workplace":"kiln","serves":"food","motion":"bench","effect":{"kind":"specks","colours":["#c87c50","#e09868"],"count":4}},
   {"id":"smelt","name":"Smelting","worker":"smelter","skill":"smithing","requirements":{},"workplace":"smelter","serves":"materials","motion":"stir","effect":{"kind":"specks","colours":["#fff2b0","#ffb040"],"count":5}},

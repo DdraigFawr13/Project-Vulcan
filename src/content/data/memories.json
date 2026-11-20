@@ -91,5 +91,11 @@
   {"id":"remembered-dead","mood":3,"decayDays":7,"text":"Remembered {about} on their day"},
   {"id":"grumbled-feasts","mood":-2,"decayDays":5,"text":"Grumbled at the Feasts law"},
   {"id":"drank-ale","mood":3,"decayDays":1,"stacks":2,"text":"Had a cup at the tavern"},
-  {"id":"hung-over","mood":-3,"decayDays":1,"text":"Woke hung over","thoughts":["My head. Never again."]}
+  {"id":"hung-over","mood":-3,"decayDays":1,"text":"Woke hung over","thoughts":["My head. Never again."]},
+  {"id":"heard-song-1","mood":2,"decayDays":3,"text":"Heard {about} sing"},
+  {"id":"heard-song-2","mood":3,"decayDays":3,"text":"Heard {about} sing"},
+  {"id":"heard-song-3","mood":4,"decayDays":3,"text":"Heard {about} sing","thoughts":["That song stays with you."]},
+  {"id":"heard-song-4","mood":5,"decayDays":3,"text":"Heard {about} sing","thoughts":["I have never heard singing like it."]},
+  {"id":"byname-proud","mood":4,"decayDays":7,"text":"Folk call me by a name I'm proud of","thoughts":["Let them say it."]},
+  {"id":"byname-stung","mood":-6,"decayDays":7,"text":"Folk call me by a name that stings","thoughts":["I wish they'd let it lie."]}
 ]
