@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import type { EntityRow } from '../core/index.ts';
 import { content as game } from '../../content/index.ts';
-import { withoutAccidents } from '../index.ts';
+import { withoutAccidents, withoutApprentices } from '../index.ts';
 import {
   bedOwnedBy,
   createSim,
@@ -26,7 +26,9 @@ import {
 import { HEARTH, siteFor } from './index.ts';
 
 // Accidents (P5.6) are left out: this tests carpentry and beds, not injury (health.test.ts does).
-const content = withoutAccidents(game);
+// Without apprentices: smoke's week of moods was measured before apprentices stood beside a
+// master (V-189).
+const content = withoutApprentices(withoutAccidents(game));
 
 const sim = createSim(content);
 const DAY = 1440;

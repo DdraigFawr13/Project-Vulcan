@@ -5,9 +5,10 @@
 // them: each minute there practises the skill at the apprentice pace (band `learn.ts`). It is the
 // bond's line that says why. The help adds nothing to the master's work: an apprentice is
 // learning, not producing, which is the colony's cost of the bond.
-import type { EntityRow } from '../core/index.ts';
+import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { far, people } from '../entity/index.ts';
 import { able, goBeside, levelOf, masterOf, practise } from '../band/index.ts';
+import { coldHearth } from '../crafts/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
 const HELP = 'help';
@@ -25,7 +26,9 @@ function besideNow(
   const jobs = content.work.priority.jobs;
   if (!jobs.includes(job) || content.jobs.find((j) => j.id === job)?.skill !== bond['skill'])
     return undefined;
-  const best = Math.min(...jobs.map((j) => levelOf(world, content, p.id, j)));
+  // Level with their best among the kinds they are able for.
+  const kinds = jobs.filter((j) => able(content, p, j));
+  const best = Math.min(...kinds.map((j) => levelOf(world, content, p.id, j)));
   if (levelOf(world, content, p.id, job) > best || !able(content, p, job)) return undefined;
   return { m, bond };
 }
@@ -33,7 +36,8 @@ function besideNow(
 /** Takes up working beside one's master, when they are at the bond's work; false if not. */
 export function takeUpHelping(ctx: SystemContext, p: EntityRow): boolean {
   const now = besideNow(ctx, p);
-  if (!now) return false;
+  if (!now || lessonDone(ctx, now.bond) || hearthBefore(ctx, p, now.m['job'] as string))
+    return false;
   Object.assign(p, { job: HELP, target: now.m.id, took: now.bond['line'] as number });
   return helping(ctx, p);
 }
@@ -47,8 +51,27 @@ export function helping(ctx: SystemContext, p: EntityRow): boolean {
     return (
       goBeside(ctx, p, now.m['x'] as number, now.m['y'] as number, now.m['z'] as number) || stop(p)
     );
+  if (lessonDone(ctx, now.bond)) return stop(p);
+  now.bond['beside'] = (now.bond['beside'] as number) + 1;
   practise(ctx, p, now.bond['skill'] as string, p['took'] as number);
   return true;
+}
+
+/** Whether today's lesson (teach.json `lesson` minutes beside the master) is over; a new day
+ * starts the count again. */
+function lessonDone(ctx: SystemContext, bond: EntityRow): boolean {
+  const day = Math.floor(ctx.world.tick / TICKS_PER_DAY);
+  if (bond['day'] !== day) Object.assign(bond, { day, beside: 0 });
+  return (bond['beside'] as number) >= ctx.content.teach.lesson;
+}
+
+/** Whether a cold room's hearth comes before the master's work for `p`, as crafts `hearthFirst`
+ * puts it first among the kinds at its level. */
+function hearthBefore(ctx: SystemContext, p: EntityRow, job: string): boolean {
+  const { world, content } = ctx;
+  const build = content.buildings.job;
+  if (!coldHearth(ctx) || !able(content, p, build)) return false;
+  return levelOf(world, content, p.id, build) <= levelOf(world, content, p.id, job);
 }
 
 function stop(p: EntityRow): false {

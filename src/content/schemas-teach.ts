@@ -13,6 +13,8 @@ export const TEACH_SCHEMAS = {
     ahead: num({ min: 1 }),
     reach: num({ min: 1 }),
     bondReach: num({ min: 1 }),
+    // Minutes a day an apprentice spends working beside their master (a day's lesson, V-189).
+    lesson: num({ min: 1 }),
     // Practice per minute in per cent of practice alone: beside a master, beside one's own master.
     beside: percent,
     apprentice: percent,

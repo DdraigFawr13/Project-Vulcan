@@ -80,7 +80,7 @@ function reason(
     return { why: w.law, causes: [(lawRow(world, APPRENTICES)?.['line'] as number) ?? 0] };
   if (isChild(q, master.id)) return { why: w.child, causes: [(q['bornLine'] as number) ?? 0] };
   if (closeness(world, master.id, q.id) >= content.teach.friend)
-    return { why: w.friend, causes: [] };
+    return { why: w.friend, causes: [(bondOf(world, master.id, q.id)?.['line'] as number) ?? 0] };
   const trait = (world.entities['trait'] ?? []).find(
     (r) => r['person'] === master.id && content.teach.choose.includes(r['trait'] as string),
   );
@@ -126,6 +126,7 @@ function take(ctx: SystemContext, master: EntityRow): void {
   });
   addEntity(world, 'apprentice', {
     ...{ master: master.id, learner: q.id, skill, line, since: world.tick, ended: 0 },
+    ...{ day: 0, beside: 0 },
   });
 }
 

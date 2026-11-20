@@ -8,6 +8,8 @@ export interface TeachDef {
   /** Tiles from a master at the same work; from one's own master. */
   reach: number;
   bondReach: number;
+  /** Minutes a day an apprentice works beside their master (teach `help.ts`). */
+  lesson: number;
   /** Practice per minute in per cent of practice alone: beside a master, beside one's own. */
   beside: number;
   apprentice: number;

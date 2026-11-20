@@ -5,10 +5,10 @@ import type { Schemas } from '../entity/index.ts';
 
 export const TEACH_TABLES: Schemas = {
   /** A master and their apprentice in a skill: the line that bound them (`line`), the tick, and
-   * the line that ended it (0 while it lasts). Band `learn.ts` reads it as data. */
+   * the line that ended it (0 while it lasts), and the minutes beside the master on day `day`. Band `learn.ts` reads it as data. */
   apprentice: {
     ...{ master: 'entity', learner: 'entity', skill: 'text' },
-    ...{ line: 'event', since: 'int', ended: 'event' },
+    ...{ line: 'event', since: 'int', ended: 'event', day: 'int', beside: 'count' },
   },
   /** Who taught whom: a learner, their teacher and the skill, from level `from` to `to`, the first
    * and the last taught rise. */

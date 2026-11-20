@@ -27,6 +27,13 @@ export function watchHour(ctx: SystemContext): void {
     if (!parent || !row || (row['level'] as number) >= Math.min(c.upTo, row['potential'] as number))
       continue;
     const pace = Math.floor((traitPace(world, content, child.id) * c.rate * MINUTES) / 100);
-    gain(ctx, child, row, pace, (child['bornLine'] as number) ?? 0, parent);
+    gain(
+      ctx,
+      child,
+      row,
+      pace,
+      (parent['took'] as number) || ((child['bornLine'] as number) ?? 0),
+      parent,
+    );
   }
 }
