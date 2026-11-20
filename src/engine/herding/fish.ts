@@ -9,7 +9,7 @@ import { besideReachable, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { isFrozen } from '../weather/index.ts';
 import { able, busy, goBeside, layAround, outranked, people, practise } from '../band/index.ts';
-import { priorityLine, skillOf, spotOf } from '../band/index.ts';
+import { priorityLine, scaled, skillOf, spotOf, worked } from '../band/index.ts';
 
 const skillName = (content: EngineContent): string =>
   content.jobs.find((j) => j.id === content.work.fish.job)?.skill ?? '';
@@ -92,7 +92,7 @@ export function takeUpFishing(ctx: SystemContext, p: EntityRow): boolean {
       ...short,
     },
   });
-  Object.assign(p, { job: 'fish', target: water, work: def.every });
+  Object.assign(p, { job: 'fish', target: water, work: scaled(ctx, p, def.job, def.every) });
   return true;
 }
 
@@ -109,9 +109,10 @@ export function fishing(ctx: SystemContext, p: EntityRow): boolean {
   if (here.z !== 0 || Math.abs(here.x - x) + Math.abs(here.y - y) !== 1)
     return goBeside(ctx, p, x, y) || endFishing(p);
   p['work'] = (p['work'] as number) - 1;
+  worked(ctx, p, def.job);
   practise(ctx, p, skillName(content), p['took'] as number);
   if ((p['work'] as number) > 0) return true;
-  p['work'] = def.every;
+  p['work'] = scaled(ctx, p, def.job, def.every);
   if (!foodShort(ctx, true)) return endFishing(p);
   const level = skillOf(world, p, skillName(content));
   const chance = Math.min(def.most, def.chance + def.perLevel * level);

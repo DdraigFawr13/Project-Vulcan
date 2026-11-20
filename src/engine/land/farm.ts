@@ -185,14 +185,14 @@ export function farming(ctx: SystemContext, p: EntityRow): boolean {
     const level = skillOf(world, p, skillName(content));
     p['target'] = tile = next;
     const minutes = minutesFor(content, content.work.farm[mode === 'sow' ? 'sow' : 'reap'], level);
-    p['work'] = scaled(ctx, p, 'farm', minutes);
+    p['work'] = scaled(ctx, p, mode === 'reap' ? 'reap' : 'farm', minutes);
   }
   const [x, y] = [tile % map.width, Math.floor(tile / map.width)];
   const here = spotOf(p);
   if (here.z !== 0 || Math.abs(here.x - x) + Math.abs(here.y - y) !== 1)
     return goBeside(ctx, p, x, y) || stop(p);
   p['work'] = (p['work'] as number) - 1;
-  worked(ctx, p, 'farm');
+  worked(ctx, p, mode === 'reap' ? 'reap' : 'farm');
   practise(ctx, p, skillName(content), p['took'] as number);
   if ((p['work'] as number) > 0) return true;
   p['target'] = -1;

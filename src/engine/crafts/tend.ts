@@ -29,7 +29,7 @@ import { tileTemperature } from '../weather/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
 import { able, goBeside, outranked, people, priorityLine, same, scaled } from '../band/index.ts';
-import { spotOf, walkTo, worked } from '../band/index.ts';
+import { couldHave, spotOf, walkTo, worked } from '../band/index.ts';
 import { cheb } from '../core/index.ts';
 
 /** What `p` would do: tend a fire (`fire` and the fuel `item` to fetch) or split `logs`. */
@@ -161,7 +161,8 @@ function pick(ctx: SystemContext, p: EntityRow, cold = false): Pick | undefined 
   const busy = people(world).some(
     (q) => q.id !== p.id && q['job'] === FUEL_JOB && (q['plan'] as number) < 0,
   );
-  const logs = fuel && want > have && !busy ? logsOf(ctx, p) : undefined;
+  const axe = couldHave(ctx, p, 'split');
+  const logs = fuel && want > have && !busy && axe ? logsOf(ctx, p) : undefined;
   if (fuel && logs) {
     const n = Math.min(
       Math.ceil((want - have) / split.per),

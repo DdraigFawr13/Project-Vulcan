@@ -80,6 +80,8 @@ export interface WalkerView {
     level: number;
     word: string;
     declined?: number;
+    /** What the row's work waits on, colony-wide (V-195): "no pick in the valley". */
+    waits?: string;
   }[];
   /** Lying on the ground (P5.6, P5.8): `down` (hurt), `dead` (unburied), `buried` or `away` (out
    * of the valley, P6.5), neither drawn;

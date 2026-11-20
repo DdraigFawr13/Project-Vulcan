@@ -2,7 +2,7 @@
 import type { EntityRow } from '../core/index.ts';
 import { loadOf } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { practise, people, skillOf, spotOf } from '../band/index.ts';
+import { practise, people, scaled, skillOf, spotOf } from '../band/index.ts';
 
 export type Kind = 'sink' | 'tunnel' | 'mine' | 'clay';
 
@@ -42,7 +42,12 @@ export function start(ctx: SystemContext, p: EntityRow, t: Task): void {
   p['what'] = t.what;
   p['plan'] = t.plan;
   p['target'] = t.target;
-  p['work'] = Math.ceil((t.minutes * 2 * mine.skilled) / (mine.skilled + level));
+  p['work'] = scaled(
+    ctx,
+    p,
+    mine.job,
+    Math.ceil((t.minutes * 2 * mine.skilled) / (mine.skilled + level)),
+  );
 }
 
 /** Ends the task; they look for work again. A load they hold (a ladder's logs) is laid down where

@@ -24,12 +24,31 @@ export const TOOLS_SCHEMAS = {
     // A held tool with under this per cent of its life left is worn: its holder wants one of the
     // next material up, so the smith wants its ingots (Morgan's card, P4.9).
     worn: num({ min: 1, max: 100 }),
+    // Knapping (V-195): with no free tool of a needed kind, someone with some skill of the `job`
+    // (jobs.json) makes a stone one from `from` (item counts) in `minutes` at a log stack; `rows`
+    // names the Work row of a use that is not itself a jobs.json id.
+    knap: obj({
+      job: ref('jobs'),
+      // Its own quality roll, so knapping leaves the smith's and carpenter's draws as they were.
+      stream: text,
+      minutes: num({ min: 1 }),
+      from: map(num({ min: 1 }), 'items'),
+      rows: map(ref('jobs')),
+      // Inputs picked up loose where they work when none can be fetched (a stone off the ground).
+      loose: list(ref('items')),
+    }),
     // `serves` lists the work (a jobs.json id, or `split`) a kind of tool is used for.
     kinds: list(
       obj({
         id,
         name: text,
         serves: texts,
+        // The uses nobody takes up without a tool of this kind (V-195), and the words for what
+        // stops when the valley's last one breaks.
+        needed: opt(texts),
+        stops: opt(text),
+        // What a stone one is knapped from, when not the file's `knap.from`.
+        knap: opt(map(num({ min: 1 }), 'items')),
         ingots: num({ min: 1 }),
         charcoal: count,
         minutes: num({ min: 1 }),

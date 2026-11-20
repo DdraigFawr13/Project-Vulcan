@@ -16,7 +16,7 @@ import {
 import { fieldsOf, strawLeft, wornThatch } from '../build/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, declineIfUnable, goBeside, outranked, people, practise } from '../band/index.ts';
-import { priorityLine, same, skillOf, spotOf, walkTo } from '../band/index.ts';
+import { priorityLine, same, scaled, skillOf, spotOf, walkTo, worked } from '../band/index.ts';
 
 const JOB = 'thatch';
 
@@ -143,9 +143,13 @@ function cut(ctx: SystemContext, p: EntityRow, h: EntityRow): boolean {
   if (!spot) return stop(p);
   const i = spot.at.y * w + spot.at.x;
   if (target !== i)
-    Object.assign(p, { target: i, work: minutesFor(ctx, p, content.buildings.roofs.thatch.cut) });
+    Object.assign(p, {
+      target: i,
+      work: scaled(ctx, p, 'thatch', minutesFor(ctx, p, content.buildings.roofs.thatch.cut)),
+    });
   if (!same(spot.at, spotOf(p))) return walkTo(ctx, p, spot.at) || stop(p);
   p['work'] = (p['work'] as number) - 1;
+  worked(ctx, p, 'thatch');
   practise(ctx, p, skillName(content), p['took'] as number);
   if ((p['work'] as number) > 0) return true;
   if (spot.field) takeStraw(fieldsOf(world).find((f) => f.id === spot.field!.id)!);

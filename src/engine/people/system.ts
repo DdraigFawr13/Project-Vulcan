@@ -15,7 +15,8 @@ import { valleyOf } from '../region/index.ts';
 import type { System } from '../sim/index.ts';
 import { addPerson, ATTRIBUTES, drawBand, drawSmithing, type Home } from '../band/index.ts';
 import { NEWCOMER_FIELDS, PRIORITY_TABLES, rollTally, setPriority } from '../band/index.ts';
-import { stepAlong, TALLY_START, TOOL_TABLES, toolsDaily, WALK_FIELDS } from '../band/index.ts';
+import { KNAP_TABLES, stepAlong, TALLY_START, TOOL_TABLES } from '../band/index.ts';
+import { toolsDaily, WALK_FIELDS } from '../band/index.ts';
 import { FORAGE_TABLES } from '../land/index.ts';
 import { JOB_FIELDS } from './jobfields.ts';
 import { DRINK_FIELDS } from './drink.ts';
@@ -61,6 +62,7 @@ export const PEOPLE_TABLES: Schemas = {
   ...PRIORITY_TABLES,
   ...FORAGE_TABLES,
   ...TOOL_TABLES,
+  ...KNAP_TABLES,
 };
 
 /** Where the band came from: the valley's neighbours, or the home culture for a plain seed. */

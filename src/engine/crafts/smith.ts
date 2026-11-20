@@ -29,7 +29,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { able, canStandBeside, declineIfUnable, fetchKind, giveTool } from '../band/index.ts';
 import { goBeside, heldMaterial, heldSpeed, materialSpeed, mostUsed } from '../band/index.ts';
 import { outranked, people, practise, priorityLine, reachableOf, skillOf } from '../band/index.ts';
-import { spotOf, useHeld } from '../band/index.ts';
+import { readyFor, scaled, spotOf, useHeld, worked } from '../band/index.ts';
 import { firstFine } from './fine.ts';
 
 const JOB = 'smith';
@@ -195,6 +195,9 @@ export function takeUpSmithing(ctx: SystemContext, p: EntityRow): boolean {
   const k = kindOf(want);
   if (outranked(ctx, p, job, () => true)) return false;
   if (!canStandBeside(ctx, p, forge['x'] as number, forge['y'] as number)) return false;
+  // A hammer is needed (V-195): without one they knap their own or do other work.
+  const tool = readyFor(ctx, p, job);
+  if (tool !== 'ok') return tool === 'knap';
   const m = content.tools.materials.find((t) => t.id === want.material)!;
   const mine = want.person.id === p.id;
   p['took'] = ctx.emit('work.tookUpSmithing', {
@@ -246,9 +249,11 @@ export function smithing(ctx: SystemContext, p: EntityRow): boolean {
   const level = skillOf(world, p, skillName(ctx));
   if ((p['work'] as number) < 0) {
     const tools = content.tools;
-    p['work'] = Math.max(1, Math.ceil((k.minutes * 2 * tools.skilled) / (tools.skilled + level)));
+    const minutes = Math.ceil((k.minutes * 2 * tools.skilled) / (tools.skilled + level));
+    p['work'] = scaled(ctx, p, tools.job, minutes);
   }
   p['work'] = (p['work'] as number) - 1;
+  worked(ctx, p, content.tools.job);
   practise(ctx, p, skillName(ctx), p['took'] as number);
   if ((p['work'] as number) > 0) return true;
   // The tool is finished: the ingots and charcoal carried are used up.

@@ -202,8 +202,8 @@
     },
     "item.beans": {
       "frame": {
-        "x": 1,
-        "y": 35,
+        "x": 341,
+        "y": 1,
         "w": 32,
         "h": 32
       },
@@ -222,7 +222,7 @@
     },
     "item.bedroll": {
       "frame": {
-        "x": 35,
+        "x": 1,
         "y": 35,
         "w": 32,
         "h": 32
@@ -242,7 +242,7 @@
     },
     "item.bedroll.laid": {
       "frame": {
-        "x": 69,
+        "x": 35,
         "y": 35,
         "w": 32,
         "h": 32
@@ -262,7 +262,7 @@
     },
     "item.berries": {
       "frame": {
-        "x": 103,
+        "x": 69,
         "y": 35,
         "w": 32,
         "h": 32
@@ -282,7 +282,7 @@
     },
     "item.bone": {
       "frame": {
-        "x": 137,
+        "x": 103,
         "y": 35,
         "w": 32,
         "h": 32
@@ -302,7 +302,7 @@
     },
     "item.bread": {
       "frame": {
-        "x": 171,
+        "x": 137,
         "y": 35,
         "w": 32,
         "h": 32
@@ -321,6 +321,26 @@
       }
     },
     "item.bronze-axe": {
+      "frame": {
+        "x": 171,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.bronze-chisel": {
       "frame": {
         "x": 205,
         "y": 35,
@@ -402,7 +422,47 @@
     },
     "item.bronze-kit": {
       "frame": {
+        "x": 341,
+        "y": 35,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.bronze-line": {
+      "frame": {
         "x": 1,
+        "y": 69,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.bronze-needle": {
+      "frame": {
+        "x": 35,
         "y": 69,
         "w": 32,
         "h": 32
@@ -422,7 +482,47 @@
     },
     "item.bronze-pick": {
       "frame": {
-        "x": 35,
+        "x": 69,
+        "y": 69,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.bronze-saw": {
+      "frame": {
+        "x": 103,
+        "y": 69,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.bronze-sickle": {
+      "frame": {
+        "x": 137,
         "y": 69,
         "w": 32,
         "h": 32
@@ -442,7 +542,7 @@
     },
     "item.bronze-spear": {
       "frame": {
-        "x": 69,
+        "x": 171,
         "y": 69,
         "w": 32,
         "h": 32
@@ -462,7 +562,7 @@
     },
     "item.cabbages": {
       "frame": {
-        "x": 103,
+        "x": 205,
         "y": 69,
         "w": 32,
         "h": 32
@@ -482,7 +582,7 @@
     },
     "item.candle": {
       "frame": {
-        "x": 137,
+        "x": 239,
         "y": 69,
         "w": 32,
         "h": 32
@@ -502,7 +602,7 @@
     },
     "item.charcoal": {
       "frame": {
-        "x": 171,
+        "x": 273,
         "y": 69,
         "w": 32,
         "h": 32
@@ -522,7 +622,7 @@
     },
     "item.cloak": {
       "frame": {
-        "x": 205,
+        "x": 307,
         "y": 69,
         "w": 32,
         "h": 32
@@ -542,7 +642,7 @@
     },
     "item.cloth": {
       "frame": {
-        "x": 239,
+        "x": 341,
         "y": 69,
         "w": 32,
         "h": 32
@@ -562,8 +662,8 @@
     },
     "item.copper-ingot": {
       "frame": {
-        "x": 273,
-        "y": 69,
+        "x": 1,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -582,8 +682,8 @@
     },
     "item.copper-ore": {
       "frame": {
-        "x": 307,
-        "y": 69,
+        "x": 35,
+        "y": 103,
         "w": 32,
         "h": 32
       },
@@ -602,7 +702,7 @@
     },
     "item.fat": {
       "frame": {
-        "x": 1,
+        "x": 69,
         "y": 103,
         "w": 32,
         "h": 32
@@ -622,7 +722,7 @@
     },
     "item.fish": {
       "frame": {
-        "x": 35,
+        "x": 103,
         "y": 103,
         "w": 32,
         "h": 32
@@ -642,7 +742,7 @@
     },
     "item.flax": {
       "frame": {
-        "x": 69,
+        "x": 137,
         "y": 103,
         "w": 32,
         "h": 32
@@ -662,7 +762,7 @@
     },
     "item.flour": {
       "frame": {
-        "x": 103,
+        "x": 171,
         "y": 103,
         "w": 32,
         "h": 32
@@ -682,7 +782,7 @@
     },
     "item.fur": {
       "frame": {
-        "x": 137,
+        "x": 205,
         "y": 103,
         "w": 32,
         "h": 32
@@ -702,7 +802,7 @@
     },
     "item.game": {
       "frame": {
-        "x": 171,
+        "x": 239,
         "y": 103,
         "w": 32,
         "h": 32
@@ -722,7 +822,7 @@
     },
     "item.gems": {
       "frame": {
-        "x": 205,
+        "x": 273,
         "y": 103,
         "w": 32,
         "h": 32
@@ -742,7 +842,7 @@
     },
     "item.gold-ore": {
       "frame": {
-        "x": 239,
+        "x": 307,
         "y": 103,
         "w": 32,
         "h": 32
@@ -762,7 +862,7 @@
     },
     "item.grain": {
       "frame": {
-        "x": 273,
+        "x": 341,
         "y": 103,
         "w": 32,
         "h": 32
@@ -782,8 +882,8 @@
     },
     "item.herbs": {
       "frame": {
-        "x": 307,
-        "y": 103,
+        "x": 1,
+        "y": 137,
         "w": 32,
         "h": 32
       },
@@ -802,7 +902,7 @@
     },
     "item.hide": {
       "frame": {
-        "x": 1,
+        "x": 35,
         "y": 137,
         "w": 32,
         "h": 32
@@ -822,7 +922,7 @@
     },
     "item.hide-coat": {
       "frame": {
-        "x": 35,
+        "x": 69,
         "y": 137,
         "w": 32,
         "h": 32
@@ -842,7 +942,7 @@
     },
     "item.honey": {
       "frame": {
-        "x": 69,
+        "x": 103,
         "y": 137,
         "w": 32,
         "h": 32
@@ -862,7 +962,7 @@
     },
     "item.ingot": {
       "frame": {
-        "x": 103,
+        "x": 137,
         "y": 137,
         "w": 32,
         "h": 32
@@ -882,7 +982,27 @@
     },
     "item.iron-axe": {
       "frame": {
-        "x": 137,
+        "x": 171,
+        "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.iron-chisel": {
+      "frame": {
+        "x": 205,
         "y": 137,
         "w": 32,
         "h": 32
@@ -902,7 +1022,7 @@
     },
     "item.iron-hammer": {
       "frame": {
-        "x": 171,
+        "x": 239,
         "y": 137,
         "w": 32,
         "h": 32
@@ -922,7 +1042,7 @@
     },
     "item.iron-hoe": {
       "frame": {
-        "x": 205,
+        "x": 273,
         "y": 137,
         "w": 32,
         "h": 32
@@ -942,7 +1062,7 @@
     },
     "item.iron-ingot": {
       "frame": {
-        "x": 239,
+        "x": 307,
         "y": 137,
         "w": 32,
         "h": 32
@@ -962,8 +1082,48 @@
     },
     "item.iron-kit": {
       "frame": {
-        "x": 273,
+        "x": 341,
         "y": 137,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.iron-line": {
+      "frame": {
+        "x": 1,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.iron-needle": {
+      "frame": {
+        "x": 35,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -982,8 +1142,8 @@
     },
     "item.iron-ore": {
       "frame": {
-        "x": 307,
-        "y": 137,
+        "x": 69,
+        "y": 171,
         "w": 32,
         "h": 32
       },
@@ -1002,7 +1162,47 @@
     },
     "item.iron-pick": {
       "frame": {
-        "x": 1,
+        "x": 103,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.iron-saw": {
+      "frame": {
+        "x": 137,
+        "y": 171,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.iron-sickle": {
+      "frame": {
+        "x": 171,
         "y": 171,
         "w": 32,
         "h": 32
@@ -1022,7 +1222,7 @@
     },
     "item.iron-spear": {
       "frame": {
-        "x": 35,
+        "x": 205,
         "y": 171,
         "w": 32,
         "h": 32
@@ -1042,7 +1242,7 @@
     },
     "item.leather": {
       "frame": {
-        "x": 69,
+        "x": 239,
         "y": 171,
         "w": 32,
         "h": 32
@@ -1062,7 +1262,7 @@
     },
     "item.leather-coat": {
       "frame": {
-        "x": 103,
+        "x": 273,
         "y": 171,
         "w": 32,
         "h": 32
@@ -1082,7 +1282,7 @@
     },
     "item.lime": {
       "frame": {
-        "x": 137,
+        "x": 307,
         "y": 171,
         "w": 32,
         "h": 32
@@ -1102,7 +1302,7 @@
     },
     "item.limestone": {
       "frame": {
-        "x": 171,
+        "x": 341,
         "y": 171,
         "w": 32,
         "h": 32
@@ -1122,8 +1322,8 @@
     },
     "item.linen": {
       "frame": {
-        "x": 205,
-        "y": 171,
+        "x": 1,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1142,8 +1342,8 @@
     },
     "item.logs": {
       "frame": {
-        "x": 239,
-        "y": 171,
+        "x": 35,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1162,8 +1362,8 @@
     },
     "item.meal": {
       "frame": {
-        "x": 273,
-        "y": 171,
+        "x": 69,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1182,8 +1382,8 @@
     },
     "item.oats": {
       "frame": {
-        "x": 307,
-        "y": 171,
+        "x": 103,
+        "y": 205,
         "w": 32,
         "h": 32
       },
@@ -1202,7 +1402,7 @@
     },
     "item.obsidian": {
       "frame": {
-        "x": 1,
+        "x": 137,
         "y": 205,
         "w": 32,
         "h": 32
@@ -1222,7 +1422,7 @@
     },
     "item.ore": {
       "frame": {
-        "x": 35,
+        "x": 171,
         "y": 205,
         "w": 32,
         "h": 32
@@ -1242,7 +1442,7 @@
     },
     "item.preserved": {
       "frame": {
-        "x": 69,
+        "x": 205,
         "y": 205,
         "w": 32,
         "h": 32
@@ -1262,7 +1462,7 @@
     },
     "item.salt": {
       "frame": {
-        "x": 103,
+        "x": 239,
         "y": 205,
         "w": 32,
         "h": 32
@@ -1282,7 +1482,7 @@
     },
     "item.seed": {
       "frame": {
-        "x": 137,
+        "x": 273,
         "y": 205,
         "w": 32,
         "h": 32
@@ -1302,7 +1502,7 @@
     },
     "item.silver-ore": {
       "frame": {
-        "x": 171,
+        "x": 307,
         "y": 205,
         "w": 32,
         "h": 32
@@ -1322,7 +1522,7 @@
     },
     "item.slate": {
       "frame": {
-        "x": 205,
+        "x": 341,
         "y": 205,
         "w": 32,
         "h": 32
@@ -1342,8 +1542,8 @@
     },
     "item.smock": {
       "frame": {
-        "x": 239,
-        "y": 205,
+        "x": 1,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1362,8 +1562,8 @@
     },
     "item.soap": {
       "frame": {
-        "x": 273,
-        "y": 205,
+        "x": 35,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1382,8 +1582,8 @@
     },
     "item.stone": {
       "frame": {
-        "x": 307,
-        "y": 205,
+        "x": 69,
+        "y": 239,
         "w": 32,
         "h": 32
       },
@@ -1402,7 +1602,27 @@
     },
     "item.stone-axe": {
       "frame": {
-        "x": 1,
+        "x": 103,
+        "y": 239,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.stone-chisel": {
+      "frame": {
+        "x": 137,
         "y": 239,
         "w": 32,
         "h": 32
@@ -1422,7 +1642,7 @@
     },
     "item.stone-hammer": {
       "frame": {
-        "x": 35,
+        "x": 171,
         "y": 239,
         "w": 32,
         "h": 32
@@ -1442,7 +1662,7 @@
     },
     "item.stone-hoe": {
       "frame": {
-        "x": 69,
+        "x": 205,
         "y": 239,
         "w": 32,
         "h": 32
@@ -1462,7 +1682,47 @@
     },
     "item.stone-kit": {
       "frame": {
-        "x": 103,
+        "x": 239,
+        "y": 239,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.stone-line": {
+      "frame": {
+        "x": 273,
+        "y": 239,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.stone-needle": {
+      "frame": {
+        "x": 307,
         "y": 239,
         "w": 32,
         "h": 32
@@ -1482,7 +1742,7 @@
     },
     "item.stone-pick": {
       "frame": {
-        "x": 137,
+        "x": 341,
         "y": 239,
         "w": 32,
         "h": 32
@@ -1500,107 +1760,7 @@
         "h": 32
       }
     },
-    "item.stone-spear": {
-      "frame": {
-        "x": 171,
-        "y": 239,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "item.sulphur": {
-      "frame": {
-        "x": 205,
-        "y": 239,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "item.tin-ingot": {
-      "frame": {
-        "x": 239,
-        "y": 239,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "item.tin-ore": {
-      "frame": {
-        "x": 273,
-        "y": 239,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "item.tools": {
-      "frame": {
-        "x": 307,
-        "y": 239,
-        "w": 32,
-        "h": 32
-      },
-      "rotated": false,
-      "trimmed": false,
-      "spriteSourceSize": {
-        "x": 0,
-        "y": 0,
-        "w": 32,
-        "h": 32
-      },
-      "sourceSize": {
-        "w": 32,
-        "h": 32
-      }
-    },
-    "item.tunic": {
+    "item.stone-saw": {
       "frame": {
         "x": 1,
         "y": 273,
@@ -1620,7 +1780,7 @@
         "h": 32
       }
     },
-    "item.turnips": {
+    "item.stone-sickle": {
       "frame": {
         "x": 35,
         "y": 273,
@@ -1640,7 +1800,7 @@
         "h": 32
       }
     },
-    "item.wares": {
+    "item.stone-spear": {
       "frame": {
         "x": 69,
         "y": 273,
@@ -1660,7 +1820,7 @@
         "h": 32
       }
     },
-    "item.wax": {
+    "item.sulphur": {
       "frame": {
         "x": 103,
         "y": 273,
@@ -1680,7 +1840,7 @@
         "h": 32
       }
     },
-    "item.wax-candle": {
+    "item.tin-ingot": {
       "frame": {
         "x": 137,
         "y": 273,
@@ -1700,7 +1860,7 @@
         "h": 32
       }
     },
-    "item.weapon": {
+    "item.tin-ore": {
       "frame": {
         "x": 171,
         "y": 273,
@@ -1720,7 +1880,7 @@
         "h": 32
       }
     },
-    "item.wool": {
+    "item.tools": {
       "frame": {
         "x": 205,
         "y": 273,
@@ -1740,7 +1900,7 @@
         "h": 32
       }
     },
-    "mark.fell": {
+    "item.tunic": {
       "frame": {
         "x": 239,
         "y": 273,
@@ -1760,7 +1920,7 @@
         "h": 32
       }
     },
-    "skep.bees": {
+    "item.turnips": {
       "frame": {
         "x": 273,
         "y": 273,
@@ -1780,7 +1940,7 @@
         "h": 32
       }
     },
-    "skep.empty": {
+    "item.wares": {
       "frame": {
         "x": 307,
         "y": 273,
@@ -1800,7 +1960,27 @@
         "h": 32
       }
     },
-    "skep.plan": {
+    "item.wax": {
+      "frame": {
+        "x": 341,
+        "y": 273,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.wax-candle": {
       "frame": {
         "x": 1,
         "y": 307,
@@ -1820,9 +2000,129 @@
         "h": 32
       }
     },
-    "zone.stockpile": {
+    "item.weapon": {
       "frame": {
         "x": 35,
+        "y": 307,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "item.wool": {
+      "frame": {
+        "x": 69,
+        "y": 307,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "mark.fell": {
+      "frame": {
+        "x": 103,
+        "y": 307,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "skep.bees": {
+      "frame": {
+        "x": 137,
+        "y": 307,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "skep.empty": {
+      "frame": {
+        "x": 171,
+        "y": 307,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "skep.plan": {
+      "frame": {
+        "x": 205,
+        "y": 307,
+        "w": 32,
+        "h": 32
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 32,
+        "h": 32
+      },
+      "sourceSize": {
+        "w": 32,
+        "h": 32
+      }
+    },
+    "zone.stockpile": {
+      "frame": {
+        "x": 239,
         "y": 307,
         "w": 32,
         "h": 32
@@ -1845,7 +2145,7 @@
     "tile": 32,
     "margin": 1,
     "spacing": 2,
-    "columns": 10,
+    "columns": 11,
     "order": [
       "burial.hurdle.e",
       "burial.hurdle.n",
@@ -1864,11 +2164,16 @@
       "item.bone",
       "item.bread",
       "item.bronze-axe",
+      "item.bronze-chisel",
       "item.bronze-hammer",
       "item.bronze-hoe",
       "item.bronze-ingot",
       "item.bronze-kit",
+      "item.bronze-line",
+      "item.bronze-needle",
       "item.bronze-pick",
+      "item.bronze-saw",
+      "item.bronze-sickle",
       "item.bronze-spear",
       "item.cabbages",
       "item.candle",
@@ -1892,12 +2197,17 @@
       "item.honey",
       "item.ingot",
       "item.iron-axe",
+      "item.iron-chisel",
       "item.iron-hammer",
       "item.iron-hoe",
       "item.iron-ingot",
       "item.iron-kit",
+      "item.iron-line",
+      "item.iron-needle",
       "item.iron-ore",
       "item.iron-pick",
+      "item.iron-saw",
+      "item.iron-sickle",
       "item.iron-spear",
       "item.leather",
       "item.leather-coat",
@@ -1918,10 +2228,15 @@
       "item.soap",
       "item.stone",
       "item.stone-axe",
+      "item.stone-chisel",
       "item.stone-hammer",
       "item.stone-hoe",
       "item.stone-kit",
+      "item.stone-line",
+      "item.stone-needle",
       "item.stone-pick",
+      "item.stone-saw",
+      "item.stone-sickle",
       "item.stone-spear",
       "item.sulphur",
       "item.tin-ingot",
@@ -1943,7 +2258,7 @@
   },
   "meta": {
     "size": {
-      "w": 340,
+      "w": 374,
       "h": 340
     },
     "scale": "1",

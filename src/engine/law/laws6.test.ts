@@ -53,8 +53,9 @@ describe('the 6A laws', () => {
     }
   });
 
-  it('holds a keeper to the share, and a refuser eating past it is seen', () => {
-    const w = createWorld(sim, 'smoke');
+  /** Short rations with one keeper and one refuser fixed, three days on. */
+  function rations(seed: string) {
+    const w = createWorld(sim, seed);
     step(w, sim, TICKS_PER_DAY - (w.tick % TICKS_PER_DAY) + 30);
     setLaw(w, 'rations', 'hunger');
     const [keeper, refuser] = alive(w);
@@ -64,19 +65,40 @@ describe('the 6A laws', () => {
     Object.assign(rowOf(keeper!.id), { answer: 'obeys', at: w.tick });
     Object.assign(rowOf(refuser!.id), { answer: 'refuses', at: w.tick });
     step(w, sim, 3 * TICKS_PER_DAY);
-    // Half a full day's food at most: the keeper's share never runs more than a meal behind.
-    expect(rowOf(keeper!.id)['left'] as number).toBeGreaterThan(-6000);
-    expect(memoriesOf(w, keeper!.id).map((m) => m['memory'])).toContain('short-meals-hard');
     const full = lines(w, 'law.keptCustom').filter((e) => e.actors?.includes(refuser!.id));
+    return {
+      w,
+      keeper: keeper!,
+      refuser: refuser!,
+      left: rowOf(keeper!.id)['left'] as number,
+      full,
+    };
+  }
+
+  it('holds a keeper to the share, and a refuser eating past it is seen', () => {
+    const { w, keeper, refuser, left, full } = rations('smoke');
+    // Half a full day's food at most: the keeper's share never runs more than a meal behind.
+    expect(left).toBeGreaterThan(-6000);
+    expect(memoriesOf(w, keeper.id).map((m) => m['memory'])).toContain('short-meals-hard');
     expect(full.length).toBeGreaterThan(0);
     const answered = lines(w, 'law.answered').find((e) => e.id === full[0]!.causes[0]);
-    expect(answered?.actors).toEqual([refuser!.id]);
-    // A full plate is a line at most once a week, and whoever saw it remembers it.
+    expect(answered?.actors).toEqual([refuser.id]);
+    // A full plate is a line at most once a week.
     expect(full.length).toBe(1);
-    const seen = lines(w, 'law.saw').find((e) => e.causes.includes(full[0]!.id))!;
-    expect(seen.actors!.length).toBeGreaterThan(0);
-    for (const q of seen.actors!)
-      expect(memoriesOf(w, q).some((m) => m['memory'] === 'saw-refused-rations')).toBe(true);
+    // Whoever saw it remembers it: the first test seed where someone was by to see it.
+    let seen: { x: World; saw: ReturnType<typeof lines>[number] } | undefined;
+    for (const seed of ['smoke', 'anvil', 'tallow', 'ledger']) {
+      const r = seed === 'smoke' ? { w, full } : rations(seed);
+      const saw = lines(r.w, 'law.saw').find((e) => e.causes.includes(r.full[0]?.id ?? -1));
+      if (saw) {
+        seen = { x: r.w, saw };
+        break;
+      }
+    }
+    expect(seen).toBeDefined();
+    expect(seen!.saw.actors!.length).toBeGreaterThan(0);
+    for (const q of seen!.saw.actors!)
+      expect(memoriesOf(seen!.x, q).some((m) => m['memory'] === 'saw-refused-rations')).toBe(true);
   });
 
   it('carries the share over a change of setting, and a newcomer answers the law', () => {

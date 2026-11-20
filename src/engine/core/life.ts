@@ -100,38 +100,6 @@ export interface ItemDef {
   tool?: { kind: string; material: string };
 }
 
-/** Tools (tools.json, Bundle 3, V-088): kinds and what each serves, materials with speed (per cent)
- * and life (work minutes), the quality bonus and how a tool is made. */
-export interface ToolsDef {
-  week: number;
-  cart: number;
-  /** The material of the cart's tools, and the Work sheet kind (jobs.json) that smiths them. */
-  cartMaterial: string;
-  job: string;
-  none: number;
-  step: number;
-  stream: string;
-  roll: number;
-  skilled: number;
-  charcoal: string;
-  /** Per cent of life left under which a held tool is worn and asks for a better one (P4.9). */
-  worn: number;
-  kinds: readonly {
-    id: string;
-    name: string;
-    serves: readonly string[];
-    ingots: number;
-    charcoal: number;
-    minutes: number;
-    /** How many the cart brings, when not `cart`. */
-    cart?: number;
-    /** At most this many people want one at once, those who do its work most. */
-    holders?: number;
-  }[];
-  materials: readonly { id: string; name: string; speed: number; life: number; ingot?: string }[];
-  quality: Readonly<Record<string, number>>;
-}
-
 /** The colony's work (work.json, P2.4): stock levels (the player's lever), felling, carrying,
  * the store and working hours. */
 export interface WorkDef {

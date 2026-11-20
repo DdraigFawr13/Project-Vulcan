@@ -16,6 +16,7 @@ export * from './region.ts';
 export * from './people.ts';
 export * from './ground.ts';
 export * from './fielddef.ts';
+export * from './tooldef.ts';
 export * from './life.ts';
 export * from './masonry.ts';
 export * from './laws.ts';

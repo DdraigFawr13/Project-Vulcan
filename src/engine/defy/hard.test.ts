@@ -177,7 +177,14 @@ describe('a leaver takes only those who share the grievance (P4)', () => {
     w.entities['belief'] = (w.entities['belief'] ?? []).filter((b) => b['person'] !== doubts.id);
     const line = leave(contextFor(w, sim, defySystem), p, g, why);
     const left = findEvent(allLines(w), line)!;
-    expect(left.actors).toEqual([p.id, shares.id]);
+    // The seed's own housemates may share it too (V-195 moved who sleeps where); each one taken
+    // holds the grievance and its belief, and the doubter stays.
+    expect(left.actors.slice(0, 2)).toEqual([p.id, shares.id]);
+    expect(left.actors).not.toContain(doubts.id);
+    for (const id of left.actors.slice(2)) {
+      expect(grievanceOf(w, content, id)?.law).toBe(g.law);
+      expect(reasonsOf(w, content, id, g.setting).belief).toBeDefined();
+    }
     expect(
       (w.entities['memory'] ?? []).some(
         (m) => m['person'] === doubts.id && m['memory'] === content.defy.memories['left'],

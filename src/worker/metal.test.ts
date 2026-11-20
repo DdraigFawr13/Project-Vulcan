@@ -155,8 +155,11 @@ describe('the metal screens', () => {
       expect(drawn.map((i) => i.frame)).toEqual(['cart']);
       const listed = tileGoods(world, x, y, z, nobody).goods!.map((g) => g.text);
       expect(listed).toContain('handcart');
-      // Three of each tool kind the cart brings (axes, picks, hoes, hammers, spears; no healer's kit).
-      expect(listed.filter((t) => t.startsWith('stone '))).toHaveLength(
+      // Three of each old tool kind the cart brings, one of each new one (V-195; no healer's kit).
+      const stone = new Set(
+        content.items.filter((i) => i.tool?.material === 'stone').map((i) => i.name),
+      );
+      expect(listed.filter((t) => stone.has(t.replace(/^(an?|\d+) /, '')))).toHaveLength(
         content.tools.kinds.reduce((n, k) => n + (k.cart ?? content.tools.cart), 0),
       );
     }

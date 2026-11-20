@@ -58,7 +58,8 @@ describe('tan pits', () => {
     expect(tanned.length).toBeGreaterThan(0);
     const chain = whyOf(w, tanned[0]!.id).map((c) => c.event.type);
     expect(chain).toEqual(expect.arrayContaining(['tan.laidIn', 'work.tookUpTanning']));
-    const took = whyOf(w, lines(w, 'tan.cured')[0]!.id).map((c) => c.event.type);
+    // The latest cure: an early one may have left the kept log by the time the leather is out.
+    const took = whyOf(w, lines(w, 'tan.cured').at(-1)!.id).map((c) => c.event.type);
     expect(took).toContain('work.tookUpTanning');
     expect(itemsOf(w).some((i) => i['kind'] === 'leather')).toBe(true);
     expect(lines(w, 'command.refused')).toEqual([]);

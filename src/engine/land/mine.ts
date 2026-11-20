@@ -23,7 +23,7 @@ import { clayWork } from './clay.ts';
 import { ladderOf, laddered, sinking } from './shaft.ts';
 import { practiseMining, start, stop, takenBy, type Kind, type Task } from './minetask.ts';
 import { able, declineIfUnable, goBeside, layAround, outranked, people } from '../band/index.ts';
-import { priorityLine, spotOf } from '../band/index.ts';
+import { couldHave, priorityLine, readyFor, spotOf, worked } from '../band/index.ts';
 
 /** The tiles of each metal's vein on each level, found once: a vein tile is only ever mined away
  * (never grown), so a cached tile that no longer holds the vein is dropped as it is met. */
@@ -168,7 +168,11 @@ export function takeUpMining(ctx: SystemContext, p: EntityRow): boolean {
     declineIfUnable(ctx, p, job);
     return false;
   }
-  if (outranked(ctx, p, job, (q) => workFor(ctx, q) !== undefined)) return false;
+  if (outranked(ctx, p, job, (q) => couldHave(ctx, q, job) && workFor(ctx, q) !== undefined))
+    return false;
+  // A pick is needed (V-195): without one they knap their own or do other work.
+  const tool = readyFor(ctx, p, job);
+  if (tool !== 'ok') return tool === 'knap';
   p['took'] = ctx.emit('work.tookUp', {
     causes: [...t.causes, ...[priorityLine(world, p.id, job)].filter((l): l is number => !!l)],
     actors: [p.id],
@@ -181,7 +185,8 @@ export function takeUpMining(ctx: SystemContext, p: EntityRow): boolean {
 /** Carries on with the same kind of task after one is done, without a new taking up. */
 function carryOn(ctx: SystemContext, p: EntityRow): boolean {
   const t = workFor(ctx, p);
-  if (!t || t.kind !== p['task']) return stop(ctx, p);
+  if (!t || t.kind !== p['task'] || !couldHave(ctx, p, ctx.content.work.mine.job))
+    return stop(ctx, p);
   start(ctx, p, t);
   return true;
 }
@@ -212,6 +217,7 @@ export function mining(ctx: SystemContext, p: EntityRow): boolean {
     return carryOn(ctx, p);
   }
   p['work'] = (p['work'] as number) - 1;
+  worked(ctx, p, content.work.mine.job);
   practiseMining(ctx, p);
   if ((p['work'] as number) > 0) return true;
   dig(ctx, p, { x, y, z });

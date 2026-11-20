@@ -58,7 +58,7 @@ export * from './weather/index.ts';
 export * from './wild/index.ts';
 // Two names more than one system exports: the engine's surface takes these.
 export { placeOf } from './fire/index.ts';
-export { childJobs } from './band/index.ts';
+export { childJobs, toolWaits } from './band/index.ts';
 export type { Hours } from './core/index.ts';
 
 /** The test-mode tools (V-041): direct orders on a tile, never levers. The worker refuses them

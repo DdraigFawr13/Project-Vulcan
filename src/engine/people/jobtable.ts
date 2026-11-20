@@ -13,7 +13,7 @@ import { limeBurning, masonry, takeUpLime, takeUpMasonry } from '../crafts/index
 import { burying, takeUpBurial, takeUpNursing } from '../care/index.ts';
 import { farming, foraging, gatherMinute, mining, takeUpFarming } from '../land/index.ts';
 import { takeUpForaging, takeUpGathering, takeUpMarked, takeUpMining } from '../land/index.ts';
-import { haulMinute, takeUpHauling } from '../band/index.ts';
+import { haulMinute, knapping, takeUpHauling, takeUpKnapping } from '../band/index.ts';
 import { fishing, takeUpFishing, hunting, takeUpHunting, takeUpHerding } from '../herding/index.ts';
 
 type Step = (ctx: SystemContext, p: EntityRow) => boolean;
@@ -64,6 +64,7 @@ export const JOBS: Readonly<Record<string, JobRow>> = {
   charcoal: { takeUp: takeUpCharcoal, work: burning, holds: true },
   smelt: { takeUp: takeUpSmelting, work: smelting, holds: true },
   smith: { takeUp: takeUpSmithing, work: smithing, holds: true },
+  'craft-tools': { takeUp: takeUpKnapping, work: knapping, holds: true },
   heal: { takeUp: takeUpNursing },
   chandle: { takeUp: takeUpChandling, work: chandling },
   beekeep: { takeUp: takeUpBeekeeping, work: beekeeping },

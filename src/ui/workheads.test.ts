@@ -29,7 +29,7 @@ describe('Work sheet headings', () => {
     expect(plain.map((j) => j.job).sort()).toEqual(['build', 'haul', 'tend']);
     expect(groups.map((g) => [g.name, g.jobs.map((j) => j.job)])).toEqual([
       ['Wild', ['hunt', 'fish']],
-      ['Stone', ['mine', 'quarry', 'mason', 'limeburn']],
+      ['Stone', ['mine', 'quarry', 'mason', 'limeburn', 'craft-tools']],
       ['Wood', ['fell', 'carpentry', 'thatch']],
       ['Land', ['farm', 'herd', 'forage']],
       ['Food', ['cook']],
@@ -49,8 +49,8 @@ describe('Work sheet headings', () => {
       grouped(visibleJobs(rows, shaft))
         .groups.find((g) => g.name === 'Stone')!
         .jobs.map((j) => j.job);
-    expect(stone(false)).toEqual(['quarry', 'mason', 'limeburn']);
-    expect(stone(true)).toEqual(['mine', 'quarry', 'mason', 'limeburn']);
+    expect(stone(false)).toEqual(['quarry', 'mason', 'limeburn', 'craft-tools']);
+    expect(stone(true)).toEqual(['mine', 'quarry', 'mason', 'limeburn', 'craft-tools']);
   });
 
   it('show the rows’ common level, or the lowest when they differ', () => {
