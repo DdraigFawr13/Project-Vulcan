@@ -344,5 +344,10 @@
 {"id":"faith.rite","importance":2,"template":"{name}, {title} of {faith}, leads the rite of {day} at the {shrine}: {count} keep it."},
 {"id":"faith.feast","importance":2,"template":"{day}: {count} ate {meal} together {where}."},
 {"id":"faith.noFeast","importance":2,"template":"No feast for {day}: the store has no food to spare."},
-{"id":"faith.leanDay","importance":2,"template":"{day} is kept lean: the store is too low for a supper."}
+{"id":"faith.leanDay","importance":2,"template":"{day} is kept lean: the store is too low for a supper."},
+{"id":"skill.taught","importance":1,"template":"{name} got better at {skill}: now {level}, taught by {teacher}."},
+{"id":"teach.apprentice","importance":2,"template":"{master} takes {learner} as apprentice in {skill}: {why}."},
+{"id":"teach.finished","importance":2,"template":"{learner} has learned what {master} can teach of {skill}: now {level}."},
+{"id":"teach.parted","importance":1,"template":"{learner} is no longer {master}'s apprentice in {skill}."},
+{"id":"teach.lost","importance":3,"template":"{name} {how}, and the colony's best {skill} went with them: nobody came near their {level}, and nothing was written.","notable":{}}
 ]

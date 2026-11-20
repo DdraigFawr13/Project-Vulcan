@@ -29,6 +29,7 @@
     "heat": "node tools/heat.mjs",
     "paths": "node tools/paths.mjs",
     "stages": "node tools/stages.mjs",
+    "teach": "node tools/teach.mjs",
     "test": "vitest run",
     "test:related": "vitest related --run",
     "test:browser": "playwright test",

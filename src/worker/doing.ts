@@ -43,6 +43,7 @@ const WORK_LABELS = new Map<string, Words>([
   ['limeburn', ['Going to burn lime', 'Burning lime']],
   ['hearth', ['Going to make a hearth', 'Making a hearth']],
   ['tend', ['Going to a fire', 'Tending a fire']],
+  ['help', ['Going to their master', 'Learning beside their master']],
 ]);
 const HAULING: Words = ['Carrying to the store', 'Hauling'];
 
@@ -166,6 +167,14 @@ function gathering(world: WorldState, p: EntityRow, say: Say): string {
   return say(herbs ? 'forageHerbs' : job, { good: def?.name ?? good ?? '', level: level ?? '' });
 }
 
+/** 6B Bundle 6 (V-189): an apprentice beside their master, who and at what. */
+function helpingDoing(world: WorldState, p: EntityRow, say: Say): string {
+  const m = (world.entities['person'] ?? []).find((q) => q.id === p['target']);
+  const job = content.jobs.find((j) => j.id === m?.['job']);
+  const skill = content.abilities.find((a) => a.id === job?.skill)?.name ?? '';
+  return say('help', { master: (m?.['name'] as string) ?? '', skill: skill.toLowerCase() });
+}
+
 /** Each job's sentence; a job not here is hauling. */
 const JOB_PHRASES = new Map<string, Phrase>([
   ['build', building],
@@ -189,6 +198,7 @@ const JOB_PHRASES = new Map<string, Phrase>([
   ['fell', gathering],
   ['forage', gathering],
   ['quarry', gathering],
+  ['help', helpingDoing],
 ]);
 
 /** What a person is doing and why, in the words of content `work.doing` (P2.9): the sentence,

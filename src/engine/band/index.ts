@@ -8,7 +8,18 @@ export { cooked, eat } from './eat.ts';
 export { edgeSpot, toGreen } from './edge.ts';
 export { fetchKind, reachableOf, useHeld } from './fetch.ts';
 export { LOOK_AGAIN, deliver, haulMinute, takeUpHauling } from './haul.ts';
-export { practise, progressOf } from './learn.ts';
+export {
+  capOf,
+  gain,
+  masterOf,
+  needOf,
+  practise,
+  progressOf,
+  skillRow,
+  teacherOf,
+  traitPace,
+  type Teacher,
+} from './learn.ts';
 export { lineOf, setLineHook, todayLine } from './lines.ts';
 export type { LineHook, LineNeed } from './lines.ts';
 export {

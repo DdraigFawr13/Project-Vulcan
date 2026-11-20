@@ -32,6 +32,7 @@ export * from './self.ts';
 export * from './colony.ts';
 export * from './family.ts';
 export * from './worship.ts';
+export * from './teach.ts';
 export * from './defy.ts';
 export { list, itemName, lower } from './words.ts';
 export { clamp, smooth, cheb, dice, roughDistance } from './maths.ts';

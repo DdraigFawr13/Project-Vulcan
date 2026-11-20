@@ -1,0 +1,47 @@
+{
+  "master": 8,
+  "ahead": 3,
+  "reach": 3,
+  "bondReach": 6,
+  "beside": 200,
+  "apprentice": 300,
+  "past": 2,
+  "slow": {
+    "from": 8,
+    "times": 3
+  },
+  "traits": {
+    "steady": 25,
+    "devout": 10,
+    "cheerful": 10,
+    "restless": -25,
+    "hot-tempered": -15,
+    "solitary": -10
+  },
+  "least": 25,
+  "hour": 6,
+  "friend": 20,
+  "choose": [
+    "sociable",
+    "steady"
+  ],
+  "end": 1,
+  "child": {
+    "rate": 50,
+    "upTo": 2,
+    "reach": 3
+  },
+  "near": 2,
+  "memories": {
+    "master": "taught-apprentice",
+    "learner": "finished-apprentice"
+  },
+  "words": {
+    "law": "keeps the Apprentices law",
+    "child": "{learner} is their own child",
+    "friend": "{learner} is the friend they are closest to",
+    "trait": "being {trait}, they chose to",
+    "died": "died",
+    "left": "left the valley"
+  }
+}

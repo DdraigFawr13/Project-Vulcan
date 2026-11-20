@@ -89,5 +89,7 @@
   {"id":"feasted-wedding-day","mood":10,"decayDays":14,"text":"Feasted on {about}'s Wedding Day"},
   {"id":"rite-wedding-day","mood":8,"decayDays":14,"text":"Kept {about}'s Wedding Day at the shrine"},
   {"id":"remembered-dead","mood":3,"decayDays":7,"text":"Remembered {about} on their day"},
-  {"id":"grumbled-feasts","mood":-2,"decayDays":5,"text":"Grumbled at the Feasts law"}
+  {"id":"grumbled-feasts","mood":-2,"decayDays":5,"text":"Grumbled at the Feasts law"},
+  {"id":"taught-apprentice","mood":6,"decayDays":28,"weight":3,"text":"Taught {about} all they could"},
+  {"id":"finished-apprentice","mood":6,"decayDays":28,"weight":3,"text":"Learned all {about} could teach"}
 ]

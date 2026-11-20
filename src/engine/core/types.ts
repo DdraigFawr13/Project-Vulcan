@@ -14,8 +14,7 @@ import type { ClothesDefs } from './clothes.ts';
 import type { TalesDefs } from './tales.ts';
 import type { SelfDefs } from './self.ts';
 import type { ColonyDefs } from './colony.ts';
-import type { FamilyDefs } from './family.ts';
-import type { WorshipDefs } from './worship.ts';
+import type { KinDefs } from './kin.ts';
 import type { DefyDefs } from './defy.ts';
 import type { CalendarDef } from './clock.ts';
 export type { CalendarDef } from './clock.ts';
@@ -370,8 +369,7 @@ export interface EngineContent
     TalesDefs,
     SelfDefs,
     ColonyDefs,
-    FamilyDefs,
-    WorshipDefs,
+    KinDefs,
     DefyDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */
