@@ -79,8 +79,9 @@ function cited(world: WorldState, sim: Sim): Set<number> {
 }
 
 /** What a person holds in mind: memories, beliefs, tales, their answer to a law and their place
- * on the defiance ladder. The lines these cite keep their words (V-177). */
-const HELD = ['memory', 'belief', 'tale', 'answer', 'defy'] as const;
+ * on the defiance ladder; and the recaps' kept lines and sentences (V-191). The lines these cite keep their words
+ * (V-177). */
+const HELD = ['memory', 'belief', 'tale', 'answer', 'defy', 'annalLine', 'annalText'] as const;
 
 /** Every ledger id a row of a `HELD` table cites. */
 function held(world: WorldState, sim: Sim): Set<number> {

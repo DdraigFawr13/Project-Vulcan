@@ -2,6 +2,7 @@
 // ledger, tick for tick (DECISIONS V-002, V-006). The worker is the only place it is run.
 // Each system's index.ts is its public surface, passed on whole: a system that exports a new name
 // needs no line here. A new system adds one export line and its entry in SYSTEMS.
+import { annalsSystem } from './annals/index.ts';
 import { beesSystem } from './bees/index.ts';
 import { buildSystem } from './build/index.ts';
 import { calendarSystem } from './calendar/index.ts';
@@ -34,6 +35,7 @@ export * from './log/index.ts';
 export * from './entity/index.ts';
 export { applyDue, createWorld, replay, step, submitCommand } from './sim/index.ts';
 export type { Cadence, Sim, SimHooks, System, SystemContext } from './sim/index.ts';
+export * from './annals/index.ts';
 export * from './bees/index.ts';
 export * from './build/index.ts';
 export * from './calendar/index.ts';
@@ -103,6 +105,7 @@ export const SYSTEMS: readonly System[] = [
   flockSystem,
   beesSystem,
   keepSystem,
+  annalsSystem,
 ];
 
 /** A simulation over `content` with the game's systems, or the given ones (tests add fixtures). */
