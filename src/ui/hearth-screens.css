@@ -521,3 +521,28 @@
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
 }
+
+/* The seed die (6W Slice 1): a 12 px pixel die drawn at 2x on an iron plate, tokens only. */
+#hud button.dice {
+  flex: none;
+  width: var(--tap);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.dice svg {
+  display: block;
+}
+.dice .o {
+  fill: var(--oak-dark);
+}
+.dice .f {
+  fill: var(--bone);
+}
+.dice .s {
+  fill: var(--bone-soft);
+}
+.dice .p {
+  fill: var(--ink);
+}
