@@ -1,5 +1,6 @@
 // Small pictures of people for the page's cards (P2.1): the same frames, clothes and hair tints the
 // map draws, laid together on a canvas from the `sprites-people` sheet.
+import { bodyStem, variantCounts } from '../render/index.ts';
 import type { PersonView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
@@ -51,9 +52,12 @@ export function portrait(p: PersonView, scale = 2, head = false): HTMLCanvasElem
       o.drawImage(s.image, f.x, f.y, f.w, f.h, 0, 0, SIZE, SIZE);
       g.drawImage(off, 0, 0);
     };
-    layer(`person.${p.race}.s.0`);
-    layer(`clothes.${p.race}.s.0`, p.look.clothes);
-    if (p.look.hair) layer(`hair.${p.look.hair}.${p.race}.s`, p.look.hairColour);
+    const { stem, overlays } = bodyStem(variantCounts(Object.keys(s.frames)), p.race, p.id);
+    layer(`${stem}.s.0`);
+    if (overlays) {
+      layer(`clothes.${p.race}.s.0`, p.look.clothes);
+      if (p.look.hair) layer(`hair.${p.look.hair}.${p.race}.s`, p.look.hairColour);
+    }
     if (head) cropHead(whole, out);
   });
   return canvas;

@@ -1,11 +1,14 @@
 // The people on the map (P2.1): each a body from the `sprites-people` sheet with their clothes and
 // hair laid over it, tinted to the colours drawn for them. Since P2.3 they walk: each snapshot
-// moves them to the tile their row says, and on screen they glide there, facing the way they go
-// with their two walk frames, then stand. The glide is a picture choice, never game state.
+// moves them to the tile their row says, and on screen they walk there at the pace they really
+// walked (trail.ts), facing the way they go with their two walk frames, then stand. The walk is a
+// picture choice, never game state.
 import Phaser from 'phaser';
 import type { PersonView, WalkerView } from '../worker/index.ts';
 import type { Spot } from './finder.ts';
+import { bodyStem, variantCounts } from './look.ts';
 import { PEOPLE } from './sheets.ts';
+import { Trails, type TrailClock } from './trail.ts';
 
 const TILE = 32;
 // People are drawn a quarter larger than a tile (V-095): centred across it, feet on its lower
@@ -13,10 +16,6 @@ const TILE = 32;
 const SIZE = 1.25;
 const LIFT_X = -(TILE * (SIZE - 1)) / 2;
 const LIFT_Y = -TILE * (SIZE - 1);
-/** Gliding: at least this many screen pixels a second (a tile a game minute at 1x), and never
- * more than about a tenth of a second behind, so at 3x nobody trails their tile. */
-const GLIDE = 320;
-const CATCH_UP = 100;
 /** Milliseconds per walk frame. */
 const STRIDE = 160;
 /** The unburied dead are drawn grey (P5.8); a carried person lies a few pixels off their carrier. */
@@ -36,6 +35,8 @@ interface Shown {
   body: Phaser.GameObjects.Image;
   clothes: Phaser.GameObjects.Image;
   hair: Phaser.GameObjects.Image | undefined;
+  /** The body's frame-name stem (look.ts): the race's body, or one whole villager. */
+  stem: string;
   facing: Facing;
   walked: number;
   /** Where a carried person lies from their carrier's tile, in pixels. */
@@ -54,11 +55,14 @@ export class PeopleSprites {
   private lying = new Map<number, Lying>();
   private z = 0;
   private live = false;
+  private readonly trails = new Trails();
 
   private readonly scene: Phaser.Scene;
+  private readonly clock: TrailClock;
 
-  constructor(game: Phaser.Game, scene: Phaser.Scene) {
+  constructor(game: Phaser.Game, scene: Phaser.Scene, clock: TrailClock) {
     this.scene = scene;
+    this.clock = clock;
     // The scene has no events until the game boots; ones set before it has made its layers are
     // drawn once it has.
     game.events.once(Phaser.Core.Events.READY, () =>
@@ -80,7 +84,10 @@ export class PeopleSprites {
   /** Where everyone stands now (each snapshot); a change of level redraws them. */
   move(walkers: readonly WalkerView[]): void {
     let level = false;
+    this.trails.keep(new Set(walkers.map((w) => w.id)));
     for (const w of walkers) {
+      // A change of level is a leap: they appear on the new level's tile at once.
+      this.trails.note(w.id, this.clock.latest, w.x + w.z * 1000, w.y);
       const p = this.people.find((q) => q.id === w.id);
       if (!p) continue;
       if (p.z !== w.z) level = true;
@@ -130,18 +137,22 @@ export class PeopleSprites {
     if (!this.live || !this.scene.textures.exists(PEOPLE)) return;
     for (const s of this.shown.values()) s.box.destroy();
     this.shown.clear();
+    const counts = variantCounts(this.scene.textures.get(PEOPLE).getFrameNames());
     for (const p of this.people.filter((q) => q.z === this.z)) {
-      const body = this.scene.add.image(0, 0, PEOPLE, `person.${p.race}.s.0`).setOrigin(0);
+      const { stem, overlays } = bodyStem(counts, p.race, p.id);
+      const body = this.scene.add.image(0, 0, PEOPLE, `${stem}.s.0`).setOrigin(0);
       const clothes = this.scene.add
         .image(0, 0, PEOPLE, `clothes.${p.race}.s.0`)
         .setOrigin(0)
-        .setTint(colour(p.look.clothes));
-      const hair = p.look.hair
-        ? this.scene.add
-            .image(0, 0, PEOPLE, `hair.${p.look.hair}.${p.race}.s`)
-            .setOrigin(0)
-            .setTint(colour(p.look.hairColour))
-        : undefined;
+        .setTint(colour(p.look.clothes))
+        .setVisible(overlays);
+      const hair =
+        overlays && p.look.hair
+          ? this.scene.add
+              .image(0, 0, PEOPLE, `hair.${p.look.hair}.${p.race}.s`)
+              .setOrigin(0)
+              .setTint(colour(p.look.hairColour))
+          : undefined;
       // Over the features and the aura glow, under the selection marks.
       const box = this.scene.add
         .container(
@@ -157,6 +168,7 @@ export class PeopleSprites {
         body,
         clothes,
         hair,
+        stem,
         facing: 's' as Facing,
         walked: 0,
         off: { x: 0, y: 0 },
@@ -195,25 +207,21 @@ export class PeopleSprites {
     }
   }
 
-  /** Each frame: slide everyone towards their tile, face the way they go, step their frames. */
+  /** Each frame: draw everyone where the screen's clock finds them on their trail, facing the way
+   * they go and stepping their frames while they move. */
   private glide(delta: number): void {
+    const now = this.clock.at(this.scene.game.loop.time);
     for (const s of this.shown.values()) {
-      const tx = s.view.x * TILE + LIFT_X + s.off.x;
-      const ty = s.view.y * TILE + LIFT_Y + s.off.y;
-      const dx = tx - s.box.x;
-      const dy = ty - s.box.y;
-      const far = Math.hypot(dx, dy);
-      if (far < 0.5) {
+      const d = this.trails.at(s.view.id, now);
+      const [x, y] = d ? [d.x - s.view.z * 1000, d.y] : [s.view.x, s.view.y];
+      s.box.setPosition(x * TILE + LIFT_X + s.off.x, y * TILE + LIFT_Y + s.off.y);
+      if (!d?.moving) {
         if (s.walked) this.pose(s, s.facing, 0);
         s.walked = 0;
         continue;
       }
-      // A jump of many tiles (a load, a long stall) is not walked out.
-      const pace = Math.max((GLIDE * delta) / 1000, (far * delta) / CATCH_UP);
-      const reach = far > TILE * 20 ? far : Math.min(far, pace);
-      s.box.setPosition(s.box.x + (dx / far) * reach, s.box.y + (dy / far) * reach);
       const facing: Facing =
-        Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'e' : 'w') : dy > 0 ? 's' : 'n';
+        Math.abs(d.dx) > Math.abs(d.dy) ? (d.dx > 0 ? 'e' : 'w') : d.dy > 0 ? 's' : 'n';
       s.walked += delta;
       this.pose(s, facing, 1 + (Math.floor(s.walked / STRIDE) % 2));
     }
@@ -222,7 +230,7 @@ export class PeopleSprites {
   private pose(s: Shown, facing: Facing, frame: number): void {
     const { race, look } = s.view;
     s.facing = facing;
-    s.body.setFrame(`person.${race}.${facing}.${frame}`);
+    s.body.setFrame(`${s.stem}.${facing}.${frame}`);
     s.clothes.setFrame(`clothes.${race}.${facing}.${frame}`);
     s.hair?.setFrame(`hair.${look.hair}.${race}.${facing}`);
   }
