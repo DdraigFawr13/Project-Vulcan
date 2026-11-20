@@ -193,11 +193,15 @@ export function markFor(content: EngineContent, part: string) {
 }
 
 /** A hurt person stops: what they carried (not a pocketed stash, P6.7) is put down where they stand, their work is dropped
- * and, when they cannot stand, they lie where they are. */
+ * and, when they cannot stand, they lie where they are. Their own bedroll, carried home, is
+ * laid where it falls, so it is still theirs to carry on once they are up. */
 export function stopFor(ctx: SystemContext, p: EntityRow, down: boolean): void {
+  const roll = ctx.content.life.cart.bedroll;
   for (const i of ctx.world.entities['item'] ?? [])
-    if (i['holder'] === p.id && !['worn', 'held', 'hid'].includes(i['state'] as string))
+    if (i['holder'] === p.id && !['worn', 'held', 'hid'].includes(i['state'] as string)) {
       Object.assign(i, { holder: 0, x: p['x'], y: p['y'], z: p['z'] });
+      if (i['kind'] === roll && i['owner'] === p.id) i['state'] = 'laid';
+    }
   Object.assign(p, { job: '', target: -1, work: 0, task: '', what: '', plan: 0 });
   if (!down) return;
   p['path'] = [];

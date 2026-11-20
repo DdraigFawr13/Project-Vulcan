@@ -13,7 +13,7 @@ export interface HouseView {
   why: string;
   /** The plan can still be sent back: planned, never sent back before, nothing built on it. */
   back: boolean;
-  /** "thatch, laid with the walls" while planned, "thatch (not drawn)" once built (V-056). */
+  /** The roof in words (6B, P6.11): none yet, or thatch, its age and whether it is worn. */
   roof: string;
   /** The line that sited it; its "why?" leads to the need. */
   sited?: LedgerLine;

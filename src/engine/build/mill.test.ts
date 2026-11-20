@@ -5,13 +5,22 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { WATER, type WorldState } from '../core/index.ts';
-import { allLines, createSim, createWorld, step, submitCommand } from '../index.ts';
+import {
+  allLines,
+  createSim,
+  createWorld,
+  step,
+  submitCommand,
+  withoutAccidents,
+} from '../index.ts';
 import { tablesProblem } from '../entity/index.ts';
 import { memoriesOf } from '../needs/index.ts';
 import { furnitureOf, hallOf, millOf, roomsOf, turning } from './index.ts';
 import { millsOf } from './mill.ts';
 
-const sim = createSim(content);
+// Accidents (P5.6) are left out: a death on day 16 leaves too few to keep the quern busy, and
+// this tests the mill, not injury (health.test.ts does).
+const sim = createSim(withoutAccidents(content));
 const DAY = 1440;
 const lines = (w: WorldState, type: string) => allLines(w).filter((e) => e.type === type);
 // Whether the hall's room stood when the harvest-home supper was called, read hour by hour, and

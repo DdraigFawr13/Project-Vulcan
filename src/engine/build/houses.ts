@@ -58,6 +58,15 @@ export const HOUSE_TABLES: Schemas = {
     sick: 'count',
     owner: 'entity',
     hall: 'event',
+    /** Its roof (6B, roofs.ts): '' none yet, `thatch`; the tick and line it was laid; the line
+     * saying no thatch can be reached; who is thatching it, their line taking it up, and what it is thatched with. */
+    roof: 'text',
+    roofed: 'int',
+    roofLine: 'event',
+    noThatch: 'event',
+    thatcher: 'entity',
+    thatchTook: 'event',
+    thatchWith: 'text',
   },
   /** The Build sheet's level for a kind of building (1 first to 4 last) and its order. */
   want: { kind: 'text', level: 'count', line: 'event' },
@@ -242,6 +251,15 @@ export function placeHouse(
       cold: 0,
       sick: 0,
       owner: extra.owner ?? 0,
+      ...{
+        roof: '',
+        roofed: 0,
+        roofLine: 0,
+        noThatch: 0,
+        thatcher: 0,
+        thatchTook: 0,
+        thatchWith: '',
+      },
       hall: 0,
     },
   });
