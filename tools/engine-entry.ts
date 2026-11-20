@@ -1,5 +1,8 @@
 // What the map and budget tools use from the engine, gathered for tools/engine.mjs.
 export {
+  annalsOf,
+  tableOf,
+  recordOf,
   addEntity,
   airHour,
   airOf,

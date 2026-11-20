@@ -1,6 +1,6 @@
 # inn
 
-The tavern (6B, V-188): evenings, ale, brawls, hangovers.
+The tavern (6B, V-188).
 
 - **Public API:** `index.ts`: `innSystem` (in `SYSTEMS` after faith, hourly, stream `inn`), `atTheInn(ctx, p, evening)` (people mind, at leisure), `hungOver(ctx, p)` (people mind, a lost minute at work), reads `tavernOf`, `tavernName`, `inTavern`, `keeperOf`, `cupsTonight`, `kegsOf`, `cupsHeld`, and `fillCask` (crafts brew).
 - **Content:** `tavern.json`: `build` (the Tavern row's `start`, house `size`, `names`, `wants`), `brew`, `stock` (the Ale row), `evening`, `keeper`, `bend`, `brawl`, `hungOver`; memories `drank-ale`, `hung-over`; tales.json `pass.tavern`, `places.tavern`, tale `tavern-brawl`.

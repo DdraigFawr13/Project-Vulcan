@@ -2,6 +2,7 @@
 // and its fingerprint. Read the shapes in schemas.ts, not the data files (MODULE.md).
 import abilities from './data/abilities.json';
 import ailments from './data/ailments.json';
+import annals from './data/annals.json';
 import awakenings from './data/awakenings.json';
 import band from './data/band.json';
 import biomes from './data/biomes.json';
@@ -63,6 +64,7 @@ export { contentHash as hashContent } from './hash';
 export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   abilities,
   ailments,
+  annals,
   awakenings,
   band,
   biomes,

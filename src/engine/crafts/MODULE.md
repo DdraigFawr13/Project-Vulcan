@@ -1,6 +1,6 @@
 # crafts
 
-Building and the workshop trades (P3.1 to P3.6, P5.3 to P5.13, 5B, 6B): building plans, carpentry, hearths and tending, cooking, the mill, the larder rows, the loom's trades, charcoal, smelting and smithing, beekeeping and candles. Each file gives rows to the job table (`people/jobtable.ts`). Uses `band` and `herding`.
+Building and the workshop trades (P3, P5, 5B, 6B): building, carpentry, hearths, cooking, milling, the larder, the loom, charcoal, metal, bees, candles and brewing. Each file gives rows to the job table (`people/jobtable.ts`). Uses `band` and `herding`.
 
 - **Public API:** `index.ts`: `LARDER_JOBS`, `MILL_JOBS`, `HEARTHS`, `TRADE_JOBS`, `banks`, `beekeeping`, `building`, `burning`, `chandling`, `clayWanted`, `coldHearth`, `coldPick`, `cooking`, `furnishing`, `hearthFirst`, `markUsed`, `reachableStacks`, `smelting`, `smithing`, `stackOf`, `stationing`, `takeUpBeekeeping`, `takeUpBuilding`, `takeUpCarpentry`, `takeUpChandling`, `takeUpChange`, `takeUpCharcoal`, `takeUpCooking`, `takeUpHearth`, `takeUpSmelting`, `takeUpSmithing`, `takeUpStation`, `takeUpTending`, `tendForWarmth`, `tendInEvening`, `tendRule`, `tending`.
 - **Building (P3.1, V-041):** `build.ts`: a free person able for the `buildings.job` takes up the nearest free plan, fetches its material, brings it, builds it from beside the tile, or takes a part down that was ordered down; the `plan` field holds the plan's id.
