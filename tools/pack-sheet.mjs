@@ -58,13 +58,17 @@ export function packSheet(frames) {
 
 /** Final art (ART_DIRECTION.md) in `art/final/<sheet>/` replaces the script-drawn frame of the same
  * name, so the draw scripts can keep running without overwriting it. A final frame must name an
- * existing frame: the art names stay the contract (ART.md). */
+ * existing frame (the art names stay the contract, ART.md), except whole villagers
+ * (`person.<race>.v<n>.<facing>.<frame>`, src/render/look.ts) and tall trees' crowns
+ * (`<art>.1.top`, src/render/canopy.ts), which only final art has. */
+const FINAL_ONLY = /^(person\.[a-z-]+\.v\d+\.[nesw]\.[0-2]|[a-z]+\.[a-z-]+\.1\.top)$/;
 export function overrideFinal(frames, sheet) {
   const dir = path.join(root, 'art/final', sheet);
   if (!existsSync(dir)) return;
   for (const file of readdirSync(dir).filter((f) => f.endsWith('.png'))) {
     const name = file.slice(0, -4);
-    if (!frames[name]) throw new Error(`art/final/${sheet}/${file}: no frame ${name} in art/src`);
+    if (!frames[name] && !FINAL_ONLY.test(name))
+      throw new Error(`art/final/${sheet}/${file}: no frame ${name} in art/src`);
     frames[name] = decodePng(readFileSync(path.join(dir, file)));
   }
 }

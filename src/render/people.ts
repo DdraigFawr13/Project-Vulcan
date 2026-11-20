@@ -5,6 +5,7 @@
 import Phaser from 'phaser';
 import type { PersonView, WalkerView } from '../worker/index.ts';
 import type { Spot } from './finder.ts';
+import { bodyStem, variantCounts } from './look.ts';
 import { PEOPLE } from './sheets.ts';
 
 const TILE = 32;
@@ -36,6 +37,8 @@ interface Shown {
   body: Phaser.GameObjects.Image;
   clothes: Phaser.GameObjects.Image;
   hair: Phaser.GameObjects.Image | undefined;
+  /** The body's frame-name stem (look.ts): the race's body, or one whole villager. */
+  stem: string;
   facing: Facing;
   walked: number;
   /** Where a carried person lies from their carrier's tile, in pixels. */
@@ -130,18 +133,22 @@ export class PeopleSprites {
     if (!this.live || !this.scene.textures.exists(PEOPLE)) return;
     for (const s of this.shown.values()) s.box.destroy();
     this.shown.clear();
+    const counts = variantCounts(this.scene.textures.get(PEOPLE).getFrameNames());
     for (const p of this.people.filter((q) => q.z === this.z)) {
-      const body = this.scene.add.image(0, 0, PEOPLE, `person.${p.race}.s.0`).setOrigin(0);
+      const { stem, overlays } = bodyStem(counts, p.race, p.id);
+      const body = this.scene.add.image(0, 0, PEOPLE, `${stem}.s.0`).setOrigin(0);
       const clothes = this.scene.add
         .image(0, 0, PEOPLE, `clothes.${p.race}.s.0`)
         .setOrigin(0)
-        .setTint(colour(p.look.clothes));
-      const hair = p.look.hair
-        ? this.scene.add
-            .image(0, 0, PEOPLE, `hair.${p.look.hair}.${p.race}.s`)
-            .setOrigin(0)
-            .setTint(colour(p.look.hairColour))
-        : undefined;
+        .setTint(colour(p.look.clothes))
+        .setVisible(overlays);
+      const hair =
+        overlays && p.look.hair
+          ? this.scene.add
+              .image(0, 0, PEOPLE, `hair.${p.look.hair}.${p.race}.s`)
+              .setOrigin(0)
+              .setTint(colour(p.look.hairColour))
+          : undefined;
       // Over the features and the aura glow, under the selection marks.
       const box = this.scene.add
         .container(
@@ -157,6 +164,7 @@ export class PeopleSprites {
         body,
         clothes,
         hair,
+        stem,
         facing: 's' as Facing,
         walked: 0,
         off: { x: 0, y: 0 },
@@ -222,7 +230,7 @@ export class PeopleSprites {
   private pose(s: Shown, facing: Facing, frame: number): void {
     const { race, look } = s.view;
     s.facing = facing;
-    s.body.setFrame(`person.${race}.${facing}.${frame}`);
+    s.body.setFrame(`${s.stem}.${facing}.${frame}`);
     s.clothes.setFrame(`clothes.${race}.${facing}.${frame}`);
     s.hair?.setFrame(`hair.${look.hair}.${race}.${facing}`);
   }

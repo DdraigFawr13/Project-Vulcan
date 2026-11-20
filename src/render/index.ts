@@ -26,9 +26,11 @@ import { Bubbles } from './bubbles.ts';
 import { Finder } from './finder.ts';
 import { WildSprites } from './wild.ts';
 import { WearLayer } from './wear.ts';
+import { CanopyLayer } from './canopy.ts';
 import { TILE, ValleyScene, type Hover } from './scene.ts';
 
 export type { Hover } from './scene.ts';
+export { bodyStem, variantCounts } from './look.ts';
 
 export interface Renderer {
   /** Sizes the map and opens the view on tile `on` (the band's green), or the middle without it. */
@@ -117,11 +119,12 @@ function layersOf(game: Phaser.Game, scene: ValleyScene, parent: HTMLElement) {
   const bars = new WorkBars(game, scene);
   const wild = new WildSprites(game, scene);
   const wear = new WearLayer(game, scene);
+  const canopy = new CanopyLayer(game, scene);
   const finder = new Finder(game, scene, () => people.spots());
   const bubbles = new Bubbles(game, scene, parent, () => people.spots());
   return {
     ...{ game, scene, parent, people, goods, build, fields, shafts, burial, furniture },
-    ...{ green, light, bars, wild, wear, finder, bubbles },
+    ...{ green, light, bars, wild, wear, canopy, finder, bubbles },
   };
 }
 
@@ -153,7 +156,7 @@ function watchAnimalFinder({ game, scene, parent, wild }: Layers): void {
 
 /** The map, the camera and the level on screen. */
 function viewHandle(l: Layers) {
-  const { game, scene, build, fields, light, wild, wear, bubbles } = l;
+  const { game, scene, build, fields, light, wild, wear, canopy, bubbles } = l;
   return {
     setMapSize: (width: number, height: number, on?: { x: number; y: number }) => {
       scene.setMapSize(width, height, on);
@@ -162,12 +165,14 @@ function viewHandle(l: Layers) {
       light.setMapSize(width, height);
       wild.setMapSize(width, height);
       wear.setMapSize(width, height);
+      canopy.setMapSize(width, height);
     },
     applyChunks: (chunks: readonly ChunkView[]) => {
       scene.applyChunks(chunks);
       build.applyChunks(chunks);
       wild.applyChunks(chunks);
       wear.applyChunks(chunks);
+      canopy.applyChunks(chunks);
     },
     setAura: (spots: readonly AuraView[]) => scene.setAura(spots),
     zoomStep: (direction: 1 | -1) => scene.zoomStep(direction),
@@ -180,7 +185,7 @@ function viewHandle(l: Layers) {
       scene.setLevel(z);
       for (const layer of [l.people, l.goods, build, fields, l.shafts, l.burial, l.furniture])
         layer.setLevel(z);
-      for (const layer of [l.green, light, l.bars, wild, wear]) layer.setLevel(z);
+      for (const layer of [l.green, light, l.bars, wild, wear, l.canopy]) layer.setLevel(z);
     },
     focus: (x: number, y: number, below: number) =>
       scene.controls?.focus((x + 0.5) * TILE, (y + 0.5) * TILE, below),
