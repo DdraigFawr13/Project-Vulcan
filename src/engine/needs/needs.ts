@@ -16,7 +16,7 @@ import { heatAt } from '../fire/index.ts';
 import { tileTemperature } from '../weather/index.ts';
 import { bedOwnedBy, houseAt, type Room } from '../build/index.ts';
 import { comfortOf, roomHere } from './comfort.ts';
-import { clothesWarmth, wearClothes } from './clothes.ts';
+import { clothesWarmth, outdoors, wearClothes } from './clothes.ts';
 import { DIET_TABLES } from './diet.ts';
 import { addMemory, expireMemories, MEMORY_TABLES, memoriesOf, memoryMood } from './memory.ts';
 
@@ -114,11 +114,18 @@ export function feltAt(world: WorldState, content: EngineContent, i: number): nu
 }
 
 /** The temperature a person feels where they stand, before their clothes. */
-function feelsBare(ctx: SystemContext, p: EntityRow): number {
-  const { world, content } = ctx;
+function feelsBare(
+  { world, content }: Pick<SystemContext, 'world' | 'content'>,
+  p: EntityRow,
+): number {
   if ((p['z'] as number) > 0) return content.life.warmth.below;
   return feltAt(world, content, (p['y'] as number) * world.map.width + (p['x'] as number));
 }
+
+/** Outdoors and colder than the warmth comfort line before their clothes: when their outer
+ * garment is worn hard and shows on them (V-190). */
+export const coldOutdoors = (world: WorldState, content: EngineContent, p: EntityRow): boolean =>
+  outdoors(world, p) && feelsBare({ world, content }, p) < content.life.warmth.comfort;
 
 /** The temperature a person feels where they stand: their clothes add to it outdoors. */
 const feels = (ctx: SystemContext, p: EntityRow): number =>
