@@ -171,9 +171,11 @@ test('the Build sheet and the Laws page are levels and laws, 44 px each', async 
   await expect(houses).toContainText('second');
   expect(await phoneRules(page)).toEqual([]);
   // P5.9, P6.5: the Laws page folds every law to one line, one open at a time. The Strangers law
-  // is Those in need from the start (V-117); it names no stranger and admits no one.
+  // is Those in need from the start (V-117); it names no stranger and admits no one. 6B adds
+  // the Hearths law, Steady by custom.
   await more('laws');
-  await expect(p.locator('.lawfold')).toHaveCount(5);
+  await expect(p.locator('.lawfold')).toHaveCount(6);
+  await expect(p.locator('.lawfold[data-law="hearths"]')).toContainText('Steady');
   await expect(p.getByRole('group', { name: 'Work hours law' })).toHaveCount(0);
   await p.getByRole('button', { name: 'Show the strangers law' }).click();
   const strangers = p.getByRole('group', { name: 'Strangers law' }).getByRole('button');

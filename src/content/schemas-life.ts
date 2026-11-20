@@ -231,6 +231,10 @@ export const LIFE_SCHEMAS = {
         idle: count,
         near: count,
       }),
+      // Room air (6B, P6.10): a room's air holds heat in tenths of a degree. Each hour a lit fire
+      // moves it `rise` per mille of the way to its heat; it then leaks per mille of itself, the
+      // mean over the room's edge of each part's `leak` (`open` for a gap or unlisted part).
+      air: obj({ rise: num({ min: 1, max: 1000 }), open: count, leak: map(count) }),
     }),
     // What a person is doing, in words (P2.9): `{good}` and `{level}` are the stock lever the
     // work answers, `{what}` the load carried.

@@ -107,31 +107,50 @@ describe('hard times without a law (P2)', () => {
   });
 });
 
+/** A hard winter under Hunger rations on anvil, and a house of three or more where one holds the
+ * memory and belief behind their grievance. Which housemates went hungry follows the winter's
+ * history, so a second is given the same memory (they already hold the belief) rather than
+ * pinned, and a third is made to doubt it in the test. */
+function hardWinter(): { w: World; p: EntityRow; shares: EntityRow; doubts: EntityRow } {
+  const w = createWorld(sim, 'anvil');
+  let day = 0;
+  while (!isWinter({ ...w, tick: day * TICKS_PER_DAY }, content)) day += 1;
+  w.tick = day * TICKS_PER_DAY + 6 * TICKS_PER_HOUR;
+  step(w, sim, 60);
+  submitCommand(w, {
+    tick: w.tick + 1,
+    kind: 'setLaw',
+    data: { law: 'rations', setting: 'hunger' },
+  });
+  for (let d = 0; d < 30; d++) step(w, sim, TICKS_PER_DAY);
+  const why = (q: EntityRow) => {
+    const g = grievanceOf(w, content, q.id);
+    return g ? reasonsOf(w, content, q.id, g.setting) : {};
+  };
+  const homes = new Map<number, EntityRow[]>();
+  for (const p of alive(w)) {
+    const h = homeHouse(w, content, p);
+    if (h) homes.set(h, [...(homes.get(h) ?? []), p]);
+  }
+  const house = [...homes.values()].find(
+    (ps) => ps.length >= 3 && ps.some((q) => why(q).mem && why(q).belief),
+  )!;
+  expect(house).toBeDefined();
+  const p = house.find((q) => why(q).mem && why(q).belief)!;
+  const shares = house.find((q) => q !== p && why(q).belief)!;
+  if (!why(shares).mem) {
+    const { id: _, ...mem } = why(p).mem!;
+    addEntity(w, 'memory', { ...mem, person: shares.id });
+  }
+  return { w, p, shares, doubts: house.find((q) => q !== p && q !== shares)! };
+}
+
 describe('a leaver takes only those who share the grievance (P4)', () => {
   it('leaves behind a housemate who does not hold the belief, and they remember it', () => {
-    const w = createWorld(sim, 'anvil');
-    // A hard winter's grievance: a fresh band under Hunger rations for 30 days.
-    let day = 0;
-    while (!isWinter({ ...w, tick: day * TICKS_PER_DAY }, content)) day += 1;
-    w.tick = day * TICKS_PER_DAY + 6 * TICKS_PER_HOUR;
-    step(w, sim, 60);
-    submitCommand(w, {
-      tick: w.tick + 1,
-      kind: 'setLaw',
-      data: { law: 'rations', setting: 'hunger' },
-    });
-    for (let d = 0; d < 30; d++) step(w, sim, TICKS_PER_DAY);
-    const homes = new Map<number, EntityRow[]>();
-    for (const p of alive(w)) {
-      const h = homeHouse(w, content, p);
-      if (h) homes.set(h, [...(homes.get(h) ?? []), p]);
-    }
-    const house = [...homes.values()].find((ps) => ps.length >= 3)!;
-    expect(house).toBeDefined();
-    const [p, shares, doubts] = house as [EntityRow, EntityRow, EntityRow];
+    // A hard winter's grievance: a fresh band under Hunger rations for 30 days (`hardWinter`).
+    const { w, p, shares, doubts } = hardWinter();
     const g = grievanceOf(w, content, p.id)!;
     const why = reasonsOf(w, content, p.id, g.setting);
-    expect(why.mem && why.belief).toBeTruthy();
     for (const q of [shares, doubts]) {
       const row = (w.entities['defy'] ?? []).find((r) => r['person'] === q.id)!;
       row['step'] = content.defy.steps.findIndex((s) => s.id === 'take') + 1;

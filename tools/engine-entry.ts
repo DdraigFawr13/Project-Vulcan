@@ -1,6 +1,13 @@
 // What the map and budget tools use from the engine, gathered for tools/engine.mjs.
 export {
   addEntity,
+  airHour,
+  airOf,
+  leakOf,
+  firesOf,
+  furnitureOf,
+  roomAt,
+  withoutAccidents,
   clockAt,
   createSim,
   createWorld,

@@ -34,6 +34,7 @@
 "fire":{"fall":2,"radius":3,
 "fuels":[{"id":"firewood","item":"firewood","minutes":60,"heat":20,"banked":{"heat":10,"rate":4}}],
 "split":{"from":"logs","fuel":"firewood","per":4,"minutes":20},
-"tend":{"low":60,"top":480,"topBelow":360,"idle":720,"near":6}},
+"tend":{"low":60,"top":480,"topBelow":360,"idle":720,"near":6},
+"air":{"rise":500,"open":400,"leak":{"wall-stone":40,"wall-brick":40,"wall-drystone":60,"wall-daub":80,"wall-wood":120,"door-stone":120,"door-wood":200,"hurdle":400,"gate-hurdle":400}}},
 "learn":{"start":240,"perLevel":120}
 }
