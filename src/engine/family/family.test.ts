@@ -90,7 +90,7 @@ describe('families: courtship and weddings', () => {
     const { w, p, q } = couple('smoke');
     addEntity(w, 'bond', {
       ...{ a: Math.min(p.id, q.id), b: Math.max(p.id, q.id), close: fam.court.from + 5 },
-      ...{ state: '', since: 0, line: 0 },
+      ...{ state: '', since: 0, line: 0, due: 0, expect: 0, last: 0 },
     });
     toMorning(w);
     const courting = lines(w, 'family.courting').find((e) => e.actors.includes(p.id))!;

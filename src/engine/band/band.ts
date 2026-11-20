@@ -49,7 +49,12 @@ function awkward(name: string): boolean {
   return false;
 }
 
-function givenName(rng: RngStream, content: EngineContent, culture: string, sex: string): string {
+export function givenName(
+  rng: RngStream,
+  content: EngineContent,
+  culture: string,
+  sex: string,
+): string {
   const names = content.cultures.find((c) => c.id === culture)!.names;
   const whole = names.givenNames?.[sex];
   if (whole?.length) return rng.pick(whole);
@@ -76,6 +81,39 @@ export function tradeOf(band: BandDef, skills: Person['skills']): string {
   return best;
 }
 
+/** A skill's potential from the attributes it is learned by, plus two dice. */
+export function potentialOf(
+  rng: RngStream,
+  content: EngineContent,
+  attributes: Record<string, number>,
+  id: string,
+): number {
+  const { band } = content;
+  const learn = content.abilities.find((a) => a.id === id)!.learnAttributes;
+  const aptitude = Math.round(learn.reduce((t, k) => t + attributes[k]!, 0) / learn.length);
+  return clamp(
+    aptitude + band.potentialOffset + dice(rng, 2),
+    band.potential[0]!,
+    band.potential[1]!,
+  );
+}
+
+/** `band.traits` traits by weight, none excluding another. */
+export function drawTraits(rng: RngStream, content: EngineContent): string[] {
+  const traits: string[] = [];
+  for (let k = 0; k < content.band.traits; k += 1) {
+    const free = content.traits.filter(
+      (t) =>
+        !traits.includes(t.id) &&
+        !traits.some((o) => t.excludes.includes(o)) &&
+        !content.traits.find((o) => traits.includes(o.id) && o.excludes.includes(t.id)),
+    );
+    if (free.length === 0) break;
+    traits.push(rng.weighted(free.map((t) => [t.id, t.weight] as const)));
+  }
+  return traits;
+}
+
 function drawPerson(rng: RngStream, content: EngineContent, homes: readonly Home[]): Person {
   const { band } = content;
   const home = rng.weighted(
@@ -97,13 +135,7 @@ function drawPerson(rng: RngStream, content: EngineContent, homes: readonly Home
     attributes[id] = clamp(mean + dice(rng, band.attributeDice), lo, hi);
   const skills: Person['skills'] = {};
   for (const id of band.skills) {
-    const learn = content.abilities.find((a) => a.id === id)!.learnAttributes;
-    const aptitude = Math.round(learn.reduce((t, k) => t + attributes[k]!, 0) / learn.length);
-    const potential = clamp(
-      aptitude + band.potentialOffset + dice(rng, 2),
-      band.potential[0]!,
-      band.potential[1]!,
-    );
+    const potential = potentialOf(rng, content, attributes, id);
     const share = band.levelBase + Math.floor((band.levelAdult * adult) / 100);
     const jitter = rng.between(band.levelJitter[0]!, band.levelJitter[1]!);
     skills[id] = { level: Math.round((potential * share * jitter) / 10_000), potential };
@@ -115,17 +147,7 @@ function drawPerson(rng: RngStream, content: EngineContent, homes: readonly Home
   const floor = band.tradeBase + Math.floor((band.tradeAdult * adult) / 100);
   const s = skills[picked]!;
   s.level = Math.max(s.level, Math.round((s.potential * floor) / 100));
-  const traits: string[] = [];
-  for (let k = 0; k < band.traits; k += 1) {
-    const free = content.traits.filter(
-      (t) =>
-        !traits.includes(t.id) &&
-        !traits.some((o) => t.excludes.includes(o)) &&
-        !content.traits.find((o) => traits.includes(o.id) && o.excludes.includes(t.id)),
-    );
-    if (free.length === 0) break;
-    traits.push(rng.weighted(free.map((t) => [t.id, t.weight] as const)));
-  }
+  const traits = drawTraits(rng, content);
   const hair = rng.weighted(Object.entries(band.hairStyles));
   const hairColour = rng.pick(band.hair[race.id]!);
   const clothes = rng.pick(band.clothes[culture.id] ?? band.defaultClothes);

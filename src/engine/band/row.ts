@@ -35,6 +35,18 @@ export const NEWCOMER_FIELDS = {
   wants: 'event',
   /** Whom they are drawn to (family.json `orientations`), drawn by the family system; '' until. */
   orientation: 'text',
+  /** Born in the valley (P6.1): mother and father, the parent whose home they share until they
+   * come of age (0 once grown, and for everyone not born here), and the line they were born on. */
+  mother: 'entity',
+  father: 'entity',
+  household: 'entity',
+  bornLine: 'event',
+  /** The line an orphan was taken in on (P6.1), else 0. */
+  fostered: 'event',
+  /** A child a stranger left in the valley (P6.1): the line they were left on; and on a stranger,
+   * 1 once the family system has weighed whether they leave one. */
+  left: 'event',
+  weighed: 'int',
 } as const;
 
 /** Adds `p` standing at (x, y) with `status`, their skills (smithing drawn apart) and traits. */
@@ -89,7 +101,19 @@ export function addPerson(
       knownWhy: '',
       waits: 0,
     },
-    ...{ wantsFrom: 0, wants: 0, orientation: '', ...extra },
+    ...{
+      wantsFrom: 0,
+      wants: 0,
+      orientation: '',
+      mother: 0,
+      father: 0,
+      household: 0,
+      bornLine: 0,
+      fostered: 0,
+      left: 0,
+      weighed: 0,
+      ...extra,
+    },
   });
   for (const skill of content.band.skills)
     addEntity(world, 'skill', { person: id, skill, ...p.skills[skill]!, xp: 0 });

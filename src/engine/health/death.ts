@@ -56,6 +56,15 @@ export function whereWords(world: WorldState, content: EngineContent, p: EntityR
   return w?.['where'] ? `${w['place']} the ${w['where']}` : `where ${pronouns(p).they} lay`;
 }
 
+/** Kin (P6.1): a spouse, a parent and a child each carry their own grief as well; '' for others. */
+function kinGrief(content: SystemContext['content'], p: EntityRow, q: EntityRow): string {
+  const kin = content.family.memories;
+  if (q.id === p['partner']) return kin.spouse;
+  if (q.id === p['mother'] || q.id === p['father']) return kin.child;
+  if (q['mother'] === p.id || q['father'] === p.id) return kin.parent;
+  return '';
+}
+
 /** `p` dies of `cause` (a sentence), citing `causes`. */
 export function die(ctx: SystemContext, p: EntityRow, cause: string, causes: number[]): number {
   const { world, content } = ctx;
@@ -109,6 +118,8 @@ export function die(ctx: SystemContext, p: EntityRow, cause: string, causes: num
       (!!p['home'] && q['home'] === p['home']) ||
       (!!close && homeHouse(world, content, q) === close);
     addMemory(ctx, q.id, near ? m.close : m.band, line, p.id);
+    const grief = kinGrief(content, p, q);
+    if (grief) addMemory(ctx, q.id, grief, line, p.id);
   }
   return line;
 }

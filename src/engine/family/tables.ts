@@ -6,9 +6,16 @@ import { personOf } from '../entity/index.ts';
 
 export const FAMILY_TABLES: Schemas = {
   /** Two people, `a` the lower id: how close they are (family.json), their `state` ('' friends,
-   * `courting`, `wed`), the tick it began and the line that said so. */
-  bond: { a: 'entity', b: 'entity', close: 'int', state: 'text', since: 'int', line: 'event' },
+   * `courting`, `wed`), the tick it began and the line that said so; for the wed (P6.1 part 2)
+   * the tick a child is due (0 for none), the line she was with child on, and the last birth. */
+  bond: {
+    ...{ a: 'entity', b: 'entity', close: 'int', state: 'text', since: 'int', line: 'event' },
+    ...{ due: 'int', expect: 'event', last: 'int' },
+  },
 };
+
+/** A person's name. */
+export const nameOf = (p: EntityRow): string => p['name'] as string;
 
 export const bondsOf = (world: WorldState): EntityRow[] => world.entities['bond'] ?? [];
 

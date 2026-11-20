@@ -51,6 +51,15 @@ export interface PersonSources {
   sicken?(person: number, ill: string): void;
 }
 
+/** A family row (P6.1): "Wed: to Domnall, since Thawmonth, year 2" and a why? to its line. */
+function kinRow(k: NonNullable<WalkerView['kin']>[number]): HTMLElement {
+  const row = el('p', { 'data-testid': 'kin' });
+  row.append(el('b', {}, k.band), `: ${k.text} `);
+  if (k.why)
+    row.append(el('button', { type: 'button', class: 'why', 'data-why': String(k.why) }, 'why?'));
+  return row;
+}
+
 export class PersonSheet {
   private p: PersonView | undefined;
   private tab: PersonTab = 'needs';
@@ -119,7 +128,7 @@ export class PersonSheet {
   /** "Wearing" (a row per garment) and "Tools" (each with its hours left, a button to its page;
    * owned like a bed, so no lever); the text is the worker's, redrawn only when it changes. */
   private fillExtra(w: WalkerView): void {
-    const shown = JSON.stringify([w.wearing, w.tools, w.law, w.warmLine, w.home]);
+    const shown = JSON.stringify([w.wearing, w.tools, w.law, w.warmLine, w.home, w.kin]);
     if (this.extra.dataset['shown'] === shown) return;
     this.extra.dataset['shown'] = shown;
     const law = w.law
@@ -141,6 +150,7 @@ export class PersonSheet {
         );
     }
     this.extra.replaceChildren(
+      ...(w.kin ?? []).map((k) => kinRow(k)),
       ...(w.home ? [home] : []),
       el('h3', {}, 'The law'),
       law,
