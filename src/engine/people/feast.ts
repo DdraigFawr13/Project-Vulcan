@@ -3,7 +3,8 @@
 // When all who can come are there, or at the last call before bed, they eat the best
 // food in store together: the most filling cooked food first (stew, pottage, bread), else whatever
 // food gives most. One line names what was eaten and where; everyone there remembers the feast.
-// A wedding feast (P6.1, engine family) is the same supper round the fire on the green.
+// A wedding feast (P6.1, engine family) is the same supper round the fire on the green; a feast
+// day's (6B, engine faith) is held round the shrine, with its rites first, and may be kept lean.
 import { HEARTH, feastOf, furnitureOf, hallOf, roomsOf } from '../build/index.ts';
 import { clockAt, type EntityRow } from '../core/index.ts';
 import { hoursOf } from '../law/index.ts';
@@ -13,6 +14,7 @@ import { reachFrom } from '../paths/index.ts';
 import { addMemories } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { eat, people, spotOf, walkTo } from '../band/index.ts';
+import { holyPlace, keepHoly } from '../faith/index.ts';
 
 /** Minutes before bed when the supper is eaten by whoever has come, unless someone is still on
  * the way; then it waits for them until `HARD_STOP` minutes after bed, and eats with whoever is
@@ -25,8 +27,11 @@ export const HARD_STOP = 60;
 function placeOfFeast(
   ctx: SystemContext,
   wedding: boolean,
+  holy: boolean,
 ): { tiles: number[]; words: string } | undefined {
   const { world, content } = ctx;
+  const shrine = holy ? holyPlace(ctx) : undefined;
+  if (shrine) return shrine;
   const width = world.map.width;
   const hall = wedding ? undefined : hallOf(world);
   const room = hall && roomsOf(world, content).find((r) => r.h.id === hall.id)?.room;
@@ -65,7 +70,7 @@ function eatTogether(ctx: SystemContext, feast: EntityRow, words: string): void 
     .map((id) => people(world).find((q) => q.id === id))
     .filter((q): q is EntityRow => !!q && q['status'] === 'alive');
   const names: string[] = [];
-  for (const q of there) {
+  for (const q of feast['lean'] ? [] : there) {
     const item = bestFood(ctx);
     if (!item) break;
     const name = content.items.find((i) => i.id === item['kind'])?.name ?? (item['kind'] as string);
@@ -77,6 +82,10 @@ function eatTogether(ctx: SystemContext, feast: EntityRow, words: string): void 
       ? names[0]!
       : `${names.slice(0, -1).join(', ')} and ${names.at(-1)!}`
     : 'what little there was';
+  if (feast['holy']) {
+    Object.assign(feast, { state: 'eaten', eaten: keepHoly(ctx, feast, there, meal, words) });
+    return;
+  }
   const couple = (feast['couple'] as number[] | undefined) ?? [];
   const wed = couple.map((id) => people(world).find((q) => q.id === id)?.['name'] as string);
   const line = ctx.emit(couple.length ? 'family.feast' : 'hall.feast', {
@@ -106,7 +115,8 @@ export function feasting(ctx: SystemContext, p: EntityRow): boolean {
   const { world } = ctx;
   const feast = feastOf(world);
   if (!feast) return false;
-  const place = placeOfFeast(ctx, !!(feast['couple'] as number[] | undefined)?.length);
+  const wedding = !!(feast['couple'] as number[] | undefined)?.length;
+  const place = placeOfFeast(ctx, wedding, !!feast['holy']);
   if (!place) return false;
   const width = world.map.width;
   const here = spotOf(p);

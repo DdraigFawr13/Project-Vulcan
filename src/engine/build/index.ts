@@ -19,7 +19,7 @@ export {
 } from './houses.ts';
 export { bedSpot, builtHome, homeFor, householdOf, othersHome, sleepsIn } from './beds.ts';
 export { hallOf, mournInHall, whoseOf } from './homes.ts';
-export { callWedding, feastOf } from './feast.ts';
+export { callHoly, callWedding, feastOf } from './feast.ts';
 export { roomAt, type Room } from './rooms.ts';
 export { atMidden, middensOf } from './midden.ts';
 export { courseNow, meanSoil, yieldAt } from './fieldsoil.ts';
@@ -63,7 +63,7 @@ export {
   type RoomRow,
   type Want,
 } from './wants.ts';
-export { HEARTH } from './hearths.ts';
+export { HEARTH, openGround } from './hearths.ts';
 export { buildWell, noteDrink, planWell, WELL, WELL_TABLES, wellsOf, waterSpots } from './well.ts';
 export { millOf, millRefusal, noteGrind, quernToday, turning } from './mill.ts';
 export {

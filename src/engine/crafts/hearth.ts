@@ -12,6 +12,7 @@ import {
   WELL,
 } from '../build/index.ts';
 import { firesOf, pieceOfFire, placeOf, reachOf } from '../fire/index.ts';
+import { isShrine } from '../faith/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from './build.ts';
 import { furnishing } from './carpentry.ts';
@@ -45,6 +46,25 @@ function choose(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   });
 }
 
+/** What a builder takes up and why, in words: a smithy's forge, anvil block or tub is made for the
+ * smithy, a well (and a shrine, 6B) on the green, a hearth in its room, else a campfire. */
+function takeUpWords(
+  ctx: SystemContext,
+  piece: EntityRow,
+): { kind: string; room: string; why: string } {
+  const { world, content } = ctx;
+  const kind = furnitureKind(content, piece);
+  const here = placeOf(world, content, piece);
+  const smithy = content.buildings.smithy.name.toLowerCase();
+  if (content.buildings.smithy.pieces.includes(kind.id))
+    return { kind: kind.name, room: smithy, why: `the ${smithy} has none` };
+  if (kind.id === WELL) return { kind: kind.name, room: 'green', why: 'the water is far' };
+  if (isShrine(content, kind.id))
+    return { kind: kind.name, room: 'green', why: 'the faithful want it' };
+  if (here.indoors) return { kind: kind.name, room: here.room, why: 'it has no hearth' };
+  return { kind: 'campfire', room: here.room, why: 'the band has no fire' };
+}
+
 /** Takes up making a hearth if one is planned and nobody free who puts Building higher could. */
 export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
@@ -74,29 +94,12 @@ export function takeUpHearth(ctx: SystemContext, p: EntityRow): boolean {
       });
     return false;
   }
-  const kind = furnitureKind(content, piece);
-  const here = placeOf(world, content, piece);
-  // A smithy's forge, anvil block or tub is made the same way, for the smithy.
-  const station = content.buildings.smithy.pieces.includes(kind.id);
-  const smithy = content.buildings.smithy.name.toLowerCase();
-  const well = kind.id === WELL;
   p['took'] = ctx.emit('work.tookUpHearth', {
     causes: [piece['line'] as number, priorityLine(world, p.id, job)].filter(
       (l): l is number => !!l,
     ),
     actors: [p.id],
-    data: {
-      name: p['name'] as string,
-      kind: station || here.indoors || well ? kind.name : 'campfire',
-      room: station ? smithy : well ? 'green' : here.room,
-      why: station
-        ? `the ${smithy} has none`
-        : well
-          ? 'the water is far'
-          : here.indoors
-            ? 'it has no hearth'
-            : 'the band has no fire',
-    },
+    data: { name: p['name'] as string, ...takeUpWords(ctx, piece) },
   });
   p['job'] = 'hearth';
   p['plan'] = piece.id;

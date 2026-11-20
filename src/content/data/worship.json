@@ -1,0 +1,14 @@
+{
+"devotion":{"spread":2,"trait":"devout","devout":3,"words":[{"from":7,"word":"devout"},{"from":3,"word":"faithful"},{"from":0,"word":"lukewarm"}]},
+"shrine":{"kind":"shrine","faiths":{"wells":{"kind":"shrine-stone","water":true}},"near":6,"least":2},
+"pray":{"minutes":30,"memory":"worshipped","every":[{"from":7,"days":2},{"from":3,"days":7}]},
+"lean":12,
+"grieved":50,
+"feast":{"noon":12,"leanDays":7,"lean":"lean-feast"},
+"why":{"death":"to mourn {about}","wedding":"for the wedding of {about} and {other}","harvest":"after the harvest home","shared":"so {names} have somewhere to pray"},
+"days":[
+{"kind":"arrival","name":"Cart Day","what":"the day the cart stopped","why":"The day the cart stopped in the valley.","feast":"feasted-cart","rite":"rite-cart"},
+{"kind":"death","name":"{about}'s Day","what":"the day {about} died","why":"The colony grieved for {about}.","feast":"feasted-day","rite":"rite-day","remember":"remembered-dead"},
+{"kind":"wedding","name":"{about}'s Wedding Day","what":"the day {about} and {other} were wed","why":"The first wedding in the valley.","feast":"feasted-wedding-day","rite":"rite-wedding-day"}
+]
+}

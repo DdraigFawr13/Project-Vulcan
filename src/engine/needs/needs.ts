@@ -166,8 +166,10 @@ function hourOf(
     const low = life.needs.find((n) => n.id === 'warmth')?.low ?? 0;
     return life.warmth.rise + Math.round(Math.max(0, low - value) * life.warmth.catchUp);
   }
-  // A drink gone for from their leisure (people drink.ts `stroll`) is a stroll, part of it (P5.2).
-  if (id === 'recreation' && (p['doing'] === 'relax' || (p['doing'] === 'drink' && p['stroll'])))
+  // A drink gone for from their leisure (people drink.ts `stroll`) is a stroll, part of it (P5.2);
+  // prayer at the shrine (6B, engine faith) is leisure too.
+  const leisure = p['doing'] === 'relax' || p['doing'] === 'pray';
+  if (id === 'recreation' && (leisure || (p['doing'] === 'drink' && p['stroll'])))
     return life.relax.gain + (company(world, content, p) ? life.relax.company : 0);
   // Thirst falls slowly through the night (`asleepFall`, P5.2).
   const slow = life.needs.find((n) => n.id === id)?.asleepFall;

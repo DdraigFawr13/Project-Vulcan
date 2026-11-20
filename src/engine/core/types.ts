@@ -1,7 +1,7 @@
 // World state and event shapes. The whole world is plain data (numbers, strings, arrays and typed
 // arrays), so the worker can post it, P0.5 can save it and tests can compare it.
 import type { PeopleDefs } from './people.ts';
-import type { AuraDials, AuraSpot, SeasonsDef, WeatherDef } from './climate.ts';
+import type { AuraDials, AuraSpot, BiomesDef, SeasonsDef, WeatherDef } from './climate.ts';
 import type { FeatureDef, UndergroundDials, WalkingDef, WearDef } from './ground.ts';
 import type { BuildingsDef, ItemDef, JobDef, LifeDef, MemoryDef, WorkDef } from './life.ts';
 import type { RngState } from './rng.ts';
@@ -15,10 +15,9 @@ import type { TalesDefs } from './tales.ts';
 import type { SelfDefs } from './self.ts';
 import type { ColonyDefs } from './colony.ts';
 import type { FamilyDefs } from './family.ts';
+import type { WorshipDefs } from './worship.ts';
 import type { DefyDefs } from './defy.ts';
-import type { BiomesDef } from './climate.ts';
 import type { CalendarDef } from './clock.ts';
-
 export type { CalendarDef } from './clock.ts';
 
 /** The named RNG streams (docs/ARCHITECTURE.md "RNG"). A system draws only from its own. */
@@ -46,6 +45,7 @@ export const STREAMS = [
   'blight',
   'bees',
   'kin',
+  'faith',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 
@@ -371,6 +371,7 @@ export interface EngineContent
     SelfDefs,
     ColonyDefs,
     FamilyDefs,
+    WorshipDefs,
     DefyDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts). */

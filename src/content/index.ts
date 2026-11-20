@@ -47,6 +47,7 @@ import traits from './data/traits.json';
 import weather from './data/weather.json';
 import wild from './data/wild.json';
 import work from './data/work.json';
+import worship from './data/worship.json';
 import type { Infer } from './schema';
 import { SCHEMAS, type ContentFile } from './schemas';
 import { contentHash as hashOf } from './hash';
@@ -105,6 +106,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   weather,
   wild,
   work,
+  worship,
 };
 
 const errors = validateContent(rawContent);
