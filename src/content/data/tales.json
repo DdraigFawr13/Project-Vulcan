@@ -5,6 +5,7 @@
   "beliefFadeDays": 56,
   "forgetDays": 112,
   "strength": ["Doubts that", "Thinks", "Is sure", "Is certain"],
+  "ordinals": ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth", "Eleventh", "Twelfth"],
   "evening": { "mend": 6 },
   "byname": { "share": 50, "told": 8, "proud": ["Lucky"] },
   "beliefs": [
@@ -24,7 +25,7 @@
     { "id": "valley-leaving", "about": "colony", "text": "folk are giving up on this valley" }
   ],
   "tales": [
-    { "id": "beast", "event": "wild.attacked", "truth": 1, "belief": "woods-dangerous", "from": 1, "song": "The Lay of {name} and the {species}", "bynames": ["", "", "Lucky", "Wolfbait"], "levels": [
+    { "id": "beast", "event": "wild.attacked", "truth": 1, "belief": "woods-dangerous", "from": 1, "song": ["The Lay of {name} and the {species}", "When the {Species} Came for {name}", "{name} and the {Species} of {Month}"], "bynames": ["", "", "Lucky", "Wolfbait"], "levels": [
       "A {species} snapped at {name} and ran off.",
       "A {species} went for {name}.",
       "A {species} went for {name}, who only just got away.",
@@ -50,7 +51,7 @@
       "{name} {did}.",
       "{name} {did}, and laughs at the law."
     ] },
-    { "id": "death", "event": "health.died", "truth": 1, "belief": "valley-deadly", "from": 2, "song": "The Lament for {name}", "levels": [
+    { "id": "death", "event": "health.died", "truth": 1, "belief": "valley-deadly", "from": 2, "song": ["The Lament for {name}", "{name}'s Lament", "A Candle for {name}", "The {Month} We Lost {name}"], "levels": [
       "{name} died. It comes to us all.",
       "{name} died {where}.",
       "{name} died {where}, and it need not have happened.",
@@ -66,7 +67,7 @@
       "{names} were turned away at the green.",
       "{names} were driven off with nothing, into the cold."
     ] },
-    { "id": "feast", "event": "hall.feast", "truth": 1, "belief": "valley-feeds", "from": 1, "song": "The Song of the Long Table", "levels": [
+    { "id": "feast", "event": "hall.feast", "truth": 1, "belief": "valley-feeds", "from": 1, "song": ["The Song of the Long Table", "{Dish} for All", "The {Month} Supper", "The Harvest Home of the {Year} Year", "{one} at the Long Table", "The Sheaves Are In", "The Supper {Where}", "The Long Night at the Board"], "levels": [
       "There was a meal in the hall.",
       "{count} ate {meal} together {where}.",
       "The feast went on all night, and nobody went home hungry."
@@ -76,7 +77,7 @@
       "The store ran out, and folk went to bed hungry.",
       "The store is bare and we will all starve."
     ] },
-    { "id": "hungry-winter", "event": "field.hungryWinter", "truth": 1, "belief": "valley-hungry", "from": 2, "word": true, "song": "The Hungry Winter", "levels": [
+    { "id": "hungry-winter", "event": "field.hungryWinter", "truth": 1, "belief": "valley-hungry", "from": 2, "word": true, "song": ["The Hungry Winter", "The Lean Winter of the {Year} Year", "The Winter We Went {days} Days Short"], "levels": [
       "Food ran a little short last winter.",
       "Last winter was a hungry one: {days} days short.",
       "Last winter nearly starved us all."
@@ -96,12 +97,12 @@
       "{name} was caught taking from the store.",
       "{name} has been robbing the store all winter."
     ] },
-    { "id": "brawl", "event": "defy.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": "The Ballad of {name} and {other}", "bynames": ["", "", "Brawler"], "levels": [
+    { "id": "brawl", "event": "defy.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": ["The Ballad of {name} and {other}", "Hard Words Between {name} and {other}", "{name}, {other} and the {Month} Quarrel"], "bynames": ["", "", "Brawler"], "levels": [
       "{name} and {other} had words.",
       "{name} came to blows with {other}.",
       "{name} near killed {other} in a brawl."
     ] },
-    { "id": "left", "event": "defy.left", "truth": 1, "belief": "valley-leaving", "from": 1, "word": true, "song": "{name}'s Leaving", "levels": [
+    { "id": "left", "event": "defy.left", "truth": 1, "belief": "valley-leaving", "from": 1, "word": true, "song": ["{name}'s Leaving", "Farewell, {name}", "The Road Out of the Valley"], "levels": [
       "{name} has gone off down the road.",
       "{name} left the valley{with}.",
       "{name} fled the valley{with}, and more will follow."
@@ -111,7 +112,7 @@
       "{name} took the best {skill} with them, and nobody learned it.",
       "{name} took their {skill} to the grave on purpose, and now it's gone for good."
     ] },
-    { "id": "tavern-brawl", "event": "tavern.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": "The Night at {tavern}", "bynames": ["", "", "Brawler"], "levels": [
+    { "id": "tavern-brawl", "event": "tavern.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": ["The Night at {tavern}", "Fists at {tavern}", "The {Month} Night at {tavern}"], "bynames": ["", "", "Brawler"], "levels": [
       "{name} and {other} had words over their ale.",
       "{name} came to blows with {other} at {tavern}.",
       "{name} smashed a stool over {other}'s head at {tavern}."

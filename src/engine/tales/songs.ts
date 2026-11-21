@@ -1,8 +1,9 @@
 // Songs (6B Bundle 5, P6.12, V-188). The bard is whoever puts Bard highest on the Work sheet
 // (ties to the sociable, then the lowest id). One free evening each (relaxing after work), the
-// bard either works on a song or sings one. A song is made of a big event (a tale with a `song`
-// title) the bard holds and nobody has sung of yet, over `bard.evenings` evenings, at most one new
-// song a season, one level bigger than the bard's version (`song.made`). It is sung at the tavern,
+// bard either works on a song or sings one. A song is made of a big event (a tale with `song`
+// titles, one chosen in titles.ts) the bard holds and nobody has sung of yet, over
+// `bard.evenings` evenings, at most one new song a season, one level bigger than the bard's
+// version (`song.made`). It is sung at the tavern,
 // or by a lit fire before there is one: everyone relaxing in earshot holds the song's version,
 // feels `bard.heard` by the bard's singing (`song.sung`), and the bard practises `bard.skill` (a
 // skill row added the first time they sing). A tale in a song still sung is never forgotten.
@@ -23,7 +24,8 @@ import { byAFire } from '../people/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { feedBelief } from './belief.ts';
 import { bynameFor, feltAgain, giveByname } from './bynames.ts';
-import { apart, fillWords, storiesOf, taleDef, taleText } from './tables.ts';
+import { apart, storiesOf, taleDef, taleText } from './tables.ts';
+import { songTitle } from './titles.ts';
 
 export const songsOf = (world: WorldState): EntityRow[] => world.entities['song'] ?? [];
 
@@ -84,8 +86,10 @@ function makeSong(ctx: SystemContext, bard: EntityRow, day: number): boolean {
   if (!pick) return false;
   const def = taleDef(content, pick.story!['tale'] as string)!;
   const level = Math.min(def.levels.length - 1, (pick.t['level'] as number) + 1);
+  const taken = new Set(songsOf(world).map((s) => s['name'] as string));
+  const name = songTitle(ctx, pick.story!, def.song!, taken);
   addEntity(world, 'song', {
-    ...{ story: pick.story!.id, name: fillWords(pick.story!, def.song!), bard: bard.id },
+    ...{ story: pick.story!.id, name, bard: bard.id },
     ...{ level, evenings: 1, day, made: 0, sung: 0 },
   });
   return true;

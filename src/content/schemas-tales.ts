@@ -29,6 +29,8 @@ export const TALES_SCHEMAS = {
     forgetDays: num({ min: 1 }),
     // The words for strength 1 to 4: doubting to certain.
     strength: list(str(), 4),
+    // Ordinal words for the colony's years in song titles.
+    ordinals: list(str()),
     // By the hearth on a winter evening, each worn garment is mended this much an hour.
     evening: obj({ mend: count }),
     // A byname comes once a tale about someone is held by over `share` per cent of the grown-ups
@@ -48,8 +50,8 @@ export const TALES_SCHEMAS = {
         belief: str(),
         from: count,
         word: opt(bool()),
-        // The title of a song made of it (a big event), filled from the event's data.
-        song: opt(str()),
+        // Title templates for a song made of it (a big event); one is chosen by the seed.
+        song: opt(list(str())),
         // The byname each level gives the one it is about ("" for none).
         bynames: opt(list(str())),
         levels: list(text),
