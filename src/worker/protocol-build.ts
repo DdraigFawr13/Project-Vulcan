@@ -42,7 +42,7 @@ export interface RoomView {
 /** A house or a room added to one, for the Build sheet and the map (P3.7, P3.8). */
 export interface BuildRow {
   id: number;
-  /** The tavern (6B): shown in its own row, not among the homes. */
+  /** The tavern or the schoolroom (6B): shown in its own row, not among the homes. */
   inn?: true;
   /** "cottage", or "cottage's second room". */
   name: string;
@@ -199,6 +199,8 @@ export interface BuildView {
   roads: RoadsRow;
   /** The Tavern row (6B Bundle 5): its level, why it waits, its plan once sited. */
   tavern: PastureRow;
+  /** The Schoolroom row (6B Bundle 6): the same shape. */
+  school: PastureRow;
   green: { x: number; y: number };
   want: { level: number; word: string };
   /** "5 people sleep under the open sky", or "none now". */

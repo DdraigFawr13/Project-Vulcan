@@ -21,7 +21,7 @@ import { takeUpChange, hearthFirst } from '../crafts/index.ts';
 import { draughtFirst, nursing } from '../care/index.ts';
 import { endHunt, herding } from '../herding/index.ts';
 import { takeUpMarked } from '../land/index.ts';
-import { takeUpHelping } from '../teach/index.ts';
+import { takeUpHelping, takeUpLessons } from '../teach/index.ts';
 import { JOBS } from './jobtable.ts';
 
 const rowOf = (p: EntityRow) => JOBS[p['job'] as string];
@@ -85,6 +85,8 @@ function takeUp(ctx: SystemContext, p: EntityRow, dark = false): boolean {
   const { world, content } = ctx;
   // A child (P6.1) helps only at the kinds family.json allows, and the youngest not at all.
   const small = childJobs(world, content, p);
+  // Lessons at the schoolroom (V-189 q7): the teacher and children of school age, by daylight.
+  if (!dark && takeUpLessons(ctx, p)) return true;
   if (small && !small.length) return idle(world, p);
   if (!dark && firsts(ctx, p, small)) return true;
   for (const job of kindsFor(ctx, p, small)) {

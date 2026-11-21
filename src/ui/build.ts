@@ -8,7 +8,7 @@ import type { BuildRow, BuildView } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { stepper, WORDS } from './stepper.ts';
 
-type BuildKind = 'house' | 'field' | 'smithy' | 'pasture' | 'road' | 'tavern';
+type BuildKind = 'house' | 'field' | 'smithy' | 'pasture' | 'road' | 'tavern' | 'school';
 
 export interface BuildActions {
   setBuild(kind: BuildKind, level: number): void;
@@ -44,6 +44,7 @@ export class BuildSheet {
   private pastureLevel: number | undefined;
   private roadLevel: number | undefined;
   private tavernLevel: number | undefined;
+  private schoolLevel: number | undefined;
   /** The site rows (pasture, tavern) whose plan is being sent back. */
   private readonly backSites = new Set<BuildKind>();
   private backSmithy = false;
@@ -66,6 +67,7 @@ export class BuildSheet {
       this.pastureLevel,
       this.roadLevel,
       this.tavernLevel,
+      this.schoolLevel,
       this.backSmithy,
       this.backBurial,
       [...this.backSites],
@@ -85,6 +87,7 @@ export class BuildSheet {
         else if (kind === 'pasture') this.pastureLevel = next;
         else if (kind === 'road') this.roadLevel = next;
         else if (kind === 'tavern') this.tavernLevel = next;
+        else if (kind === 'school') this.schoolLevel = next;
         else this.fieldLevel = next;
         this.actions.setBuild(kind, next);
         this.actions.refresh();
@@ -174,11 +177,7 @@ export class BuildSheet {
     if (view.homes) rows.push(el('p', { class: 'aside' }, view.homes.note));
     if (view.smithy) rows.push(...this.smithyRows(view.smithy));
     if (view.burial) rows.push(...this.burialRows(view.burial));
-    const tavern = content.tavern.build.name;
-    rows.push(
-      ...this.siteRows('tavern', tavern, this.tavernLevel ?? view.tavern.want.level, view.tavern),
-    );
-    rows.push(...this.roadRows(view.roads));
+    rows.push(...this.hallRows(view), ...this.roadRows(view.roads));
     rows.push(
       el(
         'p',
@@ -222,7 +221,7 @@ export class BuildSheet {
    * pasture is planned; the Tavern row, 6B): its level, the need, and the plan with why the
    * colony sited it there and Send back while nothing is built. No tile, no person (V-041). */
   private siteRows(
-    kind: 'pasture' | 'tavern',
+    kind: 'pasture' | 'tavern' | 'school',
     name: string,
     shown: number,
     view: NonNullable<BuildView['pasture']>,
@@ -246,8 +245,8 @@ export class BuildSheet {
       button.disabled = sending;
       button.addEventListener('click', () => {
         this.backSites.add(kind);
-        // The tavern is a house plan: it goes back as one.
-        this.actions.sendBack(kind === 'tavern' ? 'house' : kind, plan.id);
+        // The tavern and the schoolroom are house plans: they go back as one.
+        this.actions.sendBack(kind === 'pasture' ? kind : 'house', plan.id);
         this.actions.refresh();
       });
       rows.push(el('div', { class: 'row' }, button));
@@ -341,6 +340,24 @@ export class BuildSheet {
     return out;
   }
 
+  /** The Tavern row (6B Bundle 5) and the Schoolroom row (Bundle 6, V-189), the same shape. */
+  private hallRows(view: BuildView): HTMLElement[] {
+    const tavern = content.tavern.build.name;
+    const school = content.teach.school.build.name;
+    return [
+      ...this.siteRows('tavern', tavern, this.tavernLevel ?? view.tavern.want.level, view.tavern),
+      ...this.siteRows('school', school, this.schoolLevel ?? view.school.want.level, view.school),
+    ];
+  }
+
+  /** Drops the hall rows' levers the snapshot now shows. */
+  private settleHalls(view: BuildView): void {
+    if (this.tavernLevel === view.tavern.want.level) this.tavernLevel = undefined;
+    if (!view.tavern.plan?.back) this.backSites.delete('tavern');
+    if (this.schoolLevel === view.school.want.level) this.schoolLevel = undefined;
+    if (!view.school.plan?.back) this.backSites.delete('school');
+  }
+
   /** Drops levers the snapshot now shows. */
   settle(view: BuildView): void {
     if (this.level === view.want.level) this.level = undefined;
@@ -350,9 +367,8 @@ export class BuildSheet {
     if (!view.burial?.back) this.backBurial = false;
     if (this.pastureLevel === view.pasture?.want.level) this.pastureLevel = undefined;
     if (this.roadLevel === view.roads.want.level) this.roadLevel = undefined;
-    if (this.tavernLevel === view.tavern.want.level) this.tavernLevel = undefined;
     if (!view.pasture?.plan?.back) this.backSites.delete('pasture');
-    if (!view.tavern.plan?.back) this.backSites.delete('tavern');
+    this.settleHalls(view);
     for (const id of this.backFields)
       if (!view.fields.some((f) => f.id === id && f.back)) this.backFields.delete(id);
     for (const id of this.back)

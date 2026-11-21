@@ -29,6 +29,30 @@ export interface TeachDef {
   memories: { master: string; learner: string };
   /** Words for the lines: why a master took a learner; how a master went. */
   words: { law: string; child: string; friend: string; trait: string; died: string; left: string };
+  school: SchoolDef;
+}
+
+/** The schoolroom, its teacher, lessons and books (V-189 q7). */
+export interface SchoolDef {
+  /** The Build sheet's Schoolroom row: its name, start level, house size and wants inside. */
+  build: {
+    name: string;
+    start: number;
+    size: string;
+    wants: readonly { kind: string; count: number }[];
+  };
+  /** The Teaching row's job, and the trait ties go to. */
+  teacher: { job: string; trait: string };
+  /** Children go to lessons from this per cent of their coming of age. */
+  from: number;
+  /** Lessons fill the first `hours` of the working day and raise a gift up to `upTo`. */
+  lesson: { hours: number; upTo: number };
+  /** Minutes of sittings a book takes, the master's `doing` that is free time, the shelf kind,
+   * tiles from the master a sitting is, minutes between looks for them while walking. */
+  book: { minutes: number; free: readonly string[]; shelf: string; near: number; look: number };
+  /** Reading: minutes an evening, per cent pace, and levels under the book's it stops at. */
+  read: { minutes: number; pace: number; less: number };
+  words: { children: string; masters: string; teacher: string };
 }
 
 export interface TeachDefs {

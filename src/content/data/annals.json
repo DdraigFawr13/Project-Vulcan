@@ -22,6 +22,7 @@
       { "event": "defy.left", "weight": 9, "title": "{name} left the valley" },
       { "event": "people.sentAway", "weight": 6, "title": "{name} was sent away sick" },
       { "event": "teach.lost", "weight": 6, "title": "the best {skill} went with {name}" },
+      { "event": "school.bookLost", "weight": 5, "title": "{book} was lost" },
       { "event": "people.strangerTurnedAway", "weight": 4, "many": "{Times} strangers were turned away: {list}.", "item": "{names}" }
     ] },
     { "id": "family", "max": 3, "lines": [
@@ -37,6 +38,7 @@
       { "event": "build.millBuilt", "weight": 6, "title": "the mill was built" },
       { "event": "smithy.built", "weight": 6, "title": "the smithy was built" },
       { "event": "tavern.named", "weight": 6, "title": "{name} opened its doors" },
+      { "event": "school.book", "weight": 5, "title": "{teacher} wrote {book}" },
       { "event": "pasture.built", "weight": 5, "title": "the pasture was fenced" },
       { "event": "faith.shrine", "weight": 6, "title": "a shrine was raised" },
       { "event": "furniture.benchPlaced", "weight": 2 },

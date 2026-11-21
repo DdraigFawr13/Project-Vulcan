@@ -25,6 +25,7 @@ import { gathering, mendByAFire, practising } from './evening.ts';
 import { feasting, HARD_STOP } from './feast.ts';
 import { holyHours, praying } from '../faith/index.ts';
 import { atTheInn, hungOver } from '../inn/index.ts';
+import { reading, scribing } from '../teach/index.ts';
 import { lateUntil, watching } from '../herding/index.ts';
 import { pilfer } from '../defy/index.ts';
 import { departing, eatStash, extraWork, inStocks, slacking } from './defy.ts';
@@ -223,6 +224,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     valueOf(ctx, p, 'recreation') < lineOf(ctx, p, 'recreation');
   // Prayer at their faith's shrine (6B), now and then, before other leisure.
   if (leisure && praying(ctx, p)) return;
+  // The schoolroom (6B Bundle 6): the teacher writing down a master's ways, then reading a book.
+  if (leisure && (scribing(ctx, p) || reading(ctx, p))) return;
   // The tavern of an evening (6B Bundle 5), once it stands.
   if (leisure && atTheInn(ctx, p, hour >= day.workTo)) {
     mendByAFire(ctx, p);

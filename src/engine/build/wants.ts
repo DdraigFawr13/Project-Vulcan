@@ -9,7 +9,7 @@ import { itemsOf, raiseStock } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { anyBench, bedOwnedBy, furnitureOf } from './furniture.ts';
 import { HEARTH } from './hearths.ts';
-import { crowdedIn, mainOf, nthOf, rowsOf, sizeOf } from './houses.ts';
+import { crowdedIn, hallName, INN_SCHOOL, mainOf, nthOf, rowsOf, sizeOf } from './houses.ts';
 import { roomAt, type Room } from './rooms.ts';
 import { loomWant } from './loom.ts';
 import { householdOf } from './beds.ts';
@@ -47,7 +47,7 @@ export function roomsOf(world: WorldState, content: EngineContent): RoomRow[] {
 /** "cottage", or "cottage's second room" for a room added to it. */
 export function roomName(world: WorldState, content: EngineContent, h: EntityRow): string {
   if (h['sick']) return h['sick'] === 2 ? 'sick-house' : 'sickroom';
-  if (h['inn']) return 'tavern';
+  if (h['inn']) return hallName(h['inn']);
   const main = mainOf(world, h);
   // The hall, and a home of one's own (P5.14).
   const name = main['hall']
@@ -228,7 +228,7 @@ export function lacks(world: WorldState, content: EngineContent, rr: RoomRow) {
   if (rr.h['sick']) return [];
   // The tavern's (6B) are its own list: a counter, casks, the brewing tub, tables and chairs.
   const kinds = rr.h['inn']
-    ? content.tavern.build.wants
+    ? (rr.h['inn'] === INN_SCHOOL ? content.teach.school.build : content.tavern.build).wants
     : (content.buildings.rooms.wants.find((w) => w.role === rr.room.role?.id)?.kinds ?? []);
   const inside = new Set(rr.room.tiles);
   const width = world.map.width;

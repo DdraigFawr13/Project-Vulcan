@@ -40,6 +40,7 @@ import { roomWarmth } from './fires.ts';
 import { roomLight } from './lampview.ts';
 import { pastureRow } from './flock.ts';
 import { tavernRow } from './tavern.ts';
+import { schoolRow } from './school.ts';
 import { homeRows, homesRow } from './strangers.ts';
 import type { LedgerLine, TileView } from './protocol.ts';
 import type { BuildRow, BuildView, SmithyRow } from './protocol-build.ts';
@@ -130,6 +131,7 @@ export function buildView(world: WorldState): BuildView {
     ...(homes && { homes }),
     roads: roadsRow(world),
     tavern: tavernRow(world),
+    school: schoolRow(world),
     need: needOf(world),
     noGround: !!state['noGround'] && homeless(world, content).length > 0,
     houses: housesOf(world)

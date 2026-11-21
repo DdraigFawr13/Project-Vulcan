@@ -15,7 +15,7 @@ import { burying, takeUpBurial, takeUpNursing } from '../care/index.ts';
 import { farming, foraging, gatherMinute, mining, takeUpFarming } from '../land/index.ts';
 import { takeUpForaging, takeUpGathering, takeUpMarked, takeUpMining } from '../land/index.ts';
 import { haulMinute, knapping, takeUpHauling, takeUpKnapping } from '../band/index.ts';
-import { helping } from '../teach/index.ts';
+import { atLessons, helping, teaching } from '../teach/index.ts';
 import { fishing, takeUpFishing, hunting, takeUpHunting, takeUpHerding } from '../herding/index.ts';
 
 type Step = (ctx: SystemContext, p: EntityRow) => boolean;
@@ -73,6 +73,9 @@ export const JOBS: Readonly<Record<string, JobRow>> = {
   brew: { takeUp: takeUpBrewing, work: brewing, holds: true },
   // 6B Bundle 6 (V-189): an apprentice working beside their master (teach `help.ts`).
   help: { work: helping },
+  // The schoolroom (V-189 q7): the teacher at lessons, and a child at them (teach `school.ts`).
+  teach: { work: teaching },
+  lesson: { work: atLessons },
   ...LARDER_JOBS,
   ...MILL_JOBS,
   ...TRADE_JOBS,
