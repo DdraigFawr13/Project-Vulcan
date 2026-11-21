@@ -60,12 +60,13 @@ export function couldHave(ctx: SystemContext, p: EntityRow, use: string): boolea
   );
 }
 
-/** `p` would take up `use` but cannot have a tool for it now: their want is noted (and the line if
- * none is left in the valley) so the Toolmaking row knaps them one, without their knapping it
- * themself (for work taken up out of hours, such as splitting firewood). */
+/** `p` would take up `use` and no tool of its kind is left in the valley: their want is noted, with
+ * the line, so the Toolmaking row knaps one, without their knapping it themself (for work taken
+ * up out of hours, such as splitting firewood). While others hold one they wait for it instead,
+ * so splitting does not knap an axe for everyone. */
 export function wantTool(ctx: SystemContext, p: EntityRow, use: string): void {
   const kind = neededKind(ctx.content, use);
-  if (!kind || couldHave(ctx, p, use)) return;
+  if (!kind || toolsOfKind(ctx.world, ctx.content, kind.id).length) return;
   noteWant(ctx, p, kind.id);
   sayNone(ctx, p, kind, use);
 }

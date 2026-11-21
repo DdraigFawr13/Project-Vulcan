@@ -35,9 +35,10 @@ import {
   ticksDue,
 } from './pace.ts';
 import { actOf, landing, landingsOf, stopSettings } from './stops.ts';
+import { recapCount, recapFeed, recapPauses } from './recaps.ts';
 import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type { ChunkView, FromWorker, LedgerLine, ToWorker } from './protocol.ts';
-import type { JumpView, StopAct } from './protocol-time.ts';
+import type { JumpView, RecapSettings, StopAct } from './protocol-time.ts';
 import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave } from './save.ts';
 import { ANSWERS, isRead } from './answers.ts';
@@ -70,6 +71,10 @@ let testMode = false;
 let pace = createPace(performance.now());
 /** What each stop kind does (V-191), the content defaults until the page sends its own. */
 let stops = stopSettings();
+/** Which recaps pause play at a running speed (V-191); both until the page says otherwise. */
+let recaps: RecapSettings = { season: true, year: true };
+/** Each recap goes to the page once. */
+const recapsSent = recapFeed();
 /** Chunk versions the page has already been sent, per level; empty until the first snapshot. */
 let sent: number[][] = [];
 /** The Build view last sent, as JSON; empty until the first snapshot. */
@@ -91,13 +96,16 @@ const post = (message: FromWorker, transfer: Transferable[] = []): void =>
   postMessage(message, { transfer });
 
 /** Runs one tick, timed, and collects its lines (sealing trims the log's front at midnight);
- * returns what the strongest of its notable lines asks of the clock (V-191). */
+ * returns what the strongest of its notable lines asks of the clock (V-191). At a running speed a
+ * recap switched on pauses play, so the page can open it; a jump runs on and shows it on landing. */
 function tickOnce(w: WorldState): StopAct | undefined {
   const start = performance.now();
+  const before = recapCount(w);
   const lines = step(w, sim, 1);
   unposted.push(...lines);
   recordTick(timing, performance.now() - start, systemNames);
-  return actOf(lines, sim.notable, stops);
+  const act = actOf(lines, sim.notable, stops);
+  return !pace.skip && recapPauses(w, before, recaps) ? 'pause' : act;
 }
 
 /** Runs `ticks` ticks (for at most `RUN_MS`), or, jumping ahead, as many as fit in `SKIP_MS`; then
@@ -143,6 +151,7 @@ function snapshot(w: WorldState): void {
   sentBuild = key;
   const people = peopleSent.next(w);
   const moved = animals.next(w);
+  const annals = recapsSent.next(w, line);
   if (unposted.length) {
     post({ type: 'events', batch: unposted.map(line) });
     unposted = [];
@@ -187,6 +196,7 @@ function snapshot(w: WorldState): void {
       ...(build && { build }),
       ...(people && { people }),
       ...(yesterday && { yesterday }),
+      ...(annals && { annals }),
     },
     chunks.flatMap((c) => [
       ...[c.tiles.buffer, c.features.buffer, c.snow.buffer, c.ice.buffer],
@@ -204,6 +214,7 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
   sentBuild = '';
   peopleSent.next(w);
   animals.reset();
+  recapsSent.reset();
   unposted = [...w.log];
   pace = createPace(performance.now());
   run(0); // hands over any sealed days the world arrived with (never ticks: the pace is fresh)
@@ -273,6 +284,9 @@ const CONTROLS: { [K in Control['type']]: (m: Extract<Control, { type: K }>) => 
   setSpeed: (m) => run(setSpeed(pace, m.speed, performance.now())),
   setStops(m) {
     stops = stopSettings(m.stops);
+  },
+  setRecaps(m) {
+    recaps = { season: m.recaps.season === true, year: m.recaps.year === true };
   },
   lookAgain() {
     // Only on arrival and only once: the same seed made again with the band's second choice.

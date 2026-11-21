@@ -52,6 +52,9 @@ export const ANNALS_SCHEMAS = {
     numbers: obj({ text, levels: text, nouns }),
     // What people say: up to `max` tales, as one holder tells it now.
     say: obj({ max: count, line: text }),
+    // The recap page's words (slice 3): the line above the title, and each section's heading; a
+    // year's season paragraphs open with their season's name and need none.
+    page: obj({ kicker: text, kickerYear: text, heads: map(text) }),
     year: obj({
       season: text,
       perSeason: count,

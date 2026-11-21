@@ -34,7 +34,8 @@ export type PanelKind =
   | 'alerts'
   | 'dawn'
   | 'mood'
-  | 'stops';
+  | 'stops'
+  | 'recap';
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;
@@ -54,6 +55,8 @@ export interface PanelActions {
   item(id: number): void;
   /** The Stock lever: how much of `good` the colony keeps. */
   setStock(good: string, level: string): void;
+  /** The Ledger's Chronicle tab: every season and year recap (V-191). */
+  chronicle(): HTMLElement[];
   /** Follows the tile's stairs or shaft to level `z` and inspects the same spot there. */
   go(tile: TileView, z: number): void;
   close(): void;
@@ -76,6 +79,10 @@ export class Panel {
   private stock = '';
   private leftovers: LeftoversView = { items: [], game: 0, fish: 0 };
   private latest: readonly StockView[] = [];
+  /** The Ledger's open tab, its lines and the list under its tabs. */
+  private ledgerTab: 'lines' | 'chronicle' = 'lines';
+  private ledgerLines: readonly LedgerLine[] = [];
+  private readonly ledgerList = el('div', { class: 'ledgerlist' });
 
   constructor(parent: HTMLElement, actions: PanelActions, debug = false) {
     this.actions = actions;
@@ -164,17 +171,34 @@ export class Panel {
     this.body.replaceChildren(el('p', {}, text));
   }
 
-  showLedger(lines: readonly LedgerLine[]): void {
+  /** The Ledger: its lines, newest first, or (V-191) its Chronicle of recaps. */
+  showLedger(lines = this.ledgerLines, tab: 'lines' | 'chronicle' = 'lines'): void {
     this.open('ledger', 'Ledger');
-    this.body.replaceChildren();
+    [this.ledgerLines, this.ledgerTab] = [lines, tab];
+    const tabs = el('div', { class: 'tabs', role: 'tablist' });
+    for (const [t, label] of [
+      ['lines', 'Lines'],
+      ['chronicle', 'Chronicle'],
+    ] as const) {
+      const b = el(
+        'button',
+        { type: 'button', 'aria-pressed': String(t === tab), 'data-testid': `ledger-${t}` },
+        label,
+      );
+      b.addEventListener('click', () => this.showLedger(this.ledgerLines, t));
+      tabs.append(b);
+    }
+    this.ledgerList.replaceChildren(...(tab === 'chronicle' ? this.actions.chronicle() : []));
+    this.body.replaceChildren(tabs, this.ledgerList);
     this.addLines(lines);
   }
 
   /** New lines at the top of an open ledger, keeping the newest `LEDGER_LINES`. */
   addLines(lines: readonly LedgerLine[]): void {
-    if (this.shown !== 'ledger') return;
-    for (const line of lines) this.body.prepend(this.lineRow(line));
-    while (this.body.childElementCount > LEDGER_LINES) this.body.lastElementChild!.remove();
+    if (this.shown !== 'ledger' || this.ledgerTab !== 'lines') return;
+    const list = this.ledgerList;
+    for (const line of lines) list.prepend(this.lineRow(line));
+    while (list.childElementCount > LEDGER_LINES) list.lastElementChild!.remove();
   }
 
   /** Opens the causes of line `id` under each place it is shown. */
@@ -207,6 +231,7 @@ export class Panel {
     // scroll, so it is shown first.
     const top = this.root.hidden || this.shown !== kind || this.title.textContent !== title;
     this.shown = kind;
+    this.root.dataset['kind'] = kind;
     this.title.textContent = title;
     this.root.hidden = false;
     if (top) this.root.scrollTop = 0;

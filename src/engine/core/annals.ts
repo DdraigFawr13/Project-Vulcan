@@ -33,6 +33,7 @@ export interface AnnalsDef {
   still: string;
   numbers: { text: string; levels: string; nouns: Nouns };
   say: { max: number; line: string };
+  page: { kicker: string; kickerYear: string; heads: Readonly<Record<string, string>> };
   year: {
     season: string;
     perSeason: number;

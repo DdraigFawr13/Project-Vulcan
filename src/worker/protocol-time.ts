@@ -1,5 +1,6 @@
-// The player's clock (Phase 6T, V-191): speeds, jumps and what stops play. Settings of the worker,
-// never game commands, so none enters the command log (V-041).
+// The player's clock (Phase 6T, V-191): speeds, jumps, what stops play and the recaps. Settings of
+// the worker, never game commands, so none enters the command log (V-041).
+import type { LedgerLine } from './protocol.ts';
 
 /** 0 is paused; 1 to 6 run 10, 30, 100, 200, 400 and 800 game minutes a second. */
 export type Speed = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -38,4 +39,21 @@ export interface LandingsView {
   month: string;
   season: string;
   year: string;
+}
+
+/** Which recaps pause play and open (V-191): the page's device switches, both on by default. */
+export interface RecapSettings {
+  season: boolean;
+  year: boolean;
+}
+
+/** A recap as the page shows it (slice 3): the line above its title, the title, and its sections
+ * in order, each with a heading (none for a year's season paragraphs) and sentences, each sentence
+ * with the ledger lines it tells, for "why?". */
+export interface RecapView {
+  id: number;
+  kind: 'season' | 'year';
+  kicker: string;
+  title: string;
+  sections: { id: string; head?: string; sentences: { text: string; lines: LedgerLine[] }[] }[];
 }

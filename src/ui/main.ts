@@ -106,6 +106,7 @@ const panel = new Panel(
       if (level === z) send({ type: 'inspect', x: tile.x, y: tile.y, z });
     },
     newGame: (next) => roll(next),
+    chronicle: () => sheets.chronicle(),
     close: () => closePanel(),
   },
   debug,
@@ -128,8 +129,10 @@ const sheets = new Sheets({
   },
   opened: (kind) => hud.showPanel(kind),
   drawPeople: (list) => renderer.setPeople(list),
+  speed: setSpeed,
   ...finding(renderer, panel, (z) => setLevel(z, true)),
 });
+stops.more = () => sheets.recapRows();
 const picker = new Picker(hudRoot, {
   settle: (chosen) => {
     // A reload comes straight back to this valley; New game or a new seed opens the picker again.

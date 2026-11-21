@@ -129,6 +129,21 @@
     }
   },
   "say": { "max": 2, "line": "{name} tells it: \"{tale}\"" },
+  "page": {
+    "kicker": "The chronicle · {Season}, year {year}",
+    "kickerYear": "The chronicle · Year {year}",
+    "heads": {
+      "came": "Who came",
+      "lost": "Who we lost",
+      "family": "Births and weddings",
+      "built": "What was built",
+      "troubles": "Troubles",
+      "leads": "Who leads",
+      "numbers": "In numbers",
+      "say": "What people say",
+      "whose": "Whose year it was"
+    }
+  },
   "year": {
     "season": "{Season}: {title}.",
     "perSeason": 2,

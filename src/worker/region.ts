@@ -2,7 +2,7 @@
 // cells, and each candidate valley's map in brief with a thumbnail. Reads worlds; never steps one.
 import type { Content } from '../content/index.ts';
 import type { Region, WorldState } from '../engine/index.ts';
-import type { RegionView, ValleyPreview } from './protocol.ts';
+import type { RegionView, ValleyPreview } from './protocol-region.ts';
 
 export function regionView(region: Region): RegionView {
   if (!region.raster) throw new Error('The region was rolled without its raster.');

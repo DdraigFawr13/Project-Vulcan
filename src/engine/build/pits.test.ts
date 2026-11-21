@@ -58,9 +58,11 @@ describe('tan pits', () => {
     expect(tanned.length).toBeGreaterThan(0);
     const chain = whyOf(w, tanned[0]!.id).map((c) => c.event.type);
     expect(chain).toEqual(expect.arrayContaining(['tan.laidIn', 'work.tookUpTanning']));
-    // The latest cure: an early one may have left the kept log by the time the leather is out.
-    const took = whyOf(w, lines(w, 'tan.cured').at(-1)!.id).map((c) => c.event.type);
-    expect(took).toContain('work.tookUpTanning');
+    // Each cure cites the tanner's taking-up line, read from the cure's own causes: the kept log
+    // is a window, and since knapping (V-195) the taking-up can be older than it.
+    const tookUp = new Set(lines(w, 'work.tookUpTanning').map((l) => l.id));
+    for (const cure of lines(w, 'tan.cured'))
+      expect(cure.causes.some((id) => tookUp.has(id))).toBe(true);
     expect(itemsOf(w).some((i) => i['kind'] === 'leather')).toBe(true);
     expect(lines(w, 'command.refused')).toEqual([]);
   });

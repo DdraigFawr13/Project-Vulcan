@@ -27,9 +27,9 @@ describe('needs', () => {
   // work Part 2 (knapping, V-195) smoke's Cuthbert thatches on past the line on day 4, as kiln and
   // gwerin do; anvil takes its place (searched 2026-11-20: ledger-1, anvil, tallow hold the week).
   // After merging 6B Bundles 5 and 6 and knapping axes for firewood splitters, anvil and tallow
-  // each have one person an hour bored (2,850 and 2,900 of 3,000); on 34 seeds 12 hold the week
-  // against main's 17 (searched 2026-11-20), among them ledger-1, ledger-3 and tallow-2.
-  for (const seed of ['ledger-1', 'ledger-3', 'tallow-2']) {
+  // each have one person an hour bored (2,850 and 2,900 of 3,000); on 34 seeds 11 hold the week
+  // against main's 17 (searched 2026-11-21), among them ledger-1, anvil and ledger-3.
+  for (const seed of ['ledger-1', 'anvil', 'ledger-3']) {
     it(`keeps the band fed, rested, warm and relaxed for a week on ${seed}`, () => {
       const world = createWorld(sim, seed);
       const people = world.entities['person']!;

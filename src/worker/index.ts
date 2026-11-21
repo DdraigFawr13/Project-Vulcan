@@ -9,6 +9,7 @@ export type * from './protocol-flock.ts';
 export type * from './protocol-goods.ts';
 export type * from './protocol-law.ts';
 export type * from './protocol-people.ts';
+export type * from './protocol-region.ts';
 export type * from './protocol-time.ts';
 export type * from './protocol-wild.ts';
 // Small words and sums the page shares with the engine, from its pure core only.
