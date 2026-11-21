@@ -1,13 +1,17 @@
 // `npm run check`: every local check in order, with step timings against its budget (RULES.md
 // VR-67). Stops at the first failure; warns, never fails, on time alone. The quick check leaves
-// out the slow colony-run test files listed in vitest.config.ts; `npm run check:full` (`--full`)
-// runs every file, once before a PR is marked ready, and CI's core job runs it too.
+// out the slow and the long test files listed in vitest.config.ts; `npm run check:full` (`--full`)
+// leaves out only the long ones, run once before a PR is marked ready; `npm run check:all`
+// (`--all`) runs every file, and CI's core job runs it.
 import { appendFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { root } from './lib.mjs';
 
-const full = process.argv.includes('--full');
-const budgetSeconds = full ? 120 : 40;
+const all = process.argv.includes('--all');
+const full = all || process.argv.includes('--full');
+const tier = all ? 'all' : full ? 'full' : 'quick';
+// The every-file tier is CI's, on its two-core runner: its budget is CI's 5 minutes (VR-25).
+const budgetSeconds = { quick: 40, full: 120, all: 300 }[tier];
 const steps = [
   ['ai-master', 'node .claude/master/sync.mjs --check'],
   ['format', 'npx prettier --check --cache .'],
@@ -17,7 +21,7 @@ const steps = [
   ['shape', 'node tools/check-shape.mjs'],
   ['codemap', 'node tools/codemap.mjs --check'],
   ['reading', 'node tools/reading-cost.mjs'],
-  ['unit', full ? 'npx vitest run' : 'VULCAN_TESTS=quick npx vitest run'],
+  ['unit', `VULCAN_TESTS=${tier} npx vitest run`],
   ['build', 'npx vite build --logLevel warn'],
 ];
 
@@ -33,7 +37,7 @@ for (const [name, command] of steps) {
   }
 }
 const total = (Date.now() - start) / 1000;
-const line = `${full ? 'full ' : ''}check passed in ${total.toFixed(1)}s: ${times.join(', ')}`;
+const line = `${full ? `${tier} ` : ''}check passed in ${total.toFixed(1)}s: ${times.join(', ')}`;
 process.stdout.write(`\n${line}\n`);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${line}\n`);
 if (total > budgetSeconds)

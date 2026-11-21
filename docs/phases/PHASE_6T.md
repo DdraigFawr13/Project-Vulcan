@@ -8,6 +8,8 @@ More control over the pace of play: a speed list up to 6×, jumps of a month, a 
 - [x] Slice 1: speeds, jumps and what stops play (worker, content, screen), 2026-11-20; anvil year 1: 8 Next event stops with the defaults (4 Pause, 4 Slow)
 - [x] Slice 2: the chronicle (engine), 2026-11-20: `src/engine/annals`, `annals.json`, `npm run annals`
 - [x] Slice 3: recaps on screen, 2026-11-20: `src/ui/recaps.ts`, `src/worker/recaps.ts`; at 6× the summer turn paused and Carry on resumed at 6× (browser, 1.8 min, left out of the suite for time)
+- [x] Review fix A (P1, P5), 2026-11-21 (V-200): a jump holds the recaps it passes until it lands; an early stop leaves a card with Jump on and Stay here (`timebar.ts`, `tests/browser/jumpstop.spec.ts`); the tick loop moved to `src/worker/clock.ts`, whose test runs a season's turn at 6× and a year jump stopped by a death in under 0.1 s; check:full 199 s to 113.6 s with a long tier that CI runs (`check:all`)
+- [ ] Review fix B (P2, P3, P4): after 6B
 
 ## Design (VR-62)
 

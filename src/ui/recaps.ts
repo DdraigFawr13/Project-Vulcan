@@ -2,9 +2,11 @@
 // turn at a running speed pauses (the worker does) and the recap page opens; Carry on resumes at the
 // speed it ran at. A jump runs on and, as it lands, shows the newest recap it passed, so a year jump
 // shows only the year's (it replaces winter's). Every recap is listed in the Ledger's Chronicle tab.
+// A jump that stops early on a Pause line holds what it passed while its stop card asks Jump on or
+// Stay here (6T fix A): they open only if the jump lands, and otherwise wait in the Chronicle.
 // The two switches are kept on this device, and go to the worker as a clock setting (V-041).
 // Shows; decides nothing (GAME-02).
-import type { RecapSettings, RecapView, Speed, ToWorker } from '../worker/index.ts';
+import type { JumpEndView, RecapSettings, RecapView, Speed, ToWorker } from '../worker/index.ts';
 import { el } from './dom.ts';
 import type { Panel } from './panel.ts';
 
@@ -30,6 +32,39 @@ export function recapToShow(
   return (on.year ? newest('year') : undefined) ?? (on.season ? newest('season') : undefined);
 }
 
+/** Recaps passed and not yet shown, and whether the jump that passed them stopped early: then they
+ * wait while the game stays paused at the stop card. */
+export interface Held {
+  passed: RecapView[];
+  stopped: boolean;
+}
+
+/** As a snapshot arrives, the recap to open now, if any. A jump holds every recap it passes. One
+ * that lands opens the newest (`recapToShow`). One that stopped early on a Pause line keeps them
+ * while play stays paused, since Jump on may yet land it; once play runs on without it they go
+ * straight to the Chronicle, as they do when the player stops a jump. At a running speed a turn
+ * opens its recap at once. */
+export function recapNow(
+  held: Held,
+  m: { speed: Speed; skipping: boolean; jumpEnd?: JumpEndView },
+  on: RecapSettings,
+): RecapView | undefined {
+  if (m.skipping) return undefined;
+  if (m.jumpEnd && !m.jumpEnd.landed) {
+    held.stopped = m.jumpEnd.line !== undefined;
+    if (!held.stopped) held.passed = [];
+    return undefined;
+  }
+  if (held.stopped && !m.jumpEnd) {
+    if (m.speed === 0) return undefined;
+    [held.passed, held.stopped] = [[], false];
+    return undefined;
+  }
+  const shown = recapToShow(held.passed, on);
+  [held.passed, held.stopped] = [[], false];
+  return shown;
+}
+
 /** The speed Carry on resumes at: the one play ran at before the turn paused it, none after a jump
  * (a jump ends paused) or when play was already paused. */
 export const resumeAt = (before: { speed: Speed; skipping: boolean }): Speed =>
@@ -48,7 +83,7 @@ export class Recaps {
   /** Every recap of this world, oldest first. */
   private all: RecapView[] = [];
   /** Recaps passed while jumping, shown as it lands. */
-  private passed: RecapView[] = [];
+  private readonly held: Held = { passed: [], stopped: false };
   /** A world just began or loaded: its first recaps are not news. */
   private fresh = true;
   private before: { speed: Speed; skipping: boolean } = { speed: 0, skipping: false };
@@ -61,21 +96,29 @@ export class Recaps {
   }
 
   reset(): void {
-    [this.all, this.passed, this.fresh] = [[], [], true];
+    [this.all, this.held.passed, this.held.stopped, this.fresh] = [[], [], false, true];
+  }
+
+  /** Stay here, on the card of a jump that stopped early: what it passed waits in the Chronicle. */
+  stay(): void {
+    [this.held.passed, this.held.stopped] = [[], false];
   }
 
   /** Each snapshot, before the dawn page: true when a recap opened, so the dawn page holds back. */
-  snapshot(m: { annals?: RecapView[]; speed: Speed; skipping: boolean }): boolean {
+  snapshot(m: {
+    annals?: RecapView[];
+    speed: Speed;
+    skipping: boolean;
+    jumpEnd?: JumpEndView;
+  }): boolean {
     const before = this.before;
     this.before = { speed: m.speed, skipping: m.skipping };
     if (m.annals) {
       this.all.push(...m.annals);
-      if (!this.fresh) this.passed.push(...m.annals);
+      if (!this.fresh) this.held.passed.push(...m.annals);
       this.fresh = false;
     }
-    if (m.skipping || !this.passed.length) return false;
-    const shown = recapToShow(this.passed, this.on);
-    this.passed = [];
+    const shown = recapNow(this.held, m, this.on);
     if (!shown) return false;
     this.show(shown, resumeAt(before));
     return true;
