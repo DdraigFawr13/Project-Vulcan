@@ -54,7 +54,7 @@ const slowFiles = [
   'src/engine/inn/inn.test.ts',
 ];
 
-// The longest files (6T fix A, P5, 2026-11-21): 23 files of 8 to 40 s each, 380 s of the full
+// The longest files (6T fix A, P5, 2026-11-21): 25 files of 8 to 40 s each, 400 s of the full
 // tier's 600 s of test time as measured here, which had taken check:full to 199 s against its
 // 120 s. CI runs them on every ready PR; a thread that changes their system runs its file.
 const longFiles = [
@@ -81,6 +81,8 @@ const longFiles = [
   'src/engine/people/jobs.test.ts',
   'src/engine/crafts/loom.test.ts',
   'src/engine/keep/cellar.test.ts',
+  'src/engine/crafts/mason.test.ts',
+  'src/engine/defy/hard.test.ts',
 ];
 
 const left: Record<string, string[]> = {
