@@ -15,8 +15,8 @@ export interface TaleDef {
   from: number;
   /** No one sees it (a blight, a pack at the edge): one awake person brings word of it. */
   word?: boolean;
-  /** The title of a song made of it, filled from the event's data. */
-  song?: string;
+  /** Title templates for a song made of it (tales `titles.ts`): one is chosen by the seed. */
+  song?: readonly string[];
   /** The byname each level gives the one it is about ("" for none). */
   bynames?: readonly string[];
 }
@@ -41,6 +41,8 @@ export interface TalesDef {
   beliefFadeDays: number;
   forgetDays: number;
   strength: readonly string[];
+  /** Ordinal words for the colony's years in song titles ("First", "Second"). */
+  ordinals: readonly string[];
   evening: { mend: number };
   byname: { share: number; told: number; proud: readonly string[] };
   beliefs: readonly BeliefDef[];
