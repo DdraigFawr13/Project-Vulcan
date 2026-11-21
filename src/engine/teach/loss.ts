@@ -1,12 +1,13 @@
 // What a master takes with them (6B Bundle 6, P6.13, V-141, V-189): each hour the system notes
 // the living at teach.json `master` or more in each skill; when one of them dies or leaves and
 // nobody living is within `near` levels of them in it, the ledger says what went with them
-// (`teach.lost`, citing the death or leaving line), and a tale spreads it. With nobody near them
+// (`teach.lost`, citing the death or leaving line), and a tale spreads it. A book of their skill
+// on the schoolroom shelf near their level keeps it. With nobody near them
 // left, nobody can be taught past their gift in that skill until a new master grows or comes.
 import type { EntityRow, SimEvent } from '../core/index.ts';
 import { alive } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { skillWord } from './tables.ts';
+import { keptBooks, skillWord } from './tables.ts';
 
 const KEY = /^m(\d+)\.(.+)$/;
 const GONE = new Set(['health.died', 'defy.left']);
@@ -18,9 +19,15 @@ function goneLine(log: readonly SimEvent[], person: number): SimEvent | undefine
   return undefined;
 }
 
-/** Whether someone living still comes within `near` levels of `level` in `skill`. */
+/** Whether someone living, or a book on the schoolroom shelf (books.ts), still comes within
+ * `near` levels of `level` in `skill`. */
 function kept(ctx: SystemContext, skill: string, level: number): boolean {
   const living = new Set(alive(ctx.world).map((p) => p.id));
+  const near = ctx.content.teach.near;
+  if (
+    keptBooks(ctx.world).some((b) => b['skill'] === skill && (b['level'] as number) + near >= level)
+  )
+    return true;
   return (ctx.world.entities['skill'] ?? []).some(
     (s: EntityRow) =>
       s['skill'] === skill &&

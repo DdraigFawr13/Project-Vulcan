@@ -19,8 +19,21 @@ const COUNTED = [
   'teach.finished',
   'teach.parted',
   'teach.lost',
+  'build.school',
+  'school.teacher',
+  'school.writing',
+  'school.book',
+  'skill.read',
+  'school.bookLost',
 ];
-const SHOWN = new Set(['teach.apprentice', 'teach.finished', 'teach.lost']);
+const SHOWN = new Set([
+  'teach.apprentice',
+  'teach.finished',
+  'teach.lost',
+  'build.school',
+  'school.book',
+  'school.bookLost',
+]);
 
 for (const seed of seeds.length ? seeds : ['anvil', 'smoke', 'tallow', 'ledger-1']) {
   const sim = createSim(content);
@@ -38,7 +51,7 @@ for (const seed of seeds.length ? seeds : ['anvil', 'smoke', 'tallow', 'ledger-1
         if (!(line.type in counts)) continue;
         counts[line.type] += 1;
         if (line.type.startsWith('skill.')) rose += 1;
-        if (SHOWN.has(line.type) && shown.length < 10)
+        if (SHOWN.has(line.type) && shown.length < 14)
           shown.push(
             `y${Math.floor(day / YEAR) + 1} d${(day % YEAR) + 1}: ${renderEvent(line, sim.templates, names)}`,
           );

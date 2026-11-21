@@ -16,6 +16,9 @@ export {
   PITS_KIND,
   ROAD_KIND,
   TAVERN_KIND,
+  SCHOOL_KIND,
+  INN_SCHOOL,
+  hallName,
   wantOf as buildWantOf,
 } from './houses.ts';
 export { bedSpot, builtHome, homeFor, householdOf, othersHome, sleepsIn } from './beds.ts';
@@ -66,6 +69,7 @@ export {
 } from './wants.ts';
 export { HEARTH, openGround } from './hearths.ts';
 export { tavernHouse } from './tavern.ts';
+export { schoolHouse, schoolRoom } from './school.ts';
 export { buildWell, noteDrink, planWell, WELL, WELL_TABLES, wellsOf, waterSpots } from './well.ts';
 export { millOf, millRefusal, noteGrind, quernToday, turning } from './mill.ts';
 export {

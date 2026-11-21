@@ -136,7 +136,8 @@ export function practise(ctx: SystemContext, p: EntityRow, skill: string, took: 
 }
 
 /** Adds `hundredths` of a minute of practice to `row`; a full level rises with a line naming the
- * teacher, if any. Engine teach records who taught whom from that line. */
+ * teacher, if any, or (read from a book, engine teach) the book and the master who gave it.
+ * Engine teach records who taught whom from that line. */
 export function gain(
   ctx: SystemContext,
   p: EntityRow,
@@ -144,6 +145,7 @@ export function gain(
   hundredths: number,
   took: number,
   teacher?: EntityRow,
+  book?: string,
 ): number {
   const { content } = ctx;
   const level = row['level'] as number;
@@ -154,10 +156,10 @@ export function gain(
   const skill = (content.abilities.find((a) => a.id === row['skill'])?.name ?? '').toLowerCase();
   const data = { name: p['name'] as string, skill, level: level + 1 };
   if (!teacher) return ctx.emit('skill.rose', { causes: took ? [took] : [], actors: [p.id], data });
-  return ctx.emit('skill.taught', {
+  return ctx.emit(book ? 'skill.read' : 'skill.taught', {
     causes: took ? [took] : [],
     actors: [p.id, teacher.id],
-    data: { ...data, teacher: teacher['name'] as string },
+    data: { ...data, ...(book ? { book } : { teacher: teacher['name'] as string }) },
   });
 }
 

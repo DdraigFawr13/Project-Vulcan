@@ -20,7 +20,7 @@ import { hungryWinter } from './hungry.ts';
 import { PASTURE_TABLES } from './pasturerows.ts';
 import { finishPastures, planPasture, sendBackPasture } from './pasture.ts';
 import { finishHouses, growHouses } from './grow.ts';
-import { HOUSE_TABLES, planHouse, sendBack, setBuild } from './houses.ts';
+import { HOUSE_TABLES, INN_SCHOOL, planHouse, sendBack, setBuild } from './houses.ts';
 import { planHomes } from './homes.ts';
 import { BUILD_TABLES, partOf, planAt, planPart, plansOf } from './plans.ts';
 import { planCampfire, planRoomHearths } from './hearths.ts';
@@ -36,7 +36,8 @@ import { BURIAL_TABLES, planBurial, sendBackBurial } from './burial.ts';
 import { HERB_TABLES, planHerbGarden } from './herbs.ts';
 import { MIDDEN_TABLES, planMidden } from './midden.ts';
 import { planSickHouse } from './sickhouse.ts';
-import { planTavern, planTavernHearth } from './tavern.ts';
+import { planHallHearth, planTavern, tavernHouse } from './tavern.ts';
+import { planSchool, planSchoolHearth } from './school.ts';
 import { planSickroom } from './sickroom.ts';
 import { finishRoads, planRoads, ROAD_TABLES } from './roads.ts';
 import { startStages } from './stages.ts';
@@ -115,6 +116,7 @@ function chooseAgain(ctx: SystemContext, h: EntityRow, line: number): void {
   const green = greenOf(ctx.world);
   if (h['of']) growHouses(ctx, green, 1, h['of'] as number);
   else if (h['owner']) planHomes(ctx, green);
+  else if (h['inn'] === INN_SCHOOL) planSchool(ctx, green, true);
   else if (h['inn']) planTavern(ctx, green, true);
   else sitingHouse(ctx, green, () => planHouse(ctx, green, [line], 1));
 }
@@ -174,6 +176,7 @@ export const buildSystem: System = {
       'build.sickroom',
       'build.sickHouse',
       'build.tavern',
+      'build.school',
       'build.burialSited',
       'build.burialSentBack',
       'build.middenSited',
@@ -205,6 +208,8 @@ export const buildSystem: System = {
     middenTried: 0,
     // 6B Bundle 5: the tick the tavern last found no ground.
     tavernTried: 0,
+    // 6B Bundle 6: the tick the schoolroom last found no ground.
+    schoolTried: 0,
     // Phase 5B Bundle 2: the game day (1 + its index) the soil was last worked, and the loads of muck left.
     ...{ soilDay: 0, muck: 0 },
     // Blight: the game day it was last worked, the wet days of the last window as bits, and 1 if yesterday was dry.
@@ -296,7 +301,10 @@ export const buildSystem: System = {
     planBurial(ctx, green);
     // 6B Bundle 5: the tavern once the harvest is in, and its hearth.
     planTavern(ctx, green);
-    planTavernHearth(ctx);
+    planHallHearth(ctx, tavernHouse(ctx.world), 'tavern');
+    // 6B Bundle 6: the schoolroom once there is someone to teach or something to write.
+    planSchool(ctx, green);
+    planSchoolHearth(ctx);
     // P5.4a: a midden at the first offal.
     planMidden(ctx, green);
     // P5.7: a herb garden once the herb store ran dry for someone.

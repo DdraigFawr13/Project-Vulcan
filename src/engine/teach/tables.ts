@@ -16,6 +16,17 @@ export const TEACH_TABLES: Schemas = {
     ...{ learner: 'entity', teacher: 'entity', skill: 'text', from: 'count', to: 'count' },
     ...{ first: 'event', last: 'event' },
   },
+  /** The schoolroom (V-189 q7): its house, its teacher (0 none) and the line saying so. */
+  school: { house: 'entity', teacher: 'entity', kept: 'event' },
+  /** A book: the master whose ways it holds, the skill and level, who wrote it, `state` `writing`
+   * (minutes of sittings so far), `kept` on the shelf or `lost`; the line it was begun with, the
+   * one it was finished with and the one that lost it. */
+  book: {
+    ...{ master: 'entity', skill: 'text', level: 'count', scribe: 'entity', state: 'text' },
+    ...{ minutes: 'count', begun: 'event', line: 'event', lost: 'event' },
+  },
+  /** Minutes a person read on game day `day` (1 + its index). */
+  reader: { person: 'entity', day: 'int', minutes: 'count' },
 };
 
 export const apprenticesOf = (world: WorldState): EntityRow[] => world.entities['apprentice'] ?? [];
@@ -30,3 +41,16 @@ export const bondNow = (world: WorldState, person: number): EntityRow | undefine
 /** A skill's name in lower case ("stoneworking"). */
 export const skillWord = (content: EngineContent, skill: string): string =>
   (content.abilities.find((a) => a.id === skill)?.name ?? skill).toLowerCase();
+
+/** The school row of the schoolroom house `house`. */
+export const schoolOf = (world: WorldState, house: number | undefined): EntityRow | undefined =>
+  (world.entities['school'] ?? []).find((s) => s['house'] === house);
+export const booksOf = (world: WorldState): EntityRow[] => world.entities['book'] ?? [];
+/** The books on the shelf now. */
+export const keptBooks = (world: WorldState): EntityRow[] =>
+  booksOf(world).filter((b) => b['state'] === 'kept');
+/** "the book of smithing, Colm's method". */
+export function bookName(world: WorldState, content: EngineContent, book: EntityRow): string {
+  const m = (world.entities['person'] ?? []).find((p) => p.id === book['master']);
+  return `the book of ${skillWord(content, book['skill'] as string)}, ${(m?.['name'] as string) ?? 'a master'}'s method`;
+}

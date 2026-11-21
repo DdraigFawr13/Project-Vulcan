@@ -31,7 +31,7 @@ import {
   PITS_KIND,
   ROAD_KIND,
 } from './kinds.ts';
-import { sheetDef, SMITHY_KIND, TAVERN_KIND } from './kinds.ts';
+import { SCHOOL_KIND, sheetDef, SMITHY_KIND, TAVERN_KIND } from './kinds.ts';
 
 export const HOUSE_TABLES: Schemas = {
   /** A house, or a room added to one (`of`, the house; 0 for the house itself). `state`: `plan`,
@@ -65,7 +65,8 @@ export const HOUSE_TABLES: Schemas = {
     wall: 'text',
     cold: 'event',
     sick: 'count',
-    /** 1 for the tavern (6B Bundle 5, tavern.ts): no home, nobody's beds, no room added. */
+    /** INN_TAVERN (6B Bundle 5, tavern.ts) or INN_SCHOOL (6B Bundle 6, school.ts): no home,
+     * nobody's beds, no room added. */
     inn: 'count',
     owner: 'entity',
     hall: 'event',
@@ -95,6 +96,15 @@ export const HOUSE_TABLES: Schemas = {
 };
 
 export { FIELD_KIND, HOUSE_KIND, PASTURE_KIND, PITS_KIND, ROAD_KIND, SMITHY_KIND, TAVERN_KIND };
+export { SCHOOL_KIND };
+
+/** A house row's `inn`: the tavern, the schoolroom (nobody's home either way). */
+export const INN_TAVERN = 1;
+export const INN_SCHOOL = 2;
+
+/** "tavern" or "schoolroom" for a hall's `inn`, else ''. */
+export const hallName = (inn: unknown): string =>
+  inn === INN_TAVERN ? 'tavern' : inn === INN_SCHOOL ? 'schoolroom' : '';
 
 /** The size (or added room) a house row is. */
 export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>
@@ -102,9 +112,9 @@ export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>
     ? content.buildings.house.stage
     : content.buildings.house.sizes.find((s) => s.id === h['size'])!;
 
-/** A main house row's name: its size's, or "tavern" (6B). */
+/** A main house row's name: its size's, or "tavern" or "schoolroom" (6B). */
 const mainName = (content: EngineContent, main: EntityRow): string =>
-  main['inn'] ? 'tavern' : sizeOf(content, main).name;
+  hallName(main['inn']) || sizeOf(content, main).name;
 
 /** The name of the house a row (by id) is or belongs to, e.g. "cottage". */
 export function houseName(world: WorldState, content: EngineContent, id: number): string {

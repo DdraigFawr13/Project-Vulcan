@@ -1,5 +1,6 @@
 // Who taught whom (6B Bundle 6, V-189): each hour the new `skill.taught` lines (band `learn.ts`)
-// become or extend a `taught` row, so the person sheet can say "Etain (stoneworking 4 to 7)".
+// (and `skill.read`, a book naming its master, V-189 q7) become or extend a `taught` row, so the
+// person sheet can say "Etain (stoneworking 4 to 7)".
 import { addEntity } from '../entity/index.ts';
 import { linesAfter } from '../log/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -12,7 +13,7 @@ export function recordTaught(ctx: SystemContext): void {
   if (!fresh.length) return;
   state['seen'] = fresh.at(-1)!.id;
   for (const e of fresh) {
-    if (e.type !== 'skill.taught') continue;
+    if (e.type !== 'skill.taught' && e.type !== 'skill.read') continue;
     const [learner, teacher] = e.actors as [number, number];
     const skill = content.abilities.find((a) => a.name.toLowerCase() === e.data['skill'])?.id ?? '';
     const level = Number(e.data['level']);

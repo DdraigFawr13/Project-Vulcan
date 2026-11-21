@@ -44,5 +44,54 @@
     "trait": "being {trait}, they chose to",
     "died": "died",
     "left": "left the valley"
+  },
+  "school": {
+    "build": {
+      "name": "Schoolroom",
+      "start": 3,
+      "size": "cottage",
+      "wants": [
+        {
+          "kind": "table",
+          "count": 1
+        },
+        {
+          "kind": "chair",
+          "count": 4
+        },
+        {
+          "kind": "shelf",
+          "count": 1
+        }
+      ]
+    },
+    "teacher": {
+      "job": "teach",
+      "trait": "steady"
+    },
+    "from": 25,
+    "lesson": {
+      "hours": 3,
+      "upTo": 4
+    },
+    "book": {
+      "minutes": 480,
+      "free": [
+        "relax"
+      ],
+      "shelf": "shelf",
+      "near": 2,
+      "look": 10
+    },
+    "read": {
+      "minutes": 60,
+      "pace": 200,
+      "less": 2
+    },
+    "words": {
+      "children": "children to teach",
+      "masters": "a master's ways to write down",
+      "teacher": ", who puts teaching high on their list"
+    }
   }
 }

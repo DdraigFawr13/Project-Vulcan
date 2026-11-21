@@ -10,7 +10,7 @@ The second half of Phase 6 (V-153): P6.1 and P6.8 to P6.13, with callings (V-175
 - [x] Bundle 3, mason, lime and thatch; buildings grow, 2026-11-20 (V-185 #137, V-186)
 - [x] Bundle 4, faith, shrines and feasts, 2026-11-20 (V-187 #142, part 2; form https://claude.ai/artifact/RcpMJavxqbBymmwCBHhmXS)
 - [ ] Bundle 5, the tavern, songs and bynames (spec V-188, docs/TAVERN_AND_SONGS.md): engine part 1 2026-11-20 (V-196), part 2 2026-11-20 (V-197), screens 2026-11-20, art 2026-11-20
-- [ ] Bundle 6, apprentices, the schoolroom and callings (design settled V-189; part 1 apprentices and teaching done 2026-11-20)
+- [ ] Bundle 6, apprentices, the schoolroom and callings (design settled V-189; part 1 apprentices and teaching done 2026-11-20; part 2 the schoolroom 2026-11-21, V-199)
 - [ ] 6B balance and review
 
 ## Design (VR-62)
