@@ -95,6 +95,7 @@ function eatTogether(ctx: SystemContext, feast: EntityRow, words: string): void 
       count: there.length,
       meal,
       where: words,
+      ...(names.length ? { dish: names[0]! } : {}),
       ...(couple.length ? { a: wed[0]!, b: wed[1]! } : {}),
     },
   });
