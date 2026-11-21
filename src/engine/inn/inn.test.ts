@@ -223,10 +223,12 @@ describe('the tavern', () => {
     const { w, sim, casks } = withTavern('smoke', tuned);
     for (const c of casks)
       fillCask(w, c, { drink: 'ale', cups: 20, ready: w.tick, line: w.begunEvent });
-    for (let d = 0; d < 3; d += 1) evening(w, sim);
-    const hung = (w.entities['memory'] ?? []).filter(
-      (m) => m['memory'] === content.tavern.hungOver.memory,
-    );
+    const hungOf = () =>
+      (w.entities['memory'] ?? []).filter((m) => m['memory'] === content.tavern.hungOver.memory);
+    // Evening by evening until someone wakes hung over: how late the band comes in from work, and
+    // so how many cups they have, moves with the seed's history (3 evenings before knapping, V-195).
+    for (let d = 0; d < 8 && !hungOf().length; d += 1) evening(w, sim);
+    const hung = hungOf();
     expect(hung.length).toBeGreaterThan(0);
     const n = nightOf(w, hung[0]!['person'] as number)!;
     expect((n['hung'] as number) % TICKS_PER_DAY).toBe(

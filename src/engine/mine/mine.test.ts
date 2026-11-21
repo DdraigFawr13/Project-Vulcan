@@ -123,6 +123,7 @@ describe('mining', () => {
   // One test a seed: since the larder (thirst, sowing first) tallow takes 22 days to its ore, and
   // four seeds in one test ran past the time limit on CI. Since 5B Bundle 3 anvil takes 34: the
   // cooks' firewood walks site its wood yard 5 days sooner, and the yard is built before the ore.
+  // Since knapping (V-195) anvil takes 37.
   it.each(ORE_SEEDS)(
     'gets iron ore to the store with only the plate raised, each line tracing to it (%s)',
     (seed) => {
@@ -130,17 +131,26 @@ describe('mining', () => {
       // No ore is in the store on the first day (the siting test reads that day).
       const world = plateDay(seed);
       let days = 1;
-      while (!oreStacks(world).length && days < 40) {
+      // Each taking-up line's causes, read while fresh: a line past the sealed week keeps no
+      // causes, and since knapping (V-195) anvil's miner takes up 7 days before the ore is in.
+      const fresh = new Map<number, string[]>();
+      while (!oreStacks(world).length && days < 50) {
         step(world, sim, DAY);
         days += 1;
+        for (const l of linesOf(world, 'work.tookUp'))
+          if (!fresh.has(l.id))
+            fresh.set(
+              l.id,
+              whyOf(world, l.id).map((c) => c.event.type),
+            );
       }
       expect(oreStacks(world).length).toBeGreaterThan(0);
       const applied = linesOf(world, 'command.applied').map((l) => l.data['kind']);
       expect(applied).toEqual(['setStock']);
       const made = oreStacks(world)[0]!['made'] as number;
-      const chain = whyOf(world, made).map((c) => c.event.type);
-      expect(chain).toContain('work.tookUp');
-      expect(chain).toContain('goods.stockSet');
+      const took = whyOf(world, made).find((c) => c.event.type === 'work.tookUp');
+      expect(took).toBeDefined();
+      expect(fresh.get(took!.event.id)).toContain('goods.stockSet');
       // The iron shaft, planned first, sunk three levels (a slow seed may have begun copper and
       // tin shafts by then).
       const sunk = linesOf(world, 'map.shaftSunk');

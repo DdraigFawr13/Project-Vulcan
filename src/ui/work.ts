@@ -224,6 +224,9 @@ export class WorkSheet {
       ),
     );
     if (job.declined && !this.pending.has(key)) this.declined(row, p, job);
+    // What the work waits on, for everyone (V-195): "Waits: no pick in the valley."
+    if (job.waits)
+      row.append(el('span', { class: 'note', 'data-testid': 'waits' }, `Waits: ${job.waits}.`));
     return row;
   }
 
@@ -280,8 +283,10 @@ export class WorkSheet {
       table.append(tr);
     };
     const rowFor = (job: Job, under: boolean) => {
+      const name = el('span', {}, job.name);
+      if (job.waits) name.append(el('small', { 'data-testid': 'waits' }, ` waits: ${job.waits}`));
       line(
-        el('span', {}, job.name),
+        name,
         people.map((p) => {
           const j = jobOf(p, job.job);
           return j ? cell(p, j.name, level(p, j), (to) => this.priority(p, j, to)) : el('td');

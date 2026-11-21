@@ -46,13 +46,18 @@ describe('strangers and homes', () => {
     const c = tuned({ start: 20 });
     const sim = createSim(c);
     const w = createWorld(sim, SEED);
-    step(w, sim, 20 * DAY);
+    // Each arrival's chain is read the day it comes (the log keeps a window); the homes get 22
+    // days, as tools wear in half the time and are knapped (V-195).
+    let days = 0;
+    for (; days < 20 && !lines(w, 'people.strangerCame').length; days += 1) step(w, sim, DAY);
     const came = lines(w, 'people.strangerCame');
     expect(came.length).toBeGreaterThan(0);
     for (const line of came) {
       const why = whyOf(w, line.id).map((x) => x.event.type);
       expect(why).toContain('people.drawn');
     }
+    step(w, sim, (22 - days) * DAY);
+    expect(lines(w, 'people.strangerCame')).toHaveLength(came.length);
     expect(lines(w, 'people.strangerStays').length).toBe(came.length);
     // Each household sleeps in its own home; the couple shares one; the first house is the hall.
     const alive = people(w, 'alive');

@@ -154,25 +154,28 @@ describe('health', () => {
   });
 
   it('carries a miner who fell in the shaft to bed and binds the break, each line back to the fall', () => {
-    // The first seed whose miner takes up a shaft within 12 days (VR-24; since 5B Bundle 3 cooks
-    // take a hand, and tallow's sinker starts later).
+    // The first seed whose miner takes up a shaft within 16 days (VR-24; since 5B Bundle 3 cooks
+    // take a hand, and tallow's sinker starts later; since knapping, V-195, tallow's miner falls on day 14).
     const sim = createSim(falls);
     let world = createWorld(sim, 'tallow');
     for (const seed of ['tallow', 'smoke', 'anvil']) {
       world = createWorld(sim, seed);
       send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
-      for (let d = 0; d < 12 && !lines(world, 'health.hurt').length; d += 1) step(world, sim, DAY);
+      for (let d = 0; d < 16 && !lines(world, 'health.hurt').length; d += 1) step(world, sim, DAY);
       if (lines(world, 'health.hurt').length) break;
     }
     const hurt = lines(world, 'health.hurt')[0]!;
-    expect(hurt, 'a fall within 12 days').toBeDefined();
+    expect(hurt, 'a fall within 16 days').toBeDefined();
     expect(hurt.data['what']).toBe('fell in the shaft');
     // The fall cites the miner taking up the shaft.
     expect(world.log.find((e) => e.id === hurt.causes[0])?.type).toMatch(/^work\.tookUp/);
-    step(world, sim, DAY / 2);
     const p = people(world).find((q) => q.id === hurt.actors[0])!;
-    const carried = lines(world, 'health.carried').find((e) => e.actors[1] === p.id)!;
-    const bound = lines(world, 'health.bound').find((e) => e.actors[1] === p.id)!;
+    const lineFor = (type: string) => lines(world, type).find((e) => e.actors[1] === p.id);
+    // Hour by hour, up to two days (half a day was enough before knapping, V-195).
+    for (let h = 0; h < 48 && !(lineFor('health.carried') && lineFor('health.bound')); h += 1)
+      step(world, sim, DAY / 24);
+    const carried = lineFor('health.carried')!;
+    const bound = lineFor('health.bound')!;
     expect(carried).toBeDefined();
     expect(bound).toBeDefined();
     expect(traces(world, carried.id, hurt.id)).toBe(true);

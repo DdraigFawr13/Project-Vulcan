@@ -9,6 +9,7 @@ import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
 import {
   betterTool,
   freeTools,
+  itemsOf,
   heldBy,
   HELD,
   isWorn,
@@ -189,7 +190,7 @@ export function worked(ctx: SystemContext, p: EntityRow, use: string): void {
   tool['wear'] = (tool['wear'] as number) - 1;
   if (!tool['worn']) wornLine(ctx, p, tool);
   if ((tool['wear'] as number) > 0) return;
-  ctx.emit('tool.broke', {
+  const broke = ctx.emit('tool.broke', {
     causes: causesOf(tool, p),
     actors: [p.id],
     data: {
@@ -200,6 +201,24 @@ export function worked(ctx: SystemContext, p: EntityRow, use: string): void {
   });
   removeEntity(world, 'item', tool.id);
   toolsChanged(world);
+  lastOne(ctx, kind, broke);
+}
+
+/** Every tool of `kind` in the valley, free or held. */
+export const toolsOfKind = (
+  world: SystemContext['world'],
+  content: EngineContent,
+  kind: string,
+): EntityRow[] => itemsOf(world).filter((i) => toolOf(content, i)?.kind === kind);
+
+/** The valley's last tool of a needed kind broke: one notable line naming the work that stops
+ * (V-195), kept as the line the waiting and knapping cite. */
+function lastOne(ctx: SystemContext, kind: EngineContent['tools']['kinds'][number], broke: number) {
+  if (!kind.needed?.length || toolsOfKind(ctx.world, ctx.content, kind.id).length) return;
+  ctx.state[`none.${kind.id}`] = ctx.emit('tool.lastBroke', {
+    causes: [broke],
+    data: { kind: kind.name, stops: kind.stops ?? kind.needed.join(' and ') },
+  });
 }
 
 /** Once, when a held tool wears under its worn line: the better one it asks for and its ingots,

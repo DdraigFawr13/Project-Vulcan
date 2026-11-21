@@ -125,9 +125,13 @@ describe('building', () => {
     const [inside] = block.splice(4, 1);
     submitCommand(world, { tick: world.tick + 1, kind: 'markStore', data: inside! });
     place(world, 'wall-stone', block);
-    step(world, sim, 9 * DAY);
     const index = content.buildings.parts.findIndex((p) => p.id === 'wall-stone') + 1;
-    const built = block.filter((t) => world.map.built[t.y * world.map.width + t.x] === index);
+    const builtOf = () =>
+      block.filter((t) => world.map.built[t.y * world.map.width + t.x] === index);
+    // Day by day until seven stand (about 4 days), so the shut-in line is still in the log's
+    // window (stepping 9 days let knapping's lines push it out, V-195).
+    for (let d = 0; d < 30 && builtOf().length < 7; d++) step(world, sim, DAY);
+    const built = builtOf();
     expect(built).toHaveLength(7);
     const shut = world.log.filter((e) => e.type === 'build.shutIn');
     expect(shut).toHaveLength(1);

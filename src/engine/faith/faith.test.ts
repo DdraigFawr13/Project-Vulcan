@@ -118,13 +118,17 @@ describe('faith: feast days', () => {
     const day = holydaysOf(w).find((d) => d['kind'] === 'death')!;
     expect(day['about']).toBe(dead.id);
     expect(day['state']).toBe('asked');
-    // Empty the store: the feast is skipped, with a line citing the asking.
+    // Empty the store a minute before the day comes (a day ahead, the band may bring food in
+    // before it): the feast is skipped, with a line citing the asking.
+    const row = holydaysOf(w).find((d) => d['kind'] === 'arrival')!;
+    const next = clockAt(w.tick + TICKS_PER_DAY, content.calendar);
+    Object.assign(row, { month: next.month, day: next.day, kept: 0 });
+    step(w, sim, TICKS_PER_DAY - (w.tick % TICKS_PER_DAY) - 1);
     const food = (w.entities['item'] ?? []).filter(
       (i) => content.life.eat[i['kind'] as string] !== undefined,
     );
     for (const i of food) removeEntity(w, 'item', i.id);
-    const row = holydaysOf(w).find((d) => d['kind'] === 'arrival')!;
-    keepTomorrow(w, row);
+    step(w, sim, TICKS_PER_HOUR);
     const none = lines(w, 'faith.noFeast')[0];
     expect(none?.causes).toContain(row['line']);
   });

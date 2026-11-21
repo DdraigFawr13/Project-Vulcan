@@ -9,6 +9,7 @@ import {
   moodOf,
   needOf,
   progressOf,
+  toolWaits,
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
@@ -172,6 +173,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
       .map((job) => {
         const level = levelOf(world, content, p.id, job);
         const declined = declinedLine(world, p.id, job);
+        const waits = toolWaits(world, content, job);
         const skill = content.jobs.find((j) => j.id === job)?.skill;
         return {
           job,
@@ -180,6 +182,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
           level,
           word: content.work.priority.words[level - 1] ?? '',
           ...(declined !== undefined && { declined }),
+          ...(waits && { waits }),
         };
       }),
   }));

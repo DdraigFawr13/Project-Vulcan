@@ -22,7 +22,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { able, canStandBeside, declineIfUnable, fetchKind } from '../band/index.ts';
 import { outranked, people } from '../band/index.ts';
 import { practise, priorityLine, reachableOf, skillOf, spotOf } from '../band/index.ts';
-import { useHeld } from '../band/index.ts';
+import { neededKind, readyFor, scaled, useHeld, worked as toolWorked } from '../band/index.ts';
 import { breakBoulder, stopWork } from './quarrying.ts';
 import { goBeside as goAround, standsFor } from './build.ts';
 
@@ -168,6 +168,13 @@ export function takeUpMasonry(ctx: SystemContext, p: EntityRow): boolean {
   const pick = choose(ctx, p);
   if (!pick) return false;
   const h = pick.house;
+  // Dressing stone needs a chisel (V-195); rough walls go up without one.
+  const tool = pick.task === 'dress' ? readyFor(ctx, p, 'dress') : 'ok';
+  if (tool !== 'ok') {
+    const chisel = neededKind(content, 'dress')?.name ?? '';
+    if (tool === 'none') sayStageWaits(ctx, h, `no ${chisel} to dress stone`);
+    return tool === 'knap';
+  }
   // Back to the house they were on is the same work: no new line.
   if (h['mason'] !== p.id || !h['masonTook']) {
     h['masonTook'] = ctx.emit('work.tookUpMasonry', {
@@ -254,6 +261,8 @@ function dress(ctx: SystemContext, p: EntityRow): boolean {
   const d = def(content).mason.dress;
   const got = fetchKind(ctx, p, 'stone', d.stone);
   if (got !== 'done') return got === 'walking' || stopWork(p);
+  if (!(p['work'] as number)) p['work'] = scaled(ctx, p, 'dress', minutesFor(ctx, p, d.minutes));
+  toolWorked(ctx, p, 'dress');
   if (!worked(ctx, p, d.minutes)) return true;
   useHeld(ctx, p, 'stone', d.stone);
   const line = ctx.emit('mason.dressed', {

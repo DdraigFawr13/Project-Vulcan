@@ -1,14 +1,20 @@
 {
 "week":7,"cart":3,"cartMaterial":"stone","job":"smith","none":75,"step":10,"stream":"craft","roll":2,"skilled":10,"charcoal":"charcoal","worn":75,
+"knap":{"job":"craft-tools","stream":"knap","minutes":120,"from":{"stone":1,"logs":1},"loose":["stone"],"rows":{"split":"tend","dress":"mason"}},
 "kinds":[
-{"id":"axe","name":"axe","serves":["fell","split"],"ingots":2,"charcoal":1,"minutes":180},
-{"id":"pick","name":"pick","serves":["mine","quarry"],"ingots":2,"charcoal":1,"minutes":180},
+{"id":"axe","name":"axe","serves":["fell","split"],"needed":["fell","split"],"stops":"felling or splitting firewood","ingots":2,"charcoal":1,"minutes":180},
+{"id":"pick","name":"pick","serves":["mine","quarry"],"needed":["mine","quarry"],"stops":"mining or quarrying","ingots":2,"charcoal":1,"minutes":180},
 {"id":"hoe","name":"hoe","serves":["farm"],"ingots":1,"charcoal":1,"minutes":120},
-{"id":"spear","name":"spear","serves":["hunt"],"ingots":1,"charcoal":1,"minutes":120},
-{"id":"hammer","name":"hammer","serves":["build","carpentry"],"ingots":1,"charcoal":1,"minutes":120},
-{"id":"kit","name":"healer's kit","serves":["heal"],"ingots":1,"charcoal":1,"minutes":120,"cart":0,"holders":2}],
+{"id":"spear","name":"spear","serves":["hunt"],"needed":["hunt"],"stops":"hunting anything bigger than a hare","ingots":1,"charcoal":1,"minutes":120},
+{"id":"hammer","name":"hammer","serves":["build","smith"],"needed":["smith"],"stops":"smithing","ingots":1,"charcoal":1,"minutes":120},
+{"id":"kit","name":"healer's kit","serves":["heal"],"ingots":1,"charcoal":1,"minutes":120,"cart":0,"holders":2},
+{"id":"needle","name":"needle","serves":["tailor"],"needed":["tailor"],"stops":"tailoring","ingots":1,"charcoal":1,"minutes":60,"cart":1,"knap":{"bone":1}},
+{"id":"sickle","name":"sickle","serves":["reap","thatch"],"ingots":1,"charcoal":1,"minutes":90,"cart":1},
+{"id":"chisel","name":"chisel","serves":["dress"],"needed":["dress"],"stops":"dressing stone","ingots":1,"charcoal":1,"minutes":90,"cart":1},
+{"id":"line","name":"fishing line","serves":["fish"],"ingots":1,"charcoal":1,"minutes":60,"cart":1},
+{"id":"saw","name":"saw","serves":["carpentry"],"ingots":2,"charcoal":1,"minutes":180,"cart":1}],
 "materials":[
-{"id":"stone","name":"stone","speed":100,"life":3600},
+{"id":"stone","name":"stone","speed":100,"life":1800},
 {"id":"bronze","name":"bronze","speed":130,"life":12000,"ingot":"bronze-ingot"},
 {"id":"iron","name":"iron","speed":150,"life":24000,"ingot":"iron-ingot"}],
 "quality":{"awful":-20,"poor":-10,"plain":0,"fine":10,"excellent":20,"masterwork":30}

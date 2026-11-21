@@ -112,9 +112,11 @@ describe('mining the seam', () => {
         .reduce((n, i) => n + (i['count'] as number), 0);
     for (let d = 0; d < 20 && !salt(); d += 1) step(w, sim, DAY);
     expect(salt()).toBe(20);
-    const mined = allLines(w).filter((e) => e.type === 'mine.veinMined');
+    // Worn tools ask for bronze, so copper and tin may be mined too (V-100, V-195): the seam once.
+    const mined = allLines(w).filter(
+      (e) => e.type === 'mine.veinMined' && e.data['what'] === 'salt',
+    );
     expect(mined).toHaveLength(1);
-    expect(mined[0]!.data['what']).toBe('salt');
     const shaft = shaftsOf(w).find((s) => s['metal'] === 'salt')!;
     expect(shaft['state']).toBe('done');
     // No second shaft is planned while salt lies in the store, however the fish goes.

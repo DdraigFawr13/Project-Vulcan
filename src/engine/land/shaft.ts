@@ -8,7 +8,7 @@ import { itemName, type EngineContent, type EntityRow } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { reachableStacks, stackOf } from '../crafts/index.ts';
 import { practiseMining, start, stop } from './minetask.ts';
-import { goBeside, same, spotOf, walkTo } from '../band/index.ts';
+import { goBeside, same, spotOf, walkTo, worked } from '../band/index.ts';
 
 /** The ladder: the item and count the first level takes (the first entry of `mine.ladder`). */
 export function ladderOf(content: EngineContent): { kind: string; count: number } | undefined {
@@ -69,6 +69,7 @@ export function sinking(ctx: SystemContext, p: EntityRow): boolean {
       (depth === 0 ? goBeside(ctx, p, x, y) : walkTo(ctx, p, { x, y, z: depth })) || stop(ctx, p)
     );
   p['work'] = (p['work'] as number) - 1;
+  worked(ctx, p, content.work.mine.job);
   practiseMining(ctx, p);
   if ((p['work'] as number) > 0) return true;
   const level = depth + 1;

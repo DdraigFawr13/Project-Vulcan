@@ -25,7 +25,15 @@ import {
   speciesOf,
 } from '../wild/index.ts';
 import { able, levelOf, outranked, people, practise, priorityLine, scaled } from '../band/index.ts';
-import { skillOf, spotOf, toolPercent, walkTo, worked } from '../band/index.ts';
+import {
+  couldHave,
+  readyFor,
+  skillOf,
+  spotOf,
+  toolPercent,
+  walkTo,
+  worked,
+} from '../band/index.ts';
 
 const DIRS = [
   [0, -1],
@@ -80,16 +88,24 @@ function chooseHerd(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const apart = (h: EntityRow): number =>
     cheb({ x: h['x'] as number, y: h['y'] as number, z: 0 }, green);
   const all = huntable(world, content);
-  const stalked = all.filter((h) => !snared.includes(h['species'] as string));
-  const list = (stalked.length ? stalked : all).sort(
-    (a, b) => size.get(b.id)! - size.get(a.id)! || apart(a) - apart(b) || a.id - b.id,
-  );
+  // Bigger game than a hare wants a spear (V-195); hares are snared by hand.
+  const armed = couldHave(ctx, p, content.work.hunt.job);
+  const stalked = armed ? all.filter((h) => !snared.includes(h['species'] as string)) : [];
+  const list = (
+    stalked.length ? stalked : all.filter((h) => armed || snared.includes(h['species'] as string))
+  ).sort((a, b) => size.get(b.id)! - size.get(a.id)! || apart(a) - apart(b) || a.id - b.id);
   for (const h of list) {
     const near = nearestOf(membersOf(world, h.id), spotOf(p));
     if (near && canReach(content, world.map, spotOf(p), spotOf(near))) return h;
   }
   return undefined;
 }
+
+/** Whether there is game about that is stalked, not snared (it wants a spear). */
+const bigGame = (ctx: SystemContext): boolean =>
+  huntable(ctx.world, ctx.content).some(
+    (h) => !ctx.content.work.hunt.snare.species.includes(h['species'] as string),
+  );
 
 /** The days since the pack last attacked, if it has within the packDays. */
 function attackedDays(ctx: SystemContext): number | undefined {
@@ -177,6 +193,9 @@ export function takeUpHunting(ctx: SystemContext, p: EntityRow): boolean {
   ).length;
   if (crew >= def.crew) return false;
   if (outranked(ctx, p, def.job, (q) => chooseHerd(ctx, q) !== undefined)) return false;
+  // No spear and bigger game about: they knap one if they can, else snare hares or do other work.
+  if (!couldHave(ctx, p, def.job) && bigGame(ctx) && readyFor(ctx, p, def.job) === 'knap')
+    return true;
   const herd = chooseHerd(ctx, p);
   const prey = herd && nearestOf(membersOf(world, herd.id), spotOf(p));
   if (!herd || !prey || !walkTo(ctx, p, spotOf(prey))) return false;

@@ -25,14 +25,17 @@ const sim = createSim(winter);
 const DAY = 1440;
 type World = ReturnType<typeof createWorld>;
 
-/** A world four winter days in, and its first fire that stands in a closed room. */
+/** A world on the first winter day its first fire stands in a closed room (day 5 on ledger,
+ * since knapping axes took a day in V-195), within ten days. */
 function roomFire(seed: string): { w: World; fire: Record<string, unknown> & { id: number } } {
   const w = createWorld(sim, seed);
-  step(w, sim, 4 * DAY);
-  const fire = firesOf(w).find((f) => {
-    const piece = furnitureOf(w).find((p) => p.id === f['piece'])!;
-    return !!roomAt(w, winter, piece['x'] as number, piece['y'] as number);
-  });
+  const inRoom = () =>
+    firesOf(w).find((f) => {
+      const piece = furnitureOf(w).find((p) => p.id === f['piece'])!;
+      return !!roomAt(w, winter, piece['x'] as number, piece['y'] as number);
+    });
+  for (let d = 0; d < 10 && !inRoom(); d++) step(w, sim, DAY);
+  const fire = inRoom();
   expect(fire).toBeDefined();
   return { w, fire: fire! };
 }

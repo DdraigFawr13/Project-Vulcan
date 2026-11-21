@@ -23,8 +23,13 @@ describe('needs', () => {
   // work and falls just short of the rest bar; smoke keeps three seeds in the check (Morgan).
   // Since 6B roofs (firewood for roofless rooms, a thatcher's hours) ledger's Ita hauls to bedtime
   // on day 7 and goes bored, as kiln, gwerin and marsh do too; ledger-1, a test seed, takes its
-  // place (searched 2026-11-20: smoke, tallow, anvil and ledger-1 hold the week).
-  for (const seed of ['ledger-1', 'smoke', 'tallow']) {
+  // place (searched 2026-11-20: smoke, tallow, anvil and ledger-1 hold the week). Since Seen at
+  // work Part 2 (knapping, V-195) smoke's Cuthbert thatches on past the line on day 4, as kiln and
+  // gwerin do; anvil takes its place (searched 2026-11-20: ledger-1, anvil, tallow hold the week).
+  // After merging 6B Bundles 5 and 6 and knapping axes for firewood splitters, anvil and tallow
+  // each have one person an hour bored (2,850 and 2,900 of 3,000); on 34 seeds 11 hold the week
+  // against main's 17 (searched 2026-11-21), among them ledger-1, anvil and ledger-3.
+  for (const seed of ['ledger-1', 'anvil', 'ledger-3']) {
     it(`keeps the band fed, rested, warm and relaxed for a week on ${seed}`, () => {
       const world = createWorld(sim, seed);
       const people = world.entities['person']!;

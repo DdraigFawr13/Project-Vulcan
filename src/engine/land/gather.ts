@@ -10,7 +10,7 @@ import { canReach, walkAt } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, busy, declineIfUnable, goBeside, layAround, outranked } from '../band/index.ts';
 import { people, practise, priorityLine, scaled, SIDES, skillOf, spotOf } from '../band/index.ts';
-import { tallyAdd, worked } from '../band/index.ts';
+import { couldHave, readyFor, tallyAdd, worked } from '../band/index.ts';
 
 /** `kinds` are the feature kinds worked, preferred in that order. */
 interface Gather {
@@ -183,6 +183,12 @@ export function takeUpMarked(ctx: SystemContext, p: EntityRow, forHouse: boolean
     forHouse,
   );
   if (!marked) return false;
+  // An axe is needed (V-195): without one they knap their own or do other work.
+  const tool = readyFor(ctx, p, 'fell');
+  if (tool !== 'ok') {
+    if (tool === 'none') p['path'] = [];
+    return tool === 'knap';
+  }
   const site = forHouse ? houseName(world, content, marked.house) : '';
   p['took'] = ctx.emit(forHouse ? 'work.tookUpClearing' : 'work.tookUpMarked', {
     causes: [marked.line],
@@ -205,7 +211,11 @@ export function takeUpGathering(ctx: SystemContext, p: EntityRow, job: 'fell' | 
     declineIfUnable(ctx, p, g.def.job);
     return false;
   }
-  if (outranked(ctx, p, g.def.job, (q) => chooseSource(ctx, q, g) !== undefined)) return false;
+  const can = (q: EntityRow) => couldHave(ctx, q, g.job) && chooseSource(ctx, q, g) !== undefined;
+  if (outranked(ctx, p, g.def.job, can)) return false;
+  // A felling or quarrying tool is needed (V-195): without one they knap their own or do other work.
+  const tool = readyFor(ctx, p, g.job);
+  if (tool !== 'ok') return tool === 'knap';
   const tree = chooseSource(ctx, p, g);
   if (tree === undefined || !goBeside(ctx, p, tree % map.width, Math.floor(tree / map.width)))
     return false;

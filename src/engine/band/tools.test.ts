@@ -299,13 +299,14 @@ describe('tools in use', () => {
           if (!free.some((f) => f.x === x && f.y === y) && freeTile(w, content, x, y))
             free.push({ x, y });
     const outside = free.splice(0, 2);
-    // The store is at its largest and every tile holds logs, so nothing can be carried in.
+    // The store is at its largest and every tile holds gems, so nothing can be carried in (logs
+    // would be taken out to knap the axes cleared below, V-195, and leave room).
     for (const at of free.splice(0, content.work.store.most - storeOf(w).length))
       addEntity(w, 'store', { ...at, z: 0, made: 1 });
     for (const t of storeOf(w)) {
       const [x, y] = [t['x'] as number, t['y'] as number];
       if (!itemsOf(w).some((i) => i['x'] === x && i['y'] === y))
-        layItem(w, { kind: 'logs', count: 1, x, y, z: 0, made: 1 });
+        layItem(w, { kind: 'gems', count: 1, x, y, z: 0, made: 1 });
     }
     expect(storeOf(w)).toHaveLength(content.work.store.most);
     const [ingots, charcoal] = [

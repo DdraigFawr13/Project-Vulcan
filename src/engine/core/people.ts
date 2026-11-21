@@ -1,6 +1,6 @@
 // What the people system reads from content: the band's dials (band.json) and the forked races,
 // cultures, traits and skills a colonist is made from.
-import type { ToolsDef } from './life.ts';
+import type { ToolsDef } from './tooldef.ts';
 import type { LawDefs } from './laws.ts';
 import type { HealthDefs } from './health.ts';
 import type { MetalDefs } from './metal.ts';

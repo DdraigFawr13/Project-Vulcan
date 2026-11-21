@@ -1,6 +1,7 @@
 // P6.3, V-162: on a winter evening, people at leisure go and sit by a lit fire, unordered, and
 // mend what they wear there. A year of winter (every season named winter, every month -12) on
-// the fire tests' seed, so the campfire and hearths are built and lit by the fifth day.
+// the fire tests' seed, so the campfire and hearths are built and lit by the sixth day (knapping axes took a day,
+// V-195).
 import { describe, expect, it } from 'vitest';
 import { content as game } from '../../content/index.ts';
 import {
@@ -27,7 +28,7 @@ const sim = createSim(winter);
 describe('winter evenings by the hearth', () => {
   it('gathers the idle by a lit fire after dark and mends their clothes there', () => {
     const w = createWorld(sim, 'ledger');
-    step(w, sim, 4 * TICKS_PER_DAY - (w.tick % TICKS_PER_DAY));
+    step(w, sim, 5 * TICKS_PER_DAY - (w.tick % TICKS_PER_DAY));
     step(w, sim, daylightAt(winter, w.tick).dusk);
     expect(winterEvening(w, winter)).toBe(true);
     const idle = () =>

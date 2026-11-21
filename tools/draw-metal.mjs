@@ -113,10 +113,53 @@ export function metalItems(p = readPalette()) {
       s.line(22, 16, 28, 10, m);
       s.put(28, 9, l);
     },
+    // Seen at work Part 2 (V-195): the needle (bone for the stone one), sickle, chisel, fishing
+    // line and saw.
+    needle: (s, [l, m, d]) => {
+      s.line(7, 27, 25, 5, d);
+      s.line(7, 26, 24, 5, m);
+      s.line(8, 25, 23, 6, l);
+      s.ell(24, 6, 2, 2, m, l, d);
+      s.put(24, 6, p.ink);
+    },
+    sickle: (s, [l, m, d]) => {
+      handle(s, 6, 28, 11, 19);
+      for (let a = 0; a <= 12; a += 1) {
+        const t = (a / 12) * Math.PI;
+        const x = Math.round(19 - 8 * Math.cos(t) * 1.1);
+        const y = Math.round(16 - 10 * Math.sin(t));
+        s.rect(x, y, 2, 2, a < 4 ? d : a < 9 ? m : l);
+      }
+    },
+    chisel: (s, [l, m, d]) => {
+      handle(s, 8, 28, 15, 17);
+      s.line(15, 17, 24, 5, d);
+      s.line(16, 17, 25, 5, m);
+      s.line(17, 17, 26, 6, l);
+      s.rect(23, 3, 5, 2, l);
+    },
+    line: (s, [l, m, d]) => {
+      s.ell(13, 19, 8, 7, p['straw dark'], p.straw, p['ui oak dark']);
+      s.ell(13, 19, 4, 3, p['dirt light'], p['dirt light'], p.trunk);
+      s.line(20, 15, 25, 8, p.straw);
+      s.line(25, 8, 25, 14, m);
+      s.line(25, 14, 22, 16, d);
+      s.put(22, 15, l);
+    },
+    saw: (s, [l, m, d]) => {
+      s.rect(4, 20, 7, 5, p.trunk);
+      s.rect(5, 21, 5, 2, p['dirt light']);
+      s.rect(11, 18, 17, 4, m);
+      s.rect(11, 18, 17, 1, l);
+      for (let x = 11; x < 28; x += 2) s.put(x, 22, d);
+    },
   };
+  const bone = [p['snow shade'], p.bone, p['dirt light']];
   for (const material of ['stone', 'bronze', 'iron'])
     for (const [kind, draw] of Object.entries(shapes))
-      icon(`item.${material}-${kind}`, (s) => draw(s, metals[material]));
+      icon(`item.${material}-${kind}`, (s) =>
+        draw(s, kind === 'needle' && material === 'stone' ? bone : metals[material]),
+      );
   return frames;
 }
 

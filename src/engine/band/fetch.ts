@@ -37,6 +37,7 @@ function stacksOf(
     'tan',
     'mason',
     'limeburn',
+    'craft-tools',
   ];
   const taken = new Set(jobs.flatMap((j) => [...busy(world, p, j)]));
   const from = spotOf(p);

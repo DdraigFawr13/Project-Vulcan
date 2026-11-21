@@ -90,6 +90,7 @@
       { "event": "law.answered", "only": { "answer": "refuses" }, "weight": 4, "many": "{Times} someone refused a law: {list}.", "item": "{name}" },
       { "event": "law.keptCustom", "weight": 3, "many": "{Count} kept to the old custom: {list}.", "item": "{name}" },
       { "event": "tool.broke", "weight": 2, "many": "{Count} tools broke: {list}.", "item": "{name}'s {what}" },
+      { "event": "tool.lastBroke", "weight": 5, "title": "the valley's last {kind} broke", "one": "The valley's last {kind} broke: no more {stops} until another was made.", "many": "{Times} the valley's last tool of a kind broke: {list}.", "item": "the {kind}" },
       { "event": "smith.noIngots", "weight": 2, "many": "{Times} the smith had no metal for a tool: {list}.", "item": "{who}'s {tool}" },
       { "event": "work.declined", "weight": 1, "many": "{Times} someone turned down work they were not able for: {list}.", "item": "{name}" },
       { "event": "build.waiting", "weight": 1, "one": "The {part} waited: no {good} could be reached.", "many": "Building waited {times} for want of goods: {list}.", "item": "the {part} for {good}" },

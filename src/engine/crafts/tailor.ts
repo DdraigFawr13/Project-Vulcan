@@ -10,6 +10,7 @@ import { lifeOf, shortOf, wantOf, worthFor, sparesOf, layItem } from '../goods/i
 import type { SystemContext } from '../sim/index.ts';
 import { able, declineIfUnable, fetchKind, goBeside, outranked, people } from '../band/index.ts';
 import { practise, priorityLine, reachableOf, skillOf, spotOf, useHeld } from '../band/index.ts';
+import { readyFor, scaled, worked } from '../band/index.ts';
 import { loomOf, whereOf } from './weave.ts';
 
 const stop = (p: EntityRow): false => {
@@ -64,6 +65,9 @@ export function takeUpTailoring(ctx: SystemContext, p: EntityRow): boolean {
     .map((q) => q['make']);
   const slotOf = (k: unknown) => content.clothes.garments.find((x) => x.item === k)?.slot;
   if (making.some((k) => slotOf(k) === g.slot)) return false;
+  // A needle is needed (V-195): without one they knap their own or do other work.
+  const tool = readyFor(ctx, p, def.job);
+  if (tool !== 'ok') return tool === 'knap';
   const stock = world.entities['stock']?.find((s) => s['good'] === content.clothes.good);
   const spares = sparesOf(world, content).length;
   p['took'] = ctx.emit('work.tookUpTailoring', {
@@ -80,7 +84,7 @@ export function takeUpTailoring(ctx: SystemContext, p: EntityRow): boolean {
   const level = skillOf(world, p, content.jobs.find((j) => j.id === def.job)?.skill ?? '');
   Object.assign(p, {
     ...{ job: 'tailor', plan: at.id, target: -1, make: g.item },
-    work: Math.ceil((g.minutes * 2 * def.skilled) / (def.skilled + level)),
+    work: scaled(ctx, p, def.job, Math.ceil((g.minutes * 2 * def.skilled) / (def.skilled + level))),
   });
   return tailoring(ctx, p);
 }
@@ -102,6 +106,7 @@ export function tailoring(ctx: SystemContext, p: EntityRow): boolean {
   if (!(here.z === 0 && Math.abs(here.x - x) + Math.abs(here.y - y) <= 1))
     return goBeside(ctx, p, x, y) || stop(p);
   p['work'] = (p['work'] as number) - 1;
+  worked(ctx, p, def.job);
   const skill = content.jobs.find((j) => j.id === def.job)?.skill ?? '';
   practise(ctx, p, skill, p['took'] as number);
   if ((p['work'] as number) > 0) return true;

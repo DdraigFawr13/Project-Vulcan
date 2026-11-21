@@ -66,7 +66,19 @@ export {
   toolFactor,
   toolPercent,
   toolsDaily,
+  toolsOfKind,
   worked,
   wornHeld,
 } from './tools.ts';
+export {
+  KNAP_TABLES,
+  couldHave,
+  knapping,
+  neededKind,
+  readyFor,
+  takeUpKnapping,
+  toolWaits,
+  wantTool,
+  type Ready,
+} from './knap.ts';
 export { WALK_FIELDS, stepAlong, walkTo, wander } from './walk.ts';
