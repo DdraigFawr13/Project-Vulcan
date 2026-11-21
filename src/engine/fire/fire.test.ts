@@ -65,8 +65,14 @@ describe('hearth and firewood', () => {
       let sampled = 0;
       let under = 0;
       let lowest = Infinity;
+      // The campfire's first lighting, read while fresh: a line past the sealed week keeps no
+      // words, and since knapping (V-195) anvil's campfire may not be lit again in the last week.
+      let campfire: ReturnType<typeof allLines>[number] | undefined;
       for (let h = 0; h < 14 * 24; h += 1) {
         step(w, sim, 60);
+        campfire ??= allLines(w).find(
+          (e) => e.type === 'fire.lit' && e.data['where'] === 'on the green',
+        );
         const day = Math.floor(w.tick / DAY);
         const lit = roomsLit(w);
         if (!allLitDay && lit.length && lit.every(Boolean)) allLitDay = day;
@@ -83,9 +89,6 @@ describe('hearth and firewood', () => {
       }
       expect(w.commandLog).toHaveLength(0);
       const lines = allLines(w);
-      const campfire = lines.find(
-        (e) => e.type === 'fire.lit' && e.data['where'] === 'on the green',
-      );
       // The table for the report: first campfire lit day, all rooms lit day, samples, under, min.
       console.log(
         `${seed}: campfire lit day ${Math.floor(campfire!.tick / DAY)}, all rooms lit day ${allLitDay}, ` +
