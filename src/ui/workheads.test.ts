@@ -22,6 +22,7 @@ describe('Work sheet headings', () => {
       'Care',
       'Lamp',
       'Tavern',
+      'School',
     ]);
   });
 
@@ -41,6 +42,7 @@ describe('Work sheet headings', () => {
       ['Care', ['heal']],
       ['Lamp', ['chandle', 'beekeep']],
       ['Tavern', ['brew', 'innkeep', 'bard']],
+      ['School', ['teach']],
     ]);
   });
 

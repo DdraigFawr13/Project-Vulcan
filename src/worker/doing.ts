@@ -13,6 +13,11 @@ import {
   plansOf,
   stationsOf,
   stockOf,
+  bookName,
+  booksOf,
+  personOf,
+  skillWord,
+  standingSchool,
   type EntityRow,
   type WorldState,
 } from '../engine/index.ts';
@@ -44,6 +49,8 @@ const WORK_LABELS = new Map<string, Words>([
   ['hearth', ['Going to make a hearth', 'Making a hearth']],
   ['tend', ['Going to a fire', 'Tending a fire']],
   ['help', ['Going to their master', 'Learning beside their master']],
+  ['teach', ['Going to the schoolroom', 'Teaching']],
+  ['lesson', ['Going to lessons', 'At lessons']],
 ]);
 const HAULING: Words = ['Carrying to the store', 'Hauling'];
 
@@ -61,6 +68,11 @@ const DOING_LABELS = new Map<string, Words>([
   ['leave', 'Leaving the valley'],
 ]);
 const IDLE: Words = ['Strolling', 'Idle'];
+/** Free time at the schoolroom (6B Bundle 6): the teacher writing a book, a reader at one. */
+const LEISURE_LABELS = new Map<string, Words>([
+  ['scribe', ['Going to sit with a master', 'Writing a book']],
+  ['read', ['Going to the schoolroom', 'Reading']],
+]);
 
 /** What a person is doing, in words (P2.2). */
 export function doingOf(p: EntityRow): string {
@@ -70,7 +82,8 @@ export function doingOf(p: EntityRow): string {
   const words =
     p['doing'] === 'work'
       ? (WORK_LABELS.get(p['job'] as string) ?? HAULING)
-      : (DOING_LABELS.get(p['doing'] as string) ?? IDLE);
+      : (p['doing'] === 'relax' && LEISURE_LABELS.get(p['job'] as string)) ||
+        (DOING_LABELS.get(p['doing'] as string) ?? IDLE);
   return pick(words, walking);
 }
 
@@ -175,6 +188,27 @@ function helpingDoing(world: WorldState, p: EntityRow, say: Say): string {
   return say('help', { master: (m?.['name'] as string) ?? '', skill: skill.toLowerCase() });
 }
 
+/** The schoolroom's teacher's name, or ''. */
+const teacherName = (world: WorldState): string =>
+  (personOf(world, standingSchool(world)?.['teacher'])?.['name'] as string | undefined) ?? '';
+
+/** Free time at the schoolroom (6B Bundle 6): writing down a master's ways, or reading a book. */
+function schoolLeisure(world: WorldState, p: EntityRow, say: Say): WalkerView['now'] | undefined {
+  if (p['job'] === 'scribe') {
+    const book = booksOf(world).find((b) => b['state'] === 'writing');
+    if (!book) return undefined;
+    const master = (personOf(world, book['master'])?.['name'] as string | undefined) ?? '';
+    const skill = skillWord(content, book['skill'] as string);
+    return { text: say('scribe', { master, skill }), why: book['begun'] as number };
+  }
+  const book = p['job'] === 'read' && booksOf(world).find((b) => b.id === p['target']);
+  if (!book) return undefined;
+  return {
+    text: say('read', { book: bookName(world, content, book) }),
+    why: book['line'] as number,
+  };
+}
+
 /** Each job's sentence; a job not here is hauling. */
 const JOB_PHRASES = new Map<string, Phrase>([
   ['build', building],
@@ -199,6 +233,8 @@ const JOB_PHRASES = new Map<string, Phrase>([
   ['forage', gathering],
   ['quarry', gathering],
   ['help', helpingDoing],
+  ['teach', plain('teach')],
+  ['lesson', (world, _p, say) => say('lesson', { teacher: teacherName(world) })],
 ]);
 
 /** What a person is doing and why, in the words of content `work.doing` (P2.9): the sentence,
@@ -215,6 +251,8 @@ export function nowOf(world: WorldState, p: EntityRow): WalkerView['now'] {
   const care = careNow(world, p, say);
   if (care) return { text: care };
   const doing = p['doing'] as string;
+  const free = doing === 'relax' && schoolLeisure(world, p, say);
+  if (free) return free;
   if (doing !== 'work')
     return { text: say(pick(NEED_KEYS.get(doing) ?? ['stroll', 'idle'], walking)) };
   const phrase = JOB_PHRASES.get(p['job'] as string);

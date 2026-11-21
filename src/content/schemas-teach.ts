@@ -1,6 +1,6 @@
 // Shape of Vulcan's teaching file (src/content/data/teach.json, 6B Bundle 6, P6.13, V-074, V-141,
 // V-189): learning beside a master, apprentices, children watching a parent, and a master's loss.
-import { list, map, num, obj } from './schema';
+import { list, map, num, obj, ref, str } from './schema';
 import { count, text } from './schema-fields';
 
 const percent = num({ min: 0 });
@@ -39,5 +39,30 @@ export const TEACH_SCHEMAS = {
     memories: obj({ master: text, learner: text }),
     // Words for the lines: why a master took this learner, and how a master went.
     words: obj({ law: text, child: text, friend: text, trait: text, died: text, left: text }),
+    // The schoolroom (V-189 q7): the Build sheet's Schoolroom row (`start` level), its house size
+    // and what it wants inside; the Teaching row (`teacher.job`) and the trait ties go to; children
+    // from `from` per cent of their coming of age go to lessons for the first `lesson.hours` of
+    // the working day, which raise their strongest gift up to `lesson.upTo`; a book is `book.minutes`
+    // of sittings within `near` tiles of a master whose `doing` is one of `free` (walking, the scribe
+    // looks for them again every `look` minutes), kept on a `shelf`; reading one
+    // goes `read.pace` per cent for up to `read.minutes` an evening, up to the book's level less
+    // `read.less`.
+    school: obj({
+      build: obj({
+        name: text,
+        start: num({ min: 1 }),
+        size: str(),
+        wants: list(obj({ kind: str(), count: num({ min: 1 }) })),
+      }),
+      teacher: obj({ job: ref('jobs'), trait: text }),
+      from: percent,
+      lesson: obj({ hours: num({ min: 1 }), upTo: num({ min: 1 }) }),
+      book: obj({
+        ...{ minutes: num({ min: 1 }), free: list(text), shelf: str() },
+        ...{ near: num({ min: 1 }), look: num({ min: 1 }) },
+      }),
+      read: obj({ minutes: num({ min: 1 }), pace: percent, less: count }),
+      words: obj({ children: text, masters: text, teacher: text }),
+    }),
   }),
 };
