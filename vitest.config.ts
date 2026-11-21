@@ -1,9 +1,11 @@
 import { availableParallelism } from 'node:os';
 import { defineConfig } from 'vitest/config';
 
-// Year-long and month-long colony runs (RULES.md VR-67). The quick `npm run check` leaves these
-// files out so it stays under 30 s; `npm run check:full` and CI's core job run every file. Direct
-// runs (`npx vitest run <file>`, `npm run test:related`) always include them.
+// Three tiers (RULES.md VR-67). The quick `npm run check` (VULCAN_TESTS=quick) leaves out the slow
+// and the long files; `npm run check:full` (VULCAN_TESTS=full) leaves out only the long ones; CI's
+// `npm run check:all` runs every file. Direct runs (`npx vitest run <file>`, `npm run
+// test:related`) always include them.
+// Month-long colony runs and slower: out of the quick tier.
 const slowFiles = [
   // The lamp (P5.13): two eight-day runs with dusk at 15:00.
   'src/engine/lamp/lamp.test.ts',
@@ -13,50 +15,22 @@ const slowFiles = [
   'src/engine/bees/bees.test.ts',
   // The mill and harvest home (5B Bundle 4): a 240-day run on anvil.
   'src/engine/build/mill.test.ts',
-  'src/engine/build/fields.test.ts',
   // Tan pits (5B Bundle 5): a short run to pits built and leather tanned.
   'src/engine/build/pits.test.ts',
-  'src/engine/build/walls.test.ts',
-  'src/engine/crafts/cook.test.ts',
   'src/worker/furniture.test.ts',
-  'src/engine/build/furniture.test.ts',
-  'src/engine/build/houses.test.ts',
-  'src/engine/fire/fire.test.ts',
-  'src/engine/wild/wild.test.ts',
   'src/engine/herding/wild.test.ts',
   'src/engine/flock/flock.test.ts',
   'src/engine/herding/herd.test.ts',
-  'src/engine/map/map.test.ts',
-  'src/engine/mine/mine.test.ts',
-  'src/engine/needs/winter.test.ts',
-  'src/engine/land/forage.test.ts',
-  'src/engine/people/jobs.test.ts',
   'src/engine/sim/skip.test.ts',
-  'src/worker/save.test.ts',
   // A 136-day run (Bundle 1's field views): 15 s of the quick tier's 37 s (P4.9).
   'src/worker/fields.test.ts',
-  // Injury and death (P5.6, P5.8): a 20-day run to the first cottage, and a burial.
-  'src/engine/health/health.test.ts',
-  // Strangers and homes (P5.9, P5.14): three runs of two to three weeks on a valley seed.
-  'src/engine/band/strangers.test.ts',
-  // The same words on the page's side (P5.9, P5.14): one run of about 25 days on anvil/1.
+  // Strangers and homes on the page's side (P5.9, P5.14): one run of about 25 days on anvil/1.
   'src/worker/strangers.test.ts',
   // Worn paths and roads (P5.10): a run to the first cottage, then a road laid.
   'src/engine/build/roads.test.ts',
-  // The 5A review: each held the quick tier past its 40 s (12.7 s of tool and smithy runs, 11.8 s
-  // laying out every seed's levels).
-  'src/engine/band/tools.test.ts',
-  'src/engine/map/levels.test.ts',
-  // Stores by kind (5B Bundle 1): a run to the first store built and filled.
-  'src/engine/build/stores.test.ts',
-  // Salt and the cellar (5B Bundle 3): runs of 20 to 60 days with miners digging.
-  'src/engine/mine/salt.test.ts',
-  'src/engine/keep/cellar.test.ts',
   // Moved out of the quick tier to fit `npm run check` under 40 s (VR-67, 2026-11-18): colony runs
-  // of 10 to 30 days (sickness, smithy, loom, well, Work priorities).
-  'src/engine/health/sick.test.ts',
+  // of 10 to 30 days (smithy, well, Work priorities).
   'src/engine/build/smithy.test.ts',
-  'src/engine/crafts/loom.test.ts',
   'src/engine/build/well.test.ts',
   'src/engine/band/priority.test.ts',
   // Refactor plan proposal 3 (2026-11-19): colony runs of 1 to 15 days that share what they can inside
@@ -80,11 +54,47 @@ const slowFiles = [
   'src/engine/inn/inn.test.ts',
 ];
 
+// The longest files (6T fix A, P5, 2026-11-21): 25 files of 8 to 40 s each, 400 s of the full
+// tier's 600 s of test time as measured here, which had taken check:full to 199 s against its
+// 120 s. CI runs them on every ready PR; a thread that changes their system runs its file.
+const longFiles = [
+  'src/engine/mine/mine.test.ts',
+  'src/engine/land/forage.test.ts',
+  'src/engine/band/tools.test.ts',
+  'src/engine/map/map.test.ts',
+  'src/engine/build/houses.test.ts',
+  'src/engine/fire/fire.test.ts',
+  'src/engine/band/strangers.test.ts',
+  'src/engine/build/fields.test.ts',
+  'src/engine/wild/wild.test.ts',
+  'src/worker/save.test.ts',
+  'src/engine/colony/colony.test.ts',
+  'src/engine/build/furniture.test.ts',
+  'src/engine/health/sick.test.ts',
+  'src/engine/build/stores.test.ts',
+  'src/engine/mine/salt.test.ts',
+  'src/engine/map/levels.test.ts',
+  'src/engine/crafts/cook.test.ts',
+  'src/engine/health/health.test.ts',
+  'src/engine/needs/winter.test.ts',
+  'src/engine/build/walls.test.ts',
+  'src/engine/people/jobs.test.ts',
+  'src/engine/crafts/loom.test.ts',
+  'src/engine/keep/cellar.test.ts',
+  'src/engine/crafts/mason.test.ts',
+  'src/engine/defy/hard.test.ts',
+];
+
+const left: Record<string, string[]> = {
+  quick: [...slowFiles, ...longFiles],
+  full: longFiles,
+};
+
 // Tests sit next to the code they test (RULES.md VR-49). A test over 2 s is flagged as slow (VR-46).
 export default defineConfig({
   test: {
     include: ['src/**/*.test.ts', 'tools/tests/**/*.test.ts'],
-    exclude: process.env.VULCAN_TESTS === 'quick' ? slowFiles : [],
+    exclude: left[process.env.VULCAN_TESTS ?? ''] ?? [],
     environment: 'node',
     slowTestThreshold: 2000,
     // One worker a core. Vitest's default leaves one core for itself, which on CI's two-core

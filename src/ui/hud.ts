@@ -4,6 +4,7 @@
 // game rule (GAME-02).
 import type {
   ClockView,
+  JumpEndView,
   JumpSpan,
   JumpView,
   LandingsView,
@@ -32,6 +33,8 @@ export interface HudActions {
   togglePanel(kind: PanelButton): void;
   /** The player closed a screen with its "dismiss" button. */
   dismissed(): void;
+  /** Stay here, after a jump stopped early: the recaps it passed wait in the Chronicle. */
+  stay(): void;
 }
 
 export class Hud {
@@ -79,12 +82,9 @@ export class Hud {
     // iOS Safari applies :active (the pressed plate) only when the page listens for touches.
     document.addEventListener('touchstart', () => {}, { passive: true });
     this.debug.hidden = !debug;
-    this.time = new TimeBar({
-      setSpeed: (speed) => actions.setSpeed(speed),
-      jump: (span) => actions.jump(span),
-      stops: () => actions.togglePanel('stops'),
-      opened: () => this.showMenu(false),
-    });
+    const { setSpeed, jump, stay } = actions;
+    const stops = () => actions.togglePanel('stops');
+    this.time = new TimeBar({ setSpeed, jump, stay, stops, opened: () => this.showMenu(false) });
     const group = this.time.group;
     this.mood.addEventListener('click', () => actions.togglePanel('mood'));
     // Ledger stays in the bar; the rest fold under ⋯ on a phone (UI_STYLE.md) and sit in the bar on
@@ -125,7 +125,7 @@ export class Hud {
     this.menu = { root: menu, button: more };
     const status = el('div', { class: 'status' });
     status.append(group, panels);
-    bar.append(this.clock, status, this.time.line, this.time.tray);
+    bar.append(this.clock, status, this.time.line, this.time.tray, this.time.card);
     const zoom = el('div', { class: 'hud zoom' });
     this.up.addEventListener('click', () => actions.level(-1));
     this.down.addEventListener('click', () => actions.level(1));
@@ -163,6 +163,7 @@ export class Hud {
     skipping?: boolean;
     mood?: MoodView;
     jump?: JumpView;
+    jumpEnd?: JumpEndView;
     landings: LandingsView;
   }): void {
     const { clock, tick, at, weather, mood } = s;

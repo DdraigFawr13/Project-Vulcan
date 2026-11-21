@@ -253,3 +253,30 @@
   display: grid;
   gap: 8px;
 }
+
+/* A jump that stopped early (6T fix A): the tray's paper card with the line that stopped it, then
+   Stay here and Jump on (where it lands under the words), each a full-height plate. */
+.stopcard .stopline {
+  margin: 6px 0 2px;
+  font: 400 16px/1.3 var(--read);
+  color: var(--ink);
+}
+#hud .stopcard button {
+  min-height: 56px;
+}
+#hud .stopcard button.jumpon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-image-source: var(--plate-on);
+  color: var(--oak-dark);
+  text-shadow: none;
+}
+#hud .stopcard button.jumpon b {
+  font: 400 13px/1 var(--label);
+}
+#hud .stopcard button.jumpon small {
+  font: italic 400 14px/1.2 var(--read);
+}

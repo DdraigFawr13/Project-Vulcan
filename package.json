@@ -15,6 +15,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "check": "node .claude/skills/test-design/scripts/test-traps.mjs && node tools/check.mjs",
     "check:full": "node tools/check.mjs --full",
+    "check:all": "node tools/check.mjs --all",
     "typecheck": "tsc --noEmit",
     "boundaries": "node tools/check-boundaries.mjs",
     "limits": "node tools/check-limits.mjs",

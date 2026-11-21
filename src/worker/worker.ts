@@ -13,7 +13,6 @@ import {
   makeRegion,
   siteOf,
   START_TICK,
-  step,
   valleyOf,
   submitCommand,
   SYSTEMS,
@@ -23,22 +22,13 @@ import {
   type Stub,
   type WorldState,
 } from '../engine/index.ts';
-import {
-  createPace,
-  jump,
-  jumpDone,
-  react,
-  setSpeed,
-  SKIP_MS,
-  skipEnds,
-  stopSkip,
-  ticksDue,
-} from './pace.ts';
-import { actOf, landing, landingsOf, stopSettings } from './stops.ts';
-import { recapCount, recapFeed, recapPauses } from './recaps.ts';
+import { createPace, jump, jumpDone, setSpeed, SKIP_MS, ticksDue } from './pace.ts';
+import { cutJump, runTicks, type Clock } from './clock.ts';
+import { landing, landingsOf, stopSettings } from './stops.ts';
+import { recapFeed } from './recaps.ts';
 import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type { ChunkView, FromWorker, LedgerLine, ToWorker } from './protocol.ts';
-import type { JumpView, RecapSettings, StopAct } from './protocol-time.ts';
+import type { JumpEndView, JumpSpan, JumpView } from './protocol-time.ts';
 import { pickerBuffers, previewOf, regionView } from './region.ts';
 import { checkSave } from './save.ts';
 import { ANSWERS, isRead } from './answers.ts';
@@ -68,11 +58,14 @@ const systemNames = SYSTEMS.map((s) => s.id);
 let world: WorldState | undefined;
 /** The page's test mode: test tools are applied only when it is on. */
 let testMode = false;
-let pace = createPace(performance.now());
-/** What each stop kind does (V-191), the content defaults until the page sends its own. */
-let stops = stopSettings();
-/** Which recaps pause play at a running speed (V-191); both until the page says otherwise. */
-let recaps: RecapSettings = { season: true, year: true };
+/** The clock: its pace; what each stop kind does (V-191), the content defaults until the page
+ * sends its own; which recaps pause play at a running speed, both until the page says otherwise;
+ * and how the last jump ended, until a snapshot tells the page. */
+const clock: Clock = {
+  pace: createPace(performance.now()),
+  stops: stopSettings(),
+  recaps: { season: true, year: true },
+};
 /** Each recap goes to the page once. */
 const recapsSent = recapFeed();
 /** Chunk versions the page has already been sent, per level; empty until the first snapshot. */
@@ -95,36 +88,27 @@ let offered: WorldState[] = [];
 const post = (message: FromWorker, transfer: Transferable[] = []): void =>
   postMessage(message, { transfer });
 
-/** Runs one tick, timed, and collects its lines (sealing trims the log's front at midnight);
- * returns what the strongest of its notable lines asks of the clock (V-191). At a running speed a
- * recap switched on pauses play, so the page can open it; a jump runs on and shows it on landing. */
-function tickOnce(w: WorldState): StopAct | undefined {
-  const start = performance.now();
-  const before = recapCount(w);
-  const lines = step(w, sim, 1);
-  unposted.push(...lines);
-  recordTick(timing, performance.now() - start, systemNames);
-  const act = actOf(lines, sim.notable, stops);
-  return !pace.skip && recapPauses(w, before, recaps) ? 'pause' : act;
-}
-
-/** Runs `ticks` ticks (for at most `RUN_MS`), or, jumping ahead, as many as fit in `SKIP_MS`; then
- * hands the days sealed meanwhile to the page to archive, so a save never carries them. */
+/** Runs `ticks` ticks (for at most `RUN_MS`), or, jumping ahead, as many as fit in `SKIP_MS`, each
+ * timed, collecting their lines (sealing trims the log's front at midnight); then hands the days
+ * sealed meanwhile to the page to archive, so a save never carries them. */
 function run(ticks: number): void {
   const w = world;
   if (!w) return;
-  if (pace.skip) {
-    // Tick by tick, exactly as at any speed, so a jump writes the ledger a 3x run would.
-    const until = performance.now() + SKIP_MS;
-    while (pace.skip && performance.now() < until) {
-      const act = tickOnce(w);
-      if (skipEnds(pace, w.tick, act)) stopSkip(pace);
-    }
-  } else {
-    const until = performance.now() + RUN_MS;
-    for (let i = 0; i < ticks && performance.now() < until; i += 1)
-      if (react(pace, tickOnce(w))) break;
-  }
+  let at = performance.now();
+  const until = at + (clock.pace.skip ? SKIP_MS : RUN_MS);
+  runTicks(
+    w,
+    sim,
+    clock,
+    ticks,
+    () => performance.now() < until,
+    (lines) => {
+      unposted.push(...lines);
+      const now = performance.now();
+      recordTick(timing, now - at, systemNames);
+      at = now;
+    },
+  );
   if (w.sealed.length) {
     post({ type: 'segments', items: w.sealed.map(({ key, text }) => ({ key, text })) });
     w.sealed = [];
@@ -133,10 +117,22 @@ function run(ticks: number): void {
 
 /** The jump under way: where it lands and how far it has come. */
 function jumpView(tick: number): JumpView {
+  const { pace } = clock;
   const span = pace.span ?? 'next';
   const done = jumpDone(pace, tick);
-  const to = span === 'next' ? 'the next event' : landingsOf(pace.from ?? tick)[span];
-  return { span, to, ...(done !== undefined && { done }) };
+  return { span, to: landsAt(span, pace.from ?? tick), ...(done !== undefined && { done }) };
+}
+
+const landsAt = (span: JumpSpan, from: number): string =>
+  span === 'next' ? 'the next event' : landingsOf(from)[span];
+
+/** How the last jump ended, once: the page opens the recaps it passed only if it landed. */
+function jumpEndView(): JumpEndView | undefined {
+  const ended = clock.ended;
+  if (!ended) return undefined;
+  delete clock.ended;
+  const { span, from, landed, line: stopped } = ended;
+  return { span, to: landsAt(span, from), landed, ...(stopped && { line: line(stopped) }) };
 }
 
 /** Line `e` for the page, as the running world sees it. */
@@ -152,6 +148,7 @@ function snapshot(w: WorldState): void {
   const people = peopleSent.next(w);
   const moved = animals.next(w);
   const annals = recapsSent.next(w, line);
+  const jumpEnd = jumpEndView();
   if (unposted.length) {
     post({ type: 'events', batch: unposted.map(line) });
     unposted = [];
@@ -174,10 +171,11 @@ function snapshot(w: WorldState): void {
     {
       type: 'snapshot',
       tick: w.tick,
-      at: pace.last,
-      speed: pace.speed,
-      skipping: pace.skip,
-      ...(pace.span && { jump: jumpView(w.tick) }),
+      at: clock.pace.last,
+      speed: clock.pace.speed,
+      skipping: clock.pace.skip,
+      ...(clock.pace.span && { jump: jumpView(w.tick) }),
+      ...(jumpEnd && { jumpEnd }),
       landings: landingsOf(w.tick),
       day: { ...lawHours(w, content), ...sunOf(w.tick) },
       law: lawsOf(w),
@@ -216,9 +214,10 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
   animals.reset();
   recapsSent.reset();
   unposted = [...w.log];
-  pace = createPace(performance.now());
+  clock.pace = createPace(performance.now());
+  delete clock.ended;
   run(0); // hands over any sealed days the world arrived with (never ticks: the pace is fresh)
-  timer ??= setInterval(() => guarded(() => run(ticksDue(pace, performance.now()))), WAKE_MS);
+  timer ??= setInterval(() => guarded(() => run(ticksDue(clock.pace, performance.now()))), WAKE_MS);
   post({
     type: 'ready',
     from,
@@ -281,12 +280,15 @@ const CONTROLS: { [K in Control['type']]: (m: Extract<Control, { type: K }>) => 
     }
     adopt(loaded, 'save');
   },
-  setSpeed: (m) => run(setSpeed(pace, m.speed, performance.now())),
+  setSpeed(m) {
+    if (world) cutJump(clock, world.tick);
+    run(setSpeed(clock.pace, m.speed, performance.now()));
+  },
   setStops(m) {
-    stops = stopSettings(m.stops);
+    clock.stops = stopSettings(m.stops);
   },
   setRecaps(m) {
-    recaps = { season: m.recaps.season === true, year: m.recaps.year === true };
+    clock.recaps = { season: m.recaps.season === true, year: m.recaps.year === true };
   },
   lookAgain() {
     // Only on arrival and only once: the same seed made again with the band's second choice.
@@ -296,7 +298,13 @@ const CONTROLS: { [K in Control['type']]: (m: Extract<Control, { type: K }>) => 
   jump(m) {
     // For everyone since V-191: the player's clock, not a lever. Every tick runs on the way.
     if (!world) return;
-    jump(pace, m.span, world.tick, m.span === 'next' ? undefined : landing(world.tick, m.span));
+    delete clock.ended;
+    jump(
+      clock.pace,
+      m.span,
+      world.tick,
+      m.span === 'next' ? undefined : landing(world.tick, m.span),
+    );
   },
   requestSnapshot() {
     if (world) snapshot(world);
@@ -311,7 +319,7 @@ const CONTROLS: { [K in Control['type']]: (m: Extract<Control, { type: K }>) => 
     submitCommand(world, m);
     // Paused, a lever takes effect at once (stamped for the next tick, as it would apply), and
     // the page sees it now rather than once time runs.
-    if (pace.speed === 0 && !pace.skip) {
+    if (clock.pace.speed === 0 && !clock.pace.skip) {
       unposted.push(...applyDue(world, sim));
       // One snapshot for a burst of levers (a heading's stepper sends a command per row).
       snapSoon ??= setTimeout(() => {

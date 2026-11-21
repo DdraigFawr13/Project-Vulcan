@@ -18,18 +18,26 @@ export function stopSettings(player: StopSettings = {}): StopSettings {
 }
 
 /** The strongest act asked by `lines`, the notable ones of a tick (`notable` is `sim.notable`). */
-export function actOf(
+export const actOf = (
   lines: readonly SimEvent[],
   notable: (e: SimEvent) => boolean,
   stops: StopSettings,
-): StopAct | undefined {
-  let act: StopAct | undefined;
+): StopAct | undefined => stopOf(lines, notable, stops)?.act;
+
+/** The strongest act asked by `lines` and the first line that asked it, for the card that says why
+ * a jump stopped early. */
+export function stopOf(
+  lines: readonly SimEvent[],
+  notable: (e: SimEvent) => boolean,
+  stops: StopSettings,
+): { act: StopAct; line: SimEvent } | undefined {
+  let found: { act: StopAct; line: SimEvent } | undefined;
   for (const line of lines) {
     if (!notable(line)) continue;
-    const next = stops[kindOf.get(line.type) ?? ''] ?? 'note';
-    if (act === undefined || strength[next] > strength[act]) act = next;
+    const act = stops[kindOf.get(line.type) ?? ''] ?? 'note';
+    if (found === undefined || strength[act] > strength[found.act]) found = { act, line };
   }
-  return act;
+  return found;
 }
 
 /** The first tick of the next month, season or year after `tick` (00:00 on its first day). */

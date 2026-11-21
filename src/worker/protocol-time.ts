@@ -34,6 +34,17 @@ export interface JumpView {
   done?: number;
 }
 
+/** How the last jump ended, sent once (6T fix A): it landed, so the page opens the recaps it
+ * passed; or it stopped early on a Pause line (`line`), so the page shows that line with Jump on
+ * (the same span again, which lands where this one was going, `to`) and Stay here; or the player
+ * stopped it (neither). Recaps a jump passed open only when it lands. */
+export interface JumpEndView {
+  span: JumpSpan;
+  to: string;
+  landed: boolean;
+  line?: LedgerLine;
+}
+
 /** Where each jump would land from now: "1 Seedmonth", "1 Highsun, summer", "1 Thawmonth, Year 2". */
 export interface LandingsView {
   month: string;

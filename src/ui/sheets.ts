@@ -247,6 +247,11 @@ export class Sheets {
     return this.recaps.chronicle();
   }
 
+  /** Stay here, after a jump stopped early (6T fix A). */
+  stay(): void {
+    this.recaps.stay();
+  }
+
   /** The recap switches, for the What stops play sheet. */
   recapRows(): HTMLElement[] {
     return this.recaps.rows();

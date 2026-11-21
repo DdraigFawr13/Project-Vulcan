@@ -80,6 +80,7 @@ const hud = new Hud(
     reload: () => location.reload(),
     togglePanel: (kind) => (panel.kind === kind ? closePanel() : openPanel(kind)),
     dismissed: () => saves.dismissed(),
+    stay: () => sheets.stay(),
   },
   debug,
 );
@@ -203,6 +204,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       sheets.setPeople(people);
       // A loaded world starts paused, like a new one.
       pace.reset();
+      hud.time.reset();
       if (message.from === 'save') {
         closePanel();
         saves.loaded();

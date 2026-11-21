@@ -26,6 +26,7 @@ import type {
 
 import type {
   JumpSpan,
+  JumpEndView,
   JumpView,
   LandingsView,
   RecapSettings,
@@ -315,6 +316,8 @@ export type FromWorker =
       /** Jumping ahead (`jump` says where to); ends paused. */
       skipping: boolean;
       jump?: JumpView;
+      /** The jump that ended since the last snapshot, once. */
+      jumpEnd?: JumpEndView;
       landings: LandingsView;
       /** The colony's day (P2.5): work from and until, and bedtime, in whole hours; since P4.8 the
        * hours the work-hours law sets this season. */

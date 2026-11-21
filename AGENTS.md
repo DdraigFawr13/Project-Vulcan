@@ -16,10 +16,10 @@ Open [docs/RULES.md](docs/RULES.md), [docs/DECISIONS.md](docs/DECISIONS.md), [do
 ## Local checks (run before pushing)
 
 - While iterating: `npm run test:related -- <changed files>`.
-- Every push: `npm run check` (test-traps warnings, drift, format, types, boundaries, limits, shape ratchet, code map, reading, quick tests, build). Before ready: `npm run check:full` and `npm run test:browser` once (VR-67).
+- Every push: `npm run check` (test-traps warnings, drift, format, types, boundaries, limits, shape ratchet, code map, reading, quick tests, build). Before ready: `npm run check:full` (all but the long files) and `npm run test:browser` once (VR-67). CI runs `npm run check:all`.
 - Shape ratchet (`npm run shape`, `-- --list` names the offenders): long or tangled functions, copied helpers and contracts over 6 KB may not grow in number; after a refactor lowers one, run `npm run shape -- --update`. Before adding a helper, search for an existing one (the `refactor` skill).
 - Coverage: `npm run coverage` (full suite with V8 coverage, then one line per system) at each phase review; not part of `npm run check` or CI.
-- Test time budgets (VR-67): `npm run check` under 40 s; `npm run check:full` under 120 s (measured 2026-11-19 in a 4-core cloud container: quick 39.0 s, full 123.7 s OVER after the 6A review's midden fix; 2026-11-20 full 126.3 s OVER with 6B roofs; the full tier's time is the simulation itself, so profile a year run before trimming tests).
+- Test time budgets (VR-67): `npm run check` under 40 s; `npm run check:full` under 120 s (2026-11-21, 4-core container: 199 s with every file, 103.9 s without the long files, V-200).
 - UI or render changes: also `npm run test:browser`.
 - Map or terrain changes: `npm run map:stats` (the seed table against Phase 1's done-whens; seeds in `src/engine/map/seeds.ts`) and `npm run map:render` (PNGs in `tmp/maps/`, not committed), as the `map-check` skill says.
 - After adding or changing a module's `index.ts` or `MODULE.md`: `npm run codemap`.
@@ -28,7 +28,7 @@ Cloud sessions: the synced session hook installs Node 24.19.0 and npm 11.9.0 and
 
 ## What CI runs
 
-`ci.yml`: `core` (`npm run check:full`) and `browser` (the browser tests on the production build, in Playwright's image), target under 5 minutes. It runs once, when a PR is marked ready for review, and never on a draft or on `main` after a merge (RULES VR-54). So: open PRs as drafts, push freely, run the checks locally, and mark ready only when the PR is done. A push to a ready PR re-runs CI. `prune-merged-branches.yml` deletes merged branches until GitHub's auto-delete setting is on.
+`ci.yml`: `core` (`npm run check:all`) and `browser` (the browser tests on the production build, in Playwright's image), target under 5 minutes. It runs once, when a PR is marked ready for review, and never on a draft or on `main` after a merge (RULES VR-54). So: open PRs as drafts, push freely, run the checks locally, and mark ready only when the PR is done. A push to a ready PR re-runs CI. `prune-merged-branches.yml` deletes merged branches until GitHub's auto-delete setting is on.
 
 ## Overrides
 

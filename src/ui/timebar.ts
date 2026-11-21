@@ -1,9 +1,11 @@
 // The player's clock in the bar (Phase 6T, V-191): ❚❚, the speed plate ("3× ▾") with its list of
 // six speeds, ▸▸ with the Jump ahead tray (Next event, a month, a season, a year, each naming where
-// it lands) and, while a jump runs, the jump line: where it lands, a progress bar and Stop. Shows
-// what the worker says (landings, progress); decides nothing (GAME-02).
+// it lands) and, while a jump runs, the jump line: where it lands, a progress bar and Stop. A jump
+// that stops early on a Pause line leaves a card with that line, Jump on and Stay here (6T fix A).
+// Shows what the worker says (landings, progress, how a jump ended); decides nothing (GAME-02).
 import {
   SPEEDS,
+  type JumpEndView,
   type JumpSpan,
   type JumpView,
   type LandingsView,
@@ -18,6 +20,8 @@ export interface TimeActions {
   stops(): void;
   /** The speed list or the tray opened: the ⋯ menu folds. */
   opened(): void;
+  /** Stay here, on the card of a jump that stopped early. */
+  stay(): void;
 }
 
 const SPANS: readonly [JumpSpan, string][] = [
@@ -39,6 +43,12 @@ export class TimeBar {
   readonly group = el('div', { class: 'speeds', role: 'group', 'aria-label': 'Speed' });
   /** The Jump ahead tray, under the bar. */
   readonly tray = el('div', { class: 'tray', 'data-testid': 'jump-tray', hidden: '' });
+  /** After a jump stopped early on a Pause line: the line, Jump on and Stay here, under the bar. */
+  readonly card = el('div', { class: 'tray stopcard', 'data-testid': 'jump-stopped', hidden: '' });
+  private readonly cardLine = el('p', { class: 'stopline' });
+  private readonly cardTo = el('small');
+  /** The span Jump on sets out on again: it lands where the stopped jump was going. */
+  private again: JumpSpan = 'next';
   /** Shown only while a jump runs, in place of the alert line. */
   readonly line = el('div', { class: 'jumpline', 'data-testid': 'jump-line', hidden: '' });
   private readonly pause = plate({ 'aria-label': 'Pause', 'data-testid': 'speed-0' }, '❚❚');
@@ -98,6 +108,24 @@ export class TimeBar {
     const words = el('span', { class: 'words' });
     words.append(this.to, this.track);
     this.line.append(words, stop);
+    this.drawCard();
+  }
+
+  private drawCard(): void {
+    const on = plate({ class: 'go jumpon', 'data-testid': 'jump-on' }, '');
+    on.append(el('b', {}, 'Jump on'), this.cardTo);
+    on.addEventListener('click', () => {
+      this.card.hidden = true;
+      this.actions.jump(this.again);
+    });
+    const stay = plate({ 'data-testid': 'jump-stay' }, 'Stay here');
+    stay.addEventListener('click', () => {
+      this.card.hidden = true;
+      this.actions.stay();
+    });
+    const acts = el('div', { class: 'jumps' });
+    acts.append(stay, on);
+    this.card.append(el('h2', {}, 'The jump stopped'), this.cardLine, acts);
   }
 
   private drawTray(): void {
@@ -127,6 +155,11 @@ export class TimeBar {
     this.tray.append(head, grid, about);
   }
 
+  /** A world began or loaded: no stop card from the last one. */
+  reset(): void {
+    this.card.hidden = true;
+  }
+
   /** Opens the speed list or the tray (closing the other), or folds both. */
   fold(which?: 'list' | 'tray'): void {
     this.list.hidden = which !== 'list';
@@ -144,8 +177,21 @@ export class TimeBar {
     this.note.textContent = `Every hour still happens on the way; you just watch it fast. ${what}`;
   }
 
-  show(s: { speed: Speed; skipping: boolean; jump?: JumpView; landings: LandingsView }): void {
-    const { speed, skipping, jump, landings } = s;
+  show(s: {
+    speed: Speed;
+    skipping: boolean;
+    jump?: JumpView;
+    jumpEnd?: JumpEndView;
+    landings: LandingsView;
+  }): void {
+    const { speed, skipping, jump, jumpEnd, landings } = s;
+    if (jumpEnd?.line && !jumpEnd.landed) {
+      this.again = jumpEnd.span;
+      this.cardLine.textContent = jumpEnd.line.text;
+      this.cardTo.textContent = `to ${jumpEnd.to}`;
+      this.card.hidden = false;
+      this.fold();
+    } else if (skipping || speed !== 0) this.card.hidden = true;
     if (speed !== 0) this.shown = speed;
     this.pause.setAttribute('aria-pressed', String(!skipping && speed === 0));
     this.plate.setAttribute('aria-pressed', String(!skipping && speed !== 0));
