@@ -72,8 +72,7 @@ describe('levels below', () => {
     const W = early.map.width;
     const stone = (i: number) => kinds[early.map.tiles[i]!]!.stone === true;
     // Rock tiles at a mountain's foot, where the rock below spreads out from.
-    const foot = early.map.tiles
-      .map((_, i) => i)
+    const foot = [...early.map.tiles.keys()]
       .filter((i) => stone(i) && i % W > 0 && !stone(i - 1))
       .filter((_, k) => k % 7 === 0)
       .slice(0, 30);

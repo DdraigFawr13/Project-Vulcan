@@ -86,6 +86,10 @@ export function costAt(content: EngineContent, map: MapState, z: number, i: numb
 
 /** The cost of climbing from `i` on level `z` to the same place on `z + 1`: 0 when there is no
  * way down there (stairs or a shaft above meeting stairs or a shaft below). */
+/** Whether a tile kind leads down (stairs or a shaft), whatever lies below it. */
+export const leadsDown = (content: EngineContent, kind: number): boolean =>
+  !!kindsOf(content).down[kind];
+
 export function downAt(content: EngineContent, map: MapState, z: number, i: number): number {
   const top = layerOf(map, z);
   const below = layerOf(map, z + 1);

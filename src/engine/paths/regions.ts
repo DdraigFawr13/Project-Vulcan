@@ -7,7 +7,7 @@
 // made, so a loaded world searches exactly as the running one did.
 import type { EngineContent, MapState } from '../core/index.ts';
 import { CHUNK, chunksAcross, chunksDown, layerOf } from '../map/index.ts';
-import { costAt, downAt } from './grid.ts';
+import { costAt, downAt, leadsDown } from './grid.ts';
 
 /** Up to 128 regions fit in a 16 by 16 chunk (a checkerboard), so 256 ids a chunk is enough. */
 const PER_CHUNK = 256;
@@ -34,6 +34,9 @@ export interface Regions {
   cheap: Int32Array[];
   /** Per level: the chunk versions the labels were made from. */
   seen: Int32Array[];
+  /** Per level and chunk: its tiles that lead down (stairs, shafts), the only ones that can link
+   * to the level below. */
+  downs: Map<number, number[]>[];
 }
 
 const cache = new WeakMap<MapState, Regions>();
@@ -44,7 +47,7 @@ const levels = (map: MapState): number => 1 + map.levels.length;
 export function regionsOf(content: EngineContent, map: MapState): Regions {
   let r = cache.get(map);
   if (!r) {
-    r = { labels: [], walk: [], cheap: [], regions: new Map(), seen: [] };
+    r = { labels: [], walk: [], cheap: [], regions: new Map(), seen: [], downs: [] };
     cache.set(map, r);
   }
   const across = chunksAcross(map);
@@ -58,12 +61,18 @@ export function regionsOf(content: EngineContent, map: MapState): Regions {
       r.walk[z] = new Uint8Array(map.width * map.height);
       r.seen[z] = new Int32Array(chunks).fill(-1);
       r.cheap[z] = new Int32Array(chunks);
+      r.downs[z] = new Map();
     }
     for (let c = 0; c < chunks; c += 1)
       if (r.seen[z]![c] !== layer.chunkVersions[c]) {
         const [cx, cy] = [c % across, Math.floor(c / across)];
         // A version raised for something that is not walking (a print, lying snow) relabels nothing.
         const same = r.seen[z]![c] !== -1 && sameWalk(content, map, r, z, cx, cy);
+        // Stairs cut on open ground walk the same but now lead down, so the links change.
+        if (same && String(downsIn(content, map, z, cx, cy)) !== String(r.downs[z]!.get(c))) {
+          r.downs[z]!.set(c, downsIn(content, map, z, cx, cy));
+          changed = true;
+        }
         if (!same) {
           label(content, map, r, z, cx, cy);
           changed = true;
@@ -121,6 +130,7 @@ function label(
       if (walk[y * w + x]! && walk[y * w + x]! < 10) cheap += 1;
     }
   r.cheap[z]![cy * chunksAcross(map) + cx] = cheap;
+  r.downs[z]!.set(cy * chunksAcross(map) + cx, downsIn(content, map, z, cx, cy));
   let next = 0;
   const stack: number[] = [];
   for (let y = y0; y < y1; y += 1)
@@ -178,9 +188,15 @@ function link(content: EngineContent, map: MapState, r: Regions): void {
   for (let z = 0; z < levels(map); z += 1) {
     const labels = r.labels[z];
     if (!labels) continue;
+    const below = r.labels[z + 1];
+    // Only chunk edges link, and tiles leading down to a reached level below: each row is read
+    // at those tiles alone, in reading order as before (the 250-tile map, V-201).
+    const downs = below ? [...r.downs[z]!.values()].flat().sort((a, b) => a - b) : [];
+    let d = 0;
     for (let y = 0; y < map.height; y += 1)
-      for (let x = 0; x < map.width; x += 1) {
+      for (const x of rowTiles(map.width, y, downs, d)) {
         const i = y * w + x;
+        while (d < downs.length && downs[d]! <= i) d += 1;
         const a = labels[i]!;
         if (a < 0) continue;
         // Only the tiles on a chunk's right and bottom edges can touch another chunk.
@@ -188,7 +204,6 @@ function link(content: EngineContent, map: MapState, r: Regions): void {
           join(a, labels[i + 1]!, 0);
         if (y % CHUNK === CHUNK - 1 && y + 1 < map.height && labels[i + w]! >= 0)
           join(a, labels[i + w]!, 0);
-        const below = r.labels[z + 1];
         if (below && below[i]! >= 0) {
           const climb = downAt(content, map, z, i);
           if (climb) join(a, below[i]!, climb);
@@ -212,4 +227,25 @@ function link(content: EngineContent, map: MapState, r: Regions): void {
         }
       }
   }
+}
+
+/** The x of each tile in row `y` that can link: every tile of a chunk's bottom row, else each
+ * chunk's right edge and the row's tiles leading down (`downs` sorted, read from `from`). */
+function rowTiles(width: number, y: number, downs: readonly number[], from: number): number[] {
+  if (y % CHUNK === CHUNK - 1) return Array.from({ length: width }, (_, x) => x);
+  const xs: number[] = [];
+  for (let x = CHUNK - 1; x < width; x += CHUNK) xs.push(x);
+  for (let k = from; k < downs.length && downs[k]! < (y + 1) * width; k += 1)
+    if (downs[k]! >= y * width) xs.push(downs[k]! - y * width);
+  return xs.length > width / CHUNK ? [...new Set(xs)].sort((a, b) => a - b) : xs;
+}
+
+/** A chunk's tiles that lead down, in reading order. */
+function downsIn(content: EngineContent, map: MapState, z: number, cx: number, cy: number) {
+  const tiles = layerOf(map, z)!.tiles;
+  const out: number[] = [];
+  for (let y = cy * CHUNK; y < Math.min(map.height, (cy + 1) * CHUNK); y += 1)
+    for (let x = cx * CHUNK; x < Math.min(map.width, (cx + 1) * CHUNK); x += 1)
+      if (leadsDown(content, tiles[y * map.width + x]!)) out.push(y * map.width + x);
+  return out;
 }

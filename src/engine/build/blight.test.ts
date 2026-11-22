@@ -92,14 +92,16 @@ describe('dry spells', () => {
       const far = (f['tiles'] as number[]).filter((i) => farFromWater(w, content, i));
       if (far.length < 2) continue;
       const [parched, watered] = far as [number, number];
+      // Each tile against its own yield: their soils may differ (they did on the 250-tile valley).
       const before = tileYield(w, content, f, 100, parched);
+      const wetBefore = tileYield(w, content, f, 100, watered);
       // Five dry days after the first (which only starts the count) cost 1% each; one tile is watered daily.
       pass(w, 'dry', 6, () => {
         resow();
         f['watered'] = [watered];
       });
       expect(tileYield(w, content, f, 100, parched)).toBeLessThan(before);
-      expect(tileYield(w, content, f, 100, watered)).toBe(before);
+      expect(tileYield(w, content, f, 100, watered)).toBe(wetBefore);
       return;
     }
     throw new Error('no seed gave a field with two tiles far from water');

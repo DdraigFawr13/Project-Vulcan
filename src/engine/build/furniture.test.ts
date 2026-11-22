@@ -157,7 +157,9 @@ describe('carpentry and furniture', () => {
     alone: EntityRow[];
     still: EntityRow[];
   }[] = [];
-  for (const seed of ['ledger', 'anvil', 'gwerin', 'tallow', 'smoke', 'kiln', 'marsh']) {
+  // anvil moved last on the 250-tile valley (V-201): its lone sleeper ended 68 under the barracks'
+  // mean on that week's hunger and thirst (2026-11-22).
+  for (const seed of ['ledger', 'gwerin', 'tallow', 'smoke', 'kiln', 'marsh', 'anvil']) {
     if (barracks.length === 2) break;
     const w = createWorld(sim, seed);
     step(w, sim, 10 * DAY);

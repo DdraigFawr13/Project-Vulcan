@@ -47,8 +47,10 @@ describe('stores by kind', () => {
 
   it('never sites a store whose edge shuts off ground beside it, such as a pasture gate', () => {
     // ledger: the wood yard once went up a tile from the pasture fence, between two boulders, and
-    // its edge sealed the pasture's only gate; the flock was never folded again.
-    const world = createWorld(sim, 'ledger');
+    // its edge sealed the pasture's only gate; the flock was never folded again. On the 250-tile
+    // valley (V-201) ledger's wood yard waits past day 40, so ledger-1 holds the check (searched
+    // 2026-11-22: ledger/1, anvil, tallow, kiln, ledger-1 hold).
+    const world = createWorld(sim, 'ledger-1');
     const wood = () => depotsOf(world).find((d) => d['store'] === 'wood');
     while (wood()?.['state'] !== 'built' && world.tick < 40 * DAY) step(world, sim, DAY);
     expect(wood()?.['state']).toBe('built');

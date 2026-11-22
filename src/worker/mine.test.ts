@@ -75,10 +75,12 @@ describe('shaft views', () => {
     const row = shaftsOf(w)[0]!;
     expect(miningShown(w)).toBe(true);
     const [x, y] = [row['x'] as number, row['y'] as number];
-    expect(goodsOf(w).shafts).toEqual([{ x, y, z: 0, state: 'planned' }]);
+    // On the 250-tile valley (V-201) no ore lies near, so copper and tin may want shafts too.
+    const before = goodsOf(w).shafts;
+    expect(before).toContainEqual({ x, y, z: 0, state: 'planned' });
     const page = tileView(w, x, y, 0, lineOf)!.shaft!;
     expect(page.what).toBe(`a shaft with a ladder, down to level ${row['to'] as number}`);
-    expect(page.why).toContain('Iron is wanted');
+    expect(page.why).toMatch(/^(Iron|Copper|Tin) is wanted/);
     expect(page.work).toMatch(
       /^about 4 hours a level, \d+ in all, by whoever takes up Mining; 2 logs for the ladder$/,
     );
@@ -88,9 +90,9 @@ describe('shaft views', () => {
     submitCommand(w, { tick: w.tick + 1, kind: 'sendBackShaft', data: { shaft: page.id } });
     step(w, sim, 2);
     expect(tileView(w, x, y, 0, lineOf)!.shaft).toBeUndefined();
-    const next = goodsOf(w).shafts;
+    const next = goodsOf(w).shafts.filter((s) => !before.some((b) => b.x === s.x && b.y === s.y));
     expect(next).toHaveLength(1);
-    expect(next[0]).not.toMatchObject({ x, y });
+    expect(goodsOf(w).shafts).toHaveLength(before.length);
     expect(tileView(w, next[0]!.x, next[0]!.y, 0, lineOf)!.shaft!.back).toBe(false);
   });
 
