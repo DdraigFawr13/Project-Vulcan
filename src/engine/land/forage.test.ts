@@ -75,6 +75,8 @@ describe('foraging', () => {
 
     it(`stocks berries unordered and keeps the band fed to day 35 on ${seed}`, () => {
       const world = createWorld(sim, seed);
+      // The whole valley known (V-205): this test is not about known land.
+      world.map.known.fill(1);
       fedRuns.set(seed, world);
       let stored = 0;
       for (let day = 1; day <= 35; day += 1) {

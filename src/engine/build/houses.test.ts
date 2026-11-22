@@ -38,6 +38,8 @@ function ranWith(seed: string) {
   let r = tenDays.get(seed);
   if (!r) {
     const world = createWorld(sim, seed);
+    // The whole valley known (V-205): these tests are not about known land.
+    world.map.known.fill(1);
     step(world, sim, DAY);
     const sited = lines(world, 'build.sited')[0]!;
     const early = {
@@ -102,6 +104,7 @@ describe('houses', () => {
     // (searched 14 seeds 2026-11-22: tallow/2, ledger/3, smoke/1 and kiln/1 hold).
     const { day3 } = ranWith('smoke/1');
     const world = done(day3) ? createWorld(sim, 'smoke/1') : structuredClone(day3);
+    world.map.known.fill(1);
     while (!done(world) && world.tick < 9 * DAY) step(world, sim, 1);
     const house = firstHouse(world);
     expect(done(world)).toBe(true);
