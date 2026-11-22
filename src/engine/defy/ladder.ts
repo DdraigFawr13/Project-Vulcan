@@ -3,7 +3,8 @@
 // answer at once; an act step (work slowly, take, brawl, leave) needs the grievance `bar` points
 // (moved by traits) past keeping the law, `hold` days on the step below, the memory and the
 // belief behind it, and for leaving a faction or `leave.misery` days in low spirits. `cool` days
-// under a step's bar step them down one, with a line.
+// under a step's bar step them down one, with a line; a friend of a calling holder whose
+// push has `cool` (the peacemaker, 6B Bundle 6) cools in that many days instead.
 import {
   TICKS_PER_DAY,
   type DefyStep,
@@ -11,8 +12,8 @@ import {
   type EntityRow,
   type WorldState,
 } from '../core/index.ts';
-import { factionOf } from '../colony/index.ts';
-import { addEntity } from '../entity/index.ts';
+import { factionOf, talkersOf } from '../colony/index.ts';
+import { addEntity, pushers } from '../entity/index.ts';
 import { moodOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { leave } from './leave.ts';
@@ -25,6 +26,17 @@ function barOf(world: WorldState, step: DefyStep, person: number): number {
   for (const t of world.entities['trait'] ?? [])
     if (t['person'] === person) bar += step.traits?.[t['trait'] as string] ?? 0;
   return bar;
+}
+
+/** Days under its bar an act step takes to cool for `p`: defy.json `cool`, or the quickest
+ * `cool` push of a calling held by a friend (colony `talkersOf`: told them a tale or heard one
+ * from them lately). */
+export function coolOf(world: WorldState, content: EngineContent, p: number): number {
+  let days = content.defy.cool;
+  for (const h of pushers(world, content))
+    if (h.push.cool && h.person.id !== p && talkersOf(world, content, h.person).includes(p))
+      days = Math.min(days, h.push.cool);
+  return days;
 }
 
 /** Whether the grievance `g` (with its `why`) holds `p` on step `k` (1-based). */
@@ -117,7 +129,7 @@ function settle(
     }
     if (!content.defy.steps[k - 1]!.answer) {
       row['under'] = (row['under'] as number) + 1;
-      if ((row['under'] as number) < content.defy.cool) return false;
+      if ((row['under'] as number) < coolOf(world, content, p.id)) return false;
     }
     stepDown(ctx, p, row);
   }

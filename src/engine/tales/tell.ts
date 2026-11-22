@@ -6,7 +6,7 @@
 // down. Each telling is a `tale.told` line citing the teller's own line for it, so "why?" walks
 // back from any version to the event; the listener holds that version and may believe it.
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
-import { addEntity, awake, people } from '../entity/index.ts';
+import { addEntity, awake, people, pushers } from '../entity/index.ts';
 import { cupsTonight, inTavern, keeperOf } from '../inn/index.ts';
 import { byAFire, winterEvening } from '../people/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -106,7 +106,7 @@ function tell(
     heard: day,
     day,
   });
-  feedBelief(ctx, listener.id, def, level, false, line);
+  feedBelief(ctx, listener.id, def, level, false, line, teller.id);
   story['told'] = (story['told'] as number) + 1;
   feltAgain(ctx, listener.id, story.id, line);
 }
@@ -141,14 +141,18 @@ export function forget(ctx: SystemContext): void {
       .filter((p) => p['status'] === 'dead' || p['status'] === 'buried')
       .map((p) => p.id),
   );
-  // A tale in a song still sung is never forgotten (6B Bundle 5).
+  // A tale in a song still sung is never forgotten (6B Bundle 5); one told by a calling holder
+  // whose push has `keep` is kept that per cent as long (the lorekeeper, 6B Bundle 6).
   const sung = sungStories(ctx);
+  const keep = new Map(pushers(world, content).map((h) => [h.person.id, h.push.keep ?? 100]));
+  const keptFor = (t: EntityRow) =>
+    Math.floor((content.tales.forgetDays * (keep.get(t['teller'] as number) ?? 100)) / 100);
   world.entities['tale'] = tales.filter(
     (t) =>
       !dead.has(t['person'] as number) &&
       (t['teller'] === 0 ||
         sung.has(t['story'] as number) ||
-        day - (t['day'] as number) < content.tales.forgetDays),
+        day - (t['day'] as number) < keptFor(t)),
   );
   const held = new Set(world.entities['tale'].map((t) => t['story'] as number));
   world.entities['story'] = storiesOf(world).filter((s) => held.has(s.id));

@@ -48,44 +48,29 @@ function taleRows(w: WalkerView): HTMLElement[] {
   return out;
 }
 
-/** Who they are: their roles, strongest first, then their ambition. */
+/** One "who they are" row: its words, a why? to its line, and a note under it if any. */
+function selfRow(id: string, item: { text: string; note?: string; why: number }): HTMLElement {
+  const row = el('div', { class: 'memrow belief', 'data-testid': id });
+  row.append(el('span', { class: 't' }, item.text), why(item.why));
+  if (item.note) row.append(el('span', { class: 'r' }, item.note));
+  return row;
+}
+
+/** Who they are: their calling and faith, roles strongest first, ambition, teaching (6B Bundle
+ * 6: their master or apprentice, who taught them and whom they taught) and defiance (P6.7: how
+ * far a grievance has carried them, and the memory and belief behind it). */
 function selfRows(w: WalkerView): HTMLElement[] {
-  const { roles, ambition, defiance, faith, teaching = [] } = w.self;
-  if (!roles.length && !ambition && !defiance && !faith && !teaching.length) return [];
-  const out: HTMLElement[] = [el('h3', {}, 'Who they are')];
-  // Their faith (6B): the creed, devotion and any title, and what it holds sacred.
-  if (faith) {
-    const row = el('div', { class: 'memrow belief', 'data-testid': 'faith' });
-    row.append(el('span', { class: 't' }, faith.text), why(faith.why));
-    if (faith.note) row.append(el('span', { class: 'r' }, faith.note));
-    out.push(row);
-  }
-  for (const r of roles) {
-    const row = el('div', { class: 'memrow belief', 'data-testid': 'role' });
-    row.append(el('span', { class: 't' }, r.text), why(r.why));
-    if (r.note) row.append(el('span', { class: 'r' }, r.note));
-    out.push(row);
-  }
-  if (ambition) {
-    const row = el('div', { class: 'memrow belief', 'data-testid': 'ambition' });
-    row.append(el('span', { class: 't' }, ambition.text), why(ambition.why));
-    out.push(row);
-  }
-  // Teaching (6B Bundle 6): their master or apprentice, who taught them and whom they taught.
-  for (const t of teaching) {
-    const row = el('div', { class: 'memrow belief', 'data-testid': 'teaching' });
-    row.append(el('span', { class: 't' }, t.text), why(t.why));
-    out.push(row);
-  }
-  // Defiance (P6.7): how far a grievance has carried them, and the memory and belief behind it.
-  if (defiance) {
-    const row = el('div', { class: 'memrow belief', 'data-testid': 'defiance' });
-    row.append(el('span', { class: 't' }, defiance.text), why(defiance.why));
-    if (defiance.note) row.append(el('span', { class: 'r' }, defiance.note));
-    out.push(row);
-  }
-  out.push(el('h3', {}, 'Memories'));
-  return out;
+  const { roles, ambition, defiance, faith, calling, teaching = [] } = w.self;
+  const rows = [
+    ...(calling ? [selfRow('calling', calling)] : []),
+    ...(faith ? [selfRow('faith', faith)] : []),
+    ...roles.map((r) => selfRow('role', r)),
+    ...(ambition ? [selfRow('ambition', ambition)] : []),
+    ...teaching.map((t) => selfRow('teaching', t)),
+    ...(defiance ? [selfRow('defiance', defiance)] : []),
+  ];
+  if (!rows.length) return [];
+  return [el('h3', {}, 'Who they are'), ...rows, el('h3', {}, 'Memories')];
 }
 
 export function memoryRows(w: WalkerView | undefined): HTMLElement[] {

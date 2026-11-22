@@ -207,4 +207,7 @@ export interface SelfView {
   faith?: { text: string; note: string; why: number };
   /** 6B Bundle 6: their master or apprentice now, and who taught them and whom they taught. */
   teaching?: { text: string; why: number }[];
+  /** 6B Bundle 6 (V-189 q8): the calling they hold ("Holds a calling: the master mason."), what
+   * it does and their masterwork if made, and the line that gave it. */
+  calling?: { text: string; note: string; why: number };
 }

@@ -4,9 +4,10 @@
 // change. Traits quicken or slow it (teach.json `traits`); alone, high levels come slowly
 // (`slow`); beside a master at the same work it goes `beside` per cent, beside one's own master
 // (engine teach's `apprentice` rows, read as data) `apprentice` per cent, and a teacher can take a
-// learner up to `past` levels beyond their potential. A taught rise names the teacher.
+// learner up to `past` levels beyond their potential. A taught rise names the teacher. A master
+// whose calling pushes `apprentice` (the master, 6B Bundle 6) teaches their own at that pace.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { far } from '../entity/index.ts';
+import { far, pushOf } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
 const HUNDRED = 100;
@@ -79,7 +80,7 @@ function bondTeacher(
   const qLevel = (q && (skillRow(world, q.id, skill)?.['level'] as number)) ?? 0;
   const stance = { skill, level, qLevel, reach: t.bondReach, ahead: 1 };
   return q && teaches(content, p, q, stance)
-    ? { person: q, level: qLevel, pace: t.apprentice }
+    ? { person: q, level: qLevel, pace: pushOf(world, content, q.id)?.apprentice ?? t.apprentice }
     : undefined;
 }
 
