@@ -34,4 +34,12 @@ export const JOB_FIELDS = {
   pail: 'count',
   /** Thatching (6B): bundles of reed or straw held for the roof. */
   bundles: 'count',
+  /** A trip's pack (6W Slice 5, V-206): 1 while they carry a bedroll and food out (land
+   * `camp.ts`); `rollAt` the surface tile + 1 their own laid bedroll came from, 0 for one taken
+   * from the store; `fire` the tick their camp fire burns until; `astray` the tick they are lost
+   * until. */
+  packed: 'int',
+  rollAt: 'int',
+  fire: 'int',
+  astray: 'int',
 } as const;

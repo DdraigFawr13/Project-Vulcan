@@ -4,9 +4,13 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { stockOf, storeOf } from '../goods/index.ts';
+import { withoutAccidents } from '../health/index.ts';
 import { allLines, createSim, createWorld, step, submitCommand } from '../index.ts';
 
 const sim = createSim(content);
+const calmContent = withoutAccidents(content);
+const calm = createSim(calmContent);
+const stepWorld = step;
 const HOUR = 60;
 const DAY = 1440;
 type World = ReturnType<typeof createWorld>;
@@ -21,10 +25,14 @@ const kindAt = (w: World, i: number) =>
   w.map.features[i] ? content.features[w.map.features[i]! - 1]!.kind : '';
 
 /** A colony whose near wood is gone (every tree and log within felling reach of the store cut
- * away) and who wants plenty of it: what it has and knows of is under the stock level. */
-function woodless(seed: string): World {
-  const w = createWorld(sim, seed);
+ * away) and who wants plenty of it: what it has and knows of is under the stock level. `known`
+ * widens the land known round the store; `after` minutes pass first. */
+function woodless(seed: string, { known = 0, after = 0, run = sim } = {}): World {
+  const w = createWorld(run, seed);
+  if (after) step(w, run, after);
   const [ox, oy] = storeAt(w);
+  for (let i = 0; i < w.map.known.length; i += 1)
+    if (cheb(i % w.map.width, Math.floor(i / w.map.width), ox, oy) <= known) w.map.known[i] = 1;
   const reach = content.work.fell.reach;
   for (let i = 0; i < w.map.features.length; i += 1) {
     const [x, y] = [i % w.map.width, Math.floor(i / w.map.width)];
@@ -114,5 +122,97 @@ describe('scouting', () => {
     }
     expect(checked).toBeGreaterThan(100);
     expect(unknown).toBe(0);
+  });
+});
+
+// 6W Slice 5 (V-206): a far trip packs, camps and comes home; a late scout is looked for.
+describe('trips', () => {
+  const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === type);
+  const packOf = (w: World, id: number) =>
+    (w.entities['item'] ?? []).filter((i) => i['owner'] === id && i['state'] === 'pack');
+
+  it('a trip not back by bedtime packs a bedroll and food, camps on it and comes home', () => {
+    // Known land wide round the store, so the unknown edge is far; the need comes at 15:00.
+    const w = woodless('anvil', { known: 70, after: 9 * HOUR, run: calm });
+    let camped: ReturnType<typeof lines>[number] | undefined;
+    let laid = false;
+    let ate = false;
+    let food = Infinity;
+    for (
+      let t = 0;
+      t < 3 * DAY && !lines(w, 'land.toldOf').concat(lines(w, 'land.noWord')).length;
+      t += 1
+    ) {
+      stepWorld(w, calm, 1);
+      const out = lines(w, 'work.tookUpScouting')[0];
+      const s = out && (w.entities['person'] ?? []).find((p) => p.id === out.actors[0])!;
+      if (!s || s['job'] !== 'scout') continue;
+      const packed = packOf(w, s.id).filter((i) => i['kind'] !== 'bedroll');
+      const left = packed.reduce((n, i) => n + (i['count'] as number), 0);
+      if (left < food && food < Infinity) ate = true;
+      food = Math.min(food, left);
+      camped ??= lines(w, 'land.camped')[0];
+      // Asleep at camp: on their own bedroll, laid where they lie.
+      if (camped && s['doing'] === 'sleep')
+        laid ||= (w.entities['item'] ?? []).some(
+          (i) =>
+            i['owner'] === s.id &&
+            i['kind'] === 'bedroll' &&
+            i['state'] === 'laid' &&
+            i['x'] === s['x'] &&
+            i['y'] === s['y'],
+        );
+    }
+    const out = lines(w, 'work.tookUpScouting')[0]!;
+    expect(out.data['kit']).toMatch(/bedroll and food for \d days/);
+    expect(camped).toBeDefined();
+    expect(camped!.causes).toContain(out.id);
+    expect(laid).toBe(true);
+    expect(ate).toBe(true);
+    // Home: the trip is told of and the pack put down.
+    const home = lines(w, 'land.toldOf').concat(lines(w, 'land.noWord'))[0];
+    expect(home?.causes).toContain(out.id);
+    stepWorld(w, calm, HOUR);
+    expect(packOf(w, out.actors[0]!)).toHaveLength(0);
+  });
+
+  it('a scout lost out there is worried for, and a searcher going their way finds them', () => {
+    // Every hour on unknown land loses the way, for three days, in any weather.
+    const def = content.work.scout;
+    const lost = {
+      ...def.lost,
+      perHour: 4 * def.lost.per,
+      days: 3,
+      weather: content.weather.map((k) => k.id),
+    };
+    const fall = { ...def.fall, perHour: 0 };
+    const run = createSim({
+      ...calmContent,
+      work: { ...calmContent.work, scout: { ...def, lost, fall } },
+    });
+    const w = woodless('anvil', { known: 50, run });
+    for (let t = 0; t < 5 * DAY && !lines(w, 'land.foundScout').length; t += 10)
+      stepWorld(w, run, 10);
+    const [strayed] = lines(w, 'land.lostWay');
+    const [late] = lines(w, 'land.late');
+    const [search] = lines(w, 'land.searching');
+    const [found] = lines(w, 'land.foundScout');
+    expect(strayed).toBeDefined();
+    const out = allLines(w).find((e) => e.id === strayed!.causes[0])!;
+    expect(out.type).toBe('work.tookUpScouting');
+    // Each line leads back to the last: lost, a day late and worried for, looked for, found.
+    expect(late!.causes).toContain(out.id);
+    expect(search!.causes).toContain(late!.id);
+    expect(found!.causes).toContain(search!.id);
+    expect(found!.actors).toEqual([search!.actors[0], out.actors[0]]);
+    expect(found!.data['how']).toMatch(/set off home together/);
+    // Both come home; the trip ends with its news.
+    for (
+      let t = 0;
+      t < 2 * DAY && !lines(w, 'land.toldOf').concat(lines(w, 'land.noWord')).length;
+      t += 10
+    )
+      stepWorld(w, run, 10);
+    expect(lines(w, 'land.toldOf').concat(lines(w, 'land.noWord'))).toHaveLength(1);
   });
 });
