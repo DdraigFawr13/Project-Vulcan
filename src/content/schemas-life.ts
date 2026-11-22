@@ -4,6 +4,7 @@
 import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, effect, id, motion, text, texts } from './schema-fields';
 import { COOK, COOPER, CURE, KEEP, POTTER } from './schemas-food';
+import { SCOUT } from './schemas-ground';
 import { TOWN_SCHEMAS } from './schemas-town';
 import { MASONRY_SCHEMAS } from './schemas-masonry';
 
@@ -157,6 +158,8 @@ export const LIFE_SCHEMAS = {
     // Foraging (P2.9): the jobs.json job and the good it serves, minutes a bush takes at skill
     // `skilled`, bushes looked for within `reach` tiles of the store; a bush picked is ripe again
     // after `regrowDays` days, and bushes only grow back in the named `months`.
+    // Scouting (6W Slice 4, V-204): see WorkDef.scout.
+    scout: SCOUT,
     forage: obj({
       job: ref('jobs'),
       good: str(),

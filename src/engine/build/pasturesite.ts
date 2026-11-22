@@ -7,6 +7,7 @@
 // go in tile order, so the same seed gives the same pasture. The geometry (fold corner, gates,
 // meadow and rick) is worked out here and stored in the pasture row (pasturerows.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import { isKnown } from '../map/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import { burialsOf } from './burial.ts';
 import { foldRect, foldWall, onPastureGround, pastureTiles, pasturesOf } from './pasturerows.ts';
@@ -247,7 +248,7 @@ function openGround(world: WorldState, content: EngineContent, i: number): boole
   const feat = map.features[i]! ? content.features[map.features[i]! - 1]!.kind : '';
   if (feat && !CLEARED.has(feat)) return false;
   const kind = content.terrain.kinds[map.tiles[i]!]!;
-  return !(!kind.buildable || kind.water || kind.solid);
+  return !(!kind.buildable || kind.water || kind.solid) && isKnown(map, i);
 }
 
 const CLEARED = new Set(['bush', 'herb', 'tree', 'log']);

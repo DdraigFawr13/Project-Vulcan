@@ -3,7 +3,7 @@
 // tiles from the green, trees to fell); the lowest wins, ties in tile order.
 import type { EngineContent, EntityRow, PartDef, SizeDef, WorldState } from '../core/index.ts';
 import { depotsOf, haveOf, itemsOf, storeOf } from '../goods/index.ts';
-import { withBuiltAll } from '../map/index.ts';
+import { eachKnown, isKnown, withBuiltAll, workAreas } from '../map/index.ts';
 import { reachFrom, type Spot } from '../paths/index.ts';
 import { DUG_LEVEL, digsFor } from './dug.ts';
 import { inRect, isTreeAt, wayFrom, wayTo, type Rect, type Site, type Way } from './way.ts';
@@ -109,6 +109,8 @@ function tileFit(
   const i = y * map.width + x;
   const kind = content.terrain.kinds[map.tiles[i]!]!;
   if (!kind.buildable || kind.water || kind.solid || map.built[i]) return 'no';
+  // Only ground the colony knows is built on (V-204).
+  if (!isKnown(map, i)) return 'no';
   const f = map.features[i]! ? content.features[map.features[i]! - 1]! : undefined;
   if (f && (f.kind === 'tree' || f.kind === 'log')) return 'tree';
   if (f && f.kind !== 'bush' && f.kind !== 'herb') return 'no';
@@ -281,13 +283,13 @@ export function withinReach(
   const first = storeOf(world)[0];
   const [ox, oy] = first ? [first['x'] as number, first['y'] as number] : [map.startX, map.startY];
   const reach = content.buildings.house.reach;
-  for (let y = Math.max(0, oy - reach); y <= Math.min(map.height - 1, oy + reach); y += 1)
-    for (let x = Math.max(0, ox - reach); x <= Math.min(map.width - 1, ox + reach); x += 1) {
-      const f = map.features[y * map.width + x]!;
-      const def = f ? content.features[f - 1]! : undefined;
-      if (def && def.yields === good && ['tree', 'log', 'boulder'].includes(def.kind))
-        total += def.amount;
-    }
+  // Known material only, round the store and round a scout's find (V-204 amends V-055).
+  eachKnown(map, workAreas(content, map, ox, oy, reach), (i) => {
+    const f = map.features[i]!;
+    const def = f ? content.features[f - 1]! : undefined;
+    if (def && def.yields === good && ['tree', 'log', 'boulder'].includes(def.kind))
+      total += def.amount;
+  });
   // Ground dug for it (V-097, clay): the tiles a miner could dig (`digsFor`) from the store.
   const under = map.levels[DUG_LEVEL - 1];
   if (!under) return total;

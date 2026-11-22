@@ -41,6 +41,7 @@ const WORK_LABELS = new Map<string, Words>([
   ['bury', 'Burying the dead'],
   ['fell', ['Going to fell a tree', 'Felling']],
   ['quarry', ['Going to a boulder', 'Quarrying']],
+  ['scout', 'Scouting'],
   ['build', ['Going to build', 'Building']],
   ['carpentry', ['Going to make furniture', 'Making furniture']],
   ['thatch', ['Going to thatch', 'Thatching']],
@@ -232,10 +233,17 @@ const JOB_PHRASES = new Map<string, Phrase>([
   ['fell', gathering],
   ['forage', gathering],
   ['quarry', gathering],
+  ['scout', scoutingDoing],
   ['help', helpingDoing],
   ['teach', plain('teach')],
   ['lesson', (world, _p, say) => say('lesson', { teacher: teacherName(world) })],
 ]);
+
+/** A scout (V-204): out looking for the good, or on the way home with the news. */
+function scoutingDoing(_world: WorldState, p: EntityRow, say: Say): string {
+  const good = content.work.stock.find((s) => s.good === p['what'])?.name ?? '';
+  return say(p['task'] === 'home' ? 'scoutHome' : 'scout', { good });
+}
 
 /** What a person is doing and why, in the words of content `work.doing` (P2.9): the sentence,
  * and the line where they took the work up when it has one. */

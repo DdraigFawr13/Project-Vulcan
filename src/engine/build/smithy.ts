@@ -12,6 +12,7 @@ import {
 } from '../core/index.ts';
 import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
 import { inStore, itemsOf, layItem, marksOf, raiseStock } from '../goods/index.ts';
+import { isKnown } from '../map/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bedOwnedBy, furnitureOf } from './furniture.ts';
@@ -114,7 +115,7 @@ function free(
     if (x < 1 || y < 1 || x >= map.width - 1 || y >= map.height - 1) return undefined;
     const i = y * map.width + x;
     const kind = content.terrain.kinds[map.tiles[i]!]!;
-    if (!kind.buildable || kind.water || kind.solid) return undefined;
+    if (!kind.buildable || kind.water || kind.solid || !isKnown(map, i)) return undefined;
     if (ground.taken.has(i) || ground.items.has(i) || inStore(world, x, y, 0)) return undefined;
     if (housesOf(world).some((h) => inRect(rectOf(h), x, y))) return undefined;
     // A smithy sent back is never chosen again.

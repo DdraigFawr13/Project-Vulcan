@@ -11,6 +11,7 @@ import { clockAt, type EngineContent, type EntityRow, type WorldState } from '..
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { fieldsOf } from '../build/index.ts';
 import { haveOf, stockOf, storeOf, wantOf } from '../goods/index.ts';
+import { inAreas, isKnown, workAreas } from '../map/index.ts';
 import { reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, besideReachable, busy, goBeside, layAround, levelOf } from '../band/index.ts';
@@ -115,11 +116,14 @@ function nearBushes(
   for (const b of world.entities['bush'] ?? [])
     picked.set((b['y'] as number) * map.width + (b['x'] as number), b['picked'] as number);
   const near: [number, number][] = [];
+  // Known bushes only, within reach of the store or round a scout's find (V-204).
+  const areas = workAreas(content, map, ox, oy, reach);
   for (const i of bushesOf(world, content, crop)) {
-    const d = Math.max(Math.abs((i % map.width) - ox), Math.abs(Math.floor(i / map.width) - oy));
+    const [x, y] = [i % map.width, Math.floor(i / map.width)];
     const at = picked.get(i);
-    if (d > reach || (at !== undefined && world.tick - at < regrow)) continue;
-    near.push([d, i]);
+    if (!isKnown(map, i) || !inAreas(areas, x, y)) continue;
+    if (at !== undefined && world.tick - at < regrow) continue;
+    near.push([Math.max(Math.abs(x - ox), Math.abs(y - oy)), i]);
   }
   near.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   const list = near.map(([, i]) => i);

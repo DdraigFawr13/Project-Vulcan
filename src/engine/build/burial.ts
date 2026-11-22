@@ -5,6 +5,7 @@
 // once. Graves are dug by the people (care/burial.ts) and filled at day's end (health).
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { dryAt, freeTile } from '../goods/index.ts';
+import { bareKnown } from '../map/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
@@ -112,7 +113,7 @@ function siteBurial(ctx: SystemContext, green: Spot): Rect | undefined {
           freeTile(world, content, x, y) &&
           !fields.has(y * map.width + x) &&
           !pastures.some((p) => onPastureGround(p, map.width, x, y)) &&
-          !map.features[y * map.width + x] &&
+          bareKnown(map, y * map.width + x) &&
           ![-1, 0, 1].some((ox) => [-1, 0, 1].some((oy) => wet(x + ox, y + oy)));
     if (fits) return r;
   }

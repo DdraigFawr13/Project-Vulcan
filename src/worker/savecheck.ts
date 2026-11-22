@@ -47,6 +47,7 @@ const LAYERS: readonly (readonly [string, Layer])[] = [
   ['worn', Uint8Array],
   ['built', Uint8Array],
   ['stains', Uint8Array],
+  ['known', Uint8Array],
 ];
 
 /** The world's own fields that are counts, and those that are lists. */
@@ -92,7 +93,17 @@ const placesShaped = (map: Shape, n: number): boolean =>
   typeof map['riverExit'] === 'string' &&
   isObject(map['riches']) &&
   Array.isArray(map['regrow']) &&
-  map['regrow'].length % 3 === 0;
+  map['regrow'].length % 3 === 0 &&
+  Array.isArray(map['finds']) &&
+  map['finds'].every(findShaped);
+
+// A scouting trip (V-204): where, the good, the count (-1 while under way), its line and tick.
+const findShaped = (f: unknown): boolean =>
+  isObject(f) &&
+  typeof f['good'] === 'string' &&
+  [f['x'], f['y'], f['who'], f['line'], f['tick']].every(isCount) &&
+  Number.isSafeInteger(f['count']) &&
+  (f['count'] as number) >= -1;
 
 // A reached level below: its tiles, causes and features, each one per surface tile.
 const levelShaped = (value: unknown, length: number): boolean =>
@@ -131,6 +142,11 @@ function mapFits(world: WorldState, content: SaveContent): boolean {
     w.built.every((b) => b <= content.buildings.parts.length) &&
     // Ore stains name a feature (V-087).
     w.stains.every((f) => f <= features) &&
+    // Known land is 0, 1 or a scout's 2 (V-204); only the last trip may be under way.
+    w.known.every((k) => k <= 2) &&
+    w.finds.every(
+      (f, k) => f.x < w.width && f.y < w.height && (f.count >= 0 || k === w.finds.length - 1),
+    ) &&
     regrowFits(w.regrow, w.width * w.height, features)
   );
 }

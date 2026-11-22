@@ -14,6 +14,7 @@ import { limeBurning, masonry, takeUpLime, takeUpMasonry } from '../crafts/index
 import { burying, takeUpBurial, takeUpNursing } from '../care/index.ts';
 import { farming, foraging, gatherMinute, mining, takeUpFarming } from '../land/index.ts';
 import { takeUpForaging, takeUpGathering, takeUpMarked, takeUpMining } from '../land/index.ts';
+import { scouting, takeUpScouting } from '../land/index.ts';
 import { haulMinute, knapping, takeUpHauling, takeUpKnapping } from '../band/index.ts';
 import { atLessons, helping, teaching } from '../teach/index.ts';
 import { fishing, takeUpFishing, hunting, takeUpHunting, takeUpHerding } from '../herding/index.ts';
@@ -41,6 +42,8 @@ export const JOBS: Readonly<Record<string, JobRow>> = {
   fish: { takeUp: takeUpFishing, work: fishing },
   farm: { takeUp: takeUpFarming, work: farming },
   herd: { takeUp: takeUpHerding },
+  // Scouting (V-204): a trip goes on into the evening, until bedtime.
+  scout: { takeUp: takeUpScouting, work: scouting, always: true },
   // The builder's row: a burial first (P5.6), a cold room's hearth, clearing a house's site, then
   // hearths, workstations and plans.
   build: {

@@ -30,7 +30,7 @@ describe('Work sheet headings', () => {
     const { plain, groups } = grouped(all);
     expect(plain.map((j) => j.job).sort()).toEqual(['build', 'haul', 'tend']);
     expect(groups.map((g) => [g.name, g.jobs.map((j) => j.job)])).toEqual([
-      ['Wild', ['hunt', 'fish']],
+      ['Wild', ['hunt', 'fish', 'scout']],
       ['Stone', ['mine', 'quarry', 'mason', 'limeburn', 'craft-tools']],
       ['Wood', ['fell', 'carpentry', 'thatch']],
       ['Land', ['farm', 'herd', 'forage']],

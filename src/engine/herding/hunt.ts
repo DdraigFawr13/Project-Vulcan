@@ -11,6 +11,7 @@ import { streamFor, TICKS_PER_DAY, type EntityRow, cheb } from '../core/index.ts
 import { greenOf, ringOf } from '../build/index.ts';
 import { haveOf, stockOf, wantOf } from '../goods/index.ts';
 import { addMemory } from '../needs/index.ts';
+import { isKnown } from '../map/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import {
@@ -87,7 +88,10 @@ function chooseHerd(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const green = greenOf(world);
   const apart = (h: EntityRow): number =>
     cheb({ x: h['x'] as number, y: h['y'] as number, z: 0 }, green);
-  const all = huntable(world, content);
+  // Only game seen on known ground is hunted (V-204).
+  const all = huntable(world, content).filter((h) =>
+    isKnown(world.map, (h['y'] as number) * world.map.width + (h['x'] as number)),
+  );
   // Bigger game than a hare wants a spear (V-195); hares are snared by hand.
   const armed = couldHave(ctx, p, content.work.hunt.job);
   const stalked = armed ? all.filter((h) => !snared.includes(h['species'] as string)) : [];

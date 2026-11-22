@@ -25,6 +25,8 @@ const ACTS = ['defy.slow', 'defy.took', 'defy.brawled', 'defy.left'];
  * `each` looks at the world after every day. */
 function hardWinter(seed: string, days: number, each: (w: World) => void): World {
   const w = createWorld(sim, seed);
+  // The whole valley known (V-204): this winter's work, and so its quarrels, stay near the green.
+  w.map.known.fill(1);
   let day = 0;
   while (!isWinter({ ...w, tick: day * TICKS_PER_DAY }, content)) day += 1;
   w.tick = day * TICKS_PER_DAY + 6 * 60;
