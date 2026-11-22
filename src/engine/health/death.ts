@@ -5,6 +5,7 @@
 // said after a day. A grave dug (care/burial.ts) is filled at the end of the working day with
 // everyone free there, and the dead are `buried`.
 import {
+  the,
   TICKS_PER_DAY,
   type EngineContent,
   type EntityRow,
@@ -43,7 +44,7 @@ export function bedWords(world: WorldState, content: EngineContent, p: EntityRow
   if (!bed || !h) return `${their} bed`;
   if (h['sick']) return h['sick'] === 2 ? 'the sick-house' : 'the sickroom';
   const room = roomName(world, content, h);
-  return bed['owner'] === p.id ? `${their} bed in the ${room}` : `a bed in the ${room}`;
+  return bed['owner'] === p.id ? `${their} bed in ${the(room)}` : `a bed in ${the(room)}`;
 }
 
 /** Where someone is, for a line: abed ("in the sickroom"), else where their worst wound was

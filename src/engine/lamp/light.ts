@@ -6,7 +6,7 @@
 // burns only while someone works by it: one candle lights the room for everyone in it. With no
 // candle in store, or a workplace in no room, the room goes dark with one line a day and the
 // work waits for morning. Candles come from the store without the walk being modelled.
-import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import { the, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { houseAt, piecesOf, roomAt, roomName, type Room } from '../build/index.ts';
 import { inStore, itemsOf, stockOf, takeFrom } from '../goods/index.ts';
@@ -44,7 +44,7 @@ function placeOf(world: WorldState, content: EngineContent, job: string) {
   const [x, y] = [piece['x'] as number, piece['y'] as number];
   const room = piece['z'] === 0 ? roomAt(world, content, x, y) : undefined;
   const house = room ? houseAt(world, x, y) : undefined;
-  const name = house ? `the ${roomName(world, content, house)}` : `the ${kind} in the open`;
+  const name = house ? the(roomName(world, content, house)) : `the ${kind} in the open`;
   return { piece, room, key: room ? keyOf(room) : -piece.id, name, kind: kind as string };
 }
 

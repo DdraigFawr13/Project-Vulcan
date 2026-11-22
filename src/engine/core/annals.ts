@@ -19,6 +19,16 @@ export interface AnnalLineDef {
   /** The year's number it adds to, by line, actor, or name in the data's `names` list. */
   tally?: 'came' | 'died' | 'born' | 'homes';
   per?: 'line' | 'actors' | 'names';
+  /** A small trouble's words when it comes back season after season, folded into one line of
+   * the year's recap ("the smith had no metal for a tool"). */
+  fold?: string;
+}
+
+/** A sentence for one, or for two or more said as a list of `item`s. */
+export interface AnnalWords {
+  one: string;
+  many: string;
+  item: string;
 }
 
 export interface AnnalsDef {
@@ -29,10 +39,31 @@ export interface AnnalsDef {
   counts: readonly string[];
   skip: readonly string[];
   titles: { season: string; year: string; quiet: string; quietYear: string };
-  sections: readonly { id: string; max: number; lines: readonly AnnalLineDef[] }[];
+  /** Each section tells at most `max` kinds, its weightiest; `order` `weight` tells them weightiest
+   * first (troubles, by danger), else in the order they first happened. */
+  sections: readonly {
+    id: string;
+    max: number;
+    order?: 'time' | 'weight';
+    lines: readonly AnnalLineDef[];
+  }[];
   still: string;
   numbers: { text: string; levels: string; nouns: Nouns };
-  say: { max: number; line: string };
+  /** What people say: `line` for one telling, `both` for two that differ; `self` the words a
+   * teller uses of themselves (first person). */
+  say: { max: number; line: string; both: string; self: SelfWords };
+  /** Looking ahead at a season's end: the store against the harvest, who still lies sick, a hungry
+   * pack, a smith with no metal. */
+  ahead: {
+    /** The harvest month begins at the turn. */
+    now: string;
+    lasts: string;
+    short: string;
+    sick: AnnalWords;
+    pack: string;
+    smith: string;
+    days: readonly string[];
+  };
   page: { kicker: string; kickerYear: string; heads: Readonly<Record<string, string>> };
   year: {
     season: string;
@@ -41,7 +72,25 @@ export interface AnnalsDef {
     nouns: Nouns;
     whose: string;
     cite: number;
+    /** The year's title: the first of these sections with a titled kind of `titleMin` weight or
+     * more gives its weightiest (its biggest loss or turn). */
+    titleFrom: readonly string[];
+    titleMin: number;
+    /** Small troubles that came back in two seasons or more, as one line: `{list}` of `foldItem`. */
+    fold: string;
+    foldItem: string;
   };
+}
+
+/** First person: the teller's name as `I` (subject), `me`, `my`; `verbs` that change after I;
+ * `own` the teller's he/she words when they are the subject; `who` for ", who" after me. */
+export interface SelfWords {
+  I: string;
+  me: string;
+  my: string;
+  verbs: Readonly<Record<string, string>>;
+  own: Readonly<Record<string, string>>;
+  who: string;
 }
 
 export interface AnnalsDefs {

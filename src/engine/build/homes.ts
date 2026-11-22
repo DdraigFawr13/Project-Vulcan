@@ -6,7 +6,7 @@
 // the green leaning toward their work (site.ts), its walls by the wall rule (V-097). When the last
 // of the band sleeps in a home of their own, the first house becomes the hall: newcomers sleep
 // there until their homes are up, the harvest-home supper is eaten there and mourners gather there.
-import { TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
+import { pronouns, TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { homeFor, householdOf, sleepsIn } from './beds.ts';
@@ -124,6 +124,7 @@ function becomeHall(ctx: SystemContext): void {
     data: {
       size: sizeOf(content, first).name,
       name: last['name'] as string,
+      their: pronouns(last).their,
     },
   });
 }

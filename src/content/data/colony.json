@@ -43,7 +43,7 @@
       "afraid": ["fear-attack", "saw-attack", "lost-to-wolves"],
       "incumbent": 3,
       "drop": 10,
-      "looks": "{votes} of {people} look to them",
+      "looks": "{votes} of {people} look to {them}",
       "fallen": "standing fell under {name}"
     }
   },

@@ -32,6 +32,10 @@
       { "event": "family.born", "weight": 8, "tally": "born", "per": "line", "title": "{name} was born", "many": "{Count} children were born: {list}.", "item": "{name}, to {mother} and {father}" },
       { "event": "flock.lambed", "weight": 2, "many": "{Times} young were born in the fold: {list}.", "item": "{count} {young}" }
     ] },
+    { "id": "gathered", "max": 3, "lines": [
+      { "event": "hall.feast", "weight": 6, "title": "the harvest home feast" },
+      { "event": "faith.shrine", "weight": 6, "title": "a shrine was raised" }
+    ] },
     { "id": "built", "max": 5, "lines": [
       { "event": "build.houseBuilt", "weight": 5, "tally": "homes", "per": "line", "title": "the {size} went up", "many": "{Count} houses went up: {list}.", "item": "a {size} of {rooms}" },
       { "event": "build.roomAdded", "weight": 3, "many": "{Count} rooms were added: {list}.", "item": "one on the {size}" },
@@ -42,7 +46,6 @@
       { "event": "calling.masterwork", "weight": 6, "title": "{name} made {title}" },
       { "event": "school.book", "weight": 5, "title": "{teacher} wrote {book}" },
       { "event": "pasture.built", "weight": 5, "title": "the pasture was fenced" },
-      { "event": "faith.shrine", "weight": 6, "title": "a shrine was raised" },
       { "event": "furniture.benchPlaced", "weight": 2 },
       { "event": "build.sited", "weight": 1, "one": "The colony planned a {size} {dir} of the green.", "many": "The colony planned {count} houses: {list}.", "item": "a {size} {dir} of the green" },
       { "event": "build.homeSited", "weight": 1, "one": "The colony planned {whose} home, a {size} {dir} of the green.", "many": "The colony planned {count} homes: {list}.", "item": "{whose} home" },
@@ -59,10 +62,9 @@
       { "event": "map.levelReached", "weight": 4, "many": "{Count} levels below ground were reached: {list}.", "item": "level {level}" },
       { "event": "food.firstFine", "weight": 3, "title": "{name} cooked a fine meal", "many": "{Count} fine meals were cooked for the first time: {list}.", "item": "{what} by {name}" },
       { "event": "craft.firstFine", "weight": 3, "many": "{Count} pieces were made finer than ever before: {list}.", "item": "{what} by {name}", "title": "{name} made a {word} piece" },
-      { "event": "self.fulfilled", "weight": 5, "title": "{name} did what they set out to", "many": "{Count} did what they set out to: {list}.", "item": "{name}" },
-      { "event": "hall.feast", "weight": 6, "title": "the harvest home feast" }
+      { "event": "self.fulfilled", "weight": 5, "many": "{Count} did what they set out to: {list}.", "item": "{name}", "title": "{name} did what {they} set out to" }
     ] },
-    { "id": "troubles", "max": 6, "lines": [
+    { "id": "troubles", "max": 6, "order": "weight", "lines": [
       { "event": "wild.attacked", "weight": 7, "title": "a {species} went for {name}", "many": "{Times} beasts went for people: {list}.", "item": "a {species} for {name}" },
       { "event": "health.hurt", "only": { "serious": "yes" }, "weight": 6, "title": "{name} was badly hurt", "many": "{Count} were badly hurt: {list}.", "item": "{name}" },
       { "event": "health.festered", "weight": 6, "many": "{Count} wounds festered: {list}.", "item": "{name}'s {wound}" },
@@ -81,7 +83,7 @@
       { "event": "flock.starved", "weight": 4, "many": "{Count} beasts of the flock starved: {list}.", "item": "{a} {kind}" },
       { "event": "flock.brokeIn", "weight": 5, "title": "the pack broke into the fold", "many": "{Times} the pack broke into the fold: {list}.", "item": "{name} took {a} {kind}" },
       { "event": "flock.taken", "weight": 5, "title": "the pack took from the flock", "many": "{Count} beasts were taken from the flock left out: {list}.", "item": "{a} {kind}, by {name}" },
-      { "event": "flock.noWatch", "weight": 2, "many": "{Count} nights nobody kept watch at the fold.", "item": "one" },
+      { "event": "flock.noWatch", "weight": 2, "fold": "nobody kept watch at the fold", "many": "{Count} nights nobody kept watch at the fold.", "item": "one" },
       { "event": "flock.cullSet", "weight": 2 },
       { "event": "flock.cullEarly", "weight": 3 },
       { "event": "wild.packAtEdge", "weight": 3, "title": "the pack came to the edge", "many": "The pack came down to the edge {times}: {list}.", "item": "{name}, {days} days hungry" },
@@ -93,23 +95,23 @@
       { "event": "defy.punished", "weight": 5, "many": "{Count} were punished: {list}.", "item": "{name}" },
       { "event": "law.answered", "only": { "answer": "refuses" }, "weight": 4, "many": "{Times} someone refused a law: {list}.", "item": "{name}" },
       { "event": "law.keptCustom", "weight": 3, "many": "{Count} kept to the old custom: {list}.", "item": "{name}" },
-      { "event": "tool.broke", "weight": 2, "many": "{Count} tools broke: {list}.", "item": "{name}'s {what}" },
+      { "event": "tool.broke", "weight": 2, "fold": "tools broke", "many": "{Count} tools broke: {list}.", "item": "{name}'s {what}" },
       { "event": "tool.lastBroke", "weight": 5, "title": "the valley's last {kind} broke", "one": "The valley's last {kind} broke: no more {stops} until another was made.", "many": "{Times} the valley's last tool of a kind broke: {list}.", "item": "the {kind}" },
-      { "event": "smith.noIngots", "weight": 2, "many": "{Times} the smith had no metal for a tool: {list}.", "item": "{who}'s {tool}" },
-      { "event": "work.declined", "weight": 1, "many": "{Times} someone turned down work they were not able for: {list}.", "item": "{name}" },
-      { "event": "build.waiting", "weight": 1, "one": "The {part} waited: no {good} could be reached.", "many": "Building waited {times} for want of goods: {list}.", "item": "the {part} for {good}" },
+      { "event": "smith.noIngots", "weight": 2, "fold": "the smith had no metal for a tool", "many": "{Times} the smith had no metal for a tool: {list}.", "item": "{who}'s {tool}" },
+      { "event": "work.declined", "weight": 1, "fold": "someone turned down work they were not able for", "many": "{Times} someone turned down work they were not able for: {list}.", "item": "{name}" },
+      { "event": "build.waiting", "weight": 1, "fold": "building waited for goods", "one": "The {part} waited: no {good} could be reached.", "many": "Building waited {times} for want of goods: {list}.", "item": "the {part} for {good}" },
       { "event": "build.shutIn", "weight": 1, "one": "The {part} waited, so nobody was shut in.", "many": "Building waited {times} so nobody was shut in.", "item": "one" },
       { "event": "build.nobody", "weight": 1, "one": "The {part} waited: nobody was able to build.", "many": "Building waited {times} with nobody able to build.", "item": "one" },
       { "event": "build.noGround", "weight": 2, "many": "{Times} no ground near the green fitted a house.", "item": "one" },
-      { "event": "build.growBlocked", "weight": 1, "many": "{Count} houses had no room to grow: {list}.", "item": "the {size}" },
+      { "event": "build.growBlocked", "weight": 1, "fold": "a house had no room to grow", "many": "{Count} houses had no room to grow: {list}.", "item": "the {size}" },
       { "event": "smithy.noGround", "weight": 1 },
       { "event": "pits.noGround", "weight": 1 },
-      { "event": "metal.waiting", "weight": 1, "one": "The smelter waited: no {good} could be reached.", "many": "The smelter waited {times} for want of goods: {list}.", "item": "{good}" },
+      { "event": "metal.waiting", "weight": 1, "fold": "the smelter waited for ore", "one": "The smelter waited: no {good} could be reached.", "many": "The smelter waited {times} for want of goods: {list}.", "item": "{good}" },
       { "event": "mine.noStain", "weight": 3, "many": "No stain of {list} lay within reach, so none could be mined.", "item": "{metal}" },
       { "event": "mine.noVein", "weight": 3, "many": "{Times} a shaft found no way to a vein: {list}.", "item": "for {metal}" },
-      { "event": "mine.noLadder", "weight": 2, "one": "The shaft for {metal} waited: too few logs could be reached for its ladder.", "many": "{Times} a shaft waited for want of logs for its ladder: {list}.", "item": "for {metal}" },
-      { "event": "fire.noFloor", "weight": 2, "many": "{Times} someone was cold with no floor free for a hearth: {list}.", "item": "{name} in the {room}" },
-      { "event": "fire.stoked", "weight": 1, "many": "{Times} someone cold stoked a fire: {list}.", "item": "{name}" },
+      { "event": "mine.noLadder", "weight": 2, "fold": "a shaft waited for logs for its ladder", "one": "The shaft for {metal} waited: too few logs could be reached for its ladder.", "many": "{Times} a shaft waited for want of logs for its ladder: {list}.", "item": "for {metal}" },
+      { "event": "fire.noFloor", "weight": 2, "fold": "someone was cold with no floor free for a hearth", "many": "{Times} someone was cold with no floor free for a hearth: {list}.", "item": "{name} in the {room}" },
+      { "event": "fire.stoked", "weight": 1, "fold": "someone cold stoked a fire", "many": "{Times} someone cold stoked a fire: {list}.", "item": "{name}" },
       { "event": "mill.stood", "weight": 2, "one": "The mill's wheel froze, and grinding went back to the quern." },
       { "event": "weather.frozenOver", "weight": 3, "title": "the lakes froze" },
       { "event": "weather.riverFrozen", "weight": 3, "title": "the river froze", "one": "The river froze over in a long hard frost." }
@@ -132,7 +134,26 @@
       "levels": ["no level", "one level", "{n} levels"]
     }
   },
-  "say": { "max": 2, "line": "{name} tells it: \"{tale}\"" },
+  "say": {
+    "max": 2,
+    "line": "{name} tells it: \"{tale}\"",
+    "both": "{name} tells it: \"{tale}\" {other} tells it another way: \"{told}\"",
+    "self": {
+      "I": "I", "me": "me", "my": "my",
+      "verbs": { "has": "have", "is": "am" },
+      "own": { "his": "my", "her": "my", "their": "my", "him": "me", "them": "me", "himself": "myself", "herself": "myself", "laughs": "laugh" },
+      "who": ", and I "
+    }
+  },
+  "ahead": {
+    "now": "The harvest month begins, with food in the store for {food}.",
+    "lasts": "The store should last until the harvest, {harvest} off.",
+    "short": "The store will run out {gap} before the harvest, which is {harvest} off.",
+    "sick": { "one": "{name} still lies sick with {ill}.", "many": "Still lying sick: {list}.", "item": "{name}, with {ill}" },
+    "pack": "The pack is still hungry: {pack}, {days} without a kill.",
+    "smith": "The smith still has no metal, so worn tools wait to be made.",
+    "days": ["no days", "one day", "{n} days"]
+  },
   "page": {
     "kicker": "The chronicle · {Season}, year {year}",
     "kickerYear": "The chronicle · Year {year}",
@@ -144,6 +165,8 @@
       "troubles": "Troubles",
       "leads": "Who leads",
       "numbers": "In numbers",
+      "gathered": "Feasts and faith",
+      "ahead": "Looking ahead",
       "say": "What people say",
       "whose": "Whose year it was"
     }
@@ -158,7 +181,11 @@
       "born": ["no children", "one child", "{n} children"],
       "homes": ["no houses", "one house", "{n} houses"]
     },
-    "whose": "It was {name}'s year: {n} of its {total} kept lines name them.",
-    "cite": 12
+    "whose": "It was {name}'s year: {they} had a hand in more of what happened than anyone else.",
+    "cite": 12,
+    "titleFrom": ["lost", "troubles", "family", "leads", "came", "gathered", "built"],
+    "titleMin": 5,
+    "fold": "Season after season, small troubles came back: {list}.",
+    "foldItem": "{what} ({times})"
   }
 }

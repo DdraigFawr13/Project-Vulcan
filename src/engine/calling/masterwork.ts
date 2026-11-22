@@ -2,7 +2,7 @@
 // `masterwork`, the next piece they make in their trade (a ledger line of one of its `events`,
 // in the calling's skill, with them first among its actors) is their masterwork: it takes the
 // `quality` (a furniture piece's score, a tool's word), a name, and a line the tales copy.
-import type { EngineContent, EntityRow, SimEvent } from '../core/index.ts';
+import { pronouns, type EngineContent, type EntityRow, type SimEvent } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { callingsOf } from './tables.ts';
 
@@ -41,6 +41,7 @@ function make(ctx: SystemContext, row: EntityRow, e: SimEvent): void {
     actors: [p.id],
     data: {
       name: p['name'] as string,
+      their: pronouns(p).their,
       what: whatOf(content, e, row['skill'] as string, mw.pieces),
       title: row['named'] as string,
     },

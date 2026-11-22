@@ -27,6 +27,8 @@ export const ANNALS_SCHEMAS = {
       obj({
         id,
         max: num({ min: 1 }),
+        // `weight`: weightiest first (troubles, by danger); else in the order they happened.
+        order: opt(oneOf('time', 'weight')),
         // `event` the ledger type, with `only` data values; `one` its sentence (the ledger's own
         // words when left out); `many` for two or more, from `{count}`, `{Count}` and `{list}`
         // (each line's `item`, said as a list); `weight` ranks it for the title and the year;
@@ -43,6 +45,8 @@ export const ANNALS_SCHEMAS = {
             title: opt(text),
             tally: opt(oneOf('came', 'died', 'born', 'homes')),
             per: opt(oneOf('line', 'actors', 'names')),
+            // A small trouble's words when it comes back season after season (the year folds it).
+            fold: opt(text),
           }),
         ),
       }),
@@ -51,7 +55,23 @@ export const ANNALS_SCHEMAS = {
     still: text,
     numbers: obj({ text, levels: text, nouns }),
     // What people say: up to `max` tales, as one holder tells it now.
-    say: obj({ max: count, line: text }),
+    // `both` when two tellings differ; `self` the teller's first-person words.
+    say: obj({
+      max: count,
+      line: text,
+      both: text,
+      self: obj({ I: text, me: text, my: text, verbs: map(str()), own: map(str()), who: text }),
+    }),
+    // Looking ahead: the store against the harvest, who lies sick, a hungry pack, no metal.
+    ahead: obj({
+      now: text,
+      lasts: text,
+      short: text,
+      sick: obj({ one: text, many: text, item: text }),
+      pack: text,
+      smith: text,
+      days: forms,
+    }),
     // The recap page's words (slice 3): the line above the title, and each section's heading; a
     // year's season paragraphs open with their season's name and need none.
     page: obj({ kicker: text, kickerYear: text, heads: map(text) }),
@@ -63,6 +83,12 @@ export const ANNALS_SCHEMAS = {
       whose: text,
       // At most this many lines cited by one sentence.
       cite: num({ min: 1 }),
+      // The year's title: the first section here with a titled kind of `titleMin` or more.
+      titleFrom: texts,
+      titleMin: count,
+      // Small troubles of two seasons or more, as one line.
+      fold: text,
+      foldItem: text,
     }),
   }),
 };

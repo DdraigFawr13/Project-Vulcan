@@ -4,7 +4,7 @@
 // (`teach.lost`, citing the death or leaving line), and a tale spreads it. A book of their skill
 // on the schoolroom shelf near their level keeps it. With nobody near them
 // left, nobody can be taught past their gift in that skill until a new master grows or comes.
-import type { EntityRow, SimEvent } from '../core/index.ts';
+import { pronouns, type EntityRow, type SimEvent } from '../core/index.ts';
 import { alive } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { keptBooks, skillWord } from './tables.ts';
@@ -55,6 +55,7 @@ export function lossHour(ctx: SystemContext): void {
       actors: [id],
       data: {
         ...{ name: p['name'] as string, skill: skillWord(content, m[2]!), level },
+        ...pronouns(p),
         how: gone?.type === 'defy.left' ? content.teach.words.left : content.teach.words.died,
       },
     });
