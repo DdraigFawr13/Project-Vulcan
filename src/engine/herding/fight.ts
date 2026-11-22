@@ -22,6 +22,7 @@ import {
   woundPredator,
 } from '../wild/index.ts';
 import { armedWith, isNight, sheltered, shelterFor, upAndAbout } from './flee.ts';
+import { cryMinute, startCry } from './cry.ts';
 
 /** Whether a wolf may go for `t`: out of shelter, not standing, and alone or the last of those
  * fleeing to shelter. */
@@ -57,7 +58,8 @@ export function syncLures(ctx: SystemContext): void {
 
 /** Each minute: a hungry pack by night prowls towards, and falls on, the exposed. */
 export function attacksMinute(ctx: SystemContext): void {
-  const { world, content } = ctx;
+  const { world, content, state } = ctx;
+  if (state['fWolf']) return cryMinute(ctx, (wolf, t) => fight(ctx, wolf, t));
   const folk = content.wild.folk;
   const pack = packOf(world);
   if (!pack || (pack['hunger'] as number) < folk.attackAfter || !isNight(ctx)) return;
@@ -74,12 +76,28 @@ export function attacksMinute(ctx: SystemContext): void {
     for (const t of near) {
       if (!memo.has(t.id)) memo.set(t.id, exposed(ctx, t));
       if (!memo.get(t.id)) continue;
-      if (cheb(spotOf(t), spotOf(wolf)) <= 1) return fight(ctx, wolf, t);
+      if (cheb(spotOf(t), spotOf(wolf)) <= 1) return fallOn(ctx, wolf, t);
       if (world.tick % content.wild.move.trot === 0)
         approach(ctx, wolf, t['x'] as number, t['y'] as number);
       break;
     }
   }
+}
+
+/** The wolf falls on `t`: those in earshot answer their cry (cry.ts), else the fight is now. */
+function fallOn(ctx: SystemContext, wolf: EntityRow, t: EntityRow): void {
+  if (!startCry(ctx, wolf, t, whyWords(ctx, t), attackCause(ctx))) fight(ctx, wolf, t);
+}
+
+/** What the attack lines cite: the cry, else the sighting, else the pack's own line. */
+const attackCause = (ctx: SystemContext): number =>
+  ctx.state['fCry'] || ctx.state['sighted'] || (packOf(ctx.world)!['line'] as number);
+
+/** Why the wolf could go for `t`: "last to the {house} door" or "alone in the open". */
+function whyWords(ctx: SystemContext, t: EntityRow): string {
+  const words = ctx.content.wild.folk.words;
+  const shelter = t['doing'] === 'flee' ? shelterFor(ctx, t) : undefined;
+  return shelter ? words.last.replace('{house}', shelter.house) : words.alone;
 }
 
 interface Bite {
@@ -90,14 +108,14 @@ interface Bite {
 
 /** The fight: blows by turns until a hit, a miss of every blow, or the rounds are out. */
 function fight(ctx: SystemContext, wolf: EntityRow, target: EntityRow): void {
-  const { world, content, state } = ctx;
+  const { world, content } = ctx;
   const folk = content.wild.folk;
   const rng = streamFor(world, 'wild');
   const defenders = people(world).filter(
     (q) =>
       q.id !== target.id &&
       upAndAbout(ctx, q) &&
-      q['doing'] === 'stand' &&
+      (q['doing'] === 'stand' || q['doing'] === 'answer') &&
       !!armedWith(ctx, q) &&
       cheb(spotOf(q), spotOf(target)) <= folk.beside,
   );
@@ -126,7 +144,7 @@ function fight(ctx: SystemContext, wolf: EntityRow, target: EntityRow): void {
     });
   }
   const line = ctx.emit('wild.attacked', {
-    causes: [state['sighted'] || (packOf(world)!['line'] as number)].filter((c) => c > 0),
+    causes: [attackCause(ctx)].filter((c) => c > 0),
     actors: [target.id, ...(hit ? [hit.by.id] : [])],
     data: describe(ctx, wolf, target, bites, hit),
   });
@@ -166,8 +184,7 @@ function describe(
   const { content } = ctx;
   const words = content.wild.folk.words;
   const species = content.wild.predators.find((p) => p.kind === wolf['kind'])!.name;
-  const shelter = target['doing'] === 'flee' ? shelterFor(ctx, target) : undefined;
-  const why = shelter ? words.last.replace('{house}', shelter.house) : words.alone;
+  const why = whyWords(ctx, target);
   const tool = (k: string) => content.tools.kinds.find((t) => t.id === k)?.name ?? k;
   const killed = hit && (wolf['hurt'] as number) + 1 >= content.wild.folk.hits;
   const fight = hit

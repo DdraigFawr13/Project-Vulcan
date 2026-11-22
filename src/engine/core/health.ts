@@ -78,6 +78,10 @@ export interface SickDef {
   /** The illness (an `ills` id) a foul drink exposes to. */
   foulIll: string;
   warmLake: number;
+  /** The belief (tales `beliefs`) that the warm lake sickens: held at `believe` or more, a
+   * person passes the lake by in warm weather for other water, a well first (6B review q3). */
+  lakeBelief: string;
+  believe: number;
   /** After a flux, water within `shunNear` tiles of where it was caught is shunned `shun` days. */
   shun: number;
   shunNear: number;
