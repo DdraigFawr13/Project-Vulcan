@@ -132,6 +132,7 @@ export const WILD_SCHEMAS = {
       prowl: count,
       witness: count,
       rounds: num({ min: 1 }),
+      cry: obj({ earshot: count, minutes: num({ min: 1 }) }),
       strike: obj({ base: count, perLevel: count, most: count }),
       bite: obj({
         chance: count,

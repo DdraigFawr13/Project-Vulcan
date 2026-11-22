@@ -4,7 +4,7 @@
   "more": "{n} more",
   "times": ["never", "once", "twice", "{n} times"],
   "counts": ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"],
-  "skip": ["world.begun", "calendar.season", "need.low", "mood.changed", "weather.thawed", "weather.riverThawed"],
+  "skip": ["world.begun", "calendar.season", "need.low", "mood.changed", "weather.thawed", "weather.riverThawed", "wild.cry"],
   "titles": { "season": "{Season} of year {year}: {title}", "year": "Year {year}: {title}", "quiet": "a quiet season", "quietYear": "a quiet year" },
   "sections": [
     { "id": "came", "max": 3, "lines": [

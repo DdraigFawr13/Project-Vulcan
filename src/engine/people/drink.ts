@@ -2,10 +2,12 @@
 // unfrozen drinkable surface water or a well and drinks to full. No line per drink (V-036); the
 // need's own lines (`need.low`, `need.met`) say when thirst bites, and each drink, with the minutes
 // walked to it, is noted for the colony's well (build/well.ts). A foul drink may bring the flux,
-// and water shunned after one is passed over (foul.ts, P5.7).
-import type { EntityRow } from '../core/index.ts';
+// and water shunned after one is passed over (foul.ts, P5.7). Those who hold that the lake sickens
+// in summer (6B review q3, a tale of a flux from the warm lake) pass it by in warm weather for a
+// well or running water, while there is some; the first each year writes `people.passedLake`.
+import { WATER, yearNow, type EntityRow } from '../core/index.ts';
 import type { Spot } from '../paths/index.ts';
-import { noteDrink, waterSpots } from '../build/index.ts';
+import { noteDrink, waterSpots, wellsOf } from '../build/index.ts';
 import { changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { isFrozen } from '../weather/index.ts';
@@ -37,9 +39,50 @@ function goDrink(ctx: SystemContext, p: EntityRow): number {
   // Water shunned after a flux there (P5.7) is passed over while there is other water.
   const shun = shunned(world, content);
   const clean = spots.filter((s) => !shun(s.y * map.width + s.x));
-  const near = nearest(clean.length ? clean : spots, here, TRIES);
-  for (const s of near) if (goBeside(ctx, p, s.x, s.y)) return s.y * map.width + s.x + 1;
+  const from = clean.length ? clean : spots;
+  const belief = lakeBelief(ctx, p);
+  const lake = (s: Spot) => WATER[map.water[s.y * map.width + s.x] ?? 0] === 'lake';
+  const other = belief ? from.filter((s) => !lake(s)) : from;
+  const near = nearest(other.length ? other : from, here, TRIES);
+  for (const s of near)
+    if (goBeside(ctx, p, s.x, s.y)) {
+      if (belief && other.length && nearest(from, here, 1).some(lake))
+        passedLake(ctx, p, s, belief);
+      return s.y * map.width + s.x + 1;
+    }
   return 0;
+}
+
+/** The line of `p`'s belief that the lake sickens, when it is warm enough for it and they hold
+ * it at `sick.believe` or more; else 0. */
+function lakeBelief(ctx: SystemContext, p: EntityRow): number {
+  const { world, content } = ctx;
+  const sick = content.health.sick;
+  if (((world.systems['weather']?.['temp'] as number | undefined) ?? 0) < sick.warmLake) return 0;
+  const row = (world.entities['belief'] ?? []).find(
+    (b) => b['person'] === p.id && b['belief'] === sick.lakeBelief,
+  );
+  return row && (row['strength'] as number) >= sick.believe ? (row['line'] as number) || -1 : 0;
+}
+
+/** The first time in a year someone walks past the nearer lake for other water: one line. */
+function passedLake(ctx: SystemContext, p: EntityRow, to: Spot, belief: number): void {
+  const { world, content, state } = ctx;
+  const year = yearNow(world, content) + 1;
+  if ((state['lakeYear'] ?? 0) === year) return;
+  state['lakeYear'] = year;
+  const i = to.y * world.map.width + to.x;
+  const well = wellsOf(world).some((w) => w['x'] === to.x && w['y'] === to.y);
+  const text = content.tales.beliefs.find((b) => b.id === content.health.sick.lakeBelief)?.text;
+  ctx.emit('people.passedLake', {
+    causes: [belief].filter((c) => c > 0),
+    actors: [p.id],
+    data: {
+      name: p['name'] as string,
+      water: well ? 'well' : WATER[world.map.water[i] ?? 0] || 'water',
+      belief: text ?? '',
+    },
+  });
 }
 
 /** The first `n` spots by distance from `here` (corners count one), then row, then column, in

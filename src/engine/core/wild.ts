@@ -111,6 +111,9 @@ export interface WildDef {
     prowl: number;
     witness: number;
     rounds: number;
+    /** The cry (6B review q2): bold, armed grown-ups within `earshot` tiles, asleep or awake,
+     * run to one a wolf falls on; the fight is fought `minutes` later, with whoever came. */
+    cry: { earshot: number; minutes: number };
     strike: { base: number; perLevel: number; most: number };
     bite: {
       chance: number;

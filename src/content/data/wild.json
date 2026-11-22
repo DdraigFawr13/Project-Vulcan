@@ -60,7 +60,7 @@
 "attackAfter": 10,
 "prowl": 8,
 "witness": 8,
-"rounds": 3,
+"rounds": 3, "cry": {"earshot": 10, "minutes": 12},
 "strike": {"base":30,"perLevel":4,"most":90},
 "bite": {"chance":50,"parts":[{"id":"left-leg","weight":25},{"id":"right-leg","weight":25},{"id":"left-arm","weight":18},{"id":"right-arm","weight":17},{"id":"body","weight":10},{"id":"head","weight":5}],"severities":[{"id":"light","weight":55},{"id":"deep","weight":38},{"id":"grave","weight":7}]},
 "hits": 2,
