@@ -115,7 +115,7 @@ export const mapSystem: System = {
     map.stains = stainsOf(ctx, map);
     map.known = knownOnArrival(ctx.content, map);
     map.finds = [];
-    map.places = layPlaces(ctx, map);
+    map.places = layPlaces(ctx, map, greens);
     const formed = ctx.emit('map.formed', {
       causes: [ctx.world.begunEvent],
       data: {

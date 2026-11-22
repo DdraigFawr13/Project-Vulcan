@@ -17,12 +17,17 @@ export const placeKind = (content: EngineContent, kind: string): Kind | undefine
   content.work.scout.places.kinds.find((k) => k.id === kind);
 
 /** Lays every kind of find, kind by kind in content order. */
-export function layPlaces(ctx: SystemContext, map: MapState): Place[] {
+export function layPlaces(
+  ctx: SystemContext,
+  map: MapState,
+  greens: readonly { x: number; y: number }[],
+): Place[] {
   const { content } = ctx;
-  const rng = streamFor(ctx.world, 'places');
   const places: Place[] = [];
   for (const kind of content.work.scout.places.kinds) {
-    const cand = candidates(content, map, kind);
+    // A stream a kind (`places-<id>`), so one kind's draws never shift another's.
+    const rng = streamFor(ctx.world, `places-${kind.id}`);
+    const cand = candidates(content, map, kind, kind.rule === 'bank' ? greens : []);
     // Shuffled first, so equal scores fall by the seed, then the best first.
     for (let k = cand.length - 1; k > 0; k -= 1) {
       const j = rng.int(k + 1);
@@ -42,18 +47,29 @@ export function layPlaces(ctx: SystemContext, map: MapState): Place[] {
       places.push({ kind: kind.id, x, y, by: 0, line: 0, tick: 0 });
     }
   }
-  return places;
+  // The land is the same whichever green the band chose (a bank's clay is laid either way); the
+  // finds are those far enough from this one.
+  const from = content.work.scout.places.from;
+  return places.filter((p) => cheb(p.x, p.y, map.startX, map.startY) >= from);
 }
 
-/** The tiles `kind`'s rule allows, each with its score (higher is better). */
-function candidates(content: EngineContent, map: MapState, kind: Kind): [number, number][] {
+/** The tiles `kind`'s rule allows, each with its score (higher is better), none near `away`: a
+ * clay bank stays clear of every green the band might choose and the trees thinned round it, so
+ * the land is the same whichever they chose. */
+function candidates(
+  content: EngineContent,
+  map: MapState,
+  kind: Kind,
+  away: readonly { x: number; y: number }[],
+): [number, number][] {
   const out: [number, number][] = [];
   const w = map.width;
-  const from = content.work.scout.places.from;
   const green = map.elevation[map.startY * w + map.startX]!;
+  const clear =
+    Math.max(content.work.scout.places.from, content.terrain.generator.start.thin.reach) + 3;
   for (let y = 4; y < map.height - 4; y += 1)
     for (let x = 4; x < w - 4; x += 1) {
-      if (cheb(x, y, map.startX, map.startY) < from) continue;
+      if (away.some((g) => cheb(x, y, g.x, g.y) < clear)) continue;
       const i = y * w + x;
       const score = RULES[kind.rule]({ content, map, kind, i, x, y, green });
       if (score !== undefined) out.push([i, score]);

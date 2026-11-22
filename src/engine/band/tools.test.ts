@@ -207,8 +207,9 @@ describe('tools in use', () => {
 
   it('gives a better free tool at dawn to whoever works that kind most', () => {
     const w = createWorld(sim, 'ledger');
-    // The whole valley known (V-205): this test is not about known land.
+    // The whole valley known (V-205), its finds left out (V-206): this test is not about them.
     w.map.known.fill(1);
+    w.map.places = [];
     const [a, b] = people(w);
     const unloaded = lines(w, 'goods.unloaded')[0]!.id;
     clearFree(w, 'axe');
@@ -328,8 +329,9 @@ describe('tools in use', () => {
 
   it('burns charcoal for a tool want when the ingots are in and the charcoal is not', () => {
     const w = createWorld(sim, 'ledger');
-    // The whole valley known (V-205): this test is not about known land.
+    // The whole valley known (V-205), its finds left out (V-206): this test is not about them.
     w.map.known.fill(1);
+    w.map.places = [];
     const [a] = people(w);
     clearFree(w, 'axe');
     addEntity(w, 'usage', { person: a!.id, kind: 'axe', minutes: 5000 });
