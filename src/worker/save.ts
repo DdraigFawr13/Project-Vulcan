@@ -30,6 +30,22 @@ export const saveOf = (world: WorldState, contentHash: string): SaveFile => ({
   state: world,
 });
 
+/** Raised for a save from another format or other content, not a damaged one: the page says the
+ * version changed only for these. */
+export class OtherVersion extends Error {}
+
+/**
+ * Gives `hurt: 0` to each animal row that lacks it. Lambs born before 2026-11-22 were made without
+ * the field, so their saves failed the table check; no system reads a lamb's `hurt`, and 0 is what
+ * every other animal starts with, so the mended world plays on as it would have.
+ */
+function mendLambs(world: WorldState): void {
+  const animals = world.entities['animal'];
+  if (!Array.isArray(animals)) return;
+  for (const row of animals)
+    if (row && typeof row === 'object' && !('hurt' in row)) row['hurt'] = 0;
+}
+
 /** The world in `save`, or a throw naming why it cannot be loaded with this content. */
 export function checkSave(
   save: unknown,
@@ -39,17 +55,18 @@ export function checkSave(
 ): WorldState {
   if (!isObject(save) || !isObject(save['state'])) throw new Error('The save is damaged.');
   if (save['version'] !== SAVE_VERSION)
-    throw new Error(
+    throw new OtherVersion(
       `It was saved by another version of the game (save format ${String(save['version'])}, this game reads ${SAVE_VERSION}).`,
     );
   if (save['contentHash'] !== contentHash)
-    throw new Error(
+    throw new OtherVersion(
       `It was made with different game content (${String(save['contentHash'])} in the save, ${contentHash} here).`,
     );
   if (!stateShaped(save['state'], save)) throw new Error('The save is damaged.');
   const world = save['state'] as unknown as WorldState;
   // Deeper checks a matching content hash makes cheap (savecheck.ts).
   if (!fitsContent(world, content)) throw new Error('The save is damaged.');
+  mendLambs(world);
   const tablesWrong = tablesProblem(world, tables);
   if (tablesWrong) throw new Error(`The save is damaged: ${tablesWrong}.`);
   return world;

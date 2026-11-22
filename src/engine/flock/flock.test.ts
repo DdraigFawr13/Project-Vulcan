@@ -12,6 +12,7 @@ import {
   itemsOf,
   step,
   streamFor,
+  tablesProblem,
   templatesOf,
   type EntityRow,
   type SystemContext,
@@ -110,7 +111,7 @@ function addKept(
     addEntity(w, 'animal', {
       ...{ herd: herd.id, pack: 0, kind, x: tile % w.map.width, y: Math.floor(tile / w.map.width) },
       ...{ z: 0, path: [], stride: 0, facing: 'e', state: '', until: 0 },
-      ...{ sex, born: young ? w.tick : 0, young, tamedBy: 0, cull: 0, shorn: 0, dies: 0 },
+      ...{ hurt: 0, sex, born: young ? w.tick : 0, young, tamedBy: 0, cull: 0, shorn: 0, dies: 0 },
     });
 }
 
@@ -177,6 +178,8 @@ describe('the flock', () => {
       true,
     );
     expect(lines(w, 'flock.lambed').length).toBeGreaterThan(0);
+    // A lamb's row fits the animal table, so a save made after a lambing passes the save check.
+    expect(tablesProblem(structuredClone(w), sim.tables)).toBeUndefined();
     expect(keptOf(without.w, without.flock).filter((a) => a['young'])).toHaveLength(0);
     expect(lines(without.w, 'flock.lambed')).toHaveLength(0);
     // Next Thawmonth the lambs are grown.

@@ -30,7 +30,7 @@ import { createTiming, recordTick, timedSystems } from './timing.ts';
 import type { ChunkView, FromWorker, LedgerLine, ToWorker } from './protocol.ts';
 import type { JumpEndView, JumpSpan, JumpView } from './protocol-time.ts';
 import { pickerBuffers, previewOf, regionView } from './region.ts';
-import { checkSave } from './save.ts';
+import { checkSave, OtherVersion } from './save.ts';
 import { ANSWERS, isRead } from './answers.ts';
 import { lineOf } from './lines.ts';
 import { buildView } from './build.ts';
@@ -275,7 +275,8 @@ const CONTROLS: { [K in Control['type']]: (m: Extract<Control, { type: K }>) => 
     try {
       loaded = checkSave(m.save, contentHash, content, sim.tables);
     } catch (error) {
-      post({ type: 'loadRefused', reason: error instanceof Error ? error.message : String(error) });
+      const reason = error instanceof Error ? error.message : String(error);
+      post({ type: 'loadRefused', reason, old: error instanceof OtherVersion });
       return;
     }
     adopt(loaded, 'save');

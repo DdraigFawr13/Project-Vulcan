@@ -22,7 +22,7 @@ import { Saves } from './saves.ts';
 import { Sheets } from './sheets.ts';
 import { SpeedState } from './speed.ts';
 import { Stops } from './stops.ts';
-import { OLD_SAVE, Title } from './title.ts';
+import { OLD_SAVE, refusedNote, Title } from './title.ts';
 
 const parent = document.getElementById('game');
 const hudRoot = document.getElementById('hud');
@@ -276,11 +276,11 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
         );
     } else if (message.type === 'causes') panel.showCauses(message.id, message.lines);
     else if (message.type === 'loadRefused' && !ready) {
-      // The save to continue from no longer loads (another version): the title offers New game
-      // alone and says why; a reloaded valley begins afresh instead.
+      // The save to continue from no longer loads: the title offers New game alone and says why
+      // (another version, or the check's own reason); a reloaded valley begins afresh instead.
       saves.loading = false;
       titleWaits = false;
-      if (title) title.empty(OLD_SAVE);
+      if (title) title.empty(message.old ? OLD_SAVE : refusedNote(message.reason));
       else begin();
     } else if (message.type === 'error') {
       fail(message.message);

@@ -75,6 +75,7 @@ function keep(w: WorldState, pasture: number, rows: [kind: string, young: number
         facing: 'e',
         state: '',
         until: 0,
+        hurt: 0,
       },
       ...{ sex: kind === 'ram' ? 'm' : 'f', born: young ? w.tick : 0, young, tamedBy: by ?? 0 },
       ...{ cull: 0, shorn: 0, dies: 0 },
