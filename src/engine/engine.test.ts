@@ -46,6 +46,7 @@ const fixtureContent: EngineContent = {
   tales: content.tales,
   annals: content.annals,
   self: content.self,
+  callings: content.callings,
   colony: content.colony,
   family: content.family,
   worship: content.worship,

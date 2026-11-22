@@ -39,6 +39,7 @@ import strangers from './data/strangers.json';
 import stops from './data/stops.json';
 import tales from './data/tales.json';
 import teach from './data/teach.json';
+import callings from './data/callings.json';
 import self from './data/self.json';
 import colony from './data/colony.json';
 import defy from './data/defy.json';
@@ -102,6 +103,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   strangers,
   tales,
   teach,
+  callings,
   self,
   colony,
   defy,

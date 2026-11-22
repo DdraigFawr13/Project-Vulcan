@@ -3,6 +3,7 @@
 // with whether it is done. Words only; the rules live in engine self. A pure read.
 import { content } from '../content/index.ts';
 import {
+  callingOf,
   ambitionOf,
   ambitionText,
   defyOf,
@@ -35,6 +36,20 @@ function defianceOf(world: WorldState, p: EntityRow): SelfView['defiance'] {
   };
 }
 
+/** The calling `p` holds, what it does, and their masterwork once made. */
+function callingView(world: WorldState, p: EntityRow): SelfView['calling'] {
+  const row = callingOf(world, p.id);
+  const def = row && content.callings.callings.find((c) => c.id === row['calling']);
+  if (!row || !def) return undefined;
+  const stage = def.stages.find((s) => s.id === row['stage']) ?? def.stages[0];
+  const made = row['named'] ? ` Made their masterwork, ${row['named'] as string}.` : '';
+  return {
+    text: `Holds a calling: ${row['title'] as string}.`,
+    note: `${stage?.sign ?? ''}${made}`,
+    why: row['line'] as number,
+  };
+}
+
 /** `p`'s roles, strongest first, ambition and defiance. */
 export function selfView(world: WorldState, p: EntityRow): { self: SelfView } {
   const roles = rolesOf(world, p.id).flatMap((r) => {
@@ -61,6 +76,7 @@ export function selfView(world: WorldState, p: EntityRow): { self: SelfView } {
   const defiance = defianceOf(world, p);
   const faith = faithSelf(world, p);
   const teaching = teachSelf(world, p);
+  const calling = callingView(world, p);
   return {
     self: {
       roles,
@@ -68,6 +84,7 @@ export function selfView(world: WorldState, p: EntityRow): { self: SelfView } {
       ...(defiance ? { defiance } : {}),
       ...(faith ? { faith } : {}),
       ...(teaching ? { teaching } : {}),
+      ...(calling ? { calling } : {}),
     },
   };
 }

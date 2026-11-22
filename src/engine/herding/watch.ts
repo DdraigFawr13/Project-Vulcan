@@ -6,7 +6,7 @@
 // pack keeps `watch.reach` tiles from a lit watch fire (wild `setWards`); the watcher sleeps until
 // `watch.wake` o'clock. The fire is a hearth piece laid at the first watch and kept for the next.
 import { TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
-import { addEntity } from '../entity/index.ts';
+import { addEntity, pushers } from '../entity/index.ts';
 import { flocksOf, headOf, pastureOf } from '../flock/index.ts';
 import { createFire, fireOf } from '../fire/index.ts';
 import { inStore, itemsOf, takeFrom } from '../goods/index.ts';
@@ -67,19 +67,20 @@ function noteSign(ctx: SystemContext): void {
     Object.assign(state, { signTracks: tracks, signAt: world.tick, signLine: tracks });
 }
 
-/** Who keeps watch: the herder who puts Herding highest, alive, not hurt or down. */
+/** Who keeps watch: one whose calling pushes `watch` (the champion, 6B Bundle 6), else the
+ * herder who puts Herding highest; alive, not hurt or down, and not at another fold's fire. */
 function watcherFor(ctx: SystemContext): EntityRow | undefined {
   const { world, content } = ctx;
   const job = content.flock.job;
+  const fit = (q: EntityRow) =>
+    q['status'] === 'alive' &&
+    q['doing'] !== 'hurt' &&
+    !isDown(world, q.id) &&
+    !flocksOf(world).some((f) => f['watchBy'] === q.id);
+  const first = pushers(world, content).find((h) => h.push.watch && fit(h.person));
+  if (first) return first.person;
   return people(world)
-    .filter(
-      (q) =>
-        q['status'] === 'alive' &&
-        able(content, q, job) &&
-        q['doing'] !== 'hurt' &&
-        !isDown(world, q.id) &&
-        !flocksOf(world).some((f) => f['watchBy'] === q.id),
-    )
+    .filter((q) => fit(q) && able(content, q, job))
     .sort((a, b) => levelOf(world, content, a.id, job) - levelOf(world, content, b.id, job))[0];
 }
 
