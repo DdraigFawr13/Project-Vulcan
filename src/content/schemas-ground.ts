@@ -15,7 +15,7 @@ export const VALLEY_DIALS = {
     ),
   }),
   regrow: obj({ years: num({ min: 1 }), near: num({ min: 1 }) }),
-  // Known land (6W Slice 4, V-204): a colonist on the surface sees `sight` tiles round them, `high`
+  // Known land (6W Slice 4, V-205): a colonist on the surface sees `sight` tiles round them, `high`
   // when standing `height` metres or more above the green; the band knows `arrive` tiles round the
   // green on arrival; a scout's news of at least `least` sources is a find, worked `place` tiles
   // round it however far off.
@@ -65,7 +65,7 @@ export const GROUND_SCHEMAS = {
   ),
 };
 
-// Scouting (6W Slice 4, V-204), work.json `scout`: see WorkDef.scout in src/engine/core/life.ts.
+// Scouting (6W Slice 4, V-205), work.json `scout`: see WorkDef.scout in src/engine/core/life.ts.
 export const SCOUT = obj({
   job: ref('jobs'),
   reach: count,

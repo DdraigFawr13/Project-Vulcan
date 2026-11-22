@@ -88,7 +88,7 @@ function chooseHerd(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const green = greenOf(world);
   const apart = (h: EntityRow): number =>
     cheb({ x: h['x'] as number, y: h['y'] as number, z: 0 }, green);
-  // Only game seen on known ground is hunted (V-204).
+  // Only game seen on known ground is hunted (V-205).
   const all = huntable(world, content).filter((h) =>
     isKnown(world.map, (h['y'] as number) * world.map.width + (h['x'] as number)),
   );

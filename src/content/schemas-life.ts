@@ -158,7 +158,7 @@ export const LIFE_SCHEMAS = {
     // Foraging (P2.9): the jobs.json job and the good it serves, minutes a bush takes at skill
     // `skilled`, bushes looked for within `reach` tiles of the store; a bush picked is ripe again
     // after `regrowDays` days, and bushes only grow back in the named `months`.
-    // Scouting (6W Slice 4, V-204): see WorkDef.scout.
+    // Scouting (6W Slice 4, V-205): see WorkDef.scout.
     scout: SCOUT,
     forage: obj({
       job: ref('jobs'),

@@ -239,7 +239,7 @@ const JOB_PHRASES = new Map<string, Phrase>([
   ['lesson', (world, _p, say) => say('lesson', { teacher: teacherName(world) })],
 ]);
 
-/** A scout (V-204): out looking for the good, or on the way home with the news. */
+/** A scout (V-205): out looking for the good, or on the way home with the news. */
 function scoutingDoing(_world: WorldState, p: EntityRow, say: Say): string {
   const good = content.work.stock.find((s) => s.good === p['what'])?.name ?? '';
   return say(p['task'] === 'home' ? 'scoutHome' : 'scout', { good });

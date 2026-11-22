@@ -109,7 +109,7 @@ function tileFit(
   const i = y * map.width + x;
   const kind = content.terrain.kinds[map.tiles[i]!]!;
   if (!kind.buildable || kind.water || kind.solid || map.built[i]) return 'no';
-  // Only ground the colony knows is built on (V-204).
+  // Only ground the colony knows is built on (V-205).
   if (!isKnown(map, i)) return 'no';
   const f = map.features[i]! ? content.features[map.features[i]! - 1]! : undefined;
   if (f && (f.kind === 'tree' || f.kind === 'log')) return 'tree';
@@ -283,7 +283,7 @@ export function withinReach(
   const first = storeOf(world)[0];
   const [ox, oy] = first ? [first['x'] as number, first['y'] as number] : [map.startX, map.startY];
   const reach = content.buildings.house.reach;
-  // Known material only, round the store and round a scout's find (V-204 amends V-055).
+  // Known material only, round the store and round a scout's find (V-205 amends V-055).
   eachKnown(map, workAreas(content, map, ox, oy, reach), (i) => {
     const f = map.features[i]!;
     const def = f ? content.features[f - 1]! : undefined;

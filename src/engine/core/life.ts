@@ -136,7 +136,7 @@ export interface WorkDef {
     why: string;
     words: { sink: string; tunnel: string; mine: string; clay: string; cellar: string };
   };
-  /** Scouting (6W Slice 4, V-204): the colony wants a scout when the stock of one of `goods`
+  /** Scouting (6W Slice 4, V-205): the colony wants a scout when the stock of one of `goods`
    * plus its known sources within `reach` of the store (and round finds) is under its level; the
    * scout makes for the unknown edge at most `far` tiles out, turns home after `leg` days on a
    * leg, is home within `home` tiles of the store; a trip with no word waits `wait` days; people

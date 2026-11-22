@@ -37,7 +37,7 @@ export function bouldersBy(
   const list = memo.by.get(key) ?? scanBoulders(world, content, rock, near);
   memo.by.set(key, list);
   const { features } = world.map;
-  // Only boulders on known ground (V-204), asked now: the day's list is of every boulder.
+  // Only boulders on known ground (V-205), asked now: the day's list is of every boulder.
   return list.filter(
     (i) => content.features[(features[i] ?? 0) - 1]?.kind === 'boulder' && isKnown(world.map, i),
   );

@@ -3,7 +3,13 @@
 // (burning low and slow for the night) and the tick it was last used, which the people mark
 // (crafts/hearth.ts `markUsed`): a fire knows no people (V-042). Its heat reaches its room's tiles,
 // worked out when asked (heat.ts) from the room air kept on the row (air.ts, 6B, amends V-043).
-import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
+import {
+  clockAt,
+  the,
+  type EngineContent,
+  type EntityRow,
+  type WorldState,
+} from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { furnitureOf, greenOf, houseAt, roomAt, roomName } from '../build/index.ts';
 import type { Spot } from '../paths/index.ts';
@@ -78,7 +84,7 @@ export function placeOf(
   const h = roomAt(world, content, x, y) ? houseAt(world, x, y) : undefined;
   if (h) {
     const room = roomName(world, content, h);
-    return { where: `in the ${room}`, room, indoors: true };
+    return { where: `in ${the(room)}`, room, indoors: true };
   }
   const g = greenOf(world);
   const near = Math.max(Math.abs(g.x - x), Math.abs(g.y - y)) <= 3;

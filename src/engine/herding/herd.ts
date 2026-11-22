@@ -106,7 +106,7 @@ function freeFor(ctx: SystemContext, q: EntityRow): boolean {
     !resting(q) &&
     !loadOf(world, q.id) &&
     q['job'] !== 'bury' &&
-    // A scout away (V-204) is not called back to fold the flock.
+    // A scout away (V-205) is not called back to fold the flock.
     q['job'] !== 'scout' &&
     rankOf(ctx, q) >= levelOf(world, content, q.id, content.flock.job)
   );

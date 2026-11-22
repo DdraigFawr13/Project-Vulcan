@@ -62,7 +62,7 @@ function besideFrom(ctx: SystemContext, from: ReturnType<typeof spotOf>, x: numb
 }
 
 /** What to work next: a fallen log before a tree, then the one nearest the store, on known
- * ground within reach of the store or round a scout's find (V-204). */
+ * ground within reach of the store or round a scout's find (V-205). */
 function chooseSource(ctx: SystemContext, p: EntityRow, g: Gather): number | undefined {
   const { world, content } = ctx;
   const map = world.map;

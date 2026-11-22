@@ -1,4 +1,4 @@
-// Scouting (6W Slice 4, V-204): nobody is sent (V-041). When what the colony has of wood, stone or
+// Scouting (6W Slice 4, V-205): nobody is sent (V-041). When what the colony has of wood, stone or
 // food plus what it knows of in reach is under its stock level, a free person takes up scouting,
 // restless and hardy ones first, and walks out to the edge of the known land where the need looks
 // likeliest. What they see counts once they are home and tell of it: a find becomes a place the

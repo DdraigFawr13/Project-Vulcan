@@ -116,7 +116,7 @@ function nearBushes(
   for (const b of world.entities['bush'] ?? [])
     picked.set((b['y'] as number) * map.width + (b['x'] as number), b['picked'] as number);
   const near: [number, number][] = [];
-  // Known bushes only, within reach of the store or round a scout's find (V-204).
+  // Known bushes only, within reach of the store or round a scout's find (V-205).
   const areas = workAreas(content, map, ox, oy, reach);
   for (const i of bushesOf(world, content, crop)) {
     const [x, y] = [i % map.width, Math.floor(i / map.width)];

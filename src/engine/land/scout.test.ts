@@ -1,4 +1,4 @@
-// 6W Slice 4 (V-204): the colony works only land it knows. When the known wood in reach runs out a
+// 6W Slice 4 (V-205): the colony works only land it knows. When the known wood in reach runs out a
 // scout goes out unordered, comes home and tells of a wood, the fellers work it, and every line
 // traces back to the Wood stock level; no work is ever chosen on unknown ground.
 import { describe, expect, it } from 'vitest';

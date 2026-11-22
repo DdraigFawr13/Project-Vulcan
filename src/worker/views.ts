@@ -102,7 +102,7 @@ export function tileView(
   const feature = layer.features[i]! > 0 ? content.features[layer.features[i]! - 1] : undefined;
   const snowy = z === 0 && map.snow[i] === 1;
   const under = z < map.levels.length ? layerOf(map, z + 1) : undefined;
-  // Fog below the surface only; the surface's known land is shown from Slice 6 (V-204).
+  // Fog below the surface only; the surface's known land is shown from Slice 6 (V-205).
   const dark = z > 0 && 'known' in layer && !layer.known[i];
   const stained = z === 0 && map.stains[i]! > 0 ? content.features[map.stains[i]! - 1] : undefined;
   const rows = {

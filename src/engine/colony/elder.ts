@@ -5,6 +5,7 @@
 // and those they share a house with) lean their way on every law (law `weigh.ts`). An elder's
 // death shakes standing for a season.
 import {
+  pronouns,
   TICKS_PER_DAY,
   type EngineContent,
   type EntityRow,
@@ -100,7 +101,10 @@ function whyWords(
   fallen: string,
 ): string {
   const v = content.colony.elder.vote;
-  const looks = v.looks.replace('{votes}', String(best.votes)).replace('{people}', String(people));
+  const looks = v.looks
+    .replace('{votes}', String(best.votes))
+    .replace('{people}', String(people))
+    .replace('{them}', pronouns(best.p).them);
   const trust = best.why.length ? `, ${best.why.join(' and ')}` : '';
   return `${looks}${trust}${fallen ? `; ${v.fallen.replace('{name}', fallen)}` : ''}`;
 }

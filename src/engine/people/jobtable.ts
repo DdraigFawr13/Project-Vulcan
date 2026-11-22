@@ -42,7 +42,7 @@ export const JOBS: Readonly<Record<string, JobRow>> = {
   fish: { takeUp: takeUpFishing, work: fishing },
   farm: { takeUp: takeUpFarming, work: farming },
   herd: { takeUp: takeUpHerding },
-  // Scouting (V-204): a trip goes on into the evening, until bedtime.
+  // Scouting (V-205): a trip goes on into the evening, until bedtime.
   scout: { takeUp: takeUpScouting, work: scouting, always: true },
   // The builder's row: a burial first (P5.6), a cold room's hearth, clearing a house's site, then
   // hearths, workstations and plans.

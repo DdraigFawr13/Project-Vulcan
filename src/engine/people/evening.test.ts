@@ -28,7 +28,7 @@ const sim = createSim(winter);
 describe('winter evenings by the hearth', () => {
   it('gathers the idle by a lit fire after dark and mends their clothes there', () => {
     const w = createWorld(sim, 'ledger');
-    // The whole valley known (V-204), so the fellers work near the fires as this test expects.
+    // The whole valley known (V-205), so the fellers work near the fires as this test expects.
     w.map.known.fill(1);
     step(w, sim, 5 * TICKS_PER_DAY - (w.tick % TICKS_PER_DAY));
     step(w, sim, daylightAt(winter, w.tick).dusk);

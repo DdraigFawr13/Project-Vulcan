@@ -5,6 +5,7 @@
 import { clockAt, TICKS_PER_DAY } from '../core/index.ts';
 import type { System } from '../sim/index.ts';
 import { collect } from './collect.ts';
+import { saidOf } from './say.ts';
 import { writeSeason } from './season.ts';
 import { ANNALS_TABLES } from './tables.ts';
 import { writeYear } from './year.ts';
@@ -21,7 +22,9 @@ export const annalsSystem: System = {
     const now = clockAt(ctx.world.tick, calendar);
     const before = clockAt(ctx.world.tick - TICKS_PER_DAY, calendar);
     if (now.season === before.season) return;
-    writeSeason(ctx);
-    if (now.year !== before.year) writeYear(ctx, before.year);
+    // The year's recap stands in for winter's on the page, so it may say what winter's says.
+    const said = saidOf(ctx.state);
+    writeSeason(ctx, said);
+    if (now.year !== before.year) writeYear(ctx, before.year, said);
   },
 };

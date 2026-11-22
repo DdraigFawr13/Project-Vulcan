@@ -1,4 +1,4 @@
-// Known land (6W Slice 4, V-204): the colony works only ground it has seen. A colonist on the
+// Known land (6W Slice 4, V-205): the colony works only ground it has seen. A colonist on the
 // surface sees `sight` tiles round them (`high` from a height), and what they see stays known; a
 // scout's sightings are held (2) until they come home and tell of them. Work looks in its reach
 // round the store and round each find (`workAreas`), at known tiles only (`isKnown`).
@@ -65,7 +65,7 @@ export function forgetSeen(map: MapState): void {
 }
 
 /** Where work looks: `reach` round (ox, oy), then `place` round each find (a trip whose news
- * counted at least `least` sources, V-204), in the order they were found. */
+ * counted at least `least` sources, V-205), in the order they were found. */
 export function workAreas(
   content: EngineContent,
   map: MapState,

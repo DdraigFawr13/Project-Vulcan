@@ -75,7 +75,7 @@ function watcherFor(ctx: SystemContext): EntityRow | undefined {
   const fit = (q: EntityRow) =>
     q['status'] === 'alive' &&
     q['doing'] !== 'hurt' &&
-    // A scout away (V-204) is not called back to watch.
+    // A scout away (V-205) is not called back to watch.
     q['job'] !== 'scout' &&
     !isDown(world, q.id) &&
     !flocksOf(world).some((f) => f['watchBy'] === q.id);

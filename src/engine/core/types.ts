@@ -191,7 +191,7 @@ export interface MapState {
   riches: Record<string, number>;
   /** Felled trees waiting to grow back, three numbers each: tile, 1 + features index, due day. */
   regrow: number[];
-  /** What the colony knows of the surface (6W Slice 4, V-204): 0 unseen, 1 known, 2 seen by a
+  /** What the colony knows of the surface (6W Slice 4, V-205): 0 unseen, 1 known, 2 seen by a
    * scout who is not home yet (it counts once they tell of it). Every search for work reads 1s. */
   known: Uint8Array;
   /** Scouting trips, oldest first (6W Slice 4): the last one is under way while its `count` is -1. */

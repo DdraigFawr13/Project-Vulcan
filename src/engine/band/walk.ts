@@ -73,7 +73,7 @@ export function stepAlong(ctx: SystemContext, p: EntityRow): void {
     moved = true;
   }
   p['stride'] = path.length ? stride : 0;
-  // What they see from where they stopped stays known (V-204); a scout's counts once home.
+  // What they see from where they stopped stays known (V-205); a scout's counts once home.
   if (moved && (p['z'] as number) === 0)
     see(ctx.content, map, p['x'] as number, p['y'] as number, p['job'] === 'scout');
 }

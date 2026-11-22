@@ -97,7 +97,7 @@ const placesShaped = (map: Shape, n: number): boolean =>
   Array.isArray(map['finds']) &&
   map['finds'].every(findShaped);
 
-// A scouting trip (V-204): where, the good, the count (-1 while under way), its line and tick.
+// A scouting trip (V-205): where, the good, the count (-1 while under way), its line and tick.
 const findShaped = (f: unknown): boolean =>
   isObject(f) &&
   typeof f['good'] === 'string' &&
@@ -142,7 +142,7 @@ function mapFits(world: WorldState, content: SaveContent): boolean {
     w.built.every((b) => b <= content.buildings.parts.length) &&
     // Ore stains name a feature (V-087).
     w.stains.every((f) => f <= features) &&
-    // Known land is 0, 1 or a scout's 2 (V-204); only the last trip may be under way.
+    // Known land is 0, 1 or a scout's 2 (V-205); only the last trip may be under way.
     w.known.every((k) => k <= 2) &&
     w.finds.every(
       (f, k) => f.x < w.width && f.y < w.height && (f.count >= 0 || k === w.finds.length - 1),

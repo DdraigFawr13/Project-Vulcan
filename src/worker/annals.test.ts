@@ -35,12 +35,12 @@ const calendar = {
 };
 const shortYear: EngineContent = { ...content, calendar };
 
-// Lines a recap tells, on set days: two tools break and Bran dies in spring, the lakes freeze in
-// autumn twice; summer and winter keep nothing.
+// Lines a recap tells, on set days: two tools break, the food runs out and Bran dies in spring, the
+// lakes freeze in autumn twice and a third tool breaks; summer and winter keep nothing.
 const planted: System = {
   id: 'test-planted',
   every: 'day',
-  emits: ['tool.broke', 'health.died', 'weather.frozenOver'],
+  emits: ['tool.broke', 'goods.foodGone', 'health.died', 'weather.frozenOver'],
   run(ctx) {
     const day = ctx.world.tick / TICKS_PER_DAY;
     const broke = (name: string) =>
@@ -48,7 +48,9 @@ const planted: System = {
     if (day === 2) {
       broke('Ann');
       broke('Bryn');
+      ctx.emit('goods.foodGone', { data: { name: 'Bryn' } });
     }
+    if (day === 17) broke('Cai');
     if (day === 3)
       ctx.emit('health.died', { data: { name: 'Bran', where: 'by the ford', cause: 'Cold.' } });
     if (day === 16 || day === 18) ctx.emit('weather.frozenOver', {});
@@ -77,16 +79,31 @@ describe('annals', () => {
     ]);
     expect(said(0)).toEqual([
       { section: 'lost', text: 'Bran died by the ford. Cold.' },
-      { section: 'troubles', text: "Two tools broke: Ann's stone axe and Bryn's stone axe." },
+      // Troubles go by danger to people: the food running out before broken tools.
+      {
+        section: 'troubles',
+        text: "Bryn ate the last of the band's food. Two tools broke: Ann's stone axe and Bryn's stone axe.",
+      },
       { section: 'numbers', text: expect.stringContaining('nobody lived in the valley') },
     ]);
     // The same line twice is said once.
-    expect(said(2)[0]).toEqual({ section: 'troubles', text: 'The lakes froze over.' });
+    expect(said(2)[0]).toEqual({
+      section: 'troubles',
+      text: "The lakes froze over. Cai's stone axe broke after 40 hours of work.",
+    });
     expect(said(4)).toEqual([
       { section: 'spring', text: expect.stringMatching(/^Spring: Bran died\. Bran died by/) },
       { section: 'summer', text: 'Summer: a quiet season.' },
-      { section: 'autumn', text: 'Autumn: the lakes froze. The lakes froze over.' },
+      {
+        section: 'autumn',
+        text: expect.stringMatching(/^Autumn: the lakes froze\. The lakes froze over\./),
+      },
       { section: 'winter', text: 'Winter: a quiet season.' },
+      // A small trouble that came back in two seasons folds into one line of the year.
+      {
+        section: 'troubles',
+        text: 'Season after season, small troubles came back: tools broke (three times).',
+      },
       {
         section: 'numbers',
         text: 'In the year nobody came to the valley, one died, no children were born and no houses went up.',
@@ -134,7 +151,7 @@ describe('recaps for the page', () => {
     expect(spring).toMatchObject({ kind: 'season', title: 'Bran died' });
     expect(spring.kicker).toBe('The chronicle · Spring, year 1');
     expect(spring.sections.map((s) => s.head)).toEqual(['Who we lost', 'Troubles', 'In numbers']);
-    const broke = spring.sections[1]!.sentences[0]!;
+    const broke = spring.sections[1]!.sentences[1]!;
     expect(broke.lines.map((l) => l.text)).toEqual([
       "Ann's stone axe broke after 40 hours of work.",
       "Bryn's stone axe broke after 40 hours of work.",

@@ -1,4 +1,4 @@
-// Known land and scouting (6W Slice 4, V-204): `node tools/scouting.mjs <days> <seed>` runs one
+// Known land and scouting (6W Slice 4, V-205): `node tools/scouting.mjs <days> <seed>` runs one
 // seed with default levers and prints one JSON line: the share of the valley known by year, hours
 // spent beyond 40 tiles, each scouting trip (need, hours, how far, what it told of), work done at
 // finds, and any work target chosen on unknown ground (always 0, or a search reads unknown land).
