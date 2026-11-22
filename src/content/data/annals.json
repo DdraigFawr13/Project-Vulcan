@@ -65,6 +65,8 @@
       { "event": "self.fulfilled", "weight": 5, "many": "{Count} did what they set out to: {list}.", "item": "{name}", "title": "{name} did what {they} set out to" }
     ] },
     { "id": "troubles", "max": 6, "order": "weight", "lines": [
+      { "event": "land.late", "weight": 6, "title": "{name} was late home", "many": "{Count} were late home from the wild: {list}.", "item": "{name}" },
+      { "event": "land.foundScout", "weight": 6, "title": "{name} found {scout} out in the wild", "many": "{Count} were found out in the wild: {list}.", "item": "{scout}, by {name}" },
       { "event": "wild.attacked", "weight": 7, "title": "a {species} went for {name}", "many": "{Times} beasts went for people: {list}.", "item": "a {species} for {name}" },
       { "event": "health.hurt", "only": { "serious": "yes" }, "weight": 6, "title": "{name} was badly hurt", "many": "{Count} were badly hurt: {list}.", "item": "{name}" },
       { "event": "health.festered", "weight": 6, "many": "{Count} wounds festered: {list}.", "item": "{name}'s {wound}" },

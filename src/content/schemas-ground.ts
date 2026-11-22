@@ -75,4 +75,24 @@ export const SCOUT = obj({
   wait: count,
   traits: list(ref('traits')),
   goods: list(obj({ good: str(), kinds: list(str()), find: text, unit: text })),
+  // Trips, camps and their troubles (6W Slice 5, V-206): see WorkDef.scout.
+  pack: obj({ over: count, spare: count, most: count, due: count }),
+  camp: obj({ fire: num(), heat: count, wood: count, warm: count, pack: count }),
+  fall: obj({
+    ground: list(str()),
+    perHour: count,
+    per: count,
+    wound: str(),
+    parts: list(str()),
+    what: text,
+  }),
+  lost: obj({
+    weather: list(str()),
+    words: map(text),
+    perHour: count,
+    per: count,
+    days: count,
+    wander: count,
+  }),
+  late: obj({ days: count, memory: ref('memories'), sight: count }),
 });

@@ -1,5 +1,6 @@
 // What the needs, goods and people's daily round read from content: Vulcan's life file (P2.2)
 // and the forked items list. Need values run from 0 to `scale`; rates are per game hour.
+import type { TripDials } from './trip.ts';
 import type { MillDef } from './mill.ts';
 import type { FieldDef } from './fielddef.ts';
 import type { RoadsDef, StoresDef } from './ground.ts';
@@ -140,8 +141,8 @@ export interface WorkDef {
    * plus its known sources within `reach` of the store (and round finds) is under its level; the
    * scout makes for the unknown edge at most `far` tiles out, turns home after `leg` days on a
    * leg, is home within `home` tiles of the store; a trip with no word waits `wait` days; people
-   * with one of `traits` go first. */
-  scout: {
+   * with one of `traits` go first; trips, camps and their troubles in `TripDials`. */
+  scout: TripDials & {
     job: string;
     reach: number;
     far: number;

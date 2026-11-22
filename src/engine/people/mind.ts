@@ -21,6 +21,7 @@ import { danger } from '../care/index.ts';
 import { drinking } from './drink.ts';
 import { banks, tendInEvening } from '../crafts/index.ts';
 import { warming } from './warm.ts';
+import { afield } from './afield.ts';
 import { gathering, mendByAFire, practising } from './evening.ts';
 import { feasting, HARD_STOP } from './feast.ts';
 import { holyHours, praying } from '../faith/index.ts';
@@ -148,6 +149,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   // evening's leisure.
   // On a feast day (6B) work stops at noon for all who keep the Feasts law.
   const day = holyHours(world, content, p.id, hoursOf(world, content, p.id));
+  // Out on a trip with a pack (6W Slice 5): their own round, at camp and on the way.
+  if (afield(ctx, p, hour >= day.sleepFrom || hour < day.workFrom)) return;
   // Someone already on their way to it is waited for past bedtime, up to the supper's hard stop.
   const waited = p['doing'] === 'feast' ? HARD_STOP : 0;
   const minute = hour * 60 + (world.tick % 60);

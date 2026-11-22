@@ -164,7 +164,9 @@ function hourOf(
         : life.sleep.ground;
   if (id === 'warmth') {
     const bed = asleep(p) && (onBedroll(world, p) || inBed(world, p)) ? life.warmth.bedroll : 0;
-    const short = life.warmth.comfort - (feels(ctx, p) + bed);
+    // A camp fire on a trip (6W Slice 5, land camp.ts) warms the one who lit it.
+    const fire = (p['fire'] as number) > world.tick ? content.work.scout.camp.heat : 0;
+    const short = life.warmth.comfort - (feels(ctx, p) + bed + fire);
     if (short > 0) return -short * life.warmth.perDegree;
     // Somewhere warm, the colder they came in the faster they thaw: `catchUp` of the way back
     // to the warning line each hour, on top of the steady rise (so a long cold walk home is

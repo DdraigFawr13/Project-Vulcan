@@ -17,7 +17,7 @@ import { addPerson, ATTRIBUTES, drawBand, drawSmithing, type Home } from '../ban
 import { NEWCOMER_FIELDS, PRIORITY_TABLES, rollTally, setPriority } from '../band/index.ts';
 import { KNAP_TABLES, stepAlong, TALLY_START, TOOL_TABLES } from '../band/index.ts';
 import { toolsDaily, WALK_FIELDS } from '../band/index.ts';
-import { FORAGE_TABLES, regrowWoods } from '../land/index.ts';
+import { FORAGE_TABLES, regrowWoods, tripHour } from '../land/index.ts';
 import { JOB_FIELDS } from './jobfields.ts';
 import { DRINK_FIELDS } from './drink.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
@@ -243,6 +243,8 @@ export const peopleSystem: System = {
     markUsed(ctx);
     toolsDaily(ctx);
     regrowWoods(ctx);
+    // 6W Slice 5: a trip under way kept, the late worried for and searched for.
+    tripHour(ctx);
     const hour = hourNow(ctx);
     // P6.5: the catching-sick kept apart, before care finds them a bed this hour.
     if (ctx.world.tick % 60 === 0) apartHour(ctx);

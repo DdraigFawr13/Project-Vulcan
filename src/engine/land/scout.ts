@@ -3,7 +3,7 @@
 // restless and hardy ones first, and walks out to the edge of the known land where the need looks
 // likeliest. What they see counts once they are home and tell of it: a find becomes a place the
 // colony works however far off (`workAreas`); a trip with no word waits `wait` days.
-import { TICKS_PER_DAY, type EntityRow, type Find } from '../core/index.ts';
+import { TICKS_PER_DAY, type EntityRow, type Find, type WorldState } from '../core/index.ts';
 import { greenOf } from '../build/index.ts';
 import { haveOf, stockOf, storeOf, wantOf } from '../goods/index.ts';
 import { compass, eachKnown, forgetSeen, inAreas, tellSeen, workAreas } from '../map/index.ts';
@@ -11,6 +11,11 @@ import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, declineIfUnable, levelOf, outranked, people, priorityLine } from '../band/index.ts';
 import { spotOf, walkTo } from '../band/index.ts';
+import { isDown } from '../health/index.ts';
+import { hoursOf } from '../law/index.ts';
+import { personOf } from '../entity/index.ts';
+import { apart, packUp, unpack } from './camp.ts';
+import { astray } from './trouble.ts';
 
 type Good = SystemContext['content']['work']['scout']['goods'][number];
 
@@ -28,9 +33,6 @@ const RAYS: readonly (readonly [number, number])[] = [
   [4, 0], [4, 2], [4, 4], [2, 4], [0, 4], [-2, 4], [-4, 4], [-4, 2],
   [-4, 0], [-4, -2], [-4, -4], [-2, -4], [0, -4], [2, -4], [4, -4], [4, -2],
 ]; // prettier-ignore
-
-const apart = (ax: number, ay: number, bx: number, by: number): number =>
-  Math.max(Math.abs(ax - bx), Math.abs(ay - by));
 
 /** Where the store stands (the green before there is one). */
 function origin(ctx: SystemContext): [number, number] {
@@ -143,22 +145,47 @@ function others(ctx: SystemContext, p: EntityRow): boolean {
   );
 }
 
-/** Whether a trip is under way; one whose scout is gone (dead, or at other work) is lost, and
- * what they saw with it. */
-function underWay(ctx: SystemContext): boolean {
-  const map = ctx.world.map;
-  const last = map.finds.at(-1);
-  if (last?.count !== -1) return false;
-  if (people(ctx.world).some((q) => q['job'] === 'scout')) return true;
-  lose(ctx, last);
-  return false;
+/** The trip under way, if any: the last one, while its count is -1. */
+export const tripOf = (world: WorldState): Find | undefined => {
+  const last = world.map.finds.at(-1);
+  return last?.count === -1 ? last : undefined;
+};
+
+/** Whether a trip is under way (V-206): while its scout lives, at the trip, lying hurt, or
+ * otherwise away (they take it up again, for home); home some other way (carried in), they tell
+ * what they saw. One whose scout is dead or gone is lost, and what they saw with it. */
+export function underWay(ctx: SystemContext): boolean {
+  const { world, content } = ctx;
+  const trip = tripOf(world);
+  if (!trip) return false;
+  const s = personOf(world, trip.who);
+  if (s?.['status'] !== 'alive') {
+    // A searcher still out looking finds the body first (search.ts).
+    const q = personOf(world, trip.searcher ?? 0);
+    if (s && q?.['status'] === 'alive' && ['search', 'seek'].includes(q['task'] as string))
+      return true;
+    lose(ctx, trip);
+    return false;
+  }
+  if (s['job'] === content.work.scout.job || isDown(world, s.id)) return true;
+  const green = greenOf(world);
+  const home =
+    apart(s['x'] as number, s['y'] as number, green.x, green.y) <= content.work.scout.home;
+  if (home && s['z'] === 0) {
+    comeHome(ctx, s, trip);
+    return false;
+  }
+  if (!s['job']) Object.assign(s, { job: content.work.scout.job, task: 'home', path: [] });
+  return true;
 }
 
-/** A trip given up away from home: what the scout saw is lost with it, one line. */
+/** A trip given up away from home: what the scout saw is lost with it, one line; a dead scout's
+ * pack lies where they are, a living one's is carried home. */
 function lose(ctx: SystemContext, trip: Find): void {
   const { world, content } = ctx;
   forgetSeen(world.map);
-  const who = (world.entities['person'] ?? []).find((q) => q.id === trip.who);
+  const who = personOf(world, trip.who);
+  if (who?.['packed']) unpack(ctx, who, who['status'] !== 'alive');
   const good = content.work.stock.find((s) => s.good === trip.good)?.name ?? trip.good;
   const line = ctx.emit('land.lost', {
     causes: [trip.line],
@@ -185,6 +212,7 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
   if (outranked(ctx, p, def.job, () => true) || others(ctx, p)) return false;
   const to = frontier(ctx, p, need);
   if (!to || !walkTo(ctx, p, to)) return false;
+  const { due, kit } = kitFor(ctx, p);
   const causes = [stockOf(world, need.def.good)?.['line'], priorityLine(world, p.id, def.job)];
   p['took'] = ctx.emit('work.tookUpScouting', {
     // The stock level that wants it, and the priority that put them to it if the player set one.
@@ -193,6 +221,7 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
     data: {
       name: p['name'] as string,
       good: need.name,
+      kit,
       have: need.have + need.known,
       want: need.want,
     },
@@ -204,6 +233,7 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
     who: p.id,
     line: p['took'] as number,
     tick: world.tick,
+    ...{ due, worry: 0, searcher: 0, search: 0, strayed: 0 },
   };
   world.map.finds.push(trip);
   const leg = world.tick + def.leg * TICKS_PER_DAY;
@@ -211,13 +241,50 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
   return true;
 }
 
+/** The trip's walk there and back from the way just found, the tick it is due home by (V-206),
+ * and the pack: a day's food, or when over half a day (or not back by bedtime, so a night out)
+ * their bedroll and a day's food a day plus a spare. */
+export function kitFor(ctx: SystemContext, p: EntityRow): { due: number; kit: string } {
+  const { world, content } = ctx;
+  const w = content.terrain.walking;
+  const def = content.work.scout.pack;
+  const steps = (p['path'] as number[]).length;
+  const round = Math.ceil((steps * (w.straight + w.diagonal)) / w.speed);
+  const back = world.tick + Math.ceil((round * def.due) / 100);
+  // Not back by bedtime, the night out counts: they are due home the morning after.
+  const hours = hoursOf(world, content, p.id);
+  const today = world.tick - (world.tick % TICKS_PER_DAY);
+  let bed = today + hours.sleepFrom * 60;
+  if (bed <= world.tick) bed += TICKS_PER_DAY;
+  const night = back > bed;
+  const due = night ? back + (24 - hours.sleepFrom + hours.workFrom) * 60 : back;
+  // A short trip takes a day's food only, so nobody walks home for meals.
+  const long = round > def.over || night;
+  const days = long
+    ? Math.min(def.most, Math.ceil((due - world.tick) / TICKS_PER_DAY) + def.spare)
+    : 1;
+  const food = packUp(ctx, p, days, long);
+  const roll = packed(ctx, p);
+  const what = [roll ? 'a bedroll' : '', food ? `food for ${food} day${food === 1 ? '' : 's'}` : '']
+    .filter(Boolean)
+    .join(' and ');
+  return { due, kit: what ? `, with ${what}` : '' };
+}
+
+/** Whether `p` packed a bedroll. */
+const packed = (ctx: SystemContext, p: EntityRow): boolean =>
+  (ctx.world.entities['item'] ?? []).some(
+    (i) =>
+      i['owner'] === p.id && i['state'] === 'pack' && i['kind'] === ctx.content.life.cart.bedroll,
+  );
+
 /** A minute of the trip once they are not walking: at the far spot (or a leg's days spent, or
  * no way on) they turn for home; home, they tell what they saw. */
 export function scouting(ctx: SystemContext, p: EntityRow): boolean {
   const map = ctx.world.map;
   const trip = map.finds.at(-1);
   if (trip?.count !== -1) return endTrip(p);
-  if ((p['path'] as number[]).length) return true;
+  if ((p['path'] as number[]).length || astray(ctx, p)) return true;
   const here = spotOf(p);
   const def = ctx.content.work.scout;
   const leg = ctx.world.tick >= (p['work'] as number);
@@ -264,6 +331,8 @@ function comeHome(ctx: SystemContext, p: EntityRow, trip: Find): void {
       });
       if (n > best[2]) best = [x, y, n];
     }
+  // Home, the pack is put down (V-206).
+  if (p['packed']) unpack(ctx, p);
   const [x, y, count] = best;
   const name = content.work.stock.find((s) => s.good === trip.good)?.name ?? trip.good;
   const found = count >= content.terrain.generator.known.least;
