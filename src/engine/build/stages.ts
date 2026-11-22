@@ -7,6 +7,7 @@
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { clockAt, TICKS_PER_DAY } from '../core/index.ts';
 import { haveOf } from '../goods/index.ts';
+import { isKnown } from '../map/index.ts';
 import { besideReachable, canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { houseAt, mainOf, rowsOf } from './beds.ts';
@@ -36,7 +37,10 @@ export function bouldersBy(
   const list = memo.by.get(key) ?? scanBoulders(world, content, rock, near);
   memo.by.set(key, list);
   const { features } = world.map;
-  return list.filter((i) => content.features[(features[i] ?? 0) - 1]?.kind === 'boulder');
+  // Only boulders on known ground (V-205), asked now: the day's list is of every boulder.
+  return list.filter(
+    (i) => content.features[(features[i] ?? 0) - 1]?.kind === 'boulder' && isKnown(world.map, i),
+  );
 }
 
 function scanBoulders(

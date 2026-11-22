@@ -6,6 +6,7 @@ import type { System, SystemContext } from '../sim/index.ts';
 import { layAura, placesOf } from './aura.ts';
 import { placeFeatures, reachableAround } from './features.ts';
 import { findGreens, greenWords } from './green.ts';
+import { knownOnArrival } from './known.ts';
 import { digCommands } from './levels.ts';
 import { chunksAcross, chunksDown } from './tiles.ts';
 import { drawRiches, richesWords, thinNearGreen } from './riches.ts';
@@ -111,6 +112,8 @@ export const mapSystem: System = {
     // The levels below are made only when first reached (levels.ts).
     map.levels = new Array<null>(ctx.content.terrain.generator.underground.depth).fill(null);
     map.stains = stainsOf(ctx, map);
+    map.known = knownOnArrival(ctx.content, map);
+    map.finds = [];
     const formed = ctx.emit('map.formed', {
       causes: [ctx.world.begunEvent],
       data: {

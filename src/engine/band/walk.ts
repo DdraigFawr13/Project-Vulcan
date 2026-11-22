@@ -6,7 +6,7 @@
 // step onto open surface ground wears it (map `tread`).
 import type { EntityRow } from '../core/index.ts';
 import { markPercent } from '../health/index.ts';
-import { tread } from '../map/index.ts';
+import { see, tread } from '../map/index.ts';
 import { findPath, pack, stepCost, unpack, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
@@ -50,6 +50,7 @@ export function stepAlong(ctx: SystemContext, p: EntityRow): void {
   const lame = markPercent(ctx.world, ctx.content, p.id, 'walk');
   const gain = lame < 100 ? Math.floor((speed * lame + (ctx.world.tick % 100)) / 100) : speed;
   let stride = (p['stride'] as number) + gain;
+  let moved = false;
   while (path.length) {
     const here = pack(map, spotOf(p));
     let cost = stepCost(ctx.content, map, here, path[0]!);
@@ -69,8 +70,12 @@ export function stepAlong(ctx: SystemContext, p: EntityRow): void {
     // Footfall wears open ground (P5.10); a floor, door or level below keeps no count.
     const i = next.y * map.width + next.x;
     if (next.z === 0 && !floored(ctx, i)) tread(ctx.content, map, i);
+    moved = true;
   }
   p['stride'] = path.length ? stride : 0;
+  // What they see from where they stopped stays known (V-205); a scout's counts once home.
+  if (moved && (p['z'] as number) === 0)
+    see(ctx.content, map, p['x'] as number, p['y'] as number, p['job'] === 'scout');
 }
 
 /** An idle person: stand out the rest, then stroll to an open tile near the camp. */

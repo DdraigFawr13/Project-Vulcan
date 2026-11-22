@@ -3,7 +3,7 @@
 // the standing one nearest the store, never close to the camp) or a boulder and leaves its logs
 // (stone) where it stood. Test-mode marks and a house's site come first (`takeUpMarked`).
 import { houseName } from '../build/index.ts';
-import { raiseChunk } from '../map/index.ts';
+import { eachKnown, raiseChunk, workAreas } from '../map/index.ts';
 import { noteFelled } from './regrow.ts';
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { haveOf, markedTree, stockOf, storeOf, unmark, wantOf } from '../goods/index.ts';
@@ -61,7 +61,8 @@ function besideFrom(ctx: SystemContext, from: ReturnType<typeof spotOf>, x: numb
   });
 }
 
-/** What to work next: a fallen log before a tree, then the one nearest the store. */
+/** What to work next: a fallen log before a tree, then the one nearest the store, on known
+ * ground within reach of the store or round a scout's find (V-205). */
 function chooseSource(ctx: SystemContext, p: EntityRow, g: Gather): number | undefined {
   const { world, content } = ctx;
   const map = world.map;
@@ -72,15 +73,13 @@ function chooseSource(ctx: SystemContext, p: EntityRow, g: Gather): number | und
   const from = spotOf(p);
   let best: number | undefined;
   let score = Infinity;
-  for (let y = Math.max(0, oy - reach); y <= Math.min(map.height - 1, oy + reach); y += 1)
-    for (let x = Math.max(0, ox - reach); x <= Math.min(map.width - 1, ox + reach); x += 1) {
-      const i = y * map.width + x;
-      const def = sourceAt(world, content, i, g);
-      if (!def || taken.has(i)) continue;
-      if (Math.max(Math.abs(x - map.startX), Math.abs(y - map.startY)) <= camp) continue;
-      const s = g.kinds.indexOf(def.kind) * 100000 + Math.max(Math.abs(x - ox), Math.abs(y - oy));
-      if (s < score && besideFrom(ctx, from, x, y)) [best, score] = [i, s];
-    }
+  eachKnown(map, workAreas(content, map, ox, oy, reach), (i, x, y) => {
+    const def = sourceAt(world, content, i, g);
+    if (!def || taken.has(i)) return;
+    if (Math.max(Math.abs(x - map.startX), Math.abs(y - map.startY)) <= camp) return;
+    const s = g.kinds.indexOf(def.kind) * 100000 + Math.max(Math.abs(x - ox), Math.abs(y - oy));
+    if (s < score && besideFrom(ctx, from, x, y)) [best, score] = [i, s];
+  });
   return best;
 }
 

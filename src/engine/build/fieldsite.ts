@@ -5,6 +5,7 @@
 // average fertility and distance to water; ties go in tile order, so the same seed gives the
 // same fields. Nothing is drawn from a stream.
 import type { EngineContent, WorldState } from '../core/index.ts';
+import { isKnown } from '../map/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import { groundOf, type Ground } from './site.ts';
 import { besideBuilt } from './sitegrid.ts';
@@ -169,7 +170,7 @@ function soilAt(s: FieldSurvey, i: number): 'no' | 'tree' | 'ok' {
   const { map } = s.world;
   if (map.fertility[i]! < s.def.good) return 'no';
   const kind = s.content.terrain.kinds[map.tiles[i]!]!;
-  if (!kind.buildable || kind.water || kind.solid || map.built[i]) return 'no';
+  if (!kind.buildable || kind.water || kind.solid || map.built[i] || !isKnown(map, i)) return 'no';
   const f = map.features[i]! ? s.content.features[map.features[i]! - 1]!.kind : '';
   if (f === 'tree' || f === 'log') return 'tree';
   return f ? 'no' : 'ok';

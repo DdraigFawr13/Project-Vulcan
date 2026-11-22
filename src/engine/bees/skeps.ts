@@ -12,6 +12,7 @@ import {
 import { fieldsOf, fieldTiles, groundOf, housesOf, rectOf, roadAt } from '../build/index.ts';
 import { inRect } from '../build/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
+import { isKnown } from '../map/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
 export const BEES_TABLES: Schemas = {
@@ -106,6 +107,7 @@ function runAlong(
     const kind = content.terrain.kinds[map.tiles[i]!]!;
     if (!kind.buildable || kind.water || kind.solid || map.built[i] || map.features[i])
       return false;
+    if (!isKnown(map, i)) return false;
     if (ground.taken.has(i) || ground.items.has(i) || roadAt(world, i)) return false;
     return (
       !houses.some((r) => inRect(r, x, y)) &&

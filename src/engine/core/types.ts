@@ -191,6 +191,25 @@ export interface MapState {
   riches: Record<string, number>;
   /** Felled trees waiting to grow back, three numbers each: tile, 1 + features index, due day. */
   regrow: number[];
+  /** What the colony knows of the surface (6W Slice 4, V-205): 0 unseen, 1 known, 2 seen by a
+   * scout who is not home yet (it counts once they tell of it). Every search for work reads 1s. */
+  known: Uint8Array;
+  /** Scouting trips, oldest first (6W Slice 4): the last one is under way while its `count` is -1. */
+  finds: Find[];
+}
+
+/** One scouting trip (6W Slice 4): the need behind it, where its news centres and how many of the
+ * need's sources lie within `terrain.known.place` of there (a find when at least `least`, so the
+ * place is worked as if in reach), its scout, its set-out line (then its homecoming line) and its tick. */
+export interface Find {
+  x: number;
+  y: number;
+  good: string;
+  count: number;
+  /** The scout (a person id). */
+  who: number;
+  line: number;
+  tick: number;
 }
 
 /** One level below the surface, the same size as it, made from the seed when first reached. */

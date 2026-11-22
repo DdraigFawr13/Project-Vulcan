@@ -17,3 +17,15 @@ export { auraAt } from './aura.ts';
 export { tread, walksADay, wearStage } from './wear.ts';
 export { cutStairsAt, openAround, sinkShaftAt } from './levels.ts';
 export { makeLevel } from './underground.ts';
+export { compass } from './green.ts';
+export {
+  bareKnown,
+  eachKnown,
+  inAreas,
+  isKnown,
+  see,
+  tellSeen,
+  forgetSeen,
+  workAreas,
+  type Area,
+} from './known.ts';

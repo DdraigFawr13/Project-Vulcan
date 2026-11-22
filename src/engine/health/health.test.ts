@@ -86,6 +86,8 @@ describe('health', () => {
     // A healer dressing the wound uses one soap from the store and marks it washed.
     const sim = createSim(withoutAccidents(game));
     const w = createWorld(sim, 'smoke');
+    // The whole valley known (V-205): this test is not about known land.
+    w.map.known.fill(1);
     const slot = storeOf(w)[0]!;
     const at = { x: slot['x'] as number, y: slot['y'] as number, z: slot['z'] as number };
     layItem(w, { kind: 'soap', count: 2, ...at, made: 0 }, {});
@@ -101,6 +103,8 @@ describe('health', () => {
   it('dresses a fresh deep wound with a herb from the store, once in the ledger', () => {
     const sim = createSim(withoutAccidents(game));
     const world = createWorld(sim, 'smoke');
+    // The whole valley known (V-205): this test is not about known land.
+    world.map.known.fill(1);
     const stack = () =>
       itemsOf(world).filter(
         (i) =>

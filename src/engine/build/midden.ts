@@ -6,6 +6,7 @@
 import { TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { dryAt, freeTile, itemsOf } from '../goods/index.ts';
+import { bareKnown } from '../map/index.ts';
 import { reachFrom, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { liveFields, tilesOf } from './fields.ts';
@@ -65,7 +66,7 @@ function siteMidden(ctx: SystemContext, green: Spot): Spot | undefined {
     const i = t.y * map.width + t.x;
     if (t.x < 0 || t.y < 0 || t.x >= map.width || t.y >= map.height) continue;
     // The cheap tile tests first: freeTile scans every item and row, and most tiles fail sooner.
-    if (map.features[i] || !walkAt(content, map, 0, i) || walkAt(content, map, 0, i) > def.walk)
+    if (!bareKnown(map, i) || !walkAt(content, map, 0, i) || walkAt(content, map, 0, i) > def.walk)
       continue;
     if (
       houses.some(

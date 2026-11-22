@@ -152,4 +152,12 @@ export interface ValleyDials {
     }[];
   };
   regrow: { years: number; near: number };
+  known: {
+    sight: number;
+    high: number;
+    height: number;
+    arrive: number;
+    place: number;
+    least: number;
+  };
 }

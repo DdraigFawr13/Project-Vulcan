@@ -6,6 +6,7 @@
 // reapings (straw.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { TICKS_PER_DAY } from '../core/index.ts';
+import { isKnown } from '../map/index.ts';
 import type { Spot } from '../paths/index.ts';
 import { fieldsOf } from './fields.ts';
 import { houseAt } from './beds.ts';
@@ -78,7 +79,7 @@ export function thatchSpots(
   const out: { at: Spot; field?: EntityRow; d: number }[] = [];
   for (let y = Math.max(0, from.y - r); y <= Math.min(height - 1, from.y + r); y += 1)
     for (let x = Math.max(0, from.x - r); x <= Math.min(width - 1, from.x + r); x += 1)
-      if (reed.has(tiles[y * width + x]!))
+      if (reed.has(tiles[y * width + x]!) && isKnown(world.map, y * width + x))
         out.push({ at: { x, y, z: 0 }, d: Math.max(Math.abs(x - from.x), Math.abs(y - from.y)) });
   for (const f of fieldsOf(world)) {
     if (strawLeft(f) < 1) continue;

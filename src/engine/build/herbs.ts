@@ -8,6 +8,7 @@
 import { clockAt, TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import { dryAt, freeTile, itemsOf, layItem } from '../goods/index.ts';
+import { bareKnown } from '../map/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { liveFields, tilesOf } from './fields.ts';
 import { dirFrom } from './houses.ts';
@@ -59,7 +60,7 @@ function siteGarden(ctx: SystemContext, by: Rect): Rect | undefined {
     y < map.height &&
     freeTile(world, content, x, y) &&
     dryAt(content, map, y * map.width + x) &&
-    !map.features[y * map.width + x] &&
+    bareKnown(map, y * map.width + x) &&
     !fields.has(y * map.width + x) &&
     !pastures.some((p) => onPastureGround(p, map.width, x, y)) &&
     // A tile's width of open ground round every house, for its door and its walls.

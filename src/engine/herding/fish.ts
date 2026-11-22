@@ -5,6 +5,7 @@
 // day's fishing. Taking up is a ledger line; each catch is not.
 import { WATER, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { haveOf, stockOf, storeOf, wantOf } from '../goods/index.ts';
+import { isKnown } from '../map/index.ts';
 import { besideReachable, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { isFrozen } from '../weather/index.ts';
@@ -40,7 +41,7 @@ function chooseWater(ctx: SystemContext, p: EntityRow): number | undefined {
   for (const i of watersOf(world, content)) {
     const [x, y] = [i % map.width, Math.floor(i / map.width)];
     if (Math.max(Math.abs(x - ox), Math.abs(y - oy)) > content.work.fish.reach) continue;
-    if (isFrozen(map, i) || taken.has(i)) continue;
+    if (isFrozen(map, i) || taken.has(i) || !isKnown(map, i)) continue;
     near.push([Math.max(Math.abs(x - here.x), Math.abs(y - here.y)), i]);
   }
   near.sort((a, b) => a[0] - b[0] || a[1] - b[1]);

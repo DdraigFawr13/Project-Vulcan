@@ -162,7 +162,7 @@ export function findGreens(
 
 /** The compass word for a step of (dx, dy), y growing south: a side when one leg is more than
  * twice the other, else a corner. Whole numbers only (V-006). */
-function compass(dx: number, dy: number): string {
+export function compass(dx: number, dy: number): string {
   const [ax, ay] = [Math.abs(dx), Math.abs(dy)];
   const ns = dy < 0 ? 'north' : 'south';
   const ew = dx < 0 ? 'west' : 'east';

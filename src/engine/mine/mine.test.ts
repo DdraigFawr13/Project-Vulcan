@@ -61,6 +61,8 @@ function plateDay(seed: string): WorldState {
   let world = firstDays.get(seed);
   if (!world) {
     world = createWorld(plateSim, seed);
+    // The whole valley known (V-205): these tests are not about known land.
+    world.map.known.fill(1);
     send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
     step(world, plateSim, DAY);
     firstDays.set(seed, world);

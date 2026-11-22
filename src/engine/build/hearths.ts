@@ -6,6 +6,7 @@
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { inStore, itemsAt, raiseStock } from '../goods/index.ts';
+import { isKnown } from '../map/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { furnitureOf } from './furniture.ts';
@@ -33,7 +34,7 @@ export function openGround(
   if (x < 1 || y < 1 || x >= map.width - 1 || y >= map.height - 1) return false;
   const i = y * map.width + x;
   const kind = content.terrain.kinds[map.tiles[i]!]!;
-  if (!kind.buildable || kind.water || kind.solid || map.built[i]) return false;
+  if (!kind.buildable || kind.water || kind.solid || map.built[i] || !isKnown(map, i)) return false;
   // A feature is in the way unless it is of a kind the caller clears first (the tan pits').
   const feature = map.features[i] ? content.features[map.features[i]! - 1]?.kind : undefined;
   if (feature && !clearable.includes(feature)) return false;
