@@ -12,17 +12,20 @@ export const itemName = (content: EngineContent, id: string): string =>
 /** The same words with a small first letter, to go mid-sentence. */
 export const lower = (s: string): string => s.charAt(0).toLowerCase() + s.slice(1);
 
-/** "the cottage", but "Aldith's home" or "The Plough": a name takes no "the" (6T review). */
-export const the = (word: string): string => (/^[A-Z]/.test(word) ? word : `the ${word}`);
+/** Whether `word` already reads as named: a possessive name ("Aldith's home", "Deirdre and
+ * Ciaran's home") or one that brings its own article ("The Plough"). "Rations law" is not. */
+const owned = (word: string): boolean => /^(The |[A-Z][\w-]*(?: and [A-Z][\w-]*)?'s )/.test(word);
 
-/** `template` with "the {key}" cut to "{key}" where `named(key)` says the slot holds a name, so a
- * filled line reads "in Aldith's home", not "in the Aldith's home". */
+/** "the cottage", but "Aldith's home" or "The Plough": such a name takes no "the" (6T review). */
+export const the = (word: string): string => (owned(word) ? word : `the ${word}`);
+
+/** `template` with "the {key}" cut to "{key}" where `named(key)` says the slot holds such a name,
+ * so a filled line reads "in Aldith's home", not "in the Aldith's home". */
 export const namesTakeNoThe = (template: string, named: (key: string) => boolean): string =>
   template.replace(/\b[Tt]he \{(\w+)\}/g, (all, key: string) => (named(key) ? `{${key}}` : all));
 
-/** Whether a slot's value reads as a name: it starts with a capital. */
-export const isName = (value: unknown): boolean =>
-  typeof value === 'string' && /^[A-Z]/.test(value);
+/** Whether a slot's value is a name that takes no "the". */
+export const isName = (value: unknown): boolean => typeof value === 'string' && owned(value);
 
 /** He, him, his for `m`; she, her, her otherwise. */
 export function pronouns(p: EntityRow): { they: string; them: string; their: string } {

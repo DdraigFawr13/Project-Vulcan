@@ -154,7 +154,7 @@ describe('standing, the elder and factions', () => {
   it('picks the elder by vote, each through their own eyes: a fright looks to the guard', () => {
     const w = createWorld(sim, 'smoke');
     while (!elderOf(w)) toReckoning(w);
-    expect(lines(w, 'colony.elder').at(-1)!.data['why']).toMatch(/^\d+ of \d+ look to them/);
+    expect(lines(w, 'colony.elder').at(-1)!.data['why']).toMatch(/^\d+ of \d+ look to (him|her)\b/);
     const [voter, other] = alive(w) as [EntityRow, EntityRow];
     const c = { p: other, trust: trustOf(w, content, other).trust };
     const near = new Set<number>();

@@ -65,6 +65,19 @@ describe('a name takes no "the"', () => {
     expect(the("Deirdre and Ciaran's home")).toBe("Deirdre and Ciaran's home");
     expect(the('hall')).toBe('the hall');
     expect(namesTakeNoThe('The {room} is warm.', () => true)).toBe('{room} is warm.');
+    // A capital alone is no such name: "the Rations law" keeps its "the".
+    const law = new Map([['l', 'They ask that the {law} be eased.']]);
+    const asked = {
+      id: 1,
+      tick: 0,
+      type: 'l',
+      actors: [],
+      subjects: [],
+      causes: [],
+      data: { law: 'Rations law' },
+    };
+    expect(renderEvent(asked, law)).toBe('They ask that the Rations law be eased.');
+    expect(the('The Plough')).toBe('The Plough');
   });
 });
 
