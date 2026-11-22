@@ -14,7 +14,7 @@ import { limeBurning, masonry, takeUpLime, takeUpMasonry } from '../crafts/index
 import { burying, takeUpBurial, takeUpNursing } from '../care/index.ts';
 import { farming, foraging, gatherMinute, mining, takeUpFarming } from '../land/index.ts';
 import { takeUpForaging, takeUpGathering, takeUpMarked, takeUpMining } from '../land/index.ts';
-import { scouting, takeUpScouting } from '../land/index.ts';
+import { SEARCH_TASKS, scouting, searching, takeUpScouting } from '../land/index.ts';
 import { haulMinute, knapping, takeUpHauling, takeUpKnapping } from '../band/index.ts';
 import { atLessons, helping, teaching } from '../teach/index.ts';
 import { fishing, takeUpFishing, hunting, takeUpHunting, takeUpHerding } from '../herding/index.ts';
@@ -43,7 +43,13 @@ export const JOBS: Readonly<Record<string, JobRow>> = {
   farm: { takeUp: takeUpFarming, work: farming },
   herd: { takeUp: takeUpHerding },
   // Scouting (V-205): a trip goes on into the evening, until bedtime.
-  scout: { takeUp: takeUpScouting, work: scouting, always: true },
+  // A searcher for a late scout (V-206) is on the same row, at its search tasks.
+  scout: {
+    takeUp: takeUpScouting,
+    work: (ctx, p) =>
+      SEARCH_TASKS.includes(p['task'] as string) ? searching(ctx, p) : scouting(ctx, p),
+    always: true,
+  },
   // The builder's row: a burial first (P5.6), a cold room's hearth, clearing a house's site, then
   // hearths, workstations and plans.
   build: {

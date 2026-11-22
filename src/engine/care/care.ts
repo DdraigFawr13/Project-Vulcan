@@ -30,7 +30,7 @@ import { sew } from './surgery.ts';
 import { able, levelOf, people, practise, same, skillOf, spotOf, walkTo } from '../band/index.ts';
 import { worked } from '../band/index.ts';
 import { personOf } from '../entity/index.ts';
-import { far } from './far.ts';
+import { afar, far, searching } from './far.ts';
 
 /** Care jobs that come before anything else. */
 export const CARE_JOBS = ['carry', 'bind', 'bury', 'feed'];
@@ -148,13 +148,18 @@ function seekFinder(ctx: SystemContext, p: EntityRow, b: EntityRow): void {
   const { world, content } = ctx;
   const at = spotOf(p);
   const awake = people(world).filter((q) => free(world, q, p) && q['doing'] !== 'sleep');
+  // A scout out on a trip is heard by passers-by only; a searcher finds them by sight (V-206).
+  const away = afar(world, p);
   const hearing = awake.filter(
-    (q) => q['z'] === p['z'] && far(spotOf(q), at) <= content.health.care.hear,
+    (q) =>
+      q['z'] === p['z'] &&
+      far(spotOf(q), at) <= content.health.care.hear &&
+      !(away && searching(q)),
   );
   const late =
     clockAt(world.tick, content.calendar).hour ===
     content.work.hours.to + content.health.care.missing;
-  const pool = hearing.length ? hearing : late && !b['missed'] ? awake : [];
+  const pool = hearing.length ? hearing : late && !b['missed'] && !away ? awake : [];
   const q = [...pool]
     .filter((r) => canReach(content, world.map, spotOf(r), at))
     .sort((a, c) => far(spotOf(a), at) - far(spotOf(c), at) || a.id - c.id)[0];
@@ -175,6 +180,17 @@ function seekFinder(ctx: SystemContext, p: EntityRow, b: EntityRow): void {
   answer(ctx, q, 'carry', p, 'find');
   b['finder'] = q.id;
   walkTo(ctx, q, at);
+}
+
+/** A searcher beside a hurt scout they found (land `search.ts`): they bind and carry them as a
+ * finder would; false when someone else already has them. */
+export function fetchHurt(ctx: SystemContext, q: EntityRow, p: EntityRow): boolean {
+  const b = bodyOf(ctx.world, p.id);
+  if (!b || b['finder'] || b['found'] || b['carrier']) return false;
+  answer(ctx, q, 'carry', p, 'find');
+  b['finder'] = q.id;
+  walkTo(ctx, q, spotOf(p));
+  return true;
 }
 
 /** The free, able person who puts Healing highest (then the most skilled, then the nearest)

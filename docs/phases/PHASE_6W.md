@@ -9,7 +9,7 @@ A short phase between 6B and 6C that makes exploring a need, from Morgan's messa
 - [x] Slice 2, the map drawn by chunk, with an overview picture (screens)
 - [x] Slice 3, a bigger, patchier valley (engine)
 - [x] Slice 4, known land and scouting (engine)
-- [ ] Slice 5, trips, camps and finds (engine)
+- [ ] Slice 5, trips, camps and finds (engine); part 1 built
 - [ ] Slice 6, the known map on screen (screens)
 - [ ] Slice 7, hidden ores and prospecting (engine)
 - [ ] 6W balance and review

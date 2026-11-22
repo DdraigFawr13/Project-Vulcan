@@ -99,5 +99,7 @@
   {"id":"heard-song-3","mood":4,"decayDays":3,"text":"Heard {about} sing","thoughts":["That song stays with you."]},
   {"id":"heard-song-4","mood":5,"decayDays":3,"text":"Heard {about} sing","thoughts":["I have never heard singing like it."]},
   {"id":"byname-proud","mood":4,"decayDays":7,"text":"Folk call me by a name I'm proud of","thoughts":["Let them say it."]},
-  {"id":"byname-stung","mood":-6,"decayDays":7,"text":"Folk call me by a name that stings","thoughts":["I wish they'd let it lie."]}
+  {"id":"byname-stung","mood":-6,"decayDays":7,"text":"Folk call me by a name that stings","thoughts":["I wish they'd let it lie."]},
+  {"id":"worried","mood":-6,"decayDays":4,"text":"Worried for {about}, late home","thoughts":["Where are they? They should be back by now."]},
+  {"id":"found-lost","mood":6,"decayDays":6,"text":"Found {about} out in the wild","thoughts":["I thought we had lost them."]}
 ]

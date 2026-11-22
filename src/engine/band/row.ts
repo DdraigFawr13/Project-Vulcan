@@ -91,6 +91,7 @@ export function addPerson(
       sat: 0,
       pail: 0,
       bundles: 0,
+      ...{ packed: 0, rollAt: 0, fire: 0, astray: 0 },
     },
     ...{
       partner: 0,

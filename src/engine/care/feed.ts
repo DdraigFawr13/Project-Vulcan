@@ -11,7 +11,7 @@ import { needOf } from '../needs/index.ts';
 import { canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { eat, lineOf, fetchKind, people, spotOf, walkTo } from '../band/index.ts';
-import { far } from './far.ts';
+import { afar, far } from './far.ts';
 
 const hungry = (ctx: SystemContext, person: number): boolean => {
   const p = entityOf(ctx.world, 'person', person);
@@ -52,7 +52,8 @@ export function seekFeeders(
   for (const b of bodiesOf(world)) {
     const p = people(world).find((q) => q.id === b['person']);
     if (!p || p['status'] !== 'alive' || !b['down'] || b['carrier'] || fed.has(p.id)) continue;
-    if (!hungry(ctx, p.id)) continue;
+    // A scout lying hurt out on a trip is fed once found (V-206): nobody knows where they lie.
+    if (!hungry(ctx, p.id) || (afar(world, p) && !b['found'])) continue;
     const at = spotOf(p);
     const q = people(world)
       .filter((r) => free(r, p) && r['doing'] !== 'sleep')

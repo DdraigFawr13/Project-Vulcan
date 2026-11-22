@@ -210,6 +210,14 @@ export interface Find {
   who: number;
   line: number;
   tick: number;
+  /** 6W Slice 5 (V-206): the tick the scout means to be home by; the worry line once they are a
+   * day past it, the searcher (a person id) and the search's line; each 0 until then. */
+  due?: number;
+  worry?: number;
+  searcher?: number;
+  search?: number;
+  /** 1 once the scout has lost the way on this trip (at most once a trip). */
+  strayed?: number;
 }
 
 /** One level below the surface, the same size as it, made from the seed when first reached. */
