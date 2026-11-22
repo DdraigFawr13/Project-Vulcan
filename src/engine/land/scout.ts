@@ -12,12 +12,14 @@ import type { SystemContext } from '../sim/index.ts';
 import { able, declineIfUnable, levelOf, outranked, people, priorityLine } from '../band/index.ts';
 import { spotOf, walkTo } from '../band/index.ts';
 import { isDown } from '../health/index.ts';
-import { hoursOf } from '../law/index.ts';
+import { list } from '../core/index.ts';
 import { personOf } from '../entity/index.ts';
-import { apart, packUp, unpack } from './camp.ts';
+import { placeKind } from '../map/index.ts';
+import { apart, kitFor, unpack } from './camp.ts';
 import { astray } from './trouble.ts';
-
-type Good = SystemContext['content']['work']['scout']['goods'][number];
+import { BEYOND, lastFound, spotPlaces } from './places.ts';
+import { sourceAt, type Good } from './sources.ts';
+import { alongWord, spendWord, wordOf } from './word.ts';
 
 /** What the colony is short of: the good, its stock name, and have, known and want. */
 export interface Need {
@@ -39,13 +41,6 @@ function origin(ctx: SystemContext): [number, number] {
   const first = storeOf(ctx.world)[0];
   const map = ctx.world.map;
   return first ? [first['x'] as number, first['y'] as number] : [map.startX, map.startY];
-}
-
-/** Whether surface tile `i` holds a source of `def`'s good, and how much it gives. */
-function sourceAt(ctx: SystemContext, def: Good, i: number): number {
-  const f = ctx.world.map.features[i]!;
-  const feature = f ? ctx.content.features[f - 1] : undefined;
-  return feature && def.kinds.includes(feature.kind) ? feature.amount : 0;
 }
 
 /** The first of `scout.goods` whose stock plus its known sources within reach (and round finds)
@@ -103,6 +98,8 @@ function frontier(ctx: SystemContext, p: EntityRow, need: Need): Spot | undefine
   const map = ctx.world.map;
   const far = ctx.content.work.scout.far;
   const [ox, oy] = origin(ctx);
+  // A newcomer's word of the good pulls the way it names (V-206).
+  const word = wordOf(ctx, ctx.content.work.scout.goods.indexOf(need.def));
   let best: Spot | undefined;
   let score = Infinity;
   for (const [dx, dy] of RAYS)
@@ -110,8 +107,13 @@ function frontier(ctx: SystemContext, p: EntityRow, need: Need): Spot | undefine
       const [x, y] = [ox + Math.round((dx * d) / 4), oy + Math.round((dy * d) / 4)];
       if (x < 1 || y < 1 || x >= map.width - 1 || y >= map.height - 1) break;
       if (map.known[y * map.width + x] === 1) continue;
-      const s = d - 3 * likely(ctx, need.def, x, y);
-      const on = Math.min(far, d + 6);
+      const lean = word && alongWord(word, dx, dy) ? ctx.content.work.scout.word.lean : 0;
+      const s = d - 3 * likely(ctx, need.def, x, y) - lean;
+      // To see what lies beyond, they go on `beyond.on` tiles past the edge (V-206).
+      const on = Math.min(
+        far,
+        d + (need.def.good === BEYOND ? ctx.content.work.scout.beyond.on : 6),
+      );
       const spot =
         s < score
           ? standable(ctx, p, ox + Math.round((dx * on) / 4), oy + Math.round((dy * on) / 4))
@@ -203,7 +205,7 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
   const last = world.map.finds.at(-1);
   const least = content.terrain.generator.known.least;
   if (last && last.count < least && world.tick - last.tick < def.wait * TICKS_PER_DAY) return false;
-  const need = needOf(ctx);
+  const need = needOf(ctx) ?? beyond(ctx);
   if (!need) return false;
   if (!able(content, p, def.job)) {
     declineIfUnable(ctx, p, def.job);
@@ -213,19 +215,7 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
   const to = frontier(ctx, p, need);
   if (!to || !walkTo(ctx, p, to)) return false;
   const { due, kit } = kitFor(ctx, p);
-  const causes = [stockOf(world, need.def.good)?.['line'], priorityLine(world, p.id, def.job)];
-  p['took'] = ctx.emit('work.tookUpScouting', {
-    // The stock level that wants it, and the priority that put them to it if the player set one.
-    causes: causes.filter((l): l is number => l !== undefined),
-    actors: [p.id],
-    data: {
-      name: p['name'] as string,
-      good: need.name,
-      kit,
-      have: need.have + need.known,
-      want: need.want,
-    },
-  });
+  p['took'] = setOut(ctx, p, need, kit);
   const trip: Find = {
     ...to,
     good: need.def.good,
@@ -241,42 +231,48 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
   return true;
 }
 
-/** The trip's walk there and back from the way just found, the tick it is due home by (V-206),
- * and the pack: a day's food, or when over half a day (or not back by bedtime, so a night out)
- * their bedroll and a day's food a day plus a spare. */
-export function kitFor(ctx: SystemContext, p: EntityRow): { due: number; kit: string } {
+/** With nothing short and no new find for `beyond.days` days, the colony wants to see what lies
+ * beyond (V-206): a need with no sources, for the nearest unknown edge. */
+function beyond(ctx: SystemContext): Need | undefined {
   const { world, content } = ctx;
-  const w = content.terrain.walking;
-  const def = content.work.scout.pack;
-  const steps = (p['path'] as number[]).length;
-  const round = Math.ceil((steps * (w.straight + w.diagonal)) / w.speed);
-  const back = world.tick + Math.ceil((round * def.due) / 100);
-  // Not back by bedtime, the night out counts: they are due home the morning after.
-  const hours = hoursOf(world, content, p.id);
-  const today = world.tick - (world.tick % TICKS_PER_DAY);
-  let bed = today + hours.sleepFrom * 60;
-  if (bed <= world.tick) bed += TICKS_PER_DAY;
-  const night = back > bed;
-  const due = night ? back + (24 - hours.sleepFrom + hours.workFrom) * 60 : back;
-  // A short trip takes a day's food only, so nobody walks home for meals.
-  const long = round > def.over || night;
-  const days = long
-    ? Math.min(def.most, Math.ceil((due - world.tick) / TICKS_PER_DAY) + def.spare)
-    : 1;
-  const food = packUp(ctx, p, days, long);
-  const roll = packed(ctx, p);
-  const what = [roll ? 'a bedroll' : '', food ? `food for ${food} day${food === 1 ? '' : 's'}` : '']
-    .filter(Boolean)
-    .join(' and ');
-  return { due, kit: what ? `, with ${what}` : '' };
+  const last = lastFound(ctx);
+  if (world.tick - last.tick < content.work.scout.beyond.days * TICKS_PER_DAY) return undefined;
+  const def: Good = { good: BEYOND, kinds: [], find: '', unit: '' };
+  return { def, name: BEYOND, have: 0, known: 0, want: 0 };
 }
 
-/** Whether `p` packed a bedroll. */
-const packed = (ctx: SystemContext, p: EntityRow): boolean =>
-  (ctx.world.entities['item'] ?? []).some(
-    (i) =>
-      i['owner'] === p.id && i['state'] === 'pack' && i['kind'] === ctx.content.life.cart.bedroll,
-  );
+/** The setting-out line: the stock level that wants it (or the newest find, or the newcomer's
+ * word that points the way), and the priority that put them to it if the player set one. */
+function setOut(ctx: SystemContext, p: EntityRow, need: Need, kit: string): number {
+  const { world, content } = ctx;
+  const job = content.work.scout.job;
+  const word = wordOf(ctx, content.work.scout.goods.indexOf(need.def));
+  if (word) spendWord(ctx);
+  if (need.def.good === BEYOND)
+    return ctx.emit('work.tookUpScoutingBeyond', {
+      causes: [lastFound(ctx).line || world.begunEvent, priorityLine(world, p.id, job)].filter(
+        (l): l is number => l !== undefined && l > 0,
+      ),
+      actors: [p.id],
+      data: { name: p['name'] as string, kit, days: content.work.scout.beyond.days },
+    });
+  const causes = [
+    stockOf(world, need.def.good)?.['line'],
+    word?.line,
+    priorityLine(world, p.id, job),
+  ];
+  return ctx.emit('work.tookUpScouting', {
+    causes: causes.filter((l): l is number => typeof l === 'number' && l > 0),
+    actors: [p.id],
+    data: {
+      name: p['name'] as string,
+      good: need.name,
+      kit,
+      have: need.have + need.known,
+      want: need.want,
+    },
+  });
+}
 
 /** A minute of the trip once they are not walking: at the far spot (or a leg's days spent, or
  * no way on) they turn for home; home, they tell what they saw. */
@@ -317,10 +313,13 @@ const endTrip = (p: EntityRow): false => {
 function comeHome(ctx: SystemContext, p: EntityRow, trip: Find): void {
   const { world, content } = ctx;
   const map = world.map;
-  const def = content.work.scout.goods.find((g) => g.good === trip.good)!;
+  const def = content.work.scout.goods.find((g) => g.good === trip.good);
   const [ox, oy] = origin(ctx);
   const before = workAreas(content, map, ox, oy, content.work.scout.reach);
   tellSeen(map);
+  // What they came on out there is found as they tell of it (V-206).
+  const finds = spotPlaces(ctx, p, trip.line);
+  if (!def) return toldBeyond(ctx, p, trip, finds);
   const r = content.terrain.generator.known.place;
   let best: [number, number, number] = [trip.x, trip.y, 0];
   for (let y = Math.max(0, trip.y - 20); y <= Math.min(map.height - 1, trip.y + 20); y += 4)
@@ -357,4 +356,25 @@ function comeHome(ctx: SystemContext, p: EntityRow, trip: Find): void {
     line,
     tick: world.tick,
   });
+}
+
+/** Home from seeing what lies beyond: one line naming what they found, citing the setting-out. */
+function toldBeyond(ctx: SystemContext, p: EntityRow, trip: Find, finds: number[]): void {
+  const { world, content } = ctx;
+  if (p['packed']) unpack(ctx, p);
+  const [ox, oy] = origin(ctx);
+  const names = world.map.places
+    .filter((pl) => finds.includes(pl.line))
+    .map((pl) => placeKind(content, pl.kind)!.name);
+  const line = ctx.emit('land.beyond', {
+    causes: [trip.line],
+    actors: [p.id],
+    data: {
+      name: p['name'] as string,
+      far: apart(trip.x, trip.y, ox, oy),
+      dir: compass(trip.x - ox, trip.y - oy),
+      found: names.length ? list(names) : 'nothing new',
+    },
+  });
+  Object.assign(trip, { count: 0, line, tick: world.tick });
 }

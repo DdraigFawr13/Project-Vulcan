@@ -3,6 +3,7 @@
 // scout's sightings are held (2) until they come home and tell of them. Work looks in its reach
 // round the store and round each find (`workAreas`), at known tiles only (`isKnown`).
 import type { EngineContent, MapState } from '../core/index.ts';
+import { atLookout, foundAreas } from './places.ts';
 
 /** A square of ground work looks in: its middle and how far it reaches either way. */
 export type Area = readonly [x: number, y: number, r: number];
@@ -45,7 +46,9 @@ export function see(
   const d = content.terrain.generator.known;
   const w = map.width;
   const up = map.elevation[y * w + x]! - map.elevation[map.startY * w + map.startX]!;
-  mark(map, x, y, up >= d.height ? d.high : d.sight, away);
+  const r = up >= d.height ? d.high : d.sight;
+  // A found lookout (V-206): whoever stands there sees twice as far.
+  mark(map, x, y, up >= d.height && atLookout(content, map, x, y) ? 2 * r : r, away);
 }
 
 /** A scout is home: what they saw becomes known. Returns the tiles told of. */
@@ -65,7 +68,8 @@ export function forgetSeen(map: MapState): void {
 }
 
 /** Where work looks: `reach` round (ox, oy), then `place` round each find (a trip whose news
- * counted at least `least` sources, V-205), in the order they were found. */
+ * counted at least `least` sources, V-205), in the order they were found, then each found old
+ * wood (V-206). */
 export function workAreas(
   content: EngineContent,
   map: MapState,
@@ -76,7 +80,8 @@ export function workAreas(
   const { place, least } = content.terrain.generator.known;
   const areas: Area[] = [[ox, oy, reach]];
   for (const f of map.finds) if (f.count >= least) areas.push([f.x, f.y, place]);
-  return areas;
+  // Found old woods are worked however far off, as a scout's find is (V-206).
+  return areas.concat(foundAreas(content, map, 'work', place));
 }
 
 /** Whether (x, y) lies in one of `areas` (only the first `upTo` of them, when set). */

@@ -1,6 +1,6 @@
-# Scouting, trips, camps and the search (6W Slices 4 and 5, V-205, V-206)
+# Scouting, trips, camps, the search and finds (6W Slices 4 and 5, V-205, V-206, V-209, V-210)
 
-The rules of engine land's scouting and trips. Trips in engine `land` (`camp.ts`, `trouble.ts`, `search.ts`) and people `afield.ts`. Dials: `work.json` `scout` (`pack`, `camp`, `fall`, `lost`, `late`; types in core `trip.ts`). Nobody is sent by name, to a tile or on a trip (V-041): the levers stay the stock levels and the Scouting row.
+The rules of engine land's scouting and trips. Trips in engine `land` (`camp.ts`, `trouble.ts`, `search.ts`) and people `afield.ts`. Dials: `work.json` `scout` (`pack`, `camp`, `fall`, `lost`, `late`, `places`, `curio`, `beyond`, `word`; types in core `trip.ts`). Nobody is sent by name, to a tile or on a trip (V-041): the levers stay the stock levels and the Scouting row.
 
 ## Setting out and the news (`scout.ts`, V-205)
 
@@ -34,6 +34,15 @@ Each quarter hour walking on the surface more than `reach` tiles from the green,
 - Within `late.sight` tiles of the scout they go to them (re-found every 10 minutes) and beside them write `land.foundScout`: lying hurt, they become the scout's finder (care `fetchHurt`: bound, carried to bed); lost but well, both set off home; dead, they come home. Found or not, they walk home; `land.notFound` if they never saw them. Memory `found-lost` for the finder.
 - Care (`far.ts` `afar`): the scout of a trip under way is not looked for by care's after-work rule or fed unfound; passers-by within `care.hear` still hear them, a searcher does not (they find by sight).
 
+## Finds (map `places.ts`, land `places.ts`, V-206)
+
+- **Laid at worldgen** (`layPlaces`, stream `places`, after the known land): for each kind in `places.kinds`, the tiles its `rule` allows at least `from` tiles from the green, shuffled, best score first, `gap` apart and 6 from any other find, at most `most`. Rules: `spring` (spring water), `pool` (lake by a shore, every third tile), `grove` (a tree with `size` trees within 4; most first), `lookout` (open, highest within 4, `size` m above the green; highest first), `cliff` (open beside rock `size` m higher: cave mouths, then dens), `bank` (open bare ground beside a river; `size` of its tiles within 2 turn to clay). `map.places` {kind, x, y, by, line, tick}; save format 7.
+- **Found** (`spotPlaces`, every 10 minutes): a find whose tile is known is found by the living person on the surface nearest it; a scout's sightings, when they come home (`comeHome`), by the scout, citing the setting-out. `land.found` {name, what, far, dir, magic (within `magic` of an aura spot), then, sort (`tale`)} starts tale `found-place`, `found-cave` or `found-den`.
+- **What a find opens** (`use`): `work`, an old wood: a work area of `known.place` like a scout's find (`workAreas`); `clay`: its clay tiles are dug like level 1's (`clayWork`, build `digsFor` at z 0, `bankClay` for the kiln and house sizes), leaving `mine.floors.bank`; `fish`: anglers fish water within 3 of it however far off; `look`: whoever stands on or beside it sees twice as far (`see`). Caves and dens are tales for now.
+- **Curios** (`curioHour`): each hour on the surface over `curio.far` tiles from the green, 1 in `curio.per`, once a person a season (system state `curio`): one of the least found of `curio.list`, `land.curio` (tale `curio`), and its `memory` if it has one.
+- **The season's scout** (`beyond`): with no need and nothing found (a place, a scout's find or a trip beyond) for `beyond.days`, Scouting wants a trip to see what lies beyond: the nearest unknown edge, `beyond.on` tiles past it; `work.tookUpScoutingBeyond` cites the newest find, home `land.beyond` names what was found.
+- **A newcomer's word** (`word.ts`, hourly): the first time someone who came as a stranger is with the colony, they tell of the scouted good with most unknown sources within 5 tiles of their road in (edge to green), `word.wrong` per cent of the time the wrong way round; `land.word` (tale `word`). The next scout for that good takes ways within an eighth turn of it `word.lean` tiles nearer, and the setting-out cites the word.
+
 ## Lines
 
-`land.camped`, `land.packEmpty`, `land.lostWay`, `land.late`, `land.searching`, `land.foundScout`, `land.notFound` (events.json); `land.late` and `land.foundScout` are recap troubles (annals.json). Tests: land `scout.test.ts` "trips".
+`land.camped`, `land.packEmpty`, `land.lostWay`, `land.late`, `land.searching`, `land.foundScout`, `land.notFound`, `land.found`, `land.curio`, `land.word`, `work.tookUpScoutingBeyond`, `land.beyond` (events.json); `land.late` and `land.foundScout` are recap troubles (annals.json). Tests: land `scout.test.ts` "trips", `finds.test.ts`.

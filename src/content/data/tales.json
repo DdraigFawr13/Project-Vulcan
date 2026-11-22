@@ -23,7 +23,10 @@
     { "id": "thieves", "about": "colony", "text": "there are thieves among us" },
     { "id": "valley-blows", "about": "colony", "text": "this valley comes to blows" },
     { "id": "valley-leaving", "about": "colony", "text": "folk are giving up on this valley" },
-    { "id": "valley-masters", "about": "colony", "text": "true masters work in this valley" }
+    { "id": "valley-masters", "about": "colony", "text": "true masters work in this valley" },
+    { "id": "valley-rich", "about": "place", "text": "the valley holds more than we have seen" },
+    { "id": "valley-old", "about": "place", "text": "others lived in this valley before us" },
+    { "id": "cliffs-dangerous", "about": "place", "text": "the cliffs are no place to go alone" }
   ],
   "tales": [
     { "id": "beast", "event": "wild.attacked", "truth": 1, "belief": "woods-dangerous", "from": 1, "song": ["The Lay of {name} and the {species}", "When the {Species} Came for {name}", "{name} and the {Species} of {Month}"], "bynames": ["", "", "Lucky", "Wolfbait"], "spares": [[], [], ["Twice-spared", "Wolf-dodger"], ["Wolf-bitten", "Torn-coat"]], "levels": [
@@ -123,6 +126,11 @@
       "{name} and {other} had words over their ale.",
       "{name} came to blows with {other} at {tavern}.",
       "{name} smashed a stool over {other}'s head at {tavern}."
-    ] }
+    ] },
+    { "id": "found-place", "event": "land.found", "only": { "sort": "place" }, "truth": 1, "belief": "valley-rich", "from": 2, "levels": ["{name} came on {what} out to the {dir}.", "{name} found {what}, {far} tiles {dir} of home.", "{name} found {what} to the {dir}, finer than anything near home."]},
+    { "id": "found-cave", "event": "land.found", "only": { "sort": "cave" }, "truth": 1, "belief": "valley-old", "from": 2, "levels": ["{name} saw a hole in the cliffs to the {dir}.", "{name} found {what} {far} tiles {dir} of home, breathing cold air.", "{name} found {what} to the {dir}, and something down there breathes."]},
+    { "id": "found-den", "event": "land.found", "only": { "sort": "den" }, "truth": 1, "belief": "cliffs-dangerous", "from": 1, "levels": ["{name} saw bones under the cliffs to the {dir}.", "{name} found {what} {far} tiles {dir} of home.", "{name} found {what} to the {dir}, as big as a house and stinking of blood."]},
+    { "id": "curio", "event": "land.curio", "truth": 1, "belief": "valley-old", "from": 2, "levels": ["{name} picked up something odd out to the {dir}.", "{name} found {what}, {far} tiles {dir} of home.", "{name} found {what} to the {dir}, and it was not lying there by chance."]},
+    { "id": "word", "event": "land.word", "truth": 1, "belief": "valley-rich", "from": 2, "levels": ["{name} saw something on the road in.", "{name} spoke of {find} to the {dir}, passed on the road in.", "{name} says there is {find} to the {dir}, more than anyone could use."]}
   ]
 }

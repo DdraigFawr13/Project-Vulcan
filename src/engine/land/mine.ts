@@ -249,7 +249,12 @@ function dig(ctx: SystemContext, p: EntityRow, at: Spot): void {
     line = ctx.emit('mine.clayDug', {
       causes: [p['took'] as number],
       actors: [p.id],
-      data: { ...base, count, level: at.z, part: p['what'] as string },
+      data: {
+        ...base,
+        count,
+        where: at.z ? `on level ${at.z}` : 'at the clay bank',
+        part: p['what'] as string,
+      },
     });
   } else {
     [item, count] = [kind.digs?.item, kind.digs?.count ?? 0];
@@ -260,7 +265,9 @@ function dig(ctx: SystemContext, p: EntityRow, at: Spot): void {
       data: { ...base, rock: kind.name, level: at.z, gave },
     });
   }
-  const floor = kind.stone ? content.work.mine.floors.stone : content.work.mine.floors.earth;
+  // A clay bank dug on the surface leaves river sand (V-206).
+  const floors = content.work.mine.floors;
+  const floor = kind.stone ? floors.stone : at.z === 0 ? floors.bank : floors.earth;
   setTile(
     ctx,
     at.x,

@@ -18,6 +18,7 @@ export { tread, walksADay, wearStage } from './wear.ts';
 export { cutStairsAt, openAround, sinkShaftAt } from './levels.ts';
 export { makeLevel } from './underground.ts';
 export { compass } from './green.ts';
+export { atLookout, bankTiles, foundAreas, placeKind } from './places.ts';
 export {
   bareKnown,
   eachKnown,

@@ -8,6 +8,7 @@
 import type { WorldState } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
 import {
+  bankClay,
   digsFor,
   freeBlock,
   greenOf,
@@ -43,9 +44,11 @@ function clayCanBeHad(ctx: SystemContext, green: Spot): boolean {
   const { world, content } = ctx;
   const def = content.work.potter;
   if (haveOf(world, content, def.clayItem) >= def.clay) return true;
+  const reach = reachFrom(content, world.map, green);
+  // A found clay bank on the surface counts as the ground below does (V-206).
+  if (bankClay(world, content, reach, def.clayItem)) return true;
   const layer = world.map.levels[0];
   if (!layer) return false;
-  const reach = reachFrom(content, world.map, green);
   return layer.tiles.some((_, i) => digsFor(world, content, reach, i, def.clayItem));
 }
 
