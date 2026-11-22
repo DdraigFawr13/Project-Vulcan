@@ -55,7 +55,15 @@ export interface MasonryDef {
     burn: { limestone: number; fuel: number; lime: number; minutes: number };
   };
   stages: {
-    stone: { name: string; burned: number; from: readonly string[]; lime: string; clay: string };
+    stone: {
+      name: string;
+      burned: number;
+      from: readonly string[];
+      lime: string;
+      clay: string;
+      dry: string;
+      dryAfter: number;
+    };
     slate: { name: string };
     wash: { name: string; from: string; to: string; per: number; minutes: number };
   };

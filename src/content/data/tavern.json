@@ -38,7 +38,7 @@
   },
   "keeper": { "job": "innkeep", "trait": "sociable", "hears": 4 },
   "bend": 10,
-  "brawl": { "chance": 15, "trait": "hot-tempered", "kinds": ["cut", "crush"], "parts": ["head", "body", "left-arm", "right-arm"], "what": "was hurt in a brawl with {other} at the tavern", "memory": "brawled" },
+  "brawl": { "chance": 5, "trait": "hot-tempered", "kinds": ["cut", "crush"], "parts": ["head", "body", "left-arm", "right-arm"], "what": "was hurt in a brawl with {other} at the tavern", "memory": "brawled" },
   "hungOver": { "after": 2, "memory": "hung-over", "idle": 4, "until": 12 },
   "bard": { "job": "bard", "skill": "singing", "trait": "sociable", "evenings": 2, "practise": 60, "heard": ["heard-song-1", "heard-song-2", "heard-song-3", "heard-song-4"], "perHeard": 5 }
 }

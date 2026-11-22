@@ -193,4 +193,28 @@ describe('callings', () => {
       w.entities['belief']!.find((r) => r['person'] === p.id)?.['strength'];
     expect([strength(a), strength(b), strength(c)]).toEqual([2, 1, 1]);
   });
+
+  // 6B balance: nothing gives `fought-off` but a blow struck at a wolf, so a guard who stood
+  // against the pack side by side, or struck a wolf once in their life, passes the bar too.
+  it('makes a guard who stood against the pack the champion, with no fought-off memory', () => {
+    const { w, a, ctx } = valley();
+    Object.assign(skill(w, a, 'hunting'), { level: 6 });
+    addEntity(w, 'memory', {
+      person: a.id,
+      memory: 'stood-together',
+      weight: 1,
+      until: w.tick + TICKS_PER_DAY,
+      line: w.begunEvent,
+    });
+    addEntity(w, 'role', {
+      person: a.id,
+      role: 'guard',
+      points: 4,
+      why: '',
+      line: w.begunEvent,
+      since: 0,
+    });
+    callingDay(ctx);
+    expect(callingOf(w, a.id)?.['calling']).toBe('champion');
+  });
 });

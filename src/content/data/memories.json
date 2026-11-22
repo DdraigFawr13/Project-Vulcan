@@ -78,7 +78,7 @@
   {"id":"saw-refused-hearths","mood":-1,"decayDays":7,"text":"Saw {about} keep the fire their own way"},
   {"id":"grief-band","mood":-8,"decayDays":10,"text":"Lost {about}"},
   {"id":"saw-tracks","mood":-3,"decayDays":2,"text":"Saw wolf tracks near the town"},
-  {"id":"stood-together","mood":5,"decayDays":10,"text":"Stood against the pack side by side"},
+  {"id":"stood-together","mood":5,"decayDays":28,"text":"Stood against the pack side by side"},
   {"id":"saw-attack","mood":-8,"decayDays":7,"text":"Saw the pack go for {about}","weight":2},
   {"id":"saw-body","mood":-6,"decayDays":3,"text":"Saw {about}'s body","weight":2},
   {"id":"same-food","mood":-2,"decayDays":2,"text":"The same food, day after day","thoughts":["Fare again. Always fare."]},

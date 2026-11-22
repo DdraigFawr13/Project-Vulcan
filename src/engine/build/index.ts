@@ -120,6 +120,8 @@ export {
   clayMortarWanted,
   housesAt,
   limeCanBeHad,
+  layDry,
+  stoneWallOf,
   limeWanted,
   noteBurn,
   sayStageWaits,

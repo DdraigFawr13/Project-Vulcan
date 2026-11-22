@@ -88,7 +88,16 @@
           "id": "held",
           "sign": "Stands between the valley and the wild: sits the watch fire first, and the valley's fear of the woods fades twice as fast.",
           "bar": [
-            { "test": "memory", "id": "fought-off", "word": "stood against the attackers" },
+            {
+              "test": "either",
+              "word": "{n}",
+              "or": [
+                { "test": "memory", "id": "fought-off", "word": "stood against the attackers" },
+                { "test": "lines", "event": "wild.predatorWounded", "actor": 0, "from": 1, "word": "struck a wolf" },
+                { "test": "lines", "event": "wild.predatorKilled", "actor": 0, "from": 1, "word": "killed a wolf" },
+                { "test": "memory", "id": "stood-together", "word": "stood against the pack" }
+              ]
+            },
             { "test": "role", "id": "guard", "word": "seen as the guard" },
             { "test": "skill", "skills": ["hunting", "fighting"], "from": 6, "word": "{skill} {n}" }
           ]
