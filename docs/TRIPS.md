@@ -1,4 +1,4 @@
-# Scouting, trips, camps, the search and finds (6W Slices 4 and 5, V-205, V-206, V-209, V-210)
+# Scouting, trips, camps, the search and finds (6W Slices 4 and 5, V-205, V-206, V-209, V-212)
 
 The rules of engine land's scouting and trips. Trips in engine `land` (`camp.ts`, `trouble.ts`, `search.ts`) and people `afield.ts`. Dials: `work.json` `scout` (`pack`, `camp`, `fall`, `lost`, `late`, `places`, `curio`, `beyond`, `word`; types in core `trip.ts`). Nobody is sent by name, to a tile or on a trip (V-041): the levers stay the stock levels and the Scouting row.
 
