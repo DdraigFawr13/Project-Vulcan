@@ -39,5 +39,5 @@ export * from './teach.ts';
 export * from './callings.ts';
 export * from './tavern.ts';
 export * from './defy.ts';
-export { list, itemName, lower } from './words.ts';
+export { list, itemName, isName, lower, namesTakeNoThe, pronouns, the } from './words.ts';
 export { clamp, smooth, cheb, dice, roughDistance } from './maths.ts';

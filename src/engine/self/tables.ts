@@ -40,9 +40,11 @@ const skillName = (content: EngineContent, skill: string): string =>
   (content.abilities.find((a) => a.id === skill)?.name ?? skill).toLowerCase();
 
 /** An ambition in words: "to make a masterwork in smithing". */
-export function ambitionText(content: EngineContent, row: EntityRow): string {
+export function ambitionText(content: EngineContent, row: EntityRow, their = 'their'): string {
   const def = content.self.ambitions.find((a) => a.id === row['ambition']);
-  return (def?.text ?? '').replace('{skill}', skillName(content, row['skill'] as string));
+  return (def?.text ?? '')
+    .replace('{skill}', skillName(content, row['skill'] as string))
+    .replace('{their}', their);
 }
 
 /** The skill `person` practises in free time for their ambition, and the line that set it. */

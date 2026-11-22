@@ -2,7 +2,7 @@
 // its kind, severity, bleeding and the care it has had; a person's `body` row holds their blood
 // and whether they can stand. A lasting mark left by a healed wound is a `scar` row with the
 // content entry's plain effect (a lame leg walks slower, a maimed arm works slower).
-import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import { pronouns, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
@@ -95,12 +95,7 @@ export const partDef = (content: EngineContent, id: string) =>
 export const isDown = (world: WorldState, person: number): boolean =>
   !!bodyOf(world, person)?.['down'];
 
-/** He, him, his for `m`; she, her, her otherwise. */
-export function pronouns(p: EntityRow): { they: string; them: string; their: string } {
-  return p['sex'] === 'm'
-    ? { they: 'he', them: 'him', their: 'his' }
-    : { they: 'she', them: 'her', their: 'her' };
-}
+export { pronouns };
 
 const fill = (text: string, slots: Record<string, string>): string =>
   text.replace(/\{(\w+)\}/g, (_, k: string) => slots[k] ?? '');

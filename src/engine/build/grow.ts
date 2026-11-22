@@ -2,7 +2,7 @@
 // room whose every part stands is built, with one line. A built house whose sleepers outnumber
 // the beds it has room for adds a room (content `house.stage`) on its flattest side, walled in
 // the house's own material (V-097); its plans wait if that cannot be had.
-import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
+import { pronouns, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { bedsOf, crowdedIn, mainOf, nthOf, placeHouse, rowsOf, sizeOf } from './houses.ts';
@@ -166,7 +166,9 @@ export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: num
           actors: crowded ? [crowded.p.id] : [],
           data: {
             size: sizeOf(content, main).name,
-            for: crowded ? `${crowded.p['name']} wants a room of their own` : 'someone needs a bed',
+            for: crowded
+              ? `${crowded.p['name']} wants a room of ${pronouns(crowded.p).their} own`
+              : 'someone needs a bed',
           },
         });
       main['full'] = 1;
@@ -186,6 +188,7 @@ export function growHouses(ctx: SystemContext, green: Spot, sent = 0, only?: num
           actors: [crowded.p.id],
           data: {
             name: crowded.p['name'] as string,
+            their: pronouns(crowded.p).their,
             size,
             nth: nthOf(rows.length),
             side: site.side,

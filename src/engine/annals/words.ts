@@ -1,6 +1,13 @@
 // The recap's small words (V-191): a template filled from a line's data, counts in words, nouns by
 // count, and the sentence each kind of kept line makes.
-import { list, type AnnalLineDef, type EngineContent, type Nouns } from '../core/index.ts';
+import {
+  isName,
+  list,
+  namesTakeNoThe,
+  type AnnalLineDef,
+  type EngineContent,
+  type Nouns,
+} from '../core/index.ts';
 
 export type Words = Readonly<Record<string, string | number | boolean>>;
 
@@ -8,7 +15,7 @@ export const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
 /** `template` with each `{key}` from `words`; `{Key}` takes `key` with a capital. */
 export const fill = (template: string, words: Words): string =>
-  template.replace(/\{(\w+)\}/g, (_, k: string) => {
+  namesTakeNoThe(template, (k) => isName(words[k])).replace(/\{(\w+)\}/g, (_, k: string) => {
     if (k in words) return String(words[k]);
     const low = k.charAt(0).toLowerCase() + k.slice(1);
     return low in words ? cap(String(words[low])) : '';
@@ -21,6 +28,10 @@ export const countWord = (content: EngineContent, n: number): string =>
 /** The form of `forms` for count `n`, the last for every larger count. */
 const formOf = (content: EngineContent, forms: readonly string[], n: number): string =>
   fill(forms[Math.min(n, forms.length - 1)] ?? '{n}', { n: countWord(content, n) });
+
+/** "twice", "five times": how often, by count. */
+export const timesOf = (content: EngineContent, n: number): string =>
+  formOf(content, content.annals.times, n);
 
 /** "two houses": `nouns[key]` by `n`. */
 export const noun = (content: EngineContent, nouns: Nouns, key: string, n: number): string =>
@@ -37,7 +48,7 @@ function ledgerWords(content: EngineContent, type: string): string {
 }
 
 /** An item mid-sentence: a leading "The" or "A" goes small, names keep their capital. */
-const midSentence = (s: string): string => s.replace(/^(The|A|An) /, (w) => w.toLowerCase());
+export const midSentence = (s: string): string => s.replace(/^(The|A|An) /, (w) => w.toLowerCase());
 
 /** The items said as a list: each once, with how often when it repeats, then how many more. */
 function itemsOf(content: EngineContent, items: readonly string[]): string {

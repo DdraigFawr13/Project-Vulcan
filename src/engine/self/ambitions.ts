@@ -3,7 +3,13 @@
 // masterwork in their best craft, a trade they have it in them to learn, or a house of their own.
 // A masterwork needs the potential for it; a trade is one barely begun. Those who practise give a minute in every `every` of their free time to the skill (people
 // `mind.ts`). Each day an ambition reached is a line, and they gain `ambition.memory`.
-import type { AmbitionDef, EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import {
+  pronouns,
+  type AmbitionDef,
+  type EngineContent,
+  type EntityRow,
+  type WorldState,
+} from '../core/index.ts';
 import { builtHome } from '../build/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { addMemory } from '../needs/index.ts';
@@ -54,7 +60,7 @@ export function takeUp(ctx: SystemContext, p: EntityRow): void {
   if (!open.length) return;
   const { def, skill } = rng.pick(open);
   const row = { person: p.id, ambition: def.id, skill, since: world.tick, done: 0 };
-  const text = ambitionText(content, { id: 0, ...row });
+  const text = ambitionText(content, { id: 0, ...row }, pronouns(p).their);
   const line = ctx.emit('self.ambition', {
     causes: [p['arrived'] as number],
     actors: [p.id],
@@ -71,7 +77,7 @@ export function fulfil(ctx: SystemContext, p: EntityRow): void {
   const line = ctx.emit('self.fulfilled', {
     causes: [a['line'] as number],
     actors: [p.id],
-    data: { name: p['name'] as string, text: ambitionText(content, a) },
+    data: { name: p['name'] as string, text: ambitionText(content, a, pronouns(p).their) },
   });
   a['done'] = 1;
   addMemory(ctx, p.id, content.self.ambition.memory, line);

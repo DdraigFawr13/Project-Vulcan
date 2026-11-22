@@ -1,7 +1,14 @@
 // The tales tables and their reads (P6.3, V-155): a story is one ledger event copied as a tale,
 // with the words of its data kept so it outlives the line; a tale is what one person holds of a
 // story; a belief is a content template a person holds at a strength.
-import type { EngineContent, EntityRow, TaleDef, WorldState } from '../core/index.ts';
+import {
+  isName,
+  namesTakeNoThe,
+  type EngineContent,
+  type EntityRow,
+  type TaleDef,
+  type WorldState,
+} from '../core/index.ts';
 import type { Schemas } from '../entity/index.ts';
 import { tableOf } from '../entity/index.ts';
 
@@ -63,7 +70,10 @@ export const taleDef = (content: EngineContent, id: string): TaleDef | undefined
 /** `text` filled from a story's words: "The Lay of {name}" for Bran. */
 export function fillWords(story: EntityRow, text: string): string {
   const words = JSON.parse(story['words'] as string) as Record<string, string | number>;
-  return text.replace(/\{(\w+)\}/g, (_, k: string) => String(words[k] ?? ''));
+  const named = (k: string) => isName(words[k]);
+  return namesTakeNoThe(text, named).replace(/\{(\w+)\}/g, (_, k: string) =>
+    String(words[k] ?? ''),
+  );
 }
 
 /** A story's words at `level`: "A wolf went for Bran." */

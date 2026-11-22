@@ -16,6 +16,6 @@
   "ambitions": [
     { "id": "masterwork", "text": "to make a masterwork in {skill}", "kind": "master", "skills": ["smithing", "crafting", "cooking", "building", "stoneworking"], "from": 4, "to": 8 },
     { "id": "trade", "text": "to learn {skill}", "kind": "learn", "skills": ["smithing", "crafting", "cooking", "building", "stoneworking", "herbalism", "farming"], "from": 6, "under": 2, "to": 4 },
-    { "id": "house", "text": "to have a house of their own", "kind": "house" }
+    { "id": "house", "text": "to have a house of {their} own", "kind": "house" }
   ]
 }

@@ -1,6 +1,6 @@
 // Turns ledger lines into text from content templates; salvaged from PR #1's
 // src/engine/narrative/render.ts (commit f054061). Text only describes what the engine decided.
-import type { SimEvent } from '../core/index.ts';
+import { isName, namesTakeNoThe, type SimEvent } from '../core/index.ts';
 import type { Templates } from './emit.ts';
 
 /** Fills a template's slots: `{actorN}` and `{subjectN}` through `nameOf`, others from data. */
@@ -11,7 +11,8 @@ export function renderEvent(
 ): string {
   const template = templates.get(event.type);
   if (template === undefined) return event.type;
-  return template.replace(/\{(\w+)\}/g, (slot, key: string) => {
+  const named = (key: string) => isName(event.data[key]);
+  return namesTakeNoThe(template, named).replace(/\{(\w+)\}/g, (slot, key: string) => {
     const role = /^(actor|subject)(\d+)$/.exec(key);
     if (role) {
       const id = (role[1] === 'actor' ? event.actors : event.subjects)[Number(role[2])];
