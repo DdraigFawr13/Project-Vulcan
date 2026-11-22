@@ -30,7 +30,8 @@ import { schoolHouse, schoolRoom } from '../build/index.ts';
 import { hoursOf } from '../law/index.ts';
 import { loseBooks, reading, scribing } from './books.ts';
 import { lossHour } from './loss.ts';
-import { atLessons, standingSchool } from './school.ts';
+import { highestOn } from '../inn/index.ts';
+import { atLessons, chooseTeacher, standingSchool } from './school.ts';
 import { booksOf, keptBooks } from './tables.ts';
 
 type World = ReturnType<typeof createWorld>;
@@ -194,6 +195,72 @@ describe('the schoolroom', () => {
     loseBooks(teach);
     const lost = lines(w, 'school.bookLost').at(-1)!;
     expect(lost.causes).toEqual([booksOf(w)[0]!['line']]);
+    expect(lost.data['how']).toBe(content.teach.school.words.shelf);
     expect(booksOf(w)[0]!['state']).toBe('lost');
+  });
+
+  // 6B review q1 (V-206): the lines that were missing.
+  it('says a half-written book is lost when its master dies', () => {
+    const { w, sim, teacher, at, people } = withSchool();
+    const master = alive(w)
+      .filter((p) => p.id !== teacher.id)
+      .sort(
+        (a, b) =>
+          (row(w, b, 'crafting')['level'] as number) - (row(w, a, 'crafting')['level'] as number),
+      )[0]!;
+    Object.assign(master, { doing: 'relax' });
+    at(master, 4);
+    at(teacher, 4);
+    scribing(people, teacher);
+    expect(booksOf(w).map((b) => b['state'])).toEqual(['writing']);
+    const died = die(contextFor(w, sim, healthSystem), master, 'a fall', [w.begunEvent]);
+    loseBooks(contextFor(w, sim, teachSystem));
+    const lost = lines(w, 'school.bookLost').at(-1)!;
+    expect(lost.causes).toEqual([booksOf(w)[0]!['begun'], died]);
+    expect(lost.data['how']).toContain(`${master['name'] as string} died`);
+    expect(booksOf(w)[0]!['state']).toBe('lost');
+  });
+
+  it('cites the master’s skill or coming when siting it for a master’s ways', () => {
+    const { w } = withSchool();
+    const sited = lines(w, 'build.school')[0]!;
+    // The harvest home and the master's line: their skill rising, else their coming.
+    expect(sited.causes.length).toBe(2);
+    const cited = allLines(w).find((e) => e.id === sited.causes[1]);
+    expect(
+      cited && ['skill.rose', 'skill.taught', 'skill.read', 'people.arrived'].includes(cited.type),
+    ).toBe(true);
+  });
+
+  it('says the schoolroom has no teacher when nobody grown is left', () => {
+    const { w, sim } = withSchool();
+    const health = contextFor(w, sim, healthSystem);
+    const teacherLine = standingSchool(w)!['kept'] as number;
+    for (const p of alive(w)) die(health, p, 'a fall', [w.begunEvent]);
+    chooseTeacher(contextFor(w, sim, teachSystem));
+    const none = lines(w, 'school.noTeacher').at(-1)!;
+    expect(none.causes).toEqual([teacherLine]);
+    expect(standingSchool(w)!['teacher']).toBe(0);
+  });
+
+  it('gives the schoolroom to someone who is not already the innkeeper when they tie', () => {
+    const { w, sim } = withSchool();
+    w.entities['priority'] = (w.entities['priority'] ?? []).filter((r) => r['job'] !== 'teach');
+    const keeper = alive(w)[0]!;
+    addEntity(w, 'tavern', {
+      house: 0,
+      name: 'The Ash',
+      line: 0,
+      keeper: keeper.id,
+      kept: 0,
+      noGrain: 0,
+    });
+    const { job, trait } = content.teach.school.teacher;
+    expect(highestOn(w, content, [job, trait], 'teacher')?.id).not.toBe(keeper.id);
+    chooseTeacher(contextFor(w, sim, teachSystem));
+    expect(standingSchool(w)!['teacher']).not.toBe(keeper.id);
+    const { job: bj, trait: bt } = content.tavern.bard;
+    const bard = highestOn(w, content, [bj, bt], 'bard')!;
+    expect([keeper.id, standingSchool(w)!['teacher']]).not.toContain(bard.id);
   });
 });

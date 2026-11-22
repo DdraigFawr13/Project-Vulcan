@@ -34,9 +34,11 @@ export const FAMILY_SCHEMAS = {
     ),
     // A wedding feast only while the store holds `feastDays` days of food for everyone.
     feastDays: count,
-    // Words for the courting and wedding lines; {whose} is filled with the home's owner.
+    // Words for the courting and wedding lines; {whose} is filled with the home's owner (`empty`,
+    // `unplanned`: the home of the other one given up, built or planned).
     words: obj({
-      ...{ together: text, alike: text, tales: text, want: text, live: text },
+      ...{ together: text, alike: text, tales: text, want: text, live: text, empty: text },
+      unplanned: text,
       ...{ girl: text, boy: text, like: text, mother: text, father: text },
       ...{ daughter: text, son: text, orphan: text, leftHere: text },
     }),

@@ -32,3 +32,17 @@ export const far = (a: EntityRow, b: EntityRow): number =>
         Math.abs((a['x'] as number) - (b['x'] as number)),
         Math.abs((a['y'] as number) - (b['y'] as number)),
       );
+
+const SKILL_LINES = new Set(['skill.rose', 'skill.taught', 'skill.read']);
+
+/** The newest line the ledger still holds that raised `person`'s skill named `word` (as skill
+ * lines name it, lower case), else the line they came to the valley on: what a master's skill
+ * cites. */
+export function skillLine(world: WorldState, person: EntityRow, word: string): number {
+  for (let k = world.log.length - 1; k >= 0; k -= 1) {
+    const e = world.log[k]!;
+    if (SKILL_LINES.has(e.type) && e.actors[0] === person.id && e.data['skill'] === word)
+      return e.id;
+  }
+  return (person['arrived'] as number) ?? 0;
+}

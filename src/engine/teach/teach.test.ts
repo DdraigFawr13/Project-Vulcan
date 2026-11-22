@@ -14,6 +14,7 @@ import {
   step,
   submitCommand,
   teachSystem,
+  TICKS_PER_DAY,
   type EntityRow,
 } from '../index.ts';
 import { practise } from '../band/index.ts';
@@ -142,5 +143,43 @@ describe('teaching', () => {
     const lost = lines(w, 'teach.lost').find((e) => e.actors[0] === master.id)!;
     expect(lost.data['skill']).toBe('crafting');
     expect(lost.causes).toEqual([dead]);
+  });
+
+  // 6B review q1 (V-206): a tale-swapping friend counts, and every "why?" leads somewhere.
+  it('has a master by choice take a friend they swap tales with, citing the tale', () => {
+    const { w, master, near, ctx } = workshop(2, 12);
+    const day = Math.floor(w.tick / TICKS_PER_DAY);
+    const told = w.begunEvent;
+    addEntity(w, 'tale', {
+      ...{ person: near.id, story: 0, level: 1, teller: master.id, line: told },
+      ...{ heard: day, day },
+    });
+    apprenticeDay(ctx);
+    const took = lines(w, 'teach.apprentice').find((e) => e.actors[0] === master.id)!;
+    expect(took.actors[1]).toBe(near.id);
+    expect(took.data['why']).toBe(
+      content.teach.words.talker.replace('{learner}', near['name'] as string),
+    );
+    expect(took.causes).toEqual([told]);
+  });
+
+  it('has a master who chose by their trait cite their skill or their coming', () => {
+    const { w, master, ctx } = workshop(2, 12);
+    addEntity(w, 'trait', { person: master.id, trait: content.teach.choose[0]! });
+    apprenticeDay(ctx);
+    const took = lines(w, 'teach.apprentice').find((e) => e.actors[0] === master.id)!;
+    expect(took.causes.length).toBe(1);
+    const cited = allLines(w).find((e) => e.id === took.causes[0])!;
+    expect(['skill.rose', 'skill.taught', 'people.arrived']).toContain(cited.type);
+  });
+
+  it('has a master gone with no death line cite their skill or their coming', () => {
+    const { w, master, ctx } = workshop(2, 12);
+    lossHour(ctx);
+    master['status'] = 'dead';
+    lossHour(ctx);
+    const lost = lines(w, 'teach.lost').find((e) => e.actors[0] === master.id)!;
+    expect(lost.causes.length).toBe(1);
+    expect(lost.causes[0]).toBeGreaterThan(0);
   });
 });

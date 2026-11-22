@@ -18,7 +18,7 @@ export type CallingTestKind =
 /** One test of a bar. `trait`: holds one of `any` and none of `none`; `trusted`: among the `top`
  * most trusted grown-ups; `friends`: friends (colony `talkersOf`: told or heard a tale lately) with `share` per cent of the other living;
  * `tales`: holds `from` tales; `lines`: has been actor `actor` of `from` `event` lines; `attribute`:
- * `attr` at `from`; `ambition`: ambition `id` fulfilled; `skill`: the best of `skills` at `from`;
+ * `attr` at `from`; `ambition`: ambition `id` fulfilled, its skill at `from` if given; `skill`: the best of `skills` at `from`;
  * `memory`: holds memory `id`; `role`: holds role `id`; `either`: passes when one of `or` passes.
  * `word` says it in the line ({n} the measure, {of} out of, {skill}). */
 export interface CallingTest {

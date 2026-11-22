@@ -54,6 +54,9 @@ export const TALES_SCHEMAS = {
         song: opt(list(str())),
         // The byname each level gives the one it is about ("" for none).
         bynames: opt(list(str())),
+        // For each level, the next words in order while that byname is held by someone living
+        // (one living holder a word).
+        spares: opt(list(list(str()))),
         levels: list(text),
       }),
     ),

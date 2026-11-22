@@ -12,6 +12,7 @@ interface Tales {
     from: number;
     levels: string[];
     bynames?: string[];
+    spares?: string[][];
   }[];
 }
 
@@ -28,6 +29,8 @@ export function checkTales(files: Files): string[] {
       if (tale[k] >= tale.levels.length) errors.push(`${at}.${k}: ${tale[k]} has no words`);
     if (tale.bynames && tale.bynames.length !== tale.levels.length)
       errors.push(`${at}.bynames: one for each of its ${tale.levels.length} levels`);
+    if (tale.spares && tale.spares.length !== tale.levels.length)
+      errors.push(`${at}.spares: one list for each of its ${tale.levels.length} levels`);
   }
   return errors;
 }

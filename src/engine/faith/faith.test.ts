@@ -15,6 +15,7 @@ import {
   healthSystem,
   settingOf,
   step,
+  submitCommand,
   TICKS_PER_DAY,
   TICKS_PER_HOUR,
   weigh,
@@ -131,6 +132,20 @@ describe('faith: feast days', () => {
     step(w, sim, TICKS_PER_HOUR);
     const none = lines(w, 'faith.noFeast')[0];
     expect(none?.causes).toContain(row['line']);
+  });
+
+  // 6B review q1 (V-206): a day the Feasts law does not keep passes with a line.
+  it('a day asked for past what the Feasts law keeps passes without a feast, with a line', () => {
+    const { w } = withShrine('anvil');
+    submitCommand(w, { tick: w.tick + 1, kind: 'setLaw', data: { law: 'feasts', setting: 'few' } });
+    step(w, sim, 2);
+    const cart = holydaysOf(w).find((d) => d['kind'] === 'arrival')!;
+    keepTomorrow(w, cart);
+    expect(lines(w, 'faith.feastDay')).toEqual([]);
+    const held = lines(w, 'faith.dayHeld');
+    expect(held.length).toBe(1);
+    expect(held[0]!.data['day']).toBe(cart['name']);
+    expect(held[0]!.causes).toEqual([cart['line'], lines(w, 'law.set').at(-1)!.id]);
   });
 });
 

@@ -13,7 +13,7 @@
     {"id": "asexual", "name": "Asexual", "drawn": "none", "weight": 9, "description": "Drawn to no one; they will not court."}
   ],
   "feastDays": 3,
-  "words": {"together": "spend their evenings together", "alike": "are of a like mind", "tales": "trade tales", "want": "They want a home of their own.", "live": "They will live in {whose} home.", "girl": "girl", "boy": "boy", "daughter": "daughter", "son": "son", "orphan": "who has no parent left", "leftHere": "who was left in the valley", "like": "{word} like {their} {parent}", "mother": "mother", "father": "father"},
+  "words": {"together": "spend their evenings together", "alike": "are of a like mind", "tales": "trade tales", "want": "They want a home of their own.", "live": "They will live in {whose} home.", "empty": "{whose} home is left free for others.", "unplanned": "{whose} planned home is no longer wanted.", "girl": "girl", "boy": "boy", "daughter": "daughter", "son": "son", "orphan": "who has no parent left", "leftHere": "who was left in the valley", "like": "{word} like {their} {parent}", "mother": "mother", "father": "father"},
   "birth": {"perMille": 3, "until": 60, "carryDays": 252, "restDays": 168, "leanDays": 10, "hungry": "went-hungry"},
   "child": {"helpFrom": 25, "jobs": ["forage", "haul", "herd"]},
   "inherit": {"by": 3, "gift": 50, "weakness": 35, "kin": 25},

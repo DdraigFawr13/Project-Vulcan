@@ -151,7 +151,7 @@ export const buildSystem: System = {
     'build.grows',
     'build.growsPrivate',
     'build.growBlocked',
-    ...['build.stageWanted', 'build.stageWaits'],
+    ...['build.stageWanted', 'build.stageWaits', 'build.noSlate'],
     'furniture.benchPlaced',
     'fire.planned',
     'fire.plannedCold',

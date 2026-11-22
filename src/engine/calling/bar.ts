@@ -77,7 +77,10 @@ function ambitionTest(s: Seen, p: EntityRow, t: CallingTest): Measure {
   const skill = pass ? (a['skill'] as string) : '';
   const level = rows(s.world, 'skill').find((r) => r['person'] === p.id && r['skill'] === skill);
   const score = (level?.['level'] as number) ?? 0;
-  return { pass, score, word: t.word, skill, cite: pass ? (a['line'] as number) : 0 };
+  // With `from`, the ambition's skill must stand there too (the masterwork path, V-206).
+  const ok = pass && score >= (t.from ?? 0);
+  const word = fill(t.word, score, 0, skillName(s.content, skill));
+  return { pass: ok, score, word, skill, cite: ok ? (a['line'] as number) : 0 };
 }
 
 function heldTest(s: Seen, p: EntityRow, t: CallingTest): Measure {

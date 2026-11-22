@@ -8,7 +8,8 @@
 // (both remember it), or one of them dies or leaves.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { able } from '../band/index.ts';
-import { addEntity, alive } from '../entity/index.ts';
+import { talkersOf } from '../colony/index.ts';
+import { addEntity, alive, skillLine } from '../entity/index.ts';
 import { bondOf, grown } from '../family/index.ts';
 import { answerTo, lawRow, settingOf } from '../law/index.ts';
 import { addMemory } from '../needs/index.ts';
@@ -34,6 +35,22 @@ const isChild = (q: EntityRow, master: number): boolean =>
   q['mother'] === master || q['father'] === master;
 const closeness = (world: WorldState, a: number, b: number): number =>
   (bondOf(world, a, b)?.['close'] as number) ?? 0;
+
+/** The newest tale `a` and `b` swapped while they count as friends (colony `talkersOf`), else 0. */
+function talkedTale(world: WorldState, content: EngineContent, a: number, b: number): number {
+  const p = alive(world).find((x) => x.id === a);
+  if (!p || !talkersOf(world, content, p).includes(b)) return 0;
+  const lines = (world.entities['tale'] ?? [])
+    .filter(
+      (t) => (t['teller'] === a && t['person'] === b) || (t['teller'] === b && t['person'] === a),
+    )
+    .map((t) => t['line'] as number);
+  return lines.length ? Math.max(...lines) : 0;
+}
+
+/** Whether `q` is a friend of the master's: close enough, or one they swap tales with. */
+const friendOf = (world: WorldState, content: EngineContent, master: number, q: number): boolean =>
+  closeness(world, master, q) >= content.teach.friend || talkedTale(world, content, master, q) > 0;
 
 /** The grown who could learn `skill` from a master at `level`, best first. */
 function candidates(
@@ -61,6 +78,8 @@ function candidates(
     .sort(
       (a, b) =>
         Number(isChild(b, master.id)) - Number(isChild(a, master.id)) ||
+        Number(friendOf(world, content, master.id, b.id)) -
+          Number(friendOf(world, content, master.id, a.id)) ||
         closeness(world, master.id, b.id) - closeness(world, master.id, a.id) ||
         gift(b) - gift(a) ||
         a.id - b.id,
@@ -73,6 +92,7 @@ function reason(
   master: EntityRow,
   q: EntityRow,
   way: string,
+  skill: string,
 ): { why: string; causes: number[] } | undefined {
   const { world, content } = ctx;
   const w = content.teach.words;
@@ -81,11 +101,18 @@ function reason(
   if (isChild(q, master.id)) return { why: w.child, causes: [(q['bornLine'] as number) ?? 0] };
   if (closeness(world, master.id, q.id) >= content.teach.friend)
     return { why: w.friend, causes: [(bondOf(world, master.id, q.id)?.['line'] as number) ?? 0] };
+  // A friend they swap tales with (colony `talkersOf`, as the callings count friends).
+  const tale = talkedTale(world, content, master.id, q.id);
+  if (tale) return { why: w.talker, causes: [tale] };
   const trait = (world.entities['trait'] ?? []).find(
     (r) => r['person'] === master.id && content.teach.choose.includes(r['trait'] as string),
   );
+  // The trait has no line: the master's skill line, or their coming, says who they are.
   return trait
-    ? { why: w.trait.replace('{trait}', trait['trait'] as string), causes: [] }
+    ? {
+        why: w.trait.replace('{trait}', trait['trait'] as string),
+        causes: [skillLine(world, master, skillWord(content, skill))],
+      }
     : undefined;
 }
 
@@ -114,7 +141,7 @@ function take(ctx: SystemContext, master: EntityRow): void {
   if (way === 'none') return;
   const skill = best['skill'] as string;
   const q = candidates(world, content, master, skill, lv(best))[0];
-  const r = q && reason(ctx, master, q, way);
+  const r = q && reason(ctx, master, q, way, skill);
   if (!q || !r) return;
   const line = ctx.emit('teach.apprentice', {
     causes: r.causes.filter(Boolean),

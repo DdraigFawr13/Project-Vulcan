@@ -38,7 +38,16 @@ export const TEACH_SCHEMAS = {
     near: count,
     memories: obj({ master: text, learner: text }),
     // Words for the lines: why a master took this learner, and how a master went.
-    words: obj({ law: text, child: text, friend: text, trait: text, died: text, left: text }),
+    // `talker`: a friend they swap tales with (colony `talkersOf`).
+    words: obj({
+      law: text,
+      child: text,
+      friend: text,
+      talker: text,
+      trait: text,
+      died: text,
+      left: text,
+    }),
     // The schoolroom (V-189 q7): the Build sheet's Schoolroom row (`start` level), its house size
     // and what it wants inside; the Teaching row (`teacher.job`) and the trait ties go to; children
     // from `from` per cent of their coming of age go to lessons for the first `lesson.hours` of
@@ -62,7 +71,8 @@ export const TEACH_SCHEMAS = {
         ...{ near: num({ min: 1 }), look: num({ min: 1 }) },
       }),
       read: obj({ minutes: num({ min: 1 }), pace: percent, less: count }),
-      words: obj({ children: text, masters: text, teacher: text }),
+      // `shelf`, `unfinished`: how a book is lost ({master} and {how}: died, left).
+      words: obj({ children: text, masters: text, teacher: text, shelf: text, unfinished: text }),
     }),
   }),
 };

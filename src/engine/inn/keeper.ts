@@ -1,7 +1,7 @@
 // The tavern's name and its keeper (6B Bundle 5, P6.12, V-188). Once the tavern house is built it
 // is named from `tavern.build.names` (one not yet used here). The innkeeper is the living grown-up
-// who puts Inn-keeping highest on their Work sheet; ties go to the `keeper.trait` (sociable),
-// then the lowest id. Nobody is appointed: the Work sheet is the only lever (V-041).
+// who puts Inn-keeping highest on their Work sheet; ties go to one holding no other role (V-206),
+// then the `keeper.trait` (sociable), then the lowest id. Nobody is appointed: the Work sheet is the only lever (V-041).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { levelOf } from '../band/index.ts';
 import { tavernHouse } from '../build/index.ts';
@@ -25,16 +25,34 @@ export function nameTavern(ctx: SystemContext): void {
 const hasTrait = (world: WorldState, p: EntityRow, trait: string): boolean =>
   (world.entities['trait'] ?? []).some((t) => t['person'] === p.id && t['trait'] === trait);
 
-/** The living grown-up who puts `job` highest on their Work sheet; ties go to `trait`, then
- * the lowest id (the innkeeper, the bard). */
+/** The roles one person should not hold all at once while others tie: the innkeeper, the
+ * schoolroom's teacher (engine teach's `school` rows, read here as teach reads this module) and
+ * the bard (not kept: whoever `highestOn` names each evening). */
+export type Role = 'keeper' | 'teacher' | 'bard';
+
+/** Who holds the kept roles other than `role`: the innkeeper and the teacher. */
+function othersHeld(world: WorldState, role: Role): Set<number> {
+  const out = new Set<number>();
+  if (role !== 'keeper')
+    for (const t of world.entities['tavern'] ?? []) out.add(t['keeper'] as number);
+  if (role !== 'teacher')
+    for (const s of world.entities['school'] ?? []) out.add(s['teacher'] as number);
+  out.delete(0);
+  return out;
+}
+
+/** The living grown-up who puts `job` highest on their Work sheet; ties go to one who holds none
+ * of the other roles (so one person is not innkeeper, bard and teacher at once when nobody's Work
+ * sheet says so), then to `trait`, then the lowest id. */
 export function highestOn(
   world: WorldState,
   content: EngineContent,
-  job: string,
-  trait: string,
+  [job, trait]: [string, string],
+  role: Role,
 ): EntityRow | undefined {
+  const held = othersHeld(world, role);
   const rank = (p: EntityRow) =>
-    levelOf(world, content, p.id, job) * 2 - +hasTrait(world, p, trait);
+    levelOf(world, content, p.id, job) * 4 + +held.has(p.id) * 2 - +hasTrait(world, p, trait);
   return (world.entities['person'] ?? [])
     .filter((p) => p['status'] === 'alive' && !p['stranger'] && grown(world, content, p))
     .sort((a, b) => rank(a) - rank(b) || a.id - b.id)[0];
@@ -46,7 +64,7 @@ export function chooseKeeper(ctx: SystemContext): void {
   const t = tavernOf(world);
   if (!t) return;
   const { job, trait } = content.tavern.keeper;
-  const best = highestOn(world, content, job, trait);
+  const best = highestOn(world, content, [job, trait], 'keeper');
   const id = best?.id ?? 0;
   if (id === t['keeper']) return;
   t['keeper'] = id;

@@ -54,8 +54,18 @@ function settleHome(
   const built = (h: EntityRow) => (h['state'] === 'built' ? 0 : 1);
   const keep = homes.sort((a, b) => built(a) - built(b) || a.id - b.id)[0]!;
   const whose = whoseOf(world, [keep['owner'] as number]);
+  // The home given up is named before it loses its owner: built, it stands empty; planned, it is
+  // no longer theirs.
+  const left = homes
+    .filter((h) => h !== keep)
+    .map((h) =>
+      (h['state'] === 'built' ? words.empty : words.unplanned).replace(
+        '{whose}',
+        whoseOf(world, [h['owner'] as number]),
+      ),
+    );
   for (const h of homes) if (h !== keep) h['owner'] = 0;
-  return { words: words.live.replace('{whose}', whose), want: false };
+  return { words: [words.live.replace('{whose}', whose), ...left].join(' '), want: false };
 }
 
 /** Two wed: partners, the memory, the feast, the home. False when a supper is already called

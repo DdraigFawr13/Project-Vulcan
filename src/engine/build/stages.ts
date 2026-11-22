@@ -118,25 +118,34 @@ function winterOf(world: WorldState, content: EngineContent): number {
   return content.calendar.seasons[c.season] === 'winter' ? c.year : -1;
 }
 
-/** Counts `n` firewood laid on hearth piece `piece`'s fire against its house this winter. */
+/** Counts `n` firewood laid on hearth piece `piece`'s fire against its house this winter, and
+ * keeps `line`, the tending that laid the winter's first. */
 export function noteBurn(
   world: WorldState,
   content: EngineContent,
   piece: EntityRow,
   n: number,
+  line: number,
 ): void {
   const year = winterOf(world, content);
   const at = houseAt(world, piece['x'] as number, piece['y'] as number);
   if (year < 0 || !at) return;
   const h = mainOf(world, at);
-  if (h['burnYear'] !== year) Object.assign(h, { burnYear: year, burned: 0 });
+  if (h['burnYear'] !== year) Object.assign(h, { burnYear: year, burned: 0, burnLine: line });
   h['burned'] = (h['burned'] as number) + n;
 }
 
-/** Starts a stage on house row `h` with its line. */
-function want(ctx: SystemContext, h: EntityRow, stage: string, why: string, what: string): void {
+/** Starts a stage on house row `h` with its line, citing `cause` (the winter's fire), else the
+ * roof or the house built. */
+function want(
+  ctx: SystemContext,
+  h: EntityRow,
+  stage: string,
+  [why, what]: [string, string],
+  cause = 0,
+): void {
   const line = ctx.emit('build.stageWanted', {
-    causes: [(h['roofLine'] as number) || (h['built'] as number)].filter((l) => l > 0),
+    causes: [cause || (h['roofLine'] as number) || (h['built'] as number)].filter((l) => l > 0),
     data: { size: roofName(ctx.world, ctx.content, h), why, what },
   });
   Object.assign(h, { stage, stageLine: line, stageWait: 0 });
@@ -146,30 +155,34 @@ function want(ctx: SystemContext, h: EntityRow, stage: string, why: string, what
 function startStage(ctx: SystemContext, h: EntityRow): void {
   const { world, content } = ctx;
   const def = masonry(content).stages;
-  if (wornThatch(world, content, h) && slateCanBeHad(world, content))
-    return want(
-      ctx,
-      h,
-      'slate',
+  const worn = wornThatch(world, content, h);
+  if (worn && slateCanBeHad(world, content))
+    return want(ctx, h, 'slate', [
       'has worn thatch and slate can be split nearby',
       'it roofed in slate',
-    );
+    ]);
+  if (worn) sayNoSlate(ctx, h);
   if (h['of']) return;
   const wall = partOf(content, h['wall'] as string);
   const burned = h['burned'] as number;
   if (burned >= def.stone.burned && wallsOf(world, h, def.stone.from).length) {
     h['mortar'] = limeCanBeHad(world, content) ? 'lime' : 'clay';
     const walls = wall?.name.replace(/ wall$/, '') ?? 'timber';
-    return want(
-      ctx,
-      h,
-      'stone',
-      `burned ${burned} firewood this winter through its ${walls} walls`,
-      'it rebuilt in stone',
-    );
+    const why = `burned ${burned} firewood this winter through its ${walls} walls`;
+    return want(ctx, h, 'stone', [why, 'it rebuilt in stone'], h['burnLine'] as number);
   }
   if (wallsOf(world, h, [def.wash.from]).length && limeCanBeHad(world, content))
-    want(ctx, h, 'wash', 'has clay walls and lime can be had', 'them limewashed');
+    want(ctx, h, 'wash', ['has clay walls and lime can be had', 'them limewashed']);
+}
+
+/** Once in the colony's life: a worn thatch roof that no slate can replace (none in store and no
+ * slate rock within reach), so the slate stage is never wanted and the line says why. */
+function sayNoSlate(ctx: SystemContext, h: EntityRow): void {
+  if (ctx.state['noSlate']) return;
+  ctx.state['noSlate'] = ctx.emit('build.noSlate', {
+    causes: [(h['roofLine'] as number) || (h['built'] as number)].filter((l) => l > 0),
+    data: { size: roofName(ctx.world, ctx.content, h) },
+  });
 }
 
 /** Hourly: built houses start the stages they need. */

@@ -9,6 +9,7 @@ import {
   bondOf,
   createSim,
   createWorld,
+  familySystem,
   streamFor,
   likeOf,
   step,
@@ -16,7 +17,10 @@ import {
   TICKS_PER_HOUR,
   type EntityRow,
 } from '../index.ts';
+import { contextFor } from '../sim/system.ts';
+import { whoseOf } from '../build/index.ts';
 import { hourTogether } from './close.ts';
+import { courtingDay } from './court.ts';
 import { drawnTo, drawOrientations } from './drawn.ts';
 
 // Two days of courting rather than a month keeps the run short; the rule reads `court.days`.
@@ -108,5 +112,24 @@ describe('families: courtship and weddings', () => {
     const none = lines(w, 'family.noFeast').find((e) => e.causes.includes(wed.id));
     expect(feast ?? none).toBeDefined();
     if (feast) expect(feast.data['where']).toBe('round the fire on the green');
+  });
+
+  // 6B review q1 (V-206): the wedding line names the home given up.
+  it('names the home the wed leave, built or planned', () => {
+    const { w, p, q } = couple('smoke');
+    const house = (owner: number, state: string) =>
+      addEntity(w, 'house', { owner, state, of: 0, line: 0 });
+    const ids = [house(p.id, 'built'), house(q.id, 'built')];
+    addEntity(w, 'bond', {
+      ...{ a: Math.min(p.id, q.id), b: Math.max(p.id, q.id), close: fam.court.from + 5 },
+      ...{ state: 'courting', since: w.tick - fam.court.days * TICKS_PER_DAY, line: w.begunEvent },
+      ...{ due: 0, expect: 0, last: 0 },
+    });
+    courtingDay(contextFor(w, sim, familySystem));
+    const wed = lines(w, 'family.wed').find((e) => e.actors.includes(p.id))!;
+    const qName = whoseOf(w, [q.id]);
+    expect(wed.data['home']).toContain(fam.words.empty.replace('{whose}', qName));
+    const owners = ids.map((id) => (w.entities['house'] ?? []).find((h) => h.id === id)!['owner']);
+    expect(owners).toEqual([p.id, 0]);
   });
 });

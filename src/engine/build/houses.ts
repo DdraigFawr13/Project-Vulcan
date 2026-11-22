@@ -79,15 +79,15 @@ export const HOUSE_TABLES: Schemas = {
     thatcher: 'entity',
     thatchTook: 'event',
     thatchWith: 'text',
-    /** The stage it grows by now (6B, stages.ts): '' none, `stone`, `slate`, `wash`; the line
-     * that wanted it, the one saying it waits and when; firewood its hearths burned in the winter of
-     * `burnYear`; the mortar its stone walls are set in; the mason on it and their line. */
+    /** The stage (stages.ts: '', stone, slate, wash), its want and wait lines and when; firewood
+     * burned in the winter of `burnYear` and its first tending; the mortar; the mason and line. */
     stage: 'text',
     stageLine: 'event',
     stageWait: 'event',
     waitedAt: 'int',
     burned: 'count',
     burnYear: 'int',
+    burnLine: 'event',
     mortar: 'text',
     mason: 'entity',
     masonTook: 'event',
@@ -275,7 +275,7 @@ export function placeHouse(
         thatchWith: '',
       },
       ...{ stage: '', stageLine: 0, stageWait: 0, waitedAt: 0, burned: 0, burnYear: -1 },
-      ...{ mortar: '', mason: 0, masonTook: 0 },
+      ...{ mortar: '', mason: 0, masonTook: 0, burnLine: 0 },
       hall: 0,
     },
   });

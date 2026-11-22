@@ -28,7 +28,15 @@ export interface TeachDef {
   near: number;
   memories: { master: string; learner: string };
   /** Words for the lines: why a master took a learner; how a master went. */
-  words: { law: string; child: string; friend: string; trait: string; died: string; left: string };
+  words: {
+    law: string;
+    child: string;
+    friend: string;
+    talker: string;
+    trait: string;
+    died: string;
+    left: string;
+  };
   school: SchoolDef;
 }
 
@@ -52,7 +60,7 @@ export interface SchoolDef {
   book: { minutes: number; free: readonly string[]; shelf: string; near: number; look: number };
   /** Reading: minutes an evening, per cent pace, and levels under the book's it stops at. */
   read: { minutes: number; pace: number; less: number };
-  words: { children: string; masters: string; teacher: string };
+  words: { children: string; masters: string; teacher: string; shelf: string; unfinished: string };
 }
 
 export interface TeachDefs {

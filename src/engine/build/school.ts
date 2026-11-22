@@ -7,6 +7,7 @@
 // `teach.school.build.wants` lists (a table, chairs and the shelf books are kept on). The teacher,
 // lessons and books are engine teach's. A plan can be sent back once.
 import { yearNow, type EntityRow, type WorldState } from '../core/index.ts';
+import { skillLine } from '../entity/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { INN_SCHOOL, SCHOOL_KIND } from './houses.ts';
@@ -43,7 +44,10 @@ function reason(ctx: SystemContext): { why: string; cause: number } | undefined 
       (s['level'] as number) >= content.teach.master &&
       living.some((p) => p.id === s['person'] && !p['stranger']),
   );
-  return master ? { why: w.masters, cause: 0 } : undefined;
+  if (!master) return undefined;
+  const p = living.find((q) => q.id === master['person'])!;
+  const word = (content.abilities.find((a) => a.id === master['skill'])?.name ?? '').toLowerCase();
+  return { why: w.masters, cause: skillLine(world, p, word) };
 }
 
 /** Each hour: with the Schoolroom row at 1 to 3, the harvest home past, no tavern plan waiting

@@ -6,7 +6,8 @@
 // schoolroom's shelf. In their free time someone who works at the book's skill reads it at the
 // schoolroom, up to `read.minutes` an evening, at `read.pace` per cent of practice and up to the
 // book's level less `read.less` (past their gift by up to `past`): a `skill.read` naming the book.
-// A book whose shelf goes (the schoolroom taken down) is lost. A book keeps a master's skill from
+// A book whose shelf goes (the schoolroom taken down) is lost, and so is one half-written when its
+// master dies or leaves (`school.bookLost` says how). A book keeps a master's skill from
 // being lost when they die (loss.ts).
 import { TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
 import { gain, goBeside, skillRow, traitPace } from '../band/index.ts';
@@ -15,6 +16,7 @@ import { addEntity, alive, far } from '../entity/index.ts';
 import { grown } from '../family/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { goInside, pupils, standingSchool } from './school.ts';
+import { goneLine } from './loss.ts';
 import { bookName, booksOf, keptBooks, skillWord } from './tables.ts';
 
 export const SCRIBE = 'scribe';
@@ -50,7 +52,7 @@ function bookInHand(ctx: SystemContext, scribe: EntityRow): EntityRow | undefine
   const people = alive(world);
   const writing = booksOf(world).find((b) => b['state'] === 'writing');
   if (writing && people.some((q) => q.id === writing['master'])) return writing;
-  if (writing) writing['state'] = 'lost';
+  if (writing) loseUnfinished(ctx, writing);
   // A skill is written once a kept book comes within `near` of its best (as loss.ts keeps it).
   const written = (s: EntityRow) =>
     booksOf(world).some(
@@ -179,14 +181,39 @@ function stopReading(p: EntityRow): false {
   return false;
 }
 
-/** Each hour: books on a shelf that no longer stands are lost. */
+/** A book being written whose master died or left is lost half-written, with a line citing the
+ * sittings begun and the master's going. */
+function loseUnfinished(ctx: SystemContext, book: EntityRow): void {
+  const { world, content } = ctx;
+  const m = (world.entities['person'] ?? []).find((q) => q.id === book['master']);
+  const gone = goneLine(world.log, book['master'] as number);
+  const w = content.teach;
+  const how = w.school.words.unfinished
+    .replace('{master}', (m?.['name'] as string) ?? 'the master')
+    .replace('{how}', gone?.type === 'defy.left' ? w.words.left : w.words.died);
+  book['state'] = 'lost';
+  book['lost'] = ctx.emit('school.bookLost', {
+    causes: [book['begun'] as number, gone?.id ?? 0].filter((l) => l > 0),
+    data: { book: bookName(world, content, book), how },
+  });
+}
+
+/** Each hour: a book half-written for a master now gone is lost, and books on a shelf that no
+ * longer stands are lost. */
 export function loseBooks(ctx: SystemContext): void {
+  const living = new Set(alive(ctx.world).map((p) => p.id));
+  for (const book of booksOf(ctx.world))
+    if (book['state'] === 'writing' && !living.has(book['master'] as number))
+      loseUnfinished(ctx, book);
   if (!keptBooks(ctx.world).length || shelved(ctx)) return;
   for (const book of keptBooks(ctx.world)) {
     book['state'] = 'lost';
     book['lost'] = ctx.emit('school.bookLost', {
       causes: [book['line'] as number],
-      data: { book: bookName(ctx.world, ctx.content, book) },
+      data: {
+        book: bookName(ctx.world, ctx.content, book),
+        how: ctx.content.teach.school.words.shelf,
+      },
     });
   }
 }

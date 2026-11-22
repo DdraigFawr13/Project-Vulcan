@@ -23,6 +23,7 @@ import {
   rowsOf,
   sendBackBlock,
   sizeOf,
+  slateCanBeHad,
   smithiesOf,
   householdOf,
   whoseOf,
@@ -176,7 +177,7 @@ function roofWords(world: WorldState, h: EntityRow): string {
   const age = roofAge(world, content, h);
   const years = age < 1 ? 'this year' : `${age} year${age > 1 ? 's' : ''} ago`;
   return wornThatch(world, content, h)
-    ? `worn ${h['roof']}, laid ${years}: it lets the warmth out`
+    ? `worn ${h['roof']}, laid ${years}: it lets the warmth out${slateCanBeHad(world, content) ? '' : ', and no slate is within reach'}`
     : `${h['roof']}, laid ${years} (not drawn)`;
 }
 
