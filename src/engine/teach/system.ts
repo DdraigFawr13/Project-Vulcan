@@ -19,7 +19,7 @@ export const teachSystem: System = {
   emits: [
     ...['teach.apprentice', 'teach.finished', 'teach.parted', 'teach.lost'],
     ...['skill.taught', 'skill.rose', 'skill.read'],
-    ...['school.teacher', 'school.writing', 'school.book', 'school.bookLost'],
+    ...['school.teacher', 'school.writing', 'school.book', 'school.bookLost', 'school.noTeacher'],
   ],
   tables: TEACH_TABLES,
   run(ctx) {

@@ -10,7 +10,7 @@ const [seed = 'anvil', yearsArg = '10', out = `tmp/decade-${seed}.json`] = proce
 const years = Number(yearsArg);
 const YEAR = 336;
 const KEEP =
-  /^(family\.(wed|born|left)|health\.died|calling\.|build\.(stageWanted|stageWaits|rebuilt|laidDry)|mason\.slated|faith\.|feast|law\.|tavern\.|byname|school|teach\.bond|fire\.stoked|lime\.burned)/;
+  /^(family\.(wed|born|left)|health\.died|calling\.|build\.(stageWanted|stageWaits|rebuilt|laidDry)|mason\.slated|faith\.|feast|law\.|tavern\.|byname|school|teach\.bond|fire\.stoked|lime\.burned|tale\.byname|teach\.apprentice)/;
 const sim = createSim(content);
 const w = createWorld(sim, seed);
 const names = (id) => w.entities.person.find((p) => p.id === id)?.name ?? `#${id}`;
@@ -57,4 +57,14 @@ const bars = living.map((p) => ({ name: p.name, bars: barsOf(w, content, p.id) }
 const houses = (w.entities.house ?? [])
   .filter((h) => !h.of)
   .map((h) => ({ id: h.id, state: h.state, roof: h.roof, stage: h.stage, wall: h.wall }));
-writeFileSync(out, JSON.stringify({ seed, byYear, lines, bars, houses }, null, 1));
+// Bynames with their holders, and who holds the kept roles (6B review, V-207).
+const bynames = (w.entities.byname ?? []).map((b) => ({
+  word: b.word,
+  name: names(b.person),
+  alive: w.entities.person.find((p) => p.id === b.person)?.status === 'alive',
+}));
+const roles = {
+  keeper: (w.entities.tavern ?? []).map((t) => names(t.keeper)),
+  teacher: (w.entities.school ?? []).map((s) => names(s.teacher)),
+};
+writeFileSync(out, JSON.stringify({ seed, byYear, lines, bars, houses, bynames, roles }, null, 1));

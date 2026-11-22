@@ -157,6 +157,25 @@ describe('callings', () => {
     expect(w.entities['furniture']!.find((f) => f.id === id)?.['quality']).toBe(13);
   });
 
+  // 6B review q6 (V-207): the masterwork path also needs skill 10 in that trade.
+  it('makes a master of a fulfilled masterwork only at skill 10 in its trade', () => {
+    const { w, a, ctx } = valley();
+    addEntity(w, 'ambition', {
+      ...{ person: a.id, ambition: 'masterwork', skill: 'crafting', line: w.begunEvent },
+      ...{ since: 0, done: 1 },
+    });
+    ctx.state[`teach.finished@0#${a.id}`] = 1;
+    Object.assign(skill(w, a, 'crafting'), { level: 9, potential: 12 });
+    callingDay(ctx);
+    expect(callingOf(w, a.id)).toBeUndefined();
+    skill(w, a, 'crafting')['level'] = 10;
+    callingDay(ctx);
+    expect(callingOf(w, a.id)?.['calling']).toBe('master');
+    const taken = lines(w, 'calling.taken').at(-1)!;
+    expect(taken.causes).toContain(w.begunEvent);
+    expect(String(taken.data['why'])).toContain('crafting 10');
+  });
+
   it('makes a guard who fought off attackers the champion, and others fear the woods half as long', () => {
     const { w, a, b, c, ctx } = valley();
     Object.assign(skill(w, a, 'hunting'), { level: 6 });

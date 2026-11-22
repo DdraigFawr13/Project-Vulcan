@@ -174,7 +174,8 @@ export function songs(ctx: SystemContext): void {
   const { world, content, state } = ctx;
   const day = today(world);
   if (state['sang'] === day + 1) return;
-  const bard = highestOn(world, content, content.tavern.bard.job, content.tavern.bard.trait);
+  const { job, trait } = content.tavern.bard;
+  const bard = highestOn(world, content, [job, trait], 'bard');
   if (!bard || bard['doing'] !== 'relax') return;
   const hour = clockAt(world.tick, content.calendar).hour;
   if (hour < hoursOf(world, content, bard.id).workTo) return;

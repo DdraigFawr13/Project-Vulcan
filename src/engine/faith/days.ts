@@ -19,7 +19,7 @@ import { addEntity } from '../entity/index.ts';
 import { callHoly } from '../build/index.ts';
 import { foodDays } from '../goods/index.ts';
 import type { Hours } from '../law/index.ts';
-import { lawDef, settingOf } from '../law/index.ts';
+import { lawDef, lawRow, settingOf } from '../law/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { fill, nameOf, holydaysOf, mainCreed } from './tables.ts';
 
@@ -183,6 +183,37 @@ export function feastDayHour(ctx: SystemContext): void {
     const lean = store.days < content.worship.feast.leanDays;
     if (lean) ctx.emit('faith.leanDay', { causes: [row['line'] as number], data });
     callHoly(ctx, row['line'] as number, row.id, lean);
+  }
+  heldBack(ctx);
+}
+
+/** On the date of a feast day asked for but past what the Feasts law keeps, once a year: the line
+ * that it passes without a feast, citing the asking and the law. */
+function heldBack(ctx: SystemContext): void {
+  const { world, content } = ctx;
+  if (!lawDef(content, FEASTS)) return;
+  const clock = clockAt(world.tick, content.calendar);
+  const kept = new Set(keptDays(world, content).map((d) => d.id));
+  const setting = settingOf(world, content, FEASTS);
+  const n = setting.feasts ?? 0;
+  for (const row of holydaysOf(world)) {
+    if (row['state'] !== 'asked' || kept.has(row.id)) continue;
+    if (row['month'] !== clock.month || row['day'] !== clock.day) continue;
+    if ((row['kept'] as number) >= clock.year) continue;
+    if (world.tick < (row['since'] as number) + TICKS_PER_DAY) continue;
+    row['kept'] = clock.year;
+    ctx.emit('faith.dayHeld', {
+      causes: [row['line'] as number, (lawRow(world, FEASTS)?.['line'] as number) ?? 0].filter(
+        (l) => l > 0,
+      ),
+      data: {
+        day: row['name'] as string,
+        setting: setting.name,
+        kept: n
+          ? `only ${n} feast day${n > 1 ? 's' : ''} besides the harvest home, asked for before it`
+          : 'no feast day besides the harvest home',
+      },
+    });
   }
 }
 

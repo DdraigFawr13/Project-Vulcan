@@ -19,6 +19,9 @@ export interface TaleDef {
   song?: readonly string[];
   /** The byname each level gives the one it is about ("" for none). */
   bynames?: readonly string[];
+  /** For each level, the words a second or third holder gets while the byname is a living
+   * person's (one living holder a word, V-207). */
+  spares?: readonly (readonly string[])[];
 }
 
 export interface BeliefDef {

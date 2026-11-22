@@ -1,10 +1,11 @@
 // Bynames (6B Bundle 5, P6.12, V-188): once a day, a tale about a living person that more than
 // `byname.share` per cent of the grown-ups hold, told at least `byname.told` times, gives them the
 // byname of the version most hold (tales.json `bynames`, "" for none). One for life, the first
-// only; a song can give one too (songs.ts). It is a `tale.byname` line citing the tale's latest
+// only; a song can give one too (songs.ts). One living holder a word: a second takes the level's
+// next `spares` word, or none (V-207). It is a `tale.byname` line citing the tale's latest
 // telling, and `byname-proud` or `byname-stung` (by `byname.proud`), felt again on hearing it.
 import type { EntityRow } from '../core/index.ts';
-import { addEntity } from '../entity/index.ts';
+import { addEntity, alive } from '../entity/index.ts';
 import { grown } from '../family/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -43,17 +44,26 @@ export function giveByname(
   addMemory(ctx, person.id, feeling(ctx, word), line);
 }
 
-/** The byname `level` of `story` would give, if its person is alive and has none yet. */
+/** The byname `level` of `story` would give, if its person is alive and has none yet: the
+ * level's word, else the next of its spares no living person holds (none when all are held). */
 export function bynameFor(
   ctx: SystemContext,
   story: EntityRow,
   level: number,
 ): { person: EntityRow; word: string } | undefined {
   const { world, content } = ctx;
-  const word = taleDef(content, story['tale'] as string)?.bynames?.[level] ?? '';
+  const def = taleDef(content, story['tale'] as string);
+  const first = def?.bynames?.[level] ?? '';
   const person = (world.entities['person'] ?? []).find((p) => p.id === story['about']);
-  if (!word || !person || person['status'] !== 'alive' || bynameOf(world, person.id)) return;
-  return { person, word };
+  if (!first || !person || person['status'] !== 'alive' || bynameOf(world, person.id)) return;
+  const living = new Set(alive(world).map((p) => p.id));
+  const held = new Set(
+    (world.entities['byname'] ?? [])
+      .filter((b) => living.has(b['person'] as number))
+      .map((b) => b['word'] as string),
+  );
+  const word = [first, ...(def?.spares?.[level] ?? [])].find((w) => !held.has(w));
+  return word ? { person, word } : undefined;
 }
 
 /** The level most holders hold, the worse on a tie. */

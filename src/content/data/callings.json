@@ -55,7 +55,7 @@
               "test": "either",
               "word": "{n}",
               "or": [
-                { "test": "ambition", "id": "masterwork", "word": "made the masterwork they set out to" },
+                { "test": "ambition", "id": "masterwork", "from": 10, "word": "made the masterwork they set out to, {skill} {n}" },
                 { "test": "skill", "skills": ["smithing", "crafting", "cooking", "building", "stoneworking"], "from": 12, "word": "{skill} {n}" }
               ]
             },
