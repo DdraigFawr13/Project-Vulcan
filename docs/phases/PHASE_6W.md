@@ -55,7 +55,7 @@ Mock-up: Engine (a four-seed table of the nearest tree, stone, water, mountain a
 
 ### Slice 4: known land and scouting
 
-Mock-up: Engine (three years on four seeds: share of the map known, hours beyond 40 tiles, scouting trips and the need behind each). Done when: a test shows a colony whose known wood runs out sends a scout who makes new wood known, with the lines tracing to the stock level, and that no search reads an unknown tile.
+Mock-up: Engine, answered (V-205). Done when: a test shows a colony whose known wood runs out sends a scout who makes new wood known, with the lines tracing to the stock level, and that no search reads an unknown tile.
 
 - Reading list: `docs/DECISIONS.md` V-041 V-055 V-083 V-174; `src/engine/map/MODULE.md`; `src/engine/people/MODULE.md`; `src/engine/paths/MODULE.md`; `src/engine/goods/MODULE.md`
 
@@ -67,7 +67,7 @@ Mock-up: Engine, answered 2026-11-22 (every ★). Done when: a test shows a trip
 
 ### Slice 6: the known map on screen
 
-Mock-up: UI, form https://claude.ai/artifact/E7jy2rd4vQFzVKaZnb7uBn (2026-11-22, waiting for Morgan's answers). Proposed, not yet approved: unseen surface fades land and water only (no trees, crowns, rocks, stains, animals or prints), and a tap on it says only "not yet seen"; the overview fades the same; one rubric-red flag on each found place (a scout's news and the seven kinds of V-206), never on an unseen one, opening a tile page with what, who and when; a Trips tab in the Ledger; the Scouting row's small line says who is out or when the last trip came home. Measured on main cdf2733 (three years, default levers): 29 to 36% of the valley seen by year 3 on anvil, smoke and tallow, 0 or 1 trip each. Done when: unknown ground shows faded at 390 px, finds have markers and tile-sheet lines, the Scouting row works while paused, `npm run test:browser` passes, and the slowed-phone bench (Slice 2) stays within 10% at both zooms.
+Mock-up: UI, form https://claude.ai/artifact/E7jy2rd4vQFzVKaZnb7uBn. Done when: unknown ground shows faded at 390 px, finds have markers and tile-sheet lines, the Scouting row works while paused, `npm run test:browser` passes, and the Slice 2 bench holds.
 
 - Reading list: `docs/UI_STYLE.md`; `src/render/MODULE.md`; `src/ui/MODULE.md`; `src/worker/MODULE.md`
 
