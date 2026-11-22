@@ -82,7 +82,7 @@ function addKept(w: WorldState, flock: EntityRow, kinds: string[], by: number) {
       ...{ herd: id, pack: 0, kind, x: tile % w.map.width, y: Math.floor(tile / w.map.width) },
       ...{ z: 0, path: [], stride: 0, facing: 'e', state: '', until: 0 },
       ...{ sex: kind === 'ram' ? 'm' : 'f', born: 0, young: 0, tamedBy: by, cull: 0, shorn: 0 },
-      dies: 0,
+      ...{ dies: 0, hurt: 0 },
     });
 }
 

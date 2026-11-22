@@ -1,11 +1,15 @@
 // The title screen (P2.1, taste board pick 3A): over the last valley, dimmed, Continue names the
-// valley and the date and is one tap; New game opens the region map. With no save, or one an older
-// version made, only New game shows, over a plain dark screen.
+// valley and the date and is one tap; New game opens the region map. With no save, or one that
+// fails its check, only New game shows, over a plain dark screen, with the reason.
 import { el } from './dom.ts';
 
 /** Why Continue is missing when the newest save is refused. */
 export const OLD_SAVE =
   'Your last game was saved by an older version of the game, so it cannot be continued.';
+
+/** Why Continue is missing when the newest save fails its check for another reason. */
+export const refusedNote = (reason: string): string =>
+  `Your last game could not be continued. ${reason}`;
 
 export interface TitleActions {
   continue(): void;

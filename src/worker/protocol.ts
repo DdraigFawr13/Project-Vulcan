@@ -360,7 +360,8 @@ export type FromWorker =
   | { type: 'events'; batch: LedgerLine[] }
   | { type: 'saved'; auto: boolean; standby?: boolean; save: SaveFile; clock: ClockView }
   /** The save failed its check before anything was replaced; `reason` is shown to the player. */
-  | { type: 'loadRefused'; reason: string }
+  /** `old`: the save is from another format or other content, not damaged. */
+  | { type: 'loadRefused'; reason: string; old: boolean }
   /** The ledger download: the archived days by key, oldest first, then the recent days' NDJSON. */
   | { type: 'exported'; kind: 'ndjson'; name: string; segments: string[]; text: string }
   /** Days the engine sealed since the last run, for the page to archive (P2.0). */

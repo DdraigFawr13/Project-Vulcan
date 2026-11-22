@@ -71,7 +71,7 @@ function watchNight(firewood: number) {
     addEntity(w, 'animal', {
       ...{ herd, pack: 0, kind: 'ewe', x: tile % map.width, y: Math.floor(tile / map.width) },
       ...{ z: 0, path: [], stride: 0, facing: 'e', state: '', until: 0 },
-      ...{ sex: 'f', born: 0, young: 0, tamedBy: 0, cull: 0, shorn: 0, dies: 0 },
+      ...{ hurt: 0, sex: 'f', born: 0, young: 0, tamedBy: 0, cull: 0, shorn: 0, dies: 0 },
     });
   foldFlock(ctxOf(w), flock, 0);
   const [first, ...rest] = w.entities['person']!;
