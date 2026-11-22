@@ -12,8 +12,10 @@ const NEED_THOUGHT = new RegExp(
 
 // The band going hungry, apart from the smoke so the smoke keeps its time (CI, PR #69, as the Hurt
 // check did in PR #70): with Food wanted at none nobody forages, fishes or hunts, so the cart's food
-// runs out (about four weeks). Paused, the person sheet's "why?" holds still under a tap (it was
-// rebuilt on every snapshot, so a tap slipped off it) and names the line that ate the last of it.
+// runs out (about eleven weeks). Its first Next event runs those weeks in one jump, which takes as
+// long as the runner is busy, so it runs in the `alone` lane after the rest (playwright.config.ts,
+// PR #186). Paused, the person sheet's "why?" holds still under a tap (it was rebuilt on every
+// snapshot, so a tap slipped off it) and names the line that ate the last of it.
 test('a hungry colonist\'s Food "why?" names the line that ate the last of the food', async ({
   page,
 }) => {
