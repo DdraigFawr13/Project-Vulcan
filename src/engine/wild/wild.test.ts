@@ -15,10 +15,10 @@ import {
   removeEntity,
   step,
   streamFor,
-  SYSTEMS,
   templatesOf,
   valleyOf,
   weatherSystem,
+  wildSystem,
   type EngineContent,
   type SystemContext,
   type WorldState,
@@ -229,7 +229,8 @@ describe('a pack down to one', () => {
       pack: { ...content.wild.pack, returns: { month: 'Seedmonth', chance: 1 } },
     },
   };
-  const sim = createSim(back, SYSTEMS);
+  // Only the systems a pack's leaving and return need, so a month of it stays cheap (VR-25).
+  const sim = createSim(back, [mapSystem, calendarSystem, weatherSystem, wildSystem]);
 
   it('leaves with a line and a new pack takes the range the month it may return', () => {
     const w = createWorld(sim, 'tallow/1');
