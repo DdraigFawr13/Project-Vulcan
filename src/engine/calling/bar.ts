@@ -4,7 +4,7 @@
 import type { CallingTest, EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { lower } from '../core/index.ts';
 import { talkersOf, trustOf } from '../colony/index.ts';
-import { alive } from '../entity/index.ts';
+import { alive, tableOf as rows } from '../entity/index.ts';
 import { grown } from '../family/index.ts';
 import { heldMemoriesOf } from '../needs/index.ts';
 import { ambitionOf, rolesOf } from '../self/index.ts';
@@ -20,8 +20,6 @@ export interface Measure {
   cite: number;
 }
 
-/** Ids in a fixed order, without locale rules (engine purity). */
-const rows = (world: WorldState, kind: string): EntityRow[] => world.entities[kind] ?? [];
 const skillName = (content: EngineContent, id: string): string =>
   lower(content.abilities.find((a) => a.id === id)?.name ?? id);
 
