@@ -259,6 +259,37 @@ describe('a wolf in sight', () => {
   });
 });
 
+// 6B balance: a sighting is mostly one person, and only those in sight could count as allies,
+// so nobody stood in ten years on four seeds. A bold armed neighbour out of the wolf's sight counts.
+describe('a wolf seen by one of a bold armed pair', () => {
+  it('has them stand with the neighbour who has not seen it yet', () => {
+    const w = housed();
+    const [a, b, c] = people(w) as [EntityRow, EntityRow, EntityRow];
+    const wolf = animalsOf(w).find((x) => x['pack'])!;
+    traitsOf(w, a, ['steady']);
+    traitsOf(w, b, ['hardy']);
+    const axes = itemsOf(w).filter((i) => toolOf(content, i)?.kind === 'axe');
+    for (const [axe, p] of [
+      [axes[0]!, a],
+      [axes[1]!, b],
+    ] as const)
+      Object.assign(axe, { owner: p.id, state: 'held', ...HELD });
+    const green = greenOf(w);
+    for (const p of people(w).filter((p) => p !== a && p !== b)) place(p, { ...green, z: 0 });
+    const at = groundAt(w, 16);
+    const side = at.x > green.x ? 1 : -1;
+    place(a, at);
+    place(b, { ...at, x: at.x - side * content.wild.folk.together });
+    place(wolf, { ...at, x: at.x + side * 4 });
+    expect(Math.abs((b['x'] as number) - (wolf['x'] as number))).toBeGreaterThan(
+      content.wild.folk.sight.day,
+    );
+    step(w, sim, 1);
+    expect(a['doing']).toBe('stand');
+    expect(c['doing']).not.toBe('stand');
+  });
+});
+
 describe('wolf tracks', () => {
   const print = (w: WorldState, at: Spot): void => {
     const i = at.y * w.map.width + at.x;

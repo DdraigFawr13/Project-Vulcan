@@ -143,8 +143,9 @@ function decide(ctx: SystemContext, group: readonly EntityRow[], seen: EntityRow
   const { world, content, state } = ctx;
   const folk = content.wild.folk;
   const awake = people(world).filter((q) => upAndAbout(ctx, q));
-  const allies = (q: EntityRow): boolean =>
-    q['doing'] === 'stand' || (group.includes(q) && readyToStand(ctx, q));
+  // 6B balance: a bold, armed neighbour who has not seen it yet still counts (else a lone watcher
+  // with a friend beside them always ran: nobody stood in ten years on four seeds).
+  const allies = (q: EntityRow): boolean => q['doing'] === 'stand' || readyToStand(ctx, q);
   const stands = group.filter(
     (q) =>
       readyToStand(ctx, q) &&

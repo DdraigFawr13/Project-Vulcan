@@ -147,6 +147,8 @@ function fight(ctx: SystemContext, wolf: EntityRow, target: EntityRow): void {
       b.mortal,
     );
   if (hit) woundPredator(ctx, wolf, hit.by.id, line);
+  // 6B balance: the one who struck the wolf stood against the attackers (the guard role, V-175).
+  if (hit) addMemory(ctx, hit.by.id, folk.memories.fought, line);
   for (const q of people(world))
     if (q.id !== target.id && upAndAbout(ctx, q) && cheb(spotOf(q), spotOf(target)) <= folk.witness)
       addMemory(ctx, q.id, folk.memories.attack, line, target.id);

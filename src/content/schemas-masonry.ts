@@ -57,6 +57,8 @@ export const MASONRY_SCHEMAS = {
         from: list(text),
         lime: text,
         clay: text,
+        dry: text,
+        dryAfter: num({ min: 1 }),
       }),
       slate: obj({ name: text }),
       wash: obj({

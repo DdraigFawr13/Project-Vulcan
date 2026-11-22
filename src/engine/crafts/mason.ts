@@ -9,12 +9,14 @@ import { layItem } from '../goods/index.ts';
 import {
   bouldersBy,
   housesAt,
+  layDry,
   mainOf,
   partOf,
   plansOf,
   roofName,
   sayStageWaits,
   slateFor,
+  stoneWallOf,
   wallsOf,
 } from '../build/index.ts';
 import { setBuilt } from '../map/index.ts';
@@ -27,6 +29,12 @@ import { breakBoulder, stopWork } from './quarrying.ts';
 import { goBeside as goAround, standsFor } from './build.ts';
 
 const JOB = 'mason';
+/** What a stone stage's walls are set in, for its lines, by the house's `mortar`. */
+const MORTAR: Record<string, string> = {
+  lime: 'lime mortar',
+  clay: 'clay',
+  dry: 'no mortar, laid dry',
+};
 type Task = 'slate' | 'split' | 'wall' | 'dress' | 'wash';
 interface Pick {
   task: Task;
@@ -93,10 +101,10 @@ function stonePick(
       !on.has(`wall:${w.id}`) && standsFor(ctx, p, w['x'] as number, w['y'] as number).length > 0,
   );
   if (!wall) return undefined;
-  const part = partOf(content, h['mortar'] === 'lime' ? st.lime : st.clay)!;
-  const mortar = part.also!.material;
+  const part = partOf(content, stoneWallOf(content, h))!;
+  const mortar = part.also?.material ?? '';
   const ashlar = reachableOf(ctx, p, part.material) >= part.cost;
-  if (ashlar && reachableOf(ctx, p, mortar) >= part.also!.cost)
+  if (ashlar && (!part.also || reachableOf(ctx, p, mortar) >= part.also.cost))
     return { task: 'wall', house: h, plan: wall.id };
   if (!ashlar && reachableOf(ctx, p, 'stone') >= def(content).mason.dress.stone)
     return { task: 'dress', house: h, plan: h.id };
@@ -106,6 +114,7 @@ function stonePick(
       ? 'no lime has been burned yet'
       : 'no clay in the stores';
   sayStageWaits(ctx, h, lack);
+  if (mortar === 'clay' && layDry(ctx, h)) return stonePick(ctx, p, h, on);
   return undefined;
 }
 
@@ -294,7 +303,7 @@ function setWall(ctx: SystemContext, p: EntityRow, h: EntityRow): boolean {
   const st = def(content).stages.stone;
   const w = plansOf(world).find((r) => r.id === p['plan']);
   if (!w || !st.from.includes(w['part'] as string)) return stopWork(p);
-  const to = h['mortar'] === 'lime' ? st.lime : st.clay;
+  const to = stoneWallOf(content, h);
   const part = partOf(content, to)!;
   const [x, y] = [w['x'] as number, w['y'] as number];
   const at = ready(
@@ -302,7 +311,7 @@ function setWall(ctx: SystemContext, p: EntityRow, h: EntityRow): boolean {
     p,
     [
       [part.material, part.cost],
-      [part.also!.material, part.also!.cost],
+      ...(part.also ? [[part.also.material, part.also.cost] as [string, number]] : []),
     ],
     x,
     y,
@@ -310,8 +319,8 @@ function setWall(ctx: SystemContext, p: EntityRow, h: EntityRow): boolean {
   if (at !== true) return at === false || stopWork(p);
   if (!worked(ctx, p, def(content).mason.wall.minutes)) return true;
   useHeld(ctx, p, part.material, part.cost);
-  useHeld(ctx, p, part.also!.material, part.also!.cost);
-  const mortar = h['mortar'] === 'lime' ? 'lime mortar' : 'clay';
+  if (part.also) useHeld(ctx, p, part.also.material, part.also.cost);
+  const mortar = MORTAR[h['mortar'] as string] ?? 'clay';
   const line = ctx.emit('mason.walled', {
     causes: [p['took'] as number],
     actors: [p.id],

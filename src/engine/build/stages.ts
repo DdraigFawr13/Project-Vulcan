@@ -5,7 +5,7 @@
 // slate can be had; daub walls want limewash once lime can be had. The mason does the work
 // (crafts/mason.ts), from lime the lime burner makes (crafts/lime.ts). `buildings.masonry`.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { clockAt } from '../core/index.ts';
+import { clockAt, TICKS_PER_DAY } from '../core/index.ts';
 import { haveOf } from '../goods/index.ts';
 import { besideReachable, canReach } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -83,6 +83,12 @@ export function limeCanBeHad(world: WorldState, content: EngineContent): boolean
     haveOf(world, content, 'limestone') >= l.burn.limestone ||
     bouldersBy(world, content, l.rock, l.near).length > 0
   );
+}
+
+/** The wall part a house row's stone stage sets, by its `mortar`. */
+export function stoneWallOf(content: EngineContent, h: EntityRow): string {
+  const st = masonry(content).stages.stone;
+  return h['mortar'] === 'lime' ? st.lime : h['mortar'] === 'dry' ? st.dry : st.clay;
 }
 
 /** Slate a house row's roof takes. */
@@ -172,10 +178,26 @@ export function startStages(ctx: SystemContext): void {
 export function sayStageWaits(ctx: SystemContext, h: EntityRow, lack: string): void {
   if (h['stageWait']) return;
   const name = masonry(ctx.content).stages[h['stage'] as 'stone' | 'slate' | 'wash']?.name ?? '';
+  h['waitedAt'] = ctx.world.tick;
   h['stageWait'] = ctx.emit('build.stageWaits', {
     causes: [h['stageLine'] as number].filter((l) => l > 0),
     data: { size: roofName(ctx.world, ctx.content, h), stage: name, lack },
   });
+}
+
+/** A stone stage that has waited `stone.dryAfter` days for clay is laid dry instead, with a line
+ * (6B balance: on the 250-tile valley ledger-1's miner never met clay and it waited ten years).
+ * True when it turned. */
+export function layDry(ctx: SystemContext, h: EntityRow): boolean {
+  const st = masonry(ctx.content).stages.stone;
+  const days = Math.floor((ctx.world.tick - (h['waitedAt'] as number)) / TICKS_PER_DAY);
+  if (h['mortar'] !== 'clay' || !h['stageWait'] || days < st.dryAfter) return false;
+  h['mortar'] = 'dry';
+  ctx.emit('build.laidDry', {
+    causes: [h['stageWait'] as number],
+    data: { size: roofName(ctx.world, ctx.content, h), days },
+  });
+  return true;
 }
 
 /** House rows whose stage is `stage`, in id order. */

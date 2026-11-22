@@ -13,7 +13,8 @@
 {"id":"door-wood","name":"wooden door","kind":"door","material":"logs","cost":4,"minutes":40,"art":"build.door-wood"},
 {"id":"door-stone","name":"stone doorway","kind":"door","material":"stone","cost":5,"minutes":60,"art":"build.door-stone"},
 {"id":"wall-ashlar-lime","name":"dressed stone wall","kind":"wall","material":"ashlar","cost":3,"also":{"material":"lime","cost":1},"minutes":60,"art":"build.wall-stone"}
-,{"id":"wall-ashlar-clay","name":"dressed stone wall","kind":"wall","material":"ashlar","cost":3,"also":{"material":"clay","cost":1},"minutes":60,"art":"build.wall-stone"}
+,{"id":"wall-ashlar-dry","name":"dressed stone wall","kind":"wall","material":"ashlar","cost":3,"minutes":60,"art":"build.wall-stone"},
+{"id":"wall-ashlar-clay","name":"dressed stone wall","kind":"wall","material":"ashlar","cost":3,"also":{"material":"clay","cost":1},"minutes":60,"art":"build.wall-stone"}
 ,{"id":"wall-daub-washed","name":"limewashed daub wall","kind":"wall","material":"clay","cost":3,"also":{"material":"logs","cost":1},"minutes":40,"art":"build.wall-daub"}
 ,{"id":"wall-drystone","name":"drystone wall","kind":"wall","material":"stone","cost":2,"minutes":30,"art":"build.wall-drystone"},
 {"id":"hurdle","name":"hurdle","kind":"wall","material":"logs","cost":1,"minutes":20,"art":"build.hurdle"},
@@ -30,7 +31,7 @@
 ],
 "stage":{"id":"room","name":"room","w":5,"h":4,"sleeps":2},"private":4},
 "roofs":{"job":"thatch","skilled":10,"thatch":{"name":"thatch","per":4,"cut":20,"lay":15,"reach":40,"wears":6,"worn":40},"reed":["marsh"],"straw":{"per":4,"crops":["barley","oats"]},"open":60},
-"masonry":{"reach":40,"mason":{"job":"mason","skilled":10,"dress":{"stone":2,"minutes":60},"split":{"rock":"slate","near":3,"slate":10,"stone":10,"minutes":180},"slate":{"per":4,"lay":15},"wall":{"minutes":60}},"lime":{"job":"limeburn","skilled":10,"kiln":"a wall wants lime, and lime can be burned from limestone","rock":"limestone","near":3,"break":{"limestone":10,"stone":10,"minutes":180},"burn":{"limestone":2,"fuel":2,"lime":2,"minutes":240}},"stages":{"stone":{"name":"stone walls","burned":60,"from":["wall-wood","wall-daub"],"lime":"wall-ashlar-lime","clay":"wall-ashlar-clay"},"slate":{"name":"slate roof"},"wash":{"name":"limewash","from":"wall-daub","to":"wall-daub-washed","per":4,"minutes":20}}},
+"masonry":{"reach":40,"mason":{"job":"mason","skilled":10,"dress":{"stone":2,"minutes":60},"split":{"rock":"slate","near":3,"slate":10,"stone":10,"minutes":180},"slate":{"per":4,"lay":15},"wall":{"minutes":60}},"lime":{"job":"limeburn","skilled":10,"kiln":"a wall wants lime, and lime can be burned from limestone","rock":"limestone","near":3,"break":{"limestone":10,"stone":10,"minutes":180},"burn":{"limestone":2,"fuel":2,"lime":4,"minutes":240}},"stages":{"stone":{"name":"stone walls","burned":150,"from":["wall-wood","wall-daub"],"lime":"wall-ashlar-lime","clay":"wall-ashlar-clay","dry":"wall-ashlar-dry","dryAfter":168},"slate":{"name":"slate roof"},"wash":{"name":"limewash","from":"wall-daub","to":"wall-daub-washed","per":4,"minutes":20}}},
 "roads":{"name":"Roads","start":4,"part":"road-stone","stretch":10,"least":192,"shortest":3,"places":12},
 "smithy":{"name":"Smithy","start":2,"depth":3,"length":4,"near":20,"floor":"floor-stone","pieces":["forge","anvil","tub"]},
 "town":{"ring":16,"step":4,"most":32},

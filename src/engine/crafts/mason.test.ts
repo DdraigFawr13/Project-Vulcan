@@ -10,6 +10,7 @@ import { addEntity } from '../entity/index.ts';
 import { layItem, storeOf } from '../goods/index.ts';
 import { leakOf } from '../fire/index.ts';
 import type { EntityRow } from '../core/index.ts';
+import { TICKS_PER_DAY } from '../core/index.ts';
 import {
   allLines,
   createSim,
@@ -90,6 +91,24 @@ describe('houses grow in stages', () => {
     h['roofed'] = w.tick - 20 * year;
     expect(wornThatch(w, content, h)).toBe(false);
     expect(roofLeak(w, content, (h['x'] as number) + 1, (h['y'] as number) + 1)).toBe(0);
+  });
+
+  // 6B balance: on the 250-tile valley ledger-1's miner never met clay and its stone stages
+  // waited ten years; after `dryAfter` days waiting for clay the walls are laid dry, with a line.
+  it('lays the stone walls dry once they have waited long enough for clay', () => {
+    const { w, h } = roofedHouse('anvil');
+    const st = def.stages.stone;
+    lay(w, 'ashlar', 3 * wallsOf(w, h, st.from).length + 9);
+    h['burned'] = st.burned + 4;
+    raise(w, def.mason.job);
+    until(w, (e) => e.type === 'build.stageWaits', 1);
+    expect(h['mortar']).toBe('clay');
+    h['waitedAt'] = (h['waitedAt'] as number) - st.dryAfter * TICKS_PER_DAY;
+    const dry = until(w, (e) => e.type === 'build.laidDry', 1)!;
+    expect(dry.causes).toContain(h['stageWait']);
+    const rebuilt = until(w, (e) => e.type === 'build.rebuilt', 30)!;
+    expect(rebuilt.data['mortar']).toBe('no mortar, laid dry');
+    expect(wallsOf(w, h, [st.dry]).length).toBeGreaterThan(0);
   });
 
   it('a house that burned a winter’s firewood through timber walls is rebuilt in dressed stone', () => {

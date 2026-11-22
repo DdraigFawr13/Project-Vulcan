@@ -141,7 +141,12 @@ export const WILD_SCHEMAS = {
       hits: num({ min: 1 }),
       limp: count,
       tracks: obj({ hours: count, ring: count, packDays: count }),
-      memories: obj({ tracks: ref('memories'), stood: ref('memories'), attack: ref('memories') }),
+      memories: obj({
+        tracks: ref('memories'),
+        stood: ref('memories'),
+        attack: ref('memories'),
+        fought: ref('memories'),
+      }),
       compass: list(text, 8),
       when: list(obj({ from: count, to: count, word: text })),
       words: obj({

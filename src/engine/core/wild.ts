@@ -120,7 +120,7 @@ export interface WildDef {
     hits: number;
     limp: number;
     tracks: { hours: number; ring: number; packDays: number };
-    memories: { tracks: string; stood: string; attack: string };
+    memories: { tracks: string; stood: string; attack: string; fought: string };
     compass: readonly string[];
     when: readonly { from: number; to: number; word: string }[];
     words: {
