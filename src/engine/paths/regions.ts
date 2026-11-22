@@ -37,6 +37,10 @@ export interface Regions {
   /** Per level and chunk: its tiles that lead down (stairs, shafts), the only ones that can link
    * to the level below. */
   downs: Map<number, number[]>[];
+  /** Chunks (level times chunks plus chunk) whose version changed since the links were last
+   * made: only their links are made again, unless there are many (`relink`). */
+  pending: Set<number>;
+  linked: boolean;
 }
 
 const cache = new WeakMap<MapState, Regions>();
@@ -47,7 +51,16 @@ const levels = (map: MapState): number => 1 + map.levels.length;
 export function regionsOf(content: EngineContent, map: MapState): Regions {
   let r = cache.get(map);
   if (!r) {
-    r = { labels: [], walk: [], cheap: [], regions: new Map(), seen: [], downs: [] };
+    r = {
+      labels: [],
+      walk: [],
+      cheap: [],
+      regions: new Map(),
+      seen: [],
+      downs: [],
+      pending: new Set(),
+      linked: false,
+    };
     cache.set(map, r);
   }
   const across = chunksAcross(map);
@@ -78,11 +91,19 @@ export function regionsOf(content: EngineContent, map: MapState): Regions {
           changed = true;
         }
         r.seen[z]![c] = layer.chunkVersions[c]!;
+        r.pending.add(z * chunks + c);
       }
   }
   // Frozen water changes walking without a new tile kind; the weather raises the chunk's
   // version when ice comes or goes, so it is caught above.
-  if (changed) link(content, map, r);
+  if (changed) {
+    // Few changed chunks (a wall tried, a tree felled) mend their own links; a new level or a
+    // big change makes them all again. Both give the same links and costs.
+    if (r.linked && r.pending.size * 8 < levels(map) * chunks) relink(content, map, r);
+    else link(content, map, r);
+    r.pending.clear();
+    r.linked = true;
+  }
   return r;
 }
 
@@ -178,13 +199,7 @@ export function octile(map: MapState, a: number, b: number): number {
 function link(content: EngineContent, map: MapState, r: Regions): void {
   for (const region of r.regions.values()) region.links.clear();
   const w = map.width;
-  const join = (a: number, b: number, cost: number): void => {
-    const ra = r.regions.get(a)!;
-    const rb = r.regions.get(b)!;
-    const base = cost + octile(map, ra.rep, rb.rep);
-    if (!ra.links.has(b)) ra.links.set(b, base);
-    if (!rb.links.has(a)) rb.links.set(a, base);
-  };
+  const join = joiner(map, r);
   for (let z = 0; z < levels(map); z += 1) {
     const labels = r.labels[z];
     if (!labels) continue;
@@ -210,7 +225,23 @@ function link(content: EngineContent, map: MapState, r: Regions): void {
         }
       }
   }
-  // Components by flood over the links, each named by its smallest region id.
+  components(r);
+}
+
+/** Links two regions both ways at `cost` plus the distance between them; the first link made
+ * between two regions stands. */
+function joiner(map: MapState, r: Regions) {
+  return (a: number, b: number, cost: number): void => {
+    const ra = r.regions.get(a)!;
+    const rb = r.regions.get(b)!;
+    const base = cost + octile(map, ra.rep, rb.rep);
+    if (!ra.links.has(b)) ra.links.set(b, base);
+    if (!rb.links.has(a)) rb.links.set(a, base);
+  };
+}
+
+/** Components by flood over the links, each named by its smallest region id. */
+function components(r: Regions): void {
   const ids = [...r.regions.keys()].sort((a, b) => a - b);
   for (const id of ids) r.regions.get(id)!.component = -1;
   for (const id of ids) {
@@ -248,4 +279,91 @@ function downsIn(content: EngineContent, map: MapState, z: number, cx: number, c
     for (let x = cx * CHUNK; x < Math.min(map.width, (cx + 1) * CHUNK); x += 1)
       if (leadsDown(content, tiles[y * map.width + x]!)) out.push(y * map.width + x);
   return out;
+}
+
+/** `link` for the pending chunks alone: their regions' links, and the links into them from the
+ * chunks beside, above and below, are dropped and made again from the same tiles in the same
+ * order, so every link and cost is as a full `link` would make it. */
+function relink(content: EngineContent, map: MapState, r: Regions): void {
+  const across = chunksAcross(map);
+  const chunks = across * chunksDown(map);
+  const touching = (g: number): number[] => {
+    const c = g % chunks;
+    const [cx, cy] = [c % across, Math.floor(c / across)];
+    const out = [g - chunks, g + chunks];
+    if (cx > 0) out.push(g - 1);
+    if (cx + 1 < across) out.push(g + 1);
+    if (cy > 0) out.push(g - across);
+    if (cy + 1 < chunksDown(map)) out.push(g + across);
+    return out.filter((n) => n >= 0 && n < levels(map) * chunks);
+  };
+  const regionsIn = (g: number): Region[] => {
+    const out: Region[] = [];
+    for (let id = g * PER_CHUNK; id < (g + 1) * PER_CHUNK; id += 1) {
+      const region = r.regions.get(id);
+      if (region) out.push(region);
+    }
+    return out;
+  };
+  for (const g of r.pending) {
+    for (const region of regionsIn(g)) region.links.clear();
+    for (const n of touching(g))
+      if (!r.pending.has(n))
+        for (const region of regionsIn(n))
+          for (const to of region.links.keys())
+            if (Math.floor(to / PER_CHUNK) === g) region.links.delete(to);
+  }
+  const join = joiner(map, r);
+  for (const g of r.pending) joinChunk(content, map, r, g, join);
+  components(r);
+}
+
+/** Makes again a chunk's links: across its four edges, and through the tiles leading down from
+ * it and into it, in reading order. */
+function joinChunk(
+  content: EngineContent,
+  map: MapState,
+  r: Regions,
+  g: number,
+  join: (a: number, b: number, cost: number) => void,
+): void {
+  const w = map.width;
+  const chunks = chunksAcross(map) * chunksDown(map);
+  const [z, c] = [Math.floor(g / chunks), g % chunks];
+  const labels = r.labels[z];
+  if (!labels) return;
+  const x0 = (c % chunksAcross(map)) * CHUNK;
+  const y0 = Math.floor(c / chunksAcross(map)) * CHUNK;
+  const x1 = Math.min(w, x0 + CHUNK);
+  const y1 = Math.min(map.height, y0 + CHUNK);
+  const side = (i: number, j: number): void => {
+    if (labels[i]! >= 0 && labels[j]! >= 0) join(labels[i]!, labels[j]!, 0);
+  };
+  for (let y = y0; y < y1; y += 1) {
+    if (x1 < w) side(y * w + x1 - 1, y * w + x1);
+    if (x0 > 0) side(y * w + x0 - 1, y * w + x0);
+  }
+  for (let x = x0; x < x1; x += 1) {
+    if (y1 < map.height) side((y1 - 1) * w + x, y1 * w + x);
+    if (y0 > 0) side((y0 - 1) * w + x, y0 * w + x);
+  }
+  for (const top of [z - 1, z]) joinDowns(content, map, r, top, c, join);
+}
+
+/** Links level `top` to the level below through chunk `c`'s tiles leading down, in reading order. */
+function joinDowns(
+  content: EngineContent,
+  map: MapState,
+  r: Regions,
+  top: number,
+  c: number,
+  join: (a: number, b: number, cost: number) => void,
+): void {
+  const [upper, lower] = [r.labels[top], r.labels[top + 1]];
+  if (!upper || !lower) return;
+  for (const i of r.downs[top]!.get(c) ?? []) {
+    if (upper[i]! < 0 || lower[i]! < 0) continue;
+    const climb = downAt(content, map, top, i);
+    if (climb) join(upper[i]!, lower[i]!, climb);
+  }
 }

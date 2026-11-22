@@ -37,6 +37,17 @@ export const isTreeAt = (world: WorldState, content: EngineContent, i: number): 
   return kind === 'tree' || kind === 'log';
 };
 
+let scratch = { queue: new Int32Array(0), done: new Uint8Array(0) };
+
+/** The deque and done marks for a map of `n` tiles, kept between searches (only what a search
+ * writes is read, and the marks are cleared). */
+function scratchOf(n: number) {
+  if (scratch.done.length !== n)
+    scratch = { queue: new Int32Array(8 * n), done: new Uint8Array(n) };
+  else scratch.done.fill(0);
+  return scratch;
+}
+
 /** The fewest trees between the green and every surface tile, going round `block` if given. */
 export function wayFrom(world: WorldState, content: EngineContent, green: Spot, block?: Rect): Way {
   const map = world.map;
@@ -45,12 +56,11 @@ export function wayFrom(world: WorldState, content: EngineContent, green: Spot, 
   const from = new Int32Array(n).fill(-1);
   const start = green.y * map.width + green.x;
   // A deque as an array with a moving head: a step onto a tree goes to the back, else the front.
-  const queue = new Int32Array(8 * n);
+  const { queue, done } = scratchOf(n);
   let head = 4 * n;
   let tail = 4 * n;
   queue[tail++] = start;
   trees[start] = 0;
-  const done = new Uint8Array(n);
   while (head < tail) {
     const i = queue[head++]!;
     if (done[i]) continue;
