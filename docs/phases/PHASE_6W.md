@@ -67,7 +67,7 @@ Mock-up: Engine, answered 2026-11-22 (every ★). Done when: a test shows a trip
 
 ### Slice 6: the known map on screen
 
-Mock-up: UI. Done when: unknown ground shows faded at 390 px, finds have markers and tile-sheet lines, the Scouting row works while paused, and `npm run test:browser` passes.
+Mock-up: UI, form https://claude.ai/artifact/E7jy2rd4vQFzVKaZnb7uBn (2026-11-22, waiting for Morgan's answers). Proposed, not yet approved: unseen surface fades land and water only (no trees, crowns, rocks, stains, animals or prints), and a tap on it says only "not yet seen"; the overview fades the same; one rubric-red flag on each found place (a scout's news and the seven kinds of V-206), never on an unseen one, opening a tile page with what, who and when; a Trips tab in the Ledger; the Scouting row's small line says who is out or when the last trip came home. Measured on main cdf2733 (three years, default levers): 29 to 36% of the valley seen by year 3 on anvil, smoke and tallow, 0 or 1 trip each. Done when: unknown ground shows faded at 390 px, finds have markers and tile-sheet lines, the Scouting row works while paused, `npm run test:browser` passes, and the slowed-phone bench (Slice 2) stays within 10% at both zooms.
 
 - Reading list: `docs/UI_STYLE.md`; `src/render/MODULE.md`; `src/ui/MODULE.md`; `src/worker/MODULE.md`
 
