@@ -91,6 +91,9 @@ export const HEALTH_SCHEMAS = {
       // The illness a foul drink exposes to (an `ills` id).
       foulIll: text,
       warmLake: num({}),
+      // The belief (tales `beliefs` id) that the warm lake sickens, and the strength that acts on it.
+      lakeBelief: text,
+      believe: num({ min: 1 }),
       shun: num({ min: 1 }),
       shunNear: count,
       night: count,
