@@ -2,7 +2,7 @@
 // `byname.share` per cent of the grown-ups hold, told at least `byname.told` times, gives them the
 // byname of the version most hold (tales.json `bynames`, "" for none). One for life, the first
 // only; a song can give one too (songs.ts). One living holder a word: a second takes the level's
-// next `spares` word, or none (V-206). It is a `tale.byname` line citing the tale's latest
+// next `spares` word, or none (V-207). It is a `tale.byname` line citing the tale's latest
 // telling, and `byname-proud` or `byname-stung` (by `byname.proud`), felt again on hearing it.
 import type { EntityRow } from '../core/index.ts';
 import { addEntity, alive } from '../entity/index.ts';

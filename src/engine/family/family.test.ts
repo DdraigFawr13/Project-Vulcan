@@ -114,7 +114,7 @@ describe('families: courtship and weddings', () => {
     if (feast) expect(feast.data['where']).toBe('round the fire on the green');
   });
 
-  // 6B review q1 (V-206): the wedding line names the home given up.
+  // 6B review q1 (V-207): the wedding line names the home given up.
   it('names the home the wed leave, built or planned', () => {
     const { w, p, q } = couple('smoke');
     const house = (owner: number, state: string) =>

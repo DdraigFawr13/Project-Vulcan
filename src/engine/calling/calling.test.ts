@@ -157,7 +157,7 @@ describe('callings', () => {
     expect(w.entities['furniture']!.find((f) => f.id === id)?.['quality']).toBe(13);
   });
 
-  // 6B review q6 (V-206): the masterwork path also needs skill 10 in that trade.
+  // 6B review q6 (V-207): the masterwork path also needs skill 10 in that trade.
   it('makes a master of a fulfilled masterwork only at skill 10 in its trade', () => {
     const { w, a, ctx } = valley();
     addEntity(w, 'ambition', {

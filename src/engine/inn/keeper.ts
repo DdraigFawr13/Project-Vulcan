@@ -1,6 +1,6 @@
 // The tavern's name and its keeper (6B Bundle 5, P6.12, V-188). Once the tavern house is built it
 // is named from `tavern.build.names` (one not yet used here). The innkeeper is the living grown-up
-// who puts Inn-keeping highest on their Work sheet; ties go to one holding no other role (V-206),
+// who puts Inn-keeping highest on their Work sheet; ties go to one holding no other role (V-207),
 // then the `keeper.trait` (sociable), then the lowest id. Nobody is appointed: the Work sheet is the only lever (V-041).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { levelOf } from '../band/index.ts';

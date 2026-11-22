@@ -57,7 +57,7 @@ const bars = living.map((p) => ({ name: p.name, bars: barsOf(w, content, p.id) }
 const houses = (w.entities.house ?? [])
   .filter((h) => !h.of)
   .map((h) => ({ id: h.id, state: h.state, roof: h.roof, stage: h.stage, wall: h.wall }));
-// Bynames with their holders, and who holds the kept roles (6B review, V-206).
+// Bynames with their holders, and who holds the kept roles (6B review, V-207).
 const bynames = (w.entities.byname ?? []).map((b) => ({
   word: b.word,
   name: names(b.person),

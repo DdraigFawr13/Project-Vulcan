@@ -167,7 +167,7 @@ describe('houses grow in stages', () => {
     expect(leak(w, h)).toBeLessThan(before);
   });
 
-  // 6B review q8 (V-206): worn thatch with no slate to be had says so, once.
+  // 6B review q8 (V-207): worn thatch with no slate to be had says so, once.
   it('says once that worn thatch stays, with no slate within reach', () => {
     const { w, h } = roofedHouse('anvil');
     expect(slateCanBeHad(w, content)).toBe(false);

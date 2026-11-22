@@ -111,7 +111,7 @@ function reason(
   return trait
     ? {
         why: w.trait.replace('{trait}', trait['trait'] as string),
-        causes: [skillLine(world, master, skillWord(content, skill))],
+        causes: [skillLine(world, content, master, skill)],
       }
     : undefined;
 }

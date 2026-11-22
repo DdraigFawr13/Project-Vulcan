@@ -134,7 +134,7 @@ describe('faith: feast days', () => {
     expect(none?.causes).toContain(row['line']);
   });
 
-  // 6B review q1 (V-206): a day the Feasts law does not keep passes with a line.
+  // 6B review q1 (V-207): a day the Feasts law does not keep passes with a line.
   it('a day asked for past what the Feasts law keeps passes without a feast, with a line', () => {
     const { w } = withShrine('anvil');
     submitCommand(w, { tick: w.tick + 1, kind: 'setLaw', data: { law: 'feasts', setting: 'few' } });

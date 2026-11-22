@@ -53,9 +53,7 @@ export function lossHour(ctx: SystemContext): void {
     const gone = goneLine(world.log, id);
     // With no death line left in the ledger, the master's skill line or their coming says who.
     ctx.emit('teach.lost', {
-      causes: [gone ? gone.id : skillLine(world, p, skillWord(content, m[2]!))].filter(
-        (l) => l > 0,
-      ),
+      causes: [gone ? gone.id : skillLine(world, content, p, m[2]!)].filter((l) => l > 0),
       actors: [id],
       data: {
         ...{ name: p['name'] as string, skill: skillWord(content, m[2]!), level },

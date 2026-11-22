@@ -145,7 +145,7 @@ describe('teaching', () => {
     expect(lost.causes).toEqual([dead]);
   });
 
-  // 6B review q1 (V-206): a tale-swapping friend counts, and every "why?" leads somewhere.
+  // 6B review q1 (V-207): a tale-swapping friend counts, and every "why?" leads somewhere.
   it('has a master by choice take a friend they swap tales with, citing the tale', () => {
     const { w, master, near, ctx } = workshop(2, 12);
     const day = Math.floor(w.tick / TICKS_PER_DAY);

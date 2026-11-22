@@ -46,8 +46,7 @@ function reason(ctx: SystemContext): { why: string; cause: number } | undefined 
   );
   if (!master) return undefined;
   const p = living.find((q) => q.id === master['person'])!;
-  const word = (content.abilities.find((a) => a.id === master['skill'])?.name ?? '').toLowerCase();
-  return { why: w.masters, cause: skillLine(world, p, word) };
+  return { why: w.masters, cause: skillLine(world, content, p, master['skill'] as string) };
 }
 
 /** Each hour: with the Schoolroom row at 1 to 3, the harvest home past, no tavern plan waiting

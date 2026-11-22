@@ -199,7 +199,7 @@ describe('the schoolroom', () => {
     expect(booksOf(w)[0]!['state']).toBe('lost');
   });
 
-  // 6B review q1 (V-206): the lines that were missing.
+  // 6B review q1 (V-207): the lines that were missing.
   it('says a half-written book is lost when its master dies', () => {
     const { w, sim, teacher, at, people } = withSchool();
     const master = alive(w)

@@ -206,7 +206,7 @@ describe('tales', () => {
     expect(allLines(w).filter((e) => e.type === 'tale.byname')).toHaveLength(1);
   });
 
-  // 6B review q5 (V-206): one living holder a byname word; a second takes the next spare.
+  // 6B review q5 (V-207): one living holder a byname word; a second takes the next spare.
   it('gives the next spare word when the byname is held by someone living', () => {
     const { w, people, meet, nextTelling, attack } = setUp();
     const [bran, cai, dilys, ewan] = people as [EntityRow, EntityRow, EntityRow, EntityRow];
