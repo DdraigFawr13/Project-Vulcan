@@ -130,8 +130,21 @@ function mapFits(world: WorldState, content: SaveContent): boolean {
     w.features.every((f) => f <= features) &&
     w.built.every((b) => b <= content.buildings.parts.length) &&
     // Ore stains name a feature (V-087).
-    w.stains.every((f) => f <= features)
+    w.stains.every((f) => f <= features) &&
+    regrowFits(w.regrow, w.width * w.height, features)
   );
+}
+
+/** Felled trees to grow back (V-202): triples of a tile on the map, a feature and a due day, the
+ * days never falling (regrowWoods reads them from the front). */
+function regrowFits(regrow: readonly number[], tiles: number, features: number): boolean {
+  for (let k = 0; k < regrow.length; k += 3) {
+    const [i, f, day] = [regrow[k], regrow[k + 1], regrow[k + 2]];
+    if (!isCount(i) || i >= tiles || !isCount(f) || f < 1 || f > features || !isCount(day))
+      return false;
+    if (k && day < regrow[k - 1]!) return false;
+  }
+  return true;
 }
 
 /** Each plan is of a known part, on the map and in a known state (P3.1); water and rock are
