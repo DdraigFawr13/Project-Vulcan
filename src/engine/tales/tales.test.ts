@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import {
+  addEntity,
   allLines,
   beliefsOf,
   bynameOf,
@@ -203,5 +204,26 @@ describe('tales', () => {
     // One for life: another day brings no second.
     step(w, talesOnly, TICKS_PER_DAY);
     expect(allLines(w).filter((e) => e.type === 'tale.byname')).toHaveLength(1);
+  });
+
+  // 6B review q5 (V-207): one living holder a byname word; a second takes the next spare.
+  it('gives the next spare word when the byname is held by someone living', () => {
+    const { w, people, meet, nextTelling, attack } = setUp();
+    const [bran, cai, dilys, ewan] = people as [EntityRow, EntityRow, EntityRow, EntityRow];
+    addEntity(w, 'byname', { person: ewan.id, word: 'Wolfbait', story: 0, line: w.begunEvent });
+    attack(bran);
+    step(w, talesOnly, 1);
+    for (const [a, b] of [
+      [bran, cai],
+      [cai, dilys],
+      [dilys, ewan],
+    ] as const) {
+      meet(a, b);
+      nextTelling();
+    }
+    people.forEach((p) => (p['doing'] = 'sleep'));
+    step(w, talesOnly, TICKS_PER_DAY);
+    const beast = content.tales.tales.find((t) => t.id === 'beast')!;
+    expect(bynameOf(w, bran.id)!['word']).toBe(beast.spares![3]![0]);
   });
 });

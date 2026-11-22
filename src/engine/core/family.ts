@@ -33,6 +33,8 @@ export interface FamilyDef {
     tales: string;
     want: string;
     live: string;
+    empty: string;
+    unplanned: string;
     girl: string;
     boy: string;
     like: string;

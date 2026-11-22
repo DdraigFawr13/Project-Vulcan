@@ -7,7 +7,7 @@
   "strength": ["Doubts that", "Thinks", "Is sure", "Is certain"],
   "ordinals": ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth", "Eleventh", "Twelfth"],
   "evening": { "mend": 6 },
-  "byname": { "share": 50, "told": 8, "proud": ["Lucky"] },
+  "byname": { "share": 50, "told": 8, "proud": ["Lucky", "Twice-spared", "Wolf-dodger"] },
   "beliefs": [
     { "id": "woods-dangerous", "about": "place", "text": "the woods around the valley are dangerous" },
     { "id": "arts-lost", "about": "colony", "text": "the old skills are dying out here" },
@@ -27,7 +27,7 @@
     { "id": "valley-masters", "about": "colony", "text": "true masters work in this valley" }
   ],
   "tales": [
-    { "id": "beast", "event": "wild.attacked", "truth": 1, "belief": "woods-dangerous", "from": 1, "song": ["The Lay of {name} and the {species}", "When the {Species} Came for {name}", "{name} and the {Species} of {Month}"], "bynames": ["", "", "Lucky", "Wolfbait"], "levels": [
+    { "id": "beast", "event": "wild.attacked", "truth": 1, "belief": "woods-dangerous", "from": 1, "song": ["The Lay of {name} and the {species}", "When the {Species} Came for {name}", "{name} and the {Species} of {Month}"], "bynames": ["", "", "Lucky", "Wolfbait"], "spares": [[], [], ["Twice-spared", "Wolf-dodger"], ["Wolf-bitten", "Torn-coat"]], "levels": [
       "A {species} snapped at {name} and ran off.",
       "A {species} went for {name}.",
       "A {species} went for {name}, who only just got away.",
@@ -48,12 +48,12 @@
       "{name} has taken {a}.",
       "{name} has taken {a}, and it will go through us all."
     ] },
-    { "id": "full-plate", "event": "law.keptCustom", "only": { "did": "took a full plate" }, "truth": 1, "belief": "store-hoarded", "from": 1, "bynames": ["", "", "Greedyguts"], "levels": [
+    { "id": "full-plate", "event": "law.keptCustom", "only": { "did": "took a full plate" }, "truth": 1, "belief": "store-hoarded", "from": 1, "bynames": ["", "", "Greedyguts"], "spares": [[], [], ["Big-belly", "Second-helping"]], "levels": [
       "{name} ate a little past their share.",
       "{name} {did}.",
       "{name} {did}, while the rest of us went hungry."
     ] },
-    { "id": "kept-custom", "event": "law.keptCustom", "truth": 1, "belief": "law-flouted", "from": 1, "bynames": ["", "", "Old-hours"], "levels": [
+    { "id": "kept-custom", "event": "law.keptCustom", "truth": 1, "belief": "law-flouted", "from": 1, "bynames": ["", "", "Old-hours"], "spares": [[], [], ["Stubborn", "Old-ways"]], "levels": [
       "{name} kept the old hours.",
       "{name} {did}.",
       "{name} {did}, and laughs at the law."
@@ -64,7 +64,7 @@
       "{name} died {where}, and it need not have happened.",
       "{name} died {where}, and someone let it happen."
     ] },
-    { "id": "hurt", "event": "health.hurt", "only": { "serious": "yes" }, "truth": 1, "belief": "work-dangerous", "from": 2, "bynames": ["", "Scar", "Scar"], "levels": [
+    { "id": "hurt", "event": "health.hurt", "only": { "serious": "yes" }, "truth": 1, "belief": "work-dangerous", "from": 2, "bynames": ["", "Scar", "Scar"], "spares": [[], ["Stitches", "Patch"], ["Stitches", "Patch"]], "levels": [
       "{name} took a knock.",
       "{name} {what}.",
       "{name} {what}, and will carry it for life."
@@ -99,12 +99,12 @@
       "A frost killed the {crop}: {tiles} tiles lost.",
       "The frost took every last {crop}: that ground is cursed."
     ] },
-    { "id": "theft", "event": "defy.caught", "only": { "act": "took" }, "truth": 1, "belief": "thieves", "from": 1, "bynames": ["", "Light-fingers", "Oat-thief"], "levels": [
+    { "id": "theft", "event": "defy.caught", "only": { "act": "took" }, "truth": 1, "belief": "thieves", "from": 1, "bynames": ["", "Light-fingers", "Oat-thief"], "spares": [[], ["Quick-hand", "Magpie"], ["Sack-filler", "Magpie"]], "levels": [
       "{name} was seen near the store.",
       "{name} was caught taking from the store.",
       "{name} has been robbing the store all winter."
     ] },
-    { "id": "brawl", "event": "defy.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": ["The Ballad of {name} and {other}", "Hard Words Between {name} and {other}", "{name}, {other} and the {Month} Quarrel"], "bynames": ["", "", "Brawler"], "levels": [
+    { "id": "brawl", "event": "defy.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": ["The Ballad of {name} and {other}", "Hard Words Between {name} and {other}", "{name}, {other} and the {Month} Quarrel"], "bynames": ["", "", "Brawler"], "spares": [[], [], ["Hothead", "Black-eye"]], "levels": [
       "{name} and {other} had words.",
       "{name} came to blows with {other}.",
       "{name} near killed {other} in a brawl."
@@ -114,7 +114,7 @@
       "{name} left the valley{with}.",
       "{name} fled the valley{with}, and more will follow."
     ] },
-    { "id": "masterwork", "event": "calling.masterwork", "truth": 1, "belief": "valley-masters", "from": 1, "bynames": ["", "", "Goldhand", "Goldhand"], "levels": [
+    { "id": "masterwork", "event": "calling.masterwork", "truth": 1, "belief": "valley-masters", "from": 1, "bynames": ["", "", "Goldhand", "Goldhand"], "spares": [[], [], ["Fine-hand", "True-eye"], ["Fine-hand", "True-eye"]], "levels": [
       "{name} made {what} and called it {title}.",
       "{name} made {title}, as fine a piece as any in the valley.",
       "{name}'s {title} is the finest work this valley has ever seen.",
@@ -125,7 +125,7 @@
       "{name} took the best {skill} with {them}, and nobody learned it.",
       "{name} took {their} {skill} to the grave on purpose, and now it's gone for good."
     ] },
-    { "id": "tavern-brawl", "event": "tavern.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": ["The Night at {tavern}", "Fists at {tavern}", "The {Month} Night at {tavern}"], "bynames": ["", "", "Brawler"], "levels": [
+    { "id": "tavern-brawl", "event": "tavern.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": ["The Night at {tavern}", "Fists at {tavern}", "The {Month} Night at {tavern}"], "bynames": ["", "", "Brawler"], "spares": [[], [], ["Hothead", "Ale-fist"]], "levels": [
       "{name} and {other} had words over their ale.",
       "{name} came to blows with {other} at {tavern}.",
       "{name} smashed a stool over {other}'s head at {tavern}."

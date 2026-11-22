@@ -198,7 +198,7 @@ export const peopleSystem: System = {
   // when carpentry last found nothing to make (carpentry.ts).
   // P5.4a: `tracksDay` the game day of the last `wild.tracksFound` and `tracksLine` it; `sighted`
   // the last `wild.sighted` line and `sightedAt` its tick; `lured` the middens the pack was told of;
-  // `fished` the fish caught. 6B review (V-207): the `f*` keys a fight under way (herding cry.ts),
+  // `fished` the fish caught. 6B review (V-208): the `f*` keys a fight under way (herding cry.ts),
   // `lakeYear` the year of the last `people.passedLake`.
   initialState: {
     ...{ ...TALLY_START, idle: 0, noIngots: 0, noCharcoal: 0 },

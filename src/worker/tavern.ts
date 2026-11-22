@@ -83,7 +83,8 @@ export function tavernPlace(
   const t = tavernOf(world);
   if (!h || !h['inn'] || !t || t['house'] !== h.id) return {};
   const keeper = nameOf(world, t['keeper']);
-  const bard = highestOn(world, content, content.tavern.bard.job, content.tavern.bard.trait);
+  const { job, trait } = content.tavern.bard;
+  const bard = highestOn(world, content, [job, trait], 'bard');
   const where = content.tales.places.tavern;
   const told = thisWeek(world, 'tale.told', (e) => e.data['where'] === where).length;
   const sung = thisWeek(world, 'song.sung', (e) => e.data['where'] === where);

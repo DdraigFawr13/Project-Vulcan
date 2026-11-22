@@ -1,6 +1,6 @@
 // Rows by kind for reading: a kind's table, the people, one person and their name. Systems and
 // worker views read through these rather than each keeping its own copy.
-import type { EntityRow, WorldState } from '../core/index.ts';
+import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 
 /** A kind's table of rows, or none when nothing of that kind exists yet. */
 export const tableOf = (world: WorldState, kind: string): EntityRow[] => world.entities[kind] ?? [];
@@ -32,3 +32,23 @@ export const far = (a: EntityRow, b: EntityRow): number =>
         Math.abs((a['x'] as number) - (b['x'] as number)),
         Math.abs((a['y'] as number) - (b['y'] as number)),
       );
+
+const SKILL_LINES = new Set(['skill.rose', 'skill.taught', 'skill.read']);
+
+/** The newest line the recent ledger holds that raised `person`'s `skill` (an ability id; skill
+ * lines name it in lower case), else the line they came to the valley on: what a master's skill
+ * cites. */
+export function skillLine(
+  world: WorldState,
+  content: EngineContent,
+  person: EntityRow,
+  skill: string,
+): number {
+  const word = (content.abilities.find((a) => a.id === skill)?.name ?? skill).toLowerCase();
+  for (let k = world.log.length - 1; k >= 0; k -= 1) {
+    const e = world.log[k]!;
+    if (SKILL_LINES.has(e.type) && e.actors[0] === person.id && e.data['skill'] === word)
+      return e.id;
+  }
+  return (person['arrived'] as number) ?? 0;
+}

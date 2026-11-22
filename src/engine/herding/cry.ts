@@ -1,4 +1,4 @@
-// Answering the cry (6B review q2, V-207): when a wolf falls on someone, the bold, armed grown-ups
+// Answering the cry (6B review q2, V-208): when a wolf falls on someone, the bold, armed grown-ups
 // within `folk.cry.earshot` tiles, woken if asleep, run to them (`wild.cry`, naming each). The
 // wolf worries its prey for `folk.cry.minutes`; then the fight (fight.ts) is fought with whoever
 // came. Meanwhile the one fallen on (`doing` `held`) and the wolf stay where they are, and the

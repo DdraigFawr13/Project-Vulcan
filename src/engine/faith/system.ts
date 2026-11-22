@@ -14,7 +14,7 @@ export const faithSystem: System = {
   every: 'hour',
   emits: [
     ...['faith.shrine', 'faith.priest', 'faith.dayAsked', 'faith.feastDay'],
-    ...['faith.noFeast', 'faith.leanDay'],
+    ...['faith.noFeast', 'faith.leanDay', 'faith.dayHeld'],
   ],
   stream: 'faith',
   tables: FAITH_TABLES,

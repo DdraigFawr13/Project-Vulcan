@@ -41,6 +41,7 @@
     "law": "keeps the Apprentices law",
     "child": "{learner} is their own child",
     "friend": "{learner} is the friend they are closest to",
+    "talker": "{learner} is a friend they swap tales with",
     "trait": "being {trait}, they chose to",
     "died": "died",
     "left": "left the valley"
@@ -91,7 +92,9 @@
     "words": {
       "children": "children to teach",
       "masters": "a master's ways to write down",
-      "teacher": ", who puts teaching high on their list"
+      "teacher": ", who puts teaching high on their list",
+      "shelf": "with the schoolroom's shelf",
+      "unfinished": "half-written: {master} {how} before the sittings were done"
     }
   }
 }

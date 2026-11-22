@@ -1,4 +1,4 @@
-// 6B review q3 (V-207): a flux caught from the warm lake becomes the tale "the lake sickens in
+// 6B review q3 (V-208): a flux caught from the warm lake becomes the tale "the lake sickens in
 // summer"; in warm weather one who holds it walks past the lake to the well, with one line a
 // year citing the belief, while one who does not drinks at the lake.
 import { describe, expect, it } from 'vitest';

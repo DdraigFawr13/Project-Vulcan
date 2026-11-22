@@ -122,12 +122,14 @@ describe('houses grow in stages', () => {
     lay(w, 'stone', 20);
     lay(w, 'clay', 40);
     const before = leak(w, h);
-    h['burned'] = st.burned + 4;
+    // The winter's first tending of its fire (crafts tend.ts keeps it) is what the want cites.
+    Object.assign(h, { burned: st.burned + 4, burnLine: w.begunEvent });
     raise(w, def.mason.job);
     const wanted = until(w, (e) => e.type === 'build.stageWanted', 1)!;
     expect(wanted.data['why']).toBe(
       `burned ${st.burned + 4} firewood this winter through its wood walls`,
     );
+    expect(wanted.causes).toEqual([w.begunEvent]);
     expect(h['mortar']).toBe('clay');
     const rebuilt = until(w, (e) => e.type === 'build.rebuilt', 30)!;
     expect(rebuilt.data['mortar']).toBe('clay');
@@ -163,5 +165,18 @@ describe('houses grow in stages', () => {
     expect(washed).toBeDefined();
     expect(wallsOf(w, h, [wash.from])).toHaveLength(0);
     expect(leak(w, h)).toBeLessThan(before);
+  });
+
+  // 6B review q8 (V-207): worn thatch with no slate to be had says so, once.
+  it('says once that worn thatch stays, with no slate within reach', () => {
+    const { w, h } = roofedHouse('anvil');
+    expect(slateCanBeHad(w, content)).toBe(false);
+    const year = content.calendar.daysPerMonth * content.calendar.monthsPerYear * DAY;
+    h['roofed'] = w.tick - content.buildings.roofs.thatch.wears * year;
+    const said = until(w, (e) => e.type === 'build.noSlate', 1)!;
+    expect(said.causes).toEqual([h['roofLine']]);
+    step(w, sim, DAY);
+    expect(allLines(w).filter((e) => e.type === 'build.noSlate')).toHaveLength(1);
+    expect(h['stage']).toBe('');
   });
 });

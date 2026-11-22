@@ -295,7 +295,7 @@ export function tending(ctx: SystemContext, p: EntityRow): boolean {
   takeFrom(world, load, n);
   fire['fuel'] = (fire['fuel'] as number) + n * fuel.minutes;
   // A winter's firewood counts against the house (6B stages: a draughty house asks for stone).
-  noteBurn(world, content, piece, n);
+  noteBurn(world, content, piece, n, p['took'] as number);
   fire['kind'] = fuel.id;
   fire['line'] = p['took'] as number;
   fedPastLaw(ctx, p, piece, rule);

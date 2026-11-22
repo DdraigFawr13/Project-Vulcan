@@ -1,4 +1,4 @@
-// 6B review q2 (V-207): a wolf falls on someone asleep alone in the open at night; a bold, armed
+// 6B review q2 (V-208): a wolf falls on someone asleep alone in the open at night; a bold, armed
 // grown-up asleep within earshot wakes to the cry, runs to them and strikes the wolf. Further off
 // than earshot, nobody comes and the fight is at once, as before.
 import { describe, expect, it } from 'vitest';

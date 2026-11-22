@@ -35,11 +35,15 @@ export function chooseTeacher(ctx: SystemContext): void {
   if (!schoolOf(world, h.id)) addEntity(world, 'school', { house: h.id, teacher: 0, kept: 0 });
   const s = schoolOf(world, h.id)!;
   const { job, trait } = content.teach.school.teacher;
-  const best = highestOn(world, content, job, trait);
+  const best = highestOn(world, content, [job, trait], 'teacher');
   const id = best?.id ?? 0;
   if (id === s['teacher']) return;
+  const was = s['kept'] as number;
   s['teacher'] = id;
-  if (!best) return;
+  if (!best) {
+    s['kept'] = ctx.emit('school.noTeacher', { causes: [was].filter((l) => l > 0) });
+    return;
+  }
   const high = levelOf(world, content, best.id, job) < content.work.priority.start;
   const prio = (world.entities['priority'] ?? []).find(
     (r) => r['person'] === best.id && r['job'] === job,
