@@ -4,10 +4,11 @@ import type { MapState } from '../core/index.ts';
 import { valleyOf } from '../region/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { layAura, placesOf } from './aura.ts';
-import { placeFeatures } from './features.ts';
+import { placeFeatures, reachableAround } from './features.ts';
 import { findGreens, greenWords } from './green.ts';
 import { digCommands } from './levels.ts';
 import { chunksAcross, chunksDown } from './tiles.ts';
+import { drawRiches, richesWords, thinNearGreen } from './riches.ts';
 import { makeLevel } from './underground.ts';
 import { fadeWear } from './wear.ts';
 import { layGround } from './terrain.ts';
@@ -22,6 +23,7 @@ export const mapSystem: System = {
     'map.formed',
     'map.green',
     'map.greenAgain',
+    'map.riches',
     'map.watered',
     'map.aura',
     'map.auraDeep',
@@ -58,15 +60,29 @@ export const mapSystem: System = {
       else if (body) ground.tiles[i] = kind(water.deep[i] ? dials.deep : dials.shallow);
       else if (water.shore[i]) ground.tiles[i] = shores[water.shore[i]!]!;
     }
-    const features = placeFeatures(rng, ctx.content, ground, width, height);
+    const riches = drawRiches(rng, ctx.content);
+    const features = placeFeatures(rng, ctx.content, ground, width, height, riches);
     const greens = findGreens(ctx.content, ground.tiles, features, ground.elevation, width, height);
     const look = Math.min(ctx.state['look'] ?? 0, greens.length - 1);
     const start = greens[look]!;
     ctx.state['next'] = greens.length > 1 ? 1 : 0;
+    // The green keeps a first winter's wood and no more (6W Slice 3); its line counts what is left.
+    thinNearGreen(rng, ctx.content, features, width, height, start);
+    const radius = ctx.content.terrain.generator.start.radius;
+    start.near = reachableAround(
+      ctx.content,
+      ground.tiles,
+      features,
+      width,
+      height,
+      radius,
+    )(start.x, start.y);
     const map = ctx.world.map;
+    map.riches = riches;
+    map.regrow = [];
     map.width = width;
     map.height = height;
-    map.tiles = ground.tiles;
+    map.tiles = Uint8Array.from(ground.tiles);
     map.elevation = Int16Array.from(ground.elevation);
     map.biomes = Uint8Array.from(ground.biomes);
     map.fertility = Uint8Array.from(ground.fertility);
@@ -114,12 +130,13 @@ export const mapSystem: System = {
       causes: [formed],
       data: greenWords(ctx.content, start, greens[0]!),
     });
+    ctx.emit('map.riches', { causes: [formed], data: { words: richesWords(ctx.content, riches) } });
     const watered = ctx.emit('map.watered', {
       causes: [formed],
       data: { exit: water.exit, lakes: water.lakes, springs: water.springs },
     });
     // Water cites the gathering of the waters; everything else, shores too, the valley's forming.
-    map.tileCauses = water.body.map((b) => (b ? watered : formed));
+    map.tileCauses = Int32Array.from(water.body, (b) => (b ? watered : formed));
     // Aura last, so its draws come after everything above and change none of it.
     const aura = layAura(rng, ctx.content, map);
     map.aura = aura.aura;

@@ -13,6 +13,7 @@ import {
 } from '../core/index.ts';
 import { deepSpot } from './aura.ts';
 import { bake, fractalNoise, quantile } from './noise.ts';
+import { shareOf } from './riches.ts';
 
 /** A state of the `veins` stream for one part of the underground, derived afresh from the seed
  * each time: `2` for level 2's own draws, `bedrock` and `warp` for the bodies all levels share. */
@@ -228,8 +229,9 @@ function digCaves(
   for (let i = 0; i < W * H; i += 1) if (field[i]! > line && tiles[i] !== wet) tiles[i] = cave;
 }
 
-/** Each vein of this level: `near` clusters within the start radius, the rest anywhere, each
- * grown by a wandering walk through solid rock from a seed tile its rock preference accepts. */
+/** Each vein of this level, `per10k` times the valley's ore riches, grown by a wandering walk
+ * through solid rock from a seed tile its rock preference accepts; none lies within the start
+ * radius (6W Slice 3), so ore is found by looking for it. */
 function placeVeins(
   rng: RngStream,
   content: EngineContent,
@@ -242,17 +244,18 @@ function placeVeins(
   const W = map.width;
   const H = map.height;
   const radius = content.terrain.generator.start.radius;
-  const solid = (i: number): boolean => kinds[tiles[i]!]!.stone === true && features[i] === 0;
+  const away = (i: number): boolean =>
+    Math.max(Math.abs((i % W) - map.startX), Math.abs(Math.floor(i / W) - map.startY)) > radius;
+  const solid = (i: number): boolean =>
+    kinds[tiles[i]!]!.stone === true && features[i] === 0 && away(i);
   content.features.forEach((def, index) => {
     if (!def.vein || def.vein.level !== depth) return;
     const vein = def.vein;
-    const count = Math.max(1, Math.round((vein.per10k * W * H) / 10000));
-    const grow = (near: boolean): void => {
+    const share = shareOf(content, map.riches, def);
+    const count = Math.max(1, Math.round((vein.per10k * share * W * H) / 10000));
+    const grow = (): void => {
       for (let tries = 0; tries < 200; tries += 1) {
-        const x = near ? map.startX - radius + rng.int(2 * radius + 1) : rng.int(W);
-        const y = near ? map.startY - radius + rng.int(2 * radius + 1) : rng.int(H);
-        if (x < 0 || y < 0 || x >= W || y >= H) continue;
-        const start = y * W + x;
+        const start = rng.int(H) * W + rng.int(W);
         if (!solid(start)) continue;
         // Rock preferences are weights out of 3 (features.json `vein.rocks`); any other rock is 1.
         if (!rng.chance((vein.rocks[kinds[tiles[start]!]!.id] ?? 1) / 3)) continue;
@@ -280,6 +283,6 @@ function placeVeins(
         return;
       }
     };
-    for (let k = 0; k < count; k += 1) grow(k < vein.near);
+    for (let k = 0; k < count; k += 1) grow();
   });
 }

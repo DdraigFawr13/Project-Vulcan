@@ -4,6 +4,7 @@
 // (stone) where it stood. Test-mode marks and a house's site come first (`takeUpMarked`).
 import { houseName } from '../build/index.ts';
 import { raiseChunk } from '../map/index.ts';
+import { noteFelled } from './regrow.ts';
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { haveOf, markedTree, stockOf, storeOf, unmark, wantOf } from '../goods/index.ts';
 import { canReach, walkAt } from '../paths/index.ts';
@@ -105,6 +106,7 @@ function fell(ctx: SystemContext, p: EntityRow, i: number, g: Gather): void {
       good,
     },
   });
+  if (g.job === 'fell' && def.kind === 'tree') noteFelled(ctx, i, map.features[i]!);
   map.features[i] = 0;
   unmark(world, x, y);
   map.tileCauses[i] = line;

@@ -23,6 +23,7 @@ import {
   toNdjson,
   whyOf,
   type EngineContent,
+  type MapState,
   type System,
 } from './index.ts';
 
@@ -89,6 +90,21 @@ const dice: System = {
 const sim = createSim(fixtureContent, [mapSystem, calendarSystem, dice, annalsSystem]);
 const month = ticksPerMonth(content.calendar);
 
+/** The two maps are equal; their typed layers compared as bytes (toEqual walks 62,500 tiles a
+ * layer one by one: 7 s of this test at 250 tiles, V-201). */
+function expectSameMap(a: MapState, b: MapState): void {
+  const bytes = (v: ArrayBufferView) => Buffer.from(v.buffer, v.byteOffset, v.byteLength);
+  const plain = (m: MapState) =>
+    Object.fromEntries(Object.entries(m).filter(([, v]) => !ArrayBuffer.isView(v)));
+  for (const [k, v] of Object.entries(a))
+    if (ArrayBuffer.isView(v)) {
+      const w = (b as unknown as Record<string, ArrayBufferView>)[k]!;
+      expect(w?.constructor, k).toBe(v.constructor);
+      expect(bytes(v).equals(bytes(w)), k).toBe(true);
+    }
+  expect(plain(a)).toEqual(plain(b));
+}
+
 /** A game month from `seed`, with three levers sent at different points of the run. */
 function runMonth(seed: string, on = sim) {
   const sim = on;
@@ -109,12 +125,14 @@ describe('engine', () => {
     expect(a.segments.length).toBeGreaterThan(20);
     expect(toNdjson(allLines(a))).toBe(toNdjson(allLines(b)));
     expect(a.rng).toEqual(b.rng);
-    expect(a.map).toEqual(b.map);
+    expectSameMap(a.map, b.map);
     // The recaps too: the season that turned at the month's end has one (V-191).
     expect(annalsOf(a)).toHaveLength(1);
     expect(a.entities).toEqual(b.entities);
     // Seed plus command log alone rebuild the whole world, not only its ledger.
-    expect(replay(sim, 'hollow-oak', a.commandLog, a.tick)).toEqual(a);
+    const again = replay(sim, 'hollow-oak', a.commandLog, a.tick);
+    expectSameMap(again.map, a.map);
+    expect({ ...again, map: null }).toEqual({ ...a, map: null });
     // Another seed changes the dice, not just the seed printed in the first line.
     const rolls = (log: typeof a.log) =>
       log.filter((e) => e.type === 'test.roll').map((e) => e.data['value']);
@@ -155,7 +173,7 @@ describe('engine', () => {
     const text = (id: number) => renderEvent(log[id - 1]!, sim.templates);
     expect(text(1)).toBe('A new world began from seed "hollow-oak".');
     expect(text(2)).toMatch(
-      /^The valley took shape: 150 by 150 tiles, mostly [a-z ]+, with a [a-z]+ climate \(-?[0-9.]+ °C on the valley floor, [0-9]+ mm of rain a year\)\.$/,
+      /^The valley took shape: 250 by 250 tiles, mostly [a-z ]+, with a [a-z]+ climate \(-?[0-9.]+ °C on the valley floor, [0-9]+ mm of rain a year\)\.$/,
     );
     expect(log[1]).toMatchObject({ type: 'map.formed', causes: [1] });
     // Where the band stops the cart, and why (the green, V-083).
@@ -163,56 +181,61 @@ describe('engine', () => {
       /^The band stopped the cart on [a-z ,]+ ground .+\. Here would be the green\.$/,
     );
     expect(log[2]).toMatchObject({ type: 'map.green', causes: [2] });
-    expect(text(4)).toMatch(
+    // What the valley is rich and poor in (V-201).
+    expect(text(4)).toMatch(/^The valley was .+, but .+\.$/);
+    expect(log[3]).toMatchObject({ type: 'map.riches', causes: [2] });
+    expect(text(5)).toMatch(
       /^Its waters gathered: a river leaving by the (north|south|east|west), [0-9]+ lakes and [0-9]+ springs\.$/,
     );
-    expect(log[3]).toMatchObject({ type: 'map.watered', causes: [2] });
+    expect(log[4]).toMatchObject({ type: 'map.watered', causes: [2] });
     // The aura spots' line is part of the world as it began, so it cites only that.
-    expect(text(5)).toMatch(/^Old power gathers in the valley at .+\.$/);
-    expect(log[4]).toMatchObject({ type: 'map.aura', causes: [1] });
+    expect(text(6)).toMatch(/^Old power gathers in the valley at .+\.$/);
+    expect(log[5]).toMatchObject({ type: 'map.aura', causes: [1] });
     // The world's first month and season get their lines when it begins.
-    expect(text(6)).toBe('Thawmonth began.');
-    expect(log[5]).toMatchObject({ type: 'calendar.month', causes: [1] });
-    expect(text(7)).toBe('Spring came to the valley.');
-    expect(log[6]).toMatchObject({ type: 'calendar.season', causes: [6] });
-    expect(text(8)).toBe('Day 2 of Thawmonth began.');
-    expect(log[7]).toMatchObject({ type: 'calendar.day', causes: [6] });
-    expect(log[34]).toMatchObject({ id: 35, type: 'calendar.month', causes: [1] });
-    expect(log[35]).toMatchObject({ type: 'calendar.day', causes: [35] });
-    expect(text(91)).toBe('Highsun began.');
-    expect(log[91]).toMatchObject({ type: 'calendar.season', causes: [91] });
-    expect(text(92)).toBe('Summer came to the valley.');
-    // The map is cut into 10 by 10 chunks with narrower edge chunks; each carries its features.
-    expect(world.map.chunkVersions).toHaveLength(100);
-    const edge = chunkTiles(world.map, 9, 9);
-    expect(edge).toMatchObject({ x: 144, y: 144, w: 6, h: 6 });
+    expect(text(7)).toBe('Thawmonth began.');
+    expect(log[6]).toMatchObject({ type: 'calendar.month', causes: [1] });
+    expect(text(8)).toBe('Spring came to the valley.');
+    expect(log[7]).toMatchObject({ type: 'calendar.season', causes: [7] });
+    expect(text(9)).toBe('Day 2 of Thawmonth began.');
+    expect(log[8]).toMatchObject({ type: 'calendar.day', causes: [7] });
+    expect(log[35]).toMatchObject({ id: 36, type: 'calendar.month', causes: [1] });
+    expect(log[36]).toMatchObject({ type: 'calendar.day', causes: [36] });
+    expect(text(92)).toBe('Highsun began.');
+    expect(log[92]).toMatchObject({ type: 'calendar.season', causes: [92] });
+    expect(text(93)).toBe('Summer came to the valley.');
+    // The map is cut into 16 by 16 chunks with narrower edge chunks; each carries its features.
+    const W = world.map.width;
+    expect(W).toBe(250);
+    expect(world.map.chunkVersions).toHaveLength(256);
+    const edge = chunkTiles(world.map, 15, 15);
+    expect(edge).toMatchObject({ x: 240, y: 240, w: 10, h: 10 });
     expect(edge.tiles).toEqual(
       Uint8Array.from(
-        [0, 1, 2, 3, 4, 5].flatMap((r) =>
-          world.map.tiles.slice((144 + r) * 150 + 144, (144 + r) * 150 + 150),
-        ),
+        Array.from({ length: 10 }, (_, r) => r).flatMap((r) => [
+          ...world.map.tiles.slice((240 + r) * W + 240, (240 + r) * W + W),
+        ]),
       ),
     );
-    expect(edge.features).toHaveLength(36);
-    expect(edge.snow).toHaveLength(36);
+    expect(edge.features).toHaveLength(100);
+    expect(edge.snow).toHaveLength(100);
     // Changing a tile marks only its chunk for resending.
     const ctx = { world, content } as unknown as Parameters<typeof setTile>[0];
-    expect(() => setTile(ctx, 150 - 1, 17, 1, 9999)).toThrow('without a ledger line');
+    expect(() => setTile(ctx, W - 1, 17, 1, 9999)).toThrow('without a ledger line');
     const waters = log.find((e) => e.type === 'map.watered')!.id;
-    setTile(ctx, 150 - 1, 17, 1, waters);
-    expect(world.map.chunkVersions[1 * 10 + 9]).toBe(2);
+    setTile(ctx, W - 1, 17, 1, waters);
+    expect(world.map.chunkVersions[1 * 16 + 15]).toBe(2);
     // Every tile cites the line that laid it out until something changes it (water the
     // waters' line, the rest the valley's); "why?" walks back.
     const formed = log.find((e) => e.type === 'map.formed')!;
     const watered = log.find((e) => e.type === 'map.watered')!;
-    expect(world.map.tileCauses[17 * 150 + 149]).toBe(waters);
+    expect(world.map.tileCauses[17 * W + W - 1]).toBe(waters);
     expect(world.map.tileCauses.filter((c) => c === watered.id).length).toBeGreaterThan(0);
     // Every water tile cites the waters; each other tile one of the two generator lines.
     expect(world.map.tileCauses.every((c, i) => !world.map.water[i] || c === watered.id)).toBe(
       true,
     );
     expect(world.map.tileCauses.every((c) => c === formed.id || c === watered.id)).toBe(true);
-    expect(whyOf({ log, stubs: [] }, log[86]!.id).map((w) => [w.event.type, w.depth])).toEqual([
+    expect(whyOf({ log, stubs: [] }, log[87]!.id).map((w) => [w.event.type, w.depth])).toEqual([
       ['calendar.month', 1],
       ['world.begun', 2],
     ]);

@@ -94,7 +94,7 @@ describe('saves', () => {
     expect(check('{}')).toThrow('damaged');
     // A map or ledger broken inside a well-formed record is caught too.
     const damage = [
-      (s: SaveFile) => s.state.map.tiles.pop(),
+      (s: SaveFile) => (s.state.map.tiles = s.state.map.tiles.slice(1)),
       (s: SaveFile) => (s.state.map.tiles[5] = 99),
       (s: SaveFile) => s.state.map.chunkVersions.pop(),
       (s: SaveFile) => s.state.log.reverse(),

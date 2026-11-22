@@ -28,6 +28,9 @@ const render = process.argv.includes('--render');
 const sim = createSim(content);
 const need = content.terrain.generator.start;
 const pct = (n, d) => `${Math.round((100 * n) / d)}%`;
+// Time lines scale with the land: 300 ms per 150-by-150 tiles (6W Slice 3, V-201).
+const { width: W0, height: H0 } = content.terrain.surface;
+const limitMs = Math.round((300 * W0 * H0) / (150 * 150));
 const rows = [];
 const below = [];
 let failures = 0;
@@ -91,14 +94,18 @@ for (const seed of MAP_SEEDS) {
     stranded === 0 &&
     water >= 0.06 * n &&
     water <= 0.14 * n &&
-    ms <= 300;
+    ms <= limitMs;
   if (!ok) failures += 1;
   const meanFert = Math.round(
     m.fertility.reduce((s, v, i) => s + (content.terrain.kinds[m.tiles[i]].buildable ? v : 0), 0) /
       n,
   );
   rows.push(
-    `| ${seed} | ${m.climate} ${m.temperature} °C ${m.rainfall} mm | ${top} | ${pct(rock, n)} | ${pct(trees, n)} | ${pct(water, n)} | ${lakes} / ${springs} | ${meanFert} | ${m.startX},${m.startY} | ${c.buildable} / ${c.wood} / ${c.stone} / ${drink} | ${stranded} | ${ok ? 'yes' : 'NO'} | ${ms.toFixed(0)} |`,
+    `| ${seed} | ${m.climate} ${m.temperature} °C ${m.rainfall} mm | ${top} | ${pct(rock, n)} | ${pct(trees, n)} | ${pct(water, n)} | ${lakes} / ${springs} | ${meanFert} | ${m.startX},${m.startY} | ${c.buildable} / ${c.wood} / ${c.stone} / ${drink} | ${stranded} | ${Object.entries(
+      m.riches,
+    )
+      .map(([g, v]) => `${g} ${v}`)
+      .join(', ')} | ${ok ? 'yes' : 'NO'} | ${ms.toFixed(0)} |`,
   );
   if (render) drawMap(seed, m);
   below.push(levelRow(seed, m));
@@ -107,16 +114,16 @@ for (const seed of MAP_SEEDS) {
   years.push(year.row);
 }
 process.stdout.write(
-  `| seed | climate | main biomes | rock | trees | water | lakes / springs | fertility | start | build / wood / stone / water within ${need.radius} | inland ends | done | ms |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`,
+  `| seed | climate | main biomes | rock | trees | water | lakes / springs | fertility | start | build / wood / stone / water within ${need.radius} | inland ends | riches | done | ms |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`,
 );
 process.stdout.write(
-  `${MAP_SEEDS.length - failures} of ${MAP_SEEDS.length} seeds meet the done-whens (${need.buildable} buildable, ${need.wood} trees, ${need.stone} stone and drinkable water near the start; no inland ends; water 6 to 14% of the map; under 300 ms).\n`,
+  `${MAP_SEEDS.length - failures} of ${MAP_SEEDS.length} seeds meet the done-whens (${need.buildable} buildable, ${need.wood} trees, ${need.stone} stone and drinkable water near the start; no inland ends; water 6 to 14% of the map; under ${limitMs} ms).\n`,
 );
 process.stdout.write(
-  `\n| seed | bedrock on level 2 | caves % by level | nearest copper / tin (level 2) | nearest iron (3) | ore tiles copper / tin / iron / gold | slowest level ms | done |\n|---|---|---|---|---|---|---|---|\n${below.join('\n')}\n`,
+  `\n| seed | bedrock on level 2 | caves % by level | nearest copper / tin (level 2) | nearest iron (3) | nearest ore | ore tiles copper / tin / iron / gold | slowest level ms | done |\n|---|---|---|---|---|---|---|---|---|\n${below.join('\n')}\n`,
 );
 process.stdout.write(
-  `${MAP_SEEDS.length - levelFailures} of ${MAP_SEEDS.length} seeds meet P1.3's done-when (copper and tin within ${need.radius} tiles of the start on level 2; each level under 300 ms).\n`,
+  `${MAP_SEEDS.length - levelFailures} of ${MAP_SEEDS.length} seeds meet P1.3's done-when as 6W Slice 3 amends it (copper and tin on level 2, no ore within ${need.radius} tiles of the start; each level under ${limitMs} ms).\n`,
 );
 process.stdout.write(`\n${WEATHER_HEAD}\n${years.join('\n')}\n`);
 process.stdout.write(
@@ -219,9 +226,11 @@ function levelRow(seed, m) {
     });
     if (render) drawLevel(seed, m, z, level);
   }
-  const ok = near.copper <= need.radius && near.tin <= need.radius && slowest <= 300;
+  const nearest = Math.min(...Object.values(near));
+  const ok =
+    nearest > need.radius && near.copper < Infinity && near.tin < Infinity && slowest <= limitMs;
   if (!ok) levelFailures += 1;
-  return `| ${seed} | ${bedrock} | ${caves.join(' / ')} | ${near.copper} / ${near.tin} | ${near.iron} | ${ore.copper} / ${ore.tin} / ${ore.iron} / ${ore.gold} | ${slowest.toFixed(0)} | ${ok ? 'yes' : 'NO'} |`;
+  return `| ${seed} | ${bedrock} | ${caves.join(' / ')} | ${near.copper} / ${near.tin} | ${near.iron} | ${nearest} | ${ore.copper} / ${ore.tin} / ${ore.iron} / ${ore.gold} | ${slowest.toFixed(0)} | ${ok ? 'yes' : 'NO'} |`;
 }
 
 function drawLevel(seed, m, z, level) {

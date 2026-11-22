@@ -35,7 +35,7 @@ describe('paths', () => {
 
   it('refuses rock, deep water and walled-off ground without a search', () => {
     const kinds = content.terrain.kinds;
-    const rock = map.tiles.findIndex((k) => kinds[k]!.stone);
+    const rock = map.tiles.findIndex((k) => kinds[k]!.stone === true);
     expect(findPath(content, map, start, unpack(map, rock))).toBeUndefined();
     // Open ground the camp cannot reach (an island, a sealed hollow), if the seed has any.
     const cut = map.tiles.findIndex(

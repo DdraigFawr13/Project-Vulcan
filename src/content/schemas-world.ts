@@ -1,6 +1,7 @@
 // Shapes of the world, magic-tier, creature and item files in src/content/data.
 import { any, bool, list, map, num, obj, oneOf, opt, range, ref, str } from './schema';
 import { attribute, count, id, share, text, texts } from './schema-fields';
+import { VALLEY_DIALS } from './schemas-ground';
 import { WALK_SCHEMAS } from './schemas-town';
 
 export const WORLD_SCHEMAS = {
@@ -199,8 +200,7 @@ export const WORLD_SCHEMAS = {
   // ground. `art` names a frame family in the art sheets; `variants` frames end in .1, .2, ...
   terrain: obj({
     surface: obj({ width: count, height: count, ground: ref('terrain') }),
-    // The surface generator's dials (src/engine/map/terrain.ts): ranges are [min, max] drawn once
-    // per seed; shares are of the map's tiles; elevations are metres, temperatures degrees C.
+    // Generator dials (map/terrain.ts): ranges [min, max] drawn per seed; shares of tiles; m, °C.
     generator: obj({
       climates: list(
         obj({ id, name: text, weight: count, temperature: range(), rainfall: range() }),
@@ -249,8 +249,7 @@ export const WORLD_SCHEMAS = {
         oldGrowth: obj({ cell: num({ min: 2 }), share, factor: count }),
         glades: obj({ share, factor: count }),
       }),
-      // Rivers, streams, lakes and springs (src/engine/map/water.ts). Flows are in tiles of rain
-      // gathered, scaled by the valley's rainfall over `flowRain`; depths and heights are metres.
+      // Water (map/water.ts): flows in tiles of rain gathered, by rainfall over `flowRain`; metres.
       water: obj({
         tilt: count,
         jitter: count,
@@ -291,10 +290,9 @@ export const WORLD_SCHEMAS = {
         buildable: num({ min: 1 }),
         wood: num({ min: 1 }),
         stone: num({ min: 1 }),
-        // The green (src/engine/map/green.ts): its own ground is `near` tiles round it; `rise`
-        // metres a step and water `water` tiles off each cost a whole dry share; `spare` weighs
-        // wood and stone past the need; `edge` keeps it off the map's rim; `apart` tiles
-        // separate the band's second choice from its first.
+        // The green (map/green.ts): own ground `near` tiles round; `rise` m a step and water
+        // `water` off each cost a dry share; `spare` weighs wood and stone past the need; `edge`
+        // from the rim; `apart` to the second choice. `thin`: see VALLEY_DIALS.
         green: obj({
           near: count,
           rise: num({ min: 0.01 }),
@@ -303,7 +301,9 @@ export const WORLD_SCHEMAS = {
           edge: count,
           apart: count,
         }),
+        thin: obj({ reach: count, trees: count }),
       }),
+      ...VALLEY_DIALS,
       // Aura spots (src/engine/map/aura.ts): a faint background up to `base`, and strong spots
       // fading by `falloff` a ring out to `radius`; each site kind (code) gives its school here.
       aura: obj({

@@ -69,14 +69,13 @@ export const stateShaped = (state: Shape, save: Shape): boolean =>
 function mapShaped(map: unknown): boolean {
   if (!isObject(map) || !isCount(map['width']) || !isCount(map['height'])) return false;
   const tiles = map['tiles'];
-  if (!Array.isArray(tiles) || tiles.length !== map['width'] * map['height']) return false;
+  if (!(tiles instanceof Uint8Array) || tiles.length !== map['width'] * map['height']) return false;
   return layersShaped(map, tiles.length) && placesShaped(map, tiles.length);
 }
 
 /** The tile causes, chunk versions and generator layers, each the map's length. */
 const layersShaped = (map: Shape, n: number): boolean =>
-  Array.isArray(map['tileCauses']) &&
-  map['tileCauses'].length === n &&
+  layer(map['tileCauses'], Int32Array, n) &&
   Array.isArray(map['chunkVersions']) &&
   LAYERS.every(([k, type]) => layer(map[k], type, n)) &&
   Number.isSafeInteger(map['floor']);
@@ -90,7 +89,10 @@ const placesShaped = (map: Shape, n: number): boolean =>
   Array.isArray(map['levels']) &&
   map['levels'].every((level) => level === null || levelShaped(level, n)) &&
   typeof map['climate'] === 'string' &&
-  typeof map['riverExit'] === 'string';
+  typeof map['riverExit'] === 'string' &&
+  isObject(map['riches']) &&
+  Array.isArray(map['regrow']) &&
+  map['regrow'].length % 3 === 0;
 
 // A reached level below: its tiles, causes and features, each one per surface tile.
 const levelShaped = (value: unknown, length: number): boolean =>

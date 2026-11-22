@@ -144,6 +144,22 @@ function findDen(ctx: SystemContext, reach: Reach): { x: number; y: number } {
   const { content, world } = ctx;
   const map = world.map;
   const dials = content.wild.pack.den;
+  // Trees in each square by a summed-area table: four look-ups a tile (the 250-tile map, V-201).
+  const W = map.width + 1;
+  const sum = new Int32Array(W * (map.height + 1));
+  for (let y = 0; y < map.height; y += 1)
+    for (let x = 0; x < map.width; x += 1)
+      sum[(y + 1) * W + x + 1] =
+        (isTree(world, content, y * map.width + x) ? 1 : 0) +
+        sum[y * W + x + 1]! +
+        sum[(y + 1) * W + x]! -
+        sum[y * W + x]!;
+  const treesAround = (x: number, y: number): number => {
+    const [x0, y0] = [Math.max(0, x - dials.radius), Math.max(0, y - dials.radius)];
+    const x1 = Math.min(map.width - 1, x + dials.radius) + 1;
+    const y1 = Math.min(map.height - 1, y + dials.radius) + 1;
+    return sum[y1 * W + x1]! - sum[y0 * W + x1]! - sum[y1 * W + x0]! + sum[y0 * W + x0]!;
+  };
   for (const from of [dials.from, 0]) {
     let best = -1;
     let score = -1;
@@ -151,18 +167,7 @@ function findDen(ctx: SystemContext, reach: Reach): { x: number; y: number } {
       const [x, y] = [i % map.width, Math.floor(i / map.width)];
       const d = distance(x, y, map.startX, map.startY);
       if (d < from || !openAt(content, map, i) || !reach({ x, y, z: 0 })) continue;
-      let trees = 0;
-      for (
-        let ty = Math.max(0, y - dials.radius);
-        ty <= Math.min(map.height - 1, y + dials.radius);
-        ty += 1
-      )
-        for (
-          let tx = Math.max(0, x - dials.radius);
-          tx <= Math.min(map.width - 1, x + dials.radius);
-          tx += 1
-        )
-          if (isTree(world, content, ty * map.width + tx)) trees += 1;
+      const trees = treesAround(x, y);
       if (trees + Math.min(d, dials.far) > score)
         [best, score] = [i, trees + Math.min(d, dials.far)];
     }

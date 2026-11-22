@@ -47,6 +47,26 @@ describe('surface map', () => {
     expect(near.stone).toBeGreaterThanOrEqual(need.stone);
     expect(waterNearStart(content, map, need.radius)).toBeGreaterThan(0);
     expect(strandedWater(map)).toBe(0);
+    // 6W Slice 3 (V-201): the green sits `green.edge` from the rim and keeps at most
+    // `thin.trees` trees within `thin.reach`; the valley is rich in one good and poor in another,
+    // and its arrival line says so.
+    const { x: sx, y: sy } = { x: map.startX, y: map.startY };
+    expect(Math.min(sx, sy, map.width - 1 - sx, map.height - 1 - sy)).toBeGreaterThanOrEqual(
+      need.green.edge,
+    );
+    let trees = 0;
+    map.features.forEach((f, i) => {
+      const [x, y] = [i % map.width, Math.floor(i / map.width)];
+      const d = Math.max(Math.abs(x - sx), Math.abs(y - sy));
+      if (f && d <= need.thin.reach && content.features[f - 1]!.kind === 'tree') trees += 1;
+    });
+    expect(trees).toBeLessThanOrEqual(need.thin.trees);
+    const { levels } = content.terrain.generator.riches;
+    const shares = Object.values(map.riches);
+    expect(shares).toContain(levels[0]!.share);
+    expect(shares).toContain(levels.at(-1)!.share);
+    const said = worldOf(seed).log.find((e) => e.type === 'map.riches')!;
+    expect(String(said.data['words'])).toMatch(/, but /);
     const aura = content.terrain.generator.aura;
     const surface = map.auraSpots;
     expect(surface.length).toBeGreaterThanOrEqual(1);

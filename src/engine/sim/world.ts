@@ -93,8 +93,8 @@ export function createWorld(sim: Sim, seed: string, look = 0): WorldState {
     map: {
       width: 0,
       height: 0,
-      tiles: [],
-      tileCauses: [],
+      tiles: new Uint8Array(0),
+      tileCauses: new Int32Array(0),
       chunkVersions: [],
       elevation: new Int16Array(0),
       biomes: new Uint8Array(0),
@@ -122,6 +122,8 @@ export function createWorld(sim: Sim, seed: string, look = 0): WorldState {
       built: new Uint8Array(0),
       stains: new Uint8Array(0),
       levels: [],
+      riches: {},
+      regrow: [],
     },
   };
   for (const system of sim.systems) world.systems[system.id] = { ...system.initialState };

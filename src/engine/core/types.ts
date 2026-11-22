@@ -1,7 +1,7 @@
 // World state and event shapes. The whole world is plain data (numbers, strings, arrays and typed
 // arrays), so the worker can post it, P0.5 can save it and tests can compare it.
 import type { AuraDials, AuraSpot } from './climate.ts';
-import type { UndergroundDials, WalkingDef, WearDef } from './ground.ts';
+import type { UndergroundDials, ValleyDials, WalkingDef, WearDef } from './ground.ts';
 import type { RngState } from './rng.ts';
 export type { CalendarDef } from './clock.ts';
 
@@ -123,11 +123,12 @@ export interface WorldState {
 export interface MapState {
   width: number;
   height: number;
-  /** Index into `EngineContent.terrain.kinds`, at `y * width + x`. */
-  tiles: number[];
+  /** Index into `EngineContent.terrain.kinds`, at `y * width + x` (bytes: content allows at most
+   * 256 kinds). */
+  tiles: Uint8Array;
   /** The id of the ledger line that last changed each tile, at `y * width + x` (the inspector's
    * "last changed"). */
-  tileCauses: number[];
+  tileCauses: Int32Array;
   /** One counter per 16 by 16 chunk, row by row; it goes up whenever a tile in the chunk changes. */
   chunkVersions: number[];
   /** Height above the sea in metres, at `y * width + x`. Set once by the generator. The
@@ -186,6 +187,10 @@ export interface MapState {
   stains: Uint8Array;
   /** The levels below, 0 for level 1: null until stairs or a shaft reach one (V-014), so it costs nothing. */
   levels: (LevelState | null)[];
+  /** The share of its usual density each of `generator.riches.goods` was drawn at, by good id. */
+  riches: Record<string, number>;
+  /** Felled trees waiting to grow back, three numbers each: tile, 1 + features index, due day. */
+  regrow: number[];
 }
 
 /** One level below the surface, the same size as it, made from the seed when first reached. */
@@ -320,8 +325,10 @@ export interface TerrainDef {
       stone: number;
       /** How the band scores a green (src/engine/map/green.ts). */
       green: Record<'near' | 'rise' | 'water' | 'spare' | 'edge' | 'apart', number>;
+      /** The green keeps at most `trees` trees within `reach` tiles of the start. */
+      thin: { reach: number; trees: number };
     };
-  };
+  } & ValleyDials;
   floors: Readonly<Record<string, string>>;
   kinds: readonly {
     id: string;
