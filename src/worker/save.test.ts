@@ -16,7 +16,7 @@ import {
   toNdjson,
   type System,
 } from '../engine/index.ts';
-import { checkSave, SAVE_VERSION, saveOf, type SaveFile } from './save.ts';
+import { checkSave, OtherVersion, SAVE_VERSION, saveOf, type SaveFile } from './save.ts';
 
 // A test-only entity kind (P2.0): real kinds arrive with P2.1 (colonists) and P2.4 (items). Its
 // first row remembers the world's first day line, so the seal must keep that line as a stub.
@@ -91,7 +91,11 @@ describe('saves', () => {
       'different game content (other in the save',
     );
     expect(check({ ...save(), version: 0 })).toThrow('save format 0');
+    // Only those two say the version changed; the page blames an older game for nothing else.
+    expect(check({ ...save(), contentHash: 'other' })).toThrow(OtherVersion);
+    expect(check({ ...save(), version: 0 })).toThrow(OtherVersion);
     expect(check('{}')).toThrow('damaged');
+    expect(check('{}')).not.toThrow(OtherVersion);
     // A map or ledger broken inside a well-formed record is caught too.
     const damage = [
       (s: SaveFile) => (s.state.map.tiles = s.state.map.tiles.slice(1)),
@@ -165,6 +169,19 @@ describe('saves', () => {
     expect(
       checkSave(structuredClone(saveOf(world, contentHash)), contentHash, content, sim.tables),
     ).toEqual(world);
+  });
+
+  it('mends a save whose lambs were born without a hurt count, and no other gap', () => {
+    // Lambs born before 2026-11-22 lacked `hurt`, so 5 of 8 ten-year saves were refused.
+    const save = () => structuredClone(saveOf(world, contentHash));
+    const check = (s: unknown) => () => checkSave(s, contentHash, content, sim.tables);
+    expect(world.entities['animal']?.length).toBeGreaterThan(0);
+    const lamb = save();
+    delete lamb.state.entities['animal']![0]!['hurt'];
+    expect(checkSave(lamb, contentHash, content, sim.tables)).toEqual(world);
+    const gap = save();
+    delete gap.state.entities['animal']![0]!['shorn'];
+    expect(check(gap)).toThrow('other fields');
   });
 
   it('stores nothing for a level until it is reached', () => {

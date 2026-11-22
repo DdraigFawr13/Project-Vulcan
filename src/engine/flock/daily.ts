@@ -110,7 +110,8 @@ function bear(ctx: SystemContext, flock: EntityRow, dayOfMonth: number): void {
         state: '',
         until: 0,
       },
-      ...{ sex: sex ? 'm' : 'f', born: world.tick, young: 1, tamedBy: 0, cull: 0, shorn: 0 },
+      ...{ hurt: 0, sex: sex ? 'm' : 'f', born: world.tick, young: 1, tamedBy: 0, cull: 0 },
+      shorn: 0,
       dies: dies ? world.tick + dies * 1440 : 0,
     });
     born.set(s, (born.get(s) ?? 0) + 1);

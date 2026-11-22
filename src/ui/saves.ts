@@ -157,7 +157,7 @@ export class Saves {
       this.loading = false;
       this.deps.hud.showScreen(
         "This save can't be loaded",
-        `${m.reason} Saves don't carry over between versions before launch.`,
+        m.old ? `${m.reason} Saves don't carry over between versions before launch.` : m.reason,
         ['Back to the game', 'dismiss'],
       );
       // The game stays paused behind the explanation until the player closes it.
