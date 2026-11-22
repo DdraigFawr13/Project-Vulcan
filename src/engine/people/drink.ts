@@ -43,11 +43,12 @@ function goDrink(ctx: SystemContext, p: EntityRow): number {
   const belief = lakeBelief(ctx, p);
   const lake = (s: Spot) => WATER[map.water[s.y * map.width + s.x] ?? 0] === 'lake';
   const other = belief ? from.filter((s) => !lake(s)) : from;
-  const near = nearest(other.length ? other : from, here, TRIES);
-  for (const s of near)
+  // A believer who can reach none of the other water drinks at the lake after all.
+  const tries = [nearest(other.length ? other : from, here, TRIES)];
+  if (belief && other.length) tries.push(nearest(from, here, TRIES));
+  for (const s of tries.flat())
     if (goBeside(ctx, p, s.x, s.y)) {
-      if (belief && other.length && nearest(from, here, 1).some(lake))
-        passedLake(ctx, p, s, belief);
+      if (belief && !lake(s) && nearest(from, here, 1).some(lake)) passedLake(ctx, p, s, belief);
       return s.y * map.width + s.x + 1;
     }
   return 0;

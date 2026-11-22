@@ -121,6 +121,7 @@ export const peopleSystem: System = {
     'food.cooked',
     ...['work.tookUpMilling', 'work.tookUpBaking', 'food.ground', 'food.baked'],
     'people.warming',
+    'people.passedLake',
     'fire.lit',
     'fire.built',
     'fire.banked',
@@ -187,20 +188,23 @@ export const peopleSystem: System = {
     'work.tookUpBurial',
     'keep.cellarDug',
     ...['work.tookUpHunting', 'work.tookUpFishing', 'work.followedTracks', 'work.trackingPack'],
-    ...['wild.tracksFound', 'wild.sighted', 'wild.attacked', 'wild.killed'],
+    ...['wild.tracksFound', 'wild.sighted', 'wild.cry', 'wild.attacked', 'wild.killed'],
     ...['wild.predatorWounded', 'wild.predatorKilled', 'wild.packDrewOff'],
     ...['flock.watchLit', 'flock.watchEnded', 'flock.noWatch'],
   ],
   tables: PEOPLE_TABLES,
-  refs: ['noIngots', 'noCharcoal', 'tracksLine', 'sighted', 'signLine'],
+  refs: ['noIngots', 'noCharcoal', 'tracksLine', 'sighted', 'signLine', 'fCry'],
   // Yesterday's tally (tally.ts) lives in the state too, and `idle`: the signature of the rooms
   // when carpentry last found nothing to make (carpentry.ts).
   // P5.4a: `tracksDay` the game day of the last `wild.tracksFound` and `tracksLine` it; `sighted`
   // the last `wild.sighted` line and `sightedAt` its tick; `lured` the middens the pack was told of;
-  // `fished` the fish caught.
+  // `fished` the fish caught. 6B review (V-207): the `f*` keys a fight under way (herding cry.ts),
+  // `lakeYear` the year of the last `people.passedLake`.
   initialState: {
     ...{ ...TALLY_START, idle: 0, noIngots: 0, noCharcoal: 0 },
     ...{ tracksDay: 0, tracksLine: 0, sighted: 0, sightedAt: 0, lured: 0, fished: 0, taken: 0 },
+    ...{ fWolf: 0, fTarget: 0, fUntil: 0, fCry: 0, fFled: 0, fX: 0, fY: 0, fWx: 0, fWy: 0 },
+    lakeYear: 0,
   },
   commands: {
     setPriority: (ctx, command, cause) => setPriority(ctx, command.data, cause),

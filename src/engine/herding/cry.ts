@@ -56,6 +56,7 @@ export function startCry(
   cause: number,
 ): boolean {
   const { world, content, state } = ctx;
+  if (isDown(world, target.id)) return false;
   const runners = hearers(ctx, target);
   if (!runners.length) return false;
   for (const q of runners) {
