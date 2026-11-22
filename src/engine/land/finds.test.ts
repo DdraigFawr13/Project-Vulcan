@@ -96,6 +96,26 @@ describe('finds', () => {
     expect(home!.data['far']).toBeGreaterThan(content.work.scout.reach);
   });
 
+  it('a newcomer tells of what they passed on the road in', () => {
+    const sim = createSim(calmContent);
+    const w = createWorld(sim, 'smoke');
+    step(w, sim, HOUR);
+    // One of the band stands in for someone come from the east and let stay.
+    const came = allLines(w).at(-1)!.id;
+    const p = people(w)[0]!;
+    Object.assign(p, { stranger: came, arrived: came, homeDir: 'east' });
+    step(w, sim, HOUR);
+    const [word] = lines(w, 'land.word');
+    expect(word).toBeDefined();
+    expect(word!.actors).toEqual([p.id]);
+    expect(word!.causes).toEqual([came]);
+    expect(w.systems['word']!['good']).toBeGreaterThan(0);
+    expect(w.systems['word']!['line']).toBe(word!.id);
+    // Told once only.
+    step(w, sim, 2 * HOUR);
+    expect(lines(w, 'land.word')).toHaveLength(1);
+  });
+
   it("a newcomer's word pulls the next scout for that good its way", () => {
     const def = calmContent.work.scout;
     const run = createSim({
