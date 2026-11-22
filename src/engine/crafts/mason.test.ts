@@ -63,7 +63,7 @@ const leak = (w: World, h: EntityRow) =>
 
 describe('houses grow in stages', () => {
   it('worn thatch where slate can be had waits for a mason’s slate, then is slated', () => {
-    // ledger since the 250-tile valley (V-201): anvil has no slate within reach now (searched
+    // ledger since the 250-tile valley (V-202): anvil has no slate within reach now (searched
     // 2026-11-22: ledger, cairn and bryn have it).
     const { w, h } = roofedHouse('ledger');
     expect(slateCanBeHad(w, content)).toBe(true);

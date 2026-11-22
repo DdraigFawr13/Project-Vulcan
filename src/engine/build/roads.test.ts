@@ -33,7 +33,7 @@ describe('worn paths and roads', () => {
   });
 
   it('lays a road on the most worn way from the green, off taken ground, named, and it walks faster', () => {
-    // ledger-1 since the 250-tile valley (V-201): ledger/1's cottage stands on its field's way, so
+    // ledger-1 since the 250-tile valley (V-202): ledger/1's cottage stands on its field's way, so
     // that way's road ran cottage to field (searched 2026-11-22: ledger-1, smoke/1, kiln hold).
     const w = createWorld(sim, 'ledger-1');
     const map = w.map;

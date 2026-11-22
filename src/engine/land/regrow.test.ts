@@ -1,4 +1,4 @@
-// 6W Slice 3 (V-201): a tree felled for wood grows back after `regrow.years` when a living tree
+// 6W Slice 3 (V-202): a tree felled for wood grows back after `regrow.years` when a living tree
 // stands within `regrow.near` tiles; a lone tree's clearing stays clear. One line for the day.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';

@@ -47,6 +47,7 @@ const fixtureContent: EngineContent = {
   tales: content.tales,
   annals: content.annals,
   self: content.self,
+  callings: content.callings,
   colony: content.colony,
   family: content.family,
   worship: content.worship,
@@ -91,7 +92,7 @@ const sim = createSim(fixtureContent, [mapSystem, calendarSystem, dice, annalsSy
 const month = ticksPerMonth(content.calendar);
 
 /** The two maps are equal; their typed layers compared as bytes (toEqual walks 62,500 tiles a
- * layer one by one: 7 s of this test at 250 tiles, V-201). */
+ * layer one by one: 7 s of this test at 250 tiles, V-202). */
 function expectSameMap(a: MapState, b: MapState): void {
   const bytes = (v: ArrayBufferView) => Buffer.from(v.buffer, v.byteOffset, v.byteLength);
   const plain = (m: MapState) =>
@@ -181,7 +182,7 @@ describe('engine', () => {
       /^The band stopped the cart on [a-z ,]+ ground .+\. Here would be the green\.$/,
     );
     expect(log[2]).toMatchObject({ type: 'map.green', causes: [2] });
-    // What the valley is rich and poor in (V-201).
+    // What the valley is rich and poor in (V-202).
     expect(text(4)).toMatch(/^The valley was .+, but .+\.$/);
     expect(log[3]).toMatchObject({ type: 'map.riches', causes: [2] });
     expect(text(5)).toMatch(

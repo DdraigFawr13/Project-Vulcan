@@ -144,7 +144,7 @@ function findDen(ctx: SystemContext, reach: Reach): { x: number; y: number } {
   const { content, world } = ctx;
   const map = world.map;
   const dials = content.wild.pack.den;
-  // Trees in each square by a summed-area table: four look-ups a tile (the 250-tile map, V-201).
+  // Trees in each square by a summed-area table: four look-ups a tile (the 250-tile map, V-202).
   const W = map.width + 1;
   const sum = new Int32Array(W * (map.height + 1));
   for (let y = 0; y < map.height; y += 1)

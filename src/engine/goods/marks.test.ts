@@ -41,7 +41,7 @@ describe('test marks', () => {
     const refused = world.log.filter((e) => e.type === 'command.refused');
     expect(refused.map((e) => e.data['kind'])).toEqual(['markFell', 'markStore']);
     // Three days: walking is half the Phase 4 speed (Morgan, Phase 4 review), and on the 250-tile
-    // valley (V-201) ledger's farthest tree within 30 is felled on day 3 (measured 2026-11-22).
+    // valley (V-202) ledger's farthest tree within 30 is felled on day 3 (measured 2026-11-22).
     step(world, sim, 3 * 1440);
     expect(world.log.some((e) => e.type === 'work.tookUpMarked')).toBe(true);
     expect(marksOf(world)).toHaveLength(0);

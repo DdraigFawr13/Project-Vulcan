@@ -365,6 +365,8 @@
 {"id":"school.book","importance":3,"template":"{teacher} has written {book}, from sittings with {master}; it is kept on the schoolroom shelf.","stop":"works","notable":{}},
 {"id":"school.bookLost","importance":3,"template":"{book} is lost with the schoolroom's shelf."},
 {"id":"skill.read","importance":1,"template":"{name} got better at {skill}: now {level}, reading {book}."},
+{"id":"calling.taken","importance":3,"template":"{name} has become {title}: {why}."},
+{"id":"calling.masterwork","importance":3,"template":"{name} made their masterwork, {what}, and named it {title}."},
 {"id":"song.made","importance":2,"template":"{bard} has made a song of it: \"{song}\"."},
 {"id":"song.sung","importance":1,"template":"{bard} sang \"{song}\"{where}: {tale}"},
 {"id":"tale.byname","importance":3,"template":"Folk have taken to calling {name} \"{word}\": {tale}"},

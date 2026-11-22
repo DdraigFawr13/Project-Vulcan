@@ -75,7 +75,7 @@ describe('shaft views', () => {
     const row = shaftsOf(w)[0]!;
     expect(miningShown(w)).toBe(true);
     const [x, y] = [row['x'] as number, row['y'] as number];
-    // On the 250-tile valley (V-201) no ore lies near, so copper and tin may want shafts too.
+    // On the 250-tile valley (V-202) no ore lies near, so copper and tin may want shafts too.
     const before = goodsOf(w).shafts;
     expect(before).toContainEqual({ x, y, z: 0, state: 'planned' });
     const page = tileView(w, x, y, 0, lineOf)!.shaft!;

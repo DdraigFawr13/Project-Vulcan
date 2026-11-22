@@ -97,7 +97,7 @@ describe('the salt seam', () => {
     const few = withHouse('smoke', 9, 0);
     for (const w of [salted, few]) {
       step(w, sim, DAY);
-      // Other shafts may be planned for copper and tin, which lie far off since V-201.
+      // Other shafts may be planned for copper and tin, which lie far off since V-202.
       expect(shaftsOf(w).filter((s) => s['metal'] === 'salt')).toHaveLength(0);
     }
   });

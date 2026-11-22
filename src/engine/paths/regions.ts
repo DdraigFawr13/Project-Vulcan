@@ -190,7 +190,7 @@ function link(content: EngineContent, map: MapState, r: Regions): void {
     if (!labels) continue;
     const below = r.labels[z + 1];
     // Only chunk edges link, and tiles leading down to a reached level below: each row is read
-    // at those tiles alone, in reading order as before (the 250-tile map, V-201).
+    // at those tiles alone, in reading order as before (the 250-tile map, V-202).
     const downs = below ? [...r.downs[z]!.values()].flat().sort((a, b) => a - b) : [];
     let d = 0;
     for (let y = 0; y < map.height; y += 1)

@@ -9,7 +9,7 @@ import { songTitle } from './titles.ts';
 const sim = createSim(content);
 const feast = content.tales.tales.find((t) => t.id === 'feast')!.song!;
 
-// One world a seed: making one takes about 0.7 s at 250 tiles (V-201), and titles only read it.
+// One world a seed: making one takes about 0.7 s at 250 tiles (V-202), and titles only read it.
 const worlds = new Map<string, ReturnType<typeof createWorld>>();
 const worldOf = (seed: string) =>
   worlds.get(seed) ?? worlds.set(seed, createWorld(sim, seed)).get(seed)!;

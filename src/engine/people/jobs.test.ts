@@ -22,7 +22,7 @@ const inStoreCount = (world: ReturnType<typeof createWorld>): number =>
     .reduce((n, i) => n + (i['count'] as number), 0);
 
 describe('work', () => {
-  // ledger/1 for smoke/2 on the 250-tile valley (V-201): smoke/2 is poor in wood and fell 43 of
+  // ledger/1 for smoke/2 on the 250-tile valley (V-202): smoke/2 is poor in wood and fell 43 of
   // 50 in three days (searched 10 seeds 2026-11-22, all others hold).
   for (const seed of ['ledger', 'anvil', 'tallow', 'ledger/1']) {
     it(`fells what the colony wants and stores it, unordered, on ${seed}`, () => {

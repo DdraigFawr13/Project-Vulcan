@@ -27,6 +27,7 @@
     ] },
     { "id": "family", "max": 3, "lines": [
       { "event": "family.wed", "weight": 8, "title": "{a} and {b} were wed", "many": "{Count} couples were wed: {list}.", "item": "{a} and {b}" },
+      { "event": "calling.taken", "weight": 7, "title": "{name} became {title}", "many": "{Count} took up a calling: {list}.", "item": "{name}, {title}" },
       { "event": "tale.byname", "weight": 6, "title": "{name} came to be called {word}", "many": "{Count} got bynames: {list}.", "item": "{name} {word}" },
       { "event": "family.born", "weight": 8, "tally": "born", "per": "line", "title": "{name} was born", "many": "{Count} children were born: {list}.", "item": "{name}, to {mother} and {father}" },
       { "event": "flock.lambed", "weight": 2, "many": "{Times} young were born in the fold: {list}.", "item": "{count} {young}" }
@@ -38,6 +39,7 @@
       { "event": "build.millBuilt", "weight": 6, "title": "the mill was built" },
       { "event": "smithy.built", "weight": 6, "title": "the smithy was built" },
       { "event": "tavern.named", "weight": 6, "title": "{name} opened its doors" },
+      { "event": "calling.masterwork", "weight": 6, "title": "{name} made {title}" },
       { "event": "school.book", "weight": 5, "title": "{teacher} wrote {book}" },
       { "event": "pasture.built", "weight": 5, "title": "the pasture was fenced" },
       { "event": "faith.shrine", "weight": 6, "title": "a shrine was raised" },

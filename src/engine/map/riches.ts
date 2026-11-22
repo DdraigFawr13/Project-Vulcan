@@ -1,4 +1,4 @@
-// How rich the valley is (6W Slice 3, V-201): each good draws a share of its usual density once per
+// How rich the valley is (6W Slice 3, V-202): each good draws a share of its usual density once per
 // seed, from `generator.riches`, with at least one good rich and one poor, so valleys differ and
 // each run asks for something else. Also the green's thinned woods (`start.thin`).
 import type { EngineContent, FeatureDef, RngStream } from '../core/index.ts';

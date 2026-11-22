@@ -40,7 +40,7 @@ const lay = (w: World, kind: string, count: number, x: number, y: number) => {
 };
 
 /** A built larder 6 tiles east of the start (inside: x+7..x+9, y+1..y+2). ledger-1 since the
- * 250-tile valley (V-201): ledger's smoking stalled (2026-11-22: ledger-1, ledger-2, kiln, smoke hold). */
+ * 250-tile valley (V-202): ledger's smoking stalled (2026-11-22: ledger-1, ledger-2, kiln, smoke hold). */
 function withLarder(seed = 'ledger-1'): { w: World; x: number; y: number } {
   const w = createWorld(sim, seed);
   const { startX: x, startY: y } = w.map;

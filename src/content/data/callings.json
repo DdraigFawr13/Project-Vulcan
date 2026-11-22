@@ -1,0 +1,101 @@
+{
+  "every": 28,
+  "hour": 7,
+  "callings": [
+    {
+      "id": "peacemaker",
+      "name": "the peacemaker",
+      "stages": [
+        {
+          "id": "held",
+          "sign": "Keeps the peace: a friend's grievance cools in half the time.",
+          "bar": [
+            { "test": "trait", "any": ["steady", "cheerful"], "none": ["hot-tempered"], "word": "{n}" },
+            { "test": "trusted", "top": 2, "word": "among the two most trusted" },
+            { "test": "friends", "share": 50, "word": "friends with {n} of {of}" }
+          ]
+        }
+      ],
+      "best": 1,
+      "push": { "cool": 4 }
+    },
+    {
+      "id": "lorekeeper",
+      "name": "the lorekeeper",
+      "stages": [
+        {
+          "id": "held",
+          "sign": "Keeps the valley's tales: what they tell is believed twice over and remembered twice as long.",
+          "bar": [
+            { "test": "tales", "from": 12, "word": "holds {n} tales" },
+            { "test": "lines", "event": "tale.told", "actor": 0, "from": 30, "word": "has told {n}" },
+            { "test": "attribute", "attr": "intellect", "from": 11, "word": "sharp of mind" }
+          ]
+        }
+      ],
+      "best": 1,
+      "push": { "told": 2, "keep": 200 }
+    },
+    {
+      "id": "master",
+      "name": "the master",
+      "titles": {
+        "smithing": "the master smith",
+        "crafting": "the master carpenter",
+        "cooking": "the master cook",
+        "building": "the master builder",
+        "stoneworking": "the master mason"
+      },
+      "stages": [
+        {
+          "id": "held",
+          "sign": "A master of their trade: their next piece is their masterwork, and their apprentice learns at four times the pace.",
+          "bar": [
+            {
+              "test": "either",
+              "word": "{n}",
+              "or": [
+                { "test": "ambition", "id": "masterwork", "word": "made the masterwork they set out to" },
+                { "test": "skill", "skills": ["smithing", "crafting", "cooking", "building", "stoneworking"], "from": 12, "word": "{skill} {n}" }
+              ]
+            },
+            { "test": "lines", "event": "teach.finished", "actor": 0, "from": 1, "word": "taught an apprentice to the end" }
+          ]
+        }
+      ],
+      "best": 0,
+      "push": {
+        "apprentice": 400,
+        "masterwork": {
+          "events": {
+            "furniture.made": "crafting",
+            "smith.made": "smithing",
+            "food.cooked": "cooking",
+            "build.built": "building",
+            "mason.walled": "stoneworking"
+          },
+          "names": ["Oakheart", "Hearthsong", "Emberkeep", "Stillwater", "Greyhand", "Dawnbringer", "Wrenwing", "Old Faithful"],
+          "quality": "masterwork",
+          "pieces": { "stoneworking": "a dressed stone wall", "building": "a wall" }
+        }
+      }
+    },
+    {
+      "id": "champion",
+      "name": "the champion",
+      "stages": [
+        {
+          "id": "held",
+          "sign": "Stands between the valley and the wild: sits the watch fire first, and the valley's fear of the woods fades twice as fast.",
+          "bar": [
+            { "test": "memory", "id": "fought-off", "word": "stood against the attackers" },
+            { "test": "role", "id": "guard", "word": "seen as the guard" },
+            { "test": "skill", "skills": ["hunting", "fighting"], "from": 6, "word": "{skill} {n}" }
+          ]
+        }
+      ],
+      "best": 2,
+      "push": { "watch": true, "fade": { "belief": "woods-dangerous", "by": 50 } }
+    }
+  ]
+}

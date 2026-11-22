@@ -55,7 +55,7 @@ describe('roofs and the thatcher', () => {
 
   it('with no reed or straw it says so once and waits; a reaped field thatches it with straw', () => {
     const w = createWorld(sim, 'ledger-1');
-    // No reed: on the 250-tile valley (V-201) every seed tried had marsh within reach, so the
+    // No reed: on the 250-tile valley (V-202) every seed tried had marsh within reach, so the
     // marsh here is dried to grass before anyone looks (2026-11-22: 10 seeds).
     const kinds = content.terrain.kinds;
     const [marsh, grass] = ['marsh', 'grass'].map((id) => kinds.findIndex((k) => k.id === id));

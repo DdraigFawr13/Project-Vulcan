@@ -47,7 +47,7 @@ describe('surface map', () => {
     expect(near.stone).toBeGreaterThanOrEqual(need.stone);
     expect(waterNearStart(content, map, need.radius)).toBeGreaterThan(0);
     expect(strandedWater(map)).toBe(0);
-    // 6W Slice 3 (V-201): the green sits `green.edge` from the rim and keeps at most
+    // 6W Slice 3 (V-202): the green sits `green.edge` from the rim and keeps at most
     // `thin.trees` trees within `thin.reach`; the valley is rich in one good and poor in another,
     // and its arrival line says so.
     const { x: sx, y: sy } = { x: map.startX, y: map.startY };

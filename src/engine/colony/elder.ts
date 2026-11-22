@@ -70,15 +70,22 @@ export function trustOf(
   return { trust, why };
 }
 
+/** The living `p` told a tale or heard one from in `friendDays` (callings' friends, 6B). */
+export function talkersOf(world: WorldState, content: EngineContent, p: EntityRow): number[] {
+  const day = Math.floor(world.tick / TICKS_PER_DAY) - content.colony.elder.friendDays;
+  const people = alive(world);
+  return [...talkedWith(world, p.id, day)]
+    .filter((q) => people.some((x) => x.id === q))
+    .sort((a, b) => a - b);
+}
+
 /** `p`'s friends: those they talked with in `friendDays`, and their housemates. */
 function nearOf(world: WorldState, content: EngineContent, p: EntityRow): number[] {
-  const day = Math.floor(world.tick / TICKS_PER_DAY) - content.colony.elder.friendDays;
-  const out = talkedWith(world, p.id, day);
+  const out = new Set(talkersOf(world, content, p));
   const home = homeHouse(world, content, p);
-  const people = alive(world);
-  if (home) for (const q of people) if (homeHouse(world, content, q) === home) out.add(q.id);
+  if (home) for (const q of alive(world)) if (homeHouse(world, content, q) === home) out.add(q.id);
   out.delete(p.id);
-  return [...out].filter((q) => people.some((x) => x.id === q)).sort((a, b) => a - b);
+  return [...out].sort((a, b) => a - b);
 }
 
 /** The elder's friends, who lean their way on every law. */

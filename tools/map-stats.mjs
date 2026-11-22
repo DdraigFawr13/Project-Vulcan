@@ -28,7 +28,7 @@ const render = process.argv.includes('--render');
 const sim = createSim(content);
 const need = content.terrain.generator.start;
 const pct = (n, d) => `${Math.round((100 * n) / d)}%`;
-// Time lines scale with the land: 300 ms per 150-by-150 tiles (6W Slice 3, V-201).
+// Time lines scale with the land: 300 ms per 150-by-150 tiles (6W Slice 3, V-202).
 const { width: W0, height: H0 } = content.terrain.surface;
 const limitMs = Math.round((300 * W0 * H0) / (150 * 150));
 const rows = [];

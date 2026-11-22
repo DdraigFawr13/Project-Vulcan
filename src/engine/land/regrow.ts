@@ -1,4 +1,4 @@
-// Felled woods grow back (6W Slice 3, V-201): a tree felled for wood comes back on its tile after
+// Felled woods grow back (6W Slice 3, V-202): a tree felled for wood comes back on its tile after
 // `regrow.years`, if a living tree still stands within `regrow.near` tiles and nothing has been
 // put on the tile since; clearings stay clear. The near woods run out, but not for ever.
 import { TICKS_PER_DAY } from '../core/index.ts';

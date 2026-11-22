@@ -87,7 +87,7 @@ export function bake(field: Field, width: number, height: number): number[] {
 }
 
 /** The value below which `share` of `values` fall (0 to 1): the k-th smallest, found by
- * selection in a typed copy (no full sort; the 250-tile map calls it a dozen times, V-201). */
+ * selection in a typed copy (no full sort; the 250-tile map calls it a dozen times, V-202). */
 export function quantile(values: ArrayLike<number>, share: number): number {
   const a = Float64Array.from(values);
   const k = Math.min(a.length - 1, Math.max(0, Math.floor(share * a.length)));

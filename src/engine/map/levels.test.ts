@@ -4,7 +4,7 @@ import { createSim, createWorld, step, submitCommand } from '../index.ts';
 import { MAP_SEEDS } from './seeds.ts';
 import { makeLevel } from './underground.ts';
 
-// P1.3 done-when, amended by 6W Slice 3 (V-201): no ore lies within the start radius on any level
+// P1.3 done-when, amended by 6W Slice 3 (V-202): no ore lies within the start radius on any level
 // below, so ore is found by looking for it; and a level nobody has reached is not made at all
 // (save size: src/worker/save.test.ts).
 describe('levels below', () => {

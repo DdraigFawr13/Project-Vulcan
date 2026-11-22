@@ -29,7 +29,7 @@ describe('needs', () => {
   // After merging 6B Bundles 5 and 6 and knapping axes for firewood splitters, anvil and tallow
   // each have one person an hour bored (2,850 and 2,900 of 3,000); on 34 seeds 11 hold the week
   // against main's 17 (searched 2026-11-21), among them ledger-1, anvil and ledger-3. On the
-  // 250-tile valley (V-201) anvil and ledger-3 fall 50 short on recreation; of 24 seeds 11 hold the
+  // 250-tile valley (V-202) anvil and ledger-3 fall 50 short on recreation; of 24 seeds 11 hold the
   // week (searched 2026-11-22), among them ledger-1, ledger-2 and tallow.
   for (const seed of ['ledger-1', 'ledger-2', 'tallow']) {
     it(`keeps the band fed, rested, warm and relaxed for a week on ${seed}`, () => {

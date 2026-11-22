@@ -32,6 +32,7 @@
     "paths": "node tools/paths.mjs",
     "stages": "node tools/stages.mjs",
     "teach": "node tools/teach.mjs",
+    "callings": "node tools/callings.mjs",
     "test": "vitest run",
     "test:related": "vitest related --run",
     "test:browser": "playwright test",
