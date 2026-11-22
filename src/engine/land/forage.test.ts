@@ -88,7 +88,8 @@ describe('foraging', () => {
         (e) => e.type === 'need.low' && e.data['word'] === 'hungry',
       );
       expect(hungry).toEqual([]);
-    });
+      // 6 to 9 s alone on the 250-tile valley (V-202), over the 15 s default on CI's two cores.
+    }, 40_000);
   }
 
   it('picks nothing in the cold months and not a bush twice within its regrowing days', () => {
