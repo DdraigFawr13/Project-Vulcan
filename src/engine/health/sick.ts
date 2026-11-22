@@ -279,20 +279,23 @@ export function sickHour(ctx: SystemContext): void {
   if (clockAt(world.tick, content.calendar).hour === content.health.sick.night) spreadNight(ctx);
 }
 
-/** Whether drinking at surface tile `tile` is shunned: a flux was caught within
- * `sick.shunNear` tiles of it in the last `sick.shun` days, once it showed. */
-export function shunned(world: WorldState, content: EngineContent, tile: number): boolean {
+/** Whether drinking at a surface tile is shunned: a flux was caught within `sick.shunNear` tiles
+ * of it in the last `sick.shun` days, once it showed. The bouts are found once, for many tiles. */
+export function shunned(world: WorldState, content: EngineContent): (tile: number) => boolean {
   const s = content.health.sick;
   const w = world.map.width;
-  const [x, y] = [tile % w, Math.floor(tile / w)];
-  return illsOf(world).some((r) => {
-    const t = (r['water'] as number) - 1;
-    if (
-      t < 0 ||
-      r['state'] === 'coming' ||
-      world.tick - (r['caught'] as number) >= s.shun * TICKS_PER_DAY
+  const near = illsOf(world)
+    .filter(
+      (r) =>
+        (r['water'] as number) > 0 &&
+        r['state'] !== 'coming' &&
+        world.tick - (r['caught'] as number) < s.shun * TICKS_PER_DAY,
     )
-      return false;
-    return Math.max(Math.abs((t % w) - x), Math.abs(Math.floor(t / w) - y)) <= s.shunNear;
-  });
+    .map((r) => (r['water'] as number) - 1);
+  return (tile) => {
+    const [x, y] = [tile % w, Math.floor(tile / w)];
+    return near.some(
+      (t) => Math.max(Math.abs((t % w) - x), Math.abs(Math.floor(t / w) - y)) <= s.shunNear,
+    );
+  };
 }

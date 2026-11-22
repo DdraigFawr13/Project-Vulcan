@@ -103,6 +103,6 @@ export function openVein(world: WorldState, content: EngineContent, metal: strin
   if (!f || !layer) return false;
   const reach = reachFrom(content, map, greenOf(world));
   for (let i = 0; i < layer.features.length; i += 1)
-    if (veinOpen(world, content, reach, f, i)) return true;
+    if (layer.features[i] === f && veinOpen(world, content, reach, f, i)) return true;
   return false;
 }

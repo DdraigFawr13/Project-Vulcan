@@ -50,19 +50,19 @@ function veinFor(ctx: SystemContext, p: EntityRow, metal: string): number | unde
   const taken = takenBy(ctx, p);
   const here = spotOf(p);
   const reach = reachFrom(content, map, here);
-  let best: number | undefined;
-  let score = Infinity;
   const tiles = tilesOf(layer, f);
   for (let k = tiles.length - 1; k >= 0; k -= 1)
     if (layer.features[tiles[k]!] !== f) tiles.splice(k, 1);
-  for (const i of tiles) {
-    if (taken.has(pack(map, { x: 0, y: 0, z }) + i)) continue;
-    const [x, y] = [i % map.width, Math.floor(i / map.width)];
-    const d = Math.max(Math.abs(x - here.x), Math.abs(y - here.y)) * 1000000 + i;
-    if (d < score && veinOpen(world, content, reach, f, i))
-      [best, score] = [pack(map, { x, y, z }), d];
-  }
-  return best;
+  // Nearest first (ties in tile order): the first that can be stood beside is the one.
+  const near = tiles
+    .filter((i) => !taken.has(pack(map, { x: 0, y: 0, z }) + i))
+    .map((i) => [
+      Math.max(Math.abs((i % map.width) - here.x), Math.abs(Math.floor(i / map.width) - here.y)),
+      i,
+    ])
+    .sort((a, b) => a[0]! - b[0]! || a[1]! - b[1]!);
+  const best = near.find(([, i]) => veinOpen(world, content, reach, f, i!));
+  return best && pack(map, { x: best[1]! % map.width, y: Math.floor(best[1]! / map.width), z });
 }
 
 /** What this person would do next, or undefined when nothing is wanted. */

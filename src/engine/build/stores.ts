@@ -37,7 +37,7 @@ import {
   withinReach,
   type Rect,
 } from './site.ts';
-import { inRect, isTreeAt, wayFrom, wayTo } from './way.ts';
+import { inRect, isTreeAt, wayFrom, wayTo, type Way } from './way.ts';
 
 type Point = { x: number; y: number; n: number };
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) =>
@@ -116,7 +116,8 @@ function siteStore(
   // Not worth it even at the best spot: no ground is looked at.
   if (!spots.length || !enough(spots[0]!.walk)) return undefined;
   const ground = groundOf(world);
-  const way = wayFrom(world, content, green);
+  // The way from the green is worked out only once a footprint fits (it reads the whole map).
+  let way: Way | undefined;
   for (const s of spots.slice(0, def.tries)) {
     if (!enough(s.walk)) return undefined;
     const rect = { x: s.x - (w >> 1), y: s.y - (h >> 1), w, h };
@@ -126,6 +127,7 @@ function siteStore(
     if (!fit) continue;
     const door = doorOf(rect, green);
     const out = outsideOf(rect, door);
+    way ??= wayFrom(world, content, green);
     if (way.trees[out.y * map.width + out.x]! < 0) continue;
     if (shutsOff(world, content, rect, door, green)) continue;
     // The way in must not cross the site; trees on it are felled with the site's own.

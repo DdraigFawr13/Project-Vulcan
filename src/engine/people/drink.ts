@@ -4,6 +4,7 @@
 // walked to it, is noted for the colony's well (build/well.ts). A foul drink may bring the flux,
 // and water shunned after one is passed over (foul.ts, P5.7).
 import type { EntityRow } from '../core/index.ts';
+import type { Spot } from '../paths/index.ts';
 import { noteDrink, waterSpots } from '../build/index.ts';
 import { changeNeed, crossed, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -34,13 +35,31 @@ function goDrink(ctx: SystemContext, p: EntityRow): number {
   const map = world.map;
   const spots = waterSpots(world, content);
   // Water shunned after a flux there (P5.7) is passed over while there is other water.
-  const clean = spots.filter((s) => !shunned(world, content, s.y * map.width + s.x));
-  const near = (clean.length ? clean : spots)
-    .map((s) => [Math.max(Math.abs(s.x - here.x), Math.abs(s.y - here.y)), s] as const)
-    .sort((a, b) => a[0] - b[0] || a[1].y - b[1].y || a[1].x - b[1].x);
-  for (const [, s] of near.slice(0, TRIES))
-    if (goBeside(ctx, p, s.x, s.y)) return s.y * map.width + s.x + 1;
+  const shun = shunned(world, content);
+  const clean = spots.filter((s) => !shun(s.y * map.width + s.x));
+  const near = nearest(clean.length ? clean : spots, here, TRIES);
+  for (const s of near) if (goBeside(ctx, p, s.x, s.y)) return s.y * map.width + s.x + 1;
   return 0;
+}
+
+/** The first `n` spots by distance from `here` (corners count one), then row, then column, in
+ * the order a stable sort of them all would give, without sorting them all. */
+function nearest(spots: readonly Spot[], here: Spot, n: number): Spot[] {
+  const out: Spot[] = [];
+  const far: number[] = [];
+  // Whether spot `s` at distance `d` sorts at or after the kept spot `k`.
+  const after = (s: Spot, d: number, k: number): boolean =>
+    d > far[k]! || (d === far[k] && (s.y - out[k]!.y || s.x - out[k]!.x) >= 0);
+  for (const s of spots) {
+    const d = Math.max(Math.abs(s.x - here.x), Math.abs(s.y - here.y));
+    if (out.length === n && after(s, d, n - 1)) continue;
+    let at = out.length;
+    while (at > 0 && !after(s, d, at - 1)) at -= 1;
+    out.splice(at, 0, s);
+    far.splice(at, 0, d);
+    if (out.length > n) [out.pop(), far.pop()];
+  }
+  return out;
 }
 
 /** One minute of the drinking errand; true while it takes their minute. */
