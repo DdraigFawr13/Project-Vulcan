@@ -94,7 +94,7 @@ describe('saves', () => {
     expect(check('{}')).toThrow('damaged');
     // A map or ledger broken inside a well-formed record is caught too.
     const damage = [
-      (s: SaveFile) => s.state.map.tiles.pop(),
+      (s: SaveFile) => (s.state.map.tiles = s.state.map.tiles.slice(1)),
       (s: SaveFile) => (s.state.map.tiles[5] = 99),
       (s: SaveFile) => s.state.map.chunkVersions.pop(),
       (s: SaveFile) => s.state.log.reverse(),
@@ -120,6 +120,10 @@ describe('saves', () => {
       (s: SaveFile) => s.state.map.auraSpots.push({ ...s.state.map.auraSpots[0]!, school: 'none' }),
       // Ore stains name a feature; a level's known marks are 0 or 1.
       (s: SaveFile) => (s.state.map.stains[0] = 250),
+      // Felled trees to regrow: a tile on the map, a known feature, due days never falling (V-202).
+      (s: SaveFile) => s.state.map.regrow.push(1e7, 1, 5),
+      (s: SaveFile) => s.state.map.regrow.push(0, 250, 5),
+      (s: SaveFile) => s.state.map.regrow.push(0, 1, 9e6, 1, 1, 9e6 - 1),
       (s: SaveFile) => {
         s.state.map.levels[0] ??= levelOf(s);
         s.state.map.levels[0].known[0] = 2;
@@ -137,9 +141,11 @@ describe('saves', () => {
       hurt(bad);
       expect(check(bad)).toThrow('damaged');
     }
-    // The shaft row the damage cases bend is itself sound.
+    // The shaft row and regrow entries the damage cases bend are themselves sound.
     const sound = save();
     addShaft(sound, {});
+    const due = (sound.state.map.regrow.at(-1) ?? 0) + 1;
+    sound.state.map.regrow.push(0, 1, due, 1, 1, due);
     expect(check(sound)).not.toThrow();
   });
 

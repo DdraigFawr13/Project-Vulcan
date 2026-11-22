@@ -99,7 +99,7 @@ describe('building', () => {
   it('refuses a plan on water, on a tree or twice on one tile', () => {
     const world = fresh();
     const map = world.map;
-    const water = map.tiles.findIndex((t) => content.terrain.kinds[t]!.water);
+    const water = map.tiles.findIndex((t) => !!content.terrain.kinds[t]!.water);
     const tree = [...map.features].findIndex((f) => f && content.features[f - 1]!.kind === 'tree');
     const [free] = rowOfFree(world, 1);
     const orders = [

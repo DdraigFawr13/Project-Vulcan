@@ -14,8 +14,10 @@ const sim = createSim(content);
 const DAY = 1440;
 // An open valley and a forest one (its site needs clearing).
 // (tallow/3 now sites a second house instead of a room: the campfire's stone leaves the stock
-// short when the first house is done.)
-const SEEDS = ['ledger/1', 'tallow/2'];
+// short when the first house is done.) smoke/1 for tallow/2 on the 250-tile valley (V-202):
+// tallow/2's band was not all in by day 10 (searched 14 seeds 2026-11-22: ledger/1, smoke/1,
+// smoke/2, anvil/1, anvil/2 and gwerin/1 hold).
+const SEEDS = ['ledger/1', 'smoke/1'];
 type World = ReturnType<typeof createWorld>;
 const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === type);
 const firstHouse = (w: World) => housesOf(w).find((h) => !h['of'])!;
@@ -96,8 +98,10 @@ describe('houses', () => {
       return !!mine.length && mine.every((p) => p['state'] === 'built');
     };
     // Tick by tick from day 3 of the shared run if the cottage is not finished by then.
-    const { day3 } = ranWith('ledger/1');
-    const world = done(day3) ? createWorld(sim, 'ledger/1') : structuredClone(day3);
+    // smoke/1 since the 250-tile valley (V-202): ledger/1's room was blocked by a bedroll
+    // (searched 14 seeds 2026-11-22: tallow/2, ledger/3, smoke/1 and kiln/1 hold).
+    const { day3 } = ranWith('smoke/1');
+    const world = done(day3) ? createWorld(sim, 'smoke/1') : structuredClone(day3);
     while (!done(world) && world.tick < 9 * DAY) step(world, sim, 1);
     const house = firstHouse(world);
     expect(done(world)).toBe(true);

@@ -83,6 +83,8 @@ const longFiles = [
   'src/engine/keep/cellar.test.ts',
   'src/engine/crafts/mason.test.ts',
   'src/engine/defy/hard.test.ts',
+  // 220 days on the 250-tile valley (V-202): 40 s alone, past its 60 s hook under load.
+  'src/engine/build/mill.test.ts',
 ];
 
 const left: Record<string, string[]> = {

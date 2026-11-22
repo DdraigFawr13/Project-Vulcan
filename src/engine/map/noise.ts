@@ -33,7 +33,7 @@ export const AXES: readonly (readonly [number, number])[] = [
 function octave(rng: RngStream, width: number, height: number, cell: number): Field {
   const across = Math.floor(width / cell) + 2;
   const down = Math.floor(height / cell) + 2;
-  const lattice = new Array<number>(across * down);
+  const lattice = new Float64Array(across * down);
   for (let i = 0; i < lattice.length; i += 1) lattice[i] = rng.int(65_536) / 65_535;
   return (x, y) => {
     const gx = x / cell;
@@ -42,9 +42,13 @@ function octave(rng: RngStream, width: number, height: number, cell: number): Fi
     const y0 = Math.floor(gy);
     const fx = smooth(gx - x0);
     const fy = smooth(gy - y0);
-    const at = (i: number, j: number): number => lattice[j * across + i]!;
-    const top = at(x0, y0) + (at(x0 + 1, y0) - at(x0, y0)) * fx;
-    const bottom = at(x0, y0 + 1) + (at(x0 + 1, y0 + 1) - at(x0, y0 + 1)) * fx;
+    const k = y0 * across + x0;
+    const a = lattice[k]!;
+    const b = lattice[k + 1]!;
+    const c = lattice[k + across]!;
+    const d = lattice[k + across + 1]!;
+    const top = a + (b - a) * fx;
+    const bottom = c + (d - c) * fx;
     return top + (bottom - top) * fy;
   };
 }
@@ -82,9 +86,27 @@ export function bake(field: Field, width: number, height: number): number[] {
   return out;
 }
 
-/** The value below which `share` of `values` fall (0 to 1). */
-export function quantile(values: readonly number[], share: number): number {
-  const sorted = [...values].sort((a, b) => a - b);
-  const at = Math.min(sorted.length - 1, Math.max(0, Math.floor(share * sorted.length)));
-  return sorted[at]!;
+/** The value below which `share` of `values` fall (0 to 1): the k-th smallest, found by
+ * selection in a typed copy (no full sort; the 250-tile map calls it a dozen times, V-202). */
+export function quantile(values: ArrayLike<number>, share: number): number {
+  const a = Float64Array.from(values);
+  const k = Math.min(a.length - 1, Math.max(0, Math.floor(share * a.length)));
+  let [lo, hi] = [0, a.length - 1];
+  while (lo < hi) {
+    const pivot = a[(lo + hi) >> 1]!;
+    let [i, j] = [lo, hi];
+    while (i <= j) {
+      while (a[i]! < pivot) i += 1;
+      while (a[j]! > pivot) j -= 1;
+      if (i <= j) {
+        [a[i], a[j]] = [a[j]!, a[i]!];
+        i += 1;
+        j -= 1;
+      }
+    }
+    if (k <= j) hi = j;
+    else if (k >= i) lo = i;
+    else break;
+  }
+  return a[k]!;
 }

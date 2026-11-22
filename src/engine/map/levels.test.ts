@@ -4,25 +4,36 @@ import { createSim, createWorld, step, submitCommand } from '../index.ts';
 import { MAP_SEEDS } from './seeds.ts';
 import { makeLevel } from './underground.ts';
 
-// P1.3 done-when: copper and tin lie within the start radius on level 2 on every seed, and a
-// level nobody has reached is not made at all (save size: src/worker/save.test.ts).
+// P1.3 done-when, amended by 6W Slice 3 (V-202): no ore lies within the start radius on any level
+// below, so ore is found by looking for it; and a level nobody has reached is not made at all
+// (save size: src/worker/save.test.ts).
 describe('levels below', () => {
   const sim = createSim(content);
   const radius = content.terrain.generator.start.radius;
+  const { depth } = content.terrain.generator.underground;
   const veinOf = (id: string) => content.features.findIndex((f) => f.id === id) + 1;
 
-  it.each(MAP_SEEDS)('seed %s has copper and tin near the start on level 2', (seed) => {
+  it.each(MAP_SEEDS)('seed %s has no ore near the start below, and stains over ore', (seed) => {
     const { map } = createWorld(sim, seed);
-    const { features } = makeLevel(seed, content, map, 2);
-    for (const ore of ['copper', 'tin']) {
-      let near = Infinity;
-      features.forEach((f, i) => {
-        if (f !== veinOf(ore)) return;
+    let near = Infinity;
+    let veins = 0;
+    const levels = Array.from({ length: depth }, (_, z) => makeLevel(seed, content, map, z + 1));
+    for (const level of levels)
+      level.features.forEach((f, i) => {
+        if (!f || !content.features[f - 1]!.vein) return;
+        veins += 1;
         const x = i % map.width;
         const y = (i - x) / map.width;
         near = Math.min(near, Math.max(Math.abs(x - map.startX), Math.abs(y - map.startY)));
       });
-      expect(near, ore).toBeLessThanOrEqual(radius);
+    expect(veins).toBeGreaterThan(0);
+    expect(near).toBeGreaterThan(radius);
+    // The surface is stained over copper, tin and iron veins (V-087).
+    for (const ore of ['copper', 'tin', 'iron']) {
+      const f = veinOf(ore);
+      const at = map.stains.findIndex((s) => s === f);
+      expect(at, ore).toBeGreaterThanOrEqual(0);
+      expect(levels[content.features[f - 1]!.vein!.level - 1]!.features[at]).toBe(f);
     }
   });
 
@@ -61,8 +72,7 @@ describe('levels below', () => {
     const W = early.map.width;
     const stone = (i: number) => kinds[early.map.tiles[i]!]!.stone === true;
     // Rock tiles at a mountain's foot, where the rock below spreads out from.
-    const foot = early.map.tiles
-      .map((_, i) => i)
+    const foot = [...early.map.tiles.keys()]
       .filter((i) => stone(i) && i % W > 0 && !stone(i - 1))
       .filter((_, k) => k % 7 === 0)
       .slice(0, 30);
@@ -85,17 +95,6 @@ describe('levels below', () => {
     const [a, b] = [early.map.levels[1]!, late.map.levels[1]!];
     expect([...a.tiles].filter(keep)).toEqual([...b.tiles].filter(keep));
     expect([...a.features].filter(keep)).toEqual([...b.features].filter(keep));
-  });
-
-  it.each(MAP_SEEDS)('seed %s stains the surface over copper, tin and iron veins', (seed) => {
-    const { map } = createWorld(sim, seed);
-    for (const ore of ['copper', 'tin', 'iron']) {
-      const f = veinOf(ore);
-      const at = map.stains.findIndex((s) => s === f);
-      expect(at, ore).toBeGreaterThanOrEqual(0);
-      const level = content.features[f - 1]!.vein!.level;
-      expect(makeLevel(seed, content, map, level).features[at]).toBe(f);
-    }
   });
 
   it('a shaft makes its foot and the ground around it known on each level, and no more', () => {

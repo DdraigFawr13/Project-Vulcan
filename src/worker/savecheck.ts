@@ -69,14 +69,13 @@ export const stateShaped = (state: Shape, save: Shape): boolean =>
 function mapShaped(map: unknown): boolean {
   if (!isObject(map) || !isCount(map['width']) || !isCount(map['height'])) return false;
   const tiles = map['tiles'];
-  if (!Array.isArray(tiles) || tiles.length !== map['width'] * map['height']) return false;
+  if (!(tiles instanceof Uint8Array) || tiles.length !== map['width'] * map['height']) return false;
   return layersShaped(map, tiles.length) && placesShaped(map, tiles.length);
 }
 
 /** The tile causes, chunk versions and generator layers, each the map's length. */
 const layersShaped = (map: Shape, n: number): boolean =>
-  Array.isArray(map['tileCauses']) &&
-  map['tileCauses'].length === n &&
+  layer(map['tileCauses'], Int32Array, n) &&
   Array.isArray(map['chunkVersions']) &&
   LAYERS.every(([k, type]) => layer(map[k], type, n)) &&
   Number.isSafeInteger(map['floor']);
@@ -90,7 +89,10 @@ const placesShaped = (map: Shape, n: number): boolean =>
   Array.isArray(map['levels']) &&
   map['levels'].every((level) => level === null || levelShaped(level, n)) &&
   typeof map['climate'] === 'string' &&
-  typeof map['riverExit'] === 'string';
+  typeof map['riverExit'] === 'string' &&
+  isObject(map['riches']) &&
+  Array.isArray(map['regrow']) &&
+  map['regrow'].length % 3 === 0;
 
 // A reached level below: its tiles, causes and features, each one per surface tile.
 const levelShaped = (value: unknown, length: number): boolean =>
@@ -128,8 +130,21 @@ function mapFits(world: WorldState, content: SaveContent): boolean {
     w.features.every((f) => f <= features) &&
     w.built.every((b) => b <= content.buildings.parts.length) &&
     // Ore stains name a feature (V-087).
-    w.stains.every((f) => f <= features)
+    w.stains.every((f) => f <= features) &&
+    regrowFits(w.regrow, w.width * w.height, features)
   );
+}
+
+/** Felled trees to grow back (V-202): triples of a tile on the map, a feature and a due day, the
+ * days never falling (regrowWoods reads them from the front). */
+function regrowFits(regrow: readonly number[], tiles: number, features: number): boolean {
+  for (let k = 0; k < regrow.length; k += 3) {
+    const [i, f, day] = [regrow[k], regrow[k + 1], regrow[k + 2]];
+    if (!isCount(i) || i >= tiles || !isCount(f) || f < 1 || f > features || !isCount(day))
+      return false;
+    if (k && day < regrow[k - 1]!) return false;
+  }
+  return true;
 }
 
 /** Each plan is of a known part, on the map and in a known state (P3.1); water and rock are

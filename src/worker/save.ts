@@ -4,7 +4,7 @@ import { type Schemas, tablesProblem, type WorldState } from '../engine/index.ts
 import { fitsContent, isObject, stateShaped, type SaveContent } from './savecheck.ts';
 
 /** Raised when a save's format version changes; older saves need not load before launch. */
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 /** One saved game (docs/ARCHITECTURE.md "Save"). The command log and ledger live in `state`;
  * `seed` and `tick` repeat `state`'s as a header readable without walking the world, and

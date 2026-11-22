@@ -9,8 +9,13 @@ import { songTitle } from './titles.ts';
 const sim = createSim(content);
 const feast = content.tales.tales.find((t) => t.id === 'feast')!.song!;
 
+// One world a seed: making one takes about 0.7 s at 250 tiles (V-202), and titles only read it.
+const worlds = new Map<string, ReturnType<typeof createWorld>>();
+const worldOf = (seed: string) =>
+  worlds.get(seed) ?? worlds.set(seed, createWorld(sim, seed)).get(seed)!;
+
 function storyIn(seed: string, id: number, words: Record<string, string | number>) {
-  const world = createWorld(sim, seed);
+  const world = worldOf(seed);
   const about = (world.entities['person'] ?? [])[0]!;
   const story = {
     id,
@@ -27,7 +32,7 @@ describe('song titles', () => {
   it('the same seed and story give the same title; the feast has many', () => {
     const a = storyIn('anvil', 7, words);
     expect(songTitle(a.ctx, a.story, feast, new Set())).toBe(
-      songTitle(storyIn('anvil', 7, words).ctx, a.story, feast, new Set()),
+      songTitle({ world: createWorld(sim, 'anvil'), content }, a.story, feast, new Set()),
     );
     const seen = new Set<string>();
     for (const seed of ['anvil', 'smoke', 'tallow', 'ledger-1'])

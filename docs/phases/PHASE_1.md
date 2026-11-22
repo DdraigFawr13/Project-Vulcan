@@ -32,7 +32,7 @@ Rivers, lakes, shallow and deep water, springs, carved from P1.1's elevation; sh
 
 ### P1.3 Underground
 
-Four lazy levels with veins by level (`docs/ARCHITECTURE.md#map`), stairs and shafts, a level (`z`) in `MapState`, `setTile`, `ChunkView` and `inspect` together; level switch in the camera. Mock-up: UI. Done when: copper and tin are reachable on every seed; a level not yet reached costs no memory.
+Four lazy levels with veins by level (`docs/ARCHITECTURE.md#map`), stairs and shafts, a level (`z`) in `MapState`, `setTile`, `ChunkView` and `inspect` together; level switch in the camera. Mock-up: UI. Done when: copper and tin are reachable on every seed (none within 30 tiles of the start since V-202); a level not yet reached costs no memory.
 
 - Reading list: `docs/ARCHITECTURE.md#map`; DECISIONS V-014 (grep); `src/engine/map/MODULE.md`; `src/worker/MODULE.md`; `src/render/MODULE.md`
 

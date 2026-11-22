@@ -137,7 +137,8 @@ describe('standing, the elder and factions', () => {
     // The grievance back within a season: the faction forms again under its old name.
     for (let d = 0; d < 6 && !factionsOf(w).length; d++) toReckoning(w);
     expect(factionsOf(w)[0]?.['name']).toBe(name);
-  });
+    // 9 s alone on the 250-tile valley (V-202), over the 15 s default on CI's two cores.
+  }, 40_000);
 
   it('makes every law easier to refuse when standing is low', () => {
     const w = createWorld(sim, 'smoke');

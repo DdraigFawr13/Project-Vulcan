@@ -2,6 +2,7 @@
 // content (features.json); then the start tile, the nearest to the middle with enough around it.
 import type { EngineContent, RngStream } from '../core/index.ts';
 import { bake, fractalNoise, quantile } from './noise.ts';
+import { shareOf } from './riches.ts';
 import type { Ground } from './terrain.ts';
 
 /**
@@ -9,8 +10,9 @@ import type { Ground } from './terrain.ts';
  * field (`groves.low` to `groves.high`), times `oldGrowth.factor` in the old-growth share of the
  * map, so woods come in clumps, clearings and dense old stands; `glades` features are
  * `glades.factor` times likelier in the clearings' heart; boulders gain
- * `nearRock.density` within `nearRock.reach` tiles of rock. Rock and water tiles stay bare. Returns
- * 0 for a bare tile, else 1 + the feature's index.
+ * `nearRock.density` within `nearRock.reach` tiles of rock; each density is scaled by its good's
+ * share in the valley's `riches`. Rock and water tiles stay bare. Returns 0 for a bare tile, else
+ * 1 + the feature's index.
  */
 export function placeFeatures(
   rng: RngStream,
@@ -18,8 +20,10 @@ export function placeFeatures(
   ground: Ground,
   width: number,
   height: number,
+  riches: Readonly<Record<string, number>>,
 ): number[] {
   const { features } = content;
+  const shares = features.map((def) => shareOf(content, riches, def));
   const { biomes } = content.biomes;
   const { groves } = content.terrain.generator;
   const grove = bake(fractalNoise(rng, width, height, groves.cell, 2), width, height);
@@ -42,7 +46,7 @@ export function placeFeatures(
     let sum = 0;
     for (let f = 0; f < features.length; f += 1) {
       const def = features[f]!;
-      let chance = def.density[biome] ?? 0;
+      let chance = (def.density[biome] ?? 0) * shares[f]!;
       if (def.clumps) chance *= clump;
       if (def.glades && glade) chance *= groves.glades.factor;
       if (def.nearRock && rockDistance[i]! <= def.nearRock.reach) chance += def.nearRock.density;
@@ -78,7 +82,7 @@ function distanceTo(mask: readonly boolean[], width: number, height: number, cap
  * and stone (rock ground, or a feature yielding `start.stoneItem`). */
 export function tileUses(
   content: EngineContent,
-  tiles: readonly number[],
+  tiles: ArrayLike<number>,
   features: ArrayLike<number>,
 ): { buildable: boolean[]; wood: boolean[]; stone: boolean[] } {
   const n = tiles.length;
@@ -118,7 +122,7 @@ export interface StartCounts {
 /** Counts within `radius` tiles (a square, Chebyshev distance) of every tile. */
 export function countsAround(
   content: EngineContent,
-  tiles: readonly number[],
+  tiles: ArrayLike<number>,
   features: ArrayLike<number>,
   width: number,
   height: number,
@@ -150,16 +154,16 @@ export function countsAround(
  */
 export function reachableAround(
   content: EngineContent,
-  tiles: readonly number[],
+  tiles: ArrayLike<number>,
   features: ArrayLike<number>,
   width: number,
   height: number,
   radius: number,
 ): (x: number, y: number) => StartCounts {
   const uses = tileUses(content, tiles, features);
-  const rock = tiles.map((t) => content.terrain.kinds[t]!.stone === true);
+  const rock = Array.from(tiles, (t) => content.terrain.kinds[t]!.stone === true);
   // As the paths read it (paths/grid.ts walkAt): no rock, solid or deep water, no blocking feature.
-  const walk = tiles.map((t, i) => {
+  const walk = Array.from(tiles, (t, i) => {
     const kind = content.terrain.kinds[t]!;
     const f = features[i]! > 0 ? content.features[features[i]! - 1] : undefined;
     return !kind.stone && !kind.solid && kind.water !== 'deep' && !f?.blocks;
@@ -218,7 +222,7 @@ const STEPS = [
  */
 export function findStart(
   content: EngineContent,
-  tiles: readonly number[],
+  tiles: ArrayLike<number>,
   features: ArrayLike<number>,
   width: number,
   height: number,

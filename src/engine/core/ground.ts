@@ -18,7 +18,6 @@ export interface FeatureDef {
     level: number;
     per10k: number;
     size: Range;
-    near: number;
     rocks: Readonly<Record<string, number>>;
     /** Marks the surface above the vein with a stain (V-087). */
     stain?: boolean;
@@ -136,4 +135,21 @@ export interface StoresDef {
   apart: number;
   tries: number;
   kinds: readonly StoreKindDef[];
+}
+
+/** How rich the valley is and how its woods come back (terrain `generator.riches` and `regrow`;
+ * src/content/schemas-ground.ts VALLEY_DIALS has the meaning of each dial). */
+export interface ValleyDials {
+  riches: {
+    /** Shares of the usual density, drawn by weight; the first is poor, the last rich. */
+    levels: readonly { share: number; weight: number }[];
+    goods: readonly {
+      id: string;
+      yields?: readonly string[];
+      veins?: boolean;
+      rich: string;
+      poor: string;
+    }[];
+  };
+  regrow: { years: number; near: number };
 }

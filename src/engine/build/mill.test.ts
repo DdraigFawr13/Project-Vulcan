@@ -48,7 +48,8 @@ describe('the mill and harvest home', () => {
     world = createWorld(sim, 'anvil');
     // The supper can come before the mill: its shared memory is checked before it fades.
     until(world, () => !!millOf(world) || seen.has('hall.feast'), 220);
-  }, 60000);
+    // 220 days on the 250-tile valley (V-202): 40 s alone here, over 60 s on CI's two cores.
+  }, 120_000);
 
   it("holds one harvest home when the year's last field is in, and everyone comes", () => {
     until(world, () => seen.has('hall.feast'), 220);
