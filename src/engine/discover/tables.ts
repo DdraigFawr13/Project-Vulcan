@@ -9,10 +9,11 @@ export const DISCOVER_TABLES: Schemas = {
   trade: { person: 'entity', job: 'text', hours: 'ints', day: 'int', line: 'event' },
   /** A person's puzzle over a way: begun on `line` at `since`; `work` hours at its trade toward
    * the next work hint; the days of the last failure and book hints (-1 none); the tick of the
-   * last hint; `ended` the line that ended it (a find, theirs or another's), 0 while it lasts. */
+   * last hint; `ended` the line that ended it (a find, theirs or another's), 0 while it lasts;
+   * `busy` the last midnight its window held `drop.hours` at its trade. */
   puzzle: {
     ...{ person: 'entity', method: 'text', line: 'event', since: 'int', work: 'count' },
-    ...{ failed: 'int', read: 'int', last: 'int', ended: 'event' },
+    ...{ failed: 'int', read: 'int', last: 'int', ended: 'event', busy: 'int' },
   },
   /** One hint: the puzzle it is for, its kind (methods.json `kinds`), its line and its words in
    * the find's list. */

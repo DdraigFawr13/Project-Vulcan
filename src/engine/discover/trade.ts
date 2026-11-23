@@ -4,7 +4,8 @@
 // (milling, healing) count from their lines (`methods.credit`). At midnight someone whose most
 // worked trade this month has `start.hours` or more, and a way they could find there that no
 // living colonist knows, begins to puzzle over it (one puzzle a person); a puzzle with under
-// `drop.hours` at its trade in `drop.days` is put aside.
+// `drop.hours` at its trade in the window for `drop.days` running is put aside (V-219 tuning: a
+// season away from a trade keeps its puzzle).
 import { TICKS_PER_DAY, today, type EngineContent, type EntityRow } from '../core/index.ts';
 import { addEntity, alive } from '../entity/index.ts';
 import { skillRow } from '../band/index.ts';
@@ -120,9 +121,10 @@ export function startPuzzles(ctx: SystemContext): void {
     const p = living.get(q['person'] as number);
     if (!p) q['ended'] = q['line'] as number;
     const m = wayOf(ctx, q);
-    if (!p || world.tick - (q['since'] as number) < drop.days * TICKS_PER_DAY) continue;
+    if (!p) continue;
     const hours = hoursAt(ctx, p.id, m.job);
-    if (hours >= drop.hours) continue;
+    if (hours >= drop.hours) q['busy'] = world.tick;
+    if (world.tick - (q['busy'] as number) < drop.days * TICKS_PER_DAY) continue;
     q['ended'] = ctx.emit('discover.dropped', {
       causes: [q['line'] as number],
       actors: [p.id],
@@ -140,7 +142,7 @@ export function startPuzzles(ctx: SystemContext): void {
     });
     addEntity(world, 'puzzle', {
       ...{ person: p.id, method: got.m.id, line, since: world.tick, work: 0 },
-      ...{ failed: -1, read: -1, last: world.tick, ended: 0 },
+      ...{ failed: -1, read: -1, last: world.tick, ended: 0, busy: world.tick },
     });
   }
 }
