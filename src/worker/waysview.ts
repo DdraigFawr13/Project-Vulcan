@@ -11,7 +11,7 @@ import {
   knowsOf,
   list,
   methodDef,
-  personOf,
+  personName,
   puzzleOf,
   recordOf,
   type EntityRow,
@@ -24,8 +24,7 @@ const words = () => content.methods.screen;
 const fill = (t: string, vars: Readonly<Record<string, string | number>>): string =>
   t.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
-const nameOf = (world: WorldState, id: unknown): string =>
-  (personOf(world, id)?.['name'] as string | undefined) ?? 'someone';
+const nameOf = (world: WorldState, id: unknown): string => personName(world, id, 'someone');
 
 /** "Day 3 of Leaffall, year 2", the day of a line (a sealed one's stub keeps its tick). */
 function dateOf(world: WorldState, line: number): string {
