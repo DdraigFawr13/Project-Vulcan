@@ -67,7 +67,7 @@ Mock-up: Engine, answered 2026-11-22 (every ★). Done when: a test shows a trip
 
 ### Slice 6: the known map on screen
 
-Mock-up: UI, form https://claude.ai/artifact/E7jy2rd4vQFzVKaZnb7uBn. Done when: unknown ground shows faded at 390 px, finds have markers and tile-sheet lines, the Scouting row works while paused, `npm run test:browser` passes, and the Slice 2 bench holds.
+Mock-up: UI, answered 2026-11-23 (every ★, V-213). Done when: unknown ground shows faded at 390 px, finds have markers and tile-sheet lines, the Scouting row works while paused, `npm run test:browser` passes, and the Slice 2 bench holds.
 
 - Reading list: `docs/UI_STYLE.md`; `src/render/MODULE.md`; `src/ui/MODULE.md`; `src/worker/MODULE.md`
 
