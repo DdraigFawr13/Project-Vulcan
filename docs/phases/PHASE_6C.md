@@ -5,7 +5,7 @@ A short phase after 6W and before magic (Phase 7): a liege lord who takes a tith
 ## Status
 
 - [x] Design form answered, 2026-11-20 (V-210)
-- [ ] Spec form answered (V-211)
+- [x] Spec form answered, 2026-11-23, every recommendation (V-211)
 - [ ] Slice 1, the lord and the reeve (engine)
 - [ ] Slice 2, the tithe, the Lord law and favour (engine)
 - [ ] Slice 3, asks (engine)
