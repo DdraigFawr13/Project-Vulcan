@@ -12,5 +12,25 @@
   "barn": {"name": "Tithe barn", "start": 2, "size": "lean-to"},
   "lean": {"days": 200, "half": ["cautious","pious","learned"], "memory": "lean-tithe", "standing": {"by": -4, "days": 168, "text": "the lord took his tithe in a lean year"}},
   "search": 3
-}
+},
+"favour": {
+  "start": 50, "days": 1008,
+  "causes": {
+    "full": {"by": 6, "text": "the tithe paid in full"},
+    "tenth": {"by": -1, "text": "{short} short of the tithe: {owed} owed, {there} counted"},
+    "defiant": {"by": -10, "text": "the valley defiant of the lord"},
+    "fine": {"by": -10, "text": "the lord's fine unpaid"},
+    "found": {"by": -8, "text": "{what} found hidden from the barn"},
+    "told": {"by": -4, "text": "poaching in the lord's forest told to the reeve"}
+  },
+  "ladder": [
+    {"id": "raised", "below": 35, "text": "the tithe is raised by half", "by": 50},
+    {"id": "fine", "below": 20, "text": "the valley is fined one more tithe, due at the next harvest home", "by": 100},
+    {"id": "men", "below": 10, "text": "the lord's men come to take what is owed by force", "by": 100},
+    {"id": "free", "above": 70, "text": "the lord grants a year free of the tithe", "by": -100},
+    {"id": "forest", "above": 85, "text": "the lord grants the valley his forest", "by": 0}
+  ],
+  "men": {"kinds": ["break", "cut"], "parts": ["head", "body", "left-arm", "right-arm"], "severity": "light", "what": "was beaten by the lord's men"}
+},
+"forest": {"place": "wood", "reach": 12}
 }

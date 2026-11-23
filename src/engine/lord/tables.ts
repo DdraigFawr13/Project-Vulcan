@@ -8,13 +8,19 @@ export const LORD_TABLES: Schemas = {
   /** The lord: the ruler's id in the world, name, sex, birth year, age and whether a child then,
    * temper (id, word, line), byname ('' for none), realm and the word for its kind, the title the
    * colony uses, home (the realm's seat), people (a culture id), the side the home road leaves by,
-   * the reeve's name and the line the colony first heard of them on. */
+   * the reeve's name and the line the colony first heard of them on. 6C Slice 2: the favour
+   * ladder's steps reached (indices), a fine and a free year owed at the next visit (1), whether
+   * the forest is the colony's (1), and the forest's middle (-1 for none). */
   lord: {
     ...{ ruler: 'int', name: 'text', sex: 'text', born: 'int', age: 'int', child: 'count' },
     ...{ temper: 'text', word: 'text', line: 'text', byname: 'text', realm: 'text' },
     ...{ kind: 'text', title: 'text', home: 'text', culture: 'text', dir: 'text' },
     ...{ reeve: 'text', named: 'event' },
+    ...{ steps: 'ints', fine: 'count', free: 'count', granted: 'count', fx: 'int', fy: 'int' },
   },
+  /** The lord's favour's causes (V-222), as standing's: the cause, its worth, words, line and the
+   * tick it stops counting. */
+  favour: { cause: 'text', by: 'int', text: 'text', line: 'event', until: 'int' },
   /** The reeve while he is in the valley: where he stands and his way (as a person walks),
    * `going` 0 coming and 1 going home, the harvest-home line he came after, his coming line, the
    * person he seeks and the tick he last looked for them. */

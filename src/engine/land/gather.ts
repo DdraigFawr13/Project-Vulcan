@@ -12,6 +12,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { able, busy, declineIfUnable, goBeside, layAround, outranked } from '../band/index.ts';
 import { people, practise, priorityLine, scaled, SIDES, skillOf, spotOf } from '../band/index.ts';
 import { couldHave, readyFor, tallyAdd, worked } from '../band/index.ts';
+import { keepsOut, poached } from '../defy/index.ts';
 
 /** `kinds` are the feature kinds worked, preferred in that order. */
 interface Gather {
@@ -73,15 +74,19 @@ function chooseSource(ctx: SystemContext, p: EntityRow, g: Gather): number | und
   const from = spotOf(p);
   let best: number | undefined;
   let score = Infinity;
+  // The lord's forest is kept out of unless they would poach (6C Slice 2).
+  const out = keepsOut(ctx, p);
   eachKnown(map, workAreas(content, map, ox, oy, reach), (i, x, y) => {
     const def = sourceAt(world, content, i, g);
-    if (!def || taken.has(i)) return;
+    if (!def || taken.has(i) || (g.job === 'fell' && out(x, y))) return;
     if (Math.max(Math.abs(x - map.startX), Math.abs(y - map.startY)) <= camp) return;
     const s = g.kinds.indexOf(def.kind) * 100000 + Math.max(Math.abs(x - ox), Math.abs(y - oy));
     if (s < score && besideFrom(ctx, from, x, y)) [best, score] = [i, s];
   });
   return best;
 }
+
+const what = (name: string) => `${/^[aeiou]/.test(name) ? 'an' : 'a'} ${name}`;
 
 /** The tree comes down (or the boulder is broken up): the feature goes, what it yields lies
  * there, one line. */
@@ -100,11 +105,12 @@ function fell(ctx: SystemContext, p: EntityRow, i: number, g: Gather): void {
     data: {
       name: p['name'] as string,
       verb,
-      what: `${/^[aeiou]/.test(name) ? 'an' : 'a'} ${name}`,
+      what: what(name),
       count: def.amount,
       good,
     },
   });
+  if (g.job === 'fell') poached(ctx, p, { x, y }, `${verb} ${what(name)}`, line);
   if (g.job === 'fell' && def.kind === 'tree') noteFelled(ctx, i, map.features[i]!);
   map.features[i] = 0;
   unmark(world, x, y);

@@ -17,12 +17,15 @@ import { foodDays, hiddenOf, titheRows } from '../goods/index.ts';
 import { decree, settingOf, weigh } from '../law/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { addFavour, climb, favourFor, poachTold, shareOf } from './favour.ts';
 import { lordName, lordRow } from './tables.ts';
 
-/** The lord's share in 100 of what is brought in. */
+/** The lord's share in 100 of what is brought in: his temper's, as the favour ladder makes it
+ * (raised, a fine owed, a free year). */
 export function rateOf(ctx: SystemContext): number {
   const t = ctx.content.lord.tithe;
-  return t.tempers[lordRow(ctx.world)?.['temper'] as string] ?? t.rate;
+  const plain = t.tempers[lordRow(ctx.world)?.['temper'] as string] ?? t.rate;
+  return Math.floor((plain * shareOf(ctx)) / 100);
 }
 
 const itemWord = (ctx: SystemContext, kind: string): string =>
@@ -106,13 +109,13 @@ function search(ctx: SystemContext, reeve: string, cause: number): void {
     const count = item['count'] as number;
     const home = builtHome(world, p.id);
     const where = home ? `in their ${houseName(world, content, home.id)}` : 'in their bedroll';
-    lines.push(
-      ctx.emit('lord.found', {
-        causes: [cause, h['line'] as number],
-        actors: [p.id],
-        data: { reeve, count, what: itemWord(ctx, kind), name: p['name'] as string, where, lord },
-      }),
-    );
+    const at = ctx.emit('lord.found', {
+      causes: [cause, h['line'] as number],
+      actors: [p.id],
+      data: { reeve, count, what: itemWord(ctx, kind), name: p['name'] as string, where, lord },
+    });
+    lines.push(at);
+    addFavour(ctx, 'found', [at], { what: `${count} ${itemWord(ctx, kind)}` });
     found.push([kind, count]);
     removeEntity(world, 'item', item.id);
     removeEntity(world, 'hidden', h.id);
@@ -122,6 +125,14 @@ function search(ctx: SystemContext, reeve: string, cause: number): void {
     data: { reeve, found: goodsWords(ctx, found) },
   });
 }
+
+/** What the favour ladder makes of this year's tithe, for the reeve's line. */
+const termsOf = (lord: EntityRow): string =>
+  lord['free']
+    ? ', the lord granting a year free of the tithe'
+    : lord['fine']
+      ? ', with the fine'
+      : '';
 
 /** A later visit: the reeve counts the barn against the share of all brought in since he last
  * came, takes what is there (half, for some lords, in a lean year) and says what is short. */
@@ -162,17 +173,21 @@ export function takeTithe(ctx: SystemContext, causes: number[], to: EntityRow): 
   const sum = (xs: [string, number][]) => xs.reduce((n, [, c]) => n + c, 0);
   const short: [string, number][] = owed.map(([k, n], i) => [k, n - took[i]![1]]);
   const shortN = sum(short);
-  const leanWords = !lean
-    ? ''
-    : half
-      ? '; the year is lean, so the lord takes half'
-      : '; the year is lean, but the lord takes all';
+  const leanWords =
+    (!lean
+      ? ''
+      : half
+        ? '; the year is lean, so the lord takes half'
+        : '; the year is lean, but the lord takes all') + termsOf(lord);
   const line = ctx.emit('lord.tithed', {
     causes: [...causes, ...cites],
     actors: [to.id],
     data: {
       ...{ reeve: lord['reeve'] as string, name: to['name'] as string, lord: lordName(lord) },
-      ...{ owed: goodsWords(ctx, owed), share: rate === 10 ? 'a tenth' : `${rate} in 100` },
+      ...{
+        owed: goodsWords(ctx, owed),
+        share: rate === 10 ? 'a tenth' : rate ? `${rate} in 100` : 'none',
+      },
       ...{ brought: goodsWords(ctx, brought), lean: leanWords, there: goodsWords(ctx, there) },
       short: shortN ? `Short: ${goodsWords(ctx, short)}.` : 'Nothing is short.',
       took: goodsWords(ctx, took),
@@ -180,6 +195,16 @@ export function takeTithe(ctx: SystemContext, causes: number[], to: EntityRow): 
     },
   });
   if (lean && sum(took) > 0) leanYear(ctx, line);
+  const words = { owed: goodsWords(ctx, owed), there: goodsWords(ctx, there) };
+  favourFor(ctx, {
+    line,
+    owedN: sum(owed),
+    shortN,
+    owed,
+    words: { ...words, short: goodsWords(ctx, short) },
+  });
+  poachTold(ctx, line);
   search(ctx, lord['reeve'] as string, line);
+  climb(ctx, line, owed);
   return line;
 }

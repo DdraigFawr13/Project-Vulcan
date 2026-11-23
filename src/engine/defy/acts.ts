@@ -47,7 +47,7 @@ const storeFood = (ctx: SystemContext, food: EntityRow): boolean =>
 
 /** The answer, memory and belief behind `p` taking now: their grievance at the `take` step, else
  * hunger with no law behind it (`hungerWhy`). */
-function takeWhy(
+export function takeWhy(
   ctx: SystemContext,
   p: EntityRow,
   law?: string,

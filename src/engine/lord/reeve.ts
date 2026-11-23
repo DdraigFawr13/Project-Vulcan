@@ -13,6 +13,7 @@ import { addMemory } from '../needs/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { lordName, lordRow, reeveRow } from './tables.ts';
+import { markForest } from './forest.ts';
 import { swear, takeTithe } from './tithe.ts';
 
 const hourOf = (tick: number) => Math.floor((tick % TICKS_PER_DAY) / TICKS_PER_HOUR);
@@ -94,6 +95,7 @@ function nameTheLord(ctx: SystemContext, r: EntityRow, to: EntityRow): void {
   }
   // 6C Slice 2: the Lord law stands at Loyal from his word, and everyone answers it.
   swear(ctx, line);
+  markForest(ctx);
 }
 
 /** A later visit: the reeve counts the store, then the tithe barn, and takes the tithe. */

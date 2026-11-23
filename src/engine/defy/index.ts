@@ -2,6 +2,7 @@
 export { defySystem } from './system.ts';
 export { hideFromBarn, pilfer, raidsBarn } from './acts.ts';
 export { coolOf } from './ladder.ts';
+export { keepsOut, poached, poaches } from './poach.ts';
 export {
   atLeast,
   DEFY_TABLES,

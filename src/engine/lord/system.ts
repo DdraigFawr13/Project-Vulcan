@@ -43,6 +43,7 @@ function copyLord(ctx: SystemContext, lord: Lord): void {
     ...{ line: lord.temperLine, byname: lord.byname, realm: lord.realm, kind: lord.kind },
     ...{ title: titleOf(content, lord.kind, lord.sex), home: lord.home, culture: lord.culture },
     ...{ dir: lord.dir, reeve: reeveName(ctx, names, lord.name), named: 0 },
+    ...{ steps: [], fine: 0, free: 0, granted: 0, fx: -1, fy: -1 },
   });
 }
 
@@ -80,7 +81,8 @@ export const lordSystem: System = {
   stream: 'lord',
   emits: [
     ...['lord.reeveCame', 'lord.named', 'lord.counted', 'lord.reeveLeft', 'lord.tithed'],
-    ...['lord.barned', 'lord.carried', 'lord.searched', 'lord.found'],
+    ...['lord.barned', 'lord.carried', 'lord.searched', 'lord.found', 'lord.favour'],
+    ...['lord.step', 'lord.men', 'lord.told', 'health.hurt'],
   ],
   initialState: { done: 0, none: 0 },
   tables: LORD_TABLES,
