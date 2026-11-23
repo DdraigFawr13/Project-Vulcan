@@ -46,21 +46,34 @@ export interface TripDials {
   /** A newcomer's word of a good on the road in: wrong `wrong` per cent of the time; it pulls
    * the next scout for that good `lean` tiles toward its way. */
   word: { wrong: number; lean: number };
+  /** Prospecting (6W Slice 7, V-215): anyone beside a rock face over a seam spots it each hour
+   * 1 in `per` plus 1 in `per` a mining level, times `rocks` by the face rock's place in the
+   * ore's `vein.rocks` (best, second, any other); a seam is not spotted within `apart` tiles of
+   * one of its ore already found. A prospector walks along faces up to `day` minutes, each next
+   * face within `along` tiles; a word of ore along the road pulls them `word` tiles that way. */
+  prospect: {
+    per: number;
+    rocks: readonly number[];
+    apart: number;
+    day: number;
+    along: number;
+    word: number;
+  };
 }
 
 /** One kind of find: placed by `rule` (`size` is the rule's own measure: trees about a grove,
  * metres of rise for a lookout, of cliff for a cave or den, clay tiles in a bank), `gap` tiles
  * apart, at most `most`; `use` what finding it opens (`work`: fellers work round it, `clay`: its
- * bank is dug, `fish`: anglers fish it, `look`: whoever stands there sees twice as far); `tale`
+ * bank is dug, `fish`: anglers fish it, `look`: whoever stands there sees twice as far; `ore`: a seam spotted, mined beside, V-215); `tale`
  * the tale it starts; `then` the words after the line. */
 export interface PlaceKind {
   id: string;
   name: string;
-  rule: 'spring' | 'grove' | 'bank' | 'pool' | 'lookout' | 'cliff';
+  rule: 'spring' | 'grove' | 'bank' | 'pool' | 'lookout' | 'cliff' | 'seam';
   size: number;
   gap: number;
   most: number;
-  use?: 'work' | 'clay' | 'fish' | 'look';
+  use?: 'work' | 'clay' | 'fish' | 'look' | 'ore';
   tale: string;
   then: string;
 }

@@ -1,7 +1,7 @@
 // The overview picture (Phase 6W Slice 2, docs/MAP_OVERVIEW.md): zoomed out past ½×, the map is
 // one small picture, a pixel a tile, each tile in the average colour of its own art (tiles.ts
 // colours), instead of tile layers. A picture for each level, kept up to date from the chunks
-// that change; unknown rock below is black (V-030) with its veins glinting. Colonists on the
+// that change; unknown rock below is black (V-030), its veins too (V-215). Colonists on the
 // level on screen are ember dots over it. View only (V-015, V-041): nothing here is game state.
 import Phaser from 'phaser';
 import type { GoodsView } from '../worker/index.ts';

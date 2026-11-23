@@ -182,9 +182,10 @@ export interface MapState {
   worn: Uint8Array;
   /** Built on each surface tile (P3.1): 0, or 1 + a `buildings.parts` index; a stair is a tile kind. */
   built: Uint8Array;
-  /** Surface only: 0, or 1 + the features index of the stained vein below the tile (the
-   * shallowest stained level wins), V-087. */
-  stains: Uint8Array;
+  /** Surface rock faces (6W Slice 7, V-215, map `faces.ts`): 0 not a face, 1 a face, 1 + f a face
+   * over the seam of features index f - 1; bit 128 once a prospector has walked it. Hidden: never
+   * drawn or sent to the screen. */
+  faces: Uint8Array;
   /** The levels below, 0 for level 1: null until stairs or a shaft reach one (V-014), so it costs nothing. */
   levels: (LevelState | null)[];
   /** The share of its usual density each of `generator.riches.goods` was drawn at, by good id. */
@@ -210,6 +211,8 @@ export interface Place {
   by: number;
   line: number;
   tick: number;
+  /** A seam spotted in a rock face (V-215): the vein's feature id; absent for other finds. */
+  what?: string;
 }
 
 /** One scouting trip (6W Slice 4): the need behind it, where its news centres and how many of the
@@ -232,6 +235,11 @@ export interface Find {
   search?: number;
   /** 1 once the scout has lost the way on this trip (at most once a trip). */
   strayed?: number;
+  /** A prospecting trip (6W Slice 7, V-215): 1, with `good` the ore's feature id; `faces` the rock
+   * faces walked on it, and `along` the tick the walk along the faces ends (0 until begun). */
+  ore?: number;
+  faces?: number;
+  along?: number;
 }
 
 /** One level below the surface, the same size as it, made from the seed when first reached. */

@@ -364,9 +364,8 @@ export const WORLD_SCHEMAS = {
         }),
         // The most tiles one opening shows at once (V-030 fog).
         reveal: num({ min: 1 }),
-        // Unknown ground draws as this art; a vein glints through it at `fogVein` brightness.
+        // Unknown ground draws as this art; a vein in it stays dark too (V-215).
         fogArt: str(),
-        fogVein: share,
         stairsDown: ref('terrain'),
         stairsUp: ref('terrain'),
         stairs: ref('terrain'),

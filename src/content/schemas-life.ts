@@ -144,7 +144,8 @@ export const LIFE_SCHEMAS = {
       skilled: count,
       ladder: map(count, 'items'),
       floors: obj({ stone: str(), earth: str(), bank: str() }),
-      // A shaft may sit up to `near` tiles from its stain, on the nearest open ground; not within
+      // A shaft may sit up to `near` tiles from a found seam's face (V-215), on the nearest open
+      // ground; a search tunnel runs at most `search` tiles; not within
       // `avoid` tiles of a plan sent back or a shaft spent; on ground whose walking multiplier is
       // at most `walk` (1 is plain ground). `why` is the sentence a shaft plan gives for itself
       // ({Metal}, {metal}, {have}, {want}, {word}, {far}, {dir}); `words` say what each mining
@@ -152,8 +153,9 @@ export const LIFE_SCHEMAS = {
       near: count,
       avoid: count,
       walk: num({ min: 1 }),
+      search: count,
       why: text,
-      words: obj({ sink: text, tunnel: text, mine: text, clay: text, cellar: text }),
+      words: obj({ sink: text, tunnel: text, search: text, mine: text, clay: text, cellar: text }),
     }),
     // Foraging (P2.9): the jobs.json job and the good it serves, minutes a bush takes at skill
     // `skilled`, bushes looked for within `reach` tiles of the store; a bush picked is ripe again

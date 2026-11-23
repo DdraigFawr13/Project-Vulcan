@@ -1,5 +1,5 @@
-// The mine system (P4.1, V-086, V-087): sites a shaft by a stain when a metal is wanted and no open
-// vein can feed it, as a plan with a reason; the player's one lever is `sendBackShaft`, once a
+// The mine system (P4.1, V-086, V-215): sites a shaft beside a found seam when a metal is wanted
+// and no open vein can feed it, as a plan with a reason; the player's one lever is `sendBackShaft`, once a
 // plan, before anyone has begun it. A sunk shaft that opens no way to a vein is spent and a new one
 // is sited. Digging is the people's (src/engine/land/mine.ts).
 import type { EntityRow } from '../core/index.ts';
@@ -14,28 +14,23 @@ import { nextDig } from './tunnel.ts';
 
 const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** Plans a shaft for `metal` (or the salt seam, whose reason is the curer's) citing `causes`, or
- * says once per plate change that no stain does. Returns whether a plan was made. */
+/** Plans a shaft for `metal` (or the salt seam, whose reason is the curer's) beside a found seam,
+ * citing `causes`, the want and the seam's line; with no seam found, nothing (prospecting is
+ * Scouting's, land `prospect.ts`). Returns whether a plan was made. */
 function planShaft(
   ctx: SystemContext,
   metal: string,
   sentBack: number,
   causes: readonly number[],
 ): boolean {
-  const { world, content, state } = ctx;
+  const { world, content } = ctx;
   const salt = metal === saltOf(content);
   const plate = stockOf(world, `${metal}-ingot`);
   const line = salt ? saltCause(world) : ((plate?.['line'] as number | undefined) ?? 0);
   const site = siteShaft(world, content, metal);
   const name = content.features.find((f) => f.id === metal)!;
-  if (!site) {
-    // Once per metal for each change of its plate (the plate's line is the mark).
-    if (state[`no-${metal}`] !== line)
-      ctx.emit('mine.noStain', { causes: line ? [line] : [], data: { metal } });
-    state[`no-${metal}`] = line;
-    return false;
-  }
-  const word = name.vein?.stainWord ?? '';
+  if (!site) return false;
+  const word = name.vein?.seam ?? '';
   const ingot = `${metal}-ingot`;
   const have = haveOf(world, content, ingot);
   const why = salt
@@ -47,10 +42,10 @@ function planShaft(
   // The plate's line and the worn tools' lines that ask for metal (P4.9).
   const worn = salt ? [] : wornTools(world, content).map((w) => w.item['worn'] as number);
   const planned = ctx.emit('mine.shaftPlanned', {
-    causes: [...causes, ...(line ? [line] : []), ...worn.filter((l) => l > 0)],
+    causes: [...causes, ...(line ? [line] : []), ...worn.filter((l) => l > 0), site.seam.line],
     data: {
       ...{ metal, level: name.vein?.level ?? 0, tiles: site.far, dir: site.dir, why },
-      ...{ stain: word, x: site.x, y: site.y },
+      ...{ seam: word, x: site.x, y: site.y },
     },
   });
   addEntity(world, 'shaft', {
@@ -67,7 +62,7 @@ const sinking = (ctx: SystemContext, shaft: EntityRow): boolean =>
   );
 
 /** `sendBackShaft {shaft}`: a shaft plan not yet begun (nobody has taken up sinking it), once; the
- * colony looks for another stain at least `work.mine.avoid` tiles off. */
+ * colony plans beside another found seam at least `work.mine.avoid` tiles off, or waits for one. */
 function sendBackShaft(
   ctx: SystemContext,
   data: Readonly<Record<string, unknown>>,
@@ -103,9 +98,9 @@ function sendBackShaft(
 export const mineSystem: System = {
   id: 'mine',
   every: 'hour',
-  emits: ['mine.shaftPlanned', 'mine.shaftSentBack', 'mine.noStain', 'mine.noVein'],
-  // `sig`: a mark of the ingot plates' lines and `day` the day of the last look, so the colony
-  // looks again once a day or when a plate changes.
+  emits: ['mine.shaftPlanned', 'mine.shaftSentBack', 'mine.noVein'],
+  // `sig`: a mark of the ingot plates' lines and the seams found, and `day` the day of the last
+  // look, so the colony looks again once a day, when a plate changes or a seam is found.
   initialState: { sig: 0, day: -1 },
   tables: MINE_TABLES,
   commands: { sendBackShaft: (ctx, command, cause) => sendBackShaft(ctx, command.data, cause) },
@@ -114,7 +109,8 @@ export const mineSystem: System = {
     const metals = metalsOf(content);
     const sig = metals.reduce(
       (n, m) => (n * 31 + ((stockOf(world, `${m}-ingot`)?.['line'] as number) ?? 0)) % 1000000007,
-      7,
+      // A seam found is looked at at once (V-215).
+      7 + world.map.places.filter((p) => p.what && p.line).length,
     );
     const day = Math.floor(world.tick / TICKS_PER_DAY);
     if (sig === state['sig'] && day === state['day']) return;
@@ -137,7 +133,7 @@ export const mineSystem: System = {
           causes.push(ctx.emit('mine.noVein', { causes: line ? [line] : [], data: { metal } }));
         state[`novein-${metal}`] = line;
       }
-      // A plan that replaces one sent back (still unplaced for want of a stain) cannot be sent back.
+      // A plan that replaces one sent back (still unplaced for want of a seam) cannot be sent back.
       const last = shaftsOf(world)
         .filter((s) => s['metal'] === metal)
         .at(-1);

@@ -10,8 +10,6 @@ export interface LevelArrays {
   things: Uint8Array;
   /** 1 where the tile is known (V-030). */
   known: Uint8Array;
-  /** Surface only: 0, or 1 + the features index of the vein stained below. */
-  stains: Uint8Array;
   /** Surface only: 0, or 1 + a `buildings.parts` index (the overview's colours). */
   built: Uint8Array;
   /** Surface only: 1 where snow lies on the ground. */
@@ -33,7 +31,6 @@ export function storeChunk(
     ice: new Uint8Array(n),
     things: new Uint8Array(n),
     known: new Uint8Array(n),
-    stains: new Uint8Array(n),
     built: new Uint8Array(n),
     snowLie: new Uint8Array(n),
   });
@@ -46,7 +43,6 @@ export function storeChunk(
       level.ice[i] = chunk.ice[from]!;
       level.things[i] = chunk.features[from]!;
       level.known[i] = chunk.known[from]!;
-      level.stains[i] = chunk.stains[from]!;
       level.built[i] = chunk.built[from]!;
       level.snowLie[i] = chunk.snowLie[from]!;
     }

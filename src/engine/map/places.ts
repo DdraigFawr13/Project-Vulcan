@@ -96,6 +96,8 @@ interface At {
 
 /** Each rule's score for a tile (higher is better), or undefined where it does not allow it. */
 const RULES: Record<Kind['rule'], (a: At) => number | undefined> = {
+  // A seam is never laid: it is found where someone spots one in a rock face (V-215).
+  seam: () => undefined,
   spring: ({ map, i }) => (WATER[map.water[i]!] === 'spring' ? 0 : undefined),
   pool: ({ map, i, x, y }) => {
     if (WATER[map.water[i]!] !== 'lake' || x % 3 || y % 3) return undefined;

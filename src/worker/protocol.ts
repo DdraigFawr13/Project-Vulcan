@@ -109,8 +109,6 @@ export interface ChunkView {
   built: Uint8Array;
   /** 1 where the tile is known (V-030); all 1 on the surface. */
   known: Uint8Array;
-  /** Surface only: 0, or 1 + the features index of the ore vein stained below (V-087). */
-  stains: Uint8Array;
   /** Surface only (Bundle 2): 1 where snow lies on the ground. */
   snowLie: Uint8Array;
   /** Surface only: 0, or 1 + an index into content `wild.prints` for the print on the tile. */
@@ -198,9 +196,6 @@ export interface TileView {
   /** What grows or lies on the tile, with what it yields, e.g. "ash (25 logs)" or
    * "copper vein (20 copper ore)". */
   feature?: string;
-  /** Surface only: the ore stain on the ground and where its vein lies, e.g. "iron lies below, on
-   * level 3"; the ground line names the stain's colour. */
-  stain?: string;
   /** Where stairs or a shaft on the tile lead to a reached level; absent with no way up or down. */
   ways?: { up: boolean; down: boolean };
   chunkX: number;

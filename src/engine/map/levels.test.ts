@@ -11,9 +11,8 @@ describe('levels below', () => {
   const sim = createSim(content);
   const radius = content.terrain.generator.start.radius;
   const { depth } = content.terrain.generator.underground;
-  const veinOf = (id: string) => content.features.findIndex((f) => f.id === id) + 1;
 
-  it.each(MAP_SEEDS)('seed %s has no ore near the start below, and stains over ore', (seed) => {
+  it.each(MAP_SEEDS)('seed %s has no ore near the start below, and seams only in faces over ore', (seed) => {
     const { map } = createWorld(sim, seed);
     let near = Infinity;
     let veins = 0;
@@ -28,13 +27,20 @@ describe('levels below', () => {
       });
     expect(veins).toBeGreaterThan(0);
     expect(near).toBeGreaterThan(radius);
-    // The surface is stained over copper, tin and iron veins (V-087).
-    for (const ore of ['copper', 'tin', 'iron']) {
-      const f = veinOf(ore);
-      const at = map.stains.findIndex((s) => s === f);
-      expect(at, ore).toBeGreaterThanOrEqual(0);
-      expect(levels[content.features[f - 1]!.vein!.level - 1]!.features[at]).toBe(f);
-    }
+    // A face shows a seam only where its vein lies within a tile below; nothing else marks it
+    // (V-215, no stains).
+    let seams = 0;
+    map.faces.forEach((v, i) => {
+      if (v < 2) return;
+      seams += 1;
+      const f = v - 1;
+      const layer = levels[content.features[f - 1]!.vein!.level - 1]!;
+      const [x, y] = [i % map.width, Math.floor(i / map.width)];
+      const near = [-1, 0, 1].flatMap((dy) => [-1, 0, 1].map((dx) => (y + dy) * map.width + x + dx));
+      expect(near.some((j) => layer.features[j] === f)).toBe(true);
+    });
+    expect(seams).toBeGreaterThan(0);
+    expect('stains' in map).toBe(false);
   });
 
   it('makes a level only when stairs or a shaft reach it, the same in any order', () => {

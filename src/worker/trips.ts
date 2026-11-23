@@ -97,6 +97,9 @@ function outcomeOf(trip: Find, end: SimEvent | Stub | undefined): string {
   if (end?.type === 'land.lost') return 'lost with what they saw';
   if (end && 'data' in end && end.type === 'land.beyond')
     return `found ${String((end as SimEvent).data['found'])}`;
+  // A prospecting trip (V-215): the seam told of, or none.
+  if (end?.type === 'land.toldOfSeam') return 'told of a seam';
+  if (end?.type === 'land.noSeam') return 'no seam';
   const find = content.work.scout.goods.find((g) => g.good === trip.good)?.find;
   return trip.count >= content.terrain.generator.known.least
     ? `told of ${find ?? goodName(trip.good)}`
