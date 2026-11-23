@@ -50,6 +50,14 @@ describe('the known map on screen', () => {
     );
   });
 
+  it('names on the Scouting row each ore wanted with no seam known, and how long (V-227)', () => {
+    const w = createWorld(sim, 'smoke');
+    step(w, sim, 60);
+    expect(scoutingWords(w)).toBe('nobody out; no trip yet');
+    w.systems['orewant'] = { copper: w.tick - 40 * TICKS_PER_DAY, 'l-copper': w.tick };
+    expect(scoutingWords(w)).toBe('nobody out; no trip yet; copper wanted 40 days');
+  });
+
   it('flags a find, pages it, and tells the trip in the Trips tab and the Scouting row', () => {
     const w = createWorld(sim, 'smoke');
     step(w, sim, 60);

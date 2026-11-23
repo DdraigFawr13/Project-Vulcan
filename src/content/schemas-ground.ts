@@ -128,5 +128,6 @@ export const SCOUT = obj({
     day: count,
     along: count,
     word: count,
+    better: count,
   }),
 });

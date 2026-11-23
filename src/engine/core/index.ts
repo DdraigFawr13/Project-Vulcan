@@ -42,4 +42,5 @@ export * from './lord.ts';
 export * from './methods.ts';
 export * from './defy.ts';
 export { list, itemName, isName, lower, namesTakeNoThe, pronouns, the } from './words.ts';
+export { articlesAndCounts, counted } from './words.ts';
 export { clamp, smooth, cheb, dice, roughDistance } from './maths.ts';
