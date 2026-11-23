@@ -6,7 +6,7 @@ A short phase after 6W and before magic (Phase 7): a liege lord who takes a tith
 
 - [x] Design form answered, 2026-11-20 (V-210)
 - [x] Spec form answered, 2026-11-23, every recommendation (V-211)
-- [ ] Slice 1, the lord and the reeve (engine). Mock-up form sent 2026-11-23, waiting for Morgan: https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha (six choices: the title, no byname, a child lord, how the news lands, yearly visits, how long the reeve stays; scripts in project files `vulcan/p6c-s1-mockup/`)
+- [ ] Slice 1, the lord and the reeve (engine). Mock-up answered 2026-11-23, every recommendation (V-215, https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha); build next in a fresh thread
 - [ ] Slice 2, the tithe, the Lord law and favour (engine)
 - [ ] Slice 3, asks (engine)
 - [ ] Slice 4, the lord and asks on screen (screens)
