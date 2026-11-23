@@ -210,6 +210,7 @@ describe('carpentry and furniture', () => {
       'deconstruct',
       'cutStairs',
       'sinkShaft',
+      'findSeam',
       'markFell',
       'markStore',
       'hurt',
