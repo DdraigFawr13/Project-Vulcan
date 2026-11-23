@@ -12,6 +12,7 @@ export type { AnswerView, HoursView, LawView, StrangersLawView } from './protoco
 import type { WalkerView } from './protocol-people.ts';
 export type { HealthView, NeedView, StrangerView, WalkerView } from './protocol-people.ts';
 import type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
+import type { FindMark, FindView, TripsView } from './protocol-land.ts';
 export type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 import type {
   BuildView,
@@ -71,7 +72,9 @@ export type ToWorker =
   /** The item page (P4.6): one tool or ingot stack and where it came from. */
   | { type: 'item'; id: number }
   /** The herd or pack page of an animal tapped on the map (Bundle 2). */
-  | { type: 'animal'; id: number };
+  | { type: 'animal'; id: number }
+  /** The Ledger's Trips tab (6W Slice 6). */
+  | { type: 'trips' };
 
 /** The clock as the page shows it; the worker computes it from the tick and the content calendar. */
 export interface ClockView {
@@ -244,6 +247,10 @@ export interface TileView {
   place?: PlaceView;
   /** The page of the pasture, fold, hay meadow or rick this tile is part of (Bundle 3). */
   pasture?: AnimalPage;
+  /** Surface nobody has seen (6W Slice 6): the page says only "not yet seen". */
+  unseen?: true;
+  /** The found place flagged here (6W Slice 6). */
+  find?: FindView;
 }
 
 /** Yesterday's tally (P2.9): the date, logs felled, items carried into the store, berries
@@ -339,6 +346,8 @@ export type FromWorker =
       walkers: WalkerView[];
       /** The live animals on the surface, only when one has moved since the last snapshot. */
       animals?: AnimalView[];
+      /** The flags on found places, when they changed (6W Slice 6). */
+      finds?: FindMark[];
       /** The Stock sheet's Leftovers block and the game and fish counted as food. */
       leftovers: LeftoversView;
       /** Items, the store and marks (P2.4). */
@@ -371,6 +380,7 @@ export type FromWorker =
   | { type: 'item'; item: ItemView | undefined }
   /** The animal page for an `animal` request; none when the animal is gone. */
   | { type: 'animalPage'; page: AnimalPage | undefined }
+  | { type: 'trips'; trips: TripsView }
   /** The causes of line `id`, nearest first, each with its depth (1 is a direct cause). */
   | { type: 'causes'; id: number; lines: (LedgerLine & { depth: number })[] }
   /** The region of a plain seed and its valleys on offer, before any world begins. */

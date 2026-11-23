@@ -49,6 +49,8 @@
       { "event": "furniture.benchPlaced", "weight": 2 },
       { "event": "build.sited", "weight": 1, "one": "The colony planned a {size} {dir} of the green.", "many": "The colony planned {count} houses: {list}.", "item": "a {size} {dir} of the green" },
       { "event": "build.homeSited", "weight": 1, "one": "The colony planned {whose} home, a {size} {dir} of the green.", "many": "The colony planned {count} homes: {list}.", "item": "{whose} home" },
+      { "event": "build.homeOutgrown", "weight": 1, "one": "{whose} home grew too small for them.", "many": "{Count} homes grew too small: {list}.", "item": "{whose}" },
+      { "event": "build.homeLeft", "weight": 1, "one": "{whose} household moved into a new {size}.", "many": "{Count} households moved into bigger homes: {list}.", "item": "{whose}" },
       { "event": "build.grows", "weight": 1, "many": "{Count} houses grew too full, and rooms were planned for them: {list}.", "item": "the {size}" },
       { "event": "build.growsPrivate", "weight": 1, "many": "{Count} people wanted a room of their own: {list}.", "item": "{name}" },
       { "event": "build.storeSited", "weight": 1, "one": "The colony set out a {store} {dir} of the green.", "many": "The colony set out {count} stores: {list}.", "item": "a {store} {dir} of the green" },

@@ -108,6 +108,8 @@ const panel = new Panel(
     },
     newGame: (next) => roll(next),
     chronicle: () => sheets.chronicle(),
+    trips: () => send({ type: 'trips' }),
+    showAt: (x, y) => void (setLevel(0, true), renderer.focus(x, y, panel.below())),
     close: () => closePanel(),
   },
   debug,
@@ -218,12 +220,9 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       orders.snapshot(panel.kind === 'tile' ? shown : undefined);
       reached = message.reached;
       renderer.applyChunks(message.chunks);
-      renderer.movePeople(message.walkers, {
-        tick: message.tick,
-        speed: message.speed,
-        skipping: message.skipping,
-      });
+      renderer.movePeople(message.walkers, message);
       if (message.animals) renderer.setAnimals(message.animals);
+      if (message.finds) renderer.setFinds(message.finds);
       // The worker changes speed itself (a jump ends, a line stops play); the bar follows it.
       pace.snapshot(message);
       sheets.snapshot(message);
@@ -264,6 +263,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       }
     } else if (message.type === 'item') sheets.showItem(message.item);
     else if (message.type === 'animalPage') sheets.showAnimal(message.page);
+    else if (message.type === 'trips') panel.showTrips(message.trips);
     else if (message.type === 'picker') {
       hud.hideScreen();
       picker.show(message);
