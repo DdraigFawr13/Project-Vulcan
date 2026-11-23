@@ -24,6 +24,21 @@ export const the = (word: string): string => (owned(word) ? word : `the ${word}`
 export const namesTakeNoThe = (template: string, named: (key: string) => boolean): string =>
   template.replace(/\b[Tt]he \{(\w+)\}/g, (all, key: string) => (named(key) ? `{${key}}` : all));
 
+/** `template` with "a {key}" made "an {key}" where the slot's value starts with a small vowel
+ * ("an iron vein"), and " ({have} of {want})" cut where the want is 0, a want with no stock
+ * level ("the colony wants tin ingots", not "(0 of 0)") (6W review). */
+export const articlesAndCounts = (template: string, valueOf: (key: string) => unknown): string =>
+  template
+    .replace(/\b([Aa]) \{(\w+)\}/g, (all, a: string, key: string) => {
+      const v = valueOf(key);
+      return typeof v === 'string' && /^[aeiou]/.test(v) ? `${a}n {${key}}` : all;
+    })
+    .replace(/ \(\{\w+\} of \{(\w+)\}\)/g, (all, key: string) => (valueOf(key) === 0 ? '' : all));
+
+/** "1 copper ingot", "2 copper ingots": `plural` cut to one for a count of 1. */
+export const counted = (n: number, plural: string): string =>
+  `${n} ${n === 1 ? plural.replace(/ies$/, 'y').replace(/([^s])s$/, '$1') : plural}`;
+
 /** Whether a slot's value is a name that takes no "the". */
 export const isName = (value: unknown): boolean => typeof value === 'string' && owned(value);
 

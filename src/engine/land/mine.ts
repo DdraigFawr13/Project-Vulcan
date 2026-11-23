@@ -24,6 +24,7 @@ import { cellarWork, dugCellar } from './cellar.ts';
 import { clayWork } from './clay.ts';
 import { ladderOf, laddered, sinking } from './shaft.ts';
 import { practiseMining, start, stop, takenBy, type Kind, type Task } from './minetask.ts';
+import { longPlanned, passedOver, planSeen, takingUp } from './minefar.ts';
 import { able, declineIfUnable, goBeside, layAround, outranked, people } from '../band/index.ts';
 import { couldHave, priorityLine, readyFor, spotOf, worked } from '../band/index.ts';
 
@@ -157,7 +158,8 @@ function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
     const causes = [...base.causes, shaft['line'] as number];
     if (shaft['state'] !== 'done') {
       const ladder = shaft['depth'] === 0 ? ladderOf(content) : undefined;
-      if (mate('sink')) continue;
+      planSeen(ctx, shaft);
+      if (mate('sink') || passedOver(ctx, shaft.id, p)) continue;
       if (ladder && !laddered(ctx, p, metal, ladder, base.causes[0])) continue;
       return {
         ...base,
@@ -210,8 +212,10 @@ export function takeUpMining(ctx: SystemContext, p: EntityRow): boolean {
     declineIfUnable(ctx, p, job);
     return false;
   }
-  if (outranked(ctx, p, job, (q) => couldHave(ctx, q, job) && workFor(ctx, q) !== undefined))
-    return false;
+  // A plan waiting `mine.wait` days goes to whoever is free, not only the best placed (V-227).
+  const waited = t.kind === 'sink' && longPlanned(ctx, t.plan);
+  const could = (q: EntityRow) => couldHave(ctx, q, job) && workFor(ctx, q) !== undefined;
+  if (!waited && outranked(ctx, p, job, could)) return false;
   // A pick is needed (V-195): without one they knap their own or do other work.
   const tool = readyFor(ctx, p, job);
   if (tool !== 'ok') return tool === 'knap';
@@ -221,6 +225,7 @@ export function takeUpMining(ctx: SystemContext, p: EntityRow): boolean {
     data: { name: p['name'] as string, work: t.word, good: t.good, have: t.have, want: t.want },
   });
   start(ctx, p, t);
+  takingUp(ctx, p, t);
   return true;
 }
 
