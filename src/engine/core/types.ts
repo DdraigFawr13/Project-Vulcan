@@ -234,8 +234,7 @@ export interface Find {
   search?: number;
   /** 1 once the scout has lost the way on this trip (at most once a trip). */
   strayed?: number;
-  /** A prospecting trip (V-215): `ore` 1 (`good` the ore), `faces` walked, `along` the walk's end. */
-  ore?: number;
+  ore?: number; // a prospecting trip (V-215): 1, `good` the ore; faces walked; the walk's end
   faces?: number;
   along?: number;
 }
