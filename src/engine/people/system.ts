@@ -15,7 +15,7 @@ import { valleyOf } from '../region/index.ts';
 import type { System } from '../sim/index.ts';
 import { addPerson, ATTRIBUTES, drawBand, drawSmithing, type Home } from '../band/index.ts';
 import { NEWCOMER_FIELDS, PRIORITY_TABLES, rollTally, setPriority } from '../band/index.ts';
-import { KNAP_TABLES, stepAlong, TALLY_START, TOOL_TABLES } from '../band/index.ts';
+import { KNAP_TABLES, TALLY_START, TOOL_TABLES, walkOrWade } from '../band/index.ts';
 import { toolsDaily, WALK_FIELDS } from '../band/index.ts';
 import { FORAGE_TABLES, findsMinute, regrowWoods, tripHour } from '../land/index.ts';
 import { JOB_FIELDS } from './jobfields.ts';
@@ -122,6 +122,7 @@ export const peopleSystem: System = {
     ...['work.tookUpMilling', 'work.tookUpBaking', 'food.ground', 'food.baked'],
     'people.warming',
     'people.passedLake',
+    'people.wadedOut',
     'fire.lit',
     'fire.built',
     'fire.banked',
@@ -254,7 +255,7 @@ export const peopleSystem: System = {
     herdWatch(ctx);
     for (const p of ctx.world.entities['person'] ?? []) {
       if (p['status'] !== 'alive') continue;
-      stepAlong(ctx, p);
+      walkOrWade(ctx, p);
       tracksMinute(ctx, p);
       think(ctx, p, hour);
       risk(ctx, p);
