@@ -26,15 +26,17 @@ type World = ReturnType<typeof createWorld>;
 const SEED = 'smoke/1';
 const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === type);
 
-/** A harvest home brought in and its supper eaten today (the farm's own run takes 140 days). */
-function harvestHome(w: World, sim: ReturnType<typeof createSim>): number {
+/** A harvest home brought in today and its supper eaten, or (`eaten` false) called and never eaten
+ * (the farm's own run takes 140 days). */
+function harvestHome(w: World, sim: ReturnType<typeof createSim>, eaten = true): number {
   const home = emit(w, sim.templates, 'farm.harvestHome', {
     causes: [w.begunEvent],
     data: { names: 'the band', crop: 'turnips', count: 2000, what: 'turnips' },
   });
   const year = yearNow(w, content);
   addEntity(w, 'feast', {
-    ...{ line: home, year, state: 'eaten', start: 0, there: [], eaten: home },
+    ...{ line: home, year, state: eaten ? 'eaten' : 'called', start: 0, there: [] },
+    eaten: eaten ? home : 0,
     ...{ couple: [], on: today(w), holy: 0, lean: 0 },
   });
   return home;
@@ -98,6 +100,20 @@ describe('the lord and the reeve', () => {
     expect(counted!.causes).toContain(second);
     expect(counted!.data['lord']).toBe(lordName(lordRow(loaded)!));
     expect(lines(loaded, 'lord.named')).toHaveLength(1);
+  });
+
+  it('comes the morning after a harvest home whose supper was never eaten (V-220)', () => {
+    // Test world 1 lost its year-3 visit this way: the supper lapsed and the reeve waited on it.
+    const later = structuredClone(w);
+    const home = harvestHome(later, sim, false);
+    const day = today(later);
+    untilGone(later, sim);
+    const came = lines(later, 'lord.reeveCame').filter((e) => e.causes.includes(home));
+    expect(came).toHaveLength(1);
+    expect(came[0]!.causes).toEqual([home]);
+    expect(Math.floor(came[0]!.tick / TICKS_PER_DAY)).toBe(day + 1);
+    const counted = lines(later, 'lord.counted').filter((e) => e.causes.includes(home));
+    expect(counted).toHaveLength(1);
   });
 
   it('skips a realm that fell in history for the next that stands', () => {
