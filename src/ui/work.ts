@@ -213,10 +213,12 @@ export class WorkSheet {
     const skill = w.skills.find((s) => s.id === job.skill);
     const row = el('div', { class: 'prio', 'data-job': job.job });
     const name = el('span', { class: 'job' }, job.name);
-    const about = skill
-      ? `${skill.name.toLowerCase()} ${skill.level}, can reach ${skill.potential}`
-      : 'no skill needed';
-    name.append(el('small', {}, about));
+    const about =
+      job.about ??
+      (skill
+        ? `${skill.name.toLowerCase()} ${skill.level}, can reach ${skill.potential}`
+        : 'no skill needed');
+    name.append(el('small', job.about ? { 'data-testid': 'scouting-about' } : {}, about));
     row.append(
       name,
       stepper(want, WORDS[want - 1] ?? '', `${job.name} for ${p.name}`, (level) =>

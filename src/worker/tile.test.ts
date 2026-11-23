@@ -11,6 +11,8 @@ const nobody = () => ({}) as never;
 describe('tile page', () => {
   const w = createWorld(sim, 'ledger');
   const { map } = w;
+  // Pages of seen ground: unseen surface says only "not yet seen" (trips.test.ts).
+  map.known.fill(1);
   const at = (i: number) => [i % map.width, Math.floor(i / map.width)] as const;
 
   it('names the stain on a stained surface tile and where its ore lies', () => {

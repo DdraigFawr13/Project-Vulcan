@@ -11,6 +11,8 @@ const nobody = () => ({ text: '' }) as never;
 
 describe('the wild valley on the page', () => {
   const w = createWorld(sim, 'anvil/1');
+  // Pages of seen ground: unseen surface says only "not yet seen" (trips.test.ts).
+  w.map.known.fill(1);
 
   it('opens a herd page from a game animal, with the spare rule', () => {
     const deer = animalsOf(w).find((a) => a['herd'] && a['kind'] === 'hind')!;

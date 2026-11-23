@@ -9,6 +9,7 @@ import type {
   RegionView,
   StockView,
   TileView,
+  TripsView,
 } from '../worker/index.ts';
 import { el } from './dom.ts';
 import { regionRows } from './regionmap.ts';
@@ -17,6 +18,7 @@ import { testMode } from './testmode.ts';
 import { animalRows } from './animalsheet.ts';
 import { saveRows } from './savesheet.ts';
 import { tileRows, tileTitle } from './tilepanel.ts';
+import { tripRows } from './triprows.ts';
 import type { TestOrder } from './testtools.ts';
 
 export type PanelKind =
@@ -36,6 +38,9 @@ export type PanelKind =
   | 'mood'
   | 'stops'
   | 'recap';
+
+type LedgerTab = 'lines' | 'chronicle' | 'trips';
+const TRIP_LINE = /^land\.|^work\.tookUpScouting(Beyond)?$/;
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;
@@ -57,6 +62,10 @@ export interface PanelActions {
   setStock(good: string, level: string): void;
   /** The Ledger's Chronicle tab: every season and year recap (V-191). */
   chronicle(): HTMLElement[];
+  /** The Ledger's Trips tab asks the worker for its view (6W Slice 6). */
+  trips(): void;
+  /** A trip line's Show: the camera goes to a surface tile, clear of the sheet; picks nothing. */
+  showAt(x: number, y: number): void;
   /** Follows the tile's stairs or shaft to level `z` and inspects the same spot there. */
   go(tile: TileView, z: number): void;
   close(): void;
@@ -80,7 +89,7 @@ export class Panel {
   private leftovers: LeftoversView = { items: [], game: 0, fish: 0 };
   private latest: readonly StockView[] = [];
   /** The Ledger's open tab, its lines and the list under its tabs. */
-  private ledgerTab: 'lines' | 'chronicle' = 'lines';
+  private ledgerTab: LedgerTab = 'lines';
   private ledgerLines: readonly LedgerLine[] = [];
   private readonly ledgerList = el('div', { class: 'ledgerlist' });
 
@@ -171,14 +180,16 @@ export class Panel {
     this.body.replaceChildren(el('p', {}, text));
   }
 
-  /** The Ledger: its lines, newest first, or (V-191) its Chronicle of recaps. */
-  showLedger(lines = this.ledgerLines, tab: 'lines' | 'chronicle' = 'lines'): void {
+  /** The Ledger: its lines, newest first, (V-191) its Chronicle of recaps, or (6W Slice 6) its
+   * Trips, filled when the worker answers. */
+  showLedger(lines = this.ledgerLines, tab: LedgerTab = 'lines'): void {
     this.open('ledger', 'Ledger');
     [this.ledgerLines, this.ledgerTab] = [lines, tab];
     const tabs = el('div', { class: 'tabs', role: 'tablist' });
     for (const [t, label] of [
       ['lines', 'Lines'],
       ['chronicle', 'Chronicle'],
+      ['trips', 'Trips'],
     ] as const) {
       const b = el(
         'button',
@@ -190,11 +201,26 @@ export class Panel {
     }
     this.ledgerList.replaceChildren(...(tab === 'chronicle' ? this.actions.chronicle() : []));
     this.body.replaceChildren(tabs, this.ledgerList);
+    if (tab === 'trips') this.actions.trips();
     this.addLines(lines);
+  }
+
+  /** Whether the Ledger's Trips tab is open, so new trip lines ask for it again. */
+  get tripsOpen(): boolean {
+    return this.shown === 'ledger' && this.ledgerTab === 'trips';
+  }
+
+  /** The worker's Trips view, into an open Trips tab. */
+  showTrips(view: TripsView): void {
+    if (!this.tripsOpen) return;
+    const show = (x: number, y: number) => this.actions.showAt(x, y);
+    this.ledgerList.replaceChildren(...tripRows(view, (l) => this.lineRow(l), show));
   }
 
   /** New lines at the top of an open ledger, keeping the newest `LEDGER_LINES`. */
   addLines(lines: readonly LedgerLine[]): void {
+    // An open Trips tab asks again when one of its trips gets a line (6W Slice 6).
+    if (this.tripsOpen && lines.some((l) => TRIP_LINE.test(l.type))) this.actions.trips();
     if (this.shown !== 'ledger' || this.ledgerTab !== 'lines') return;
     const list = this.ledgerList;
     for (const line of lines) list.prepend(this.lineRow(line));

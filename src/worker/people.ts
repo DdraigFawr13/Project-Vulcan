@@ -27,6 +27,7 @@ import type { NeedView, PersonView, WalkerView } from './protocol.ts';
 import { jobShown } from './jobrows.ts';
 import { homeOf, strangerOf } from './strangers.ts';
 import { kinView } from './kinview.ts';
+import { scoutingWords } from './trips.ts';
 
 const nameOf = (list: readonly { id: string; name: string }[], id: string): string =>
   list.find((x) => x.id === id)?.name ?? id;
@@ -174,6 +175,8 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
         const level = levelOf(world, content, p.id, job);
         const declined = declinedLine(world, p.id, job);
         const waits = toolWaits(world, content, job);
+        // The Scouting row says who is out, or when the last trip came home (6W Slice 6).
+        const about = job === content.work.scout.job ? scoutingWords(world) : undefined;
         const skill = content.jobs.find((j) => j.id === job)?.skill;
         return {
           job,
@@ -183,6 +186,7 @@ export const walkersOf = (world: WorldState): WalkerView[] =>
           word: content.work.priority.words[level - 1] ?? '',
           ...(declined !== undefined && { declined }),
           ...(waits && { waits }),
+          ...(about && { about }),
         };
       }),
   }));

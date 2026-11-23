@@ -6,6 +6,7 @@
 import Phaser from 'phaser';
 import { content } from '../content/index.ts';
 import type { AnimalView, ChunkView, Spot3 } from '../worker/index.ts';
+import { FADE } from './fade.ts';
 import { frameIndex, TILE } from './frames.ts';
 import { WILD } from './sheets.ts';
 import { HeldChunks, WindowTiles, type Area } from './tile-window.ts';
@@ -44,6 +45,8 @@ export class WildSprites {
   private middenKey = '';
   private readonly trails = new Trails();
   private readonly clock: TrailClock;
+  /** 1 where a surface tile has been seen: an animal on unseen land is not drawn (V-213). */
+  private known = new Uint8Array(0);
 
   constructor(game: Phaser.Game, scene: Phaser.Scene, clock: TrailClock) {
     this.scene = scene;
@@ -62,6 +65,7 @@ export class WildSprites {
   /** A world began: forget the last one's snow, prints and animals. */
   setMapSize(width: number, height: number): void {
     this.size = { width, height };
+    this.known = new Uint8Array(width * height);
     this.waiting = [];
     this.held.clear();
     this.list = [];
@@ -72,6 +76,12 @@ export class WildSprites {
   applyChunks(chunks: readonly ChunkView[]): void {
     const surface = chunks.filter((c) => c.z === 0);
     for (const c of surface) this.held.keep(c);
+    for (const c of surface)
+      for (let row = 0; row < c.h; row += 1)
+        this.known.set(
+          c.known.subarray(row * c.w, (row + 1) * c.w),
+          (c.y + row) * this.size.width + c.x,
+        );
     if (!this.live) return void this.waiting.push(...surface);
     for (const c of surface) this.paint(c);
   }
@@ -115,6 +125,7 @@ export class WildSprites {
   at(x: number, y: number): number | undefined {
     if (this.z !== 0) return undefined;
     for (const { view, image } of this.animals.values()) {
+      if (!image.visible) continue;
       const here =
         Math.floor((image.x + TILE / 2) / TILE) === x &&
         Math.floor((image.y + TILE / 2) / TILE) === y;
@@ -126,7 +137,10 @@ export class WildSprites {
   /** Where the first animal (of art kind `kind`, if given) stands, in map px: the smoke's way to
    * find one to tap. */
   first(kind?: string): { x: number; y: number } | undefined {
-    const image = [...this.animals.values()].find((s) => !kind || s.view.kind === kind)?.image;
+    // Only one drawn: an animal on unseen land is not (V-213).
+    const image = [...this.animals.values()].find(
+      (s) => s.image.visible && (!kind || s.view.kind === kind),
+    )?.image;
     return image && { x: image.x + TILE / 2, y: image.y + TILE / 2 };
   }
 
@@ -204,7 +218,9 @@ export class WildSprites {
     const snow = frameIndex(this.scene.textures, GROUND, SNOW);
     for (let row = 0; row < c.h; row += 1)
       for (let col = 0; col < c.w; col += 1)
-        this.snow!.put(0, c.snowLie[row * c.w + col] ? snow : -1, c.x + col, c.y + row);
+        this.snow!.put(0, c.snowLie[row * c.w + col] ? snow : -1, c.x + col, c.y + row)
+          // Snow on unseen land fades with it (fade.ts).
+          ?.setAlpha(c.known[row * c.w + col] ? 1 : FADE);
   }
 
   /** Each frame: draw every animal where the screen's clock finds it on its trail, facing as
@@ -215,6 +231,8 @@ export class WildSprites {
       const d = this.trails.at(s.view.id, now);
       const [x, y] = d ? [d.x, d.y] : [s.view.x, s.view.y];
       s.image.setPosition(x * TILE, y * TILE);
+      const seen = this.known[Math.round(y) * this.size.width + Math.round(x)] === 1;
+      s.image.setVisible(this.z === 0 && seen);
       if (!d?.moving) {
         if (s.walked) s.image.setFrame(frameOf(s.view, 0));
         s.walked = 0;

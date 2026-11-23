@@ -82,6 +82,9 @@ export interface WalkerView {
     declined?: number;
     /** What the row's work waits on, colony-wide (V-195): "no pick in the valley". */
     waits?: string;
+    /** The row's small line in place of its skill, colony-wide: Scouting's "Edwin is out for
+     * wood, due home ..." or "nobody out; last trip home 4 days ago" (6W Slice 6). */
+    about?: string;
   }[];
   /** Lying on the ground (P5.6, P5.8): `down` (hurt), `dead` (unburied), `buried` or `away` (out
    * of the valley, P6.5), neither drawn;
