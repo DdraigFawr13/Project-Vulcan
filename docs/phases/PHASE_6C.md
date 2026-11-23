@@ -10,7 +10,7 @@ A short phase after 6W and before magic (Phase 7): a liege lord who takes a tith
 - [ ] Slice 2, the tithe, the Lord law and favour (engine)
 - [ ] Slice 3, asks (engine)
 - [ ] Slice 4, the lord and asks on screen (screens)
-- [ ] Slice 5, hints and breakthroughs (engine)
+- [ ] Slice 5, hints and breakthroughs (engine): mock-up form https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u (2026-11-23, six questions, answers pending; source and ten-year runs in project files `vulcan/p6c-slice5/`)
 - [ ] Slice 6, discoveries on screen (screens)
 - [ ] Slice 7, the lord comes, petitions, wandering masters, contests, the charter (engine and screens)
 - [ ] 6C balance and review
