@@ -14,3 +14,9 @@ Detail for Phase 6C (`docs/phases/PHASE_6C.md`), from Morgan's design form (V-21
 
 The first dozen methods (content, numbers at Slice 5's mock-up): steel (smith), a heavier plough (farm), resting a field each third year (farm), better mill wheel (mill), treadle loom (weave), lime mortar (mason, lower leak), herb remedies (heal), glazed pots (potter, longer keep), a better charcoal clamp (charcoal), bark tanning (tan), bee skeps that winter well (beekeep), and a cleaner smelt (smelt). Job ids copied from `jobs.json`.
 
+## Spec form answers (2026-11-23, V-211)
+
+- **q1 A, the reeve walks in.** He comes by the home road with a cart and a guard, stays the day, counts the tithe barn and leaves; tapping him opens a page like a stranger's.
+- **q2 A, goods and beatings.** At the bottom of the ladder the lord's men take about twice what was owed from the store and barn; anyone who stands in their way may be beaten (wounds with a line, nobody killed). No hostages.
+- **q3 A, the finder, then teaching.** A method is known only by its finder; others learn it as their apprentice or from a book the teacher writes (V-189, V-199); a finder who dies untaught takes it with them (V-141).
+- **q4 A, the lord's forest.** The old woods farthest from the green are the lord's; hunting or felling there is poaching, a defiance some do anyway (the hungry, the defiant); favour falls if the reeve hears; a charter makes it the colony's. One content entry for the forest, one for the charter.
