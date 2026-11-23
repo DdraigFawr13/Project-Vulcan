@@ -7,7 +7,7 @@ A short phase after 6W and before magic (Phase 7): a liege lord who takes a tith
 - [x] Design form answered, 2026-11-20 (V-210)
 - [x] Spec form answered, 2026-11-23, every recommendation (V-211)
 - [x] Slice 1, the lord and the reeve (engine). Mock-up answered 2026-11-23, every recommendation (V-216, https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha); built 2026-11-23 (V-217); the reeve no longer waits on the supper being eaten (V-220)
-- [ ] Slice 2, the tithe, the Lord law and favour (engine). Mock-up answered 2026-11-23, every recommendation (V-222, https://claude.ai/artifact/91We7kCTAGYGzkkTaCU8DD); part 1 (tithe barn, the reeve's take, Lord law, hiding, lean year) built 2026-11-23 (V-224); part 2 (favour, ladder, the lord's forest) next
+- [ ] Slice 2, the tithe, the Lord law and favour (engine). Mock-up answered 2026-11-23, every recommendation (V-222, https://claude.ai/artifact/91We7kCTAGYGzkkTaCU8DD); part 1 (tithe barn, the reeve's take, Lord law, hiding, lean year) built 2026-11-23 (V-225); part 2 (favour, ladder, the lord's forest) next
 - [ ] Slice 3, asks (engine)
 - [ ] Slice 4, the lord and asks on screen (screens)
 - [ ] Slice 5, hints and breakthroughs (engine). Mock-up answered 2026-11-23, every recommendation (V-218, https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u); part 1 (ways, hints, finds) and part 2 (mishaps, New Ways, spreading, loss) built 2026-11-23 (V-219), part 3 (effects on knowers' work) built

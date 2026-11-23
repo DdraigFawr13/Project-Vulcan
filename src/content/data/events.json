@@ -416,7 +416,7 @@
 {"id":"lord.found","importance":3,"template":"{reeve} found {count} {what} hidden by {name} {where}, and took it for {lord}.","stop":"quarrel","notable":{}},
 {"id":"defy.hidTithe","importance":2,"template":"{name} took {count} {food} from the tithe barn and hid it at home ({why}).","stop":"quarrel","notable":{}},
 {"id":"discover.puzzle","importance":1,"template":"{name} began to puzzle over {method}, after {hours} hours at the {where} this month."},
-{"id":"discover.hint","importance":2,"template":"{name} {how}: {n} of {of} hints towards {method}."},
+{"id":"discover.hint","importance":2,"template":"{name} {how}{beside}: {n} of {of} hints towards {method}."},
 {"id":"discover.found","importance":3,"template":"{name} found {method} after {days} days of puzzling, from {hints}.","stop":"ways","notable":{}},
 {"id":"discover.dropped","importance":1,"template":"{name} put aside puzzling over {method}: only {hours} hours at the {where} in four weeks."},
 {"id":"discover.mishap","importance":2,"template":"{name} tried something new at the {where} and {went}.","stop":"works","notable":{}},
