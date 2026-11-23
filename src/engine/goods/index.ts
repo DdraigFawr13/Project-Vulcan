@@ -57,6 +57,16 @@ export {
   wornAsk,
   wornTools,
 } from './tools.ts';
+export {
+  barnOf,
+  broughtIn,
+  fromBarn,
+  hiddenOf,
+  TITHE_TABLES,
+  titheRow,
+  titheRows,
+  tithing,
+} from './tithe.ts';
 export { daysToHarvest, eatFrom, foodDays, foodGoneLine, storeLasts } from './food.ts';
 export { isTree, markedTree, marksOf, unmark } from './marks.ts';
 export {

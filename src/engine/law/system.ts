@@ -18,14 +18,22 @@ function setLaw(ctx: SystemContext, data: Readonly<Record<string, unknown>>, cau
   const { law, setting } = data as { law?: string; setting?: string };
   const def = typeof law === 'string' ? lawDef(ctx.content, law) : undefined;
   const s = def?.settings.find((x) => x.id === setting);
-  if (!def || !s) {
+  if (!def || !s || s.unset) {
     ctx.emit('command.refused', {
       causes: [cause],
       data: { kind: 'setLaw', reason: 'no such law or setting' },
     });
     return;
   }
-  if (settingOf(ctx.world, ctx.content, def.id).id === s.id) return;
+  decree(ctx, def.id, s.id, cause);
+}
+
+/** Sets `law` to `setting`, citing `cause` (the lever's line, or the reeve's for the Lord law,
+ * 6C): a `law.set` line, then everyone answers. Nothing when it already stands. */
+export function decree(ctx: SystemContext, law: string, setting: string, cause: number): void {
+  const def = lawDef(ctx.content, law);
+  const s = def?.settings.find((x) => x.id === setting);
+  if (!def || !s || settingOf(ctx.world, ctx.content, def.id).id === s.id) return;
   const line = ctx.emit('law.set', { causes: [cause], data: { law: def.law, setting: s.name } });
   const row = lawRow(ctx.world, def.id);
   const fields = { setting: s.id, line, changed: ctx.world.tick };

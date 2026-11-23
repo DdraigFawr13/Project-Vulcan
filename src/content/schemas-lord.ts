@@ -30,5 +30,22 @@ export const LORD_SCHEMAS = {
     tempers: map(count),
     // The memory of the news, and the bitter one for anyone not of the lord's people.
     memories: obj({ named: ref('memories'), bitter: ref('memories') }),
+    // 6C Slice 2 (V-222): the tithe. The Lord law's id; the share in 100 of what is brought in
+    // (tempers raising it); the item kinds tithed; the Build sheet's Tithe barn row (its name,
+    // start level and house size); in a lean year the tempers that take half, the memory each
+    // grown-up keeps and the standing cause; one visit in `search` the reeve searches the houses.
+    tithe: obj({
+      law: str(),
+      rate: num({ min: 1, max: 100 }),
+      tempers: map(num({ min: 1, max: 100 })),
+      kinds: list(ref('items')),
+      barn: obj({ name: text, start: num({ min: 1, max: 4 }), size: str() }),
+      lean: obj({
+        half: list(str()),
+        memory: ref('memories'),
+        standing: obj({ by: num(), days: num({ min: 1 }), text }),
+      }),
+      search: num({ min: 1 }),
+    }),
   }),
 };

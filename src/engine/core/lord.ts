@@ -24,6 +24,28 @@ export interface LordDef {
   /** What each temper adds to the news's memory weight. */
   tempers: Readonly<Record<string, number>>;
   memories: { named: string; bitter: string };
+  /** The tithe (6C Slice 2, V-222). */
+  tithe: TitheDef;
+}
+
+export interface TitheDef {
+  /** The Lord law's id (laws.json). */
+  law: string;
+  /** The share in 100 of what is brought in, and the tempers that take more. */
+  rate: number;
+  tempers: Readonly<Record<string, number>>;
+  /** The item kinds tithed. */
+  kinds: readonly string[];
+  /** The Build sheet's Tithe barn row and the house size it is sited at. */
+  barn: { name: string; start: number; size: string };
+  /** A lean year: the tempers that take half, the memory each grown-up keeps, the standing cause. */
+  lean: {
+    half: readonly string[];
+    memory: string;
+    standing: { by: number; days: number; text: string };
+  };
+  /** One visit in `search`, the reeve searches the houses. */
+  search: number;
 }
 
 export interface LordDefs {

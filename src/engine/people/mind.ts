@@ -30,7 +30,7 @@ import { trying } from '../discover/index.ts';
 import { reading, scribing } from '../teach/index.ts';
 import { lateUntil, watching } from '../herding/index.ts';
 import { pilfer } from '../defy/index.ts';
-import { departing, eatStash, extraWork, inStocks, slacking } from './defy.ts';
+import { departing, eatStash, extraWork, inStocks, raiding, slacking } from './defy.ts';
 
 export const MIND_FIELDS = {
   /** `eat`, `drink` (drink.ts), `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `warm` (warm.ts), `hurt` (lying
@@ -228,6 +228,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
     hour >= day.workTo ||
     isDark(content, world.tick) ||
     valueOf(ctx, p, 'recreation') < lineOf(ctx, p, 'recreation');
+  // The tithe barn raided by someone with a grievance against the Lord law, or hungry (6C).
+  if ((leisure || p['doing'] === 'raid') && raiding(ctx, p)) return;
   // Prayer at their faith's shrine (6B), now and then, before other leisure.
   if (leisure && praying(ctx, p)) return;
   // The schoolroom (6B Bundle 6): the teacher writing down a master's ways, then reading a book.

@@ -1,5 +1,5 @@
 // Public surface of the law system.
-export { lawSystem } from './system.ts';
+export { decree, lawSystem } from './system.ts';
 export { answerNow, LAW_TABLES } from './answer.ts';
 export {
   customaryHours,

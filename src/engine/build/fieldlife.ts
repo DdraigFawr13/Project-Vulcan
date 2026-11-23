@@ -8,7 +8,7 @@
 import { strawOf } from './straw.ts';
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
 import { addEntity } from '../entity/index.ts';
-import { haveOf, isTree, marksOf, stockOf } from '../goods/index.ts';
+import { broughtIn, haveOf, isTree, marksOf, stockOf } from '../goods/index.ts';
 import { addMemories } from '../needs/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -66,6 +66,8 @@ export function finishReaping(ctx: SystemContext, f: EntityRow, cause: number): 
     causes: [cause, f['last'] as number],
     data: { crop: crop.name, count, what, kept: f['kept'] as number, ...placeOf(world, f) },
   });
+  // The lord's share is of what was brought in, less the seed kept (6C Slice 2, V-222).
+  broughtIn(world, content, crop.item, f['got'] as number, harvested);
   const reapers = (f['reapers'] as number[])
     .map((id) => (world.entities['person'] ?? []).find((p) => p.id === id))
     .filter((p): p is EntityRow => !!p);

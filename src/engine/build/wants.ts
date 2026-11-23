@@ -9,7 +9,16 @@ import { itemsOf, raiseStock } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { anyBench, bedOwnedBy, furnitureOf } from './furniture.ts';
 import { HEARTH } from './hearths.ts';
-import { crowdedIn, hallName, INN_SCHOOL, mainOf, nthOf, rowsOf, sizeOf } from './houses.ts';
+import {
+  crowdedIn,
+  hallName,
+  INN_SCHOOL,
+  INN_TITHE,
+  mainOf,
+  nthOf,
+  rowsOf,
+  sizeOf,
+} from './houses.ts';
 import { roomAt, type Room } from './rooms.ts';
 import { loomWant } from './loom.ts';
 import { householdOf } from './beds.ts';
@@ -225,7 +234,7 @@ function facingOf(f: Floor, pick: number): string {
 /** What a room lacks, in the order of its role's wants: counts include pieces still planned. */
 export function lacks(world: WorldState, content: EngineContent, rr: RoomRow) {
   // The sickroom's wants are its beds alone (spareBed).
-  if (rr.h['sick']) return [];
+  if (rr.h['sick'] || rr.h['inn'] === INN_TITHE) return [];
   // The tavern's (6B) are its own list: a counter, casks, the brewing tub, tables and chairs.
   const kinds = rr.h['inn']
     ? (rr.h['inn'] === INN_SCHOOL ? content.teach.school.build : content.tavern.build).wants
