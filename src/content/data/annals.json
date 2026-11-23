@@ -13,7 +13,8 @@
       { "event": "people.strangerCame", "weight": 3, "many": "{Times} strangers came in to the green: {list}.", "item": "{names} from the {dir}" },
       { "event": "people.strangerStays", "weight": 6, "tally": "came", "per": "actors", "title": "{names} stayed" },
       { "event": "people.cameBack", "weight": 5, "many": "{Count} came back by the roads, over their sickness: {list}.", "item": "{name}" },
-      { "event": "family.left", "weight": 6, "tally": "came", "per": "line", "title": "a child was left in the valley" }
+      { "event": "family.left", "weight": 6, "tally": "came", "per": "line", "title": "a child was left in the valley" },
+      { "event": "lord.named", "weight": 8, "title": "the reeve named {lord} the valley's lord" }
     ] },
     { "id": "lost", "max": 4, "lines": [
       { "event": "health.died", "weight": 10, "tally": "died", "per": "line", "title": "{name} died", "many": "{Count} died: {list}.", "item": "{name}" },

@@ -402,5 +402,9 @@
 {"id":"tavern.tookUp","importance":1,"template":"{name} took up brewing: {why}."},
 {"id":"tavern.brewed","importance":1,"template":"{name} brewed {from} into a cask of {drink} at {tavern}; it will be ready in {days} days."},
 {"id":"tavern.noGrain","importance":1,"template":"{name} brews nothing at {tavern}: the grain is kept for eating."},
-{"id":"tavern.brawled","importance":3,"template":"{name} had a drink too many at {tavern} and came to blows with {other}.","stop":"quarrel","notable":{}}
+{"id":"tavern.brawled","importance":3,"template":"{name} had a drink too many at {tavern} and came to blows with {other}.","stop":"quarrel","notable":{}},
+{"id":"lord.reeveCame","importance":1,"template":"{reeve}, reeve to {lord}, came up the road from {home} the morning after the harvest home."},
+{"id":"lord.named","importance":3,"template":"{reeve} found {name} and spoke {voice}{words}: the valley is held by the {realm}, and from next harvest home a share of it is owed.","stop":"comings","notable":{}},
+{"id":"lord.counted","importance":2,"template":"{reeve} counted the store with {name} for {lord}: {food} food in store, {days} days' eating for {mouths}. He took nothing this year."},
+{"id":"lord.reeveLeft","importance":1,"template":"{reeve} went back down the road to {home}."}
 ]

@@ -40,8 +40,9 @@ function floored(ctx: SystemContext, i: number): boolean {
   return !!built && ctx.content.buildings.parts[built - 1]?.kind !== 'road';
 }
 
-/** One minute of walking for one person: steps taken while the stride covers them. */
-export function stepAlong(ctx: SystemContext, p: EntityRow): void {
+/** One minute of walking for one person: steps taken while the stride covers them. A walker who is
+ * not one of the colony (the lord's reeve, 6C) passes `sees` false: what he sees is not known. */
+export function stepAlong(ctx: SystemContext, p: EntityRow, sees = true): void {
   const map = ctx.world.map;
   let path = p['path'] as number[];
   if (!path.length) return;
@@ -74,7 +75,7 @@ export function stepAlong(ctx: SystemContext, p: EntityRow): void {
   }
   p['stride'] = path.length ? stride : 0;
   // What they see from where they stopped stays known (V-205); a scout's counts once home.
-  if (moved && (p['z'] as number) === 0)
+  if (sees && moved && (p['z'] as number) === 0)
     see(ctx.content, map, p['x'] as number, p['y'] as number, p['job'] === 'scout');
 }
 

@@ -11,3 +11,4 @@ export type {
 export { regionSystem, siteOf, valleyOf } from './system.ts';
 export { neighboursOf, type Neighbour, type Reason } from './record.ts';
 export { placeName } from './names.ts';
+export { lordOf, namesOf, type Lord } from './lord.ts';

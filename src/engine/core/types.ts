@@ -32,6 +32,7 @@ export const STREAMS = [
   'kin',
   'faith',
   'inn',
+  'lord',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 
@@ -209,7 +210,6 @@ export interface Place {
   by: number;
   line: number;
   tick: number;
-  /** A seam spotted in a rock face (V-215): the vein's feature id; absent for other finds. */
   what?: string;
 }
 
