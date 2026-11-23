@@ -101,5 +101,7 @@
   {"id":"byname-proud","mood":4,"decayDays":7,"text":"Folk call me by a name I'm proud of","thoughts":["Let them say it."]},
   {"id":"byname-stung","mood":-6,"decayDays":7,"text":"Folk call me by a name that stings","thoughts":["I wish they'd let it lie."]},
   {"id":"worried","mood":-6,"decayDays":4,"text":"Worried for {about}, late home","thoughts":["Where are they? They should be back by now."]},
-  {"id":"found-lost","mood":6,"decayDays":6,"text":"Found {about} out in the wild","thoughts":["I thought we had lost them."]}
+  {"id":"found-lost","mood":6,"decayDays":6,"text":"Found {about} out in the wild","thoughts":["I thought we had lost them."]},
+  {"id":"wonder","mood":4,"decayDays":6,"text":"Found something wondrous out in the wild","thoughts":["Who made it, and when? I keep turning it over."]},
+  {"id":"unease","mood":-3,"decayDays":5,"text":"Found something uncanny out in the wild","thoughts":["Someone was out there before us. Maybe still is."]}
 ]

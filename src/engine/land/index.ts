@@ -8,3 +8,4 @@ export { needOf, scouting, takeUpScouting } from './scout.ts';
 export { breakCamp, campWarm, eatPack, makeCamp, unpack } from './camp.ts';
 export { trouble } from './trouble.ts';
 export { SEARCH_TASKS, lookFor, searching, tripHour } from './search.ts';
+export { findsMinute } from './places.ts';

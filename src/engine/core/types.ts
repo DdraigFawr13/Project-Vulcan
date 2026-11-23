@@ -196,6 +196,20 @@ export interface MapState {
   known: Uint8Array;
   /** Scouting trips, oldest first (6W Slice 4): the last one is under way while its `count` is -1. */
   finds: Find[];
+  /** The finds laid at worldgen (6W Slice 5 part 2, V-206): springs, old woods, clay banks,
+   * pools, lookouts, cave mouths and dens, each found once by whoever sees it. */
+  places: Place[];
+}
+
+/** One find on the map: its kind (`work.scout.places.kinds` id) and tile; who found it, the
+ * line and the tick, each 0 until then. */
+export interface Place {
+  kind: string;
+  x: number;
+  y: number;
+  by: number;
+  line: number;
+  tick: number;
 }
 
 /** One scouting trip (6W Slice 4): the need behind it, where its news centres and how many of the

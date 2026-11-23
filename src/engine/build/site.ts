@@ -5,7 +5,7 @@ import type { EngineContent, EntityRow, PartDef, SizeDef, WorldState } from '../
 import { depotsOf, haveOf, itemsOf, storeOf } from '../goods/index.ts';
 import { eachKnown, isKnown, withBuiltAll, workAreas } from '../map/index.ts';
 import { reachFrom, type Spot } from '../paths/index.ts';
-import { DUG_LEVEL, digsFor } from './dug.ts';
+import { DUG_LEVEL, bankClay, digsFor } from './dug.ts';
 import { inRect, isTreeAt, wayFrom, wayTo, type Rect, type Site, type Way } from './way.ts';
 
 export { inRect, type Rect, type Site } from './way.ts';
@@ -290,10 +290,11 @@ export function withinReach(
     if (def && def.yields === good && ['tree', 'log', 'boulder'].includes(def.kind))
       total += def.amount;
   });
-  // Ground dug for it (V-097, clay): the tiles a miner could dig (`digsFor`) from the store.
-  const under = map.levels[DUG_LEVEL - 1];
-  if (!under) return total;
+  // Ground dug for it (V-097): tiles a miner could dig (`digsFor`), and found clay banks (V-206).
   const reached = reachFrom(content, map, { x: ox, y: oy, z: 0 });
+  const under = map.levels[DUG_LEVEL - 1];
+  if (!under) return total + bankClay(world, content, reached, good);
+  total += bankClay(world, content, reached, good);
   for (let y = Math.max(0, oy - reach); y <= Math.min(map.height - 1, oy + reach); y += 1)
     for (let x = Math.max(0, ox - reach); x <= Math.min(map.width - 1, ox + reach); x += 1) {
       const i = y * map.width + x;

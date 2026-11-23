@@ -126,6 +126,7 @@ export function createWorld(sim: Sim, seed: string, look = 0): WorldState {
       regrow: [],
       known: new Uint8Array(0),
       finds: [],
+      places: [],
     },
   };
   for (const system of sim.systems) world.systems[system.id] = { ...system.initialState };

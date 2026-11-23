@@ -40,8 +40,9 @@ const people = (w: World) => w.entities['person'] ?? [];
 /** A world whose band all have crafting level `level`, which cannot rise (potential the same). */
 function crafters(seed: string, level: number): World {
   const w = createWorld(sim, seed);
-  // The whole valley known (V-205): these tests are not about known land.
+  // The whole valley known (V-205), its finds left out (V-206): these tests are not about them.
   w.map.known.fill(1);
+  w.map.places = [];
   for (const s of w.entities['skill'] ?? [])
     if (s['skill'] === 'crafting') Object.assign(s, { level, potential: level });
   return w;

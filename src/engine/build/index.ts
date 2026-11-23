@@ -32,7 +32,7 @@ export { mucky, muckLeft, poorestTile, spreadMuck, takeLoad } from './soillife.t
 export { burialGround, burialsOf, freePlots, gravesOf, inBurial, toBury } from './burial.ts';
 export { groundOf, housesOf, inRect, rectOf, type Rect } from './site.ts';
 export { blockedByGoods, planTiles } from './clearing.ts';
-export { digsFor } from './dug.ts';
+export { bankClay, digsFor } from './dug.ts';
 export {
   BUILD_TABLES,
   finishPlan,
