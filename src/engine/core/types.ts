@@ -32,6 +32,7 @@ export const STREAMS = [
   'kin',
   'faith',
   'inn',
+  'lord',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 

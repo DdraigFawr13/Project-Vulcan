@@ -1,0 +1,7 @@
+{
+"titles": [{"kind":"Horde","title":"Warlord"},{"kind":"Warhost","title":"Warlord"},{"kind":"Warren","title":"Warlord"},{"kind":"Queendom","title":"Queen"},{"kind":"Kingdom","title":"King","f":"Queen"},{"kind":"Jarldom","title":"Jarl"},{"kind":"Lordship","title":"Lord","f":"Lady"},{"kind":"Thanedom","title":"Thane"},{"kind":"Chieftaincy","title":"Chief"},{"kind":"Khanate","title":"Khan"},{"kind":"Steading","title":"Lord","f":"Lady"},{"kind":"Shire","title":"Lord","f":"Lady"},{"kind":"Commune","title":"Elder"},{"kind":"Free City","title":"Elder"},{"kind":"Council","title":"Elder"},{"kind":"Circle","title":"Elder"},{"kind":"Republic","title":"Elder"}],
+"title": {"title":"Lord","f":"Lady"},
+"reeve": {"sex":"m","pace":2,"arrive":6,"speakBy":15,"leave":19,"reach":2,"seek":30},
+"tempers": {"bold":0,"pious":0,"greedy":1,"cruel":2,"cautious":0,"learned":0},
+"memories": {"named":"lord-named","bitter":"lord-bitter"}
+}

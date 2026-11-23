@@ -70,10 +70,11 @@ function weighed(
   content: EngineContent,
   def: MemoryDef,
   row: Readonly<Record<string, unknown>>,
+  extra = 0,
 ): number {
   const spell = content.life.memory.spellDays;
   const run = def.heavy ? Math.floor(bits(row['mask'] as number) / spell) : 0;
-  const now = (def.weight ?? 1) + (row['fresh'] as number) + run;
+  const now = (def.weight ?? 1) + (row['fresh'] as number) + run + extra;
   return Math.max(row['weight'] as number, now);
 }
 
@@ -92,7 +93,7 @@ function cameToday(content: EngineContent, row: EntityRow, today: number): void 
  * Gives `person` the memory `id`, caused by event `cause`. One they already hold (fresh or
  * lingering) that does not stack is made fresh again and its run goes on; a stacking one
  * (content `stacks`) adds another row until it holds that many, then refreshes the one nearest
- * to fading. An unknown id is ignored.
+ * to fading. An unknown id is ignored. `extra` adds to the weight (the lord's temper, 6C).
  */
 export function addMemory(
   ctx: SystemContext,
@@ -100,6 +101,7 @@ export function addMemory(
   id: string,
   cause: number,
   about = 0,
+  extra = 0,
 ): void {
   const { world, content } = ctx;
   const def = content.memories.find((m) => m.id === id);
@@ -117,14 +119,14 @@ export function addMemory(
     addEntity(world, 'memory', {
       ...{ person, memory: id, until, line: cause, about, since: world.tick },
       ...{ first: today, last: today, days: 1, mask: 1, fresh },
-      weight: weighed(content, def, row),
+      weight: weighed(content, def, row, extra),
     });
     return;
   }
   const oldest = held.reduce((a, b) => ((b['until'] as number) < (a['until'] as number) ? b : a));
   Object.assign(oldest, { until, line: cause, about });
   cameToday(content, oldest, today);
-  oldest['weight'] = weighed(content, def, oldest);
+  oldest['weight'] = weighed(content, def, oldest, extra);
 }
 
 /** Gives each of `people` the memory `id` (a shared one: `farm.harvestHome` calls this with its

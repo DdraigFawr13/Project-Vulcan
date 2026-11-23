@@ -24,6 +24,7 @@ import { defySystem } from './defy/index.ts';
 import { familySystem } from './family/index.ts';
 import { faithSystem } from './faith/index.ts';
 import { innSystem } from './inn/index.ts';
+import { lordSystem } from './lord/index.ts';
 import { talesSystem } from './tales/index.ts';
 import { teachSystem } from './teach/index.ts';
 import { callingSystem } from './calling/index.ts';
@@ -59,6 +60,7 @@ export * from './defy/index.ts';
 export * from './family/index.ts';
 export * from './faith/index.ts';
 export * from './inn/index.ts';
+export * from './lord/index.ts';
 export * from './tales/index.ts';
 export * from './teach/index.ts';
 export * from './calling/index.ts';
@@ -105,6 +107,7 @@ export const SYSTEMS: readonly System[] = [
   teachSystem,
   callingSystem,
   innSystem,
+  lordSystem,
   calendarSystem,
   weatherSystem,
   wildSystem,
