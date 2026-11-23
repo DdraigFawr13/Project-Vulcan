@@ -1,5 +1,5 @@
 // A person's sheet (P2.6) in tabs: Needs (mood and needs, live), Memories (P6.2), Health (P5.6, P5.8), Skills (each with its practice
-// towards the next level), Work (their priorities, as on the Work sheet) and Ledger (the lines
+// towards the next level, and new ways under Trade, V-221), Work (their priorities, as on the Work sheet) and Ledger (the lines
 // about them). It shows what the snapshot says; nothing here decides a rule (GAME-02).
 import type { LedgerLine, PersonView, StrangerView, WalkerView } from '../worker/index.ts';
 import { el } from './dom.ts';
@@ -7,6 +7,7 @@ import type { Panel } from './panel.ts';
 import { fillBlood, healthBody, healthKey } from './healthtab.ts';
 import { fillNeed, needRow, skillRows, whoLine } from './person.ts';
 import { fillThought, memoryRows } from './memorytab.ts';
+import { personWayRows } from './waysrows.ts';
 
 /** A stranger's page (P5.9): who, rows with "why?", and that nothing here takes them in. */
 function strangerRows(s: StrangerView): HTMLElement[] {
@@ -233,7 +234,7 @@ export class PersonSheet {
     if (w?.stranger) return `S:${JSON.stringify(w.stranger)}`;
     // Levels only: practice moves every few minutes of work, and each redraw replaces the tabs.
     if (this.tab === 'health') return healthKey(w?.health);
-    if (this.tab === 'skills') return JSON.stringify(w?.skills.map((s) => s.level));
+    if (this.tab === 'skills') return JSON.stringify([w?.skills.map((s) => s.level), w?.ways]);
     if (this.tab === 'work')
       return JSON.stringify(this.sources.work(this.p!, w).map((r) => r.outerHTML));
     if (this.tab === 'ledger') return String(this.mine().at(-1)?.id);
@@ -290,6 +291,7 @@ export class PersonSheet {
           );
       return [
         el('p', {}, `Trade: ${p.trade}${p.known === p.trade ? ` · brought from ${p.home}` : ''}`),
+        ...personWayRows(w?.ways),
         skillRows(skills, true),
         practice,
         el('p', { class: 'aside' }, 'Skills rise with use, up to the mark each person can reach.'),

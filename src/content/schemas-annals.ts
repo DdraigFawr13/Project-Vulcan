@@ -47,6 +47,9 @@ export const ANNALS_SCHEMAS = {
             per: opt(oneOf('line', 'actors', 'names')),
             // A small trouble's words when it comes back season after season (the year folds it).
             fold: opt(text),
+            // The year's recap lists every such line of the year as one sentence (`{list}` of
+            // `item`s): the year's finds and ways lost (6C Slice 6, V-221).
+            year: opt(text),
           }),
         ),
       }),

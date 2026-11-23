@@ -120,6 +120,9 @@ export interface WalkerView {
   home?: { text: string; why?: number };
   /** Family rows (P6.1): Wed, Born, Taken in, Child; each with the line that says why. */
   kin?: { band: string; text: string; why?: number }[];
+  /** New ways (6C Slice 6, V-221): the puzzle they are on and the ways they know; none when
+   * neither. */
+  ways?: PersonWaysView;
   /** A stranger's page while the band speaks or they walk away (P5.9); none for the colony. */
   stranger?: StrangerView;
   /** Seen at work (V-194): the motion of the job they stand working (jobs.json `motion`, with
@@ -213,4 +216,33 @@ export interface SelfView {
   /** 6B Bundle 6 (V-189 q8): the calling they hold ("Holds a calling: the master mason."), what
    * it does and their masterwork if made, and the line that gave it. */
   calling?: { text: string; note: string; why: number };
+}
+
+/** A way on screen (6C Slice 6, V-221): its words, a second line, and the line behind it when
+ * that line explains more than the world's beginning. */
+export interface WayRow {
+  text: string;
+  note: string;
+  why?: number;
+}
+
+/** A person's new ways (V-221): "Puzzling over a cleaner smelt: 2 of 4 hints." with the line that
+ * began it, a row for each hint and its line, and how many are left; then each way they know with
+ * how they came by it, when and what it does. */
+export interface PersonWaysView {
+  puzzle?: {
+    text: string;
+    why?: number;
+    hints: { text: string; why?: number }[];
+    left: string;
+  };
+  known: WayRow[];
+}
+
+/** The colony's ways under the New Ways law (V-221): each way a living colonist knows, with who
+ * and what it does, `none` when there are none yet, and what is being puzzled over. */
+export interface ColonyWaysView {
+  known: WayRow[];
+  none?: string;
+  puzzled: WayRow;
 }
