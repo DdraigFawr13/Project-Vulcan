@@ -210,7 +210,7 @@ export interface Place {
   by: number;
   line: number;
   tick: number;
-  what?: string;
+  what?: string; // a seam's ore (V-215)
 }
 
 /** One scouting trip (6W Slice 4): the need behind it, where its news centres and how many of the
