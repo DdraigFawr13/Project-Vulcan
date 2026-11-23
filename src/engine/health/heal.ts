@@ -6,7 +6,7 @@
 // often with daily dressing); a fever puts them to bed and may kill them. On healing, a lasting
 // mark may stay (more often without a healer's care).
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
-import { addEntity } from '../entity/index.ts';
+import { addEntity, lessMinutes, wayEffect } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { die } from './death.ts';
 import { abedSick } from './sick.ts';
@@ -61,7 +61,11 @@ function rateOf(ctx: SystemContext, p: EntityRow, w: EntityRow): number {
   if (severityOf(ctx.content, w).bleed === 0) return 100;
   const base = lying(p) ? h.bed : h.up;
   const care = w['bound'] === 2 ? (dressed(ctx, w) ? 100 : h.undressed) : h.rough;
-  return Math.floor((base * care) / 100);
+  // A dressed wound heals `remedies` per cent faster when its healer knows the way (V-219).
+  const herbs = dressed(ctx, w)
+    ? wayEffect(ctx.world, ctx.content, w['healer'] as number, 'remedies')
+    : 0;
+  return Math.floor((base * care * (100 + herbs)) / 10_000);
 }
 
 /** One hour's blood: what the open wounds drain, else some regained. True when they died. */
@@ -133,7 +137,15 @@ function fester(ctx: SystemContext, p: EntityRow, w: EntityRow): boolean {
     const total = festerChance(ctx, w);
     if (!roll(ctx, dailyChance(total, f.days))) return false;
     w['fester'] = 1;
-    w['feverEnd'] = world.tick + f.fever * TICKS_PER_DAY;
+    // Their healer's remedies cut the fever's days by the way's per cent (V-219).
+    const ticks = lessMinutes(
+      world,
+      content,
+      w['healer'] as number,
+      'remedies',
+      f.fever * TICKS_PER_DAY,
+    );
+    w['feverEnd'] = world.tick + ticks;
     w['fevered'] = ctx.emit('health.festered', {
       causes: [w['line'] as number, w['care'] as number].filter((c) => c > 0),
       actors: [p.id],

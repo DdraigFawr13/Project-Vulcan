@@ -18,6 +18,7 @@ import {
   tileYield,
 } from '../build/index.ts';
 import { haveOf, isTree, itemsOf, layItem, takeFrom, wantOf } from '../goods/index.ts';
+import { lessMinutes } from '../entity/index.ts';
 import { reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { stackOf } from '../crafts/index.ts';
@@ -185,7 +186,8 @@ export function farming(ctx: SystemContext, p: EntityRow): boolean {
     const level = skillOf(world, p, skillName(content));
     p['target'] = tile = next;
     const minutes = minutesFor(content, content.work.farm[mode === 'sow' ? 'sow' : 'reap'], level);
-    p['work'] = scaled(ctx, p, mode === 'reap' ? 'reap' : 'farm', minutes);
+    const quick = lessMinutes(world, content, p.id, 'heavy-plough', minutes);
+    p['work'] = scaled(ctx, p, mode === 'reap' ? 'reap' : 'farm', quick);
   }
   const [x, y] = [tile % map.width, Math.floor(tile / map.width)];
   const here = spotOf(p);
@@ -212,6 +214,7 @@ function sowTile(ctx: SystemContext, p: EntityRow, f: EntityRow, tile: number, s
   }
   f['crop'] = crop.id;
   fieldDone(f).push(tile);
+  f['farmer'] = p.id;
   f['took'] = p['took'] as number;
   if (fieldDone(f).length >= fieldTiles(f).length) {
     finishSowing(ctx, f, p['took'] as number);
@@ -224,6 +227,7 @@ function sowTile(ctx: SystemContext, p: EntityRow, f: EntityRow, tile: number, s
 function reapTile(ctx: SystemContext, p: EntityRow, f: EntityRow, tile: number): void {
   const { world, content } = ctx;
   const crop = cropOf(content, f['crop'] as string)!;
+  f['farmer'] = p.id;
   const at = { x: tile % world.map.width, y: Math.floor(tile / world.map.width), z: 0 };
   // Seed grain is kept back from a food crop's harvest only (not flax, P5.5).
   const food = content.items.find((i) => i.id === crop.item)?.good === 'food';

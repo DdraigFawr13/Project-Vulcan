@@ -10,7 +10,7 @@
 // (`clayWanted`, clay.ts).
 import type { EntityRow, WorldState } from '../core/index.ts';
 import { bricksWanted, clayMortarWanted, kilnOf } from '../build/index.ts';
-import { addEntity } from '../entity/index.ts';
+import { addEntity, wayEffect } from '../entity/index.ts';
 import { potsAt } from '../keep/index.ts';
 import { depotAt, inStore, itemsOf, layItem, takeFrom } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -163,8 +163,13 @@ function setPot(ctx: SystemContext, p: EntityRow, stack: EntityRow, pot: EntityR
     },
   });
   const cask = (world.entities['cask'] ?? []).find((c) => c['x'] === x && c['y'] === y);
-  if (cask) Object.assign(cask, { pots: ((cask['pots'] as number) ?? 0) + 1, line });
-  else addEntity(world, 'cask', { x, y, z: 0, barrels: 0, pots: 1, line });
+  const glazed = wayEffect(world, content, p.id, 'glazed-pots') ? 1 : 0;
+  if (cask)
+    Object.assign(cask, {
+      ...{ pots: ((cask['pots'] as number) ?? 0) + 1, line },
+      glazed: ((cask['glazed'] as number) ?? 0) + glazed,
+    });
+  else addEntity(world, 'cask', { x, y, z: 0, barrels: 0, pots: 1, glazed, line });
   takeFrom(world, pot, 1);
 }
 

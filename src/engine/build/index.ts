@@ -36,12 +36,14 @@ export { bankClay, digsFor } from './dug.ts';
 export {
   BUILD_TABLES,
   finishPlan,
+  mortaredTiles,
   partOf,
   planAt,
   planPart,
   plansOf,
   nextNeed,
   refundOf,
+  setMortar,
   stillNeeded,
   takeDownPlan,
 } from './plans.ts';

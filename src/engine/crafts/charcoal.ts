@@ -7,6 +7,7 @@
 // up and each step are lines; trips are not. One clamp, one burner at a time.
 import type { EntityRow } from '../core/index.ts';
 import { stationOf } from '../build/index.ts';
+import { wayEffect } from '../entity/index.ts';
 import { charcoalNeeded, haveOf, trailText, withStep, type Step } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, canStandBeside, declineIfUnable, fetchKind, goBeside } from '../band/index.ts';
@@ -122,17 +123,20 @@ export function burning(ctx: SystemContext, p: EntityRow): boolean {
       data: { name: p['name'] as string, logs: def.logs, where, hours: Math.round(def.burn / 60) },
     });
   } else {
+    // A clamp opened by a knower of the better clamp gives `by` per cent more (V-219).
+    const count =
+      def.yield + Math.round((def.yield * wayEffect(world, content, p.id, 'clamp')) / 100);
     const line = ctx.emit('metal.charcoalMade', {
       causes: [clamp['litLine'] as number, p['took'] as number].filter((l) => l > 0),
       actors: [p.id],
-      data: { name: p['name'] as string, count: def.yield, where },
+      data: { name: p['name'] as string, count, where },
     });
     const step: Step = { s: 'burned', who: p['name'] as string, tick: world.tick, ...here };
-    step.n = def.yield;
+    step.n = count;
     layAll(
       ctx,
       def.item,
-      def.yield,
+      count,
       here,
       line,
       trailText(withStep([], step, content.metal.trail.most)),

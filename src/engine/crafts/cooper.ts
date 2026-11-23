@@ -127,7 +127,7 @@ function setBarrel(ctx: SystemContext, p: EntityRow, stack: EntityRow, barrel: E
   });
   const cask = (world.entities['cask'] ?? []).find((c) => c['x'] === x && c['y'] === y);
   if (cask) Object.assign(cask, { barrels: (cask['barrels'] as number) + 1, line });
-  else addEntity(world, 'cask', { x, y, z: 0, barrels: 1, pots: 0, line });
+  else addEntity(world, 'cask', { x, y, z: 0, barrels: 1, pots: 0, glazed: 0, line });
   takeFrom(world, barrel, 1);
 }
 

@@ -16,6 +16,8 @@ export interface MethodDef {
   /** What a mishap spoils, and whether the work is at a fire. */
   ruins: readonly string[];
   hot?: boolean;
+  /** What it does for a knower's own work, in per cent, `on` the materials it covers (V-219). */
+  effect: { by: number; on?: readonly string[] };
 }
 
 export interface HintWords {

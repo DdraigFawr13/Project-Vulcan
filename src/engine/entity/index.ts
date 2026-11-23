@@ -3,3 +3,4 @@ export { addEntity, citedByEntities, entityOf, removeEntity, tablesProblem } fro
 export type { FieldType, Schemas, TableSchema } from './tables.ts';
 export { alive, awake, far, people, personName, personOf, skillLine, tableOf } from './rows.ts';
 export { pushers, pushOf, type Pusher } from './callings.ts';
+export { lessMinutes, wayBy, wayEffect } from './ways.ts';

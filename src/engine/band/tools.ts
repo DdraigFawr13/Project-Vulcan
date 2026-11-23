@@ -5,7 +5,7 @@
 // whose own tool is beaten by one; the old one goes to whoever holds the worst of the kind (and
 // works it), else back. Hours are each person's own. A tool at no wear left breaks. The work's minutes are divided by the tool's speed.
 import { clockAt, TICKS_PER_DAY, type EngineContent, type EntityRow } from '../core/index.ts';
-import { addEntity, removeEntity, type Schemas } from '../entity/index.ts';
+import { addEntity, removeEntity, wayBy, type Schemas } from '../entity/index.ts';
 import {
   betterTool,
   freeTools,
@@ -175,6 +175,14 @@ export function wornHeld(ctx: SystemContext, person: number, use: string): boole
   return !!tool && isWorn(ctx.content, tool);
 }
 
+/** The wear one more minute of work puts on a tool: 1, or on a tool made by a smith who knew
+ * steel only the share of minutes its way leaves (half as fast: every other minute). */
+function wearOf(content: EngineContent, tool: EntityRow): number {
+  const keep = tool['steel'] ? 100 - wayBy(content, 'steel') : 100;
+  const n = tool['worked'] as number;
+  return Math.floor((n * keep) / 100) - Math.floor(((n - 1) * keep) / 100);
+}
+
 /** One minute of work with a kind of tool: counted for "who does it most", and wearing the tool
  * held, which breaks at no wear left (one notable line naming the hours worked). */
 export function worked(ctx: SystemContext, p: EntityRow, use: string): void {
@@ -187,7 +195,7 @@ export function worked(ctx: SystemContext, p: EntityRow, use: string): void {
   const tool = bestHeld(ctx, p.id, kind.id);
   if (!tool) return;
   tool['worked'] = (tool['worked'] as number) + 1;
-  tool['wear'] = (tool['wear'] as number) - 1;
+  tool['wear'] = (tool['wear'] as number) - wearOf(content, tool);
   if (!tool['worn']) wornLine(ctx, p, tool);
   if ((tool['wear'] as number) > 0) return;
   const broke = ctx.emit('tool.broke', {

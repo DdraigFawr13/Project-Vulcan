@@ -61,6 +61,9 @@ export const LAMP_SCHEMAS = {
         wax: num({ min: 0 }),
         minutes: num({ min: 1 }),
       }),
+      // On the first day of `winter.month` 1 in `odds` colonies is lost (6C Slice 5, V-219; the
+      // skeps way cuts it by its `effect.by` per cent for its keeper's colonies).
+      winter: obj({ month: str(), odds: num({ min: 1 }) }),
     }),
   }),
 } as const;
