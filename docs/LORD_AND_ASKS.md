@@ -21,6 +21,16 @@ The first dozen methods (content, numbers at Slice 5's mock-up): steel (smith), 
 - **q3 A, the finder, then teaching.** A method is known only by its finder; others learn it as their apprentice or from a book the teacher writes (V-189, V-199); a finder who dies untaught takes it with them (V-141).
 - **q4 A, the lord's forest.** The old woods farthest from the green are the lord's; hunting or felling there is poaching, a defiance some do anyway (the hungry, the defiant); favour falls if the reeve hears; a charter makes it the colony's. One content entry for the forest, one for the charter.
 
+## Slice 6 mock-up answers (2026-11-23, V-221)
+
+Form https://claude.ai/artifact/GRvQNoFM1D1viLSPMnoaif, every recommendation. Pictures: the real game at 390 px with the new parts drawn in (project files `vulcan/p6c-slice6/`).
+
+- **Where (q1 A):** the Skills tab, a "New ways" heading under Trade: "Puzzling over a cleaner smelt: 2 of 4 hints", why? opening each hint's ledger line.
+- **A known way (q2 A):** the way, how they came by it (found it, apprentice, book, working beside someone) and when, and what it does for their work, with why?.
+- **The colony's list (q3 A):** under the New Ways law on the Laws sheet, "Ways the colony knows": each way, who knows it and what it does; a way only one person knows says it would be lost with them; then what is being puzzled over. A way not yet found is never listed.
+- **How loud (q4 A):** a find, and a way lost with its last knower, go on the alert line under a new stop kind "Finds and new ways", default Slow; a mishap under "Building and works" (Note); hints and someone learning a way are ledger lines only.
+- **Recaps (q5 A):** a season recap gets a "New ways" part (finds, ways learnt, lost, mishaps, each citing its line) when anything happened; the year recap lists the year's finds and losses.
+
 ## Slice 5 mock-up answers (2026-11-23, V-218)
 
 Form https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u, every recommendation. Ten game years on the four test worlds (main 08f2f64, after the newcomers fix), hint rules estimated on top: 7, 5, 5 and 5 finds (anvil, smoke, tallow, ledger-1), the last in year 6 to 10; 0 to 3 mishaps a world (3 to 6 under Encouraged); 24 to 63 strangers came. Source, scratch model and runs: project files `vulcan/p6c-slice5/`.
@@ -45,7 +55,7 @@ Form https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha, every recommendation. Me
 - **Stay:** morning till dark; he finds the elder (else whoever is nearest the hall), speaks and leaves.
 - **Build notes:** skip a realm with `fell`; a plain seed has no lord (test with a valley seed); no test valley has a pious, cruel or learned lord, so temper tests make one in the test.
 
-## Slice 2 mock-up answers (2026-11-23, V-221)
+## Slice 2 mock-up answers (2026-11-23, V-222)
 
 Form https://claude.ai/artifact/91We7kCTAGYGzkkTaCU8DD, every recommendation. Measured on main (five years on anvil/1, smoke/1, ledger-1/1, four on tallow/1, no tithe): three of four valleys went hungry in some year; a tenth came to 23 to 40 days' eating (estimate, 4 food a person a day).
 
