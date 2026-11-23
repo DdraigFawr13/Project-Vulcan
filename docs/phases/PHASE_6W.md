@@ -73,7 +73,7 @@ Mock-up: UI, answered 2026-11-23 (every ★, V-213). Done when: unknown ground s
 
 ### Slice 7: hidden ores and prospecting
 
-Mock-up: Engine (five years on four seeds: the first ore found, where, by whom, and the days to the first ingot). Done when: no stain layer remains; a test shows an unseen vein stays unknown until a tunnel passes beside it; a test shows a prospector beside a rock face may spot a seam, with the line.
+Mock-up: Engine, form https://claude.ai/artifact/4osnix13gC32GEi59Pkfcx (answers pending; numbers measured on main 95b6004, five years on four seeds: today the first copper ingot comes on day 12 to 17, and seams in rock faces lie 30 to 89 tiles off). Done when: no stain layer remains; a test shows an unseen vein stays unknown until a tunnel passes beside it; a test shows a prospector beside a rock face may spot a seam, with the line.
 
 - Reading list: `docs/DECISIONS.md` V-030 V-087 V-094 V-193; `src/engine/mine/MODULE.md`; `src/engine/map/MODULE.md`; `src/render/MODULE.md`
 
