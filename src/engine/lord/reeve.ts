@@ -43,19 +43,19 @@ export function soughtOf(world: WorldState): EntityRow | undefined {
 }
 
 /** Sets the reeve on the road at the map's edge on the lord's side; false when there is no way
- * in. `harvest` is the harvest-home line he comes after. */
-export function sendReeve(ctx: SystemContext, harvest: number, eaten: number): boolean {
+ * in. `causes` are the harvest-home line he comes after, then its supper's line if it was eaten. */
+export function sendReeve(ctx: SystemContext, causes: readonly number[]): boolean {
   const { world, content } = ctx;
   const lord = lordRow(world)!;
   const at = edgeSpot(world, content, lord['dir'] as string);
   const sought = soughtOf(world);
   if (!at || !sought) return false;
   const came = ctx.emit('lord.reeveCame', {
-    causes: [harvest, eaten],
+    causes,
     data: { reeve: lord['reeve'] as string, lord: lordName(lord), home: lord['home'] as string },
   });
   addEntity(world, 'reeve', {
-    ...{ ...at, path: [], stride: 0, going: 0, harvest, came },
+    ...{ ...at, path: [], stride: 0, going: 0, harvest: causes[0]!, came },
     ...{ seeks: sought.id, looked: world.tick },
   });
   walkTo(ctx, reeveRow(world)!, spot(sought));
