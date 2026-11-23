@@ -39,6 +39,9 @@ export const METHODS_SCHEMAS = {
     // Luck: 1 in `days` working days (`hours` or more at the trade), 1 in `lucky` for a byname
     // in `bynames`.
     luck: obj({ days, lucky: days, bynames: list(str()), hours: num({ min: 1 }) }),
+    // A hint of one of `kinds` also goes to everyone puzzling over the same way who worked its
+    // trade that day (6C Slice 5, Morgan's card 2026-11-23); `words` name them in the line.
+    share: obj({ kinds: list(str()), words: text }),
     // A dream gives the last hint: 1 in `nights` once `days` have passed since the one before.
     dream: obj({ nights: days, days }),
     memories: obj({ found: ref('memories'), learned: ref('memories'), mishap: ref('memories') }),

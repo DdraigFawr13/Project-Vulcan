@@ -33,7 +33,7 @@ describe('needs', () => {
   // week (searched 2026-11-22), among them ledger-1, ledger-2 and tallow. Since hidden ores
   // (V-215) a prospector a day or two along the faces falls 50 to 150 short on recreation; of 16
   // seeds 6 hold the week (searched 2026-11-23), among them ledger-1, smoke and ledger-3. Since
-  // far shafts are camped by (V-224) smoke falls 50 short at hour 133; of 12 seeds 4 hold the week
+  // far shafts are camped by (V-225) smoke falls 50 short at hour 133; of 12 seeds 4 hold the week
   // (searched 2026-11-23): ledger-1, ledger-3, kiln and gwerin.
   for (const seed of ['ledger-1', 'kiln', 'ledger-3']) {
     it(`keeps the band fed, rested, warm and relaxed for a week on ${seed}`, () => {
