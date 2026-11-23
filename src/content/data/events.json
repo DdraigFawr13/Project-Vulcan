@@ -427,6 +427,7 @@
 {"id":"discover.hint","importance":2,"template":"{name} {how}{beside}: {n} of {of} hints towards {method}."},
 {"id":"discover.found","importance":3,"template":"{name} found {method} after {days} days of puzzling, from {hints}.","stop":"ways","notable":{}},
 {"id":"discover.dropped","importance":1,"template":"{name} put aside puzzling over {method}: only {hours} hours at the {where} in four weeks."},
+{"id":"discover.resumed","importance":1,"template":"{name} took up puzzling over {method} again, after {hours} hours at the {where} this month, with {n} of {of} hints kept."},
 {"id":"discover.mishap","importance":2,"template":"{name} tried something new at the {where} and {went}.","stop":"works","notable":{}},
 {"id":"discover.learned","importance":3,"template":"{name} learned {method} from {teacher}, {how}."},
 {"id":"discover.lost","importance":3,"template":"The way of {method} was lost with {name}: nobody else living knew it.","stop":"ways","notable":{}},

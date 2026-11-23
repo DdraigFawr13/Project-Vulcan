@@ -5,15 +5,21 @@
 // worked trade this month has `start.hours` or more, and a way they could find there that no
 // living colonist knows, begins to puzzle over it (one puzzle a person); a puzzle with under
 // `drop.hours` at its trade in the window for `drop.days` running is put aside (V-219 tuning: a
-// season away from a trade keeps its puzzle).
-import { TICKS_PER_DAY, today, type EngineContent, type EntityRow } from '../core/index.ts';
-import { addEntity, alive } from '../entity/index.ts';
+// season away from a trade keeps its puzzle); one taken up again keeps its hints (V-228).
+import {
+  TICKS_PER_DAY,
+  today,
+  type EngineContent,
+  type EntityRow,
+  type WorldState,
+} from '../core/index.ts';
+import { addEntity, alive, tableOf } from '../entity/index.ts';
 import { skillRow } from '../band/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addHint, wayOf } from './find.ts';
 import { mishap } from './mishap.ts';
 import { waysOf } from './ways.ts';
-import { knowersOf, knows, monthHours, puzzleOf, puzzlesNow, tradeRow } from './tables.ts';
+import { hintsOf, knowersOf, knows, monthHours, puzzleOf, puzzlesNow, tradeRow } from './tables.ts';
 export { workedToday } from './tables.ts';
 
 /** The trades some way belongs to. */
@@ -104,6 +110,13 @@ function wayFor(ctx: SystemContext, p: EntityRow) {
   return m && { m, hours: top.hours };
 }
 
+/** The puzzle `person` last put aside over `method`, if any (V-228): taking a way up again keeps
+ * its hints. A way someone found or learnt is known, so is never begun again. */
+const putAside = (world: WorldState, person: number, method: string): EntityRow | undefined =>
+  tableOf(world, 'puzzle')
+    .filter((q) => q['person'] === person && q['method'] === method && q['ended'])
+    .at(-1);
+
 /** Each midnight: puzzles of the dead end, a puzzle left too long is put aside, and someone with
  * no puzzle may begin one (`discover.puzzle`). */
 export function startPuzzles(ctx: SystemContext): void {
@@ -128,11 +141,25 @@ export function startPuzzles(ctx: SystemContext): void {
     if (puzzleOf(world, p.id) || !waysOf(world, content, p.id).start) continue;
     const got = wayFor(ctx, p);
     if (!got) continue;
-    const line = ctx.emit('discover.puzzle', {
-      causes: [workLine(ctx, p.id, got.m.job)].filter((l) => l > 0),
-      actors: [p.id],
-      data: { name: p['name'] as string, method: got.m.name, hours: got.hours, where: got.m.where },
-    });
+    const old = putAside(world, p.id, got.m.id);
+    const data = {
+      name: p['name'] as string,
+      method: got.m.name,
+      hours: got.hours,
+      where: got.m.where,
+    };
+    const work = [workLine(ctx, p.id, got.m.job)].filter((l) => l > 0);
+    if (old) {
+      const n = hintsOf(world, old.id).length;
+      const causes = [...work, old['ended'] as number];
+      const line = ctx.emit('discover.resumed', {
+        ...{ causes, actors: [p.id] },
+        data: { ...data, n, of: got.m.hints },
+      });
+      Object.assign(old, { line, ended: 0, last: world.tick, busy: world.tick });
+      continue;
+    }
+    const line = ctx.emit('discover.puzzle', { causes: work, actors: [p.id], data });
     addEntity(world, 'puzzle', {
       ...{ person: p.id, method: got.m.id, line, since: world.tick, work: 0 },
       ...{ failed: -1, read: -1, last: world.tick, ended: 0, busy: world.tick },

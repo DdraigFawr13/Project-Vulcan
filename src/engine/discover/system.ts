@@ -20,6 +20,7 @@ export const discoverSystem: System = {
     'discover.found',
     'discover.beaten',
     'discover.dropped',
+    'discover.resumed',
     'discover.mishap',
     'discover.learned',
     'discover.lost',
