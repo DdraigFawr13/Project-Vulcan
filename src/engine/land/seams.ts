@@ -8,7 +8,15 @@
 import { itemName, streamFor, type EntityRow, type Place } from '../core/index.ts';
 import { greenOf } from '../build/index.ts';
 import { compass, rockOdds, seamAt } from '../map/index.ts';
-import { metalsOf, openVein, oreShort, saltShort, seamsOf, shaftFor, siteShaft } from '../mine/index.ts';
+import {
+  metalsOf,
+  openVein,
+  oreShort,
+  saltShort,
+  seamsOf,
+  shaftFor,
+  siteShaft,
+} from '../mine/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { people, skillOf } from '../band/index.ts';
 import { isDown } from '../health/index.ts';

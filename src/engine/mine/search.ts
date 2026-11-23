@@ -57,7 +57,12 @@ function wayFrom(map: WorldState['map'], start: number, way: number, n: number):
 
 /** Where to start: the known open tiles beside the dark that the shaft's foot reaches, in a cave
  * or by water (farthest from the foot first, ties to the lower tile), then the foot itself. */
-function startsOf(world: WorldState, content: EngineContent, shaft: EntityRow, z: number): number[] {
+function startsOf(
+  world: WorldState,
+  content: EngineContent,
+  shaft: EntityRow,
+  z: number,
+): number[] {
   const map = world.map;
   const layer = map.levels[z - 1]!;
   const [W, H] = [map.width, map.height];
@@ -84,7 +89,13 @@ function startsOf(world: WorldState, content: EngineContent, shaft: EntityRow, z
 }
 
 /** How much of the ore's rock the miners know of within 2 tiles of a way, by `vein.rocks`. */
-function rockAlong(world: WorldState, content: EngineContent, metal: string, z: number, way: number[]): number {
+function rockAlong(
+  world: WorldState,
+  content: EngineContent,
+  metal: string,
+  z: number,
+  way: number[],
+): number {
   const map = world.map;
   const layer = map.levels[z - 1]!;
   const rocks = content.features.find((f) => f.id === metal)?.vein?.rocks ?? {};

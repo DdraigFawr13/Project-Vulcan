@@ -12,36 +12,41 @@ describe('levels below', () => {
   const radius = content.terrain.generator.start.radius;
   const { depth } = content.terrain.generator.underground;
 
-  it.each(MAP_SEEDS)('seed %s has no ore near the start below, and seams only in faces over ore', (seed) => {
-    const { map } = createWorld(sim, seed);
-    let near = Infinity;
-    let veins = 0;
-    const levels = Array.from({ length: depth }, (_, z) => makeLevel(seed, content, map, z + 1));
-    for (const level of levels)
-      level.features.forEach((f, i) => {
-        if (!f || !content.features[f - 1]!.vein) return;
-        veins += 1;
-        const x = i % map.width;
-        const y = (i - x) / map.width;
-        near = Math.min(near, Math.max(Math.abs(x - map.startX), Math.abs(y - map.startY)));
+  it.each(MAP_SEEDS)(
+    'seed %s has no ore near the start below, and seams only in faces over ore',
+    (seed) => {
+      const { map } = createWorld(sim, seed);
+      let near = Infinity;
+      let veins = 0;
+      const levels = Array.from({ length: depth }, (_, z) => makeLevel(seed, content, map, z + 1));
+      for (const level of levels)
+        level.features.forEach((f, i) => {
+          if (!f || !content.features[f - 1]!.vein) return;
+          veins += 1;
+          const x = i % map.width;
+          const y = (i - x) / map.width;
+          near = Math.min(near, Math.max(Math.abs(x - map.startX), Math.abs(y - map.startY)));
+        });
+      expect(veins).toBeGreaterThan(0);
+      expect(near).toBeGreaterThan(radius);
+      // A face shows a seam only where its vein lies within a tile below; nothing else marks it
+      // (V-215, nothing on the ground).
+      let seams = 0;
+      map.faces.forEach((v, i) => {
+        if (v < 2) return;
+        seams += 1;
+        const f = v - 1;
+        const layer = levels[content.features[f - 1]!.vein!.level - 1]!;
+        const [x, y] = [i % map.width, Math.floor(i / map.width)];
+        const near = [-1, 0, 1].flatMap((dy) =>
+          [-1, 0, 1].map((dx) => (y + dy) * map.width + x + dx),
+        );
+        expect(near.some((j) => layer.features[j] === f)).toBe(true);
       });
-    expect(veins).toBeGreaterThan(0);
-    expect(near).toBeGreaterThan(radius);
-    // A face shows a seam only where its vein lies within a tile below; nothing else marks it
-    // (V-215, nothing on the ground).
-    let seams = 0;
-    map.faces.forEach((v, i) => {
-      if (v < 2) return;
-      seams += 1;
-      const f = v - 1;
-      const layer = levels[content.features[f - 1]!.vein!.level - 1]!;
-      const [x, y] = [i % map.width, Math.floor(i / map.width)];
-      const near = [-1, 0, 1].flatMap((dy) => [-1, 0, 1].map((dx) => (y + dy) * map.width + x + dx));
-      expect(near.some((j) => layer.features[j] === f)).toBe(true);
-    });
-    expect(seams).toBeGreaterThan(0);
-    expect('stains' in map).toBe(false);
-  });
+      expect(seams).toBeGreaterThan(0);
+      expect('stains' in map).toBe(false);
+    },
+  );
 
   it('makes a level only when stairs or a shaft reach it, the same in any order', () => {
     const world = createWorld(sim, 'ledger');

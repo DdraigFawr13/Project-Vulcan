@@ -23,7 +23,11 @@ function wantsIron(content: Content, seed: string, only: boolean): World {
   const w = createWorld(createSim(content), seed);
   w.map.known.fill(1);
   if (only) w.map.faces.forEach((v, i) => v && v !== 1 + IRON && (w.map.faces[i] = v | 128));
-  submitCommand(w, { tick: w.tick + 1, kind: 'setStock', data: { good: 'iron-ingot', level: 'some' } });
+  submitCommand(w, {
+    tick: w.tick + 1,
+    kind: 'setStock',
+    data: { good: 'iron-ingot', level: 'some' },
+  });
   return w;
 }
 

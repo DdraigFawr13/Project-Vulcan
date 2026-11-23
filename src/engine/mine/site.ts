@@ -16,7 +16,8 @@ export interface ShaftSite {
   seam: Place;
 }
 
-const cheb = (ax: number, ay: number, bx: number, by: number): number =>
+/** Tiles apart, the larger of the two offsets. */
+export const cheb = (ax: number, ay: number, bx: number, by: number): number =>
   Math.max(Math.abs(ax - bx), Math.abs(ay - by));
 
 /** The seams of `metal` someone has found (places with its feature id and a line). */
@@ -63,7 +64,11 @@ export function siteShaft(
 
 /** The free tile nearest `seam`'s face within `work.mine.near` (ties to the lower tile): plain,
  * dry ground with nothing on it, reachable from the green. */
-export function siteBy(world: WorldState, content: EngineContent, seam: Place): ShaftSite | undefined {
+export function siteBy(
+  world: WorldState,
+  content: EngineContent,
+  seam: Place,
+): ShaftSite | undefined {
   const map = world.map;
   const green = greenOf(world);
   const reach = reachFrom(content, map, green);

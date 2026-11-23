@@ -1,13 +1,10 @@
-// Planting a found seam (tests and debug only): the nearest face over a seam of `metal` that the
-// band can get beside and a shaft can be sited by, marked found as if someone had spotted it, its line `line`. Faces within
-// `work.mine.avoid` of a seam already found are passed over, so a second call plants another.
+// Planting a found seam (tests and debug only): the nearest face over a seam of `metal` the band
+// can get beside and a shaft can be sited by, marked found as if spotted, its line `line`. Faces
+// within `work.mine.avoid` of a seam already found are passed over, so a second call plants another.
 import type { EngineContent, Place, WorldState } from '../core/index.ts';
 import { greenOf } from '../build/index.ts';
 import { reachFrom, walkAt } from '../paths/index.ts';
-import { seamsOf, siteBy } from './site.ts';
-
-const cheb = (ax: number, ay: number, bx: number, by: number): number =>
-  Math.max(Math.abs(ax - bx), Math.abs(ay - by));
+import { cheb, seamsOf, siteBy } from './site.ts';
 
 export function plantSeam(
   world: WorldState,

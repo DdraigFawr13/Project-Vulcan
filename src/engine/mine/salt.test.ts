@@ -66,7 +66,10 @@ describe('the salt seam', () => {
       const w = createWorld(sim, seed);
       const { features } = makeLevel(seed, content, w.map, 2);
       expect(features.some((f) => f === SALT)).toBe(true);
-      expect(w.map.faces.some((v) => v === 1 + SALT), seed).toBe(true);
+      expect(
+        w.map.faces.some((v) => v === 1 + SALT),
+        seed,
+      ).toBe(true);
     }
   });
 

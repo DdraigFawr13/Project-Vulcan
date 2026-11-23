@@ -5,7 +5,14 @@ import { describe, expect, it } from 'vitest';
 import { content as game } from '../../content/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { chunkTiles, CHUNK } from '../map/index.ts';
-import { allLines, createSim, createWorld, step, submitCommand, withoutAccidents } from '../index.ts';
+import {
+  allLines,
+  createSim,
+  createWorld,
+  step,
+  submitCommand,
+  withoutAccidents,
+} from '../index.ts';
 import { openVein } from './index.ts';
 
 const content = withoutAccidents(game);

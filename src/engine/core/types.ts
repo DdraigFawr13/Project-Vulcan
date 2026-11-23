@@ -182,9 +182,7 @@ export interface MapState {
   worn: Uint8Array;
   /** Built on each surface tile (P3.1): 0, or 1 + a `buildings.parts` index; a stair is a tile kind. */
   built: Uint8Array;
-  /** Surface rock faces (6W Slice 7, V-215, map `faces.ts`): 0 not a face, 1 a face, 1 + f a face
-   * over the seam of features index f - 1; bit 128 once a prospector has walked it. Hidden: never
-   * drawn or sent to the screen. */
+  /** Hidden rock faces (V-215, `faces.ts`): 0, 1, or 1 + the seam's feature; | 128 walked. */
   faces: Uint8Array;
   /** The levels below, 0 for level 1: null until stairs or a shaft reach one (V-014), so it costs nothing. */
   levels: (LevelState | null)[];
@@ -235,8 +233,7 @@ export interface Find {
   search?: number;
   /** 1 once the scout has lost the way on this trip (at most once a trip). */
   strayed?: number;
-  /** A prospecting trip (6W Slice 7, V-215): 1, with `good` the ore's feature id; `faces` the rock
-   * faces walked on it, and `along` the tick the walk along the faces ends (0 until begun). */
+  /** A prospecting trip (V-215): `ore` 1 (`good` the ore), `faces` walked, `along` the walk's end. */
   ore?: number;
   faces?: number;
   along?: number;

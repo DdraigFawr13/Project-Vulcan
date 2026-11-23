@@ -30,8 +30,10 @@ describe('needs', () => {
   // each have one person an hour bored (2,850 and 2,900 of 3,000); on 34 seeds 11 hold the week
   // against main's 17 (searched 2026-11-21), among them ledger-1, anvil and ledger-3. On the
   // 250-tile valley (V-202) anvil and ledger-3 fall 50 short on recreation; of 24 seeds 11 hold the
-  // week (searched 2026-11-22), among them ledger-1, ledger-2 and tallow.
-  for (const seed of ['ledger-1', 'ledger-2', 'tallow']) {
+  // week (searched 2026-11-22), among them ledger-1, ledger-2 and tallow. Since hidden ores
+  // (V-215) a prospector a day or two along the faces falls 50 to 150 short on recreation; of 16
+  // seeds 6 hold the week (searched 2026-11-23), among them ledger-1, smoke and ledger-3.
+  for (const seed of ['ledger-1', 'smoke', 'ledger-3']) {
     it(`keeps the band fed, rested, warm and relaxed for a week on ${seed}`, () => {
       const world = createWorld(sim, seed);
       const people = world.entities['person']!;

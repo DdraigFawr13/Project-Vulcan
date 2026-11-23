@@ -79,7 +79,8 @@ function searchFor(
   const { world, content } = ctx;
   if (siteShaft(world, content, metal)) return undefined;
   // One search tunnel at a time.
-  const searching = (q: EntityRow) => q['task'] === 'tunnel' && !shaftFor(world, q['what'] as string);
+  const searching = (q: EntityRow) =>
+    q['task'] === 'tunnel' && !shaftFor(world, q['what'] as string);
   if (others.some(searching)) return undefined;
   const map = world.map;
   const size = map.width * map.height;

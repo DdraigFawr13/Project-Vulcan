@@ -20,9 +20,6 @@ import { miningOf, oreKnown, oresWanted, oreWord, seamOres, type OreNeed } from 
 import { alongWord, spendWord, wordOf } from './word.ts';
 import type { Need } from './scout.ts';
 
-const cheb = (ax: number, ay: number, bx: number, by: number): number =>
-  Math.max(Math.abs(ax - bx), Math.abs(ay - by));
-
 /** An ore wanted and unknown, as a scouting need. */
 export function oreAsNeed(ctx: SystemContext, ox: number, oy: number): Need | undefined {
   const ore = oreNeed(ctx, ox, oy);
@@ -36,7 +33,7 @@ function unwalked(ctx: SystemContext, ox: number, oy: number): number[] {
   const map = ctx.world.map;
   const far = ctx.content.work.scout.far;
   return faceList(map).filter(
-    (i) => !faceWalked(map, i) && cheb(i % map.width, Math.floor(i / map.width), ox, oy) <= far,
+    (i) => !faceWalked(map, i) && apart(i % map.width, Math.floor(i / map.width), ox, oy) <= far,
   );
 }
 
@@ -98,7 +95,7 @@ function ranked(
   const scored: [number, number][] = [];
   for (const i of unwalked(ctx, ox, oy)) {
     const [x, y] = [i % map.width, Math.floor(i / map.width)];
-    const d = cheb(x, y, cx, cy);
+    const d = apart(x, y, cx, cy);
     if (d > far) continue;
     const liked = rocks[ids[map.tiles[i]!]!] !== undefined ? 0 : 1000;
     const lean = word && alongWord(word, x - ox, y - oy) ? content.work.scout.prospect.word : 0;
@@ -109,7 +106,13 @@ function ranked(
 
 /** The side of the first face to make for, from the green: the best unwalked face within `far`
  * that `p` can get beside. */
-export function faceTarget(ctx: SystemContext, p: EntityRow, need: OreNeed, ox: number, oy: number): Spot | undefined {
+export function faceTarget(
+  ctx: SystemContext,
+  p: EntityRow,
+  need: OreNeed,
+  ox: number,
+  oy: number,
+): Spot | undefined {
   const far = ctx.content.work.scout.far;
   for (const i of ranked(ctx, need.metal, [ox, oy], [ox, oy], far)) {
     const side = sideOf(ctx, p, i);
@@ -120,7 +123,12 @@ export function faceTarget(ctx: SystemContext, p: EntityRow, need: OreNeed, ox: 
 
 /** The setting-out line: the stock level (or the curer's want) and the worn tools that ask for
  * the metal, the word that points the way, and the priority that put them to it. */
-export function setOutProspecting(ctx: SystemContext, p: EntityRow, need: OreNeed, kit: string): number {
+export function setOutProspecting(
+  ctx: SystemContext,
+  p: EntityRow,
+  need: OreNeed,
+  kit: string,
+): number {
   const { world, content } = ctx;
   const salt = need.metal === content.work.cure.salt.item;
   const k = content.work.scout.goods.length + seamOres(ctx).indexOf(need.metal);
