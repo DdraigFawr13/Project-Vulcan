@@ -83,9 +83,11 @@ function cited(world: WorldState, sim: Sim): Set<number> {
  * (V-177). */
 const HELD = ['memory', 'belief', 'tale', 'answer', 'defy', 'annalLine', 'annalText'] as const;
 
-/** Every ledger id a row of a `HELD` table cites. */
+/** Every ledger id a row of a `HELD` table cites, and each scout trip's last line, so a find's
+ * page and the Trips tab keep its words and its set-out line (V-213). */
 function held(world: WorldState, sim: Sim): Set<number> {
   const ids = new Set<number>();
+  for (const find of world.map.finds) if (find.line) ids.add(find.line);
   const tables = Object.fromEntries(
     HELD.flatMap((k) => (sim.tables[k] ? [[k, sim.tables[k]]] : [])),
   );

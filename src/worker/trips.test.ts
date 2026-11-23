@@ -114,5 +114,13 @@ describe('the known map on screen', () => {
     w.tick += 2 * TICKS_PER_DAY;
     expect(scoutingWords(w)).toBe('nobody out; last trip home 2 days ago');
     expect(entityOf(w, 'person', scout.id)).toBeDefined();
+
+    // A week on, the trip's days are sealed: the find keeps its line and the trip its time out.
+    const found = map.finds.find((f) => f.line === told)!;
+    step(w, sim, 8 * TICKS_PER_DAY);
+    expect(w.log.some((e) => e.id === told)).toBe(false);
+    expect(tileFind(w, 10, 12, line(w)).find?.line?.id).toBe(told);
+    const later = tripsView(w, line(w)).trips.at(map.finds.length - 1 - map.finds.indexOf(found));
+    expect(later?.sub).toMatch(/^Out 20 hours.* · told of a wood$/);
   });
 });
