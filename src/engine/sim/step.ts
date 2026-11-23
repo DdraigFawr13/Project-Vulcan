@@ -79,9 +79,13 @@ function cited(world: WorldState, sim: Sim): Set<number> {
 }
 
 /** What a person holds in mind: memories, beliefs, tales, their answer to a law and their place
- * on the defiance ladder; and the recaps' kept lines and sentences (V-191). The lines these cite keep their words
- * (V-177). */
-const HELD = ['memory', 'belief', 'tale', 'answer', 'defy', 'annalLine', 'annalText'] as const;
+ * on the defiance ladder; the recaps' kept lines and sentences (V-191); and the puzzles, hints and
+ * ways known, whose lines the Skills tab and the Laws sheet open (V-221). The lines these cite
+ * keep their words (V-177). */
+const HELD = [
+  ...['memory', 'belief', 'tale', 'answer', 'defy', 'annalLine', 'annalText'],
+  ...['puzzle', 'hint', 'knows'],
+] as const;
 
 /** Every ledger id a row of a `HELD` table cites, each scout trip's last line and each found
  * place's line, so a find's page and the Trips tab keep their words (V-213). */
