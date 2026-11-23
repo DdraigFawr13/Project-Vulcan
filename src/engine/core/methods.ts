@@ -38,6 +38,7 @@ export interface MethodsDef {
   seen: { odds: number; most: number; event: string };
   tale: { odds: number; id: string };
   luck: { days: number; lucky: number; bynames: readonly string[]; hours: number };
+  share: { kinds: readonly string[]; words: string };
   dream: { nights: number; days: number };
   memories: { found: string; learned: string; mishap: string };
   mishap: {
