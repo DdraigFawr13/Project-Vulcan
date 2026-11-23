@@ -13,6 +13,7 @@ import { addMemory } from '../needs/index.ts';
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { lordName, lordRow, reeveRow } from './tables.ts';
+import { swear, takeTithe } from './tithe.ts';
 
 const hourOf = (tick: number) => Math.floor((tick % TICKS_PER_DAY) / TICKS_PER_HOUR);
 const spot = (r: EntityRow): Spot => ({
@@ -91,9 +92,11 @@ function nameTheLord(ctx: SystemContext, r: EntityRow, to: EntityRow): void {
     const id = p['culture'] === lord['culture'] ? named : bitter;
     addMemory(ctx, p.id, id, line, 0, extra);
   }
+  // 6C Slice 2: the Lord law stands at Loyal from his word, and everyone answers it.
+  swear(ctx, line);
 }
 
-/** A later visit: the reeve counts the store, and takes nothing until the tithe (Slice 2). */
+/** A later visit: the reeve counts the store, then the tithe barn, and takes the tithe. */
 function countTheStore(ctx: SystemContext, r: EntityRow, to: EntityRow): void {
   const { world, content } = ctx;
   const lord = lordRow(world)!;
@@ -107,6 +110,7 @@ function countTheStore(ctx: SystemContext, r: EntityRow, to: EntityRow): void {
       ...{ food, days, mouths },
     },
   });
+  takeTithe(ctx, [r['harvest'] as number, r['came'] as number, lord['named'] as number], to);
 }
 
 /** Speaks to `to`, then turns for home. */

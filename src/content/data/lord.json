@@ -3,5 +3,14 @@
 "title": {"title":"Lord","f":"Lady"},
 "reeve": {"sex":"m","pace":2,"arrive":6,"speakBy":15,"leave":19,"reach":2,"look":30},
 "tempers": {"bold":0,"pious":0,"greedy":1,"cruel":2,"cautious":0,"learned":0},
-"memories": {"named":"lord-named","bitter":"lord-bitter"}
+"memories": {"named":"lord-named","bitter":"lord-bitter"},
+"tithe": {
+  "law": "lord",
+  "rate": 10,
+  "tempers": {"greedy": 15, "cruel": 15},
+  "kinds": ["grain","turnips","oats","beans","cabbages","fleece","wool","iron-ingot","copper-ingot","tin-ingot","bronze-ingot","iron-axe","iron-kit","iron-pick","iron-spear","iron-hoe","iron-hammer","iron-needle","iron-sickle","iron-chisel","iron-line","iron-saw"],
+  "barn": {"name": "Tithe barn", "start": 2, "size": "lean-to"},
+  "lean": {"days": 200, "half": ["cautious","pious","learned"], "memory": "lean-tithe", "standing": {"by": -4, "days": 168, "text": "the lord took his tithe in a lean year"}},
+  "search": 3
+}
 }

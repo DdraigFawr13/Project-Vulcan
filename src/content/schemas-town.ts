@@ -162,6 +162,9 @@ export const WALK_SCHEMAS = {
     ice: num({ min: 1 }),
     // P5.10: a step on a road, in tenths of the step on plain ground.
     road: num({ min: 1, max: 10 }),
+    // Minutes a step through water that can't be stood on, wading or swimming out when the ice
+    // thawed under someone (band/walk.ts).
+    wade: num({ min: 1 }),
   }),
   // P5.10 (V-054): footfall. Each step a person takes onto open surface ground adds one wear;
   // every dawn a tile loses its wear shifted right by `fade` (a 64th at 6), so a way walked N

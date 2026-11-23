@@ -23,6 +23,10 @@ export interface LawSettingDef {
   /** P6.5: what the setting does, for the Laws sheet. */
   about?: string;
   ask: number;
+  /** 6C Lord law (V-222): the per cent of the lord's share carried to the tithe barn; `unset` for
+   * the setting before the lord comes, which no lever picks and no faction asks for. */
+  tithe?: number;
+  unset?: boolean;
   hours?: Hours;
   /** Hours in winter, and how winter leans on it: for a law of hours. */
   winter?: Hours;

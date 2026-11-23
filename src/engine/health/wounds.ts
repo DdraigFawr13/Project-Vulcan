@@ -4,6 +4,7 @@
 // content entry's plain effect (a lame leg walks slower, a maimed arm works slower).
 import { pronouns, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
+import { dropTithe } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
 export const HEALTH_TABLES: Schemas = {
@@ -195,6 +196,7 @@ export function stopFor(ctx: SystemContext, p: EntityRow, down: boolean): void {
   for (const i of ctx.world.entities['item'] ?? [])
     if (i['holder'] === p.id && !['worn', 'held', 'hid'].includes(i['state'] as string)) {
       Object.assign(i, { holder: 0, x: p['x'], y: p['y'], z: p['z'] });
+      dropTithe(ctx.world, i);
       if (i['kind'] === roll && i['owner'] === p.id) i['state'] = 'laid';
     }
   Object.assign(p, { job: '', target: -1, work: 0, task: '', what: '', plan: 0 });

@@ -9,21 +9,22 @@ import type { EntityRow, RecipeDef } from '../core/index.ts';
 import { stationOf } from '../build/index.ts';
 import { wayEffect } from '../entity/index.ts';
 import {
+  broughtIn,
   haveOf,
   ingotWant,
   mergeTrails,
   oreTrail,
   trailOf,
   trailText,
+  type Step,
   wantedBy,
   withStep,
-  type Step,
 } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, canStandBeside, declineIfUnable, fetchKind, goBeside } from '../band/index.ts';
 import { layAll, outranked, people, practise, priorityLine, reachableOf } from '../band/index.ts';
 import { skillOf, spotOf, useHeld } from '../band/index.ts';
-import { itemName } from '../core/index.ts';
+import { counted, itemName } from '../core/index.ts';
 
 const stop = (p: EntityRow): false => {
   Object.assign(p, { job: '', plan: 0, target: -1, work: 0, make: '' });
@@ -157,10 +158,12 @@ export function smelting(ctx: SystemContext, p: EntityRow): boolean {
       name: p['name'] as string,
       count: out,
       what: itemName(ctx.content, r.makes),
+      made: counted(out, itemName(ctx.content, r.makes)),
       where: `at ${x}, ${y}`,
     },
   });
   layAll(ctx, r.makes, out, here, line, trail);
+  broughtIn(ctx.world, ctx.content, r.makes, out, line);
   stop(p);
   return true;
 }

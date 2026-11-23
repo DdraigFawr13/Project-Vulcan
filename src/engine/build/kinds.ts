@@ -9,12 +9,14 @@ export const ROAD_KIND = 'road';
 export const PITS_KIND = 'pits';
 export const TAVERN_KIND = 'tavern';
 export const SCHOOL_KIND = 'school';
+export const TITHE_KIND = 'tithe';
 /** A Build sheet row's name and start level. */
 export function sheetDef(content: EngineContent, kind: string): { name: string; start: number } {
   const rows: Record<string, { name: string; start: number }> = {
     [PASTURE_KIND]: content.flock.pasture,
     [TAVERN_KIND]: content.tavern.build,
     [SCHOOL_KIND]: content.teach.school.build,
+    [TITHE_KIND]: content.lord.tithe.barn,
     [PITS_KIND]: content.clothes.pits,
     [FIELD_KIND]: content.buildings.field,
     [SMITHY_KIND]: content.buildings.smithy,
@@ -33,4 +35,5 @@ export const BUILD_KINDS: readonly string[] = [
   PITS_KIND,
   TAVERN_KIND,
   SCHOOL_KIND,
+  TITHE_KIND,
 ];

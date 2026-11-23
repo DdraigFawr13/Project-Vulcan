@@ -17,6 +17,7 @@ export const defySystem: System = {
     'defy.slow',
     'defy.cooled',
     'defy.took',
+    'defy.hidTithe',
     'defy.caught',
     'defy.punished',
     'defy.brawled',

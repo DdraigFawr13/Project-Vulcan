@@ -12,6 +12,7 @@
 import { streamFor, type EntityRow } from '../core/index.ts';
 import { piecesOf, qualityOf } from '../build/index.ts';
 import {
+  broughtIn,
   freeTools,
   haveOf,
   ingotWant,
@@ -22,8 +23,8 @@ import {
   speedOf,
   trailOf,
   trailText,
-  withStep,
   type Step,
+  withStep,
 } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, canStandBeside, declineIfUnable, fetchKind, giveTool } from '../band/index.ts';
@@ -304,6 +305,7 @@ function made(
     trail: tool.trail,
     maker: p.id,
   });
+  broughtIn(world, content, item['kind'] as string, 1, line);
   firstFine(ctx, p, score, word.word, what, line);
   if (heldSpeed(ctx, target.id, tool.kind) < speedOf(content, item))
     giveTool(ctx, item, target, 'it was made for them');

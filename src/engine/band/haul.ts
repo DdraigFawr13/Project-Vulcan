@@ -31,6 +31,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { busy, layAround, same, spotOf } from './spots.ts';
 import { tallyAdd } from './tally.ts';
 import { walkTo } from './walk.ts';
+import { deliverTithe, takeUpTithe, TITHE, tithePickUp } from './tithehaul.ts';
 
 /** The tick before which they do not look for work again after finding none. */
 export const LOOK_AGAIN = 30;
@@ -44,6 +45,8 @@ export function deliver(ctx: SystemContext, p: EntityRow, load: EntityRow): void
   const count = load['count'] as number;
   const here = spotOf(p);
   const made = load['made'] as number;
+  // The lord's share goes to the tithe barn (6C Slice 2).
+  if (load['state'] === TITHE && deliverTithe(ctx, p, load)) return;
   if (content.work.haul.midden.includes(kind)) return deliverWaste(ctx, p, load, here);
   // Past its plate a good goes only to a store of its kind, once one stands; till then (a cleared
   // site's logs) to the home store as before. Carried out of a room, it goes wherever there is room.
@@ -161,7 +164,7 @@ function pickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): void {
 export function haulMinute(ctx: SystemContext, p: EntityRow): boolean {
   const item = itemsOf(ctx.world).find((i) => i.id === p['target'] && !i['holder']);
   if (item && same(spotOf(item), spotOf(p))) {
-    pickUp(ctx, p, item);
+    if (!tithePickUp(ctx, p, item)) pickUp(ctx, p, item);
     p['target'] = -1;
     return true;
   }
@@ -292,6 +295,8 @@ function chooseLoad(ctx: SystemContext, p: EntityRow, spare: boolean): EntityRow
 
 /** Carrying the nearest load to a store; `spare`, also food past its plate that would spoil. */
 export function takeUpHauling(ctx: SystemContext, p: EntityRow, spare = false): boolean {
+  // The lord's share first, once the tithe barn stands (tithehaul.ts).
+  if (takeUpTithe(ctx, p)) return true;
   const item = chooseLoad(ctx, p, spare);
   if (!item || !walkTo(ctx, p, spotOf(item))) return false;
   p['job'] = 'haul';

@@ -26,6 +26,7 @@ import {
   type MapState,
   type System,
 } from './index.ts';
+import { counted } from './core/index.ts';
 
 // Test-only fixtures: a system that rolls its dice every hour and a lever with no game meaning.
 // The fixture calendar turns a season every month, so the month's run writes a recap (V-191).
@@ -317,5 +318,28 @@ describe('engine', () => {
     expect(() =>
       createSim(fixtureContent, [{ id: 'y', every: 'day', emits: ['test.nothing'] }]),
     ).toThrow('No template in content events for: test.nothing.');
+  });
+
+  it('reads "an iron vein", leaves out a count with no want, and says one ingot (6W review)', () => {
+    const sim = createSim(content);
+    const line = (type: string, data: Record<string, string | number>) =>
+      renderEvent(
+        { id: 1, tick: 0, type, causes: [], actors: [], subjects: [], data },
+        sim.templates,
+      );
+    expect(line('mine.veinShown', { name: 'Colm', what: 'iron vein', level: 2 })).toBe(
+      'Colm broke through beside an iron vein on level 2.',
+    );
+    expect(line('mine.veinShown', { name: 'Colm', what: 'tin vein', level: 2 })).toContain('a tin');
+    const took = { name: 'Colm', work: 'mining tin ore', good: 'tin ingots', have: 0 };
+    expect(line('work.tookUp', { ...took, want: 0 })).toBe(
+      'Colm took up mining tin ore: the colony wants tin ingots.',
+    );
+    expect(line('work.tookUp', { ...took, want: 10 })).toContain('tin ingots (0 of 10).');
+    const smelted = (n: number) =>
+      line('metal.smelted', { name: 'Edwin', made: counted(n, 'copper ingots'), where: 'at 1, 2' });
+    expect(smelted(1)).toBe('Edwin smelted 1 copper ingot at the smelter at 1, 2.');
+    expect(smelted(4)).toBe('Edwin smelted 4 copper ingots at the smelter at 1, 2.');
+    expect(counted(1, 'rock faces')).toBe('1 rock face');
   });
 });

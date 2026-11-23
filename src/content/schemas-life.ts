@@ -156,6 +156,9 @@ export const LIFE_SCHEMAS = {
       search: count,
       why: text,
       words: obj({ sink: text, tunnel: text, search: text, mine: text, clay: text, cellar: text }),
+      // V-227: a shaft over `pack` tiles out is gone to with `days` of food; `wait`, `waits`.
+      ...{ pack: count, days: count, wait: count },
+      waits: obj({ ladder: text, far: text, nobody: text }),
     }),
     // Foraging (P2.9): the jobs.json job and the good it serves, minutes a bush takes at skill
     // `skilled`, bushes looked for within `reach` tiles of the store; a bush picked is ripe again

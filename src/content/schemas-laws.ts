@@ -47,6 +47,10 @@ export const LAWS_SCHEMAS = {
             // P6.5: what the setting does, in words for the Laws sheet.
             about: opt(text),
             ask: num(),
+            // 6C Lord law (V-222): the per cent of the lord's share carried to the tithe barn, and
+            // `unset` for the setting before the lord comes (no lever picks it, no faction asks it).
+            tithe: opt(num({ min: 0, max: 100 })),
+            unset: opt(bool()),
             hours: opt(hours),
             winter: opt(hours),
             winterLean: opt(num()),
