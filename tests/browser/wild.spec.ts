@@ -22,8 +22,17 @@ test('an animal drawn on the map opens its herd page at 390 px', async ({ page }
     .poll(async () => (await find(), game.getAttribute('data-animal-at')), { timeout: 30_000 })
     .not.toBeNull();
   await page.getByTestId('speed-0').click();
-  await find();
-  await expect.poll(() => game.getAttribute('data-animal-at')).not.toBeNull();
+  // Paused, the animal may still be gliding to its last step: wait until two looks agree.
+  let last: string | null = null;
+  await expect
+    .poll(async () => {
+      await find();
+      const at = await game.getAttribute('data-animal-at');
+      const still = at !== null && at === last;
+      last = at;
+      return still;
+    })
+    .toBe(true);
   const [x, y] = (await game.getAttribute('data-animal-at'))!.split(',').map(Number);
   const box = (await game.locator('canvas').boundingBox())!;
   await page.mouse.click(box.x + x!, box.y + y!);
