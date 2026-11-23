@@ -4,6 +4,7 @@
 // give loads of muck that farmers carry to the poorest fallow ground (land/farm.ts). All dials
 // are content `buildings.field.soil`; the pure reads are fieldsoil.ts.
 import { clockAt, TICKS_PER_DAY, type EntityRow, type WorldState } from '../core/index.ts';
+import { wayEffect } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { cropNow, doneOf, liveFields, placeOf, tilesOf } from './fields.ts';
 import { courseNow, meanSoil } from './fieldsoil.ts';
@@ -79,6 +80,15 @@ function restLine(ctx: SystemContext, f: EntityRow): void {
   });
 }
 
+/** The winter gain: a resting field (nothing growing) whose last farmer knows resting gains more. */
+const restGain = (ctx: SystemContext, f: EntityRow, gain: number): number =>
+  f['crop']
+    ? gain
+    : gain +
+      Math.round(
+        (gain * wayEffect(ctx.world, ctx.content, f['farmer'] as number, 'resting')) / 100,
+      );
+
 /** Once a day, from the hourly field tick: fallow gain, the year's muck, and rests. */
 export function tickSoil(ctx: SystemContext, fields: EntityRow[]): void {
   const { world, content, state } = ctx;
@@ -93,7 +103,13 @@ export function tickSoil(ctx: SystemContext, fields: EntityRow[]): void {
   const { winter, muck } = content.buildings.field.soil;
   if (c.day === 1 && month === winter.month)
     for (const f of liveFields(world))
-      shiftSoil(ctx, f, winter.gain, 'lay fallow over the winter', f['last'] as number);
+      shiftSoil(
+        ctx,
+        f,
+        restGain(ctx, f, winter.gain),
+        'lay fallow over the winter',
+        f['last'] as number,
+      );
   if (c.day === 1 && month === muck.month) {
     const herds = (world.entities['herd'] ?? []).filter((h) =>
       livePastures(world).some((p) => p.id === h['kept']),

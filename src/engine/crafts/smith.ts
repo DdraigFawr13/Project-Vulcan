@@ -302,6 +302,7 @@ function made(
   const item = layTool(world, content, restOf(world, content), {
     ...{ kind: tool.kind, material: tool.material, quality: word.id, made: line },
     trail: tool.trail,
+    maker: p.id,
   });
   firstFine(ctx, p, score, word.word, what, line);
   if (heldSpeed(ctx, target.id, tool.kind) < speedOf(content, item))

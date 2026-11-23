@@ -65,6 +65,8 @@ export const FIELD_TABLES: Schemas = {
     watered: 'ints',
     cut: 'count',
     wline: 'event',
+    /** Who last sowed or reaped it (6C Slice 5, V-219): resting helps if they know the way. */
+    farmer: 'entity',
   },
 };
 
@@ -207,7 +209,7 @@ export function planFields(ctx: SystemContext, green: Spot, causes: number[], se
   addEntity(world, 'field', {
     ...{ crop: '', state: 'plan', tiles: site.tiles, done: [], sown: 0, line, last: line },
     ...{ took: 0, why, sent, leave: 0, got: 0, kept: 0, reapers: [], noSeed: 0 },
-    ...{ course: 0, prev: '', rested: 0, wline: 0, straw: 0, ...clearBlight() },
+    ...{ course: 0, prev: '', rested: 0, wline: 0, straw: 0, farmer: 0, ...clearBlight() },
     at: site.tiles[0]!,
   });
   raiseStock(ctx, content.buildings.field.seed, content.buildings.field.name.toLowerCase(), line);

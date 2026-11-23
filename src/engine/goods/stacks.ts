@@ -33,6 +33,8 @@ export const GOODS_TABLES: Schemas = {
     worn: 'event',
     /** Food's spoiling carried over to tomorrow, in millionths of one (keep spoil.ts, P5.12). */
     rot: 'count',
+    /** The smith who made a tool knowing steel (6C Slice 5, V-219): it wears half as fast; else 0. */
+    steel: 'entity',
   },
 };
 
@@ -56,6 +58,7 @@ export function layItem(
     owner?: number;
     state?: string;
     wear?: number;
+    steel?: number;
     quality?: string;
     trail?: string;
   } = {},
@@ -71,6 +74,7 @@ export function layItem(
     worked: 0,
     worn: 0,
     rot: 0,
+    steel: extra.steel ?? 0,
   });
 }
 

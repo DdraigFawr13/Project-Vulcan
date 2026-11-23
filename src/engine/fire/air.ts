@@ -4,7 +4,7 @@
 // (banked heat when banked), then the air leaks the room's `leakOf` per mille of itself, at least
 // a tenth while any is left. A fire in the open has no air: it warms only while it burns (heat.ts).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { roofLeak, roomAt } from '../build/index.ts';
+import { mortaredTiles, roofLeak, roomAt } from '../build/index.ts';
 import { firesOf, fuelOf, pieceOfFire } from './fire.ts';
 
 /** Per mille of its heat a room's air loses an hour: the mean of its edge parts' `leak`
@@ -13,8 +13,7 @@ import { firesOf, fuelOf, pieceOfFire } from './fire.ts';
 export function leakOf(world: WorldState, content: EngineContent, piece: EntityRow): number {
   const room = roomAt(world, content, piece['x'] as number, piece['y'] as number);
   if (!room) return 0;
-  const { width, height, built } = world.map;
-  const { leak, open } = content.work.fire.air;
+  const { width, height } = world.map;
   const inside = new Set(room.tiles);
   const edge = new Set<number>();
   for (const i of room.tiles) {
@@ -32,13 +31,25 @@ export function leakOf(world: WorldState, content: EngineContent, piece: EntityR
     }
   }
   if (!edge.size) return 0;
-  let sum = 0;
-  for (const n of edge) {
-    const part = content.buildings.parts[built[n]! - 1];
-    sum += (part && leak[part.id]) ?? open;
-  }
+  const sum = edgeLeak(world, content, edge);
   const roof = roofLeak(world, content, piece['x'] as number, piece['y'] as number);
   return Math.max(1, Math.floor(sum / edge.size) + roof);
+}
+
+/** The sum of the leaks of the edge parts' tiles: a stone wall set by a knower of lime mortar
+ * loses `by` per cent less heat (V-219). */
+function edgeLeak(world: WorldState, content: EngineContent, edge: Set<number>): number {
+  const { leak, open } = content.work.fire.air;
+  const lime = content.methods.methods.find((m) => m.id === 'lime-mortar')?.effect ?? { by: 0 };
+  const mortared = mortaredTiles(world);
+  let sum = 0;
+  for (const n of edge) {
+    const part = content.buildings.parts[world.map.built[n]! - 1];
+    const one = (part && leak[part.id]) ?? open;
+    const eased = mortared.has(n) && lime.on?.includes(part?.material ?? '');
+    sum += eased ? Math.floor((one * (100 - lime.by)) / 100) : one;
+  }
+  return sum;
 }
 
 /** The heat (tenths of a degree) a fire drives its room's air towards now. */

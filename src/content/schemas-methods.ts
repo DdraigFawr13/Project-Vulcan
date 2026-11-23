@@ -16,6 +16,9 @@ export const METHODS_SCHEMAS = {
         ...{ hints: num({ min: 1 }), where: text, failures: list(str()) },
         // What a mishap spoils (the first in store), and whether its work is at a fire.
         ...{ ruins: list(ref('items')), hot: opt(bool()) },
+        // What it does for a knower's own work, in per cent (the hook is named for the way); `on` the
+        // materials it covers, where it covers some.
+        effect: obj({ by: num({ min: 1 }), on: opt(list(str())) }),
       }),
     ),
     // A puzzle starts after `hours` at a trade in the last `days`.

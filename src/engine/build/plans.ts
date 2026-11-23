@@ -2,7 +2,7 @@
 // it and the work left. Builders take plans up themselves (crafts/build.ts); this file owns the
 // rows and what happens to the map when a part is finished or taken down.
 import type { EngineContent, EntityRow, PartDef, WorldState } from '../core/index.ts';
-import { removeEntity, type Schemas } from '../entity/index.ts';
+import { addEntity, removeEntity, wayEffect, type Schemas } from '../entity/index.ts';
 import { cutStairsAt, setBuilt } from '../map/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
@@ -31,6 +31,8 @@ export const BUILD_TABLES: Schemas = {
     held: 'int',
     house: 'entity',
   },
+  /** A surface wall tile set by a knower of lime mortar (6C Slice 5, V-219); `person` who. */
+  mortared: { x: 'int', y: 'int', person: 'entity' },
 };
 
 export const plansOf = (world: WorldState): EntityRow[] => world.entities['plan'] ?? [];
@@ -84,15 +86,39 @@ export function refundOf(
   return out;
 }
 
+/** The wall tiles (map index) set by a knower of lime mortar. */
+export const mortaredTiles = (world: WorldState): Set<number> =>
+  new Set(
+    (world.entities['mortared'] ?? []).map(
+      (r) => (r['y'] as number) * world.map.width + (r['x'] as number),
+    ),
+  );
+
+/** A wall set at (x, y) by `builder`: remembered if they know lime mortar, else any earlier
+ * knower's mark on that tile is forgotten. */
+export function setMortar(ctx: SystemContext, x: number, y: number, builder: number): void {
+  const { world, content } = ctx;
+  forgetMortar(world, x, y);
+  if (wayEffect(world, content, builder, 'lime-mortar'))
+    addEntity(world, 'mortared', { x, y, person: builder });
+}
+
+/** The tile's wall comes down: its mortar mark goes with it. */
+function forgetMortar(world: WorldState, x: number, y: number): void {
+  const old = (world.entities['mortared'] ?? []).find((r) => r['x'] === x && r['y'] === y);
+  if (old) removeEntity(world, 'mortared', old.id);
+}
+
 /** The part is finished under `cause` (the builder's line): a wall, door or floor is set on the
  * map (anything growing there is cleared); a stair cuts stairs down, reaching the level below if nobody has. */
-export function finishPlan(ctx: SystemContext, plan: EntityRow, cause: number): void {
+export function finishPlan(ctx: SystemContext, plan: EntityRow, cause: number, builder = 0): void {
   const part = planPart(ctx.content, plan);
   const [x, y, z] = [plan['x'] as number, plan['y'] as number, plan['z'] as number];
   // A bush or herbs on a house's site is cleared as the part goes up (site.ts).
   if (z === 0) ctx.world.map.features[y * ctx.world.map.width + x] = 0;
   if (part.kind === 'stair') cutStairsAt(ctx, x, y, z, cause);
   else setBuilt(ctx, x, y, ctx.content.buildings.parts.indexOf(part) + 1, cause);
+  if (part.kind === 'wall' && z === 0) setMortar(ctx, x, y, builder);
   Object.assign(plan, { state: 'built', done: cause, work: 0, waited: 0 });
 }
 
@@ -104,8 +130,10 @@ export function takeDownPlan(
   cause: number,
 ): { kind: string; count: number }[] {
   const back = refundOf(ctx.content, plan);
-  if ((plan['done'] as number) > 0)
+  if ((plan['done'] as number) > 0) {
     setBuilt(ctx, plan['x'] as number, plan['y'] as number, 0, cause);
+    forgetMortar(ctx.world, plan['x'] as number, plan['y'] as number);
+  }
   removeEntity(ctx.world, 'plan', plan.id);
   return back;
 }

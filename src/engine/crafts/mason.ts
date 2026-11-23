@@ -15,6 +15,7 @@ import {
   plansOf,
   roofName,
   sayStageWaits,
+  setMortar,
   slateFor,
   stoneWallOf,
   wallsOf,
@@ -284,7 +285,7 @@ function dress(ctx: SystemContext, p: EntityRow): boolean {
 }
 
 /** Sets a part in place of wall plan row `w`, keeping its row. */
-function swapWall(ctx: SystemContext, w: EntityRow, to: string, cause: number): void {
+function swapWall(ctx: SystemContext, p: EntityRow, w: EntityRow, to: string, cause: number) {
   const { content } = ctx;
   const part = partOf(content, to)!;
   Object.assign(w, { part: to, have: part.cost, also: part.also?.cost ?? 0, done: cause });
@@ -295,6 +296,7 @@ function swapWall(ctx: SystemContext, w: EntityRow, to: string, cause: number): 
     content.buildings.parts.indexOf(part) + 1,
     cause,
   );
+  setMortar(ctx, w['x'] as number, w['y'] as number, p.id);
 }
 
 /** The next wall set in dressed stone; the house says so once the last is. */
@@ -326,7 +328,7 @@ function setWall(ctx: SystemContext, p: EntityRow, h: EntityRow): boolean {
     actors: [p.id],
     data: { name: p['name'] as string, mortar, x, y },
   });
-  swapWall(ctx, w, to, line);
+  swapWall(ctx, p, w, to, line);
   if (!wallsOf(world, h, st.from).length) {
     const done = ctx.emit('build.rebuilt', {
       causes: [line, h['stageLine'] as number].filter((l) => l > 0),
@@ -354,7 +356,7 @@ function wash(ctx: SystemContext, p: EntityRow, h: EntityRow): boolean {
     actors: [p.id],
     data: { name: p['name'] as string, size: roofName(world, content, h) },
   });
-  for (const r of walls) swapWall(ctx, r, w.to, line);
+  for (const r of walls) swapWall(ctx, p, r, w.to, line);
   Object.assign(h, { stage: '', stageLine: line, mason: 0, masonTook: 0 });
   return stopWork(p);
 }

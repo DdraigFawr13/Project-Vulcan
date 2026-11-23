@@ -12,7 +12,7 @@ import { roomsOf } from '../build/index.ts';
 import { heatAt } from '../fire/index.ts';
 import { tileTemperature } from '../weather/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { addEntity } from '../entity/index.ts';
+import { addEntity, wayBy } from '../entity/index.ts';
 
 const MILLION = 1_000_000;
 const MONTH = 28;
@@ -63,6 +63,10 @@ export const barrelsAt = (world: WorldState, x: number, y: number, z: number): n
 export const potsAt = (world: WorldState, x: number, y: number, z: number): number =>
   caskOf(world, x, y, z, 'pots');
 
+/** The pots on a store tile made by a knower of glazed pots (potter.ts), 0 for none. */
+export const glazedAt = (world: WorldState, x: number, y: number, z: number): number =>
+  caskOf(world, x, y, z, 'glazed');
+
 /** A stack's loss a day as a share, where it lies now. Barrels under it cut the rate of as much
  * of it as `keep.barrel.holds` a barrel covers, to `keep.barrel.times` of it; grain, oats and beans
  * (`potter.kinds`) take pots instead, `potter.holds` a pot, to `potter.times`. */
@@ -83,8 +87,16 @@ export function rateOf(
   const { times, holds } = potted ? pots : content.work.keep.barrel;
   const n = potted ? potsAt(world, ...at) : barrelsAt(world, ...at);
   const covered = n ? Math.min(1, (holds * n) / (i['count'] as number)) : 0;
+  // The share of the stack in glazed pots spoils `glazed-pots` per cent less (V-219).
+  const glazed =
+    potted && n ? Math.min(1, (holds * glazedAt(world, ...at)) / (i['count'] as number)) : 0;
+  const glaze = 1 - (glazed * wayBy(content, 'glazed-pots')) / 100;
   return (
-    base * place * warmthTimes(content, keptAt(world, content, i)) * (1 - (1 - times) * covered)
+    base *
+    place *
+    warmthTimes(content, keptAt(world, content, i)) *
+    (1 - (1 - times) * covered) *
+    glaze
   );
 }
 

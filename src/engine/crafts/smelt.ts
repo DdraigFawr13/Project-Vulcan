@@ -7,6 +7,7 @@
 // alert per input, cleared when it arrives.
 import type { EntityRow, RecipeDef } from '../core/index.ts';
 import { stationOf } from '../build/index.ts';
+import { wayEffect } from '../entity/index.ts';
 import {
   haveOf,
   ingotWant,
@@ -114,6 +115,12 @@ export function takeUpSmelting(ctx: SystemContext, p: EntityRow): boolean {
   return smelting(ctx, p);
 }
 
+/** A smelting by a knower of the cleaner smelt gives an ingot more at 1 in 4 (V-219). */
+function extraIngot(ctx: SystemContext, p: EntityRow, r: RecipeDef): number {
+  const by = wayEffect(ctx.world, ctx.content, p.id, 'cleaner-smelt');
+  return by > 0 && !r.alloy && ctx.rng().chance(by / 100) ? 1 : 0;
+}
+
 /** One minute of smelting; false when it is done, or cannot be done (what is held goes back). */
 export function smelting(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
@@ -132,6 +139,7 @@ export function smelting(ctx: SystemContext, p: EntityRow): boolean {
   p['work'] = (p['work'] as number) - 1;
   practise(ctx, p, skillName(ctx), p['took'] as number);
   if ((p['work'] as number) > 0) return true;
+  const out = r.out + extraIngot(ctx, p, r);
   const trails: Step[][] = [];
   for (const input of r.inputs)
     for (const used of useHeld(ctx, p, input.kind, input.count))
@@ -139,7 +147,7 @@ export function smelting(ctx: SystemContext, p: EntityRow): boolean {
   const most = content.metal.trail.most;
   const step: Step = {
     ...{ s: r.alloy ? 'mixed' : 'smelted', who: p['name'] as string, tick: world.tick },
-    ...{ ...here, n: r.out, k: r.makes },
+    ...{ ...here, n: out, k: r.makes },
   };
   const trail = trailText(withStep(mergeTrails(trails, most), step, most));
   const line = ctx.emit(r.alloy ? 'metal.mixed' : 'metal.smelted', {
@@ -147,12 +155,12 @@ export function smelting(ctx: SystemContext, p: EntityRow): boolean {
     actors: [p.id],
     data: {
       name: p['name'] as string,
-      count: r.out,
+      count: out,
       what: itemName(ctx.content, r.makes),
       where: `at ${x}, ${y}`,
     },
   });
-  layAll(ctx, r.makes, r.out, here, line, trail);
+  layAll(ctx, r.makes, out, here, line, trail);
   stop(p);
   return true;
 }
