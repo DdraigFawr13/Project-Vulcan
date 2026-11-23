@@ -62,6 +62,9 @@ export interface LawSettingDef {
   feasts?: number;
   /** 6B Apprentices (P6.13): every master takes one (`all`), by choice, or none. */
   apprentices?: 'all' | 'choice' | 'none';
+  /** 6C New Ways (V-218): puzzles and luck for keepers, hours a work hint, 1 in `mishap` work
+   * hints going wrong, 1 working minute in `trying` spent trying (0 none). */
+  ways?: { start: boolean; luck: boolean; work: number; mishap: number; trying: number };
 }
 
 export interface LawDef {

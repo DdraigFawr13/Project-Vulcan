@@ -88,6 +88,18 @@ export const LAWS_SCHEMAS = {
             feasts: opt(count),
             // 6B Apprentices (P6.13): every master takes one, by choice, or none (engine teach).
             apprentices: opt(oneOf('all', 'choice', 'none')),
+            // 6C New Ways (V-218): whether a keeper begins puzzles and has luck, hours a work hint,
+            // 1 in `mishap` work hints going wrong, and 1 working minute in `trying` spent trying
+            // (0 none) while puzzling (engine discover).
+            ways: opt(
+              obj({
+                start: bool(),
+                luck: bool(),
+                work: num({ min: 1 }),
+                mishap: num({ min: 1 }),
+                trying: count,
+              }),
+            ),
           }),
         ),
       }),

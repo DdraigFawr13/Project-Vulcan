@@ -32,7 +32,7 @@ export function addHint(
   kind: HintKind,
   causes: readonly number[],
   vars: Readonly<Record<string, unknown>> = {},
-): void {
+): number {
   const { world, content } = ctx;
   const m = wayOf(ctx, puzzle);
   const p = personRow(ctx, puzzle['person'] as number)!;
@@ -51,6 +51,7 @@ export function addHint(
   addEntity(world, 'hint', { puzzle: puzzle.id, kind, line, short });
   puzzle['last'] = world.tick;
   if (n >= m.hints) findWay(ctx, puzzle, p, m);
+  return line;
 }
 
 /** The find: the way is known, the puzzle ends, and so does everyone else's on it. */
