@@ -7,15 +7,17 @@ test('an animal drawn on the map opens its herd page at 390 px', async ({ page }
   test.setTimeout(90_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await settle(page, 'anvil', 1);
+  // Stops only note, so a notable line does not slow the play below.
+  await settle(page, 'tallow', 1, true, 'note');
   const game = page.getByTestId('game');
   await expect(game.locator('canvas')).toBeVisible();
   // The snapshot carries the animals; the renderer's event centres the view on one.
   await expect.poll(async () => Number(await game.getAttribute('data-animals'))).toBeGreaterThan(0);
   // Only an animal on seen land is drawn (V-213): none is on arrival; one wanders into sight
-  // within the first day (anvil: hour 8), so play until one is drawn, then pause.
+  // within the first day on tallow (hour 9; anvil not for a week), so play until one is drawn,
+  // then pause.
   const find = () => game.evaluate((g) => g.dispatchEvent(new Event('vulcan:find-animal')));
-  await chooseSpeed(page, 4);
+  await chooseSpeed(page, 3);
   await expect
     .poll(async () => (await find(), game.getAttribute('data-animal-at')), { timeout: 30_000 })
     .not.toBeNull();

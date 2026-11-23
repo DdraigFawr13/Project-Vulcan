@@ -99,9 +99,12 @@ export function tileView(
   const chunkX = Math.floor(x / CHUNK);
   const chunkY = Math.floor(y / CHUNK);
   const version = layer.chunkVersions[chunkY * chunksAcross(map) + chunkX]!;
-  // Unseen surface (6W Slice 6, V-213) says only that: no ground, height or what lies there.
-  if (z === 0 && map.known[y * map.width + x] !== 1)
-    return { x, y, z, ground: 'not yet seen', unseen: true, chunkX, chunkY, version };
+  // Unseen surface (6W Slice 6, V-213) says only that: no ground, height or what lies there; a
+  // shaft the colony planned there is its own plan, so its page still shows.
+  if (z === 0 && map.known[y * map.width + x] !== 1) {
+    const seen = { x, y, z, ground: 'not yet seen', chunkX, chunkY, version };
+    return { ...seen, unseen: true, ...tileShaft(w, x, y, lineOf) };
+  }
   const i = y * map.width + x;
   const changedBy = recordOf(w, layer.tileCauses[i]!);
   const feature = layer.features[i]! > 0 ? content.features[layer.features[i]! - 1] : undefined;
