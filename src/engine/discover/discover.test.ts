@@ -1,6 +1,6 @@
 // 6C Slice 5 (V-142, V-218): a smith at the forge begins to puzzle over steel, gathers its hints
 // and finds it, the find's line citing every hint; a lucky night writes its line; nobody puzzles
-// over a way a living colonist knows.
+// over a way a living colonist knows; a puzzle put aside keeps its hints when taken up again.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import {
@@ -96,5 +96,21 @@ describe('hints and breakthroughs', () => {
     expect(put?.actors).toEqual([smith.id]);
     expect(put?.causes).toEqual([lines(w, 'discover.puzzle')[0]!.id]);
     expect(puzzleOf(w, smith.id)).toBeUndefined();
+  });
+
+  it('a puzzle put aside and taken up again keeps its hints (V-228)', () => {
+    const { w, smith, hours, text } = forge();
+    hours(3 * 24 + content.methods.work);
+    const kept = lines(w, 'discover.hint').length;
+    expect(kept).toBeGreaterThan(0);
+    hours(2 * (content.methods.drop.days * 24 + 24), '');
+    expect(lines(w, 'discover.dropped')).toHaveLength(1);
+    hours(3 * 24);
+    const [again] = lines(w, 'discover.resumed');
+    expect(again?.causes).toContain(lines(w, 'discover.dropped')[0]!.id);
+    expect(text(again!)).toContain(`with ${kept} of`);
+    expect(lines(w, 'discover.puzzle')).toHaveLength(1);
+    const q = puzzleOf(w, smith.id)!;
+    expect((w.entities['hint'] ?? []).filter((h) => h['puzzle'] === q.id)).toHaveLength(kept);
   });
 });
