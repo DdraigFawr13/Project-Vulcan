@@ -23,7 +23,7 @@ The first dozen methods (content, numbers at Slice 5's mock-up): steel (smith), 
 
 ## Slice 5 mock-up answers (2026-11-23, V-218)
 
-Form https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u, every recommendation. Ten game years on the four test worlds (main 95b6004), hint rules estimated on top: 7, 2, 4 and 3 finds (anvil, smoke, tallow, ledger-1), most in the first four years; 1 to 3 mishaps a world (2 to 8 under Encouraged). Source, scratch model and runs: project files `vulcan/p6c-slice5/`.
+Form https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u, every recommendation. Ten game years on the four test worlds (main 08f2f64, after the newcomers fix), hint rules estimated on top: 7, 5, 5 and 5 finds (anvil, smoke, tallow, ledger-1), the last in year 6 to 10; 0 to 3 mishaps a world (3 to 6 under Encouraged); 24 to 63 strangers came. Source, scratch model and runs: project files `vulcan/p6c-slice5/`.
 
 - **Pace (q1 A):** a work hint every 120 hours at the trade; Encouraged two thirds of that.
 - **The twelve (q2 A):** the list below, with skill gates and hints steel 6/5, cleaner smelt 5/4, heavier plough 5/4, resting a field 4/3, mill wheel any/4, treadle loom 5/4, lime mortar 5/4, herb remedies 4/4, glazed pots 5/4, charcoal clamp 4/3, bark tanning 4/3, skeps 4/3. Effects, only for a knower's work: tools wear half as fast; one more ingot in four smelts; sowing and reaping a fifth faster; a resting field's soil back twice as fast; grinding a quarter faster; weaving a third faster; stone walls lose a third less heat; dressed wounds and fevers heal a quarter faster; food in their pots spoils half as fast; a quarter more charcoal a clamp; hides tan in two thirds the time; half as many skeps lost over winter. Numbers tuned at build.
@@ -31,7 +31,7 @@ Form https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u, every recommendation. Te
 - **Mishaps (q4 A):** on 1 in 6 work hints (1 in 4 under Encouraged): ruined materials; at forge, smelter, clamp or kiln sometimes a burned hand (a wound) or a small fire; nobody killed; each a line and a tale.
 - **New Ways (q5 A):** Allowed is the custom; Encouraged costs one working hour in eight and more mishaps; Old ways only starts no puzzle and gives no luck to those who keep it; faiths holding learning sacred lean for Encouraged, order against.
 - **Spreading (q6 B, widens spec form q3):** besides an apprentice in the skill and a book, anyone who works the same trade on the same days as a knower for about 200 hours learns the method; it is still lost if every knower dies or leaves first.
-- **Build notes:** one puzzle a person at a time; 40 h at the trade in four weeks to start one; nobody puzzles over a method a living colonist knows, and a find ends others' puzzles on it; failure hints at most one a person a 28 days; milling and healing are short jobs, so count their work from their lines; the 6B newcomers fix (V-214) now brings strangers, so "seen" hints fire.
+- **Build notes:** one puzzle a person at a time; 40 h at the trade in four weeks to start one; nobody puzzles over a method a living colonist knows, and a find ends others' puzzles on it; failure hints at most one a person a 28 days; milling and healing are short jobs, so count their work from their lines; a stranger's coming gives each person puzzling a seen hint at 1 in 8, at most 2 towards one method (default; seen hints are the second source after work in the runs).
 
 ## Slice 1 mock-up answers (2026-11-23, V-216)
 
