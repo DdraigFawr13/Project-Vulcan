@@ -21,6 +21,18 @@ The first dozen methods (content, numbers at Slice 5's mock-up): steel (smith), 
 - **q3 A, the finder, then teaching.** A method is known only by its finder; others learn it as their apprentice or from a book the teacher writes (V-189, V-199); a finder who dies untaught takes it with them (V-141).
 - **q4 A, the lord's forest.** The old woods farthest from the green are the lord's; hunting or felling there is poaching, a defiance some do anyway (the hungry, the defiant); favour falls if the reeve hears; a charter makes it the colony's. One content entry for the forest, one for the charter.
 
+## Slice 5 mock-up answers (2026-11-23, V-218)
+
+Form https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u, every recommendation. Ten game years on the four test worlds (main 95b6004), hint rules estimated on top: 7, 2, 4 and 3 finds (anvil, smoke, tallow, ledger-1), most in the first four years; 1 to 3 mishaps a world (2 to 8 under Encouraged). Source, scratch model and runs: project files `vulcan/p6c-slice5/`.
+
+- **Pace (q1 A):** a work hint every 120 hours at the trade; Encouraged two thirds of that.
+- **The twelve (q2 A):** the list below, with skill gates and hints steel 6/5, cleaner smelt 5/4, heavier plough 5/4, resting a field 4/3, mill wheel any/4, treadle loom 5/4, lime mortar 5/4, herb remedies 4/4, glazed pots 5/4, charcoal clamp 4/3, bark tanning 4/3, skeps 4/3. Effects, only for a knower's work: tools wear half as fast; one more ingot in four smelts; sowing and reaping a fifth faster; a resting field's soil back twice as fast; grinding a quarter faster; weaving a third faster; stone walls lose a third less heat; dressed wounds and fevers heal a quarter faster; food in their pots spoils half as fast; a quarter more charcoal a clamp; hides tan in two thirds the time; half as many skeps lost over winter. Numbers tuned at build.
+- **Luck (q3 A):** 1 in 100 working days at the trade; twice that for a Lucky or Twice-spared byname (tales.json). No new trait.
+- **Mishaps (q4 A):** on 1 in 6 work hints (1 in 4 under Encouraged): ruined materials; at forge, smelter, clamp or kiln sometimes a burned hand (a wound) or a small fire; nobody killed; each a line and a tale.
+- **New Ways (q5 A):** Allowed is the custom; Encouraged costs one working hour in eight and more mishaps; Old ways only starts no puzzle and gives no luck to those who keep it; faiths holding learning sacred lean for Encouraged, order against.
+- **Spreading (q6 B, widens spec form q3):** besides an apprentice in the skill and a book, anyone who works the same trade on the same days as a knower for about 200 hours learns the method; it is still lost if every knower dies or leaves first.
+- **Build notes:** one puzzle a person at a time; 40 h at the trade in four weeks to start one; nobody puzzles over a method a living colonist knows, and a find ends others' puzzles on it; failure hints at most one a person a 28 days; milling and healing are short jobs, so count their work from their lines; the 6B newcomers fix (V-214) now brings strangers, so "seen" hints fire.
+
 ## Slice 1 mock-up answers (2026-11-23, V-216)
 
 Form https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha, every recommendation. Measured on main (valley 1 of each test world): Ogrgul (Horde of Ashaglug, bold), Tarainach (Queendom of Esgairarrig, cautious), Gunnil the Builder (Jarldom of Brandby, bold, aged 10), Yarknak (Lordship of Rustnakpit, greedy); first harvest home day 142 or 143.
