@@ -636,3 +636,12 @@ table.grid th small {
 .lawfold small {
   font-size: 14px;
 }
+
+/* New ways (6C Slice 6, V-221): a puzzle's hints sit under it, each with its why?, on an ember
+   rule (UI_STYLE: ember marks what is being worked at). */
+.panel .hint {
+  margin: 0 0 4px 4px;
+  padding-left: 10px;
+  border-left: 2px solid var(--ember);
+  font-size: 15px;
+}

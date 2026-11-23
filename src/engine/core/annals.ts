@@ -22,6 +22,9 @@ export interface AnnalLineDef {
   /** A small trouble's words when it comes back season after season, folded into one line of
    * the year's recap ("the smith had no metal for a tool"). */
   fold?: string;
+  /** The year's recap lists every line of it this year as one sentence, `{list}` of `item`s
+   * (6C Slice 6: the year's finds and the ways lost). */
+  year?: string;
 }
 
 /** A sentence for one, or for two or more said as a list of `item`s. */
