@@ -156,7 +156,7 @@ export const LIFE_SCHEMAS = {
       search: count,
       why: text,
       words: obj({ sink: text, tunnel: text, search: text, mine: text, clay: text, cellar: text }),
-      // V-226: a shaft over `pack` tiles out is gone to with `days` of food; `wait`, `waits`.
+      // V-227: a shaft over `pack` tiles out is gone to with `days` of food; `wait`, `waits`.
       ...{ pack: count, days: count, wait: count },
       waits: obj({ ladder: text, far: text, nobody: text }),
     }),

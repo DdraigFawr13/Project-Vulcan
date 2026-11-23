@@ -1,4 +1,4 @@
-// Work at a far shaft (6W review, V-226). Anvil's tin shaft, 70 tiles out, was taken up 34 times
+// Work at a far shaft (6W review, V-227). Anvil's tin shaft, 70 tiles out, was taken up 34 times
 // and never sunk: its sinker set out, turned home to eat after four hours on the way and never
 // got there. So a miner whose shaft lies over `mine.pack` tiles from the green packs food for
 // `mine.days` days and a bedroll, as a scout does, and eats and camps out there (people

@@ -12,7 +12,7 @@ import { isDark } from '../lamp/index.ts';
 import { drinking } from './drink.ts';
 import { working } from './jobs.ts';
 
-/** Whether `p` is on a trip with their pack: a scout, or a miner gone to a far shaft (V-226).
+/** Whether `p` is on a trip with their pack: a scout, or a miner gone to a far shaft (V-227).
  * Anyone else packed puts the pack down once home. */
 function onTrip(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;

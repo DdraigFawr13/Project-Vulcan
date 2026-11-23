@@ -130,7 +130,7 @@ function planHome(ctx: SystemContext, green: Spot): void {
     : [...new Set(ids.map((id) => alive(world).find((q) => q.id === id)!['wants']))];
   const lean = work ? `, toward the ${table === 'field' ? 'fields' : table} where they work` : '';
   const line = ctx.emit('build.homeSited', {
-    causes: [...(wants as number[]), ...(want.line ? [want.line] : [])],
+    causes: [...(wants as number[]), ...(want.line ? [want.line] : [])].filter((l) => l > 0),
     actors: ids,
     data: {
       whose: whoseOf(world, ids),

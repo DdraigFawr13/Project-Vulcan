@@ -10,6 +10,7 @@
   "byname": { "share": 50, "told": 8, "proud": ["Lucky", "Twice-spared", "Wolf-dodger"] },
   "beliefs": [
     { "id": "woods-dangerous", "about": "place", "text": "the woods around the valley are dangerous" },
+    { "id": "lord-greedy", "about": "colony", "text": "the lord takes the bread from our mouths" },
     { "id": "arts-lost", "about": "colony", "text": "the old skills are dying out here" },
     { "id": "valley-finders", "about": "colony", "text": "this valley finds new ways" },
     { "id": "new-ways-risky", "about": "colony", "text": "new ways bring trouble" },
@@ -149,6 +150,7 @@
     { "id": "found-cave", "event": "land.found", "only": { "sort": "cave" }, "truth": 1, "belief": "valley-old", "from": 2, "levels": ["{name} saw a hole in the cliffs to the {dir}.", "{name} found {what} {far} tiles {dir} of home, breathing cold air.", "{name} found {what} to the {dir}, and something down there breathes."]},
     { "id": "found-den", "event": "land.found", "only": { "sort": "den" }, "truth": 1, "belief": "cliffs-dangerous", "from": 1, "levels": ["{name} saw bones under the cliffs to the {dir}.", "{name} found {what} {far} tiles {dir} of home.", "{name} found {what} to the {dir}, as big as a house and stinking of blood."]},
     { "id": "curio", "event": "land.curio", "truth": 1, "belief": "valley-old", "from": 2, "levels": ["{name} picked up something odd out to the {dir}.", "{name} found {what}, {far} tiles {dir} of home.", "{name} found {what} to the {dir}, and it was not lying there by chance."]},
-    { "id": "word", "event": "land.word", "truth": 1, "belief": "valley-rich", "from": 2, "levels": ["{name} saw something on the road in.", "{name} spoke of {find} to the {dir}, passed on the road in.", "{name} says there is {find} to the {dir}, more than anyone could use."]}
+    { "id": "word", "event": "land.word", "truth": 1, "belief": "valley-rich", "from": 2, "levels": ["{name} saw something on the road in.", "{name} spoke of {find} to the {dir}, passed on the road in.", "{name} says there is {find} to the {dir}, more than anyone could use."]},
+    { "id": "lean-tithe", "event": "colony.standing", "only": { "cause": "leanTithe" }, "truth": 1, "belief": "lord-greedy", "from": 1, "levels": ["The reeve took the lord's share.", "The reeve took the lord's share in a lean year, and we went short.", "The lord takes the bread from our children's mouths."] }
   ]
 }

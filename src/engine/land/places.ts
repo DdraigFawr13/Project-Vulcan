@@ -119,7 +119,7 @@ export function curioHour(ctx: SystemContext): void {
 
 /** Each minute (V-206): finds seen are found, the far out may come on a curio, a newcomer tells
  * of their road in, anyone beside a rock face may spot a seam in it (V-215), and a want of ore
- * not found is kept and told of once a season (V-226). */
+ * not found is kept and told of once a season (V-227). */
 export function findsMinute(ctx: SystemContext): void {
   spotPlaces(ctx);
   curioHour(ctx);

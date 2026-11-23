@@ -4,9 +4,17 @@
 // extra work keeps them working to bedtime; someone leaving walks out by their home's road and, once
 // off the map, is gone with their clothes, bedroll and stash; tools and loads are left behind.
 import type { EntityRow } from '../core/index.ts';
-import { leavingOf, sentenceOf, slacks, stashOf, takesWith } from '../defy/index.ts';
-import { bedOwnedBy, greenOf } from '../build/index.ts';
-import { itemsOf } from '../goods/index.ts';
+import {
+  hideFromBarn,
+  leavingOf,
+  raidsBarn,
+  sentenceOf,
+  slacks,
+  stashOf,
+  takesWith,
+} from '../defy/index.ts';
+import { barnSpot, bedOwnedBy, greenOf } from '../build/index.ts';
+import { dropTithe, itemsOf } from '../goods/index.ts';
 import { stopFor } from '../health/index.ts';
 import { removeEntity } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -58,6 +66,7 @@ export function departing(ctx: SystemContext, p: EntityRow): boolean {
  * free. */
 function gone(ctx: SystemContext, p: EntityRow): void {
   for (const i of [...itemsOf(ctx.world)]) {
+    if (i['holder'] === p.id) dropTithe(ctx.world, i);
     if (takesWith(ctx.content, i, p.id)) removeEntity(ctx.world, 'item', i.id);
     else if (i['holder'] === p.id || i['owner'] === p.id)
       Object.assign(i, { holder: 0, owner: 0, x: p['x'], y: p['y'], z: p['z'] });
@@ -65,4 +74,19 @@ function gone(ctx: SystemContext, p: EntityRow): void {
   const bed = bedOwnedBy(ctx.world, p.id);
   if (bed) bed['owner'] = 0;
   p['status'] = 'gone';
+}
+
+/** At leisure (6C Slice 2): someone with a reason to take from the tithe barn walks there, takes
+ * and hides it at home (engine defy decides). True while they are about it. */
+export function raiding(ctx: SystemContext, p: EntityRow): boolean {
+  const at = barnSpot(ctx.world);
+  if (p['doing'] === 'raid') {
+    if ((p['path'] as number[]).length) return true;
+    p['doing'] = '';
+    if (at && p['x'] === at.x && p['y'] === at.y && p['z'] === at.z) hideFromBarn(ctx, p);
+    return false;
+  }
+  if (!at || !raidsBarn(ctx, p) || !walkTo(ctx, p, at)) return false;
+  p['doing'] = 'raid';
+  return true;
 }

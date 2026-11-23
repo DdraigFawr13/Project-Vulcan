@@ -50,7 +50,7 @@ describe('stores by kind', () => {
     // its edge sealed the pasture's only gate; the flock was never folded again. On the 250-tile
     // valley (V-202) ledger's wood yard waits past day 40, so ledger-1 holds the check (searched
     // 2026-11-22: ledger/1, anvil, tallow, kiln, ledger-1 hold). Since far shafts are camped by
-    // (V-226) ledger-1's wood yard waits past day 40; tallow holds (searched 2026-11-23).
+    // (V-227) ledger-1's wood yard waits past day 40; tallow holds (searched 2026-11-23).
     const world = createWorld(sim, 'tallow');
     const wood = () => depotsOf(world).find((d) => d['store'] === 'wood');
     while (wood()?.['state'] !== 'built' && world.tick < 40 * DAY) step(world, sim, DAY);

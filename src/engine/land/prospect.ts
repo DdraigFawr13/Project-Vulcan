@@ -5,7 +5,7 @@
 // make for the nearest rock face nobody has walked, the ore's liked rocks first, walk along the
 // faces up to `prospect.day` minutes and come home. Faces walked are remembered (map `faces.ts`),
 // with when and by what mining skill: a face is fresh again a year on, or at once for a better
-// miner (V-226). With every face within `scout.far` tiles walked, the want waits for a change.
+// miner (V-227). With every face within `scout.far` tiles walked, the want waits for a change.
 import { counted, TICKS_PER_DAY, type EntityRow, type Find } from '../core/index.ts';
 import { greenOf } from '../build/index.ts';
 import { faceList, faceWalked, walkFaces } from '../map/index.ts';
@@ -32,7 +32,7 @@ export function oreAsNeed(ctx: SystemContext, ox: number, oy: number): Need | un
 /** Each walked face's tile: the tick it was walked times 16, plus the walker's mining level. */
 const walksOf = (ctx: SystemContext) => (ctx.world.systems['faces'] ??= {});
 
-/** Whether face `i` is fresh for a prospector of mining level `skill` (V-226): never walked,
+/** Whether face `i` is fresh for a prospector of mining level `skill` (V-227): never walked,
  * walked a year ago or more, or walked by a miner `prospect.better` levels less skilled. A face marked walked with no
  * record of it stays walked. */
 export function faceFresh(ctx: SystemContext, i: number, skill: number): boolean {

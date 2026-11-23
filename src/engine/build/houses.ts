@@ -31,7 +31,7 @@ import {
   PITS_KIND,
   ROAD_KIND,
 } from './kinds.ts';
-import { SCHOOL_KIND, sheetDef, SMITHY_KIND, TAVERN_KIND } from './kinds.ts';
+import { SCHOOL_KIND, sheetDef, SMITHY_KIND, TAVERN_KIND, TITHE_KIND } from './kinds.ts';
 
 export const HOUSE_TABLES: Schemas = {
   /** A house, or a room added to one (`of`, the house; 0 for the house itself). `state`: `plan`,
@@ -98,15 +98,15 @@ export const HOUSE_TABLES: Schemas = {
 };
 
 export { FIELD_KIND, HOUSE_KIND, PASTURE_KIND, PITS_KIND, ROAD_KIND, SMITHY_KIND, TAVERN_KIND };
-export { SCHOOL_KIND };
+export { SCHOOL_KIND, TITHE_KIND };
 
-/** A house row's `inn`: the tavern, the schoolroom (nobody's home either way). */
+/** A house row's `inn`: the tavern, the schoolroom, the tithe barn (6C): nobody's home. */
 export const INN_TAVERN = 1;
 export const INN_SCHOOL = 2;
-
-/** "tavern" or "schoolroom" for a hall's `inn`, else ''. */
+export const INN_TITHE = 3;
+/** "tavern", "schoolroom" or "tithe barn" for a hall's `inn`, else ''. */
 export const hallName = (inn: unknown): string =>
-  inn === INN_TAVERN ? 'tavern' : inn === INN_SCHOOL ? 'schoolroom' : '';
+  ['', 'tavern', 'schoolroom', 'tithe barn'][inn as number] ?? '';
 
 /** The size (or added room) a house row is. */
 export const sizeOf = (content: EngineContent, h: EntityRow): SizeDef =>

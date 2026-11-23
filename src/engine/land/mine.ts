@@ -212,7 +212,7 @@ export function takeUpMining(ctx: SystemContext, p: EntityRow): boolean {
     declineIfUnable(ctx, p, job);
     return false;
   }
-  // A plan waiting `mine.wait` days goes to whoever is free, not only the best placed (V-226).
+  // A plan waiting `mine.wait` days goes to whoever is free, not only the best placed (V-227).
   const waited = t.kind === 'sink' && longPlanned(ctx, t.plan);
   const could = (q: EntityRow) => couldHave(ctx, q, job) && workFor(ctx, q) !== undefined;
   if (!waited && outranked(ctx, p, job, could)) return false;

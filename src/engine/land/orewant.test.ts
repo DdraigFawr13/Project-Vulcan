@@ -1,4 +1,4 @@
-// 6W review fixes (V-226): a walked rock face is fresh again a year on, or at once for a better
+// 6W review fixes (V-227): a walked rock face is fresh again a year on, or at once for a better
 // miner; an ore wanted and not found is told of once a season; a shaft far out is gone to with a
 // pack and sunk; a plan held two days with nothing sunk goes to the next free miner; a plan not
 // begun in a season says why. Nobody is sent (V-041): every check here only reads lines.
@@ -100,7 +100,7 @@ describe('ore wanted and not found', () => {
   });
 });
 
-describe('a far shaft (V-226)', () => {
+describe('a far shaft (V-227)', () => {
   /** `seed` with two iron seams planted, run until someone takes up sinking. */
   function untilSinking(content: Content, seed = 'smoke') {
     const sim = createSim(content);
