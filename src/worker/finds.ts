@@ -2,6 +2,7 @@
 // the flags on found places, and a found place's rows on its tile page. Pure reads of the world.
 import { content } from '../content/index.ts';
 import {
+  cap,
   CHUNK,
   chunksAcross,
   clockAt,
@@ -87,7 +88,6 @@ export function findFeed() {
   };
 }
 
-const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 const pad = (n: number): string => String(n).padStart(2, '0');
 
 /** "07:00, Day 24 of Deepwinter, year 3". */
@@ -125,7 +125,7 @@ export function tileFind(w: WorldState, x: number, y: number, lineOf: LineOf): {
   const line = recordOf(w, f.line);
   return {
     find: {
-      title: capital(def.find),
+      title: cap(def.find),
       rows: [
         ['find', `${def.find}, about ${f.count} ${def.unit}, ${fromHome(w, x, y)}`],
         ['found by', `${who ?? 'a scout'}, scouting for ${goodName(f.good)}`],
@@ -149,7 +149,7 @@ function placePage(w: WorldState, x: number, y: number, lineOf: LineOf): { find?
   const line = recordOf(w, p.line);
   return {
     find: {
-      title: capital(kind.name),
+      title: cap(kind.name),
       rows: [
         ['find', `${kind.name}, ${fromHome(w, x, y)}`],
         ['found by', personName(w, p.by) ?? 'someone of the colony'],
