@@ -45,7 +45,7 @@ export const HOUSE_TABLES: Schemas = {
    * `sick` 1 for a room added as the sickroom (P5.6), whose beds are the hurt's, nobody's own,
    * and 2 for the sick-house the Sickness law asks for (P6.5, sickhouse.ts);
    * `owner` the person whose home it is (P5.14, beds.ts), 0 for the band's houses; `hall` the
-   * line the first house became the hall under (homes.ts). */
+   * line the first house became the hall under (homes.ts); `outgrown` a home's line (outgrown.ts). */
   house: {
     size: 'text',
     x: 'int',
@@ -70,6 +70,7 @@ export const HOUSE_TABLES: Schemas = {
     inn: 'count',
     owner: 'entity',
     hall: 'event',
+    outgrown: 'event',
     /** Its roof (6B, roofs.ts): '' none yet, `thatch`; the tick and line it was laid; the line
      * saying no thatch can be reached; who is thatching it, their line taking it up, and what it is thatched with. */
     roof: 'text',
@@ -191,8 +192,7 @@ function bedHome(world: WorldState, bed: EntityRow): EntityRow | undefined {
   return h && h['state'] === 'built' ? mainOf(world, h) : undefined;
 }
 
-/** The people of house `main` who sleep in a bed of theirs there and feel crowded: their
- * privacy need is under its line (P3.5), with the line that said so. */
+/** Who sleeps in a bed of theirs in `main` with privacy under its line (P3.5), and that line. */
 export function crowdedIn(world: WorldState, main: EntityRow): { p: EntityRow; line: number }[] {
   const out: { p: EntityRow; line: number }[] = [];
   for (const b of piecesOf(world, 'bed')) {
@@ -276,7 +276,7 @@ export function placeHouse(
       },
       ...{ stage: '', stageLine: 0, stageWait: 0, waitedAt: 0, burned: 0, burnYear: -1 },
       ...{ mortar: '', mason: 0, masonTook: 0, burnLine: 0 },
-      hall: 0,
+      ...{ hall: 0, outgrown: 0 },
     },
   });
   const parts = partsOf(content, site, site.door, wall, extra.skip);

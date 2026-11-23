@@ -12,6 +12,10 @@ export function valeName(rng: RngStream, culture: CultureDef, patterns: readonly
   }
 }
 
+/** A place name in a culture's tongue ("Tegfawr"), up to nine letters where it can be. */
+export const placeName = (rng: RngStream, culture: CultureDef): string =>
+  valeName(rng, culture, ['{n}']);
+
 /** Grid cells as a walker counts them: the long side plus half the short (no square roots). */
 export const dayDistance = (dx: number, dy: number): number => {
   const a = Math.abs(dx);
