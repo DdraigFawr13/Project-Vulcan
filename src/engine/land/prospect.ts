@@ -33,7 +33,7 @@ export function oreAsNeed(ctx: SystemContext, ox: number, oy: number): Need | un
 const walksOf = (ctx: SystemContext) => (ctx.world.systems['faces'] ??= {});
 
 /** Whether face `i` is fresh for a prospector of mining level `skill` (V-225): never walked,
- * walked a year ago or more, or walked by a less skilled miner. A face marked walked with no
+ * walked a year ago or more, or walked by a miner `prospect.better` levels less skilled. A face marked walked with no
  * record of it stays walked. */
 export function faceFresh(ctx: SystemContext, i: number, skill: number): boolean {
   const { world, content } = ctx;
@@ -41,7 +41,8 @@ export function faceFresh(ctx: SystemContext, i: number, skill: number): boolean
   const walk = walksOf(ctx)[i];
   if (walk === undefined) return false;
   const year = content.calendar.daysPerMonth * content.calendar.monthsPerYear * TICKS_PER_DAY;
-  return world.tick - Math.floor(walk / 16) >= year || Math.min(15, skill) > walk % 16;
+  const better = content.work.scout.prospect.better;
+  return world.tick - Math.floor(walk / 16) >= year || Math.min(15, skill) >= (walk % 16) + better;
 }
 
 /** The faces within `far` of the green fresh for a prospector of mining level `skill`. */

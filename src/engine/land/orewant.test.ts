@@ -53,7 +53,7 @@ const bestMining = (w: World): number =>
   );
 
 describe('ore wanted and not found', () => {
-  it('walks the faces again a year on, or at once for a better miner, not for an equal one', () => {
+  it('walks the faces again a year on, or at once for a miner `better` levels above the walker', () => {
     const sim = createSim(base);
     const fresh = wantsIron(base, 'smoke');
     walkAll(fresh, fresh.tick, 15);
@@ -63,12 +63,23 @@ describe('ore wanted and not found', () => {
     walkAll(aged, aged.tick - YEAR, 15);
     step(aged, sim, 3 * DAY);
     expect(lines(aged, 'work.tookUpProspecting').length).toBeGreaterThan(0);
-    const best = bestMining(aged);
-    if (best > 0) {
-      const lesser = wantsIron(base, 'smoke');
-      walkAll(lesser, lesser.tick, best - 1);
-      step(lesser, sim, 3 * DAY);
-      expect(lines(lesser, 'work.tookUpProspecting').length).toBeGreaterThan(0);
+    // With `better` at 1, faces walked by someone a level below the best miner are fresh to them;
+    // walked at the best miner's own level, they are not.
+    const prospect = { ...base.work.scout.prospect, better: 1 };
+    const one: Content = {
+      ...base,
+      work: { ...base.work, scout: { ...base.work.scout, prospect } },
+    };
+    const best = bestMining(createWorld(createSim(one), 'smoke'));
+    expect(best).toBeGreaterThan(0);
+    for (const [walker, goes] of [
+      [best - 1, true],
+      [best, false],
+    ] as const) {
+      const w = wantsIron(one, 'smoke');
+      walkAll(w, w.tick, walker);
+      step(w, createSim(one), 3 * DAY);
+      expect(lines(w, 'work.tookUpProspecting').length > 0).toBe(goes);
     }
   });
 
