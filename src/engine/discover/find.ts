@@ -12,7 +12,7 @@ import {
 import { addEntity, alive } from '../entity/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { hintsOf, methodDef, puzzlesNow } from './tables.ts';
+import { hintsOf, methodDef, puzzlesNow, workedToday } from './tables.ts';
 
 /** `text` with each `{key}` filled from `vars`. */
 export const fill = (text: string, vars: Readonly<Record<string, unknown>>): string =>
@@ -25,7 +25,22 @@ const personRow = (ctx: SystemContext, id: number): EntityRow | undefined =>
 export const wayOf = (ctx: SystemContext, puzzle: EntityRow): MethodDef =>
   methodDef(ctx.content, puzzle['method'] as string)!;
 
-/** A hint of `kind` on `puzzle`, its line citing `causes`; the last one is the find. */
+/** Others puzzling over the same way who worked its trade today: a hint of a `share` kind
+ * reaches them too (Morgan's card 2026-11-23). */
+function sharersOf(ctx: SystemContext, puzzle: EntityRow, kind: HintKind, m: MethodDef) {
+  if (!ctx.content.methods.share.kinds.includes(kind)) return [];
+  const living = new Set(alive(ctx.world).map((p) => p.id));
+  return puzzlesNow(ctx.world).filter(
+    (q) =>
+      q.id !== puzzle.id &&
+      q['method'] === puzzle['method'] &&
+      living.has(q['person'] as number) &&
+      workedToday(ctx, q['person'] as number, m.job),
+  );
+}
+
+/** A hint of `kind` on `puzzle`, its line citing `causes`, shared with workmates puzzling over
+ * the same way; a puzzle's last hint is its find. */
 export function addHint(
   ctx: SystemContext,
   puzzle: EntityRow,
@@ -39,18 +54,25 @@ export function addHint(
   const words = content.methods.kinds[kind];
   const all = { where: m.where, ...vars };
   const short = fill(words.short, all);
-  const n = hintsOf(world, puzzle.id).length + 1;
+  const others = sharersOf(ctx, puzzle, kind, m);
+  const mates = others.map((q) => personRow(ctx, q['person'] as number)!);
+  const names = list(mates.map((q) => q['name'] as string));
+  const beside = mates.length ? fill(content.methods.share.words, { names, ...pronouns(p) }) : '';
   const line = ctx.emit('discover.hint', {
     causes: [...causes, puzzle['line'] as number].filter((l) => l > 0).slice(0, 2),
-    actors: [p.id],
+    actors: [p.id, ...mates.map((q) => q.id)],
     data: {
-      ...{ name: p['name'] as string, how: fill(words.how, { ...all, short }), n, of: m.hints },
-      ...{ method: m.name, kind },
+      ...{ name: p['name'] as string, how: fill(words.how, { ...all, short }), beside },
+      ...{ n: hintsOf(world, puzzle.id).length + 1, of: m.hints, method: m.name, kind },
     },
   });
-  addEntity(world, 'hint', { puzzle: puzzle.id, kind, line, short });
-  puzzle['last'] = world.tick;
-  if (n >= m.hints) findWay(ctx, puzzle, p, m);
+  for (const q of [puzzle, ...others]) {
+    if (q['ended']) continue;
+    addEntity(world, 'hint', { puzzle: q.id, kind, line, short });
+    q['last'] = world.tick;
+    if (hintsOf(world, q.id).length >= m.hints)
+      findWay(ctx, q, personRow(ctx, q['person'] as number)!, m);
+  }
   return line;
 }
 

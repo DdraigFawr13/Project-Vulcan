@@ -27,6 +27,7 @@
 "book": {"days":56,"event":"skill.read"},
 "tale": {"odds":2,"id":"found-way"},
 "luck": {"days":100,"lucky":50,"bynames":["Lucky","Twice-spared"],"hours":4},
+"share": {"kinds":["work","failure","luck"],"words":", and {names} beside {them}"},
 "dream": {"nights":200,"days":112},
 "memories": {"found":"found-way","learned":"learned-way","mishap":"mishap"},
 "mishap": {"hand":30,"fire":10,"burn":{"parts":["left-arm","right-arm"],"severity":"light","what":"was burnt at the {where}, trying something new","at":"at"},"nothing":"the work in hand","words":{"ruined":"spoiled {what}","hand":"burned {their} hand","fire":"started a small fire that burned {what} before it was beaten out"}},

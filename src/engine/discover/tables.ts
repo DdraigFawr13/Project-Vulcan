@@ -1,6 +1,12 @@
 // The discovery tables and their reads (6C Slice 5, V-142, V-218): each person's puzzle and its
 // hints, the hours each works at a trade, and who knows each way.
-import type { EngineContent, EntityRow, MethodDef, WorldState } from '../core/index.ts';
+import {
+  today,
+  type EngineContent,
+  type EntityRow,
+  type MethodDef,
+  type WorldState,
+} from '../core/index.ts';
 import { alive, tableOf, type Schemas } from '../entity/index.ts';
 
 export const DISCOVER_TABLES: Schemas = {
@@ -60,3 +66,15 @@ export const tradeRow = (world: WorldState, person: number, job: string): Entity
 /** Hours at a trade over the window. */
 export const monthHours = (row: EntityRow | undefined): number =>
   ((row?.['hours'] as number[] | undefined) ?? []).reduce((n, h) => n + h, 0);
+
+/** Whether `person` worked at `job` today. */
+export function workedToday(
+  ctx: { world: WorldState; content: EngineContent },
+  person: number,
+  job: string,
+): boolean {
+  const row = tradeRow(ctx.world, person, job);
+  const day = today(ctx.world);
+  const n = ctx.content.methods.start.days;
+  return row?.['day'] === day && ((row['hours'] as number[])[day % n] ?? 0) > 0;
+}
