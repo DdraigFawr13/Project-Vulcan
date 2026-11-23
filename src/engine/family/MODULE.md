@@ -1,6 +1,6 @@
 # family
 
-Families (P6.1, V-145, V-161): unwed adults drawn to each other grow close at leisure, court, wed with a feast on the green and set up one household; a wed woman and man have children, who grow up and want homes; orphans and children strangers leave are taken in; the old die of old age. Nobody is told whom to marry: there is no lever (V-041).
+Families (P6.1, V-145, V-161): courting, weddings and households, children and growing up, orphans taken in, and old age. Nobody is told whom to marry: there is no lever (V-041).
 
 - **Public API:** `index.ts`: `familySystem` (in `SYSTEMS` after tales), `FAMILY_TABLES`, `bondOf(world, p, q)`, `bondsOf`, `otherOf`, `courtingOf(world, id)` (0 for no one), `ageOf(world, content, p)` (years from `born`), `grown` (at their race's `maturityYears`), `unwed` (alive, grown, no living partner), `mayCourt` (both unwed, each drawn to the other: `drawn.ts`, which draws each person's `orientation` from stream `kin`), `likeOf` (an hour together's worth).
 - **Content:** `family.json` (schema `schemas-family.ts`): `hour`, `leisure` (`doing` values), `near`, `like` (`base`, `shared`, `clash`), `told`, `fade`, `court` (`from`, `days`, `part`), `orientations` (`drawn`: other, same, both, none; `weight`), `feastDays`, `words` (the lines' phrases), `memories` (`wed`, `feast`); events `family.*`; memories `married`, `wedding-feast`.

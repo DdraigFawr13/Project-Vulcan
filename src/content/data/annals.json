@@ -46,6 +46,7 @@
       { "event": "tavern.named", "weight": 6, "title": "{name} opened its doors" },
       { "event": "calling.masterwork", "weight": 6, "title": "{name} made {title}" },
       { "event": "school.book", "weight": 5, "title": "{teacher} wrote {book}" },
+      { "event": "discover.found", "weight": 6, "title": "{name} found {method}" },
       { "event": "pasture.built", "weight": 5, "title": "the pasture was fenced" },
       { "event": "furniture.benchPlaced", "weight": 2 },
       { "event": "build.sited", "weight": 1, "one": "The colony planned a {size} {dir} of the green.", "many": "The colony planned {count} houses: {list}.", "item": "a {size} {dir} of the green" },

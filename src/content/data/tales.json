@@ -11,6 +11,7 @@
   "beliefs": [
     { "id": "woods-dangerous", "about": "place", "text": "the woods around the valley are dangerous" },
     { "id": "arts-lost", "about": "colony", "text": "the old skills are dying out here" },
+    { "id": "valley-finders", "about": "colony", "text": "this valley finds new ways" },
     { "id": "valley-deadly", "about": "colony", "text": "this valley kills its own" },
     { "id": "work-dangerous", "about": "colony", "text": "the work here maims people" },
     { "id": "strangers-hard", "about": "law", "text": "turning folk away is hard-hearted" },
@@ -127,6 +128,11 @@
       "Nobody here knows {skill} the way {name} did.",
       "{name} took the best {skill} with {them}, and nobody learned it.",
       "{name} took {their} {skill} to the grave on purpose, and now it's gone for good."
+    ] },
+    { "id": "found-way", "event": "discover.found", "truth": 1, "belief": "valley-finders", "from": 1, "bynames": ["", "Clever", "Clever"], "spares": [[], ["Sharp-wit", "Bright-eye"], ["Sharp-wit", "Bright-eye"]], "levels": [
+      "{name} found {method}.",
+      "{name} worked out {method} on {their} own.",
+      "{name} found {method}, and nobody else in the valley could have."
     ] },
     { "id": "tavern-brawl", "event": "tavern.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": ["The Night at {tavern}", "Fists at {tavern}", "The {Month} Night at {tavern}"], "bynames": ["", "", "Brawler"], "spares": [[], [], ["Hothead", "Ale-fist"]], "levels": [
       "{name} and {other} had words over their ale.",
