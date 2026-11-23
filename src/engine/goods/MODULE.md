@@ -17,5 +17,5 @@ Items as stacks on tiles, the band's handcart, the store and the colony's stock 
 - **State owned:** tables `item` (kind, count, quality, x, y, z, holder (who carries it, or 0), owner (whose it is, or 0), state, wear, worked, trail, made), `store` (x, y, z, made) and `stock` (good, level, line). No system state; `every: day` with no `run`, since stacks change through the people who use them.
 - **Invariants:** one stack of a kind a tile from the unloading; counts never above the stack size; a used-up item is removed (entity MODULE.md).
 - **Tests:** `src/engine/needs/needs.test.ts` (the cart unloads once, a bedroll each, the rations go down as the band eats); `src/engine/people/jobs.test.ts` (the store is set up; the stock level's logs reach it with no order; the lever and its refusal).
-- **Tithe (6C):** `tithe.ts` tables `tithe`, `hidden`: `broughtIn`, `barnOf`, `fromBarn`, `hiddenOf` (lord MODULE.md).
+- **Tithe (6C):** `tithe.ts` tables `tithe`, `hidden`: `broughtIn`, `barnOf`, `fromBarn`, `hiddenOf`, `dropTithe` (a load put down short of the barn is due again), `inForest` (lord MODULE.md).
 - **Ways (V-219):** a tool's `steel` is its maker's id when they knew steel (`layTool` `maker`), else 0.

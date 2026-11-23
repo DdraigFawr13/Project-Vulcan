@@ -48,5 +48,27 @@ export const LORD_SCHEMAS = {
       }),
       search: num({ min: 1 }),
     }),
+    // Favour (V-222): 0 to 100 from `start`, made of causes that each count for `days`, as
+    // standing is; the causes' worth and words ({...} filled from the visit); the ladder's steps,
+    // each taken once when favour falls to `below` or rises to `above`, adding `by` in 100 to the
+    // share; the lord's men (V-211): the wounds they give and the line's words.
+    favour: obj({
+      start: num({ min: 0, max: 100 }),
+      days: num({ min: 1 }),
+      causes: map(obj({ by: num(), text })),
+      ladder: list(
+        obj({
+          id: str(),
+          below: opt(num({ min: 0, max: 100 })),
+          above: opt(num({ min: 0, max: 100 })),
+          text,
+          by: num(),
+        }),
+      ),
+      men: obj({ kinds: list(str()), parts: list(str()), severity: str(), what: text }),
+    }),
+    // The lord's forest: the find of kind `place` farthest from the green, and every tile within
+    // `reach` of it.
+    forest: obj({ place: str(), reach: num({ min: 1 }) }),
   }),
 };

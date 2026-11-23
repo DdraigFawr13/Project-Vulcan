@@ -78,3 +78,12 @@ export function fromBarn(world: WorldState, kind: string, count: number): number
   if (row && n > 0) row['barn'] = (row['barn'] as number) - n;
   return n;
 }
+
+/** Whether surface tile (x, y) lies in the lord's forest (6C Slice 2): within `forest.reach` of
+ * its middle, while the forest is the lord's (not granted to the colony). */
+export function inForest(world: WorldState, content: EngineContent, x: number, y: number): boolean {
+  const lord = world.entities['lord']?.[0];
+  if (!lord?.['named'] || lord['granted'] || (lord['fx'] as number) < 0) return false;
+  const d = Math.max(Math.abs(x - (lord['fx'] as number)), Math.abs(y - (lord['fy'] as number)));
+  return d <= content.lord.forest.reach;
+}

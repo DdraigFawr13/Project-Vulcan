@@ -26,6 +26,31 @@ export interface LordDef {
   memories: { named: string; bitter: string };
   /** The tithe (6C Slice 2, V-222). */
   tithe: TitheDef;
+  /** Favour, its causes and ladder (V-222). */
+  favour: FavourDef;
+  /** The lord's forest: the find of kind `place` farthest from the green, `reach` tiles round. */
+  forest: { place: string; reach: number };
+}
+
+export interface FavourStep {
+  id: string;
+  /** Taken when favour falls to `below`, or rises to `above`. */
+  below?: number;
+  above?: number;
+  text: string;
+  /** What it adds to the share, in 100. */
+  by: number;
+}
+
+export interface FavourDef {
+  start: number;
+  /** How long each cause counts. */
+  days: number;
+  /** Each cause's worth and words. */
+  causes: Readonly<Record<string, { by: number; text: string }>>;
+  ladder: readonly FavourStep[];
+  /** The lord's men's blows (V-211). */
+  men: { kinds: readonly string[]; parts: readonly string[]; severity: string; what: string };
 }
 
 export interface TitheDef {

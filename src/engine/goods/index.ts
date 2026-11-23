@@ -64,6 +64,7 @@ export {
   hiddenOf,
   TITHE_TABLES,
   dropTithe,
+  inForest,
   titheRow,
   titheRows,
   tithing,

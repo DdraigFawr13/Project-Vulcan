@@ -21,12 +21,13 @@ import { storyWorld } from '../region/story.ts';
 import { kindOf, lordIn } from '../region/lord.ts';
 import { lordName, lordRow, reeveRow } from './index.ts';
 import { titleOf } from './tables.ts';
-import { broughtIn, hideFromBarn, layItem, raidsBarn, titheRow } from '../index.ts';
+import { broughtIn, hideFromBarn, layItem, raidsBarn, storeOf, titheRow } from '../index.ts';
 import { lordSystem } from './system.ts';
-import { defySystem } from '../defy/index.ts';
+import { defySystem, keepsOut, poached, poaches } from '../defy/index.ts';
 import { stopFor } from '../health/index.ts';
 import { contextFor } from '../sim/system.ts';
 import { rateOf } from './tithe.ts';
+import { favourOf } from './favour.ts';
 
 type World = ReturnType<typeof createWorld>;
 const SEED = 'smoke/1';
@@ -156,6 +157,87 @@ describe('the lord and the reeve', () => {
     expect(tithed!.data['shortN']).toBe(owed - Math.min(25, owed));
     expect(String(tithed!.data['short'])).toContain(owed > 25 ? `${owed - 25} turnips` : 'Nothing');
     expect(titheRow(later, 'turnips')!['brought']).toBe(0);
+  });
+
+  /** A world after the first visit with 400 turnips brought in and 5 in the barn, favour
+   * moved by `by` beforehand; runs the next visit. */
+  function shortVisit(by: number, more?: (w: World) => void): World {
+    const later = structuredClone(w);
+    more?.(later);
+    const reaped = emit(later, sim.templates, 'field.harvested', {
+      causes: [later.begunEvent],
+      data: { crop: 'turnips', count: 400, what: 'turnips', kept: 0, x: 1, y: 1, dir: 'east' },
+    });
+    broughtIn(later, content, 'turnips', 400, reaped);
+    titheRow(later, 'turnips')!['barn'] = 5;
+    if (by) addEntity(later, 'favour', { cause: 'test', by, text: 'test', line: 0, until: 1e9 });
+    harvestHome(later, sim);
+    untilGone(later, sim);
+    return later;
+  }
+
+  it('lowers favour for a shortfall, with a line naming what was owed and counted', () => {
+    const later = shortVisit(0);
+    const [tithed] = lines(later, 'lord.tithed');
+    const fell = lines(later, 'lord.favour').find((e) => e.data['cause'] === 'tenth')!;
+    expect(fell.causes).toEqual([tithed!.id]);
+    const owed = tithed!.data['owedN'] as number;
+    expect(String(fell.data['text'])).toContain(`${owed} turnips owed, 5 turnips counted`);
+    expect(fell.data['way']).toBe('falls');
+    const tenths = Math.ceil((10 * (owed - 5)) / owed);
+    expect(fell.data['favour']).toBe(content.lord.favour.start - tenths);
+    expect(favourOf(contextFor(later, sim, lordSystem))).toBe(content.lord.favour.start - tenths);
+  });
+
+  it('fines a valley whose favour falls to the fine, a line citing the take', () => {
+    const plain = rateOf(contextFor(w, sim, lordSystem));
+    const later = shortVisit(-30);
+    const steps = lines(later, 'lord.step');
+    const fine = steps.find((e) => e.data['step'] === 'fine')!;
+    expect(fine.causes).toEqual([lines(later, 'lord.tithed')[0]!.id]);
+    expect(String(fine.data['text'])).toContain('fined');
+    expect(steps.map((e) => e.data['step'])).toEqual(['raised', 'fine']);
+    const lord = lordRow(later)!;
+    expect(lord['fine']).toBe(1);
+    // Raised by half and a fine of one more tithe: two and a half shares at the next visit.
+    expect(rateOf(contextFor(later, sim, lordSystem))).toBe(Math.floor((plain * 250) / 100));
+  });
+
+  it("sends the lord's men at the bottom, who take more and harm no child", () => {
+    const later = shortVisit(-45, (x) => {
+      const store = storeOf(x)[0]!;
+      const at = { x: store['x'] as number, y: store['y'] as number, z: 0 };
+      layItem(x, { kind: 'turnips', count: 300, ...at, made: x.begunEvent });
+    });
+    const [men] = lines(later, 'lord.men');
+    const [tithed] = lines(later, 'lord.tithed');
+    expect(men!.causes).toEqual([
+      lines(later, 'lord.step').find((e) => e.data['step'] === 'men')!.id,
+    ]);
+    expect(men!.data['took']).toBe(`${tithed!.data['owedN'] as number} turnips`);
+    for (const hurt of lines(later, 'health.hurt').filter((e) => e.causes.includes(men!.id))) {
+      const p = (later.entities['person'] ?? []).find((q) => q.id === hurt.actors[0])!;
+      expect(p['status']).toBe('alive');
+      expect(String(hurt.data['what'])).toContain("beaten by the lord's men");
+    }
+  });
+
+  it("keeps the well fed out of the lord's forest, and keeps a poacher's deed for the reeve", () => {
+    const later = structuredClone(w);
+    const ctx = contextFor(later, sim, lordSystem);
+    const lord = lordRow(later)!;
+    expect(lord['fx']).toBeGreaterThanOrEqual(0);
+    const [fx, fy] = [lord['fx'] as number, lord['fy'] as number];
+    const p = (later.entities['person'] ?? []).find((q) => q['status'] === 'alive')!;
+    expect(poaches(ctx, p)).toBe(false);
+    expect(keepsOut(ctx, p)(fx, fy)).toBe(true);
+    expect(keepsOut(ctx, p)(fx + 200, fy + 200)).toBe(false);
+    poached(ctx, p, { x: fx, y: fy }, 'felled an oak', later.begunEvent);
+    const [line] = lines(later, 'defy.poached');
+    expect(line!.causes).toContain(later.begunEvent);
+    expect(later.entities['poach']).toHaveLength(1);
+    lord['granted'] = 1;
+    expect(keepsOut(ctx, p)(fx, fy)).toBe(false);
   });
 
   it('counts what he leaves in the barn towards the next share', () => {

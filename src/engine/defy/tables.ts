@@ -21,6 +21,9 @@ export const DEFY_TABLES: Schemas = {
   sentence: { person: 'entity', kind: 'text', day: 'int', line: 'event' },
   /** Someone leaving the valley for good, and the line that says so (people `defy.ts`). */
   leaving: { person: 'entity', line: 'event' },
+  /** Poaching in the lord's forest (6C Slice 2): who, the deed's words, the line, and who saw it
+   * (the lord system tells the reeve, through the Loyal among them, at his next visit). */
+  poach: { person: 'entity', deed: 'text', line: 'event', saw: 'ints' },
 };
 
 export const defyOf = (world: WorldState, person: number): EntityRow | undefined =>

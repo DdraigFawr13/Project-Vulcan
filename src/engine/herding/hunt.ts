@@ -10,6 +10,7 @@
 import { streamFor, TICKS_PER_DAY, type EntityRow, cheb } from '../core/index.ts';
 import { greenOf, ringOf } from '../build/index.ts';
 import { haveOf, stockOf, wantOf } from '../goods/index.ts';
+import { keepsOut, poached } from '../defy/index.ts';
 import { addMemory } from '../needs/index.ts';
 import { isKnown } from '../map/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
@@ -88,9 +89,13 @@ function chooseHerd(ctx: SystemContext, p: EntityRow): EntityRow | undefined {
   const green = greenOf(world);
   const apart = (h: EntityRow): number =>
     cheb({ x: h['x'] as number, y: h['y'] as number, z: 0 }, green);
-  // Only game seen on known ground is hunted (V-205).
-  const all = huntable(world, content).filter((h) =>
-    isKnown(world.map, (h['y'] as number) * world.map.width + (h['x'] as number)),
+  // Only game seen on known ground is hunted (V-205), and not in the lord's forest unless they
+  // would poach (6C Slice 2).
+  const out = keepsOut(ctx, p);
+  const all = huntable(world, content).filter(
+    (h) =>
+      isKnown(world.map, (h['y'] as number) * world.map.width + (h['x'] as number)) &&
+      !out(h['x'] as number, h['y'] as number),
   );
   // Bigger game than a hare wants a spear (V-195); hares are snared by hand.
   const armed = couldHave(ctx, p, content.work.hunt.job);
@@ -217,6 +222,14 @@ export function takeUpHunting(ctx: SystemContext, p: EntityRow): boolean {
       ...short,
     },
   });
+  const species = speciesOf(content, herd['species'] as string).plural;
+  poached(
+    ctx,
+    p,
+    { x: herd['x'] as number, y: herd['y'] as number },
+    `went after the ${species}`,
+    p['took'] as number,
+  );
   Object.assign(p, { job: 'hunt', task: 'walk', target: herd.id, what: '', work: 0 });
   scaled(ctx, p, def.job, 1);
   return true;
