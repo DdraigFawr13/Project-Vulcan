@@ -70,7 +70,8 @@ describe('new ways on screen', () => {
     const e = (w.entities['person'] ?? []).find(
       (p) => p['status'] === 'alive' && ![a, b, c].includes(p),
     );
-    if (e) expect(personWays(w, e)).toEqual({});
+    expect(e).toBeDefined();
+    expect(personWays(w, e!)).toEqual({});
   });
 
   it("lists the colony's ways, warns of a lone knower, and never a way nobody living knows", () => {
@@ -92,6 +93,15 @@ describe('new ways on screen', () => {
       note: `A cleaner smelt (${an}, 2 of 4 hints).`,
       why: line,
     });
+    // A kept book by the lone knower holds the way, so it is not lost with them (spread.ts).
+    const book = addEntity(w, 'book', {
+      ...{ master: c!.id, skill: 'stoneworking', level: 5, scribe: c!.id, state: 'kept' },
+      ...{ minutes: 0, begun: line, line, lost: 0 },
+    });
+    expect(colonyWays(w).known[1]!.note).toMatch(
+      /^Only .+ knows it, and a kept book holds it too\./,
+    );
+    w.entities['book'] = (w.entities['book'] ?? []).filter((b) => b.id !== book);
     // Every way has its effect in words.
     for (const m of content.methods.methods)
       expect(content.methods.screen.effects[m.id]).toBeTruthy();
@@ -145,6 +155,13 @@ describe('new ways in the recaps', () => {
     expect(season!['annal']).toBe(recaps[0]!.id);
     expect(year!['annal']).toBe(recaps.at(-1)!.id);
     for (const t of found) expect((t['lines'] as number[]).length).toBe(1);
+    // The year lists the find, and spring's paragraph keeps only its title ("Spring: Ann found
+    // steel."), not the find's sentence again.
+    const yearText = recapOf(world, recaps.at(-1)!.id)
+      .map((p) => p.text)
+      .join(' ');
+    expect(yearText).toContain('Spring: Ann found steel.');
+    expect(yearText).not.toContain('days of puzzling');
     expect(recapOf(world, recaps[0]!.id).map((p) => p.section)).toContain('ways');
     // A quiet season has no "New ways" part.
     expect(recapOf(world, recaps[1]!.id).map((p) => p.section)).not.toContain('ways');

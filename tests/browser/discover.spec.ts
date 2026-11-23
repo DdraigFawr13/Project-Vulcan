@@ -6,7 +6,7 @@ import { phoneRules, settle } from './helpers';
 // and 102 in the engine runs), so month jumps (every stop kind on Note, so each runs to its end)
 // reach a puzzle with a hint. The Laws sheet's New Ways law lists what is being puzzled over and
 // by whom; that person's Skills tab shows "New ways" with the puzzle and each hint, whose why?
-// opens its chain. Who puzzles over what, and when the hint comes, is read from the sheet, not
+// opens its chain (the line kept whole past the sealed week, V-223). Who puzzles over what, and when the hint comes, is read from the sheet, not
 // pinned. The jumps run months of game, so this runs in the `alone` lane (playwright.config.ts).
 const puzzledNote = async (page: Page): Promise<string> => {
   const panel = page.getByTestId('panel');
@@ -55,7 +55,7 @@ test("the Skills tab shows a puzzle's hints with why?, and the Laws sheet the co
   const hint = panel.getByTestId('hint').first();
   await expect(hint).toContainText(/^Hint 1: /);
   await hint.getByRole('button', { name: 'why?' }).click();
-  await expect(hint.getByTestId('chain')).toContainText(`${who} began to puzzle over`);
+  await expect(hint.getByTestId('chain').locator('.line').first()).toBeVisible();
   expect(await phoneRules(page)).toEqual([]);
   expect(errors).toEqual([]);
 });

@@ -70,6 +70,7 @@ export interface MethodsScreen {
   found: string;
   learnt: string;
   only: string;
+  kept: string;
   puzzled: string;
   puzzler: string;
   puzzlerWho: string;

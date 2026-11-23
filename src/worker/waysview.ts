@@ -7,6 +7,7 @@ import {
   alive,
   clockAt,
   hintsOf,
+  inBook,
   knowersOf,
   knowsOf,
   list,
@@ -26,9 +27,12 @@ const fill = (t: string, vars: Readonly<Record<string, string | number>>): strin
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 const nameOf = (world: WorldState, id: unknown): string => personName(world, id, 'someone');
 
-/** "Day 3 of Leaffall, year 2", the day of a line (a sealed one's stub keeps its tick). */
+/** "Day 3 of Leaffall, year 2", the day of a line (a sealed one's stub keeps its tick); "" for a
+ * line not found. */
 function dateOf(world: WorldState, line: number): string {
-  const c = clockAt(recordOf(world, line)?.tick ?? 0, content.calendar);
+  const r = recordOf(world, line);
+  if (!r) return '';
+  const c = clockAt(r.tick, content.calendar);
   return `Day ${c.day} of ${content.calendar.monthNames[c.month]!}, year ${c.year}`;
 }
 
@@ -74,7 +78,10 @@ function knownRow(world: WorldState, k: EntityRow): WayRow | undefined {
   const effect = effectOf(m.id);
   return {
     text: fill(words().knows, { method: m.name }),
-    note: fill(words().known, { how, date: dateOf(world, line), Effect: cap(effect) }),
+    note: fill(words().known, {
+      how: [how, dateOf(world, line)].filter(Boolean).join(', '),
+      Effect: cap(effect),
+    }),
     ...whyOf(world, line),
   };
 }
@@ -101,14 +108,17 @@ function colonyRow(world: WorldState, method: string, rows: readonly EntityRow[]
   const learnt = names((k) => k['how'] !== 'found');
   const who =
     mine.length === 1
-      ? fill(words().only, { name: nameOf(world, mine[0]!['person']) })
+      ? fill(inBook(world, m) ? words().kept : words().only, {
+          name: nameOf(world, mine[0]!['person']),
+        })
       : [
           found && fill(words().found, { names: found }),
           learnt && fill(words().learnt, { names: learnt }),
         ]
           .filter(Boolean)
           .join('; ') + '.';
-  const first = rows.find((k) => k['how'] === 'found') ?? rows[0]!;
+  // The living's own line first: a way lost and found again cites the new find.
+  const first = [...mine, ...rows].find((k) => k['how'] === 'found') ?? mine[0] ?? rows[0]!;
   return {
     text: cap(m.name),
     note: `${who} ${cap(effectOf(method))}.`,

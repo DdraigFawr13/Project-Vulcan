@@ -71,7 +71,7 @@ export const METHODS_SCHEMAS = {
       effects: map(text),
       ...{ puzzle: text, hint: text, left: text, knows: text, known: text },
       how: obj({ found: text, apprentice: text, book: text, beside: text }),
-      ...{ found: text, learnt: text, only: text, puzzled: text, puzzler: text },
+      ...{ found: text, learnt: text, only: text, kept: text, puzzled: text, puzzler: text },
       ...{ puzzlerWho: text, nobody: text, none: text },
     }),
   }),

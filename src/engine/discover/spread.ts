@@ -3,7 +3,13 @@
 // at its trade on days a knower worked it too, and at once to someone reading a book by a knower
 // of its skill. Learning ends their own puzzle on it. A way nobody living knows is lost, with a
 // line citing the last knower's death or leaving.
-import { pronouns, type EntityRow, type MethodDef, type SimEvent } from '../core/index.ts';
+import {
+  pronouns,
+  type EntityRow,
+  type MethodDef,
+  type SimEvent,
+  type WorldState,
+} from '../core/index.ts';
 import { addEntity, alive, entityOf, tableOf, type Schemas } from '../entity/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -126,12 +132,11 @@ function goneLine(log: readonly SimEvent[], person: number): number {
 
 /** Whether a book on the shelf was written by a knower of the way, in its skill (V-141: a book
  * keeps a master's ways). */
-const inBook = (ctx: SystemContext, m: MethodDef): boolean =>
-  tableOf(ctx.world, 'book').some(
+/** Whether a kept book by a knower holds the way, so it is not lost with its last knower. */
+export const inBook = (world: WorldState, m: MethodDef): boolean =>
+  tableOf(world, 'book').some(
     (b) =>
-      b['state'] === 'kept' &&
-      b['skill'] === m.skill &&
-      knows(ctx.world, b['master'] as number, m.id),
+      b['state'] === 'kept' && b['skill'] === m.skill && knows(world, b['master'] as number, m.id),
   );
 
 /** The hour's look at who knows each way: one nobody living knows, and no kept book holds, is
@@ -142,7 +147,7 @@ export function lossHour(ctx: SystemContext): void {
     const key = `k.${m.id}`;
     const [living] = knowersOf(world, m.id);
     if (living) state[key] = living.id;
-    if (living || inBook(ctx, m)) continue;
+    if (living || inBook(world, m)) continue;
     const last = state[key] && entityOf(world, 'person', state[key]);
     delete state[key];
     if (!last) continue;

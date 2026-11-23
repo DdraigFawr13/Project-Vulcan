@@ -32,11 +32,17 @@ const lineOf = (r: EntityRow) => r['event'] as number;
 function seasonsOf(world: WorldState, content: EngineContent, year: number): Sentence[] {
   const { perSeason } = content.annals.year;
   const texts = tableOf(world, 'annalText');
+  const listed = new Set<unknown>(
+    content.annals.sections.filter((s) => s.lines.some((l) => l.year)).map((s) => s.id),
+  );
   const out: Sentence[] = [];
   for (const a of tableOf(world, 'annal')) {
     if (a['kind'] !== 'season' || a['year'] !== year) continue;
     const season = content.calendar.seasons[a['season'] as number] ?? '';
-    const own = texts.filter((t) => t['annal'] === a.id && (t['weight'] as number) > 0);
+    // A section the year lists whole (`year` words: finds, ways lost) is not said again here.
+    const own = texts.filter(
+      (t) => t['annal'] === a.id && (t['weight'] as number) > 0 && !listed.has(t['section']),
+    );
     const best = [...own]
       .sort((x, y) => (y['weight'] as number) - (x['weight'] as number) || x.id - y.id)
       .slice(0, perSeason)
