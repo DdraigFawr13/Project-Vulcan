@@ -20,12 +20,15 @@ const DAY = 1440;
 type World = ReturnType<typeof createWorld>;
 /** The cart's rations cut to one stack, so the food runs out in days rather than weeks (the
  * 5A review: the full cart ran this test near its 15 s limit; two stacks timed out at 16.5 s
- * on CI's loaded runner twice in wave 3, so one stack: 6.1 s down to 3.9 s alone). */
+ * on CI's loaded runner twice in wave 3, so one stack: 6.1 s down to 3.9 s alone; with the
+ * finds of V-206 one stack timed out at 19.7 s on CI, so half a stack). */
 function shortOfFood(w: World): World {
   for (const i of itemsOf(w)
     .filter((x) => x['kind'] === 'preserved')
     .slice(1))
     removeEntity(w, 'item', i.id);
+  const [left] = itemsOf(w).filter((x) => x['kind'] === 'preserved');
+  if (left) left['count'] = Math.ceil((left['count'] as number) / 2);
   return w;
 }
 

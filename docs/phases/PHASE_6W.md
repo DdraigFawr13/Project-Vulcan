@@ -9,7 +9,7 @@ A short phase between 6B and 6C that makes exploring a need, from Morgan's messa
 - [x] Slice 2, the map drawn by chunk, with an overview picture (screens)
 - [x] Slice 3, a bigger, patchier valley (engine)
 - [x] Slice 4, known land and scouting (engine)
-- [ ] Slice 5, trips, camps and finds (engine); part 1 built
+- [x] Slice 5, trips, camps and finds (engine)
 - [ ] Slice 6, the known map on screen (screens)
 - [ ] Slice 7, hidden ores and prospecting (engine)
 - [ ] 6W balance and review
@@ -55,7 +55,7 @@ Mock-up: Engine (a four-seed table of the nearest tree, stone, water, mountain a
 
 ### Slice 4: known land and scouting
 
-Mock-up: Engine (three years on four seeds: share of the map known, hours beyond 40 tiles, scouting trips and the need behind each). Done when: a test shows a colony whose known wood runs out sends a scout who makes new wood known, with the lines tracing to the stock level, and that no search reads an unknown tile.
+Mock-up: Engine, answered (V-205). Done when: a test shows a colony whose known wood runs out sends a scout who makes new wood known, with the lines tracing to the stock level, and that no search reads an unknown tile.
 
 - Reading list: `docs/DECISIONS.md` V-041 V-055 V-083 V-174; `src/engine/map/MODULE.md`; `src/engine/people/MODULE.md`; `src/engine/paths/MODULE.md`; `src/engine/goods/MODULE.md`
 
@@ -67,7 +67,7 @@ Mock-up: Engine, answered 2026-11-22 (every ★). Done when: a test shows a trip
 
 ### Slice 6: the known map on screen
 
-Mock-up: UI. Done when: unknown ground shows faded at 390 px, finds have markers and tile-sheet lines, the Scouting row works while paused, and `npm run test:browser` passes.
+Mock-up: UI, answered 2026-11-23 (every ★, V-213). Done when: unknown ground shows faded at 390 px, finds have markers and tile-sheet lines, the Scouting row works while paused, `npm run test:browser` passes, and the Slice 2 bench holds.
 
 - Reading list: `docs/UI_STYLE.md`; `src/render/MODULE.md`; `src/ui/MODULE.md`; `src/worker/MODULE.md`
 

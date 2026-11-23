@@ -5,7 +5,7 @@
 // day's fishing. Taking up is a ledger line; each catch is not.
 import { WATER, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { haveOf, stockOf, storeOf, wantOf } from '../goods/index.ts';
-import { isKnown } from '../map/index.ts';
+import { foundAreas, inAreas, isKnown } from '../map/index.ts';
 import { besideReachable, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { isFrozen } from '../weather/index.ts';
@@ -29,7 +29,8 @@ function watersOf(world: WorldState, content: EngineContent): number[] {
   return tiles;
 }
 
-/** The unfrozen water tile nearest `p` within reach of the store that they can get beside. */
+/** The unfrozen water tile nearest `p` within reach of the store (or at a found pool) that they
+ * can get beside. */
 function chooseWater(ctx: SystemContext, p: EntityRow): number | undefined {
   const { world, content } = ctx;
   const map = world.map;
@@ -38,9 +39,12 @@ function chooseWater(ctx: SystemContext, p: EntityRow): number | undefined {
   const here = spotOf(p);
   const taken = busy(world, p, 'fish');
   const near: [number, number][] = [];
+  // A found fishing pool is fished however far off (V-206).
+  const pools = foundAreas(content, map, 'fish', 3);
   for (const i of watersOf(world, content)) {
     const [x, y] = [i % map.width, Math.floor(i / map.width)];
-    if (Math.max(Math.abs(x - ox), Math.abs(y - oy)) > content.work.fish.reach) continue;
+    const far = Math.max(Math.abs(x - ox), Math.abs(y - oy)) > content.work.fish.reach;
+    if (far && !inAreas(pools, x, y)) continue;
     if (isFrozen(map, i) || taken.has(i) || !isKnown(map, i)) continue;
     near.push([Math.max(Math.abs(x - here.x), Math.abs(y - here.y)), i]);
   }

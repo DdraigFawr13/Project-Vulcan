@@ -7,6 +7,7 @@ import { layAura, placesOf } from './aura.ts';
 import { placeFeatures, reachableAround } from './features.ts';
 import { findGreens, greenWords } from './green.ts';
 import { knownOnArrival } from './known.ts';
+import { layPlaces } from './places.ts';
 import { digCommands } from './levels.ts';
 import { chunksAcross, chunksDown } from './tiles.ts';
 import { drawRiches, richesWords, thinNearGreen } from './riches.ts';
@@ -114,6 +115,7 @@ export const mapSystem: System = {
     map.stains = stainsOf(ctx, map);
     map.known = knownOnArrival(ctx.content, map);
     map.finds = [];
+    map.places = layPlaces(ctx, map, greens);
     const formed = ctx.emit('map.formed', {
       causes: [ctx.world.begunEvent],
       data: {

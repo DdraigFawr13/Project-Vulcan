@@ -128,7 +128,7 @@ export interface WorkDef {
     vein: number;
     skilled: number;
     ladder: Readonly<Record<string, number>>;
-    floors: { stone: string; earth: string };
+    floors: { stone: string; earth: string; bank: string };
     near: number;
     /** Tiles kept clear of a plan sent back or a shaft spent; the most walking multiplier a
      * shaft's ground may have (1: plain); the shaft plan's sentence and the taking-up words. */

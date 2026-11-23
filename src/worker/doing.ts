@@ -239,10 +239,17 @@ const JOB_PHRASES = new Map<string, Phrase>([
   ['lesson', (world, _p, say) => say('lesson', { teacher: teacherName(world) })],
 ]);
 
-/** A scout (V-205): out looking for the good, or on the way home with the news. */
-function scoutingDoing(_world: WorldState, p: EntityRow, say: Say): string {
+/** A scout (V-205): out looking for the good (or to see what lies beyond, V-206), on the way home
+ * with the news, or looking for a scout late home. */
+function scoutingDoing(world: WorldState, p: EntityRow, say: Say): string {
+  if (['search', 'seek', 'back'].includes(p['task'] as string)) {
+    const scout = (world.entities['person'] ?? []).find((q) => q.id === p['target']);
+    return say('search', { scout: (scout?.['name'] as string) ?? 'the scout' });
+  }
+  if (p['task'] === 'home') return say('scoutHome', {});
+  if (p['what'] === 'beyond') return say('scoutBeyond', {});
   const good = content.work.stock.find((s) => s.good === p['what'])?.name ?? '';
-  return say(p['task'] === 'home' ? 'scoutHome' : 'scout', { good });
+  return say('scout', { good });
 }
 
 /** What a person is doing and why, in the words of content `work.doing` (P2.9): the sentence,

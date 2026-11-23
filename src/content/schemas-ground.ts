@@ -95,4 +95,30 @@ export const SCOUT = obj({
     wander: count,
   }),
   late: obj({ days: count, memory: ref('memories'), sight: count }),
+  // The finds, curios, the season's scout and a newcomer's word (6W Slice 5 part 2, V-206).
+  places: obj({
+    from: count,
+    magic: count,
+    magicWords: text,
+    kinds: list(
+      obj({
+        id,
+        name: text,
+        rule: oneOf('spring', 'grove', 'bank', 'pool', 'lookout', 'cliff'),
+        size: count,
+        gap: count,
+        most: count,
+        use: opt(oneOf('work', 'clay', 'fish', 'look')),
+        tale: str(),
+        then: text,
+      }),
+    ),
+  }),
+  curio: obj({
+    far: count,
+    per: count,
+    list: list(obj({ id, what: text, memory: opt(ref('memories')) })),
+  }),
+  beyond: obj({ days: count, on: count }),
+  word: obj({ wrong: count, lean: count }),
 });

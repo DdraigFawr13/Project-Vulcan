@@ -95,7 +95,15 @@ const placesShaped = (map: Shape, n: number): boolean =>
   Array.isArray(map['regrow']) &&
   map['regrow'].length % 3 === 0 &&
   Array.isArray(map['finds']) &&
-  map['finds'].every(findShaped);
+  map['finds'].every(findShaped) &&
+  Array.isArray(map['places']) &&
+  map['places'].every(placeShaped);
+
+// A find laid on the map (V-206): its kind, tile, and who found it, the line and tick (0 until).
+const placeShaped = (f: unknown): boolean =>
+  isObject(f) &&
+  typeof f['kind'] === 'string' &&
+  [f['x'], f['y'], f['by'], f['line'], f['tick']].every(isCount);
 
 // A scouting trip (V-205): where, the good, the count (-1 while under way), its line and tick.
 const findShaped = (f: unknown): boolean =>
@@ -147,6 +155,7 @@ function mapFits(world: WorldState, content: SaveContent): boolean {
     w.finds.every(
       (f, k) => f.x < w.width && f.y < w.height && (f.count >= 0 || k === w.finds.length - 1),
     ) &&
+    w.places.every((p) => p.x < w.width && p.y < w.height) &&
     regrowFits(w.regrow, w.width * w.height, features)
   );
 }

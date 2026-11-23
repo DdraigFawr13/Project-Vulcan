@@ -11,6 +11,7 @@ import { feltAt, needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { eat, lineOf, spotOf } from '../band/index.ts';
 import { packOf, setLures } from '../wild/index.ts';
+import { hoursOf } from '../law/index.ts';
 
 /** Steps apart on the larger axis. */
 export const apart = (ax: number, ay: number, bx: number, by: number): number =>
@@ -222,3 +223,40 @@ export function campWarm(ctx: SystemContext, p: EntityRow): boolean {
   Object.assign(p, { doing: 'warm', path: [], fire: world.tick + warm });
   return true;
 }
+
+/** The trip's walk there and back from the way just found, the tick it is due home by (V-206),
+ * and the pack: a day's food, or when over half a day (or not back by bedtime, so a night out)
+ * their bedroll and a day's food a day plus a spare. */
+export function kitFor(ctx: SystemContext, p: EntityRow): { due: number; kit: string } {
+  const { world, content } = ctx;
+  const w = content.terrain.walking;
+  const def = content.work.scout.pack;
+  const steps = (p['path'] as number[]).length;
+  const round = Math.ceil((steps * (w.straight + w.diagonal)) / w.speed);
+  const back = world.tick + Math.ceil((round * def.due) / 100);
+  // Not back by bedtime, the night out counts: they are due home the morning after.
+  const hours = hoursOf(world, content, p.id);
+  const today = world.tick - (world.tick % TICKS_PER_DAY);
+  let bed = today + hours.sleepFrom * 60;
+  if (bed <= world.tick) bed += TICKS_PER_DAY;
+  const night = back > bed;
+  const due = night ? back + (24 - hours.sleepFrom + hours.workFrom) * 60 : back;
+  // A short trip takes a day's food only, so nobody walks home for meals.
+  const long = round > def.over || night;
+  const days = long
+    ? Math.min(def.most, Math.ceil((due - world.tick) / TICKS_PER_DAY) + def.spare)
+    : 1;
+  const food = packUp(ctx, p, days, long);
+  const roll = packed(ctx, p);
+  const what = [roll ? 'a bedroll' : '', food ? `food for ${food} day${food === 1 ? '' : 's'}` : '']
+    .filter(Boolean)
+    .join(' and ');
+  return { due, kit: what ? `, with ${what}` : '' };
+}
+
+/** Whether `p` packed a bedroll. */
+const packed = (ctx: SystemContext, p: EntityRow): boolean =>
+  (ctx.world.entities['item'] ?? []).some(
+    (i) =>
+      i['owner'] === p.id && i['state'] === 'pack' && i['kind'] === ctx.content.life.cart.bedroll,
+  );
