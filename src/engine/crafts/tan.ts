@@ -9,7 +9,7 @@
 import type { EntityRow } from '../core/index.ts';
 import { TICKS_PER_DAY } from '../core/index.ts';
 import { leatherStored, livePits, storedOf, wantsOuter } from '../build/index.ts';
-import { addEntity, removeEntity } from '../entity/index.ts';
+import { addEntity, lessMinutes, removeEntity } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, canStandBeside, declineIfUnable, fetchKind, goBeside } from '../band/index.ts';
 import { layAll, outranked, people, practise, priorityLine, reachableOf } from '../band/index.ts';
@@ -146,7 +146,9 @@ export function tanning(ctx: SystemContext, p: EntityRow): boolean {
     });
     addEntity(world, 'pit', {
       ...{ station: s.id, laid: world.tick, line },
-      ready: world.tick + tan.leather.days * TICKS_PER_DAY,
+      ready:
+        world.tick +
+        lessMinutes(world, ctx.content, p.id, 'bark-tanning', tan.leather.days * TICKS_PER_DAY),
     });
   }
   stop(p);

@@ -28,6 +28,8 @@ export const BEES_TABLES: Schemas = {
     line: 'event',
     harvested: 'count',
     visited: 'int',
+    /** Who caught the colony in it (6C Slice 5, V-219), 0 while it has none. */
+    keeper: 'entity',
   },
 };
 
@@ -170,7 +172,7 @@ export function siteStand(ctx: SystemContext): void {
     for (const i of run)
       addEntity(world, 'skep', {
         ...{ x: i % w, y: Math.floor(i / w), z: 0, field: field.id, state: 'plan', line },
-        ...{ harvested: 0, visited: 0 },
+        ...{ harvested: 0, visited: 0, keeper: 0 },
       });
     return;
   }

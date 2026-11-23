@@ -326,7 +326,7 @@ function finish(ctx: SystemContext, p: EntityRow, plan: EntityRow): boolean {
           takeFrom(world, i, pile.count);
           return pile;
         });
-  finishPlan(ctx, plan, line);
+  finishPlan(ctx, plan, line, p.id);
   for (const pile of moved) layAround(ctx, pile.kind, pile.count, spotOf(p), line);
   stop(p);
   return true;

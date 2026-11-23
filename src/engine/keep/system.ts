@@ -20,8 +20,17 @@ export const KEEP_TABLES: Schemas = {
   /** A past week's loss of a kind at a store, kept `keep.history` weeks (lost.ts); `line` is the
    * weekly line that said it, for what reads it to cite. */
   spoilWeek: { week: 'int', store: 'int', kind: 'text', count: 'count', line: 'event' },
-  /** Barrels and pots on a store tile (cooper.ts, potter.ts); `line` the latest line that set one there. */
-  cask: { x: 'int', y: 'int', z: 'int', barrels: 'count', pots: 'count', line: 'event' },
+  /** Barrels and pots on a store tile (cooper.ts, potter.ts), `glazed` the pots made by a knower
+   * of glazed pots (V-219); `line` the latest line that set one there. */
+  cask: {
+    x: 'int',
+    y: 'int',
+    z: 'int',
+    barrels: 'count',
+    pots: 'count',
+    glazed: 'count',
+    line: 'event',
+  },
 };
 
 /** "5 turnips and 2 fish": most first, ties in content order. */

@@ -3,6 +3,7 @@
 // material's work minutes, ten per cent a quality step from plain more or less. Free tools lie in
 // the store; a tool someone has taken is theirs (`owner`, `state` `held`) and lies on no tile.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
+import { wayEffect } from '../entity/index.ts';
 import { itemsOf, layItem } from './stacks.ts';
 
 /** Where a tool someone holds "lies": on no tile of the map. */
@@ -158,7 +159,15 @@ export function layTool(
   world: WorldState,
   content: EngineContent,
   at: { x: number; y: number; z: number },
-  tool: { kind: string; material: string; quality: string; made: number; trail?: string },
+  tool: {
+    kind: string;
+    material: string;
+    quality: string;
+    made: number;
+    trail?: string;
+    /** The smith: a tool made by a knower of steel wears slower (6C Slice 5, V-219). */
+    maker?: number;
+  },
 ): EntityRow {
   const kind = toolItemId(content, tool.kind, tool.material)!;
   const id = layItem(
@@ -168,6 +177,7 @@ export function layTool(
       quality: tool.quality,
       wear: lifeFor(content, tool.material, tool.quality),
       ...(tool.trail && { trail: tool.trail }),
+      ...(tool.maker && wayEffect(world, content, tool.maker, 'steel') && { steel: tool.maker }),
     },
   );
   toolsChanged(world);

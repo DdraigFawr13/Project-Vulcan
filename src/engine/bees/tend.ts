@@ -28,6 +28,7 @@ export function skepTended(ctx: SystemContext, skep: EntityRow, p: EntityRow): b
     data: { name: p['name'] as string, field: FIELD },
   });
   skep['state'] = 'bees';
+  skep['keeper'] = p.id;
   return true;
 }
 

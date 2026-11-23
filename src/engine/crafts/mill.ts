@@ -13,7 +13,7 @@ import { canReach, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, besideReachable, busy, goBeside, layAround, outranked } from '../band/index.ts';
 import { people, practise, priorityLine, same, skillOf, spotOf, walkTo } from '../band/index.ts';
-import { alive } from '../entity/index.ts';
+import { alive, lessMinutes } from '../entity/index.ts';
 
 /** Where `p` would work and on what: the piece, the stack to fetch, the batch and its minutes. */
 interface Pick {
@@ -183,7 +183,14 @@ function takeUp(ctx: SystemContext, p: EntityRow, job: 'mill' | 'bake'): boolean
     data: { name: p['name'] as string, where: where(ctx, got), have: got.have, want: got.want },
   });
   Object.assign(p, {
-    ...{ job, plan: got.piece.id, target: got.stack.id, work: got.minutes, task: got.task },
+    ...{
+      job,
+      plan: got.piece.id,
+      target: got.stack.id,
+      work:
+        job === 'mill' ? lessMinutes(world, content, p.id, 'mill-wheel', got.minutes) : got.minutes,
+      task: got.task,
+    },
   });
   return millWork(ctx, p);
 }

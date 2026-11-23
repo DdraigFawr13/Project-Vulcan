@@ -147,6 +147,7 @@
 {"id":"bees.skep","importance":1,"template":"{name} made a skep for the stand by the {field}."},
 {"id":"bees.swarm","importance":2,"template":"{name} caught a swarm from the woods into a skep by the {field}."},
 {"id":"bees.harvest","importance":2,"template":"{name} took {honey} honey and {wax} beeswax from the skeps by the {field}."},
+{"id":"bees.lost","importance":2,"template":"The bees in a skep by the {field} did not live through the winter; {name} kept them."},
 {"id":"work.tookUpBees","importance":1,"template":"{name} took up {what} for the skeps by the {field}."},
 {"id":"fire.stoked","importance":2,"template":"{name} was cold and stoked the fire {where} past {days}.","stop":"works","notable":{}},
 {"id":"fire.banked","importance":1,"template":"{name} banked the fire {where} for the night."},

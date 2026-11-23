@@ -5,6 +5,7 @@
 // makes cloaks too), else linen from flax. They fetch the inputs, work beside the loom
 // `minutes × 2 × skilled ÷ (skilled + level)` (practising), and lay the cloth for haulers.
 import type { EntityRow } from '../core/index.ts';
+import { lessMinutes } from '../entity/index.ts';
 import { furnitureOf, houseAt, roomName } from '../build/index.ts';
 import { haveOf, shortOf } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -80,9 +81,10 @@ export function takeUpWeaving(ctx: SystemContext, p: EntityRow): boolean {
     },
   });
   const level = skillOf(world, p, content.jobs.find((j) => j.id === def.job)?.skill ?? '');
+  const minutes = Math.ceil((r.minutes * 2 * def.skilled) / (def.skilled + level));
   Object.assign(p, {
     ...{ job: 'weave', plan: loom.id, target: -1, make: r.makes },
-    work: Math.ceil((r.minutes * 2 * def.skilled) / (def.skilled + level)),
+    work: lessMinutes(world, content, p.id, 'treadle-loom', minutes),
   });
   return weaving(ctx, p);
 }

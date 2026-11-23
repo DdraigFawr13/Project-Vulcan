@@ -40,6 +40,8 @@ export interface BeesDef {
   skep: { minutes: number; months: readonly string[] };
   swarm: { months: readonly string[]; chance: number };
   harvest: { month: string; honey: number; wax: number; minutes: number };
+  /** On the first day of `month`, 1 in `odds` colonies is lost (fewer when its keeper knows skeps). */
+  winter: { month: string; odds: number };
 }
 
 export interface LampDefs {
