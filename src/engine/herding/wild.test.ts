@@ -89,6 +89,9 @@ describe('hunting and fishing', () => {
     Object.assign(herd, { x: at.x, y: at.y });
     const members = animalsOf(w).filter((a) => a['herd'] === herd.id);
     for (const a of members) Object.assign(a, { x: at.x, y: at.y, path: [], state: '' });
+    // Game is hunted only on known ground (V-205): someone has seen where the herd was brought.
+    for (let y = at.y - 3; y <= at.y + 3; y += 1)
+      for (let x = at.x - 3; x <= at.x + 3; x += 1) w.map.known[y * w.map.width + x] = 1;
     const hunters = new Set<number>();
     for (let h = 0; h < 4 * 24 && !lines(w, 'wild.killed').some((l) => l.actors.length); h += 1)
       step(w, sim, 60);

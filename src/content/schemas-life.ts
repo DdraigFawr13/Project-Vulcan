@@ -143,7 +143,7 @@ export const LIFE_SCHEMAS = {
       vein: count,
       skilled: count,
       ladder: map(count, 'items'),
-      floors: obj({ stone: str(), earth: str() }),
+      floors: obj({ stone: str(), earth: str(), bank: str() }),
       // A shaft may sit up to `near` tiles from its stain, on the nearest open ground; not within
       // `avoid` tiles of a plan sent back or a shaft spent; on ground whose walking multiplier is
       // at most `walk` (1 is plain ground). `why` is the sentence a shaft plan gives for itself

@@ -3,6 +3,7 @@
 import { digsFor, kilnOf, planPart, plansOf } from '../build/index.ts';
 import type { EntityRow } from '../core/index.ts';
 import { haveOf } from '../goods/index.ts';
+import { bankTiles } from '../map/index.ts';
 import { pack, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { takenBy, type Task } from './minetask.ts';
@@ -50,23 +51,32 @@ function clayNeed(ctx: SystemContext, p: EntityRow) {
   return have < wanted ? { plan: kiln!, good: clay, have, need: wanted, what: 'kiln' } : undefined;
 }
 
-/** Digging clay for a wall plan, from the nearest known clay tile on level 1 that can be reached. */
+/** Digging clay for a wall plan, from the nearest known clay tile on level 1, or of a found clay
+ * bank on the surface, that can be reached. */
 export function clayWork(ctx: SystemContext, p: EntityRow): Task | undefined {
   const { world, content } = ctx;
   const map = world.map;
   const need = clayNeed(ctx, p);
   const layer = map.levels[0];
-  if (!need || !layer) return undefined;
+  if (!need || (!layer && !bankTiles(content, map).length)) return undefined;
   const taken = takenBy(ctx, p);
   const here = spotOf(p);
   const reach = reachFrom(content, map, here);
   let best: number | undefined;
   let score = Infinity;
-  for (let i = 0; i < layer.tiles.length; i += 1) {
+  for (let i = 0; i < (layer?.tiles.length ?? 0); i += 1) {
     const [x, y] = [i % map.width, Math.floor(i / map.width)];
     const node = pack(map, { x, y, z: 1 });
     const d = Math.max(Math.abs(x - here.x), Math.abs(y - here.y)) * 1000000 + i;
     if (d < score && !taken.has(node) && digsFor(world, content, reach, i, need.good))
+      [best, score] = [node, d];
+  }
+  // A found clay bank on the surface (V-206), dug as the ground below is.
+  for (const i of bankTiles(content, map)) {
+    const [x, y] = [i % map.width, Math.floor(i / map.width)];
+    const node = pack(map, { x, y, z: 0 });
+    const d = Math.max(Math.abs(x - here.x), Math.abs(y - here.y)) * 1000000 + i;
+    if (d < score && !taken.has(node) && digsFor(world, content, reach, i, need.good, 0))
       [best, score] = [node, d];
   }
   if (best === undefined) return undefined;

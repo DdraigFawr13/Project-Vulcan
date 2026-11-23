@@ -8,9 +8,11 @@ import {
   compass,
   entityOf,
   greenOf,
+  placeKind,
   recordOf,
   type Find,
   type MapState,
+  type Place,
   type SimEvent,
   type Stub,
   type WorldState,
@@ -53,12 +55,21 @@ export function knownFeed() {
 /** A scout's news that counted as a find (V-205): at least `least` sources round its place. */
 const isFind = (f: Find): boolean => f.count >= content.terrain.generator.known.least;
 
-/** The flags: each found place on known land, oldest first. */
+/** A place laid at worldgen that someone has found (V-206): its line is set then. */
+const isFound = (p: Place): boolean => p.line > 0;
+
+/** The flags: each scout's find, then each found place, on known land, one to a tile. */
 export function findMarks(w: WorldState): FindMark[] {
   const { map } = w;
-  return map.finds
-    .filter((f) => isFind(f) && map.known[f.y * map.width + f.x] === 1)
-    .map(({ x, y }) => ({ x, y }));
+  const seen = new Set<number>();
+  const marks: FindMark[] = [];
+  for (const { x, y } of [...map.finds.filter(isFind), ...map.places.filter(isFound)]) {
+    const i = y * map.width + x;
+    if (map.known[i] !== 1 || seen.has(i)) continue;
+    seen.add(i);
+    marks.push({ x, y });
+  }
+  return marks;
 }
 
 /** The flags as a feed: each snapshot gets them only when they changed. */
@@ -90,19 +101,25 @@ export function whenWords(tick: number): string {
 export const goodName = (good: string): string =>
   content.work.stock.find((s) => s.good === good)?.name ?? good;
 
-/** The page of the find flagged on (x, y), if one is: what, who, when, how it is worked. */
-export function tileFind(
-  w: WorldState,
-  x: number,
-  y: number,
-  lineOf: (e: SimEvent | Stub) => LedgerLine,
-): { find?: FindView } {
+type LineOf = (e: SimEvent | Stub) => LedgerLine;
+
+/** "56 tiles south-west of home". */
+function fromHome(w: WorldState, x: number, y: number): string {
+  const g = greenOf(w);
+  return `${Math.max(Math.abs(x - g.x), Math.abs(y - g.y))} tiles ${compass(x - g.x, y - g.y)} of home`;
+}
+
+const personName = (w: WorldState, id: number): string | undefined =>
+  entityOf(w, 'person', id)?.['name'] as string | undefined;
+
+/** The page of the find flagged on (x, y), if one is: what, who, when, how it is worked. A
+ * scout's find comes first; else a found place. */
+export function tileFind(w: WorldState, x: number, y: number, lineOf: LineOf): { find?: FindView } {
+  if (w.map.known[y * w.map.width + x] !== 1) return {};
   const f = [...w.map.finds].reverse().find((t) => t.x === x && t.y === y && isFind(t));
   const def = f && content.work.scout.goods.find((g) => g.good === f.good);
-  if (!f || !def || w.map.known[y * w.map.width + x] !== 1) return {};
-  const g = greenOf(w);
-  const far = Math.max(Math.abs(x - g.x), Math.abs(y - g.y));
-  const who = entityOf(w, 'person', f.who)?.['name'] as string | undefined;
+  if (!f || !def) return placePage(w, x, y, lineOf);
+  const who = personName(w, f.who);
   const left = sourcesLeft(w.map, x, y, def.kinds);
   const r = content.terrain.generator.known.place;
   const line = recordOf(w, f.line);
@@ -110,16 +127,34 @@ export function tileFind(
     find: {
       title: capital(def.find),
       rows: [
-        [
-          'find',
-          `${def.find}, about ${f.count} ${def.unit}, ${far} tiles ${compass(x - g.x, y - g.y)} of home`,
-        ],
+        ['find', `${def.find}, about ${f.count} ${def.unit}, ${fromHome(w, x, y)}`],
         ['found by', `${who ?? 'a scout'}, scouting for ${goodName(f.good)}`],
         ['when', whenWords(f.tick)],
         [
           'worked',
           `as if in reach, ${r} tiles round it; ${left ? `${left} ${def.unit} left` : 'none left'}`,
         ],
+      ],
+      ...(line && { line: lineOf(line) }),
+    },
+  };
+}
+
+/** A found place's page: what and where, who found it and when, and what it is for (its kind's
+ * `then` words: under "worked" for a kind with a `use`, else under "seen"). */
+function placePage(w: WorldState, x: number, y: number, lineOf: LineOf): { find?: FindView } {
+  const p = w.map.places.find((t) => t.x === x && t.y === y && isFound(t));
+  const kind = p && placeKind(content, p.kind);
+  if (!p || !kind) return {};
+  const line = recordOf(w, p.line);
+  return {
+    find: {
+      title: capital(kind.name),
+      rows: [
+        ['find', `${kind.name}, ${fromHome(w, x, y)}`],
+        ['found by', personName(w, p.by) ?? 'someone of the colony'],
+        ['when', whenWords(p.tick)],
+        [kind.use ? 'worked' : 'seen', kind.then],
       ],
       ...(line && { line: lineOf(line) }),
     },

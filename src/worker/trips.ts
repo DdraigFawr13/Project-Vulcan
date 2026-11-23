@@ -16,6 +16,13 @@ import type { LedgerLine } from './protocol.ts';
 
 type LineOf = (e: SimEvent | Stub) => LedgerLine;
 
+/** The good of a trip to see what lies beyond (engine land `places.ts` `BEYOND`, V-206). */
+const BEYOND = 'beyond';
+
+/** "for wood", or "to see what lies beyond". */
+const forWords = (good: string): string =>
+  good === BEYOND ? 'to see what lies beyond' : `for ${goodName(good)}`;
+
 const nameOf = (w: WorldState, id: number): string =>
   (entityOf(w, 'person', id)?.['name'] as string | undefined) ?? 'The scout';
 
@@ -30,7 +37,7 @@ function outWords(w: WorldState, trip: Find): string {
   const due = trip.due
     ? `, ${w.tick > trip.due ? 'was due' : 'due'} home ${whenWords(trip.due)}`
     : '';
-  return `${nameOf(w, trip.who)} is out for ${goodName(trip.good)}${due}`;
+  return `${nameOf(w, trip.who)} is out ${forWords(trip.good)}${due}`;
 }
 
 /** The Scouting row's line: who is out, else when the last trip came home. */
@@ -71,9 +78,14 @@ function linesOfTrips(w: WorldState, starts: (number | undefined)[]): SimEvent[]
   return out;
 }
 
-/** Where a line's Show button goes: a camp's tile, or the find a homecoming told of. */
-function atOf(e: SimEvent, trip: Find): { x: number; y: number } | undefined {
+/** Where a line's Show button goes: a camp's tile, the find a homecoming told of, or a place the
+ * scout found. */
+function atOf(w: WorldState, e: SimEvent, trip: Find): { x: number; y: number } | undefined {
   if (e.type === 'land.toldOf') return { x: trip.x, y: trip.y };
+  if (e.type === 'land.found') {
+    const place = w.map.places.find((p) => p.line === e.id);
+    return place && { x: place.x, y: place.y };
+  }
   const { x, y } = e.data;
   return e.type === 'land.camped' && typeof x === 'number' && typeof y === 'number'
     ? { x, y }
@@ -90,14 +102,18 @@ function tripView(
   const out = trip.count === -1;
   const end = out ? undefined : recordOf(w, trip.line);
   const lost = end?.type === 'land.lost';
+  const saw =
+    end && 'data' in end && end.type === 'land.beyond' ? (end as SimEvent).data : undefined;
   const find = content.work.scout.goods.find((g) => g.good === trip.good)?.find;
   const outcome = out
     ? ''
     : lost
       ? 'lost with what they saw'
-      : trip.count >= content.terrain.generator.known.least
-        ? `told of ${find ?? goodName(trip.good)}`
-        : 'no word';
+      : saw
+        ? `found ${String(saw['found'])}`
+        : trip.count >= content.terrain.generator.known.least
+          ? `told of ${find ?? goodName(trip.good)}`
+          : 'no word';
   const from = start !== undefined ? recordOf(w, start)?.tick : undefined;
   const hours = from !== undefined ? Math.round(((out ? w.tick : trip.tick) - from) / 60) : -1;
   const nights = lines.filter((e) => e.type === 'land.camped').length;
@@ -106,10 +122,10 @@ function tripView(
     nights ? `${nights} night${nights > 1 ? 's' : ''} camped` : '',
   ];
   return {
-    title: `${nameOf(w, trip.who)}, for ${goodName(trip.good)} · ${out ? 'out' : lost ? 'not home' : 'home'}`,
+    title: `${nameOf(w, trip.who)}, ${forWords(trip.good)} · ${out ? 'out' : lost ? 'not home' : 'home'}`,
     sub: [spent.filter(Boolean).join(', '), outcome].filter(Boolean).join(' · '),
     lines: lines.map((e) => {
-      const at = atOf(e, trip);
+      const at = atOf(w, e, trip);
       return { ...lineOf(e), ...(at && { at }) };
     }),
   };

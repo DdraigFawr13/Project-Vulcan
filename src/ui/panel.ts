@@ -40,7 +40,7 @@ export type PanelKind =
   | 'recap';
 
 type LedgerTab = 'lines' | 'chronicle' | 'trips';
-const TRIP_LINE = /^land\.|^work\.tookUpScouting$/;
+const TRIP_LINE = /^land\.|^work\.tookUpScouting(Beyond)?$/;
 
 /** The ledger panel keeps this many newest lines; the full ledger is in saves and the export. */
 export const LEDGER_LINES = 200;

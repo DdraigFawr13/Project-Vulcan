@@ -123,4 +123,75 @@ describe('the known map on screen', () => {
     const later = tripsView(w, line(w)).trips.at(map.finds.length - 1 - map.finds.indexOf(found));
     expect(later?.sub).toMatch(/^Out 20 hours.* · told of a wood$/);
   });
+
+  it('flags a found place and a beyond trip says what it found', () => {
+    const w = createWorld(sim, 'smoke');
+    step(w, sim, 60);
+    const { map } = w;
+    const scout = w.entities['person']![0]!;
+    const name = scout['name'] as string;
+    // A spring the scout found on a trip to see what lies beyond.
+    const place = map.places.find((p) => p.kind === 'spring' && !p.line)!;
+    expect(place).toBeDefined();
+    const setOut = emit(w, sim.templates, 'work.tookUpScoutingBeyond', {
+      actors: [scout.id],
+      data: { name, kit: '', days: 84 },
+    });
+    const trip = { x: place.x, y: place.y, good: 'beyond', count: -1, who: scout.id, line: setOut };
+    map.finds.push({
+      ...trip,
+      tick: w.tick,
+      due: w.tick + TICKS_PER_DAY,
+      worry: 0,
+      searcher: 0,
+      search: 0,
+      strayed: 0,
+    });
+    expect(scoutingWords(w)).toMatch(new RegExp(`^${name} is out to see what lies beyond, due`));
+    w.tick += 600; // the clock only
+    const found = emit(w, sim.templates, 'land.found', {
+      causes: [setOut],
+      actors: [scout.id],
+      data: {
+        name,
+        what: 'a spring',
+        far: 30,
+        dir: 'east',
+        magic: '',
+        then: 'Fresh water.',
+        sort: 'place',
+      },
+    });
+    Object.assign(place, { by: scout.id, line: found, tick: w.tick });
+    const home = emit(w, sim.templates, 'land.beyond', {
+      causes: [setOut],
+      actors: [scout.id],
+      data: { name, far: 30, dir: 'east', found: 'a spring' },
+    });
+    Object.assign(map.finds.at(-1)!, { count: 0, line: home, tick: w.tick });
+
+    const i = place.y * map.width + place.x;
+    map.known[i] = 0;
+    expect(findMarks(w)).not.toContainEqual({ x: place.x, y: place.y });
+    map.known[i] = 1;
+    expect(findMarks(w)).toContainEqual({ x: place.x, y: place.y });
+    const page = tileFind(w, place.x, place.y, line(w)).find!;
+    expect(page.title).toBe('A spring');
+    expect(page.rows).toEqual([
+      ['find', expect.stringMatching(/^a spring, \d+ tiles [a-z-]+ of home$/)],
+      ['found by', name],
+      ['when', expect.stringMatching(/^\d\d:\d\d, Day/)],
+      ['seen', 'Fresh water to drink and camp by.'],
+    ]);
+    expect(page.line?.id).toBe(found);
+
+    const [t] = tripsView(w, line(w)).trips;
+    expect(t).toMatchObject({ title: `${name}, to see what lies beyond · home` });
+    expect(t!.sub).toMatch(/· found a spring$/);
+    expect(t!.lines.map((l) => [l.id, l.at])).toEqual([
+      [setOut, undefined],
+      [found, { x: place.x, y: place.y }],
+      [home, undefined],
+    ]);
+  });
 });

@@ -33,4 +33,41 @@ export interface TripDials {
   /** A scout `days` past due is worried for (memory `memory`); next morning the colony wants a
    * searcher, who finds them within `sight` tiles. */
   late: { days: number; memory: string; sight: number };
+  /** The finds (6W Slice 5 part 2, V-206): places laid at worldgen at least `from` tiles from the
+   * green, found by whoever sees them; one within `magic` tiles of an aura spot is noted
+   * (`magicWords`). */
+  places: { from: number; magic: number; magicWords: string; kinds: readonly PlaceKind[] };
+  /** Curios: each hour on the surface more than `far` tiles from the green, 1 in `per`, at most
+   * one a person a season. */
+  curio: { far: number; per: number; list: readonly Curio[] };
+  /** With no new find for `days` days and nothing short, the colony wants a scout to see what
+   * lies beyond, `on` tiles past the known land's edge. */
+  beyond: { days: number; on: number };
+  /** A newcomer's word of a good on the road in: wrong `wrong` per cent of the time; it pulls
+   * the next scout for that good `lean` tiles toward its way. */
+  word: { wrong: number; lean: number };
+}
+
+/** One kind of find: placed by `rule` (`size` is the rule's own measure: trees about a grove,
+ * metres of rise for a lookout, of cliff for a cave or den, clay tiles in a bank), `gap` tiles
+ * apart, at most `most`; `use` what finding it opens (`work`: fellers work round it, `clay`: its
+ * bank is dug, `fish`: anglers fish it, `look`: whoever stands there sees twice as far); `tale`
+ * the tale it starts; `then` the words after the line. */
+export interface PlaceKind {
+  id: string;
+  name: string;
+  rule: 'spring' | 'grove' | 'bank' | 'pool' | 'lookout' | 'cliff';
+  size: number;
+  gap: number;
+  most: number;
+  use?: 'work' | 'clay' | 'fish' | 'look';
+  tale: string;
+  then: string;
+}
+
+/** A small odd thing found far out: its words, and the memory a third of them leave. */
+export interface Curio {
+  id: string;
+  what: string;
+  memory?: string;
 }
