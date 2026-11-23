@@ -18,6 +18,7 @@
     { "id": "valley-hungry", "about": "colony", "text": "this valley cannot feed us" },
     { "id": "fields-cursed", "about": "place", "text": "the fields are cursed" },
     { "id": "valley-sickly", "about": "colony", "text": "this valley breeds sickness" },
+    { "id": "lake-sickens", "about": "place", "text": "the lake sickens in summer" },
     { "id": "law-flouted", "about": "law", "text": "the work-hours law is not kept here" },
     { "id": "store-hoarded", "about": "law", "text": "the store is kept for the few" },
     { "id": "thieves", "about": "colony", "text": "there are thieves among us" },
@@ -36,6 +37,11 @@
       "Wolves were seen near {where}.",
       "{name} came down to {where}.",
       "{name} came down to {where}, hungry for one of us."
+    ] },
+    { "id": "lake-flux", "event": "health.sick", "only": { "how": "drank from the lake in the warm weather" }, "truth": 1, "belief": "lake-sickens", "from": 1, "levels": [
+      "{name} took {a} after a drink from the lake.",
+      "{name} drank from the lake in the warm weather and took {a}.",
+      "The lake turns bad in summer: {name} took {a} from it, and it will take more of us."
     ] },
     { "id": "sick", "event": "health.sick", "truth": 1, "belief": "valley-sickly", "from": 2, "levels": [
       "{name} is a little poorly.",

@@ -15,6 +15,7 @@ import { addMemory, needOf } from '../needs/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { animalsOf, packOf, whenWord } from '../wild/index.ts';
+import { inCry } from './cry.ts';
 import { lineOf, people, spotOf, walkTo } from '../band/index.ts';
 
 /** Whether `p` is awake on the surface and on their feet: someone a predator can be seen by. */
@@ -48,7 +49,7 @@ const hasTrait = (ctx: SystemContext, p: EntityRow, list: readonly string[]): st
     .map((t) => t['trait'] as string);
 
 /** Bold and armed: ready to stand if not alone. */
-const readyToStand = (ctx: SystemContext, p: EntityRow): boolean => {
+export const readyToStand = (ctx: SystemContext, p: EntityRow): boolean => {
   const folk = ctx.content.wild.folk;
   return (
     hasTrait(ctx, p, folk.bold).length > 0 &&
@@ -228,6 +229,11 @@ function lyingLow(ctx: SystemContext, p: EntityRow): boolean {
 
 /** The predator rung for `p` this minute: true when it took the minute (standing or fleeing). */
 export function predatorRung(ctx: SystemContext, p: EntityRow): boolean {
+  // A fight under way (cry.ts) holds the one fallen on and those running to them.
+  if (p['doing'] === 'held' || p['doing'] === 'answer') {
+    if (inCry(ctx, p)) return true;
+    p['doing'] = '';
+  }
   const out = predatorsOf(ctx).length > 0;
   if (out && lyingLow(ctx, p)) return true;
   if (!out || !upAndAbout(ctx, p)) {
