@@ -20,3 +20,15 @@ The first dozen methods (content, numbers at Slice 5's mock-up): steel (smith), 
 - **q2 A, goods and beatings.** At the bottom of the ladder the lord's men take about twice what was owed from the store and barn; anyone who stands in their way may be beaten (wounds with a line, nobody killed). No hostages.
 - **q3 A, the finder, then teaching.** A method is known only by its finder; others learn it as their apprentice or from a book the teacher writes (V-189, V-199); a finder who dies untaught takes it with them (V-141).
 - **q4 A, the lord's forest.** The old woods farthest from the green are the lord's; hunting or felling there is poaching, a defiance some do anyway (the hungry, the defiant); favour falls if the reeve hears; a charter makes it the colony's. One content entry for the forest, one for the charter.
+
+## Slice 1 mock-up answers (2026-11-23, V-216)
+
+Form https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha, every recommendation. Measured on main (valley 1 of each test world): Ogrgul (Horde of Ashaglug, bold), Tarainach (Queendom of Esgairarrig, cautious), Gunnil the Builder (Jarldom of Brandby, bold, aged 10), Yarknak (Lordship of Rustnakpit, greedy); first harvest home day 142 or 143.
+
+- **Title:** from the realm's kind, a content list in `lord.json` (Warlord, Queen, Jarl, Lord, Thane; a free commune's head is Elder).
+- **No byname:** the name alone; the reeve's line gives the temper's words (the package's temper `line`).
+- **A child ruler** stays lord; the reeve speaks for "the young jarl and those who rule for him". Nothing in 6C harms the child.
+- **The news:** each colonist gets a memory, weighed by the lord's temper and bitter for anyone not of the lord's people.
+- **Visits:** every harvest home from the first, the morning after; he counts the store in a line and takes nothing until Slice 2.
+- **Stay:** morning till dark; he finds the elder (else whoever is nearest the hall), speaks and leaves.
+- **Build notes:** skip a realm with `fell`; a plain seed has no lord (test with a valley seed); no test valley has a pious, cruel or learned lord, so temper tests make one in the test.
