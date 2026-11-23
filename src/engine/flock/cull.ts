@@ -1,7 +1,7 @@
 // The flock's shearing, the autumn cull and what the rick cannot feed (P5.4b): which animals are
 // marked to be butchered, in what order, and the shearing and butchery themselves.
 import { clockAt, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
-import { layItem } from '../goods/index.ts';
+import { broughtIn, layItem } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { killAnimal, speciesOf } from '../wild/index.ts';
 import {
@@ -64,6 +64,7 @@ export function shear(
     made: line,
   });
   flock['line'] = line;
+  broughtIn(world, content, def.item, def.count, line);
   return line;
 }
 

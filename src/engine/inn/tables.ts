@@ -1,7 +1,7 @@
 // The tavern's tables and their reads (6B Bundle 5, P6.12, V-188): the tavern itself (its house,
 // name and keeper), each cask's brew, and each person's evening there.
 import { today, type EntityRow, type WorldState } from '../core/index.ts';
-import { furnitureOf, houseAt, tavernHouse } from '../build/index.ts';
+import { furnitureOf, houseAt, INN_TAVERN, tavernHouse } from '../build/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
 
 export const INN_TABLES: Schemas = {
@@ -37,7 +37,7 @@ export const tavernName = (world: WorldState): string =>
 export function inTavern(world: WorldState, p: EntityRow): boolean {
   if (p['z'] !== 0) return false;
   const h = houseAt(world, p['x'] as number, p['y'] as number);
-  return !!h && !!h['inn'] && h['state'] === 'built';
+  return !!h && h['inn'] === INN_TAVERN && h['state'] === 'built';
 }
 
 /** Brews in casks that still stand (a keg row outlives a cask taken down, unread). */

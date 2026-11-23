@@ -72,6 +72,11 @@ export function walkAt(content: EngineContent, map: MapState, z: number, i: numb
   return walk;
 }
 
+/** Whether surface tile `i` is water of any kind, frozen or open: what someone the ice thawed
+ * under can wade or swim through to get out (shore.ts). */
+export const isWater = (content: EngineContent, map: MapState, i: number): boolean =>
+  !!kindsOf(content).water[map.tiles[i]!];
+
 /** What standing on tile `i` of level `z` costs now, in tenths of a step on plain ground: its
  * walking multiplier times 10, or `walking.road` on a road (P5.10, V-054); 0 when it cannot be
  * stood on. Searches and steps cost by this; `walkAt` stays the plain multiplier. */

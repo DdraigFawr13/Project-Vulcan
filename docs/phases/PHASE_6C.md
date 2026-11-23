@@ -7,8 +7,8 @@ A short phase after 6W and before magic (Phase 7): a liege lord who takes a tith
 - [x] Design form answered, 2026-11-20 (V-210)
 - [x] Spec form answered, 2026-11-23, every recommendation (V-211)
 - [x] Slice 1, the lord and the reeve (engine). Mock-up answered 2026-11-23, every recommendation (V-216, https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha); built 2026-11-23 (V-217); the reeve no longer waits on the supper being eaten (V-220)
-- [ ] Slice 2, the tithe, the Lord law and favour (engine). Mock-up answered 2026-11-23, every recommendation (V-222, https://claude.ai/artifact/91We7kCTAGYGzkkTaCU8DD); build next
-- [ ] Slice 3, asks (engine)
+- [ ] Slice 2, the tithe, the Lord law and favour (engine). Mock-up answered 2026-11-23, every recommendation (V-222, https://claude.ai/artifact/91We7kCTAGYGzkkTaCU8DD); part 1 (tithe barn, the reeve's take, Lord law, hiding, lean year) built 2026-11-23 (V-226); part 2 (favour, ladder, the lord's forest) next
+- [ ] Slice 3, asks (engine). Mock-up answered 2026-11-23, every recommendation (V-225, https://claude.ai/artifact/RHuQLTHnr7pqrCYrjjoxKQ)
 - [ ] Slice 4, the lord and asks on screen (screens)
 - [ ] Slice 5, hints and breakthroughs (engine). Mock-up answered 2026-11-23, every recommendation (V-218, https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u); part 1 (ways, hints, finds) and part 2 (mishaps, New Ways, spreading, loss) built 2026-11-23 (V-219), part 3 (effects on knowers' work) built
 - [x] Slice 6, discoveries on screen (screens). Mock-up answered 2026-11-23, every recommendation (V-221, https://claude.ai/artifact/GRvQNoFM1D1viLSPMnoaif); built 2026-11-23 (V-223)
@@ -55,7 +55,7 @@ Mock-up: Engine (five years on four seeds: tithe owed and paid, favour and its c
 
 Mock-up: Engine (five years on four seeds: asks by source, taken, done, let pass, who worked them and why). Done when: the fine-blade test; every ask's line cites a source line; letting one pass costs favour or regard with a line.
 
-- Reading list: `docs/DECISIONS.md` V-041 V-146 V-147 V-201 V-210; `src/engine/people/MODULE.md`; `src/engine/crafts/MODULE.md`; `src/engine/region/MODULE.md`; `docs/LORD_AND_ASKS.md`
+- Reading list: `docs/DECISIONS.md` V-041 V-146 V-147 V-201 V-210 V-222 V-225; `src/engine/people/MODULE.md`; `src/engine/crafts/MODULE.md`; `src/engine/region/MODULE.md`; `docs/LORD_AND_ASKS.md`
 
 ### Slice 4: the lord and asks on screen
 

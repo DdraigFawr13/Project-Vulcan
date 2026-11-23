@@ -22,9 +22,14 @@ import type { SystemContext } from '../sim/index.ts';
 import { addCause } from './standing.ts';
 import { factionsOf } from './tables.ts';
 
-/** Laws everyone answers while they stand away from the custom. */
+/** Laws everyone answers while they stand away from the custom, and that a faction could ask to
+ * step back (never onto an `unset` setting: the Lord law before the lord, 6C). */
 const asking = (world: WorldState, content: EngineContent): LawDef[] =>
-  content.laws.laws.filter((d) => !d.split && settingOf(world, content, d.id).id !== d.start);
+  content.laws.laws.filter((d) => {
+    const now = settingOf(world, content, d.id).id;
+    if (d.split || now === d.start) return false;
+    return !d.settings.find((s) => s.id === stepBack(d, now))?.unset;
+  });
 
 /** How far short of keeping `law` each person is, weighed alone. */
 function grudges(world: WorldState, content: EngineContent, law: string): Map<number, number> {

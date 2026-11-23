@@ -14,7 +14,8 @@
       { "event": "people.strangerStays", "weight": 6, "tally": "came", "per": "actors", "title": "{names} stayed" },
       { "event": "people.cameBack", "weight": 5, "many": "{Count} came back by the roads, over their sickness: {list}.", "item": "{name}" },
       { "event": "family.left", "weight": 6, "tally": "came", "per": "line", "title": "a child was left in the valley" },
-      { "event": "lord.named", "weight": 8, "title": "the reeve named {lord} the valley's lord" }
+      { "event": "lord.named", "weight": 8, "title": "the reeve named {lord} the valley's lord" },
+      { "event": "lord.tithed", "weight": 3, "title": "the reeve took {took} for {lord}" }
     ] },
     { "id": "lost", "max": 4, "lines": [
       { "event": "health.died", "weight": 10, "tally": "died", "per": "line", "title": "{name} died", "many": "{Count} died: {list}.", "item": "{name}" },
@@ -103,6 +104,8 @@
       { "event": "tavern.brawled", "weight": 5, "title": "{name} came to blows with {other} at {tavern}", "many": "{Count} brawls broke out at the tavern: {list}.", "item": "{name} with {other}" },
       { "event": "defy.took", "weight": 4, "many": "{Times} food went missing from the store: {list}.", "item": "{name} took {count} {food}" },
       { "event": "defy.caught", "weight": 4, "many": "{Count} were caught: {list}.", "item": "{name}" },
+      { "event": "defy.hidTithe", "weight": 4, "many": "{Times} the tithe barn was robbed: {list}.", "item": "{name} took {count} {food}" },
+      { "event": "lord.found", "weight": 5, "many": "{Count} hoards were found by the reeve: {list}.", "item": "{name}'s {what}" },
       { "event": "defy.punished", "weight": 5, "many": "{Count} were punished: {list}.", "item": "{name}" },
       { "event": "law.answered", "only": { "answer": "refuses" }, "weight": 4, "many": "{Times} someone refused a law: {list}.", "item": "{name}" },
       { "event": "law.keptCustom", "weight": 3, "many": "{Count} kept to the old custom: {list}.", "item": "{name}" },
@@ -119,6 +122,8 @@
       { "event": "pits.noGround", "weight": 1 },
       { "event": "metal.waiting", "weight": 1, "fold": "the smelter waited for ore", "one": "The smelter waited: no {good} could be reached.", "many": "The smelter waited {times} for want of goods: {list}.", "item": "{good}" },
       { "event": "land.noSeam", "weight": 1, "many": "{Times} a prospector came home with no seam: {list}.", "item": "of {ore}" },
+      { "event": "land.stillNoOre", "weight": 2, "fold": "a season passed with no ore found", "one": "Another season passed with no {ore} found: {why}.", "many": "{Times} a season passed with no ore found: {list}.", "item": "no {ore}" },
+      { "event": "mine.shaftWaits", "weight": 2, "fold": "a planned shaft waited", "one": "The shaft for {metal} waited a season: {why}.", "many": "{Times} a planned shaft waited a season: {list}.", "item": "for {metal}" },
       { "event": "mine.noVein", "weight": 3, "many": "{Times} a shaft found no way to a vein: {list}.", "item": "for {metal}" },
       { "event": "mine.noLadder", "weight": 2, "fold": "a shaft waited for logs for its ladder", "one": "The shaft for {metal} waited: too few logs could be reached for its ladder.", "many": "{Times} a shaft waited for want of logs for its ladder: {list}.", "item": "for {metal}" },
       { "event": "fire.noFloor", "weight": 2, "fold": "someone was cold with no floor free for a hearth", "many": "{Times} someone was cold with no floor free for a hearth: {list}.", "item": "{name} in the {room}" },

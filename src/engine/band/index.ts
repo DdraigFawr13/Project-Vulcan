@@ -81,4 +81,4 @@ export {
   wantTool,
   type Ready,
 } from './knap.ts';
-export { WALK_FIELDS, stepAlong, walkTo, wander } from './walk.ts';
+export { WALK_FIELDS, stepAlong, walkOrWade, walkTo, wander } from './walk.ts';

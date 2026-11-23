@@ -3,6 +3,7 @@
 import { content } from '../content/index.ts';
 import {
   entityOf,
+  itemName,
   recordOf,
   TICKS_PER_DAY,
   type Find,
@@ -40,15 +41,32 @@ function outWords(w: WorldState, trip: Find): string {
   return `${nameOf(w, trip.who)} is out ${forWords(trip.good)}${due}`;
 }
 
-/** The Scouting row's line: who is out, else when the last trip came home. */
+const daysWord = (days: number): string => (days === 1 ? '1 day' : `${days} days`);
+
+/** "; copper wanted 40 days": each ore wanted with no seam known, and how long (engine land
+ * `orewant.ts`, V-227). */
+function wantedWords(w: WorldState): string {
+  const since = w.systems['orewant'] ?? {};
+  const words = Object.entries(since)
+    .filter(([k]) => !k.startsWith('l-'))
+    .map(([metal, tick]) => {
+      const f = content.features.find((d) => d.id === metal);
+      const ore = f?.yields ? itemName(content, f.yields).replace(/ ore$/, '') : metal;
+      return `${ore} wanted ${daysWord(Math.floor((w.tick - tick) / TICKS_PER_DAY))}`;
+    });
+  return words.length ? `; ${words.join(', ')}` : '';
+}
+
+/** The Scouting row's line: who is out, else when the last trip came home; then each ore wanted
+ * and unknown. */
 export function scoutingWords(w: WorldState): string {
   const out = underWay(w);
-  if (out) return outWords(w, out);
+  if (out) return outWords(w, out) + wantedWords(w);
   const last = w.map.finds.at(-1);
-  if (!last) return 'nobody out; no trip yet';
+  if (!last) return `nobody out; no trip yet${wantedWords(w)}`;
   const days = Math.floor((w.tick - last.tick) / TICKS_PER_DAY);
-  const ago = days === 0 ? 'today' : days === 1 ? '1 day ago' : `${days} days ago`;
-  return `nobody out; last trip home ${ago}`;
+  const ago = days === 0 ? 'today' : `${daysWord(days)} ago`;
+  return `nobody out; last trip home ${ago}${wantedWords(w)}`;
 }
 
 /** The line a trip set out with: its own line while under way, else the line its homecoming

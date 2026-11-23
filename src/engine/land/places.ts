@@ -14,6 +14,8 @@ import { greenOf } from '../build/index.ts';
 import { storeOf } from '../goods/index.ts';
 import { wordHour } from './word.ts';
 import { seamHour } from './seams.ts';
+import { oreWantDay } from './orewant.ts';
+import { shaftWaitDay } from './minefar.ts';
 
 /** Every 10 minutes (and when a scout comes home, `scout` with their trip's line): each find
  * whose tile has become known is found. Returns the finds' lines. */
@@ -116,12 +118,15 @@ export function curioHour(ctx: SystemContext): void {
 }
 
 /** Each minute (V-206): finds seen are found, the far out may come on a curio, a newcomer tells
- * of their road in, and anyone beside a rock face may spot a seam in it (V-215). */
+ * of their road in, anyone beside a rock face may spot a seam in it (V-215), and a want of ore
+ * not found is kept and told of once a season (V-227). */
 export function findsMinute(ctx: SystemContext): void {
   spotPlaces(ctx);
   curioHour(ctx);
   wordHour(ctx);
   seamHour(ctx);
+  oreWantDay(ctx);
+  shaftWaitDay(ctx);
 }
 
 /** Home from seeing what lies beyond: one line naming what they found, citing the setting-out. */

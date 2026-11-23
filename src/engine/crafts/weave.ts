@@ -7,7 +7,7 @@
 import type { EntityRow } from '../core/index.ts';
 import { lessMinutes } from '../entity/index.ts';
 import { furnitureOf, houseAt, roomName } from '../build/index.ts';
-import { haveOf, shortOf } from '../goods/index.ts';
+import { broughtIn, haveOf, shortOf } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, canStandBeside, declineIfUnable, fetchKind, goBeside } from '../band/index.ts';
 import { layAll, outranked, people, practise, priorityLine, reachableOf } from '../band/index.ts';
@@ -120,6 +120,7 @@ export function weaving(ctx: SystemContext, p: EntityRow): boolean {
     },
   });
   layAll(ctx, r.makes, r.out, here, line);
+  broughtIn(ctx.world, content, r.makes, r.out, line);
   stop(p);
   return true;
 }
