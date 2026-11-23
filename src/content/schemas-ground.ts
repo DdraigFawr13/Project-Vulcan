@@ -55,10 +55,9 @@ export const GROUND_SCHEMAS = {
           per10k: count,
           size: range(),
           rocks: map(count, 'terrain'),
-          // A coloured stain on the surface above the vein (V-087).
-          stain: opt(bool()),
-          stainColour: opt(str()),
-          stainWord: opt(str()),
+          // The colour word of the vein's seam where it shows in a rock face (V-215): a vein with
+          // one can be spotted by a prospector; none, it is never looked for.
+          seam: opt(str()),
         }),
       ),
     }),
@@ -104,11 +103,11 @@ export const SCOUT = obj({
       obj({
         id,
         name: text,
-        rule: oneOf('spring', 'grove', 'bank', 'pool', 'lookout', 'cliff'),
+        rule: oneOf('spring', 'grove', 'bank', 'pool', 'lookout', 'cliff', 'seam'),
         size: count,
         gap: count,
         most: count,
-        use: opt(oneOf('work', 'clay', 'fish', 'look')),
+        use: opt(oneOf('work', 'clay', 'fish', 'look', 'ore')),
         tale: str(),
         then: text,
       }),
@@ -121,4 +120,13 @@ export const SCOUT = obj({
   }),
   beyond: obj({ days: count, on: count }),
   word: obj({ wrong: count, lean: count }),
+  // Prospecting (6W Slice 7, V-215): see WorkDef.scout.prospect.
+  prospect: obj({
+    per: count,
+    rocks: list(num({ min: 0 })),
+    apart: count,
+    day: count,
+    along: count,
+    word: count,
+  }),
 });

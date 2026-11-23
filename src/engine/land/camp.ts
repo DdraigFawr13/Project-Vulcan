@@ -128,7 +128,7 @@ export function eatPack(ctx: SystemContext, p: EntityRow): boolean {
     eat(ctx, p, item);
     return true;
   }
-  if (p['task'] !== 'out') return false;
+  if (!['out', 'along'].includes(p['task'] as string)) return false;
   ctx.emit('land.packEmpty', {
     causes: [p['took'] as number].filter((l) => l > 0),
     actors: [p.id],
@@ -230,12 +230,13 @@ export function campWarm(ctx: SystemContext, p: EntityRow): boolean {
 /** The trip's walk there and back from the way just found, the tick it is due home by (V-206),
  * and the pack: a day's food, or when over half a day (or not back by bedtime, so a night out)
  * their bedroll and a day's food a day plus a spare. */
-export function kitFor(ctx: SystemContext, p: EntityRow): { due: number; kit: string } {
+export function kitFor(ctx: SystemContext, p: EntityRow, more = 0): { due: number; kit: string } {
   const { world, content } = ctx;
   const w = content.terrain.walking;
   const def = content.work.scout.pack;
   const steps = (p['path'] as number[]).length;
-  const round = Math.ceil((steps * (w.straight + w.diagonal)) / w.speed);
+  // `more`: minutes the trip spends out there besides the walk (a prospector's day on the faces).
+  const round = Math.ceil((steps * (w.straight + w.diagonal)) / w.speed) + more;
   const back = world.tick + Math.ceil((round * def.due) / 100);
   // Not back by bedtime, the night out counts: they are due home the morning after.
   const hours = hoursOf(world, content, p.id);

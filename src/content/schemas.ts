@@ -23,6 +23,7 @@ import { TEACH_SCHEMAS } from './schemas-teach';
 import { CALLINGS_SCHEMAS } from './schemas-callings';
 import { TAVERN_SCHEMAS } from './schemas-tavern';
 import { LORD_SCHEMAS } from './schemas-lord';
+import { METHODS_SCHEMAS } from './schemas-methods';
 import { TIME_SCHEMAS } from './schemas-time';
 import { TOOLS_SCHEMAS } from './schemas-tools';
 import { WILD_SCHEMAS } from './schemas-wild';
@@ -53,6 +54,7 @@ export const SCHEMAS = {
   ...CALLINGS_SCHEMAS,
   ...TAVERN_SCHEMAS,
   ...LORD_SCHEMAS,
+  ...METHODS_SCHEMAS,
   ...CLOTHES_SCHEMAS,
   ...ANNALS_SCHEMAS,
   ...TIME_SCHEMAS,

@@ -13,6 +13,7 @@ Game data: the forked Story Generator raws plus Vulcan's own tiles, recipes, job
 - **Annals (Phase 6T, V-191):** `annals.json` (schema `schemas-annals.ts`, read by `src/engine/annals`): the season and year recaps' sections, the line kinds each tells and in what words; `validate-annals.ts` checks every line of importance 3 or notable is told by a section or skipped by name.
 - **Stops (Phase 6T, V-191):** `stops.json` (schema `schemas-time.ts`): the kinds of notable line a player sets to Pause, Slow or Note, each with its name, hint and default; every notable event in `events.json` names one in `stop`, and no other event does (`validate-time.ts`).
 - **The lord (6C Slice 1, V-216):** `lord.json` (schema `schemas-lord.ts`, read by `src/engine/lord`): titles by the realm's kind, the reeve's day and pace, the temper's extra memory weight, the news's memories.
+- **Methods (6C Slice 5, V-218):** `methods.json` (schema `schemas-methods.ts`, read by `src/engine/discover`): the twelve ways, their trades, skill gates and hints, and the pace and words of each kind of hint.
 - **Adding content:** add the entry to its JSON file; a new field or file needs its spec in `schemas-world.ts` or `schemas-people.ts` first. Read the schema, not the entries.
 - **Fixed in schemas, not data:** the power tier ids, creature tiers (beast, great, legendary) and the tier-cap rule for `magic` abilities; a new tier or family is a schema change.
 - **Rules:** pure data, same purity rules as the engine; may import engine types.

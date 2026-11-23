@@ -120,7 +120,7 @@ export function createWorld(sim: Sim, seed: string, look = 0): WorldState {
       wear: new Uint16Array(0),
       worn: new Uint8Array(0),
       built: new Uint8Array(0),
-      stains: new Uint8Array(0),
+      faces: new Uint8Array(0),
       levels: [],
       riches: {},
       regrow: [],

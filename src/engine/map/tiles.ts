@@ -49,7 +49,6 @@ export function chunkTiles(
   worn: Uint8Array;
   built: Uint8Array;
   known: Uint8Array;
-  stains: Uint8Array;
 } {
   const layer = layerOf(map, z);
   if (!layer) throw new Error(`Level ${z} has not been reached.`);
@@ -68,7 +67,6 @@ export function chunkTiles(
   const worn = new Uint8Array(w * h);
   const built = new Uint8Array(w * h);
   const known = new Uint8Array(w * h);
-  const stains = new Uint8Array(w * h);
   for (let row = 0; row < h; row += 1)
     for (let col = 0; col < w; col += 1) {
       const from = (y + row) * map.width + x + col;
@@ -79,19 +77,20 @@ export function chunkTiles(
       // Unseen surface (6W Slice 6, V-213) goes out as the lie of the land and its weather only:
       // what grows, lies or walked there is news once someone sees it; a scout's sightings (2)
       // count when they are home.
-      const seen = z > 0 || map.known[from] === 1;
+      // Below, a vein stays dark like any unknown rock until a tunnel passes beside it (V-215).
+      const seen = z > 0 ? (layer as LevelState).known[from] === 1 : map.known[from] === 1;
       known[row * w + col] = z === 0 ? (seen ? 1 : 0) : (layer as LevelState).known[from]!;
       if (!seen) continue;
       features[row * w + col] = layer.features[from]!;
       if (z === 0) {
         const to = row * w + col;
-        [worn[to], built[to], stains[to]] = [map.worn[from]!, map.built[from]!, map.stains[from]!];
+        [worn[to], built[to]] = [map.worn[from]!, map.built[from]!];
         if (map.printKind[from]) printTo(map, from, tick, to, { printKind, printAge, printDir });
       }
     }
   return {
     ...{ x, y, z, w, h, tiles, features, snow, ice, snowLie },
-    ...{ printKind, printAge, printDir, worn, built, known, stains },
+    ...{ printKind, printAge, printDir, worn, built, known },
   };
 }
 

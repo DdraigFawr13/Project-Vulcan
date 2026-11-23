@@ -19,6 +19,7 @@ export { cutStairsAt, openAround, sinkShaftAt } from './levels.ts';
 export { makeLevel } from './underground.ts';
 export { compass } from './green.ts';
 export { atLookout, bankTiles, foundAreas, placeKind } from './places.ts';
+export { faceList, faceWalked, isFace, rockOdds, seamAt, walkFaces } from './faces.ts';
 export {
   bareKnown,
   eachKnown,

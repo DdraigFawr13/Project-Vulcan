@@ -24,6 +24,7 @@ import { familySystem } from './family/index.ts';
 import { faithSystem } from './faith/index.ts';
 import { innSystem } from './inn/index.ts';
 import { lordSystem } from './lord/index.ts';
+import { discoverSystem } from './discover/index.ts';
 import { talesSystem } from './tales/index.ts';
 import { teachSystem } from './teach/index.ts';
 import { callingSystem } from './calling/index.ts';
@@ -60,6 +61,7 @@ export * from './family/index.ts';
 export * from './faith/index.ts';
 export * from './inn/index.ts';
 export * from './lord/index.ts';
+export * from './discover/index.ts';
 export * from './tales/index.ts';
 export * from './teach/index.ts';
 export * from './calling/index.ts';
@@ -77,6 +79,7 @@ export const TEST_TOOLS: readonly string[] = [
   'deconstruct',
   'cutStairs',
   'sinkShaft',
+  'findSeam',
   'markFell',
   'markStore',
   'hurt',
@@ -107,6 +110,7 @@ export const SYSTEMS: readonly System[] = [
   callingSystem,
   innSystem,
   lordSystem,
+  discoverSystem,
   calendarSystem,
   weatherSystem,
   wildSystem,

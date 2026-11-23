@@ -236,12 +236,22 @@ test('wanting iron plans a shaft the alert shows, and the plan can be sent back 
   const p = panel();
   await more('stock');
   await p.getByTestId('stock-iron-ingot').getByRole('button', { name: 'Some (10)' }).click();
+  // Ores are hidden (V-215): test mode's tool marks the nearest iron seam found, from any tile.
+  await p.getByRole('button', { name: 'Close panel' }).click();
+  const canvas = page.getByTestId('game').locator('canvas');
+  const mid = (await canvas.boundingBox())!;
+  const bar = await page
+    .locator('#hud')
+    .evaluate((e) => parseFloat(e.style.getPropertyValue('--bar-h')));
+  // A tile off to one side of the green, clear of the band.
+  await canvas.click({ position: { x: mid.width / 2 + 120, y: mid.height / 2 + bar / 2 + 120 } });
+  await p.getByRole('button', { name: 'Find an iron seam' }).click();
   // The plan is a notable line, so Skip stops paused on it, before a miner takes it up. Worn tools
-  // plan copper and tin shafts first, so skip until iron's rust stain is in the Alerts sheet
-  // (another alert on the same tick can take the alert line, as it did in CI).
+  // may plan copper and tin shafts first, so skip until iron's is in the Alerts sheet (another
+  // alert on the same tick can take the alert line, as it did in CI).
   const ironPlan = p
     .locator('[data-line]')
-    .filter({ hasText: 'planned a shaft by the rust stain' });
+    .filter({ hasText: 'planned a shaft for iron beside the rust seam' });
   const planned = async () => {
     await page.getByTestId('alert').click();
     return (await ironPlan.count()) > 0;
@@ -249,11 +259,6 @@ test('wanting iron plans a shaft the alert shows, and the plan can be sent back 
   for (let skips = 0; skips < 20 && !(await planned()); skips++) await skipOnce(page);
   await ironPlan.first().getByTestId('alert-show').click();
   // Show centres the tile in the part of the screen below the bar.
-  const canvas = page.getByTestId('game').locator('canvas');
-  const mid = (await canvas.boundingBox())!;
-  const bar = await page
-    .locator('#hud')
-    .evaluate((e) => parseFloat(e.style.getPropertyValue('--bar-h')));
   await canvas.click({ position: { x: mid.width / 2, y: mid.height / 2 + bar / 2 } });
   await expect(p).toContainText('Shaft, planned');
   await expect(p).toContainText('a shaft with a ladder, down to level');

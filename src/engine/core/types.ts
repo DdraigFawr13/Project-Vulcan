@@ -33,6 +33,7 @@ export const STREAMS = [
   'faith',
   'inn',
   'lord',
+  'discover',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 
@@ -183,9 +184,8 @@ export interface MapState {
   worn: Uint8Array;
   /** Built on each surface tile (P3.1): 0, or 1 + a `buildings.parts` index; a stair is a tile kind. */
   built: Uint8Array;
-  /** Surface only: 0, or 1 + the features index of the stained vein below the tile (the
-   * shallowest stained level wins), V-087. */
-  stains: Uint8Array;
+  /** Hidden rock faces (V-215, `faces.ts`): 0, 1, or 1 + the seam's feature; | 128 walked. */
+  faces: Uint8Array;
   /** The levels below, 0 for level 1: null until stairs or a shaft reach one (V-014), so it costs nothing. */
   levels: (LevelState | null)[];
   /** The share of its usual density each of `generator.riches.goods` was drawn at, by good id. */
@@ -211,6 +211,7 @@ export interface Place {
   by: number;
   line: number;
   tick: number;
+  what?: string; // a seam's ore (V-215)
 }
 
 /** One scouting trip (6W Slice 4): the need behind it, where its news centres and how many of the
@@ -233,6 +234,9 @@ export interface Find {
   search?: number;
   /** 1 once the scout has lost the way on this trip (at most once a trip). */
   strayed?: number;
+  ore?: number; // a prospecting trip (V-215): 1, `good` the ore; faces walked; the walk's end
+  faces?: number;
+  along?: number;
 }
 
 /** One level below the surface, the same size as it, made from the seed when first reached. */

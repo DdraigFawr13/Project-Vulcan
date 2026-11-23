@@ -1,14 +1,14 @@
-// 5B Bundle 3 part 2b (V-041, V-132): every seed has a salt seam on level 2 with a white stain on
-// the surface; with a smokehouse, fresh fish in the stores and no salt, the mine plans a shaft by
-// the nearest white stain (citing the smokehouse or the curer), miners dig it, and the salt that
-// reaches a store goes into the next batch the curer makes.
+// 5B Bundle 3 part 2b (V-041, V-132), 6W Slice 7 (V-215): every seed has salt on level 2 that shows
+// as a white seam in some rock face; with a smokehouse, fresh fish in the stores and no salt, the
+// mine plans a shaft beside a found white seam (citing the smokehouse or the curer, and the find),
+// miners dig it, and the salt that reaches a store goes into the next batch the curer makes.
 import { describe, expect, it } from 'vitest';
 import { content as game } from '../../content/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { freeTile, haveOf, inStore, layItem } from '../goods/index.ts';
 import { allLines, createSim, createWorld, itemsOf, step, withoutAccidents } from '../index.ts';
 import { makeLevel } from '../map/underground.ts';
-import { shaftsOf } from './index.ts';
+import { plantSeam, shaftsOf } from './index.ts';
 
 // No pasture, no accidents, no cooking, and a smokehouse that wants more firewood than anyone has
 // (`cure.fuel`, set back to 2 where a test lets the curer work).
@@ -26,14 +26,8 @@ const SALT = content.features.findIndex((f) => f.id === 'salt') + 1;
 const lay = (w: World, kind: string, count: number, x: number, y: number) =>
   layItem(w, { kind, count, x, y, z: 0, made: 1 });
 
-/** Whether a white stain lies within `work.mine.near` tiles of (x, y). */
-function stainedNear(w: World, x: number, y: number): boolean {
-  const near = content.work.mine.near;
-  for (let dy = -near; dy <= near; dy += 1)
-    for (let dx = -near; dx <= near; dx += 1)
-      if (w.map.stains[(y + dy) * w.map.width + x + dx] === SALT) return true;
-  return false;
-}
+const cheb = (ax: number, ay: number, bx: number, by: number) =>
+  Math.max(Math.abs(ax - bx), Math.abs(ay - by));
 
 /** A built larder east of the start and a smokehouse on free ground west of it, with `fish` fresh
  * fish and `wood` firewood in the larder (no wood: nobody can smoke the fish). */
@@ -59,34 +53,41 @@ function withHouse(seed: string, fish: number, wood: number): World {
   });
   lay(w, 'fish', fish, x + 7, y + 1);
   if (wood) lay(w, 'firewood', wood, x + 8, y + 1);
+  // The colony has found a white seam (prospecting is land's prospect.test.ts).
+  plantSeam(w, content, 'salt');
   return w;
 }
 
 describe('the salt seam', () => {
-  it('lies on level 2 with a white stain on the surface, on every seed', () => {
+  it('lies on level 2 and shows as a white seam in some rock face, on every seed', () => {
     expect(SALT).toBeGreaterThan(0);
-    expect(content.features[SALT - 1]!.vein).toMatchObject({ level: 2, stainWord: 'white' });
+    expect(content.features[SALT - 1]!.vein).toMatchObject({ level: 2, seam: 'white' });
     for (const seed of ['anvil', 'smoke', 'tallow', 'ledger-1']) {
       const w = createWorld(sim, seed);
       const { features } = makeLevel(seed, content, w.map, 2);
       expect(features.some((f) => f === SALT)).toBe(true);
-      expect(w.map.stains.some((s) => s === SALT)).toBe(true);
+      expect(
+        w.map.faces.some((v) => v === 1 + SALT),
+        seed,
+      ).toBe(true);
     }
   });
 
-  it('plans a shaft by the nearest white stain when fish is stored, none is salted', () => {
+  it('plans a shaft beside a found white seam when fish is stored, none is salted', () => {
     for (const seed of ['anvil', 'smoke', 'tallow', 'ledger-1']) {
       const w = withHouse(seed, 14, 0);
       step(w, sim, DAY);
       const shafts = shaftsOf(w).filter((s) => s['metal'] === 'salt');
       expect(shafts, seed).toHaveLength(1);
       const shaft = shafts[0]!;
-      expect(stainedNear(w, shaft['x'] as number, shaft['y'] as number)).toBe(true);
+      const seam = w.map.places.find((p) => p.what === 'salt')!;
+      const near = cheb(shaft['x'] as number, shaft['y'] as number, seam.x, seam.y);
+      expect(near).toBeLessThanOrEqual(content.work.mine.near);
       const line = allLines(w).find((e) => e.id === shaft['line'])!;
       expect(line.type).toBe('mine.shaftPlanned');
       expect(line.causes).toContain(1);
       expect(String(line.data['why'])).toMatch(
-        /^Salt is wanted: 14 fresh meat and fish lie in the stores and none is salted\. This is by the nearest white stain past the town ring: \d+ tiles [\w-]+ of the green, on dry, level ground\.$/,
+        /^Salt is wanted: 14 fresh meat and fish lie in the stores and none is salted\. This is beside the white seam found in a rock face: \d+ tiles [\w-]+ of the green, on dry, level ground\.$/,
       );
     }
   });

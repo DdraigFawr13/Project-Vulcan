@@ -5,21 +5,22 @@
 // colony works however far off (`workAreas`); a trip with no word waits `wait` days.
 import { TICKS_PER_DAY, type EntityRow, type Find, type WorldState } from '../core/index.ts';
 import { greenOf } from '../build/index.ts';
-import { haveOf, stockOf, storeOf, wantOf } from '../goods/index.ts';
+import { haveOf, stockOf, wantOf } from '../goods/index.ts';
 import { compass, eachKnown, forgetSeen, inAreas, tellSeen, workAreas } from '../map/index.ts';
 import { canReach, walkAt, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, declineIfUnable, levelOf, outranked, people, priorityLine } from '../band/index.ts';
 import { spotOf, walkTo } from '../band/index.ts';
 import { isDown } from '../health/index.ts';
-import { list } from '../core/index.ts';
 import { personOf } from '../entity/index.ts';
-import { placeKind } from '../map/index.ts';
 import { apart, kitFor, unpack } from './camp.ts';
 import { astray } from './trouble.ts';
-import { BEYOND, lastFound, spotPlaces } from './places.ts';
+import { BEYOND, lastFound, origin, spotPlaces, toldBeyond } from './places.ts';
 import { sourceAt, type Good } from './sources.ts';
+import type { OreNeed } from './seams.ts';
 import { alongWord, spendWord, wordOf } from './word.ts';
+import { alongFaces, betterMiner, faceTarget, oreAsNeed, prospectHome } from './prospect.ts';
+import { setOutProspecting, walkTrip } from './prospect.ts';
 
 /** What the colony is short of: the good, its stock name, and have, known and want. */
 export interface Need {
@@ -28,6 +29,8 @@ export interface Need {
   have: number;
   known: number;
   want: number;
+  /** A prospecting trip's ore (V-215). */
+  ore?: OreNeed;
 }
 
 /** The 16 ways out from the store, as whole steps on a square of 4 (no angles, V-006). */
@@ -35,13 +38,6 @@ const RAYS: readonly (readonly [number, number])[] = [
   [4, 0], [4, 2], [4, 4], [2, 4], [0, 4], [-2, 4], [-4, 4], [-4, 2],
   [-4, 0], [-4, -2], [-4, -4], [-2, -4], [0, -4], [2, -4], [4, -4], [4, -2],
 ]; // prettier-ignore
-
-/** Where the store stands (the green before there is one). */
-function origin(ctx: SystemContext): [number, number] {
-  const first = storeOf(ctx.world)[0];
-  const map = ctx.world.map;
-  return first ? [first['x'] as number, first['y'] as number] : [map.startX, map.startY];
-}
 
 /** The first of `scout.goods` whose stock plus its known sources within reach (and round finds)
  * is under its stock level; kept for the tick, as everyone asks the same question. */
@@ -205,17 +201,25 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
   const last = world.map.finds.at(-1);
   const least = content.terrain.generator.known.least;
   if (last && last.count < least && world.tick - last.tick < def.wait * TICKS_PER_DAY) return false;
-  const need = needOf(ctx) ?? beyond(ctx);
+  const need = needOf(ctx) ?? oreAsNeed(ctx, ...origin(ctx)) ?? beyond(ctx);
   if (!need) return false;
   if (!able(content, p, def.job)) {
     declineIfUnable(ctx, p, def.job);
     return false;
   }
-  if (outranked(ctx, p, def.job, () => true) || others(ctx, p)) return false;
-  const to = frontier(ctx, p, need);
+  // A prospector is the best miner free (V-215); other trips, the restless and hardy first.
+  const first = need.ore ? betterMiner(ctx, p) : others(ctx, p);
+  return !outranked(ctx, p, def.job, () => true) && !first && goOut(ctx, p, need);
+}
+
+/** Sets them out on the trip for `need`, if there is a way to its first spot. */
+function goOut(ctx: SystemContext, p: EntityRow, need: Need): boolean {
+  const { world } = ctx;
+  const def = ctx.content.work.scout;
+  const to = need.ore ? faceTarget(ctx, p, need.ore, ...origin(ctx)) : frontier(ctx, p, need);
   if (!to || !walkTo(ctx, p, to)) return false;
-  const { due, kit } = kitFor(ctx, p);
-  p['took'] = setOut(ctx, p, need, kit);
+  const { due, kit } = kitFor(ctx, p, need.ore ? def.prospect.day : 0);
+  p['took'] = need.ore ? setOutProspecting(ctx, p, need.ore, kit) : setOut(ctx, p, need, kit);
   const trip: Find = {
     ...to,
     good: need.def.good,
@@ -224,6 +228,7 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
     line: p['took'] as number,
     tick: world.tick,
     ...{ due, worry: 0, searcher: 0, search: 0, strayed: 0 },
+    ...(need.ore && { ore: 1, faces: 0, along: 0 }),
   };
   world.map.finds.push(trip);
   const leg = world.tick + def.leg * TICKS_PER_DAY;
@@ -280,17 +285,11 @@ export function scouting(ctx: SystemContext, p: EntityRow): boolean {
   const map = ctx.world.map;
   const trip = map.finds.at(-1);
   if (trip?.count !== -1) return endTrip(p);
+  if (trip.ore) walkTrip(ctx, p, trip);
   if ((p['path'] as number[]).length || astray(ctx, p)) return true;
   const here = spotOf(p);
   const def = ctx.content.work.scout;
-  const leg = ctx.world.tick >= (p['work'] as number);
-  if (p['task'] === 'out') {
-    if (here.z === 0 && apart(here.x, here.y, trip.x, trip.y) > 1 && !leg)
-      if (walkTo(ctx, p, { x: trip.x, y: trip.y, z: 0 })) return true;
-    // They turn here: the news is of the land round where they got to.
-    if (here.z === 0) Object.assign(trip, { x: here.x, y: here.y });
-    Object.assign(p, { task: 'home', work: ctx.world.tick + def.leg * TICKS_PER_DAY });
-  }
+  if (outward(ctx, p, trip)) return true;
   const green = greenOf(ctx.world);
   if (apart(here.x, here.y, green.x, green.y) <= def.home && here.z === 0) {
     comeHome(ctx, p, trip);
@@ -301,6 +300,25 @@ export function scouting(ctx: SystemContext, p: EntityRow): boolean {
   if (home && walkTo(ctx, p, home)) return true;
   lose(ctx, trip);
   return endTrip(p);
+}
+
+/** Out to the far spot, then (a prospector) along the faces; true while still going out. Else they
+ * turn here: the news is of the land round where they got to. */
+function outward(ctx: SystemContext, p: EntityRow, trip: Find): boolean {
+  const here = spotOf(p);
+  const leg = ctx.world.tick >= (p['work'] as number);
+  if (p['task'] === 'out') {
+    if (here.z === 0 && apart(here.x, here.y, trip.x, trip.y) > 1 && !leg)
+      if (walkTo(ctx, p, { x: trip.x, y: trip.y, z: 0 })) return true;
+    // A prospector walks along the faces from here (V-215).
+    p['task'] = trip.ore && !leg && here.z === 0 ? 'along' : 'turn';
+  }
+  if (p['task'] === 'along' && !leg && alongFaces(ctx, p, trip)) return true;
+  if (p['task'] === 'home') return false;
+  if (here.z === 0) Object.assign(trip, { x: here.x, y: here.y });
+  const back = ctx.world.tick + ctx.content.work.scout.leg * TICKS_PER_DAY;
+  Object.assign(p, { task: 'home', work: back });
+  return false;
 }
 
 const endTrip = (p: EntityRow): false => {
@@ -319,6 +337,7 @@ function comeHome(ctx: SystemContext, p: EntityRow, trip: Find): void {
   tellSeen(map);
   // What they came on out there is found as they tell of it (V-206).
   const finds = spotPlaces(ctx, p, trip.line);
+  if (trip.ore) return prospectHome(ctx, p, trip);
   if (!def) return toldBeyond(ctx, p, trip, finds);
   const r = content.terrain.generator.known.place;
   let best: [number, number, number] = [trip.x, trip.y, 0];
@@ -356,25 +375,4 @@ function comeHome(ctx: SystemContext, p: EntityRow, trip: Find): void {
     line,
     tick: world.tick,
   });
-}
-
-/** Home from seeing what lies beyond: one line naming what they found, citing the setting-out. */
-function toldBeyond(ctx: SystemContext, p: EntityRow, trip: Find, finds: number[]): void {
-  const { world, content } = ctx;
-  if (p['packed']) unpack(ctx, p);
-  const [ox, oy] = origin(ctx);
-  const names = world.map.places
-    .filter((pl) => finds.includes(pl.line))
-    .map((pl) => placeKind(content, pl.kind)!.name);
-  const line = ctx.emit('land.beyond', {
-    causes: [trip.line],
-    actors: [p.id],
-    data: {
-      name: p['name'] as string,
-      far: apart(trip.x, trip.y, ox, oy),
-      dir: compass(trip.x - ox, trip.y - oy),
-      found: names.length ? list(names) : 'nothing new',
-    },
-  });
-  Object.assign(trip, { count: 0, line, tick: world.tick });
 }

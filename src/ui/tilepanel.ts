@@ -8,7 +8,7 @@ import type { PanelActions } from './panel.ts';
 import { placeHead, placeTitle } from './placerows.ts';
 import { shaftBack, shaftTitle } from './shaftrows.ts';
 import { testTools } from './testtools.ts';
-import { STAIN_NOTE, standingFacts, standingLines } from './tilerows.ts';
+import { standingFacts, standingLines } from './tilerows.ts';
 import { worksBack, worksDoing } from './worksrows.ts';
 
 /** What the tile rows need from the panel. */
@@ -46,8 +46,6 @@ export function tileRows(
   for (const [key, value] of factsOf(tile, deps.debug))
     facts.append(el('dt', {}, key), el('dd', {}, value));
   const rows = [...placeHead(tile), facts, ...worksDoing(tile, (id) => actions.item(id))];
-  if (tile.stain && !tile.piece && !tile.field && !tile.shaft)
-    rows.push(el('p', { class: 'aside' }, STAIN_NOTE));
   rows.push(...waysOf(tile, actions), ...backsOf(tile, actions));
   if (deps.debug)
     rows.push(...testTools(tile, depth, (kind, arg) => actions.test(tile, kind, arg)));
