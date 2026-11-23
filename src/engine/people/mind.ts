@@ -26,6 +26,7 @@ import { gathering, mendByAFire, practising } from './evening.ts';
 import { feasting, HARD_STOP } from './feast.ts';
 import { holyHours, praying } from '../faith/index.ts';
 import { atTheInn, hungOver } from '../inn/index.ts';
+import { trying } from '../discover/index.ts';
 import { reading, scribing } from '../teach/index.ts';
 import { lateUntil, watching } from '../herding/index.ts';
 import { pilfer } from '../defy/index.ts';
@@ -210,8 +211,10 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   const hours = hour >= day.workFrom && hour < workTo && !armOut(world, content, p.id);
   // A day in the stocks is the working day on the green; working slowly idles a minute in a few.
   if (inStocks(ctx, p, hours)) return;
-  // Hung over (6B), a minute in a few is lost until noon.
-  if (hours && p['doing'] === 'work' && (slacking(ctx, p) || hungOver(ctx, p))) return;
+  // Hung over (6B), a minute in a few is lost until noon; a puzzler under Encouraged New Ways
+  // spends one in `trying` trying (6C, V-218).
+  if (hours && p['doing'] === 'work' && (slacking(ctx, p) || hungOver(ctx, p) || trying(ctx, p)))
+    return;
   if (working(ctx, p, hours)) {
     p['doing'] = 'work';
     return;

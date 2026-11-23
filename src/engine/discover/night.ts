@@ -9,6 +9,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { addHint, wayOf } from './find.ts';
 import { hintsOf, puzzleOf, tradeRow } from './tables.ts';
 import { workLine } from './trade.ts';
+import { waysOf } from './ways.ts';
 
 /** Hours `person` worked at `job` on game day `day`, if the ring still holds it. */
 function hoursOn(ctx: SystemContext, person: number, job: string, day: number): number {
@@ -29,6 +30,7 @@ export function nightHour(ctx: SystemContext): void {
     const m = wayOf(ctx, q);
     const lucky = luck.bynames.includes((bynameOf(world, p.id)?.['word'] as string) ?? '');
     if (
+      waysOf(world, content, p.id).luck &&
       hoursOn(ctx, p.id, m.job, day) >= luck.hours &&
       ctx.rng().int(lucky ? luck.lucky : luck.days) === 0
     ) {

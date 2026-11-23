@@ -13,6 +13,9 @@ export interface MethodDef {
   where: string;
   /** Lines that count as a failure in its trade. */
   failures: readonly string[];
+  /** What a mishap spoils, and whether the work is at a fire. */
+  ruins: readonly string[];
+  hot?: boolean;
 }
 
 export interface HintWords {
@@ -34,7 +37,19 @@ export interface MethodsDef {
   tale: { odds: number; id: string };
   luck: { days: number; lucky: number; bynames: readonly string[]; hours: number };
   dream: { nights: number; days: number };
-  memories: { found: string };
+  memories: { found: string; learned: string; mishap: string };
+  mishap: {
+    hand: number;
+    fire: number;
+    nothing: string;
+    burn: { parts: readonly string[]; severity: string; what: string; at: string };
+    words: { ruined: string; hand: string; fire: string };
+  };
+  spread: {
+    apprentice: number;
+    beside: number;
+    words: { apprentice: string; book: string; beside: string };
+  };
   kinds: Readonly<Record<HintKind, HintWords>>;
   failed: Readonly<Record<string, { words: string; by: 'actor' | 'trade' }>>;
 }

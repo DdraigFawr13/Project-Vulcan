@@ -10,14 +10,13 @@ import { addEntity, alive } from '../entity/index.ts';
 import { skillRow } from '../band/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addHint, wayOf } from './find.ts';
+import { mishap } from './mishap.ts';
+import { waysOf } from './ways.ts';
 import { knowersOf, knows, monthHours, puzzleOf, puzzlesNow, tradeRow } from './tables.ts';
 
 /** The trades some way belongs to. */
 export const tradesOf = (content: EngineContent): Set<string> =>
   new Set(content.methods.methods.map((m) => m.job));
-
-/** Hours at a work hint (Slice 5's pace; the New Ways law changes it later). */
-export const workHours = (ctx: SystemContext): number => ctx.content.methods.work;
 
 /** Zeroes the ring's days since it was last written, up to today. */
 function roll(row: EntityRow, day: number, n: number): void {
@@ -26,6 +25,14 @@ function roll(row: EntityRow, day: number, n: number): void {
   if (day - from >= n) hours.fill(0);
   else for (let d = from + 1; d <= day; d += 1) hours[d % n] = 0;
   row['day'] = day;
+}
+
+/** Whether `person` worked at `job` today. */
+export function workedToday(ctx: SystemContext, person: number, job: string): boolean {
+  const row = tradeRow(ctx.world, person, job);
+  const day = today(ctx.world);
+  const n = ctx.content.methods.start.days;
+  return row?.['day'] === day && ((row['hours'] as number[])[day % n] ?? 0) > 0;
 }
 
 /** The line of `person`'s latest work at `job` (0 for none). */
@@ -61,10 +68,12 @@ export function addHours(
   const puzzle = puzzleOf(world, p.id);
   if (!puzzle || wayOf(ctx, puzzle).job !== job) return;
   puzzle['work'] = (puzzle['work'] as number) + hours;
-  const need = workHours(ctx);
-  while ((puzzle['work'] as number) >= need && !puzzle['ended']) {
-    puzzle['work'] = (puzzle['work'] as number) - need;
-    addHint(ctx, puzzle, 'work', [row['line'] as number]);
+  const ways = waysOf(world, content, p.id);
+  while ((puzzle['work'] as number) >= ways.work && !puzzle['ended']) {
+    puzzle['work'] = (puzzle['work'] as number) - ways.work;
+    const hint = addHint(ctx, puzzle, 'work', [row['line'] as number]);
+    if (!puzzle['ended'] && ways.mishap > 0 && ctx.rng().int(ways.mishap) === 0)
+      mishap(ctx, puzzle, p, hint);
   }
 }
 
@@ -121,7 +130,7 @@ export function startPuzzles(ctx: SystemContext): void {
     });
   }
   for (const p of living.values()) {
-    if (puzzleOf(world, p.id)) continue;
+    if (puzzleOf(world, p.id) || !waysOf(world, content, p.id).start) continue;
     const got = wayFor(ctx, p);
     if (!got) continue;
     const line = ctx.emit('discover.puzzle', {
