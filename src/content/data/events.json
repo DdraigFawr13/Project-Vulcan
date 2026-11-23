@@ -312,6 +312,8 @@
 {"id":"people.broughtAnimal","importance":2,"template":"{names} brought {a} {animal}{fate}."},
 {"id":"people.wantsHome","importance":1,"template":"{names} {want} a home of their own{since}."},
 {"id":"build.homeSited","importance":2,"template":"The colony plans {whose} home, a {size} {dir} of the green: {why}.","stop":"works","notable":{}},
+{"id":"build.homeOutgrown","importance":2,"template":"{whose} home, a {size}, sleeps {sleepers} in room for {room}, and it can take no more rooms: they want a bigger home.","stop":"works","notable":{}},
+{"id":"build.homeLeft","importance":2,"template":"{whose} household moves into their new {size}; the {old} they outgrew is left free for others.","stop":"works","notable":{}},
 {"id":"people.movedHome","importance":2,"template":"{name} moved into {whose} home, a {size}."},
 {"id":"build.hall","importance":3,"template":"The first {size} is now the hall: {name}, the last of the band, moved into {their} own home. Newcomers will sleep here until their homes are up.","stop":"works","notable":{}},
 {"id":"self.role","importance":2,"template":"{name} now sees themselves as {roles}{was}{why}."},

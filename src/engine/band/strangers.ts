@@ -23,6 +23,7 @@ import { addPerson } from './row.ts';
 import { drawSmithing } from './smithing.ts';
 import { stepAlong } from './walk.ts';
 import { decide, namesOf } from './verdict.ts';
+import { famePercent, quietReason, roadOf } from './road.ts';
 import { edgeSpot, toGreen } from './edge.ts';
 import { people, alive } from '../entity/index.ts';
 
@@ -53,11 +54,15 @@ export function oddsOf(ctx: SystemContext) {
   const { food, days } = foodDays(world, content, mouths);
   const step = d.food.find((f) => days >= f.days) ?? d.food.at(-1)!;
   const { beds, floor } = freeBeds(world, content);
-  let pct = (d.base * step.rate) / 100;
+  // Neighbours on record draw `base` by the food to spare; the valley's songs and bynames carry
+  // further, whatever the store holds (road.ts).
+  const fame = famePercent(world, content);
+  const near = neighboursOf(world.seed, content).length ? d.base : 0;
+  let pct = (near * step.rate) / 100 + fame;
   if (!beds && !floor) pct = (pct * d.noBed) / 100;
   pct += d.name * (state['stayed'] ?? 0);
   if (isWinter(world, content)) pct = (pct * d.winter) / 100;
-  return { percent: Math.floor(pct), food, days, mouths, beds, floor };
+  return { percent: Math.floor(pct), food, days, mouths, beds, floor, fame };
 }
 
 const COUNT = ['nobody', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
@@ -68,7 +73,7 @@ function come(ctx: SystemContext, rng: RngStream, near: readonly Neighbour[]): v
   const s = content.strangers;
   const odds = oddsOf(ctx);
   const n = rng.weighted(near.map((h) => [h, Math.max(1, Math.floor(60 / h.days))] as const));
-  const reason = n.reasons.length ? rng.pick(n.reasons) : { kind: 'wander', line: '' };
+  const reason = n.reasons.length ? rng.pick(n.reasons) : quietReason(odds.fame);
   const settled = (world.entities['colony'] ?? [])[0]?.['settled'] as number | undefined;
   const from = [settled || world.begunEvent];
   const record = reason.line
@@ -138,14 +143,17 @@ function drawMonth(ctx: SystemContext): void {
   if (c.hour !== d.hour || c.minute !== 0) return;
   // One at a time: nobody comes while a stranger is on their way or waiting.
   if (strangersOf(world).some((p) => (p['waits'] as number) >= 0)) return;
-  const first = !state['first'];
+  const known = neighboursOf(world.seed, content);
+  // The first stranger's own day is for a valley with neighbours; the road waits for songs.
+  const first = !state['first'] && known.length > 0;
   if (first) {
     const month = content.calendar.monthNames.indexOf(d.first.month);
     if (c.month !== month || c.day !== d.first.day) return;
   } else if (c.day !== 1) return;
-  const near = neighboursOf(world.seed, content);
-  if (!near.length) return;
+  if (!known.length && !famePercent(world, content)) return;
   const rng = ctx.rng();
+  const near = known.length ? known : roadOf(world, content, rng);
+  if (!near.length) return;
   if (!first && rng.int(100) >= oddsOf(ctx).percent) return;
   state['first'] = 1;
   come(ctx, rng, near);
@@ -160,6 +168,7 @@ function arrive(ctx: SystemContext, lead: EntityRow, group: EntityRow[]): void {
     odds.days >= (content.strangers.draw.food[1]?.days ?? 0) ? 'food' : '',
     odds.beds || odds.floor ? 'a bed' : '',
     state['stayed'] ? 'others who stayed' : '',
+    odds.fame ? content.strangers.way.words : '',
   ].filter(Boolean);
   const brings = lead['brings'] as string;
   const kd = content.flock.kinds.find((k) => k.species === brings);
