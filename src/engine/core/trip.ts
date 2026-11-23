@@ -51,7 +51,7 @@ export interface TripDials {
    * ore's `vein.rocks` (best, second, any other); a seam is not spotted within `apart` tiles of
    * one of its ore already found. A prospector walks along faces up to `day` minutes, each next
    * face within `along` tiles; a word of ore along the road pulls them `word` tiles that way. A
-   * walked face is fresh again a year on, or for a miner `better` levels above its walker (V-225). */
+   * walked face is fresh again a year on, or for a miner `better` levels above its walker (V-226). */
   prospect: {
     per: number;
     rocks: readonly number[];

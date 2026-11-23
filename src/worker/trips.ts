@@ -44,7 +44,7 @@ function outWords(w: WorldState, trip: Find): string {
 const daysWord = (days: number): string => (days === 1 ? '1 day' : `${days} days`);
 
 /** "; copper wanted 40 days": each ore wanted with no seam known, and how long (engine land
- * `orewant.ts`, V-225). */
+ * `orewant.ts`, V-226). */
 function wantedWords(w: WorldState): string {
   const since = w.systems['orewant'] ?? {};
   const words = Object.entries(since)

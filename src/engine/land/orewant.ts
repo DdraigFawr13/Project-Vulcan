@@ -1,4 +1,4 @@
-// An ore wanted and not found (6W review, V-225): while a metal (or the cure's salt) is wanted
+// An ore wanted and not found (6W review, V-226): while a metal (or the cure's salt) is wanted
 // and no seam of it is known, the colony keeps the day the want began, and once a season says so
 // in one line ("Another season and still no copper; the tools are stone."), citing the want and
 // the last trip that went for it. The Work sheet's Scouting row reads the day (worker `trips.ts`).
