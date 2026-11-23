@@ -21,7 +21,7 @@ The first dozen methods (content, numbers at Slice 5's mock-up): steel (smith), 
 - **q3 A, the finder, then teaching.** A method is known only by its finder; others learn it as their apprentice or from a book the teacher writes (V-189, V-199); a finder who dies untaught takes it with them (V-141).
 - **q4 A, the lord's forest.** The old woods farthest from the green are the lord's; hunting or felling there is poaching, a defiance some do anyway (the hungry, the defiant); favour falls if the reeve hears; a charter makes it the colony's. One content entry for the forest, one for the charter.
 
-## Slice 1 mock-up answers (2026-11-23, V-215)
+## Slice 1 mock-up answers (2026-11-23, V-216)
 
 Form https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha, every recommendation. Measured on main (valley 1 of each test world): Ogrgul (Horde of Ashaglug, bold), Tarainach (Queendom of Esgairarrig, cautious), Gunnil the Builder (Jarldom of Brandby, bold, aged 10), Yarknak (Lordship of Rustnakpit, greedy); first harvest home day 142 or 143.
 
