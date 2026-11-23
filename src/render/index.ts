@@ -154,7 +154,7 @@ function onScreen(scene: ValleyScene, at: { x: number; y: number }): string {
 }
 
 /** The smoke has no handle on the renderer: this event centres the view on an animal and writes
- * where it stands on screen (canvas px) to `data-animal-at`. */
+ * where it stands on screen (canvas px) to `data-animal-at`, and on the map to `data-animal-map`. */
 function watchAnimalFinder({ game, scene, parent, wild }: Layers): void {
   parent.addEventListener('vulcan:find-animal', (e) => {
     const kind = (e as CustomEvent<string | undefined>).detail;
@@ -164,7 +164,9 @@ function watchAnimalFinder({ game, scene, parent, wild }: Layers): void {
     delete parent.dataset['animalAt'];
     // The camera's view is brought up to date as a frame is drawn.
     game.events.once(Phaser.Core.Events.POST_RENDER, () => {
-      parent.dataset['animalAt'] = onScreen(scene, wild.first(kind) ?? first);
+      const at = wild.first(kind) ?? first;
+      parent.dataset['animalAt'] = onScreen(scene, at);
+      parent.dataset['animalMap'] = `${at.x},${at.y}`;
     });
   });
 }
