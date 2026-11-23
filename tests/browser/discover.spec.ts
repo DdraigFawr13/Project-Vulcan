@@ -29,9 +29,13 @@ test("the Skills tab shows a puzzle's hints with why?, and the Laws sheet the co
   for (let months = 0; months < 6 && !hinted.test(note); months++) {
     await page.getByTestId('jump-open').click();
     await page.getByTestId('jump-month').click();
-    // Paused before and after: the jump line going is the jump's end.
-    await expect(page.getByTestId('jump-line')).toBeHidden({ timeout: 60_000 });
-    await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
+    // Paused before and after. The line is seen first, as in time.spec.ts: checked at once, it
+    // could read hidden before the jump had shown it (CI, PR #212), with the jump still running.
+    await expect(page.getByTestId('jump-line')).toContainText('Jumping to');
+    await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true', {
+      timeout: 60_000,
+    });
+    await expect(page.getByTestId('jump-line')).toBeHidden();
     note = await puzzledNote(page);
     await page.keyboard.press('Escape');
   }
