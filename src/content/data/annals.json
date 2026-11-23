@@ -13,7 +13,8 @@
       { "event": "people.strangerCame", "weight": 3, "many": "{Times} strangers came in to the green: {list}.", "item": "{names} from the {dir}" },
       { "event": "people.strangerStays", "weight": 6, "tally": "came", "per": "actors", "title": "{names} stayed" },
       { "event": "people.cameBack", "weight": 5, "many": "{Count} came back by the roads, over their sickness: {list}.", "item": "{name}" },
-      { "event": "family.left", "weight": 6, "tally": "came", "per": "line", "title": "a child was left in the valley" }
+      { "event": "family.left", "weight": 6, "tally": "came", "per": "line", "title": "a child was left in the valley" },
+      { "event": "lord.named", "weight": 8, "title": "the reeve named {lord} the valley's lord" }
     ] },
     { "id": "lost", "max": 4, "lines": [
       { "event": "health.died", "weight": 10, "tally": "died", "per": "line", "title": "{name} died", "many": "{Count} died: {list}.", "item": "{name}" },
@@ -49,6 +50,8 @@
       { "event": "furniture.benchPlaced", "weight": 2 },
       { "event": "build.sited", "weight": 1, "one": "The colony planned a {size} {dir} of the green.", "many": "The colony planned {count} houses: {list}.", "item": "a {size} {dir} of the green" },
       { "event": "build.homeSited", "weight": 1, "one": "The colony planned {whose} home, a {size} {dir} of the green.", "many": "The colony planned {count} homes: {list}.", "item": "{whose} home" },
+      { "event": "build.homeOutgrown", "weight": 1, "one": "{whose} home grew too small for them.", "many": "{Count} homes grew too small: {list}.", "item": "{whose}" },
+      { "event": "build.homeLeft", "weight": 1, "one": "{whose} household moved into a new {size}.", "many": "{Count} households moved into bigger homes: {list}.", "item": "{whose}" },
       { "event": "build.grows", "weight": 1, "many": "{Count} houses grew too full, and rooms were planned for them: {list}.", "item": "the {size}" },
       { "event": "build.growsPrivate", "weight": 1, "many": "{Count} people wanted a room of their own: {list}.", "item": "{name}" },
       { "event": "build.storeSited", "weight": 1, "one": "The colony set out a {store} {dir} of the green.", "many": "The colony set out {count} stores: {list}.", "item": "a {store} {dir} of the green" },

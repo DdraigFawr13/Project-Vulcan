@@ -19,7 +19,7 @@ import {
 } from '../index.ts';
 import { contextFor } from '../sim/system.ts';
 import { whoseOf } from '../build/index.ts';
-import { hourTogether } from './close.ts';
+import { hourTogether, mayCourt } from './close.ts';
 import { courtingDay } from './court.ts';
 import { drawnTo, drawOrientations } from './drawn.ts';
 
@@ -131,5 +131,33 @@ describe('families: courtship and weddings', () => {
     expect(wed.data['home']).toContain(fam.words.empty.replace('{whose}', qName));
     const owners = ids.map((id) => (w.entities['house'] ?? []).find((h) => h.id === id)!['owner']);
     expect(owners).toEqual([p.id, 0]);
+  });
+  // 6B review q7 (V-214): one widowed mourns `court.mourn` days from the death, then may court.
+  it('a widow courts again once the year of mourning is past', () => {
+    const { w, p, q } = couple('smoke');
+    const late = alive(w).find((x) => x.id !== p.id && x.id !== q.id)!;
+    Object.assign(late, { status: 'dead', partner: p.id });
+    p['partner'] = late.id;
+    const mourn = fam.court.mourn * TICKS_PER_DAY;
+    const body = { person: late.id, blood: 0, down: 1, carrier: 0, healer: 0, finder: 0 };
+    addEntity(w, 'body', {
+      ...body,
+      ...{ found: 0, bed: 0, roll: 0, died: 1, diedAt: w.tick, alerted: 0, missed: 0, away: 0 },
+    });
+    addEntity(w, 'bond', {
+      ...{ a: Math.min(p.id, q.id), b: Math.max(p.id, q.id), close: fam.court.from + 40 },
+      ...{ state: '', since: 0, line: 0, due: 0, expect: 0, last: 0 },
+    });
+    const dead = (w.entities['body'] ?? []).find((b) => b['person'] === late.id)!;
+    dead['diedAt'] = w.tick - mourn + TICKS_PER_DAY * 2;
+    expect(mayCourt(w, sim.content, p, q)).toBe(false);
+    toMorning(w);
+    expect(lines(w, 'family.courting').some((e) => e.actors.includes(p.id))).toBe(false);
+    dead['diedAt'] = w.tick - mourn - 1;
+    expect(mayCourt(w, sim.content, p, q)).toBe(true);
+    toMorning(w);
+    expect(lines(w, 'family.courting').find((e) => e.actors.includes(p.id))?.actors).toEqual(
+      expect.arrayContaining([p.id, q.id]),
+    );
   });
 });

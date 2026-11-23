@@ -12,14 +12,22 @@ import { addEntity, alive, far } from '../entity/index.ts';
 import { drawnTo } from './drawn.ts';
 import { bondOf, bondsOf, unwed } from './tables.ts';
 
-/** Whether `p` still mourns a spouse: their `lost-spouse` memory is fresh (memories.json days). */
-const mourning = (world: WorldState, content: EngineContent, p: EntityRow): boolean =>
-  (world.entities['memory'] ?? []).some(
+/** Whether `p` still mourns a spouse: their `lost-spouse` memory is fresh (memories.json days),
+ * or their late partner died under `court.mourn` days ago (a year, V-214). */
+export function mourning(world: WorldState, content: EngineContent, p: EntityRow): boolean {
+  const body = (world.entities['body'] ?? []).find((b) => b['person'] === p['partner']);
+  if (
+    body?.['died'] &&
+    world.tick < (body['diedAt'] as number) + content.family.court.mourn * TICKS_PER_DAY
+  )
+    return true;
+  return (world.entities['memory'] ?? []).some(
     (m) =>
       m['person'] === p.id &&
       m['memory'] === content.family.memories.spouse &&
       (m['until'] as number) > world.tick,
   );
+}
 
 /** Whether `p` is free to court: unwed, grown and not mourning a spouse. */
 const free = (world: WorldState, content: EngineContent, p: EntityRow): boolean =>

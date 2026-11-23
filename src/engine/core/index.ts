@@ -38,6 +38,7 @@ export * from './worship.ts';
 export * from './teach.ts';
 export * from './callings.ts';
 export * from './tavern.ts';
+export * from './lord.ts';
 export * from './defy.ts';
 export { list, itemName, isName, lower, namesTakeNoThe, pronouns, the } from './words.ts';
 export { clamp, smooth, cheb, dice, roughDistance } from './maths.ts';

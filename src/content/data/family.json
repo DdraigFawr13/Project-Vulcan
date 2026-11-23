@@ -5,7 +5,7 @@
   "like": {"base": 1, "shared": 1, "clash": 2},
   "told": 3,
   "fade": 2,
-  "court": {"from": 50, "days": 28, "part": 20},
+  "court": {"from": 50, "days": 28, "part": 20, "mourn": 336},
   "orientations": [
     {"id": "straight", "name": "Straight", "drawn": "other", "weight": 905, "description": "Drawn to the other sex."},
     {"id": "bisexual", "name": "Bisexual", "drawn": "both", "weight": 52, "description": "Drawn to women and men alike."},

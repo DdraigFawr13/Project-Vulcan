@@ -317,6 +317,8 @@
 {"id":"people.broughtAnimal","importance":2,"template":"{names} brought {a} {animal}{fate}."},
 {"id":"people.wantsHome","importance":1,"template":"{names} {want} a home of their own{since}."},
 {"id":"build.homeSited","importance":2,"template":"The colony plans {whose} home, a {size} {dir} of the green: {why}.","stop":"works","notable":{}},
+{"id":"build.homeOutgrown","importance":2,"template":"{whose} home, a {size}, sleeps {sleepers} in room for {room}, and it can take no more rooms: they want a bigger home.","stop":"works","notable":{}},
+{"id":"build.homeLeft","importance":2,"template":"{whose} household moves into their new {size}; the {old} they outgrew is left free for others.","stop":"works","notable":{}},
 {"id":"people.movedHome","importance":2,"template":"{name} moved into {whose} home, a {size}."},
 {"id":"build.hall","importance":3,"template":"The first {size} is now the hall: {name}, the last of the band, moved into {their} own home. Newcomers will sleep here until their homes are up.","stop":"works","notable":{}},
 {"id":"self.role","importance":2,"template":"{name} now sees themselves as {roles}{was}{why}."},
@@ -395,5 +397,9 @@
 {"id":"tavern.tookUp","importance":1,"template":"{name} took up brewing: {why}."},
 {"id":"tavern.brewed","importance":1,"template":"{name} brewed {from} into a cask of {drink} at {tavern}; it will be ready in {days} days."},
 {"id":"tavern.noGrain","importance":1,"template":"{name} brews nothing at {tavern}: the grain is kept for eating."},
-{"id":"tavern.brawled","importance":3,"template":"{name} had a drink too many at {tavern} and came to blows with {other}.","stop":"quarrel","notable":{}}
+{"id":"tavern.brawled","importance":3,"template":"{name} had a drink too many at {tavern} and came to blows with {other}.","stop":"quarrel","notable":{}},
+{"id":"lord.reeveCame","importance":1,"template":"{reeve}, reeve to {lord}, came up the road from {home} the morning after the harvest home."},
+{"id":"lord.named","importance":3,"template":"{reeve} found {name} and spoke {voice}{words}: the valley is held by the {realm}, and from next harvest home a share of it is owed.","stop":"comings","notable":{}},
+{"id":"lord.counted","importance":2,"template":"{reeve} counted the store with {name} for {lord}: {food} food in store, {days} days' eating for {mouths}. He took nothing this year."},
+{"id":"lord.reeveLeft","importance":1,"template":"{reeve} went back down the road to {home}."}
 ]

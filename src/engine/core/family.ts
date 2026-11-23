@@ -14,7 +14,8 @@ export interface FamilyDef {
   told: number;
   /** Closeness lost each day, per cent. */
   fade: number;
-  court: { from: number; days: number; part: number };
+  /** `mourn`: days one widowed mourns before courting again (V-214). */
+  court: { from: number; days: number; part: number; mourn: number };
   /** Whom a person is drawn to, one drawn per person by `weight`; `woman` is her word for it. */
   orientations: readonly {
     id: string;

@@ -18,8 +18,9 @@ export const FAMILY_SCHEMAS = {
     // Closeness lost each day, per cent.
     fade: num({ min: 0, max: 100 }),
     // At `from` closeness two court; after `days` days courting they wed, unless closeness fell
-    // to `part`. Two court only when each is drawn to the other (`orientations`).
-    court: obj({ from: num({ min: 1 }), days: num({ min: 1 }), part: count }),
+    // to `part`. Two court only when each is drawn to the other (`orientations`). One widowed
+    // mourns `mourn` days from the death before courting again (V-214).
+    court: obj({ from: num({ min: 1 }), days: num({ min: 1 }), part: count, mourn: count }),
     // Whom a person is drawn to, one drawn per person by `weight` (per thousand, after the
     // Gallup 2025 US shares): the `other` sex, the `same`, `both` or `none`. `woman`: her word.
     orientations: list(
