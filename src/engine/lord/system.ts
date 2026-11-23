@@ -4,10 +4,10 @@
 import { TICKS_PER_DAY, TICKS_PER_HOUR, today } from '../core/index.ts';
 import type { EngineContent, EntityRow } from '../core/index.ts';
 import { addEntity, people } from '../entity/index.ts';
-import { nameFrom } from '../band/index.ts';
+import { edgeSpot, nameFrom } from '../band/index.ts';
 import { lordOf, namesOf, type Lord } from '../region/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
-import { reeveMinute, sendReeve } from './reeve.ts';
+import { reeveMinute, sendReeve, soughtOf } from './reeve.ts';
 import { LORD_TABLES, lordRow, reeveRow, titleOf } from './tables.ts';
 
 /** The first harvest-home supper eaten after feast `done` (a supper with no couple and no feast
@@ -49,23 +49,28 @@ function copyLord(ctx: SystemContext, lord: Lord): void {
   });
 }
 
-/** The reeve sets out the morning after a harvest home, once the hour comes. */
+/** The reeve sets out the morning after a harvest home, once the hour comes. A morning missed (a
+ * reeve still in the valley, a save loaded later) or a valley with no way in from the lord's side
+ * loses that visit; the lord is copied only when the reeve can come. */
 function maybeSend(ctx: SystemContext): void {
   const { world, content, state } = ctx;
   const f = nextHarvest(ctx);
-  if (!f || today(world) < (f['on'] as number) + 1) return;
+  const due = f ? (f['on'] as number) + 1 : 0;
+  if (!f || today(world) < due) return;
   const hour = Math.floor((world.tick % TICKS_PER_DAY) / TICKS_PER_HOUR);
   const { arrive, speakBy } = content.lord.reeve;
-  if (hour < arrive || hour >= speakBy) return;
+  if (today(world) === due && (hour < arrive || hour >= speakBy)) return;
   state['done'] = f.id;
-  if (!lordRow(world)) {
-    const lord = lordOf(world.seed, content);
-    if (!lord) {
-      state['none'] = 1;
-      return;
-    }
-    copyLord(ctx, lord);
+  if (today(world) > due) return;
+  const known = lordRow(world);
+  const lord = known ? undefined : lordOf(world.seed, content);
+  if (!known && !lord) {
+    state['none'] = 1;
+    return;
   }
+  const dir = known ? (known['dir'] as string) : lord!.dir;
+  if (!edgeSpot(world, content, dir) || !soughtOf(world)) return;
+  if (lord) copyLord(ctx, lord);
   sendReeve(ctx, f['line'] as number, f['eaten'] as number);
 }
 
