@@ -55,7 +55,16 @@ export function givenName(
   culture: string,
   sex: string,
 ): string {
-  const names = content.cultures.find((c) => c.id === culture)!.names;
+  return nameFrom(rng, content.cultures.find((c) => c.id === culture)!.names, sex);
+}
+
+/** A given name from a people's name lists (`CultureDef['names']`): a whole one of the sex where
+ * the lists hold them, else a start and an end joined. */
+export function nameFrom(
+  rng: RngStream,
+  names: EngineContent['cultures'][number]['names'],
+  sex: string,
+): string {
   const whole = names.givenNames?.[sex];
   if (whole?.length) return rng.pick(whole);
   let name = '';
