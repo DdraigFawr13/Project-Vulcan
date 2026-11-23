@@ -105,5 +105,6 @@
   {"id":"wonder","mood":4,"decayDays":6,"text":"Found something wondrous out in the wild","thoughts":["Who made it, and when? I keep turning it over."]},
   {"id":"unease","mood":-3,"decayDays":5,"text":"Found something uncanny out in the wild","thoughts":["Someone was out there before us. Maybe still is."]},
   {"id":"lord-named","mood":-1,"decayDays":14,"text":"Heard the valley has a lord","thoughts":["We have a lord now, it seems.","A share owed, every harvest home."]},
-  {"id":"lord-bitter","mood":-4,"decayDays":21,"text":"Told a lord not of my people rules us","thoughts":["A lord not of my people, taking our harvest.","Who are they to claim this valley?"]}
+  {"id":"lord-bitter","mood":-4,"decayDays":21,"text":"Told a lord not of my people rules us","thoughts":["A lord not of my people, taking our harvest.","Who are they to claim this valley?"]},
+  {"id":"found-way","mood":10,"decayDays":56,"weight":3,"text":"Found a new way of working","thoughts":["I worked it out at last!","Nobody here knew it before me."]}
 ]

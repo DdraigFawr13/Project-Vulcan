@@ -1,0 +1,12 @@
+# discover
+
+New ways of working, found from hints (6C Slice 5, V-218).
+
+- **Public API:** `index.ts`: `discoverSystem` (hourly, after `lordSystem`, stream `discover`), `puzzleOf(world, person)`, `hintsOf(world, puzzle)`, `knows`, `knowsOf`, `knowersOf` (the living), `methodDef`.
+- **Content:** `methods.json` (schema `schemas-methods.ts`): the twelve `methods` (trade `job`, `skill` and `from`, `hints`, `where`, `failures`), `start`, `work`, `credit`, `failure`, `book`, `seen`, `tale`, `luck`, `dream`, `memories.found`, `kinds` (each hint's words), `failed`; events `discover.*`; memory `found-way`; tale `found-way` and belief `valley-finders`.
+- **Puzzles (`trade.ts`):** hourly, each living person at `work` at a way's trade adds an hour to a 28-day ring (table `trade`); a `credit` line (milling, healing) adds its hours. Daily at midnight someone with no puzzle and `start.hours` in the window at a trade begins on its first way they have the skill for, don't know and no living colonist knows (`discover.puzzle`, citing their work line). One puzzle a person.
+- **Hints:** work, every `work` hours at the trade; failure (`reads.ts`), a line in the way's `failures`, to an actor of it puzzling there, else whoever puzzling there worked the trade most this month, once a person in `failure.days`; seen, a `people.strangerCame` line, 1 in `seen.odds` each puzzler, at most `seen.most` a way; book, a `skill.read` of the puzzle's skill, once in `book.days`; tale, a newly held `found-way` tale of another's find in the same trade, 1 in `tale.odds`; luck (`night.ts`), at midnight after `luck.hours` at the trade that day, 1 in `luck.days` (`luck.lucky` with a byname in `luck.bynames`); dream, the last hint, 1 in `dream.nights` once `dream.days` passed since the last. Each is `discover.hint` citing its source and the puzzle's line.
+- **The find (`find.ts`):** at the last hint, `discover.found` cites every hint and lists their words; a `knows` row, the `found-way` memory, the tale (and so maybe a byname); every other puzzle on that way ends with `discover.beaten`.
+- **State owned:** tables `trade`, `puzzle`, `hint`, `knows`; state `seen` (ledger) and `tales` (tale rows read).
+- **Invariants:** no lever names a puzzler (V-041): the Work sheet's priorities decide who works a trade. Reads people rows, skills, bynames, tales and the ledger; writes its tables and memories.
+- **Tests:** `discover.test.ts` (a smith finds steel with a line citing each hint; a lucky night's line; no puzzle over a way a living colonist knows).
