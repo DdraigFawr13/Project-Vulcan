@@ -6,7 +6,7 @@ A short phase after 6W and before magic (Phase 7): a liege lord who takes a tith
 
 - [x] Design form answered, 2026-11-20 (V-210)
 - [x] Spec form answered, 2026-11-23, every recommendation (V-211)
-- [x] Slice 1, the lord and the reeve (engine). Mock-up answered 2026-11-23, every recommendation (V-216, https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha); built 2026-11-23 (V-217)
+- [x] Slice 1, the lord and the reeve (engine). Mock-up answered 2026-11-23, every recommendation (V-216, https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha); built 2026-11-23 (V-217); the reeve no longer waits on the supper being eaten (V-219)
 - [ ] Slice 2, the tithe, the Lord law and favour (engine)
 - [ ] Slice 3, asks (engine)
 - [ ] Slice 4, the lord and asks on screen (screens)

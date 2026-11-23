@@ -10,15 +10,11 @@ import type { System, SystemContext } from '../sim/index.ts';
 import { reeveMinute, sendReeve, soughtOf } from './reeve.ts';
 import { LORD_TABLES, lordRow, reeveRow, titleOf } from './tables.ts';
 
-/** The first harvest-home supper eaten after feast `done` (a supper with no couple and no feast
- * day), if any. */
+/** The first harvest-home supper called after feast `done` (a supper with no couple and no feast
+ * day), eaten or not (V-219): the reeve comes for the harvest, not the supper. */
 function nextHarvest(ctx: SystemContext): EntityRow | undefined {
   return (ctx.world.entities['feast'] ?? []).find(
-    (f) =>
-      f.id > (ctx.state['done'] ?? 0) &&
-      f['eaten'] &&
-      !(f['couple'] as number[]).length &&
-      !f['holy'],
+    (f) => f.id > (ctx.state['done'] ?? 0) && !(f['couple'] as number[]).length && !f['holy'],
   );
 }
 
@@ -49,7 +45,7 @@ function copyLord(ctx: SystemContext, lord: Lord): void {
   });
 }
 
-/** The reeve sets out the morning after a harvest home, once the hour comes. A morning missed (a
+/** The reeve sets out the morning after a harvest home's supper day, once the hour comes. A morning missed (a
  * reeve still in the valley, a save loaded later) or a valley with no way in from the lord's side
  * loses that visit; the lord is copied only when the reeve can come. */
 function maybeSend(ctx: SystemContext): void {
@@ -71,7 +67,10 @@ function maybeSend(ctx: SystemContext): void {
   const dir = known ? (known['dir'] as string) : lord!.dir;
   if (!edgeSpot(world, content, dir) || !soughtOf(world)) return;
   if (lord) copyLord(ctx, lord);
-  sendReeve(ctx, f['line'] as number, f['eaten'] as number);
+  sendReeve(
+    ctx,
+    [f['line'] as number, f['eaten'] as number].filter((n) => n > 0),
+  );
 }
 
 export const lordSystem: System = {
