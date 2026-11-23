@@ -54,3 +54,17 @@ Form https://claude.ai/artifact/REXNtmdRPMMK3vJr8pGBha, every recommendation. Me
 - **Visits:** every harvest home from the first, the morning after; he counts the store in a line and takes nothing until Slice 2.
 - **Stay:** morning till dark; he finds the elder (else whoever is nearest the hall), speaks and leaves.
 - **Build notes:** skip a realm with `fell`; a plain seed has no lord (test with a valley seed); no test valley has a pious, cruel or learned lord, so temper tests make one in the test.
+
+## Slice 2 mock-up answers (2026-11-23, V-222)
+
+Form https://claude.ai/artifact/91We7kCTAGYGzkkTaCU8DD, every recommendation. Measured on main (five years on anvil/1, smoke/1, ledger-1/1, four on tallow/1, no tithe): three of four valleys went hungry in some year; a tenth came to 23 to 40 days' eating (estimate, 4 food a person a day).
+
+- **Size and goods:** a tenth of all brought in since the reeve's last visit (each harvest less seed kept, fleece and wool, ingots, iron things); 15 in 100 for greedy or cruel; flax, logs and stone untithed.
+- **The barn:** each harvest's share is hauled to the tithe barn as it comes in; the store cannot eat it; the reeve counts the barn.
+- **Lord law:** starts Loyal at the first visit, answered by everyone then (not a custom); Grudging pays half; Defiant nothing.
+- **Hiding:** at defiance's take step, or hungry while the store will not last, a colonist takes from the barn and hides it at home; under Defiant one who wants the lord paid carries their share. Missing goods are short; one visit in three the reeve searches, and a stash found is a line naming what and whose house.
+- **Favour:** start 50; full tithe +6, each tenth short −1, Defiant −10, unpaid fine −10, stash found −8, seen poaching told −4; each cause lasts three years. Ladder: 35 tithe raised by half, 20 a fine (one more tithe), 10 the lord's men (V-211); 70 a tithe-free year, 85 the lord's forest. Paying alone peaks near 68, so charters also need asks (Slice 3). The market right waits for trade.
+- **Lean year:** the store will not last to the harvest: cautious, pious and learned lords take half and say so, bold, greedy and cruel all; either way a standing cause and a memory against the Lord law for each grown-up.
+- **Forest:** in this slice; woodcutters and hunters keep out unless hungry or set against the Lord law; someone Loyal who sees a poacher tells the reeve (−4, a line naming the deed).
+- **Estimated paths (five years):** Defiant meets the lord's men in year 5 on two valleys; Grudging is raised from year 4; Loyal stays 46 to 68. Source and runs: /mnt/project-files/vulcan/p6c-s2-mockup/.
+
