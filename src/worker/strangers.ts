@@ -192,6 +192,18 @@ export function homeOf(world: WorldState, p: EntityRow): WalkerView['home'] {
   };
 }
 
+/** ", but Domnall and Aelfgifu's home is too small for them", for each home outgrown (V-214). */
+function outgrownWords(world: WorldState): string {
+  const homes = (world.entities['house'] ?? []).filter((h) => h['outgrown'] && h['owner']);
+  if (!homes.length) return '';
+  const whose = homes.map((h) => whoseOf(world, householdHeads(world, h['owner'] as number)));
+  return `, but ${list(whose)} ${homes.length > 1 ? 'homes are' : 'home is'} too small for them`;
+}
+
+/** The grown heads of a household: the owner and their partner. */
+const householdHeads = (world: WorldState, owner: number): number[] =>
+  householdOf(world, owner).filter((id) => !personOf(world, id)?.['household']);
+
 /** The Build sheet's homes: who wants one, who has theirs, who comes next, and the want's rule. */
 export function homesRow(
   world: WorldState,
@@ -204,7 +216,7 @@ export function homesRow(
   const n = queue.reduce((k, g) => k + g.length, 0);
   const need = queue.length
     ? `homes of their own for ${n}: ${names(queue)}.${housed.length ? ` ${list(housed.map((p) => p['name'] as string))} ${housed.length > 1 ? 'have theirs' : 'has one'}.` : ''}`
-    : 'everyone has a home of their own.';
+    : `everyone has a home of their own${outgrownWords(world)}.`;
   const unplanned = queue.filter((g) => !homeFor(world, g[0]!.id));
   const homes = unplanned.map(
     (g) =>

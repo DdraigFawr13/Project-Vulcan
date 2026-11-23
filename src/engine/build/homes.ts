@@ -10,9 +10,11 @@ import { pronouns, TICKS_PER_DAY, type EntityRow, type WorldState } from '../cor
 import type { Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { homeFor, householdOf, sleepsIn } from './beds.ts';
-import { dirFrom, placeHouse, sizeOf, wantOf } from './houses.ts';
+import { bedsOf, dirFrom, placeHouse, sizeOf, wantOf } from './houses.ts';
 import { chooseHouse, housesOf } from './site.ts';
 import { alive } from '../entity/index.ts';
+import { growHomes, leaveOutgrown, outgrownHome } from './outgrown.ts';
+import { widenRing } from './ring.ts';
 
 const list = (items: readonly string[]): string =>
   items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
@@ -62,29 +64,70 @@ function sayWants(ctx: SystemContext): void {
   }
 }
 
+/** Whose home comes next: whoever has waited longest, a couple first that day; then a household
+ * that outgrew its home (outgrown.ts), with that home. */
+function nextHousehold(world: WorldState): { p: EntityRow; old?: EntityRow } | undefined {
+  const waiting = alive(world).filter((p) => p['wants'] && !homeFor(world, p.id));
+  const day = (p: EntityRow) => Math.floor((p['wantsFrom'] as number) / TICKS_PER_DAY);
+  const size = (p: EntityRow) => householdOf(world, p.id).length;
+  const first = [...waiting].sort((a, b) => day(a) - day(b) || size(b) - size(a) || a.id - b.id)[0];
+  if (first) return { p: first };
+  const old = outgrownHome(world);
+  const p = old && alive(world).find((q) => q.id === old['owner']);
+  return p && { p, old };
+}
+
+/** Ground for a home of `n`, for a household leaving home `old` one that sleeps more than it
+ * did (so a home is outgrown at most once a size); with no ground within the ring it widens
+ * (P4.7), as for a house, and the colony looks again. */
+function siteHome(
+  ctx: SystemContext,
+  green: Spot,
+  n: number,
+  cause: number,
+  work?: Spot,
+  old?: EntityRow,
+) {
+  const { world, content } = ctx;
+  const room = old ? bedsOf(world, content, old).room : 0;
+  const sizes = content.buildings.house.sizes.filter((s) => s.sleeps > room);
+  if (!sizes.length) return undefined;
+  const only = { sizes };
+  const pick = chooseHouse(world, content, green, n, work, only);
+  if (pick || !cause || !widenRing(ctx, cause)) return pick;
+  return chooseHouse(world, content, green, n, work, only);
+}
+
 /** One home planned at a time, for the household that has waited longest. */
 function planHome(ctx: SystemContext, green: Spot): void {
   const { world, content, state } = ctx;
   if (housesOf(world).some((h) => h['owner'] && h['state'] === 'plan')) return;
   // The band's first house comes first.
   if (!housesOf(world).some((h) => !h['of'] && h['state'] === 'built')) return;
-  const waiting = alive(world).filter((p) => p['wants'] && !homeFor(world, p.id));
-  if (!waiting.length) return;
+  const next = nextHousehold(world);
+  if (!next) return;
   if (world.tick < (state['homeTried'] ?? 0) + TICKS_PER_DAY && state['homeTried']) return;
-  const day = (p: EntityRow) => Math.floor((p['wantsFrom'] as number) / TICKS_PER_DAY);
-  const size = (p: EntityRow) => householdOf(world, p.id).length;
-  const p = [...waiting].sort((a, b) => day(a) - day(b) || size(b) - size(a) || a.id - b.id)[0]!;
+  const { p, old } = next;
   const ids = householdOf(world, p.id);
   const table = content.strangers.home.work[p['trade'] as string];
   const work = workOf(world, table);
-  const pick = chooseHouse(world, content, green, ids.length, work);
+  const pick = siteHome(
+    ctx,
+    green,
+    ids.length,
+    (old ? old['outgrown'] : p['wants']) as number,
+    work,
+    old,
+  );
   if (!pick) {
     state['homeTried'] = world.tick;
     return;
   }
   state['homeTried'] = 0;
   const want = wantOf(world, content);
-  const wants = [...new Set(ids.map((id) => alive(world).find((q) => q.id === id)!['wants']))];
+  const wants = old
+    ? [old['outgrown']]
+    : [...new Set(ids.map((id) => alive(world).find((q) => q.id === id)!['wants']))];
   const lean = work ? `, toward the ${table === 'field' ? 'fields' : table} where they work` : '';
   const line = ctx.emit('build.homeSited', {
     causes: [...(wants as number[]), ...(want.line ? [want.line] : [])],
@@ -129,9 +172,11 @@ function becomeHall(ctx: SystemContext): void {
   });
 }
 
-/** Each hour: wants said, a home planned, the hall opened. */
+/** Each hour: wants said, a home grown or outgrown and left, a home planned, the hall opened. */
 export function planHomes(ctx: SystemContext, green: Spot): void {
   sayWants(ctx);
+  growHomes(ctx, green);
+  leaveOutgrown(ctx);
   planHome(ctx, green);
   becomeHall(ctx);
 }

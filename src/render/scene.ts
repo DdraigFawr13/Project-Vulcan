@@ -11,7 +11,8 @@ import { storeChunk, type LevelArrays } from './chunk-store.ts';
 import { frameIndex, groundFrame, TILE, variantOf } from './frames.ts';
 import { BUILDINGS, ITEMS, PEOPLE, WILD } from './sheets.ts';
 import type { Spot } from './finder.ts';
-import { HoverMark } from './hover.ts';
+import { Backdrop, FADE } from './fade.ts';
+import { HoverMark, tileUnder } from './hover.ts';
 import { Overview } from './overview.ts';
 import { readColours } from './overview-colours.ts';
 import { StainLayer } from './stains.ts';
@@ -64,6 +65,7 @@ export class ValleyScene extends Phaser.Scene {
   /** Per feature: whether it is an ore vein. */
   private veins: boolean[] = [];
   private stains?: StainLayer;
+  private backdrop?: Backdrop;
   /** Per terrain kind: 0 dry, 1 shallow water, 2 deep water. */
   private kindWater: number[] = [];
   /** Per terrain kind: the nature-sheet marker drawn over it (a spring's), else -1. */
@@ -100,23 +102,26 @@ export class ValleyScene extends Phaser.Scene {
   }
 
   create(): void {
+    const ground = (name: string) => groundFrame(this.textures, GROUND_SHEETS, name);
+    const nature = (art: string) => frameIndex(this.textures, NATURE, `${art}.1`);
     this.frames = content.terrain.kinds.map((kind) =>
-      Array.from({ length: kind.variants }, (_, v) => this.groundFrame(`${kind.art}.${v + 1}`)),
+      Array.from({ length: kind.variants }, (_, v) => ground(`${kind.art}.${v + 1}`)),
     );
-    this.snowFrame = this.groundFrame(`${content.terrain.generator.rock.snowArt}.1`);
+    this.snowFrame = ground(`${content.terrain.generator.rock.snowArt}.1`);
     const { fogArt, fogVein } = content.terrain.generator.underground;
-    this.dark = this.groundFrame(`${fogArt}.1`);
+    this.dark = ground(`${fogArt}.1`);
     this.glint = fogVein;
     this.veins = content.features.map((f) => f.kind === 'vein');
     this.stains = new StainLayer(this);
+    this.backdrop = new Backdrop(this);
     this.window.layers.push(this.stains);
-    this.iceFrame = this.groundFrame('tile.ice.1');
-    this.featureFrames = content.features.map((f) => this.frameIndex(NATURE, `${f.art}.1`));
+    this.iceFrame = ground('tile.ice.1');
+    this.featureFrames = content.features.map((f) => nature(f.art));
     const { kinds } = content.terrain;
     this.kindWater = kinds.map((k) => (k.water === 'deep' ? 2 : k.water ? 1 : 0));
-    this.markers = kinds.map((k) => (k.marker ? this.frameIndex(NATURE, `${k.marker}.1`) : -1));
+    this.markers = kinds.map((k) => (k.marker ? nature(k.marker) : -1));
     const shallow = kinds.find((k) => k.id === content.terrain.generator.water.shallow)!;
-    this.shallowFrame = this.groundFrame(`${shallow.art}.1`);
+    this.shallowFrame = ground(`${shallow.art}.1`);
     this.hover.create(this, SHEET);
     this.marked = this.add
       .image(0, 0, SHEET, 'overlay.designate')
@@ -135,7 +140,7 @@ export class ValleyScene extends Phaser.Scene {
         const at = p.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
         return this.controls?.glideIn(at.x, at.y);
       }
-      const tile = this.ground.length ? this.tileAt(p) : undefined;
+      const tile = this.ground.length ? tileUnder(p, this.cameras.main, this.size) : undefined;
       if (tile) this.onSelect(tile);
     });
     this.overview = new Overview(this, readColours(this.textures, GROUND_SHEETS, NATURE), () =>
@@ -164,6 +169,7 @@ export class ValleyScene extends Phaser.Scene {
     this.z = 0;
     this.show();
     this.stains?.set(new Uint8Array(0), width);
+    this.backdrop?.setMapSize(width, height);
     this.overview?.setMapSize(width, height);
     this.overview?.setLevel(0);
     this.window.reset();
@@ -206,6 +212,7 @@ export class ValleyScene extends Phaser.Scene {
   private showTiles(on: boolean): void {
     this.tiles?.setShown(on);
     this.overview?.show(!on);
+    this.backdrop?.show(on && this.z === 0);
     this.hover.show(undefined);
     this.marked?.setAlpha(on ? 1 : 0);
   }
@@ -216,6 +223,7 @@ export class ValleyScene extends Phaser.Scene {
     this.show();
     this.stains?.setLevel(z);
     this.overview?.setLevel(z);
+    this.backdrop?.show(z === 0 && !this.window.far);
     if (!this.tiles?.ready) return;
     const a = this.window.area;
     if (this.ground.length) this.paint(a.x, a.y, a.w, a.h);
@@ -263,13 +271,6 @@ export class ValleyScene extends Phaser.Scene {
     this.marked?.setVisible(!!tile).setPosition((tile?.x ?? 0) * TILE, (tile?.y ?? 0) * TILE);
   }
 
-  private tileAt(pointer: Phaser.Input.Pointer): { x: number; y: number } | undefined {
-    const world = pointer.positionToCamera(this.cameras.main) as Phaser.Math.Vector2;
-    const x = Math.floor(world.x / TILE);
-    const y = Math.floor(world.y / TILE);
-    return x >= 0 && y >= 0 && x < this.size.width && y < this.size.height ? { x, y } : undefined;
-  }
-
   private buildMap(): void {
     if (this.tiles) return;
     // Plain layers, not Phaser's GPU layer: the GPU layer's shader reads tile indices back from a
@@ -304,8 +305,9 @@ export class ValleyScene extends Phaser.Scene {
     const w = Math.min(width, clip.x + clip.w) - x;
     const h = Math.min(height, clip.y + clip.h) - y;
     if (w <= 0 || h <= 0) return;
-    // Unknown ground is black, so it shows no water either.
-    const water = (i: number): number => (this.known[i] ? this.kindWater[this.ground[i]!]! : 0);
+    // Unknown ground below is black, so it shows no water either; unseen surface shows it faded.
+    const surface = this.z === 0;
+    const water = (i: number) => (this.known[i] || surface ? this.kindWater[this.ground[i]!]! : 0);
     const rows: number[][] = [];
     const over: number[][] = [];
     const things: number[][] = [];
@@ -315,7 +317,7 @@ export class ValleyScene extends Phaser.Scene {
       const on: number[] = [];
       for (let col = x; col < x + w; col += 1) {
         const i = row * width + col;
-        const dark = !this.known[i];
+        const dark = !surface && !this.known[i];
         const picture = waterPicture(col, row, width, height, water);
         // Frozen water shows the same shapes in ice (tools/draw-ice.mjs).
         const frozen = this.ice[i] === 1;
@@ -338,7 +340,7 @@ export class ValleyScene extends Phaser.Scene {
         }
         // In the dark only veins show, glinting through.
         const feature = dark && !this.veins[this.things[i]! - 1] ? 0 : this.things[i]!;
-        const marker = dark ? -1 : this.markers[this.ground[i]!]!;
+        const marker = this.known[i] ? this.markers[this.ground[i]!]! : -1;
         on.push(
           feature > 0
             ? this.natureGid + this.featureFrames[feature - 1]!
@@ -355,13 +357,16 @@ export class ValleyScene extends Phaser.Scene {
     tiles.putRows(WATER, over, x, y);
     tiles.putRows(FEATURES, things, x, y);
     for (let row = y; row < y + h; row += 1)
-      for (let col = x; col < x + w; col += 1)
-        tiles.tile(FEATURES, col, row)?.setAlpha(this.known[row * width + col] ? 1 : this.glint);
+      for (let col = x; col < x + w; col += 1) {
+        const known = this.known[row * width + col];
+        if (!surface) tiles.tile(FEATURES, col, row)?.setAlpha(known ? 1 : this.glint);
+        else for (const k of [GROUND, WATER]) tiles.tile(k, col, row)?.setAlpha(known ? 1 : FADE);
+      }
   }
 
   /** Tile `i`'s own picture, its variant picked by where it is drawn (at col, row). */
   private pictureOf(i: number, col: number, row: number): number {
-    if (!this.known[i]) return this.dark;
+    if (!this.known[i] && this.z > 0) return this.dark;
     if (this.snow[i]) return this.snowFrame;
     const kind = this.ground[i]!;
     const pictures = this.frames[kind];
@@ -372,29 +377,21 @@ export class ValleyScene extends Phaser.Scene {
   private waterFrame(name: string): number {
     let index = this.waterFrames.get(name);
     if (index === undefined) {
-      index = this.groundFrame(name);
+      index = groundFrame(this.textures, GROUND_SHEETS, name);
       this.waterFrames.set(name, index);
     }
     return index;
   }
 
-  private frameIndex(sheet: string, name: string): number {
-    return frameIndex(this.textures, sheet, name);
-  }
-
-  private groundFrame(name: string): number {
-    return groundFrame(this.textures, GROUND_SHEETS, name);
-  }
-
   private hoverAt(pointer: Phaser.Input.Pointer | undefined): void {
     if (!this.tiles) return;
     const far = !pointer || this.controls?.dragging || this.window.far;
-    const tile = !far && this.ground.length ? this.tileAt(pointer) : undefined;
+    const tile =
+      !far && this.ground.length ? tileUnder(pointer, this.cameras.main, this.size) : undefined;
     const at = tile ? tile.y * this.size.width + tile.x : 0;
     const kind = tile && content.terrain.kinds[this.ground[at]!];
-    // Unknown ground below is not named (V-030).
-    this.hover.show(
-      tile && kind ? { ...tile, ground: this.known[at] ? kind.name : 'unknown' } : undefined,
-    );
+    // Unknown ground below is not named (V-030), nor unseen surface (V-213).
+    const name = this.known[at] ? kind?.name : this.z ? 'unknown' : 'not yet seen';
+    this.hover.show(tile && kind && name ? { ...tile, ground: name } : undefined);
   }
 }

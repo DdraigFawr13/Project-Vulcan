@@ -33,3 +33,15 @@ export class HoverMark {
     this.onHover(hover);
   }
 }
+
+/** The map tile under `pointer` in a map `size` tiles, or undefined off the map. */
+export function tileUnder(
+  pointer: Phaser.Input.Pointer,
+  camera: Phaser.Cameras.Scene2D.Camera,
+  size: { width: number; height: number },
+): { x: number; y: number } | undefined {
+  const world = pointer.positionToCamera(camera) as Phaser.Math.Vector2;
+  const x = Math.floor(world.x / TILE);
+  const y = Math.floor(world.y / TILE);
+  return x >= 0 && y >= 0 && x < size.width && y < size.height ? { x, y } : undefined;
+}

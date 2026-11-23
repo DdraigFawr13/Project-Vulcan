@@ -25,7 +25,13 @@ export const STRANGERS_SCHEMAS = {
       eat: num({ min: 1 }),
       hour: num({ min: 0, max: 23 }),
       first: obj({ month: text, day: num({ min: 1 }) }),
+      // The valley's name abroad (road.ts, V-214): percent a song made here and a living byname
+      // holder add to the draw, to at most `most`.
+      fame: obj({ song: percent, byname: percent, most: percent }),
     }),
+    // `way`: with no neighbours on record, a stranger comes by the road from a place of the founders'
+    // people `days` (lowest, highest) away, of site `kind`; `words` name the songs in their line.
+    way: obj({ days: range(), kind: text, words: text }),
     // Percents: a stranger comes as a couple, and brings one of `animals` (flock species).
     couple: percent,
     animal: percent,

@@ -73,27 +73,39 @@ export function chunkTiles(
     for (let col = 0; col < w; col += 1) {
       const from = (y + row) * map.width + x + col;
       tiles[row * w + col] = layer.tiles[from]!;
-      features[row * w + col] = layer.features[from]!;
       if (z === 0) snow[row * w + col] = map.snow[from]!;
       if (z === 0) ice[row * w + col] = map.ice[from]! >> 7;
       if (z === 0) snowLie[row * w + col] = map.snowLie[from]!;
-      if (z === 0 && map.printKind[from]) {
-        printKind[row * w + col] = map.printKind[from]!;
-        printAge[row * w + col] = Math.max(
-          0,
-          Math.min(255, Math.floor((tick - map.printAt[from]!) / 60)),
-        );
-        printDir[row * w + col] = map.printDir[from]!;
+      // Unseen surface (6W Slice 6, V-213) goes out as the lie of the land and its weather only:
+      // what grows, lies or walked there is news once someone sees it; a scout's sightings (2)
+      // count when they are home.
+      const seen = z > 0 || map.known[from] === 1;
+      known[row * w + col] = z === 0 ? (seen ? 1 : 0) : (layer as LevelState).known[from]!;
+      if (!seen) continue;
+      features[row * w + col] = layer.features[from]!;
+      if (z === 0) {
+        const to = row * w + col;
+        [worn[to], built[to], stains[to]] = [map.worn[from]!, map.built[from]!, map.stains[from]!];
+        if (map.printKind[from]) printTo(map, from, tick, to, { printKind, printAge, printDir });
       }
-      if (z === 0) worn[row * w + col] = map.worn[from]!;
-      if (z === 0) built[row * w + col] = map.built[from]!;
-      if (z === 0) stains[row * w + col] = map.stains[from]!;
-      known[row * w + col] = z === 0 ? 1 : (layer as LevelState).known[from]!;
     }
   return {
     ...{ x, y, z, w, h, tiles, features, snow, ice, snowLie },
     ...{ printKind, printAge, printDir, worn, built, known, stains },
   };
+}
+
+/** Copies surface tile `from`'s print to chunk index `to`, its age in hours at `tick`. */
+function printTo(
+  map: MapState,
+  from: number,
+  tick: number,
+  to: number,
+  out: { printKind: Uint8Array; printAge: Uint8Array; printDir: Uint8Array },
+): void {
+  out.printKind[to] = map.printKind[from]!;
+  out.printAge[to] = Math.max(0, Math.min(255, Math.floor((tick - map.printAt[from]!) / 60)));
+  out.printDir[to] = map.printDir[from]!;
 }
 
 /**

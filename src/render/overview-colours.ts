@@ -6,6 +6,7 @@
 import type Phaser from 'phaser';
 import { content } from '../content/index.ts';
 import type { LevelArrays } from './chunk-store.ts';
+import { FADE, pageHex } from './fade.ts';
 import { BUILDINGS } from './sheets.ts';
 
 /** Red, green, blue and alpha, 0 to 255. */
@@ -31,12 +32,22 @@ export interface Colours {
   snow: Rgba;
   lying: Paint;
   ice: Rgba;
+  /** The page colour unseen surface fades to (6W Slice 6). */
+  page: Rgba;
   /** A field frame's colour, or undefined if the sheet lacks it. */
   field(frame: string): Rgba | undefined;
 }
 
 const BLACK: Rgba = [0, 0, 0, 255];
 const NONE: Paint = { rgb: BLACK, cover: 0 };
+
+/** A `#rrggbb` colour as red, green, blue and alpha. */
+export const rgbOf = (hex: string): Rgba => [
+  parseInt(hex.slice(1, 3), 16),
+  parseInt(hex.slice(3, 5), 16),
+  parseInt(hex.slice(5, 7), 16),
+  255,
+];
 
 /** `top` laid over `base` at `share`. */
 export const mix = (base: Rgba, top: Rgba, share: number): Rgba => [
@@ -46,10 +57,22 @@ export const mix = (base: Rgba, top: Rgba, share: number): Rgba => [
   255,
 ];
 
-/** Tile `i`'s colour on the overview of `level`. */
-export function overColour(c: Colours, level: LevelArrays, i: number): Rgba {
+/** Unseen surface tile `i`: its ground (or ice, or snow-capped rock) faded into the page. */
+function faded(c: Colours, level: LevelArrays, i: number): Rgba {
+  const ground = level.ice[i]
+    ? c.ice
+    : level.snow[i]
+      ? c.snow
+      : (c.kinds[level.ground[i]!] ?? BLACK);
+  return mix(c.page, ground, FADE);
+}
+
+/** Tile `i`'s colour on the overview of `level`; unseen `surface` is its ground faded into the
+ * page, as the tiles draw it (fade.ts), with nothing on it. */
+export function overColour(c: Colours, level: LevelArrays, i: number, surface = false): Rgba {
   const thing = level.things[i]!;
   const feature = thing ? c.features[thing - 1] : undefined;
+  if (!level.known[i] && surface) return faded(c, level, i);
   if (!level.known[i]) {
     const vein = feature && c.veins[thing - 1];
     return vein ? mix(BLACK, feature.rgb, feature.cover * c.glint) : BLACK;
@@ -98,6 +121,7 @@ export function readColours(
     snow: solid(groundPaint(`${content.terrain.generator.rock.snowArt}.1`)),
     lying: groundPaint('tile.snow.1'),
     ice: solid(groundPaint('tile.ice.1')),
+    page: rgbOf(pageHex()),
     field(frame) {
       if (!fields.has(frame))
         fields.set(frame, built?.has(frame) ? solid(reader.paint(BUILDINGS, frame)) : undefined);

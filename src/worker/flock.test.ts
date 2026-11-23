@@ -23,7 +23,9 @@ import { animalPage, leftoversView } from './wild.ts';
 const sim = createSim(content);
 // One anvil/1 world per file (~0.3 s each to make); every test works on its own clone (~5 ms).
 let base: WorldState | undefined;
-const fresh = () => structuredClone((base ??= createWorld(sim, 'anvil/1')));
+// Pages of seen ground: unseen surface says only "not yet seen" (trips.test.ts).
+const seen = (w: WorldState) => (w.map.known.fill(1), w);
+const fresh = () => structuredClone((base ??= seen(createWorld(sim, 'anvil/1'))));
 const nobody = () => ({ text: '' }) as never;
 const at = (w: WorldState, i: number) =>
   tileView(w, i % w.map.width, Math.floor(i / w.map.width), 0, nobody)!;

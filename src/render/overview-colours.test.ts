@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LevelArrays } from './chunk-store.ts';
+import { FADE } from './fade.ts';
 import { mix, overColour, type Colours, type Rgba } from './overview-colours.ts';
 
 const GRASS: Rgba = [60, 120, 40, 255];
@@ -18,6 +19,7 @@ const colours: Colours = {
   snow: [240, 240, 250, 255],
   lying: { rgb: [250, 250, 255, 255], cover: 1 },
   ice: [180, 210, 230, 255],
+  page: [222, 208, 176, 255],
   field: () => undefined,
 };
 
@@ -53,5 +55,15 @@ describe('the overview colours', () => {
     expect(overColour(colours, tile({ ice: 1 }), 0)).toEqual(colours.ice);
     expect(overColour(colours, tile({ snow: 1 }), 0)).toEqual(colours.snow);
     expect(overColour(colours, tile({ built: 1 }), 0)).toEqual([150, 150, 150, 255]);
+  });
+
+  it('fades unseen surface into the page, its ground only, with nothing on it (V-213)', () => {
+    const unseen = overColour(colours, tile({ known: 0, things: 1 }), 0, true);
+    expect(unseen).toEqual(mix(colours.page, GRASS, FADE));
+    expect(overColour(colours, tile({ known: 0, snow: 1 }), 0, true)).toEqual(
+      mix(colours.page, colours.snow, FADE),
+    );
+    // Seen surface is drawn in full, as before.
+    expect(overColour(colours, tile({ things: 1 }), 0, true)).toEqual(mix(GRASS, TREE, 0.5));
   });
 });

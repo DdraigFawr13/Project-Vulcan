@@ -22,6 +22,8 @@ export interface TileDeps {
 /** The inspector's title: the works, place, field, store or shaft here, else the tile. */
 export function tileTitle(tile: TileView): string {
   const where = tile.z === 0 ? '' : ` · ${tile.z} level${tile.z > 1 ? 's' : ''} down`;
+  // A found place (6W Slice 6): "A wood · tile 170, 102".
+  if (tile.find) return `${tile.find.title} · tile ${tile.x}, ${tile.y}`;
   return (
     tile.works?.name ??
     (placeTitle(tile) || undefined) ??
@@ -56,6 +58,7 @@ export function tileRows(
 /** The facts list: what lies here comes first, as it is usually what a tap was after (Morgan,
  * Phase 3 playtest). */
 const factsOf = (tile: TileView, debug: boolean): string[][] => [
+  ...(tile.find?.rows ?? []),
   ...(tile.goods ?? []).map((g) => ['lying here', g.text]),
   ...(tile.piece || tile.field || tile.shaft || tile.works || tile.place ? [] : landFacts(tile)),
   ...(tile.feature ? [[tile.z ? 'vein' : 'on it', tile.feature]] : []),
@@ -118,11 +121,13 @@ function linesOf(
   const rows: HTMLElement[] = [];
   if (typeof notice === 'string') rows.push(el('p', { class: 'note' }, notice));
   else if (notice) rows.push(lineRow(notice, 'Not done · '));
+  if (tile.find?.line) rows.push(lineRow(tile.find.line, 'Found · '));
   for (const [line, label] of standingLines(tile)) rows.push(lineRow(line, label));
   for (const g of tile.goods ?? []) if (g.made) rows.push(lineRow(g.made, 'Made by · '));
   if (tile.store?.made) rows.push(lineRow(tile.store.made, 'Store · '));
   if (tile.store?.built) rows.push(lineRow(tile.store.built, 'Built · '));
-  if (tile.piece || tile.works || tile.place) return rows;
+  // Unseen land (6W Slice 6) says only that: no line changed it that anyone knows of.
+  if (tile.piece || tile.works || tile.place || tile.unseen) return rows;
   rows.push(
     tile.changedBy
       ? lineRow(tile.changedBy, 'Last changed · ')
