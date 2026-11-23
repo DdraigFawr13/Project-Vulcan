@@ -1,7 +1,7 @@
 // Worn ground on the map (P5.10, taste board pick A): earth showing through grass where people
 // walk, in the stages the chunks' `worn` bytes carry, on the ground kinds that wear
 // (`terrain.wear.kinds`). A tile layer of its own from the `tiles-world` sheet (`wear.<stage>.<1|2>`,
-// the variant by position hash) over the ground and stains, under lying snow (depth 1.05).
+// the variant by position hash) over the ground, under lying snow (depth 1.05).
 // Kept only for the window near the camera (tile-window.ts) and repainted when a chunk arrives
 // or the window moves; none of it is game state.
 import type Phaser from 'phaser';

@@ -14,8 +14,6 @@ const colours: Colours = {
     { rgb: ORE, cover: 0.4 },
   ],
   parts: [{ rgb: [150, 150, 150, 255], cover: 1 }],
-  veins: [false, true],
-  glint: 0.5,
   snow: [240, 240, 250, 255],
   lying: { rgb: [250, 250, 255, 255], cover: 1 },
   ice: [180, 210, 230, 255],
@@ -31,7 +29,6 @@ const tile = (over: Partial<Record<keyof LevelArrays, number>>): LevelArrays => 
     ice: one('ice'),
     things: one('things'),
     known: Uint8Array.of(over.known ?? 1),
-    stains: one('stains'),
     built: one('built'),
     snowLie: one('snowLie'),
   };
@@ -45,10 +42,9 @@ describe('the overview colours', () => {
     expect(wood[1]).toBeLessThan(GRASS[1]);
   });
 
-  it('keeps unknown rock black, a vein glinting through it (V-030)', () => {
+  it('keeps unknown rock black, a vein in it too (V-030, V-215)', () => {
     expect(overColour(colours, tile({ known: 0, things: 1 }), 0)).toEqual([0, 0, 0, 255]);
-    const vein = overColour(colours, tile({ known: 0, things: 2 }), 0);
-    expect(vein).toEqual(mix([0, 0, 0, 255], ORE, 0.2));
+    expect(overColour(colours, tile({ known: 0, things: 2 }), 0)).toEqual([0, 0, 0, 255]);
   });
 
   it('shows ice, snow and built parts from their own colours', () => {

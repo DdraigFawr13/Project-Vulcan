@@ -7,6 +7,14 @@ import type { LedgerLine, TileView, ToWorker } from '../worker/index.ts';
 /** The ledger lines that answer a dig order. At 3x an order can land a tick or two late. */
 const ANSWERS = ['map.stairsCut', 'map.shaftSunk', 'map.digRefused'];
 
+/** The orders whose one argument is all they send, by the field it goes in. */
+const ARG_FIELD: Readonly<Record<string, string>> = {
+  sendBack: 'house',
+  sendBackShaft: 'shaft',
+  sendBackMill: 'mill',
+  findSeam: 'metal',
+};
+
 interface Order {
   x: number;
   y: number;
@@ -36,15 +44,12 @@ export class Orders {
     const { x, y, z } = tile;
     const dig = kind === 'cutStairs' || kind === 'sinkShaft';
     this.order = { x, y, z, tick, dig };
+    const field = ARG_FIELD[kind];
     const data = dig
       ? { x, y, z, ...(arg !== undefined && { to: arg }) }
-      : kind === 'sendBack'
-        ? { house: arg as number }
-        : kind === 'sendBackShaft'
-          ? { shaft: arg as number }
-          : kind === 'sendBackMill'
-            ? { mill: arg as number }
-            : { x, y, ...(kind === 'placeBuilding' && arg !== undefined && { part: arg }) };
+      : field
+        ? { [field]: arg ?? '' }
+        : { x, y, ...(kind === 'placeBuilding' && arg !== undefined && { part: arg }) };
     this.send({ type: 'command', tick, kind: kind === 'sendBackMill' ? 'sendBack' : kind, data });
     this.send({ type: 'inspect', x, y, z });
   }

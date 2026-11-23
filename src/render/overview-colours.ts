@@ -1,7 +1,7 @@
 // The overview's colours (docs/MAP_OVERVIEW.md "Its look: tile colours"): each tile in the
 // average colour of its own art, a feature (a tree, a boulder) laid over its ground by how much
 // of the tile it covers, so woods read darker than grass; snow, ice and water from their own
-// art; unknown rock black, a vein glinting through it. Colours are read once from the packed
+// art; unknown rock black, veins too (V-215). Colours are read once from the packed
 // sheets; a picture choice only.
 import type Phaser from 'phaser';
 import { content } from '../content/index.ts';
@@ -25,9 +25,6 @@ export interface Colours {
   features: (Paint | undefined)[];
   /** By `buildings.parts` index. */
   parts: (Paint | undefined)[];
-  /** Per features index: whether it is a vein, which glints through the dark. */
-  veins: boolean[];
-  glint: number;
   /** Snow-capped rock, lying snow and ice. */
   snow: Rgba;
   lying: Paint;
@@ -73,10 +70,7 @@ export function overColour(c: Colours, level: LevelArrays, i: number, surface = 
   const thing = level.things[i]!;
   const feature = thing ? c.features[thing - 1] : undefined;
   if (!level.known[i] && surface) return faded(c, level, i);
-  if (!level.known[i]) {
-    const vein = feature && c.veins[thing - 1];
-    return vein ? mix(BLACK, feature.rgb, feature.cover * c.glint) : BLACK;
-  }
+  if (!level.known[i]) return BLACK;
   let colour = level.ice[i] ? c.ice : level.snow[i] ? c.snow : (c.kinds[level.ground[i]!] ?? BLACK);
   if (level.snowLie[i]) colour = mix(colour, c.lying.rgb, c.lying.cover);
   const part = level.built[i] ? c.parts[level.built[i]! - 1] : undefined;
@@ -116,8 +110,6 @@ export function readColours(
     kinds,
     features,
     parts,
-    veins: content.features.map((f) => f.kind === 'vein'),
-    glint: content.terrain.generator.underground.fogVein,
     snow: solid(groundPaint(`${content.terrain.generator.rock.snowArt}.1`)),
     lying: groundPaint('tile.snow.1'),
     ice: solid(groundPaint('tile.ice.1')),

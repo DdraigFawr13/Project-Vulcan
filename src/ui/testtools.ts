@@ -6,7 +6,13 @@ import type { TileView } from '../worker/index.ts';
 import { el } from './dom.ts';
 
 export type TestOrder =
-  'cutStairs' | 'sinkShaft' | 'markFell' | 'markStore' | 'placeBuilding' | 'deconstruct';
+  | 'cutStairs'
+  | 'sinkShaft'
+  | 'findSeam'
+  | 'markFell'
+  | 'markStore'
+  | 'placeBuilding'
+  | 'deconstruct';
 
 /** The parts the row offers to plan, with their buttons' words. */
 const PLANS = [
@@ -35,8 +41,11 @@ export function testTools(
   }
   if (tile.tree && !tile.marked) add('Mark to fell', 'markFell');
   if (tile.open) add('Add to store', 'markStore');
-  if (tile.z === 0 && !tile.plan)
+  if (tile.z === 0 && !tile.plan) {
     for (const [label, part] of PLANS) add(label, 'placeBuilding', part);
+    // Ores are hidden (V-215): the nearest iron seam found, as if spotted.
+    add('Find an iron seam', 'findSeam', 'iron');
+  }
   if (tile.plan && tile.plan.state !== 'down') add('Take down', 'deconstruct');
   if (!tools.length && !tile.marked) return [];
   const head = el('p', {}, 'Test tools');

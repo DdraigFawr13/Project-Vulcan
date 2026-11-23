@@ -1,6 +1,6 @@
 // The wild valley on the map (Phase 5A Bundle 2): snow lying on the ground, the prints animals
 // leave on it and in the mud, the animals themselves and the middens. Snow is a tile layer of its
-// own over the ground and stains (depth 1.1), kept for the window near the camera; prints are sprites under the features (depth 1.8),
+// own over the ground (depth 1.1), kept for the window near the camera; prints are sprites under the features (depth 1.8),
 // fainter as they age; animals glide between tiles like people (depth 8). Everything is redrawn
 // only when its chunk or its list changes; none of it is game state.
 import Phaser from 'phaser';

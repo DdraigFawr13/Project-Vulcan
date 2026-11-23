@@ -13,6 +13,8 @@ import {
   oreShort,
   saltCause,
   saltShort,
+  searchDig,
+  siteShaft,
   shaftFor,
   veinOpen,
 } from '../mine/index.ts';
@@ -65,6 +67,40 @@ function veinFor(ctx: SystemContext, p: EntityRow, metal: string): number | unde
   return best && pack(map, { x: best[1]! % map.width, y: Math.floor(best[1]! / map.width), z });
 }
 
+/** A search tunnel for `metal` (V-215): one at a time, from a shaft at its level, while none of
+ * its seams is found; the task and its causes (the want and the shaft's plan). */
+function searchFor(
+  ctx: SystemContext,
+  p: EntityRow,
+  metal: string,
+  causes: number[],
+  others: EntityRow[],
+): Omit<Task, 'what' | 'good' | 'have' | 'want' | 'word'> | undefined {
+  const { world, content } = ctx;
+  if (siteShaft(world, content, metal)) return undefined;
+  // One search tunnel at a time.
+  const searching = (q: EntityRow) =>
+    q['task'] === 'tunnel' && !shaftFor(world, q['what'] as string);
+  if (others.some(searching)) return undefined;
+  const map = world.map;
+  const size = map.width * map.height;
+  const z = content.features.find((f) => f.id === metal)?.vein?.level ?? 0;
+  const taken = new Set(
+    [...takenBy(ctx, p)].filter((n) => Math.floor(n / size) === z).map((n) => n % size),
+  );
+  const dig = searchDig(ctx, metal, causes, taken);
+  if (!dig) return undefined;
+  const tile = unpack(map, z * size + dig.tile);
+  return {
+    ...(dig.fresh && { search: dig.fresh }),
+    causes: [...causes, dig.shaft['line'] as number],
+    kind: 'tunnel',
+    plan: dig.shaft.id,
+    target: pack(map, tile),
+    minutes: content.work.mine.dig,
+  };
+}
+
 /** What this person would do next, or undefined when nothing is wanted. */
 function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
   const { world, content } = ctx;
@@ -72,6 +108,7 @@ function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
   const mine = content.work.mine;
   const others = people(world).filter((q) => q.id !== p.id && q['job'] === 'mine');
   const saltId = content.work.cure.salt.item;
+  let search: Task | undefined;
   for (const metal of [...metalsOf(content), saltId]) {
     const def = content.features.find((f) => f.id === metal)!;
     const salt = metal === saltId;
@@ -109,7 +146,12 @@ function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
         word: word('mine'),
       };
     const shaft = shaftFor(world, metal);
-    if (!shaft) continue;
+    if (!shaft) {
+      // A search tunnel waits for any known work below (V-215): the first ore that wants one.
+      const found = search ? undefined : searchFor(ctx, p, metal, base.causes, others);
+      if (found) search = { ...base, ...found, word: mine.words.search.replace('{m}', metal) };
+      continue;
+    }
     const mate = (kind: Kind) => others.some((q) => q['task'] === kind && q['plan'] === shaft.id);
     // The shaft's plan line is a cause of the taking up, after the plate's.
     const causes = [...base.causes, shaft['line'] as number];
@@ -153,7 +195,7 @@ function workFor(ctx: SystemContext, p: EntityRow): Task | undefined {
       word: word('tunnel'),
     };
   }
-  return cellarWork(ctx, p) ?? clayWork(ctx, p);
+  return search ?? cellarWork(ctx, p) ?? clayWork(ctx, p);
 }
 
 /** Mining, while an ingot plate is short of ore the colony cannot feed from an open vein, or a
@@ -276,13 +318,45 @@ function dig(ctx: SystemContext, p: EntityRow, at: Spot): void {
     line,
     at.z,
   );
+  const fresh = darkVeins(ctx, at);
   openAround(ctx, at.x, at.y, at.z, line);
+  for (const f of fresh) veinShown(ctx, p, f, at.z, line);
   if (p['task'] === 'tunnel') dugCellar(ctx, p, line);
   // A vein's ore keeps the tile it came from (P4.6): the step its ingots and tools carry on.
   const trail = feature?.yields
     ? trailText([{ s: 'mined', who: base.name, tick: world.tick, ...at, k: feature.yields }])
     : '';
   if (item && count) layYield(ctx, item, count, at, line, trail);
+}
+
+/** The veins round a dug tile that nobody knew of on its level (V-215): none of their tiles was
+ * known there before. */
+function darkVeins(ctx: SystemContext, at: Spot): number[] {
+  const map = ctx.world.map;
+  const layer = at.z > 0 ? map.levels[at.z - 1] : undefined;
+  if (!layer) return [];
+  const near = new Set<number>();
+  for (let dy = -1; dy <= 1; dy += 1)
+    for (let dx = -1; dx <= 1; dx += 1) {
+      const [x, y] = [at.x + dx, at.y + dy];
+      if (x < 0 || y < 0 || x >= map.width || y >= map.height) continue;
+      const i = y * map.width + x;
+      if (layer.features[i] && !layer.known[i]) near.add(layer.features[i]!);
+    }
+  if (!near.size) return [];
+  for (let i = 0; i < layer.features.length; i += 1)
+    if (layer.known[i] && near.has(layer.features[i]!)) near.delete(layer.features[i]!);
+  return [...near];
+}
+
+/** A vein shown for the first time on its level by digging beside it: one line. */
+function veinShown(ctx: SystemContext, p: EntityRow, f: number, z: number, line: number): void {
+  const def = ctx.content.features[f - 1]!;
+  ctx.emit('mine.veinShown', {
+    causes: [line],
+    actors: [p.id],
+    data: { name: p['name'] as string, metal: def.id, what: def.name, level: z },
+  });
 }
 
 /** Lays what the digging gave on the open ground around the tile; whatever finds no free tile

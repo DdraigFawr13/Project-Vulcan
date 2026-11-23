@@ -46,7 +46,7 @@ const LAYERS: readonly (readonly [string, Layer])[] = [
   ['wear', Uint16Array],
   ['worn', Uint8Array],
   ['built', Uint8Array],
-  ['stains', Uint8Array],
+  ['faces', Uint8Array],
   ['known', Uint8Array],
 ];
 
@@ -103,6 +103,7 @@ const placesShaped = (map: Shape, n: number): boolean =>
 const placeShaped = (f: unknown): boolean =>
   isObject(f) &&
   typeof f['kind'] === 'string' &&
+  (f['what'] === undefined || typeof f['what'] === 'string') &&
   [f['x'], f['y'], f['by'], f['line'], f['tick']].every(isCount);
 
 // A scouting trip (V-205): where, the good, the count (-1 while under way), its line and tick.
@@ -148,8 +149,8 @@ function mapFits(world: WorldState, content: SaveContent): boolean {
     w.biomes.every((b) => b < content.biomes.biomes.length) &&
     w.features.every((f) => f <= features) &&
     w.built.every((b) => b <= content.buildings.parts.length) &&
-    // Ore stains name a feature (V-087).
-    w.stains.every((f) => f <= features) &&
+    // A face's seam names a feature; bit 128 is walked (V-215).
+    w.faces.every((f) => (f & 127) <= features + 1) &&
     // Known land is 0, 1 or a scout's 2 (V-205); only the last trip may be under way.
     w.known.every((k) => k <= 2) &&
     w.finds.every(

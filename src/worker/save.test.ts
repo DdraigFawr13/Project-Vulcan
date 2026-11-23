@@ -122,8 +122,8 @@ describe('saves', () => {
       (s: SaveFile) => (s.state.map.snowLie = new Uint8Array(3)),
       (s: SaveFile) => (s.state.map.printAt = new Int32Array(3)),
       (s: SaveFile) => s.state.map.auraSpots.push({ ...s.state.map.auraSpots[0]!, school: 'none' }),
-      // Ore stains name a feature; a level's known marks are 0 or 1.
-      (s: SaveFile) => (s.state.map.stains[0] = 250),
+      // A face's seam names a feature (V-215); a level's known marks are 0 or 1.
+      (s: SaveFile) => (s.state.map.faces[0] = 120),
       // Felled trees to regrow: a tile on the map, a known feature, due days never falling (V-202).
       (s: SaveFile) => s.state.map.regrow.push(1e7, 1, 5),
       (s: SaveFile) => s.state.map.regrow.push(0, 250, 5),

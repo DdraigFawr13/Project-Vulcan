@@ -74,6 +74,8 @@ describe('carpentry and furniture', () => {
   for (const seed of SEEDS) {
     it(`sets up a bench, makes beds and puts everyone in a bed they own, unordered, on ${seed}`, () => {
       const w = createWorld(sim, seed);
+      // Every rock face walked, so nobody is off prospecting (V-215): not what this tests.
+      w.map.faces.forEach((v, i) => v && (w.map.faces[i] = v | 128));
       step(w, sim, 9 * DAY + 16 * 60);
       // Everyone owns a bed by an evening: the next one where spring sowing slowed the building.
       while (people(w).some((p) => !bedOwnedBy(w, p.id)) && w.tick < 14 * DAY) step(w, sim, DAY);
@@ -165,6 +167,8 @@ describe('carpentry and furniture', () => {
   for (const seed of ['ledger', 'gwerin', 'tallow', 'smoke', 'kiln', 'marsh', 'anvil']) {
     if (barracks.length === 2) break;
     const w = createWorld(sim, seed);
+    // Every rock face walked, so nobody is off prospecting (V-215): not what this tests.
+    w.map.faces.forEach((v, i) => v && (w.map.faces[i] = v | 128));
     step(w, sim, 10 * DAY);
     const alone = people(w).filter((p) => roomOf(w, p)?.sleepers === 1).length;
     const shared = people(w).filter((p) => (roomOf(w, p)?.sleepers ?? 0) >= 3).length;
@@ -206,6 +210,7 @@ describe('carpentry and furniture', () => {
       'deconstruct',
       'cutStairs',
       'sinkShaft',
+      'findSeam',
       'markFell',
       'markStore',
       'hurt',

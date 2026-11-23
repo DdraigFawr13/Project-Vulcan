@@ -10,6 +10,7 @@ import { toolWaits } from './knap.ts';
 import { takeUpTending } from '../crafts/index.ts';
 import { peopleSystem } from '../people/index.ts';
 import { contextFor } from '../sim/system.ts';
+import { plantSeam } from '../mine/index.ts';
 
 const content = withoutAccidents(game);
 const sim = createSim(content);
@@ -27,9 +28,12 @@ const people = (w: World) => w.entities['person'] ?? [];
 const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === type);
 
 /** A valley with no pick, on a seed whose worn tools soon ask for bronze, so miners would sink a
- * shaft (V-100). */
+ * shaft (V-100) beside a copper seam found (V-215). Since then smoke's best miner is out
+ * prospecting for tin or building while the others yield the shaft to them; of 8 seeds 3 sink
+ * within 6 days (searched 2026-11-23), among them tallow. */
 function noPick(knappers: boolean): World {
-  const w = createWorld(knappers ? sim : noKnap, 'smoke');
+  const w = createWorld(knappers ? sim : noKnap, 'tallow');
+  plantSeam(w, content, 'copper');
   w.entities['item'] = itemsOf(w).filter((i) => toolOf(content, i)?.kind !== 'pick');
   return w;
 }

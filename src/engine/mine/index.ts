@@ -2,5 +2,7 @@
 export { mineSystem } from './system.ts';
 export { metalsOf, MINE_TABLES, oreShort, SHAFT_STATES, shaftFor, shaftsOf } from './shafts.ts';
 export { nextDig } from './tunnel.ts';
-export { veinOpen } from './site.ts';
+export { liveSeams, openVein, seamsOf, siteShaft, veinOpen } from './site.ts';
+export { beginSearch, searchDig, type SearchBegin } from './search.ts';
 export { saltCause, saltShort, smokehouseOf } from './salt.ts';
+export { plantSeam } from './plant.ts';
