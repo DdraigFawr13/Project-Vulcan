@@ -8,6 +8,7 @@
 {"id":"quarrel","name":"Quarrels and crime","hint":"defiance, factions, petitions","default":"slow"},
 {"id":"danger","name":"Dangers","hint":"a pack at the edge, blight, frost, a hungry flock","default":"slow"},
 {"id":"mood","name":"Moods and needs","hint":"a need or a mood running low, work declined","default":"note"},
-{"id":"works","name":"Building and works","hint":"built, sited, waiting, a tool broke","default":"note"},
+{"id":"works","name":"Building and works","hint":"built, sited, waiting, a tool broke, a new way gone wrong","default":"note"},
+{"id":"ways","name":"Finds and new ways","hint":"a new way found, a way lost with its last knower","default":"slow"},
 {"id":"world","name":"Seasons, weather and firsts","hint":"a new season, ice, a first fine thing, a feast","default":"note"}
 ]

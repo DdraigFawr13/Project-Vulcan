@@ -1,5 +1,6 @@
 // The wire shapes of the Laws page and a person's answer (P4.8), split from protocol.ts.
 import type { ColonyView } from './protocol-colony.ts';
+import type { ColonyWaysView } from './protocol-people.ts';
 
 /** Hours of work and bed, in whole hours. */
 export interface HoursView {
@@ -66,6 +67,8 @@ export interface RuledLawView {
   answers: AnswerView[];
   /** The Feasts law (6B): the feast days, the harvest home first. */
   days?: FeastDayView[];
+  /** The New Ways law (6C Slice 6, V-221): the ways the colony knows, and what is puzzled over. */
+  ways?: ColonyWaysView;
 }
 
 /** A feast day on the Laws page (6B): "Cart Day, 1 Thawmonth", why it is kept and whether the law

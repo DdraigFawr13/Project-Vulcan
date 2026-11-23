@@ -55,6 +55,28 @@ export interface MethodsDef {
   };
   kinds: Readonly<Record<HintKind, HintWords>>;
   failed: Readonly<Record<string, { words: string; by: 'actor' | 'trade' }>>;
+  screen: MethodsScreen;
+}
+
+/** The words the screen shows a way in (6C Slice 6, V-221): each way's effect on a knower's
+ * work, a puzzle and its hints, how a way was come by, and the colony's list. */
+export interface MethodsScreen {
+  effects: Readonly<Record<string, string>>;
+  puzzle: string;
+  hint: string;
+  left: string;
+  knows: string;
+  how: Readonly<Record<'found' | 'apprentice' | 'book' | 'beside', string>>;
+  known: string;
+  found: string;
+  learnt: string;
+  only: string;
+  kept: string;
+  puzzled: string;
+  puzzler: string;
+  puzzlerWho: string;
+  nobody: string;
+  none: string;
 }
 
 export interface MethodsDefs {
