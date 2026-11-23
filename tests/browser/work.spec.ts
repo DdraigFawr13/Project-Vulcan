@@ -45,9 +45,17 @@ test('a worker swings with bits flying at 1x and 2x, and tools and loads show', 
   await chooseSpeed(page, 2);
   await expect.poll(async () => (await look(page)).bits, { timeout: 8_000 }).toBeGreaterThan(0);
   await shot(page, 'work-2x');
-  // Haulers and builders fetching carry their loads within the day.
-  await expect.poll(async () => (await look(page, 'load')).at, { timeout: 60_000 }).not.toBeNull();
-  expect((await look(page, 'load')).loads).toBeGreaterThan(0);
+  // Haulers and builders fetching carry their loads within the day: someone found carrying, and
+  // their load drawn, in the same look (two looks apart, the load may be set down between them).
+  await expect
+    .poll(
+      async () => {
+        const l = await look(page, 'load');
+        return l.at ? l.loads : 0;
+      },
+      { timeout: 60_000 },
+    )
+    .toBeGreaterThan(0);
   await shot(page, 'work-load');
   expect(errors).toEqual([]);
 });
