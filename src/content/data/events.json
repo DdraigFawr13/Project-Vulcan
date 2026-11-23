@@ -173,6 +173,7 @@
 {"id":"goods.wornOut","importance":2,"template":"{name}'s {what} wore through."},
 {"id":"people.changed","importance":1,"template":"{name} put on a {what} from the store: {why}."},
 {"id":"work.tookUpTending","importance":1,"template":"{name} took up tending: {why}."},
+{"id":"people.wadedOut","importance":2,"template":"{name} waded out of the {water}: the ice had melted under them."},
 {"id":"people.passedLake","importance":2,"template":"{name} walked on to the {water} rather than drink from the lake: {belief}, they say."},
 {"id":"people.warming","importance":1,"template":"{name} went to warm up by the fire."},
 {"id":"people.claimedBed","importance":1,"template":"{name} took the bed in the {room}: it was free."},

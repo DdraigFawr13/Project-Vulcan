@@ -1,13 +1,14 @@
 // Walking (P2.3): each minute a person on a way gains stride and takes the next step once the
 // stride covers its cost, so shallow water and marsh slow them. A way blocked since it was found
-// (a tree that fell across it, ice that thawed) is found again from where they stand. Someone
+// (a tree that fell across it, ice that thawed) is found again from where they stand. Someone the
+// ice thawed under first wades or swims out to the nearest ground, a tile every `walking.wade` minutes. Someone
 // with nothing to do strolls to a tile near the camp and stands a while; P2.2 and P2.4 give them
 // reasons to go somewhere instead. Steps are state, never ledger lines (V-036); since P5.10 each
 // step onto open surface ground wears it (map `tread`).
-import type { EntityRow } from '../core/index.ts';
+import { WATER, type EntityRow } from '../core/index.ts';
 import { markPercent } from '../health/index.ts';
 import { see, tread } from '../map/index.ts';
-import { findPath, pack, stepCost, unpack, walkAt, type Spot } from '../paths/index.ts';
+import { findPath, pack, stepCost, unpack, walkAt, wayAshore, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
 /** The fields each person row carries for walking. */
@@ -40,17 +41,61 @@ function floored(ctx: SystemContext, i: number): boolean {
   return !!built && ctx.content.buildings.parts[built - 1]?.kind !== 'road';
 }
 
+/** The stride a minute gains: a lame leg (P5.6) walks slower, its fraction spread over minutes. */
+function strideGain(ctx: SystemContext, p: EntityRow): number {
+  const speed = ctx.content.terrain.walking.speed;
+  const lame = markPercent(ctx.world, ctx.content, p.id, 'walk');
+  return lame < 100 ? Math.floor((speed * lame + (ctx.world.tick % 100)) / 100) : speed;
+}
+
+/** Whether someone stands on the surface where nobody can stand: water the ice thawed under. */
+export function afloat(ctx: SystemContext, p: EntityRow): boolean {
+  const map = ctx.world.map;
+  return (
+    (p['z'] as number) === 0 &&
+    !walkAt(ctx.content, map, 0, (p['y'] as number) * map.width + (p['x'] as number))
+  );
+}
+
+/** A minute in water that can't be stood on: whatever way they had is dropped, and every
+ * `walking.wade` minutes they get a tile nearer the nearest ground through the water. Counted by
+ * the clock, not by stride, since whatever they were about re-sets their stride each minute. */
+function wadeOut(ctx: SystemContext, p: EntityRow): void {
+  p['path'] = [];
+  p['stride'] = 0;
+  if (ctx.world.tick % ctx.content.terrain.walking.wade !== 0) return;
+  const way = wayAshore(ctx.content, ctx.world.map, spotOf(p));
+  if (!way?.length) return;
+  const next = unpack(ctx.world.map, way[0]!);
+  p['x'] = next.x;
+  p['y'] = next.y;
+}
+
+/** One minute of walking for someone of the band, and the line the minute they come out of water
+ * the ice thawed under them: it cites what made the tile (the day's ice line, weather.ts). */
+export function walkOrWade(ctx: SystemContext, p: EntityRow): void {
+  const map = ctx.world.map;
+  const i = (p['y'] as number) * map.width + (p['x'] as number);
+  const wet = afloat(ctx, p);
+  stepAlong(ctx, p);
+  const water = WATER[map.water[i] ?? 0];
+  if (!wet || !water || afloat(ctx, p)) return;
+  const cause = map.tileCauses[i] ?? 0;
+  ctx.emit('people.wadedOut', {
+    causes: cause > 0 ? [cause] : [],
+    actors: [p.id],
+    data: { name: p['name'] as string, water },
+  });
+}
+
 /** One minute of walking for one person: steps taken while the stride covers them. A walker who is
  * not one of the colony (the lord's reeve, 6C) passes `sees` false: what he sees is not known. */
 export function stepAlong(ctx: SystemContext, p: EntityRow, sees = true): void {
   const map = ctx.world.map;
+  if (afloat(ctx, p)) return wadeOut(ctx, p);
   let path = p['path'] as number[];
   if (!path.length) return;
-  // A lame leg (P5.6) walks slower: the stride's fraction is spread over the minutes.
-  const speed = ctx.content.terrain.walking.speed;
-  const lame = markPercent(ctx.world, ctx.content, p.id, 'walk');
-  const gain = lame < 100 ? Math.floor((speed * lame + (ctx.world.tick % 100)) / 100) : speed;
-  let stride = (p['stride'] as number) + gain;
+  let stride = (p['stride'] as number) + strideGain(ctx, p);
   let moved = false;
   while (path.length) {
     const here = pack(map, spotOf(p));
