@@ -18,6 +18,7 @@ function spoil(ctx: SystemContext, kinds: readonly string[]): string {
       (i) =>
         i['kind'] === kind &&
         !i['owner'] &&
+        !i['holder'] &&
         inStore(world, i['x'] as number, i['y'] as number, i['z'] as number),
     );
     if (!item) continue;

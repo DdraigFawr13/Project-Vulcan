@@ -20,6 +20,7 @@ import {
 import { contextFor } from '../sim/system.ts';
 import { lossHour } from './spread.ts';
 import { knows } from './tables.ts';
+import { waysOf } from './ways.ts';
 
 type World = ReturnType<typeof createWorld>;
 const lines = (w: World, type: string) => allLines(w).filter((e) => e.type === type);
@@ -93,6 +94,9 @@ describe('mishaps, New Ways, spreading and loss', () => {
     const smith = living(w).find((p) => p.id === keeps?.['person'])!;
     hours(3 * 24, [smith]);
     expect(lines(w, 'discover.puzzle').filter((e) => e.actors[0] === smith.id)).toEqual([]);
+    // Someone who refuses Old ways only keeps the custom, Allowed.
+    keeps!['answer'] = 'refuses';
+    expect(waysOf(w, sim.content, smith.id).start).toBe(true);
   });
 
   it('teaches a way to someone working beside its knower', () => {
@@ -117,5 +121,19 @@ describe('mishaps, New Ways, spreading and loss', () => {
     const [death] = lines(w, 'health.died');
     expect(lost?.actors).toEqual([knower.id]);
     expect(lost?.causes).toEqual([death!.id]);
+  });
+
+  it('a kept book by the knower keeps the way from being lost', () => {
+    const { sim, w, smiths, ctx } = forge();
+    const [knower] = smiths;
+    addEntity(w, 'knows', { person: knower.id, method: 'steel', how: 'found', line: 1, from: 0 });
+    addEntity(w, 'book', {
+      ...{ master: knower.id, skill: 'smithing', level: 7, scribe: knower.id, state: 'kept' },
+      ...{ minutes: 0, begun: 1, line: 1, lost: 0 },
+    });
+    lossHour(ctx);
+    die(contextFor(w, sim, healthSystem), knower, 'old age', []);
+    lossHour(ctx);
+    expect(lines(w, 'discover.lost')).toEqual([]);
   });
 });

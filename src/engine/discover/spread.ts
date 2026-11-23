@@ -9,7 +9,7 @@ import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { fill } from './find.ts';
 import { knowersOf, knows, knowsOf, puzzleOf } from './tables.ts';
-import { tradesOf, workedToday } from './trade.ts';
+import { tradesOf, workedToday, workLine } from './trade.ts';
 
 export const SPREAD_TABLES: Schemas = {
   /** Hours `person` has worked toward learning a way from a knower. */
@@ -25,7 +25,7 @@ export function learnWay(
   m: MethodDef,
   teacher: EntityRow,
   how: How,
-  cause: number,
+  causes: readonly number[],
   vars: Readonly<Record<string, unknown>> = {},
 ): void {
   const { world, content } = ctx;
@@ -33,7 +33,7 @@ export function learnWay(
     ...{ their: pronouns(p).their, them: pronouns(teacher).them, where: m.where, ...vars },
   });
   const line = ctx.emit('discover.learned', {
-    causes: [cause].filter((l) => l > 0),
+    causes: causes.filter((l) => l > 0),
     actors: [p.id, teacher.id],
     data: {
       name: p['name'] as string,
@@ -86,14 +86,10 @@ function learnHour(ctx: SystemContext, p: EntityRow, job: string): void {
     row['hours'] = (row['hours'] as number) + 1;
     const teacher = bond?.teacher ?? beside!;
     if ((row['hours'] as number) >= (bond ? s.apprentice : s.beside))
-      learnWay(
-        ctx,
-        p,
-        m,
-        teacher,
-        bond ? 'apprentice' : 'beside',
+      learnWay(ctx, p, m, teacher, bond ? 'apprentice' : 'beside', [
+        workLine(ctx, p.id, job),
         bond?.line ?? knownLine(ctx, teacher.id, m.id),
-      );
+      ]);
   }
 }
 
@@ -115,7 +111,7 @@ export function bookLearn(ctx: SystemContext, e: SimEvent): void {
     const word = content.abilities.find((a) => a.id === m.skill)?.name.toLowerCase();
     if (!word || e.data['skill'] !== word || knows(world, reader.id, m.id)) continue;
     if (knows(world, master.id, m.id))
-      learnWay(ctx, reader, m, master, 'book', e.id, { book: e.data['book'] });
+      learnWay(ctx, reader, m, master, 'book', [e.id], { book: e.data['book'] });
   }
 }
 
@@ -128,17 +124,25 @@ function goneLine(log: readonly SimEvent[], person: number): number {
   return 0;
 }
 
-/** The hour's look at who knows each way: one nobody living knows is lost (state `k.<way>`
- * holds a living knower while there is one). */
+/** Whether a book on the shelf was written by a knower of the way, in its skill (V-141: a book
+ * keeps a master's ways). */
+const inBook = (ctx: SystemContext, m: MethodDef): boolean =>
+  tableOf(ctx.world, 'book').some(
+    (b) =>
+      b['state'] === 'kept' &&
+      b['skill'] === m.skill &&
+      knows(ctx.world, b['master'] as number, m.id),
+  );
+
+/** The hour's look at who knows each way: one nobody living knows, and no kept book holds, is
+ * lost (state `k.<way>` holds the last living knower while one lives). */
 export function lossHour(ctx: SystemContext): void {
   const { world, content, state } = ctx;
   for (const m of content.methods.methods) {
     const key = `k.${m.id}`;
     const [living] = knowersOf(world, m.id);
-    if (living) {
-      state[key] = living.id;
-      continue;
-    }
+    if (living) state[key] = living.id;
+    if (living || inBook(ctx, m)) continue;
     const last = state[key] && entityOf(world, 'person', state[key]);
     delete state[key];
     if (!last) continue;

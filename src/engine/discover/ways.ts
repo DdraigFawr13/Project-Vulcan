@@ -30,8 +30,8 @@ export function waysOf(world: WorldState, content: EngineContent, person: number
 /** Under a `trying` setting, one working minute in `trying` at their puzzle's trade is spent
  * trying the new way and does no work (people `mind.ts` asks). */
 export function trying(ctx: SystemContext, p: EntityRow): boolean {
-  const q = puzzleOf(ctx.world, p.id);
-  if (!q || wayOf(ctx, q).job !== p['job']) return false;
   const every = waysOf(ctx.world, ctx.content, p.id).trying;
-  return every > 0 && (ctx.world.tick + p.id) % every === 0;
+  if (!every || (ctx.world.tick + p.id) % every !== 0) return false;
+  const q = puzzleOf(ctx.world, p.id);
+  return !!q && wayOf(ctx, q).job === p['job'];
 }

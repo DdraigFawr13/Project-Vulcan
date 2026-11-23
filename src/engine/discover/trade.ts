@@ -72,7 +72,8 @@ export function addHours(
   while ((puzzle['work'] as number) >= ways.work && !puzzle['ended']) {
     puzzle['work'] = (puzzle['work'] as number) - ways.work;
     const hint = addHint(ctx, puzzle, 'work', [row['line'] as number]);
-    if (ways.mishap > 0 && ctx.rng().int(ways.mishap) === 0) mishap(ctx, puzzle, p, hint);
+    if (!puzzle['ended'] && ways.mishap > 0 && ctx.rng().int(ways.mishap) === 0)
+      mishap(ctx, puzzle, p, hint);
   }
 }
 
