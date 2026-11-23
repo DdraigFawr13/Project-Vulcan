@@ -63,6 +63,7 @@ export {
   fromBarn,
   hiddenOf,
   TITHE_TABLES,
+  dropTithe,
   titheRow,
   titheRows,
   tithing,

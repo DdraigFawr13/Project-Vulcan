@@ -14,7 +14,7 @@ import {
   takesWith,
 } from '../defy/index.ts';
 import { barnSpot, bedOwnedBy, greenOf } from '../build/index.ts';
-import { itemsOf } from '../goods/index.ts';
+import { dropTithe, itemsOf } from '../goods/index.ts';
 import { stopFor } from '../health/index.ts';
 import { removeEntity } from '../entity/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -66,6 +66,7 @@ export function departing(ctx: SystemContext, p: EntityRow): boolean {
  * free. */
 function gone(ctx: SystemContext, p: EntityRow): void {
   for (const i of [...itemsOf(ctx.world)]) {
+    if (i['holder'] === p.id) dropTithe(ctx.world, i);
     if (takesWith(ctx.content, i, p.id)) removeEntity(ctx.world, 'item', i.id);
     else if (i['holder'] === p.id || i['owner'] === p.id)
       Object.assign(i, { holder: 0, owner: 0, x: p['x'], y: p['y'], z: p['z'] });

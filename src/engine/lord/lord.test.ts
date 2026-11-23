@@ -24,6 +24,7 @@ import { titleOf } from './tables.ts';
 import { broughtIn, hideFromBarn, layItem, raidsBarn, titheRow } from '../index.ts';
 import { lordSystem } from './system.ts';
 import { defySystem } from '../defy/index.ts';
+import { stopFor } from '../health/index.ts';
 import { contextFor } from '../sim/system.ts';
 import { rateOf } from './tithe.ts';
 
@@ -215,6 +216,24 @@ describe('the lord and the reeve', () => {
     expect(left.reduce((n, i) => n + (i['count'] as number), 0)).toBeLessThanOrEqual(
       60 - Math.min(60, share),
     );
+  });
+
+  it('gives a dropped share back to the colony, due again, when its hauler is hurt', () => {
+    const later = structuredClone(w);
+    const p = (later.entities['person'] ?? []).find((q) => q['status'] === 'alive')!;
+    broughtIn(later, content, 'turnips', 400, later.begunEvent);
+    Object.assign(titheRow(later, 'turnips')!, { due: 0, set: 20 });
+    const id = layItem(
+      later,
+      { kind: 'turnips', count: 20, x: p['x'] as number, y: p['y'] as number, z: 0, made: 0 },
+      { state: 'tithe' },
+    );
+    const load = (later.entities['item'] ?? []).find((i) => i.id === id)!;
+    load['holder'] = p.id;
+    stopFor(contextFor(later, sim, lordSystem), p, true);
+    expect(load['state']).toBe('');
+    expect(load['holder']).toBe(0);
+    expect(titheRow(later, 'turnips')).toMatchObject({ due: 20, set: 0 });
   });
 
   it('skips a realm that fell in history for the next that stands', () => {

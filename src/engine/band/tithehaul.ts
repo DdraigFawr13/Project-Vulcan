@@ -6,7 +6,15 @@
 // Nobody is sent (V-041): it is hauling like any other, taken up by whoever is free.
 import type { EntityRow } from '../core/index.ts';
 import { barnSpot } from '../build/index.ts';
-import { inStore, itemsOf, layItem, takeFrom, titheRow, titheRows } from '../goods/index.ts';
+import {
+  dropTithe,
+  inStore,
+  itemsOf,
+  layItem,
+  takeFrom,
+  titheRow,
+  titheRows,
+} from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { busy, same, spotOf } from './spots.ts';
@@ -73,17 +81,6 @@ export function tithePickUp(ctx: SystemContext, p: EntityRow, item: EntityRow): 
   return true;
 }
 
-/** No barn to carry it to (sent back, or out of reach): the load is the colony's again. */
-function giveBack(ctx: SystemContext, load: EntityRow): void {
-  const row = titheRow(ctx.world, load['kind'] as string);
-  const n = load['count'] as number;
-  if (row) {
-    row['set'] = Math.max(0, (row['set'] as number) - n);
-    row['due'] = (row['due'] as number) + n;
-  }
-  load['state'] = '';
-}
-
 /** A minute carrying a `tithe` load: to the barn, then into it, with a line once the kind's share
  * is all in, or (under a Defiant law) one for whoever carried their own share. True while it is
  * theirs to see to; false when the load went back to the colony (deliver it as any other). */
@@ -91,12 +88,12 @@ export function deliverTithe(ctx: SystemContext, p: EntityRow, load: EntityRow):
   const { world, content } = ctx;
   const at = barnSpot(world);
   if (!at) {
-    giveBack(ctx, load);
+    dropTithe(ctx.world, load);
     return false;
   }
   if (!same(spotOf(p), at)) {
     if (walkTo(ctx, p, at)) return true;
-    giveBack(ctx, load);
+    dropTithe(ctx.world, load);
     return false;
   }
   const kind = load['kind'] as string;

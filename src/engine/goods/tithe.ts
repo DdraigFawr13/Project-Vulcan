@@ -58,6 +58,19 @@ export const barnOf = (world: WorldState): { kind: string; count: number }[] =>
     .filter((r) => (r['barn'] as number) > 0)
     .map((r) => ({ kind: r['kind'] as string, count: r['barn'] as number }));
 
+/** A `tithe` load put down short of the barn (its hauler hurt, gone, sent back): the goods are the
+ * colony's again and the share is due once more. Any other item is left as it is. */
+export function dropTithe(world: WorldState, load: EntityRow): void {
+  if (load['state'] !== 'tithe') return;
+  const row = titheRow(world, load['kind'] as string);
+  const n = load['count'] as number;
+  if (row) {
+    row['set'] = Math.max(0, (row['set'] as number) - n);
+    row['due'] = (row['due'] as number) + n;
+  }
+  load['state'] = '';
+}
+
 /** Takes up to `count` of `kind` out of the barn; how many were there to take. */
 export function fromBarn(world: WorldState, kind: string, count: number): number {
   const row = titheRow(world, kind);
