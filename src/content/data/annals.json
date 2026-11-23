@@ -125,6 +125,8 @@
       { "event": "pits.noGround", "weight": 1 },
       { "event": "metal.waiting", "weight": 1, "fold": "the smelter waited for ore", "one": "The smelter waited: no {good} could be reached.", "many": "The smelter waited {times} for want of goods: {list}.", "item": "{good}" },
       { "event": "land.noSeam", "weight": 1, "many": "{Times} a prospector came home with no seam: {list}.", "item": "of {ore}" },
+      { "event": "land.stillNoOre", "weight": 2, "fold": "a season passed with no ore found", "one": "Another season passed with no {ore} found: {why}.", "many": "{Times} a season passed with no ore found: {list}.", "item": "no {ore}" },
+      { "event": "mine.shaftWaits", "weight": 2, "fold": "a planned shaft waited", "one": "The shaft for {metal} waited a season: {why}.", "many": "{Times} a planned shaft waited a season: {list}.", "item": "for {metal}" },
       { "event": "mine.noVein", "weight": 3, "many": "{Times} a shaft found no way to a vein: {list}.", "item": "for {metal}" },
       { "event": "mine.noLadder", "weight": 2, "fold": "a shaft waited for logs for its ladder", "one": "The shaft for {metal} waited: too few logs could be reached for its ladder.", "many": "{Times} a shaft waited for want of logs for its ladder: {list}.", "item": "for {metal}" },
       { "event": "fire.noFloor", "weight": 2, "fold": "someone was cold with no floor free for a hearth", "many": "{Times} someone was cold with no floor free for a hearth: {list}.", "item": "{name} in the {room}" },

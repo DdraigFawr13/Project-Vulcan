@@ -145,6 +145,13 @@ export interface WorkDef {
       clay: string;
       cellar: string;
     };
+    /** V-227: tiles from the green past which a miner packs food for `days` and a bedroll; days a
+     * plan is held with nothing sunk before the next free miner may take it; why a plan not begun
+     * in a season waits. */
+    pack: number;
+    days: number;
+    wait: number;
+    waits: { ladder: string; far: string; nobody: string };
   };
   /** Scouting (6W Slice 4, V-205): the colony wants a scout when the stock of one of `goods`
    * plus its known sources within `reach` of the store (and round finds) is under its level; the

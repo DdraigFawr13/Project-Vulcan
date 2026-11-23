@@ -8,6 +8,7 @@ import { itemName, type EngineContent, type EntityRow } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { reachableStacks, stackOf } from '../crafts/index.ts';
 import { practiseMining, start, stop } from './minetask.ts';
+import { heldTooLong } from './minefar.ts';
 import { goBeside, same, spotOf, walkTo, worked } from '../band/index.ts';
 
 /** The ladder: the item and count the first level takes (the first entry of `mine.ladder`). */
@@ -46,6 +47,7 @@ export function sinking(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
   const shaft = shaftsOf(world).find((s) => s.id === p['plan']);
   if (!shaft || ['sent', 'spent', 'done'].includes(shaft['state'] as string)) return stop(ctx, p);
+  if (heldTooLong(ctx, p, shaft)) return stop(ctx, p);
   const depth = shaft['depth'] as number;
   const [x, y] = [shaft['x'] as number, shaft['y'] as number];
   const ladder = depth === 0 ? ladderOf(content) : undefined;
