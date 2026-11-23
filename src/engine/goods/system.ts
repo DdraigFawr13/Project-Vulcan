@@ -11,6 +11,7 @@ import { putOn } from './clothes.ts';
 import { markCommands, MARK_TABLES } from './marks.ts';
 import { DEPOT_TABLES } from './depots.ts';
 import { rollTrips, TRIP_TABLES } from './trips.ts';
+import { TITHE_TABLES } from './tithe.ts';
 import { dryAt, setStock, setUpStock, setUpStore, STORE_TABLES } from './store.ts';
 import { itemName } from '../core/index.ts';
 
@@ -51,7 +52,14 @@ export const goodsSystem: System = {
   // The line where the last food was eaten (food.ts), which hunger cites.
   initialState: { foodGone: 0 },
   refs: ['foodGone'],
-  tables: { ...GOODS_TABLES, ...STORE_TABLES, ...DEPOT_TABLES, ...TRIP_TABLES, ...MARK_TABLES },
+  tables: {
+    ...GOODS_TABLES,
+    ...STORE_TABLES,
+    ...DEPOT_TABLES,
+    ...TRIP_TABLES,
+    ...MARK_TABLES,
+    ...TITHE_TABLES,
+  },
   commands: {
     setStock: (ctx, command, cause) => setStock(ctx, command.data, cause),
     markFell: (ctx, command, cause) => markCommands.markFell(ctx, command.data, cause),

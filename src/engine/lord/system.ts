@@ -9,6 +9,7 @@ import { lordOf, namesOf, type Lord } from '../region/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { reeveMinute, sendReeve, soughtOf } from './reeve.ts';
 import { LORD_TABLES, lordRow, reeveRow, titleOf } from './tables.ts';
+import { setDue } from './tithe.ts';
 
 /** The first harvest-home supper called after feast `done` (a supper with no couple and no feast
  * day), eaten or not (V-220): the reeve comes for the harvest, not the supper. */
@@ -77,10 +78,14 @@ export const lordSystem: System = {
   id: 'lord',
   every: 'minute',
   stream: 'lord',
-  emits: ['lord.reeveCame', 'lord.named', 'lord.counted', 'lord.reeveLeft'],
+  emits: [
+    ...['lord.reeveCame', 'lord.named', 'lord.counted', 'lord.reeveLeft', 'lord.tithed'],
+    ...['lord.barned', 'lord.carried', 'lord.searched', 'lord.found'],
+  ],
   initialState: { done: 0, none: 0 },
   tables: LORD_TABLES,
   run(ctx) {
+    if (ctx.world.tick % TICKS_PER_HOUR === 0) setDue(ctx);
     const r = reeveRow(ctx.world);
     if (r) reeveMinute(ctx, r);
     else if (!ctx.state['none']) maybeSend(ctx);

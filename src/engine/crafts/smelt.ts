@@ -9,15 +9,16 @@ import type { EntityRow, RecipeDef } from '../core/index.ts';
 import { stationOf } from '../build/index.ts';
 import { wayEffect } from '../entity/index.ts';
 import {
+  broughtIn,
   haveOf,
   ingotWant,
   mergeTrails,
   oreTrail,
   trailOf,
   trailText,
+  type Step,
   wantedBy,
   withStep,
-  type Step,
 } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, canStandBeside, declineIfUnable, fetchKind, goBeside } from '../band/index.ts';
@@ -161,6 +162,7 @@ export function smelting(ctx: SystemContext, p: EntityRow): boolean {
     },
   });
   layAll(ctx, r.makes, out, here, line, trail);
+  broughtIn(ctx.world, ctx.content, r.makes, out, line);
   stop(p);
   return true;
 }

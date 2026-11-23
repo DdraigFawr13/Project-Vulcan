@@ -7,8 +7,8 @@
 // most once in `brawl.every` days: both take a light wound (`deep` per cent a deep one). Anyone
 // awake who sees it (needs `seenBy`) catches them (punish.ts).
 import { list, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
-import { awake, far } from '../entity/index.ts';
-import { inStore, layItem, takeFrom } from '../goods/index.ts';
+import { addEntity, awake, far } from '../entity/index.ts';
+import { barnOf, fromBarn, inStore, layItem, takeFrom } from '../goods/index.ts';
 import { wound } from '../health/index.ts';
 import { addMemory, seenBy } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -19,13 +19,18 @@ import { citesOf, grievanceOf, hungerWhy, reasonsOf, whyWords, type Why } from '
 /** `p` is caught at `act` by `saw`, who remember it: the line, then the Punishment law. */
 function caught(ctx: SystemContext, p: EntityRow, act: string, saw: EntityRow[], line: number) {
   const d = ctx.content.defy;
-  const did = act === 'took' ? 'taking from the store' : 'brawling';
+  const did =
+    act === 'took'
+      ? 'taking from the store'
+      : act === 'hid'
+        ? 'taking from the tithe barn'
+        : 'brawling';
   const at = ctx.emit('defy.caught', {
     causes: [line],
     actors: [p.id, ...saw.map((q) => q.id)],
     data: { names: list(saw.map((q) => q['name'] as string)), name: p['name'] as string, did, act },
   });
-  const memory = act === 'took' ? d.memories['sawTheft']! : d.memories['sawBrawl']!;
+  const memory = act === 'brawled' ? d.memories['sawBrawl']! : d.memories['sawTheft']!;
   for (const q of saw) addMemory(ctx, q.id, memory, at, p.id);
   punish(ctx, p, at, saw);
 }
@@ -42,9 +47,15 @@ const storeFood = (ctx: SystemContext, food: EntityRow): boolean =>
 
 /** The answer, memory and belief behind `p` taking now: their grievance at the `take` step, else
  * hunger with no law behind it (`hungerWhy`). */
-function takeWhy(ctx: SystemContext, p: EntityRow): { cites: number[]; why: Why } | undefined {
+function takeWhy(
+  ctx: SystemContext,
+  p: EntityRow,
+  law?: string,
+): { cites: number[]; why: Why } | undefined {
   const { world, content } = ctx;
   let g = atLeast(world, content, p.id, 'take') ? grievanceOf(world, content, p.id) : undefined;
+  // From the tithe barn (6C Slice 2): only a grievance against the Lord law, else hunger.
+  if (law && g?.law !== law) g = undefined;
   let why = g ? reasonsOf(world, content, p.id, g.setting) : {};
   // A grievance without its memory and belief still leaves hunger as a reason.
   if (!why.mem || !why.belief) {
@@ -93,6 +104,57 @@ export function pilfer(ctx: SystemContext, p: EntityRow, food: EntityRow): void 
   row['took'] = world.tick;
   const saw = seenBy(ctx.world, ctx.content, p);
   if (saw.length) caught(ctx, p, 'took', saw, line);
+}
+
+/** Food in the tithe barn, the kind there is most of first (6C Slice 2). */
+function barnFood(ctx: SystemContext): string[] {
+  const eat = ctx.content.life.eat;
+  return barnOf(ctx.world)
+    .filter((b) => (eat[b.kind] ?? 0) > 0)
+    .sort((a, b) => b.count - a.count || (a.kind < b.kind ? -1 : 1))
+    .map((b) => b.kind);
+}
+
+/** Whether `p` would take from the tithe barn now (6C Slice 2, V-222): due a take, with food in
+ * the barn, and a grievance against the Lord law at the `take` step (else hunger in hard times)
+ * with its memory and belief. */
+export function raidsBarn(ctx: SystemContext, p: EntityRow): boolean {
+  const row = defyOf(ctx.world, p.id);
+  if (!row || !due(ctx, row['took'] as number, ctx.content.defy.take.every)) return false;
+  return barnFood(ctx).length > 0 && !!takeWhy(ctx, p, ctx.content.lord.tithe.law);
+}
+
+/** At the tithe barn: `p` takes `take.count` of its food and hides it at home (a held stash, as
+ * from the store), a line citing the answer, memory and belief; seen, they are caught. */
+export function hideFromBarn(ctx: SystemContext, p: EntityRow): void {
+  const { world, content } = ctx;
+  const row = defyOf(world, p.id);
+  const reason = row && takeWhy(ctx, p, content.lord.tithe.law);
+  const kind = barnFood(ctx)[0];
+  if (!row || !reason || !kind) return;
+  const n = fromBarn(world, kind, content.defy.take.count);
+  if (!n) return;
+  const line = ctx.emit('defy.hidTithe', {
+    causes: reason.cites,
+    actors: [p.id],
+    data: {
+      ...{ name: p['name'] as string, count: n },
+      food: (content.items.find((d) => d.id === kind)?.name ?? kind).toLowerCase(),
+      why: whyWords(world, content, reason.why),
+    },
+  });
+  const spot = { x: p['x'] as number, y: p['y'] as number, z: p['z'] as number };
+  const stash = layItem(
+    world,
+    { kind, count: n, ...spot, made: line },
+    { owner: p.id, state: 'hid' },
+  );
+  const item = (world.entities['item'] ?? []).find((i) => i.id === stash);
+  if (item) item['holder'] = p.id;
+  addEntity(world, 'hidden', { item: stash, person: p.id, kind, count: n, line });
+  row['took'] = world.tick;
+  const saw = seenBy(world, content, p);
+  if (saw.length) caught(ctx, p, 'hid', saw, line);
 }
 
 /** Each hour: those at the `brawl` step, due one and among people, come to blows. */

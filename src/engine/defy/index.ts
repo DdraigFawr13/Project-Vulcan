@@ -1,6 +1,6 @@
 // Public surface of the defiance system.
 export { defySystem } from './system.ts';
-export { pilfer } from './acts.ts';
+export { hideFromBarn, pilfer, raidsBarn } from './acts.ts';
 export { coolOf } from './ladder.ts';
 export {
   atLeast,
