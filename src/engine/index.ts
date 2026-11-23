@@ -79,6 +79,7 @@ export const TEST_TOOLS: readonly string[] = [
   'deconstruct',
   'cutStairs',
   'sinkShaft',
+  'findSeam',
   'markFell',
   'markStore',
   'hurt',

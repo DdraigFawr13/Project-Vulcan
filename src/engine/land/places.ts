@@ -3,15 +3,17 @@
 // by the scout once home and telling of it. Each is a `land.found` line, and so a tale. Curios come
 // to anyone far out: each hour more than `curio.far` tiles from the green, 1 in `curio.per`, at
 // most one a person a season; a third leave a memory. Rolls draw from the `trips` stream.
-import { clockAt, streamFor, type EntityRow, type Place } from '../core/index.ts';
+import { clockAt, list, streamFor, type EntityRow, type Find, type Place } from '../core/index.ts';
 import { isDown } from '../health/index.ts';
 import { compass, placeKind } from '../map/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { people } from '../band/index.ts';
-import { apart, awayFrom } from './camp.ts';
+import { apart, awayFrom, unpack } from './camp.ts';
 import { greenOf } from '../build/index.ts';
+import { storeOf } from '../goods/index.ts';
 import { wordHour } from './word.ts';
+import { seamHour } from './seams.ts';
 
 /** Every 10 minutes (and when a scout comes home, `scout` with their trip's line): each find
  * whose tile has become known is found. Returns the finds' lines. */
@@ -114,9 +116,38 @@ export function curioHour(ctx: SystemContext): void {
 }
 
 /** Each minute (V-206): finds seen are found, the far out may come on a curio, a newcomer tells
- * of their road in. */
+ * of their road in, and anyone beside a rock face may spot a seam in it (V-215). */
 export function findsMinute(ctx: SystemContext): void {
   spotPlaces(ctx);
   curioHour(ctx);
   wordHour(ctx);
+  seamHour(ctx);
+}
+
+/** Home from seeing what lies beyond: one line naming what they found, citing the setting-out. */
+export function toldBeyond(ctx: SystemContext, p: EntityRow, trip: Find, finds: number[]): void {
+  const { world, content } = ctx;
+  const [ox, oy] = origin(ctx);
+  if (p['packed']) unpack(ctx, p);
+  const names = world.map.places
+    .filter((pl) => finds.includes(pl.line))
+    .map((pl) => placeKind(content, pl.kind)!.name);
+  const line = ctx.emit('land.beyond', {
+    causes: [trip.line],
+    actors: [p.id],
+    data: {
+      name: p['name'] as string,
+      far: apart(trip.x, trip.y, ox, oy),
+      dir: compass(trip.x - ox, trip.y - oy),
+      found: names.length ? list(names) : 'nothing new',
+    },
+  });
+  Object.assign(trip, { count: 0, line, tick: world.tick });
+}
+
+/** Where the store stands (the green before there is one). */
+export function origin(ctx: SystemContext): [number, number] {
+  const first = storeOf(ctx.world)[0];
+  const map = ctx.world.map;
+  return first ? [first['x'] as number, first['y'] as number] : [map.startX, map.startY];
 }

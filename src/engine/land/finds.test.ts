@@ -38,7 +38,9 @@ describe('finds', () => {
         expect(clay).toBeGreaterThanOrEqual(5);
       }
     }
-    expect([...kinds].sort()).toEqual(content.work.scout.places.kinds.map((k) => k.id).sort());
+    // Seams are not laid: they are spotted in rock faces (V-215).
+    const laid = content.work.scout.places.kinds.filter((k) => k.rule !== 'seam');
+    expect([...kinds].sort()).toEqual(laid.map((k) => k.id).sort());
   });
 
   it('a find seen is found by whoever is nearest, a line and a tale', () => {
@@ -88,6 +90,8 @@ describe('finds', () => {
       work: { ...calmContent.work, scout: { ...def, beyond: { ...def.beyond, days: 1 } } },
     });
     const w = createWorld(run, 'anvil');
+    // Every rock face walked, so no ore want sends a prospector first (V-215).
+    w.map.faces.forEach((v, i) => v && (w.map.faces[i] = v | 128));
     for (let t = 0; t < 6 * DAY && !lines(w, 'land.beyond').length; t += 30) step(w, run, 30);
     const [out] = lines(w, 'work.tookUpScoutingBeyond');
     const [home] = lines(w, 'land.beyond');

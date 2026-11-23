@@ -15,7 +15,6 @@ import { Backdrop, FADE } from './fade.ts';
 import { HoverMark, tileUnder } from './hover.ts';
 import { Overview } from './overview.ts';
 import { readColours } from './overview-colours.ts';
-import { StainLayer } from './stains.ts';
 import { WindowFollower, WindowTiles, type Area } from './tile-window.ts';
 import { waterPicture } from './water-art.ts';
 
@@ -60,11 +59,7 @@ export class ValleyScene extends Phaser.Scene {
   /** 1 where the tile is known (V-030); unknown ground below draws black (the taste pick). */
   private known: Uint8Array = new Uint8Array(0);
   private dark = 0;
-  /** Brightness a vein keeps glinting through the dark. */
-  private glint = 1;
   /** Per feature: whether it is an ore vein. */
-  private veins: boolean[] = [];
-  private stains?: StainLayer;
   private backdrop?: Backdrop;
   /** Per terrain kind: 0 dry, 1 shallow water, 2 deep water. */
   private kindWater: number[] = [];
@@ -108,13 +103,9 @@ export class ValleyScene extends Phaser.Scene {
       Array.from({ length: kind.variants }, (_, v) => ground(`${kind.art}.${v + 1}`)),
     );
     this.snowFrame = ground(`${content.terrain.generator.rock.snowArt}.1`);
-    const { fogArt, fogVein } = content.terrain.generator.underground;
+    const { fogArt } = content.terrain.generator.underground;
     this.dark = ground(`${fogArt}.1`);
-    this.glint = fogVein;
-    this.veins = content.features.map((f) => f.kind === 'vein');
-    this.stains = new StainLayer(this);
     this.backdrop = new Backdrop(this);
-    this.window.layers.push(this.stains);
     this.iceFrame = ground('tile.ice.1');
     this.featureFrames = content.features.map((f) => nature(f.art));
     const { kinds } = content.terrain;
@@ -168,7 +159,6 @@ export class ValleyScene extends Phaser.Scene {
     this.levels = [];
     this.z = 0;
     this.show();
-    this.stains?.set(new Uint8Array(0), width);
     this.backdrop?.setMapSize(width, height);
     this.overview?.setMapSize(width, height);
     this.overview?.setLevel(0);
@@ -187,8 +177,6 @@ export class ValleyScene extends Phaser.Scene {
       storeChunk(this.levels, c, this.size.width, this.size.height);
       this.overview?.paint(c.z, this.levels[c.z]!, c);
     }
-    const surface = this.levels[0];
-    if (surface && chunks.some((c) => c.z === 0)) this.stains?.set(surface.stains, this.size.width);
     // A level's first chunks arrive when it is reached: if it is on screen, draw it whole.
     if (this.ground.length === 0 && this.levels[this.z]) return this.setLevel(this.z);
     // Water pictures depend on neighbours, so each chunk repaints a tile past its edges too.
@@ -221,7 +209,6 @@ export class ValleyScene extends Phaser.Scene {
   setLevel(z: number): void {
     this.z = z;
     this.show();
-    this.stains?.setLevel(z);
     this.overview?.setLevel(z);
     this.backdrop?.show(z === 0 && !this.window.far);
     if (!this.tiles?.ready) return;
@@ -338,8 +325,8 @@ export class ValleyScene extends Phaser.Scene {
           line.push(this.pictureOf(i, col, row));
           wet.push(-1);
         }
-        // In the dark only veins show, glinting through.
-        const feature = dark && !this.veins[this.things[i]! - 1] ? 0 : this.things[i]!;
+        // Nothing shows in the dark, veins neither (V-215).
+        const feature = dark ? 0 : this.things[i]!;
         const marker = this.known[i] ? this.markers[this.ground[i]!]! : -1;
         on.push(
           feature > 0
@@ -359,7 +346,7 @@ export class ValleyScene extends Phaser.Scene {
     for (let row = y; row < y + h; row += 1)
       for (let col = x; col < x + w; col += 1) {
         const known = this.known[row * width + col];
-        if (!surface) tiles.tile(FEATURES, col, row)?.setAlpha(known ? 1 : this.glint);
+        if (!surface) tiles.tile(FEATURES, col, row)?.setAlpha(1);
         else for (const k of [GROUND, WATER]) tiles.tile(k, col, row)?.setAlpha(known ? 1 : FADE);
       }
   }

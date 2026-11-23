@@ -1,4 +1,5 @@
 // What a miner is doing (P4.1): the task, who else is on which tile, starting and stopping it.
+import { beginSearch, type SearchBegin } from '../mine/index.ts';
 import type { EntityRow } from '../core/index.ts';
 import { loadOf } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -21,6 +22,8 @@ export interface Task {
   good: string;
   have: number;
   want: number;
+  /** A search tunnel to begin when this is taken up (V-215). */
+  search?: SearchBegin;
 }
 
 /** Targets (packed nodes) others are working on the tile-digging tasks. */
@@ -37,6 +40,7 @@ export function start(ctx: SystemContext, p: EntityRow, t: Task): void {
   const mine = content.work.mine;
   const skill = content.jobs.find((j) => j.id === mine.job)?.skill ?? '';
   const level = skillOf(world, p, skill);
+  if (t.search) beginSearch(ctx, t.search);
   p['job'] = 'mine';
   p['task'] = t.kind;
   p['what'] = t.what;

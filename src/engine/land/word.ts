@@ -5,12 +5,14 @@
 // sent, and no tile is named.
 import { streamFor, type EntityRow } from '../core/index.ts';
 import { greenOf } from '../build/index.ts';
-import { compass } from '../map/index.ts';
+import { compass, faceList, seamAt } from '../map/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { edgeSpot, people } from '../band/index.ts';
 import { sourceAt } from './sources.ts';
+import { oresWanted, oreWord, seamOres } from './seams.ts';
 
-/** The word held: 1 + the `scout.goods` index it is of (0: none), its way out and its line. */
+/** The word held: 1 + the `scout.goods` index it is of (0: none; past the goods, an ore of
+ * `seamOres`, V-215), its way out and its line. */
 export interface Word {
   good: number;
   dx: number;
@@ -68,8 +70,13 @@ function tell(ctx: SystemContext, p: EntityRow, state: Record<string, number>): 
         goods.forEach((def, k) => (counts[k]! += sourceAt(ctx, def, i) ? 1 : 0));
       }
   }
-  const k = counts.indexOf(Math.max(...counts));
-  if (!counts[k]) return;
+  // A real seam of an ore the colony wants and knows no seam of, passed within 5 tiles of the
+  // road, is told of first (V-215): its word steers the next prospector.
+  const ores = seamOres(ctx);
+  const wanted = oresWanted(ctx).map((o) => ores.indexOf(o.metal));
+  const seen = seamsAlong(ctx, wanted, g, edge);
+  const k = seen >= 0 ? goods.length + seen : counts.indexOf(Math.max(...counts));
+  if (seen < 0 && !counts[k]) return;
   let [dx, dy] = [edge.x - g.x, edge.y - g.y];
   // Wrong: they mean another way, a quarter, a half or three quarters round.
   const rng = streamFor(world, 'trips');
@@ -82,9 +89,44 @@ function tell(ctx: SystemContext, p: EntityRow, state: Record<string, number>): 
   const line = ctx.emit('land.word', {
     causes: [p['arrived'] as number],
     actors: [p.id],
-    data: { name: p['name'] as string, find: goods[k]!.find, dir: compass(dx, dy) },
+    data: { name: p['name'] as string, find: findOf(ctx, k), dir: compass(dx, dy) },
   });
   Object.assign(state, { good: k + 1, dx, dy, line });
+}
+
+/** The words for what word `k` is of: a scouted good's find, or an ore's seam. */
+function findOf(ctx: SystemContext, k: number): string {
+  const goods = ctx.content.work.scout.goods;
+  if (k < goods.length) return goods[k]!.find;
+  const id = seamOres(ctx)[k - goods.length]!;
+  const f = ctx.content.features.findIndex((d) => d.id === id) + 1;
+  return `a ${ctx.content.features[f - 1]!.vein!.seam!} seam of ${oreWord(ctx, f)} in the rock`;
+}
+
+/** The first of `wanted` (indices into `seamOres`) with an unfound seam within 5 tiles of the
+ * road from `edge` to the green; -1 for none. */
+function seamsAlong(
+  ctx: SystemContext,
+  wanted: readonly number[],
+  g: { x: number; y: number },
+  edge: { x: number; y: number },
+): number {
+  if (!wanted.length) return -1;
+  const map = ctx.world.map;
+  const ores = seamOres(ctx);
+  const steps = Math.max(Math.abs(edge.x - g.x), Math.abs(edge.y - g.y));
+  for (const i of faceList(map)) {
+    const f = seamAt(map, i);
+    const k = f ? ores.indexOf(ctx.content.features[f - 1]!.id) : -1;
+    if (k < 0 || !wanted.includes(k)) continue;
+    const [x, y] = [i % map.width, Math.floor(i / map.width)];
+    for (let s = 0; s <= steps; s += 1) {
+      const cx = g.x + Math.round(((edge.x - g.x) * s) / Math.max(1, steps));
+      const cy = g.y + Math.round(((edge.y - g.y) * s) / Math.max(1, steps));
+      if (Math.max(Math.abs(x - cx), Math.abs(y - cy)) <= 5) return k;
+    }
+  }
+  return -1;
 }
 
 /** Whether the way (rx, ry) lies within an eighth turn of the word's. */

@@ -41,7 +41,7 @@ describe('metal status', () => {
       data: { good: 'tin-ingot', level: 'some' },
     });
     step(w, sim, 1);
-    expect(metalStatus(w, content, 'tin')).toBe('No shaft yet: no tin stain found');
+    expect(metalStatus(w, content, 'tin')).toBe('No shaft yet: no tin seam found');
     const plate = stockView(w).find((s) => s.good === 'tin-ingot')!;
     expect(plate.status).toBe(metalStatus(w, content, 'tin'));
     expect(stockView(w).find((s) => s.good === 'logs')!.status).toBeUndefined();

@@ -121,8 +121,13 @@ describe('hearth and firewood', () => {
 
   it('heats a room evenly from its air, and the open from its fire, falling with distance', () => {
     const w = createWorld(sim, 'ledger');
+    // Every rock face walked, so nobody is off prospecting (V-215): not what this tests.
+    w.map.faces.forEach((v, i) => v && (w.map.faces[i] = v | 128));
     step(w, sim, 4 * DAY);
-    const fire = firesOf(w).find((f) => f['lit'] && f['banked'] === 0);
+    // Then on to the first hour a fire burns unbanked (the campfire may be out at dawn).
+    const burning = () => firesOf(w).find((f) => f['lit'] && f['banked'] === 0);
+    for (let h = 0; h < 48 && !burning(); h += 1) step(w, sim, 60);
+    const fire = burning();
     expect(fire).toBeDefined();
     const piece = furnitureOf(w).find((p) => p.id === fire!['piece'])!;
     const [x, y] = [piece['x'] as number, piece['y'] as number];

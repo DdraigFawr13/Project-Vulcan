@@ -1,4 +1,4 @@
-// The land's rows on a tile page: ground, stain, biome, height, fertility, temperature, ice,
+// The land's rows on a tile page: ground, biome, height, fertility, temperature, ice,
 // aura and water, each in words from the worker (GAME-02).
 import type { TileView } from '../worker/index.ts';
 
@@ -7,7 +7,6 @@ import type { TileView } from '../worker/index.ts';
 export function landFacts(tile: TileView): string[][] {
   return [
     ['ground', tile.ground],
-    ...(tile.stain ? [['stain', tile.stain]] : []),
     ...(tile.biome ? [['biome', tile.biome]] : []),
     ...(tile.elevation !== undefined ? [['height', `${tile.elevation} m`]] : []),
     ...(tile.fertility !== undefined ? [['fertility', `${tile.fertility} of 100`]] : []),

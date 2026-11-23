@@ -9,6 +9,7 @@ import {
   compass,
   entityOf,
   greenOf,
+  itemName,
   placeKind,
   recordOf,
   type Find,
@@ -147,11 +148,16 @@ function placePage(w: WorldState, x: number, y: number, lineOf: LineOf): { find?
   const kind = p && placeKind(content, p.kind);
   if (!p || !kind) return {};
   const line = recordOf(w, p.line);
+  // A seam names its ore and colour (V-215): "a green seam of copper".
+  const vein = p.what ? content.features.find((f) => f.id === p.what) : undefined;
+  const name = vein?.vein?.seam
+    ? `a ${vein.vein.seam} seam of ${itemName(content, vein.yields).replace(/ ore$/, '')}`
+    : kind.name;
   return {
     find: {
-      title: cap(kind.name),
+      title: cap(name),
       rows: [
-        ['find', `${kind.name}, ${fromHome(w, x, y)}`],
+        ['find', `${name}, ${fromHome(w, x, y)}`],
         ['found by', personName(w, p.by) ?? 'someone of the colony'],
         ['when', whenWords(p.tick)],
         [kind.use ? 'worked' : 'seen', kind.then],
