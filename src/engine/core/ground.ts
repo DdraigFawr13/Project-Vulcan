@@ -39,6 +39,8 @@ export interface WalkingDef {
   ice: number;
   /** P5.10: a step on a road, in tenths of the step on plain ground. */
   road: number;
+  /** Minutes a step through water nobody can stand in, out from where the ice melted under them. */
+  wade: number;
 }
 
 /** P5.10 footfall (src/content/schemas-town.ts has the meaning of each dial; map/wear.ts). */

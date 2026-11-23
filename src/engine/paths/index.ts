@@ -3,3 +3,4 @@ export { costAt, pack, stepCost, unpack, walkAt } from './grid.ts';
 export type { Node, Spot } from './grid.ts';
 export { besideReachable } from './beside.ts';
 export { canReach, findPath, reachFrom } from './search.ts';
+export { wayAshore } from './shore.ts';
