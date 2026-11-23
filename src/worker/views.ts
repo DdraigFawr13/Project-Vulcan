@@ -31,6 +31,7 @@ import { tileWild } from './wild.ts';
 import { tileRoad } from './roads.ts';
 import { tavernPlace } from './tavern.ts';
 import { tilePlace } from './places.ts';
+import { tileFind } from './finds.ts';
 import type { ClockView, LedgerLine, TileView } from './protocol.ts';
 
 export function clockView(tick: number): ClockView {
@@ -97,12 +98,16 @@ export function tileView(
   if (!layer) return undefined;
   const chunkX = Math.floor(x / CHUNK);
   const chunkY = Math.floor(y / CHUNK);
+  const version = layer.chunkVersions[chunkY * chunksAcross(map) + chunkX]!;
+  // Unseen surface (6W Slice 6, V-213) says only that: no ground, height or what lies there.
+  if (z === 0 && map.known[y * map.width + x] !== 1)
+    return { x, y, z, ground: 'not yet seen', unseen: true, chunkX, chunkY, version };
   const i = y * map.width + x;
   const changedBy = recordOf(w, layer.tileCauses[i]!);
   const feature = layer.features[i]! > 0 ? content.features[layer.features[i]! - 1] : undefined;
   const snowy = z === 0 && map.snow[i] === 1;
   const under = z < map.levels.length ? layerOf(map, z + 1) : undefined;
-  // Fog below the surface only; the surface's known land is shown from Slice 6 (V-205).
+  // Fog below the surface only; unseen surface is answered above.
   const dark = z > 0 && 'known' in layer && !layer.known[i];
   const stained = z === 0 && map.stains[i]! > 0 ? content.features[map.stains[i]! - 1] : undefined;
   const rows = {
@@ -127,7 +132,7 @@ export function tileView(
     ...waysOf(map, i, z),
     chunkX,
     chunkY,
-    version: layer.chunkVersions[chunkY * chunksAcross(map) + chunkX]!,
+    version,
     ...(changedBy && { changedBy: lineOf(changedBy) }),
     ...tileGoods(w, x, y, z, lineOf),
     ...(z === 0 && tileHouse(w, x, y, lineOf)),
@@ -138,6 +143,7 @@ export function tileView(
     ...(z === 0 && tileRoad(w, i)),
     ...(z === 0 && tilePlace(w, x, y, lineOf)),
     ...(z === 0 && tavernPlace(w, x, y, lineOf)),
+    ...(z === 0 && tileFind(w, x, y, lineOf)),
   };
   // Unknown ground below is named only as unknown, with a vein glinting through (V-030).
   if (!dark) return rows;

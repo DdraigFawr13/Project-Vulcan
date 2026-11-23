@@ -180,6 +180,9 @@ export function makeCamp(ctx: SystemContext, p: EntityRow, night: boolean): void
       far,
       dir,
       fire: fire ? `, and lit a fire against the cold (${temp} °C)` : '',
+      // Where, for the Trips tab's Show (6W Slice 6); not in the words.
+      x: p['x'] as number,
+      y: p['y'] as number,
     },
   });
   const pack = packOf(world);

@@ -8,6 +8,7 @@ import {
   type BuildView,
   type ChunkView,
   type ClockView,
+  type FindMark,
   type GoodsView,
   type PersonView,
   type Speed,
@@ -28,6 +29,7 @@ import { Finder } from './finder.ts';
 import { WildSprites } from './wild.ts';
 import { WearLayer } from './wear.ts';
 import { CanopyLayer } from './canopy.ts';
+import { FlagLayer } from './flags.ts';
 import { TrailClock } from './trail.ts';
 import { TILE, ValleyScene, type Hover } from './scene.ts';
 
@@ -65,6 +67,8 @@ export interface Renderer {
   setAnimals(animals: readonly AnimalView[]): void;
   /** The animal standing on a tile of the surface, if any: its id. */
   animalAt(x: number, y: number): number | undefined;
+  /** Flags the found places (6W Slice 6). */
+  setFinds(marks: readonly FindMark[]): void;
   /** Moves the people to where the latest snapshot (its tick and speed) stands them (P2.3); they
    * walk there a few game minutes behind, at the pace they really walked (trail.ts). */
   movePeople(
@@ -128,13 +132,14 @@ function layersOf(game: Phaser.Game, scene: ValleyScene, parent: HTMLElement) {
   const wild = new WildSprites(game, scene, clock);
   const wear = new WearLayer(scene);
   const canopy = new CanopyLayer(scene);
+  const flags = new FlagLayer(game, scene);
   scene.window.layers.push(wear, canopy, wild);
   scene.spots = () => people.spots();
   const finder = new Finder(game, scene, () => people.spots());
   const bubbles = new Bubbles(game, scene, parent, () => people.spots());
   return {
     ...{ game, scene, parent, clock, people, goods, build, fields, shafts, burial, furniture },
-    ...{ green, light, bars, wild, wear, canopy, finder, bubbles },
+    ...{ green, light, bars, wild, wear, canopy, flags, finder, bubbles },
   };
 }
 
@@ -164,10 +169,8 @@ function watchAnimalFinder({ game, scene, parent, wild }: Layers): void {
   });
 }
 
-/** Seen at work (V-194): this event centres the view on someone working with the motion named
- * in its detail and, once a frame is drawn, writes where they stand (`data-worker-at`), the work
- * bits in the air (`data-bits`) and how many hold a tool or carry a load (`data-tools`,
- * `data-loads`). */
+/** Seen at work (V-194): centres on someone working with the named motion, then writes where
+ * they stand, the bits in the air and how many hold a tool or a load (`data-*`). */
 function watchWorkFinder({ game, scene, parent, people }: Layers): void {
   parent.addEventListener('vulcan:find-worker', (e) => {
     const motion = (e as CustomEvent<string | undefined>).detail;
@@ -215,7 +218,8 @@ function viewHandle(l: Layers) {
       scene.setLevel(z);
       for (const layer of [l.people, l.goods, build, fields, l.shafts, l.burial, l.furniture])
         layer.setLevel(z);
-      for (const layer of [l.green, light, l.bars, wild, wear, l.canopy]) layer.setLevel(z);
+      for (const layer of [l.green, light, l.bars, wild, wear, l.canopy, l.flags])
+        layer.setLevel(z);
     },
     focus: (x: number, y: number, below: number) =>
       scene.controls?.focus((x + 0.5) * TILE, (y + 0.5) * TILE, below),
@@ -276,6 +280,7 @@ function goodsHandle(l: Layers) {
       l.wild.setMiddens(view.middens);
     },
     setBuild: (view: BuildView) => l.green.set(view),
+    setFinds: (marks: readonly FindMark[]) => l.flags.set(marks, l.parent),
   };
 }
 

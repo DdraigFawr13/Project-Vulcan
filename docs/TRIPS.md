@@ -37,3 +37,13 @@ Each quarter hour walking on the surface more than `reach` tiles from the green,
 ## Lines
 
 `land.camped`, `land.packEmpty`, `land.lostWay`, `land.late`, `land.searching`, `land.foundScout`, `land.notFound` (events.json); `land.late` and `land.foundScout` are recap troubles (annals.json). Tests: land `scout.test.ts` "trips".
+
+## On screen (Slice 6, V-213)
+
+- **Unseen surface** (`map.known` not 1, a scout's held sightings included) goes out in its chunk as ground, snow and ice only (engine map `chunkTiles`): no features, stains, prints, wear or builds, `known` 0. Known land raises no chunk version, so the worker's `knownFeed` (worker `finds.ts`) counts each surface chunk's known tiles once a tick and resends a chunk whose count grew.
+- **Drawn faded** (render `fade.ts`): ground and water tiles at `FADE` (0.33) over a page-coloured sheet under the surface, no spring marker; lying snow fades with them (`wild.ts`); an animal on unseen land is not drawn and cannot be tapped. The overview fades the same (`overview-colours.ts` `faded`). Below ground is unchanged (V-030).
+- **Its page** (worker `views.ts`): `ground: 'not yet seen'`, `unseen`, and nothing else; the hover says the same.
+- **Flags** (render `flags.ts`): one rubric flag drawn by script on each find on known land (`findMarks`: a scout's news of `least` or more sources), sent in the snapshot's `finds` when changed; it keeps its 1x size on screen when zoomed out, over the overview. `data-flags` on `#game` lists them. The find's tile page (`tileFind`, `FindView`): title ("A wood · tile x, y"), find, found by, when, worked (with what is left), and the line under "Found ·".
+- **Trips tab** (the Ledger's third tab, ui `triprows.ts`): the page asks `trips` and the worker answers `tripsView`: who is out and when due (else what sends a scout), then each trip, newest first, its title, hours out and nights camped, and its lines (the set-out line and every `land.` line citing one of the trip's lines, from the recent log). `land.camped` (data `x`, `y`) and `land.toldOf` lines carry `at` for a Show button that moves the camera only. An open tab asks again when a trip line arrives.
+- **Scouting row** (`WalkerView.work[].about`, `trips.ts` `scoutingWords`): "<name> is out for <need>, due home <when>" or "nobody out; last trip home N days ago", in place of "no skill needed".
+- Tests: worker `trips.test.ts`; render `overview-colours.test.ts`; browser `known.spec.ts`.
