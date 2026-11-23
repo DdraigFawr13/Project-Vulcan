@@ -18,8 +18,9 @@ import {
   withoutAccidents,
 } from '../index.ts';
 import { storyWorld } from '../region/story.ts';
-import { kindOf, lordIn } from '../region/index.ts';
-import { lordName, lordRow, reeveRow, titleOf } from './index.ts';
+import { kindOf, lordIn } from '../region/lord.ts';
+import { lordName, lordRow, reeveRow } from './index.ts';
+import { titleOf } from './tables.ts';
 
 type World = ReturnType<typeof createWorld>;
 const SEED = 'smoke/1';

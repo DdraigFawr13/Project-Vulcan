@@ -24,7 +24,7 @@ export const LORD_SCHEMAS = {
       speakBy: hour,
       leave: hour,
       reach: num({ min: 1 }),
-      seek: num({ min: 1 }),
+      look: num({ min: 1 }),
     }),
     // What each temper (the package's ids) adds to the weight of the news's memory.
     tempers: map(count),

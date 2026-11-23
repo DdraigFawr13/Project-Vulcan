@@ -139,7 +139,7 @@ export function reeveMinute(ctx: SystemContext, r: EntityRow): void {
     return;
   }
   let sought = alive(world).find((p) => p.id === r['seeks']);
-  if (!sought || world.tick - (r['looked'] as number) >= dials.seek) {
+  if (!sought || world.tick - (r['looked'] as number) >= dials.look) {
     sought = soughtOf(world);
     r['seeks'] = sought?.id ?? 0;
     r['looked'] = world.tick;

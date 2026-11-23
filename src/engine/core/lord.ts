@@ -19,7 +19,7 @@ export interface LordDef {
     speakBy: number;
     leave: number;
     reach: number;
-    seek: number;
+    look: number;
   };
   /** What each temper adds to the news's memory weight. */
   tempers: Readonly<Record<string, number>>;

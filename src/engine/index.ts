@@ -1,7 +1,6 @@
 // The engine's one public surface. The engine is pure: same seed, content and commands, same
 // ledger, tick for tick (DECISIONS V-002, V-006). The worker is the only place it is run.
-// Each system's index.ts is passed on whole; a new system adds one export line and its SYSTEMS
-// entry.
+// Each system's index.ts is passed on whole; a new system adds an export and a SYSTEMS entry.
 import { annalsSystem } from './annals/index.ts';
 import { beesSystem } from './bees/index.ts';
 import { buildSystem } from './build/index.ts';
