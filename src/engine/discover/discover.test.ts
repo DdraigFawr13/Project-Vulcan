@@ -86,9 +86,11 @@ describe('hints and breakthroughs', () => {
     expect(lines(w, 'discover.puzzle')).toEqual([]);
   });
 
-  it('a puzzle left a month for other work is put aside', () => {
+  it('a puzzle left two months for other work is put aside, but not one left a month', () => {
     const { w, smith, hours } = forge();
     hours(3 * 24);
+    hours(content.methods.drop.days * 24 + 24, '');
+    expect(lines(w, 'discover.dropped')).toEqual([]);
     hours(content.methods.drop.days * 24 + 24, '');
     const [put] = lines(w, 'discover.dropped');
     expect(put?.actors).toEqual([smith.id]);
