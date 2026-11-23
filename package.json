@@ -34,6 +34,7 @@
     "teach": "node tools/teach.mjs",
     "callings": "node tools/callings.mjs",
     "decade": "node tools/decade.mjs",
+    "timeuse": "node tools/timeuse.mjs",
     "discover": "node tools/discover.mjs",
     "test": "vitest run",
     "test:related": "vitest related --run",
