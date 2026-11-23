@@ -17,6 +17,7 @@ import type { CallingsDefs } from './callings.ts';
 import type { DefyDefs } from './defy.ts';
 import type { TavernDefs } from './tavern.ts';
 import type { LordDefs } from './lord.ts';
+import type { MethodsDefs } from './methods.ts';
 import type { BiomesDef, SeasonsDef, WeatherDef } from './climate.ts';
 import type { CalendarDef } from './clock.ts';
 import type { FeatureDef } from './ground.ts';
@@ -43,6 +44,7 @@ export interface EngineContent
     CallingsDefs,
     TavernDefs,
     LordDefs,
+    MethodsDefs,
     DefyDefs {
   calendar: CalendarDef;
   /** `notable`: when a line is an alert and a skip stop (P2.6, log/notable.ts); `importance` 1

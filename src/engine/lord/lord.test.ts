@@ -102,7 +102,7 @@ describe('the lord and the reeve', () => {
     expect(lines(loaded, 'lord.named')).toHaveLength(1);
   });
 
-  it('comes the morning after a harvest home whose supper was never eaten (V-219)', () => {
+  it('comes the morning after a harvest home whose supper was never eaten (V-220)', () => {
     // Test world 1 lost its year-3 visit this way: the supper lapsed and the reeve waited on it.
     const later = structuredClone(w);
     const home = harvestHome(later, sim, false);

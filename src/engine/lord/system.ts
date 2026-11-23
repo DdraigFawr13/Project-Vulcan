@@ -11,7 +11,7 @@ import { reeveMinute, sendReeve, soughtOf } from './reeve.ts';
 import { LORD_TABLES, lordRow, reeveRow, titleOf } from './tables.ts';
 
 /** The first harvest-home supper called after feast `done` (a supper with no couple and no feast
- * day), eaten or not (V-219): the reeve comes for the harvest, not the supper. */
+ * day), eaten or not (V-220): the reeve comes for the harvest, not the supper. */
 function nextHarvest(ctx: SystemContext): EntityRow | undefined {
   return (ctx.world.entities['feast'] ?? []).find(
     (f) => f.id > (ctx.state['done'] ?? 0) && !(f['couple'] as number[]).length && !f['holy'],
