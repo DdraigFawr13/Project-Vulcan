@@ -14,26 +14,36 @@ test('an animal drawn on the map opens its herd page at 390 px', async ({ page }
   // The snapshot carries the animals; the renderer's event centres the view on one.
   await expect.poll(async () => Number(await game.getAttribute('data-animals'))).toBeGreaterThan(0);
   // Only an animal on seen land is drawn (V-213): none is on arrival; one wanders into sight
-  // within the first day on tallow (hour 9; anvil not for a week), so play until one is drawn,
-  // then pause.
-  const find = () => game.evaluate((g) => g.dispatchEvent(new Event('vulcan:find-animal')));
-  await chooseSpeed(page, 3);
-  await expect
-    .poll(async () => (await find(), game.getAttribute('data-animal-at')), { timeout: 30_000 })
-    .not.toBeNull();
-  await page.getByTestId('speed-0').click();
-  // Paused, the animal may still be gliding to its last step, and the view follows it, so wait
-  // until two looks find it on the same map spot.
-  let last: string | null = null;
-  await expect
-    .poll(async () => {
-      await find();
-      const at = await game.getAttribute('data-animal-map');
-      const still = at !== null && at === last;
-      last = at;
-      return still;
-    })
-    .toBe(true);
+  // within the first day on tallow (hour 9; anvil not for a week). A look waits two frames, so
+  // the renderer has written its answer, and returns the animal's map spot (null with none drawn).
+  const look = async () => {
+    await game.evaluate(async (g) => {
+      g.dispatchEvent(new Event('vulcan:find-animal'));
+      for (let i = 0; i < 2; i += 1) await new Promise((done) => requestAnimationFrame(done));
+    });
+    return game.getAttribute('data-animal-map');
+  };
+  // Play until one is drawn, then pause. Until the pause lands it may walk on, even onto unseen
+  // land where it is no longer drawn (CI on PRs #192 and #193 tapped bare marsh), so look until
+  // two looks find it on the same spot; if it is gone, play on and try again.
+  let still = false;
+  for (let tries = 0; tries < 5 && !still; tries += 1) {
+    await chooseSpeed(page, 3);
+    await expect.poll(look, { timeout: 30_000 }).not.toBeNull();
+    await page.getByTestId('speed-0').click();
+    let last: string | null = null;
+    let state = 'moving';
+    await expect
+      .poll(async () => {
+        const at = await look();
+        state = at === null ? 'gone' : at === last ? 'still' : 'moving';
+        last = at;
+        return state;
+      })
+      .not.toBe('moving');
+    still = state === 'still';
+  }
+  expect(still, 'an animal stays drawn once play is paused').toBe(true);
   const [x, y] = (await game.getAttribute('data-animal-at'))!.split(',').map(Number);
   const box = (await game.locator('canvas').boundingBox())!;
   await page.mouse.click(box.x + x!, box.y + y!);
