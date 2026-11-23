@@ -134,8 +134,17 @@ export interface WorkDef {
      * shaft's ground may have (1: plain); the shaft plan's sentence and the taking-up words. */
     avoid: number;
     walk: number;
+    /** The most tiles one search tunnel runs (V-215). */
+    search: number;
     why: string;
-    words: { sink: string; tunnel: string; mine: string; clay: string; cellar: string };
+    words: {
+      sink: string;
+      tunnel: string;
+      search: string;
+      mine: string;
+      clay: string;
+      cellar: string;
+    };
   };
   /** Scouting (6W Slice 4, V-205): the colony wants a scout when the stock of one of `goods`
    * plus its known sources within `reach` of the store (and round finds) is under its level; the

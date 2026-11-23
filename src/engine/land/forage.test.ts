@@ -77,6 +77,8 @@ describe('foraging', () => {
       const world = createWorld(sim, seed);
       // The whole valley known (V-205): this test is not about known land.
       world.map.known.fill(1);
+      // Every rock face walked: a prospector's days out are not what this tests (V-215).
+      world.map.faces.forEach((v, i) => v && (world.map.faces[i] = v | 128));
       fedRuns.set(seed, world);
       let stored = 0;
       for (let day = 1; day <= 35; day += 1) {

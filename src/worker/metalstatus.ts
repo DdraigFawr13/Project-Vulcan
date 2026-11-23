@@ -35,7 +35,7 @@ export function metalStatus(world: WorldState, content: EngineContent, metal: st
     const ore = content.features.find((f) => f.kind === 'vein' && f.yields === short.kind);
     if (!ore) return `Waiting on ${nameOf(content, short.kind)}`;
     const shaft = shaftFor(world, ore.id);
-    if (!shaft) return `No shaft yet: no ${ore.id} stain found`;
+    if (!shaft) return `No shaft yet: no ${ore.id} seam found`;
     if (shaft['state'] === 'planned') return `A shaft to ${ore.id} is planned`;
     if (shaft['state'] === 'sinking') return `Miners are sinking a shaft to ${ore.id}`;
     return `Miners are digging for ${ore.id} ore`;

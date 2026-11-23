@@ -112,13 +112,11 @@ export function tileView(
   const under = z < map.levels.length ? layerOf(map, z + 1) : undefined;
   // Fog below the surface only; unseen surface is answered above.
   const dark = z > 0 && 'known' in layer && !layer.known[i];
-  const stained = z === 0 && map.stains[i]! > 0 ? content.features[map.stains[i]! - 1] : undefined;
   const rows = {
     x,
     y,
     z,
-    ground: `${content.terrain.kinds[layer.tiles[i]!]!.name}${snowy ? ', snow-capped' : ''}${stained?.vein?.stainWord ? ` with a ${stained.vein.stainWord} stain` : ''}`,
-    ...(stained && { stain: `${metalOf(stained)} lies below, on level ${stained.vein!.level}` }),
+    ground: `${content.terrain.kinds[layer.tiles[i]!]!.name}${snowy ? ', snow-capped' : ''}`,
     ...(z === 0 && {
       biome: content.biomes.biomes[map.biomes[i]!]!.name,
       elevation: map.elevation[i]!,
@@ -148,14 +146,10 @@ export function tileView(
     ...(z === 0 && tavernPlace(w, x, y, lineOf)),
     ...(z === 0 && tileFind(w, x, y, lineOf)),
   };
-  // Unknown ground below is named only as unknown, with a vein glinting through (V-030).
+  // Unknown ground below is named only as unknown; a vein there stays dark too (V-030, V-215).
   if (!dark) return rows;
   const { below, water, drinkable, crossing, aura, ways, feature: seen, ...safe } = rows;
-  return {
-    ...safe,
-    ground: 'unknown: nobody has dug next to it',
-    ...(feature?.vein && { feature: `${metalOf(feature)} glints through the dark` }),
-  };
+  return { ...safe, ground: 'unknown: nobody has dug next to it' };
 }
 
 /** A vein's metal: its ore's name without "ore" ("iron"). */

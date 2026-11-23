@@ -248,6 +248,9 @@ function scoutingDoing(world: WorldState, p: EntityRow, say: Say): string {
   }
   if (p['task'] === 'home') return say('scoutHome', {});
   if (p['what'] === 'beyond') return say('scoutBeyond', {});
+  // A prospector (V-215): out for an ore's seam.
+  const vein = content.features.find((f) => f.id === p['what'] && f.vein);
+  if (vein) return say('prospect', { ore: itemName(content, vein.yields).replace(/ ore$/, '') });
   const good = content.work.stock.find((s) => s.good === p['what'])?.name ?? '';
   return say('scout', { good });
 }

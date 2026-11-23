@@ -6,6 +6,7 @@ import { content } from '../content/index.ts';
 import {
   createSim,
   createWorld,
+  plantSeam,
   shaftsOf,
   step,
   submitCommand,
@@ -23,7 +24,15 @@ const sim = createSim(content);
 // ~0.3 s). The last three tests start alike (iron raised at once, then days of stepping), so they
 // share one run in half-hour steps and read it where each used to read its own.
 let base: WorldState | undefined;
-const fresh = () => structuredClone((base ??= createWorld(sim, 'smoke')));
+/** Smoke with two iron seams found (V-215), so a shaft has a face to stand by and a sent-back
+ * plan another to go to. */
+function seamed(): WorldState {
+  const w = createWorld(sim, 'smoke');
+  plantSeam(w, content, 'iron');
+  plantSeam(w, content, 'iron');
+  return w;
+}
+const fresh = () => structuredClone((base ??= seamed()));
 const run = (() => {
   let w: WorldState | undefined;
   let steps = 0;

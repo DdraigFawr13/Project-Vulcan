@@ -17,7 +17,7 @@ export function shaftFacts(tile: TileView): [string, string][] {
     ['what', shaft.what],
     ['why here', shaft.why],
     ['work', shaft.work],
-    ['ground', tile.stain ? `${tile.ground}: ${tile.stain}` : tile.ground],
+    ['ground', tile.ground],
     ...(shaft.here ? [['here', shaft.here] as [string, string]] : []),
   ];
 }
@@ -42,7 +42,7 @@ export function shaftBack(tile: TileView, sendBack: () => void): HTMLElement[] {
     el(
       'p',
       { class: 'aside' },
-      'A plan can be sent back once; the miners then choose another stain.',
+      'A plan can be sent back once; the miners then dig beside another seam found, or wait for one.',
     ),
   ];
 }

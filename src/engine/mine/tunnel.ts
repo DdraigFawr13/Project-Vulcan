@@ -1,11 +1,12 @@
 // Tunnelling toward a vein (P4.1): on the shaft's vein level, known open ground costs a step and
 // each rock or earth tile the minutes digging it takes, so the way found runs through open ground
 // first and then the cheapest line of tiles to dig. Miners plan on what they know (V-030): a tile
-// not yet shown costs as rock whatever it really is, and veins show through the fog (V-094).
-// Ties go to the lower tile index.
+// not yet shown costs as rock whatever it really is, and the way makes for a vein tile they know:
+// one shown, or one behind a seam found in a rock face above (V-215). Ties go to the lower tile.
 import type { EngineContent, WorldState } from '../core/index.ts';
 import { diggable } from '../map/index.ts';
 import { walkAt } from '../paths/index.ts';
+import { seamTiles } from './site.ts';
 
 const SIDES = [
   [0, -1],
@@ -36,11 +37,15 @@ export function nextDig(
   const size = W * H;
   /** Known open ground: shown, and walkable. */
   const open = (i: number): boolean => !!layer.known[i] && walkAt(content, map, at.z, i) > 0;
+  const behind = seamTiles(world, content, metal);
+  /** A vein tile of the metal the miners know of. */
+  const goal = (i: number): boolean =>
+    layer.features[i] === f && (layer.known[i] === 1 || behind.has(i));
   /** Cost to enter tile `i`; 0 when it can be neither walked nor dug (known water not walked). */
   const enter = (i: number): number => {
     if (taken.has(i)) return 0;
     if (open(i)) return 1;
-    if (layer.features[i]) return vein;
+    if (goal(i) || (layer.known[i] && layer.features[i])) return vein;
     if (!layer.known[i]) return dig;
     return diggable(kinds[layer.tiles[i]!]!) ? dig : 0;
   };
@@ -80,7 +85,7 @@ export function nextDig(
     const i = key % size;
     const cost = (key - i) / size;
     if (cost > far[i]!) continue;
-    if (layer.features[i] === f) {
+    if (goal(i)) {
       // Walk back to the first tile on the way that is not open ground.
       let tile = i;
       for (let j = i; j !== start; j = prev[j]!) if (!open(j)) tile = j;

@@ -1,5 +1,6 @@
-// P4.1 mining (V-086, V-087, V-041): raising an ingot plate gets a shaft sited by the metal's stain
-// outside the town ring, dug by colonists nobody orders, and the ore reaches the store. The one
+// P4.1 mining (V-086, V-215, V-041): raising an ingot plate gets a shaft sited beside a found seam
+// of the metal (planted here; finding one is land's prospect.test.ts), dug by colonists nobody
+// orders, and the ore reaches the store. The one
 // lever beside the plate is sending a shaft plan back, once. Shafts are sited on the done-when's three
 // seeds; the ore test adds ledger, and keeps anvil, whose store once filled with a cleared site's logs.
 import { describe, expect, it } from 'vitest';
@@ -14,10 +15,9 @@ import {
   whyOf,
   type WorldState,
 } from '../index.ts';
-import { greenOf, ringOf } from '../build/index.ts';
 import { inStore, itemsOf, layItem } from '../goods/index.ts';
 import { walkAt } from '../paths/index.ts';
-import { nextDig, shaftsOf } from './index.ts';
+import { nextDig, plantSeam, shaftsOf } from './index.ts';
 import { openVein } from './site.ts';
 
 const DAY = 1440;
@@ -34,19 +34,20 @@ const SINK_SEED = 'smoke';
 const send = (world: WorldState, kind: string, data: Record<string, string | number>) =>
   submitCommand(world, { tick: world.tick + 1, kind, data });
 
-/** Whether a stain of feature `f` lies within `work.mine.near` tiles of (x, y). */
-function stainedNear(map: WorldState['map'], x: number, y: number, f: number): boolean {
-  const near = base.work.mine.near;
-  for (let dy = -near; dy <= near; dy += 1)
-    for (let dx = -near; dx <= near; dx += 1)
-      if (map.stains[(y + dy) * map.width + x + dx] === f) return true;
-  return false;
+const cheb = (ax: number, ay: number, bx: number, by: number) =>
+  Math.max(Math.abs(ax - bx), Math.abs(ay - by));
+
+/** Two seams of iron found, apart: the colony knows where to dig. */
+function seams(world: WorldState, content: Content = base): void {
+  plantSeam(world, content, 'iron');
+  plantSeam(world, content, 'iron');
 }
 
 /** A fresh world with the iron plate set to `level`, run for `days`. */
 function run(seed: string, days: number, content: Content = base, level = 'some') {
   const sim = createSim(content);
   const world = createWorld(sim, seed);
+  seams(world, content);
   send(world, 'setStock', { good: 'iron-ingot', level });
   step(world, sim, days * DAY);
   return { sim, world };
@@ -63,6 +64,7 @@ function plateDay(seed: string): WorldState {
     world = createWorld(plateSim, seed);
     // The whole valley known (V-205): these tests are not about known land.
     world.map.known.fill(1);
+    seams(world);
     send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
     step(world, plateSim, DAY);
     firstDays.set(seed, world);
@@ -77,6 +79,7 @@ function untilSinking() {
   const sim = plateSim;
   if (!sinking) {
     const world = createWorld(sim, SINK_SEED);
+    seams(world);
     send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
     const sinker = () =>
       (world.entities['person'] ?? []).some((q) => q['job'] === 'mine' && q['task'] === 'sink');
@@ -96,7 +99,7 @@ const oreStacks = (world: WorldState) =>
   );
 
 describe('mining', () => {
-  it('sites one shaft by the metal stain past the ring, on dry ground, with the reason', () => {
+  it('sites one shaft beside the nearer found seam, on dry ground, with the reason', () => {
     for (const seed of SEEDS) {
       const world = plateDay(seed);
       const shafts = shaftsOf(world);
@@ -104,21 +107,18 @@ describe('mining', () => {
       const s = shafts[0]!;
       const map = world.map;
       const i = (s['y'] as number) * map.width + (s['x'] as number);
-      const iron = base.features.findIndex((f) => f.id === 'iron') + 1;
-      const green = greenOf(world);
-      expect(stainedNear(map, s['x'] as number, s['y'] as number, iron)).toBe(true);
-      expect(walkAt(base, map, 0, i)).toBe(1);
-      const far = Math.max(
-        Math.abs((s['x'] as number) - green.x),
-        Math.abs((s['y'] as number) - green.y),
+      const seam = map.places.find((p) => p.what === 'iron')!;
+      expect(cheb(s['x'] as number, s['y'] as number, seam.x, seam.y)).toBeLessThanOrEqual(
+        base.work.mine.near,
       );
-      expect(far).toBeGreaterThan(ringOf(world, base));
+      expect(walkAt(base, map, 0, i)).toBe(1);
       const planned = linesOf(world, 'mine.shaftPlanned')[0]!;
       expect(planned.id).toBe(s['line']);
       expect(planned.data['why']).toMatch(
-        /^Iron is wanted \(0 of 10 ingots\) and no open vein holds iron\. This is by the nearest rust stain past the town ring: \d+ tiles [a-z-]+ of the green, on dry, level ground\.$/,
+        /^Iron is wanted \(0 of 10 ingots\) and no open vein holds iron\. This is beside the rust seam found in a rock face: \d+ tiles [a-z-]+ of the green, on dry, level ground\.$/,
       );
       expect(whyOf(world, planned.id).map((c) => c.event.type)).toContain('goods.stockSet');
+      expect(planned.causes).toContain(seam.line);
     }
   });
 
@@ -172,11 +172,10 @@ describe('mining', () => {
     expect(old!['state']).toBe('sent');
     expect(next!['sentBack']).toBe(1);
     expect(next!['state']).toBe('planned');
-    const apart = Math.max(
-      Math.abs((next!['x'] as number) - (old!['x'] as number)),
-      Math.abs((next!['y'] as number) - (old!['y'] as number)),
-    );
-    expect(apart).toBeGreaterThan(6);
+    // Beside the other seam found.
+    const other = world.map.places.filter((p) => p.what === 'iron')[1]!;
+    const by = cheb(next!['x'] as number, next!['y'] as number, other.x, other.y);
+    expect(by).toBeLessThanOrEqual(base.work.mine.near);
     send(world, 'sendBackShaft', { shaft: next!.id });
     step(world, sim, 60);
     const refused = linesOf(world, 'command.refused').at(-1)!;
@@ -185,18 +184,20 @@ describe('mining', () => {
     expect(shaftsOf(world).filter((s) => s['state'] === 'planned')).toHaveLength(1);
   });
 
-  it('says once that no stain lies within reach when the metal has none', () => {
-    const bare: Content = {
+  it('plans no shaft and says nothing while no seam of the metal is found', () => {
+    const blind: Content = {
       ...base,
-      features: base.features.map((f) =>
-        f.id === 'iron' ? { ...f, vein: { ...f.vein!, stain: false } } : f,
-      ),
+      work: {
+        ...base.work,
+        scout: { ...base.work.scout, prospect: { ...base.work.scout.prospect, per: 1e9 } },
+      },
     };
-    const { world } = run('tallow', 3, bare);
-    const alerts = linesOf(world, 'mine.noStain');
-    expect(alerts).toHaveLength(1);
-    expect(alerts[0]!.data['metal']).toBe('iron');
+    const sim = createSim(blind);
+    const world = createWorld(sim, 'tallow');
+    send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
+    step(world, sim, 3 * DAY);
     expect(shaftsOf(world)).toHaveLength(0);
+    expect(linesOf(world, 'mine.shaftPlanned')).toHaveLength(0);
   });
 
   it('digs known clay on level 1 for a wall plan that waits for it, then it is hauled up', () => {
@@ -226,9 +227,10 @@ describe('mining', () => {
   it('spends a sunk shaft that opens no way to a vein, says so once and sites another', () => {
     const sim = createSim(base);
     const world = createWorld(sim, SINK_SEED);
+    seams(world);
     send(world, 'setStock', { good: 'iron-ingot', level: 'some' });
     // Hour by hour, so the vein is gone before anyone has mined it and iron is still short.
-    for (let h = 0; h < 12 * 24 && shaftsOf(world)[0]?.['state'] !== 'done'; h += 1)
+    for (let h = 0; h < 24 * 24 && shaftsOf(world)[0]?.['state'] !== 'done'; h += 1)
       step(world, sim, DAY / 24);
     const first = shaftsOf(world)[0]!;
     expect(first['state']).toBe('done');
@@ -245,11 +247,9 @@ describe('mining', () => {
     const next = shaftsOf(world)[1]!;
     expect(next['state']).not.toBe('sent');
     expect(next['sentBack']).toBe(0);
-    const apart = Math.max(
-      Math.abs((next['x'] as number) - (first['x'] as number)),
-      Math.abs((next['y'] as number) - (first['y'] as number)),
-    );
-    expect(apart).toBeGreaterThan(base.work.mine.avoid);
+    const other = world.map.places.filter((p) => p.what === 'iron')[1]!;
+    const by = cheb(next['x'] as number, next['y'] as number, other.x, other.y);
+    expect(by).toBeLessThanOrEqual(base.work.mine.near);
     expect(whyOf(world, next['line'] as number).map((c) => c.event.type)).toContain('mine.noVein');
     // Once for each change of the plate, however many shafts come to nothing.
     step(world, sim, 8 * DAY);
@@ -277,7 +277,7 @@ describe('mining', () => {
           const { x, y, z, made } = item as Record<string, number>;
           layItem(world, { kind: 'logs', count: 1, x: x!, y: y!, z: z!, made: made! });
         }
-    for (let m = 0; m < (3 * DAY) / 10 && !linesOf(world, 'mine.sank').length; m += 1)
+    for (let m = 0; m < (8 * DAY) / 10 && !linesOf(world, 'mine.sank').length; m += 1)
       step(world, sim, 10);
     expect(linesOf(world, 'mine.sank')[0]?.data['ladder']).toBe(' with 2 logs for a ladder');
   });
@@ -295,7 +295,7 @@ describe('mining', () => {
     expect(linesOf(world, 'mine.sank')).toHaveLength(0);
   });
 
-  it('sees a vein through the fog but plans its tunnel only on ground it knows', () => {
+  it('keeps a vein dark until it is known, and plans tunnels only on what miners know', () => {
     const sim = createSim(base);
     const world = createWorld(sim, 'tallow');
     const { startX: x, startY: y } = world.map;
@@ -307,23 +307,26 @@ describe('mining', () => {
     level.features.forEach((f, i) => f === iron && (level.features[i] = 0));
     const kind = (id: string) => base.terrain.kinds.findIndex((k) => k.id === id);
     const at = (dx: number) => y * map.width + x + dx;
-    // A band of rock round the shaft foot, shown, with an iron tile at its end, not shown.
+    // A band of rock round the shaft foot, shown, with an iron tile beside the foot, not shown.
     for (let dy = -2; dy <= 2; dy += 1)
       for (let dx = 1; dx <= 8; dx += 1) {
         level.tiles[(y + dy) * map.width + x + dx] = kind('rock-wall');
         level.known[(y + dy) * map.width + x + dx] = 1;
       }
-    level.features[at(8)] = iron;
-    level.known[at(8)] = 0;
-    expect(openVein(world, base, 'iron')).toBe(false);
-    level.tiles[at(1)] = kind('rock-wall');
     level.features[at(1)] = iron;
     level.known[at(1)] = 0;
-    // A vein tile beside the foot counts as open though it was never shown.
-    expect(openVein(world, base, 'iron')).toBe(true);
-    level.features[at(1)] = 0;
     const foot = { x, y, z: 3 };
     const next = () => nextDig(world, base, foot, 'iron', new Set())?.tile;
+    // Unknown, it is no open vein and no tunnel makes for it (V-215).
+    expect(openVein(world, base, 'iron')).toBe(false);
+    expect(next()).toBeUndefined();
+    // Shown, it is open beside the foot.
+    level.known[at(1)] = 1;
+    expect(openVein(world, base, 'iron')).toBe(true);
+    // A known vein tile farther off: the way runs through known open ground first.
+    level.features[at(1)] = 0;
+    level.features[at(8)] = iron;
+    level.known[at(8)] = 1;
     expect(next()).toBe(at(1));
     // Ground not shown costs as rock, whatever it is: a cave floor there is the next tile to dig.
     level.tiles[at(1)] = kind(base.terrain.generator.underground.caves.kind);

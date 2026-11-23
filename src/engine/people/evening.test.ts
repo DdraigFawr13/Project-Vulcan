@@ -30,6 +30,8 @@ describe('winter evenings by the hearth', () => {
     const w = createWorld(sim, 'ledger');
     // The whole valley known (V-205), so the fellers work near the fires as this test expects.
     w.map.known.fill(1);
+    // Every rock face walked, so nobody is off prospecting (V-215) while the fires are built.
+    w.map.faces.forEach((v, i) => v && (w.map.faces[i] = v | 128));
     step(w, sim, 5 * TICKS_PER_DAY - (w.tick % TICKS_PER_DAY));
     step(w, sim, daylightAt(winter, w.tick).dusk);
     expect(winterEvening(w, winter)).toBe(true);
