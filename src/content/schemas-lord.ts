@@ -32,7 +32,7 @@ export const LORD_SCHEMAS = {
     memories: obj({ named: ref('memories'), bitter: ref('memories') }),
     // 6C Slice 2 (V-222): the tithe. The Lord law's id; the share in 100 of what is brought in
     // (tempers raising it); the item kinds tithed; the Build sheet's Tithe barn row (its name,
-    // start level and house size); in a lean year the tempers that take half, the memory each
+    // start level and house size); a lean year (under `days` days' eating in store at the visit), the tempers that take half, the memory each
     // grown-up keeps and the standing cause; one visit in `search` the reeve searches the houses.
     tithe: obj({
       law: str(),
@@ -41,6 +41,7 @@ export const LORD_SCHEMAS = {
       kinds: list(ref('items')),
       barn: obj({ name: text, start: num({ min: 1, max: 4 }), size: str() }),
       lean: obj({
+        days: num({ min: 1 }),
         half: list(str()),
         memory: ref('memories'),
         standing: obj({ by: num(), days: num({ min: 1 }), text }),

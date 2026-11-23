@@ -40,6 +40,8 @@ export interface TitheDef {
   barn: { name: string; start: number; size: string };
   /** A lean year: the tempers that take half, the memory each grown-up keeps, the standing cause. */
   lean: {
+    /** Under this many days' eating in store at the visit, the year is lean. */
+    days: number;
     half: readonly string[];
     memory: string;
     standing: { by: number; days: number; text: string };

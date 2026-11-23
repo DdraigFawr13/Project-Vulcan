@@ -158,6 +158,18 @@ describe('the lord and the reeve', () => {
     expect(titheRow(later, 'turnips')!['brought']).toBe(0);
   });
 
+  it('counts what he leaves in the barn towards the next share', () => {
+    const later = structuredClone(w);
+    broughtIn(later, content, 'turnips', 400, later.begunEvent);
+    titheRow(later, 'turnips')!['barn'] = 100;
+    harvestHome(later, sim);
+    untilGone(later, sim);
+    const [tithed] = lines(later, 'lord.tithed');
+    const row = titheRow(later, 'turnips')!;
+    expect(row['barn']).toBe(100 - (tithed!.data['tookN'] as number));
+    expect(row['set']).toBe(row['barn']);
+  });
+
   it('lets someone hungry take from the barn, the line citing their memory and belief', () => {
     const later = structuredClone(w);
     step(later, sim, 2 * TICKS_PER_DAY);

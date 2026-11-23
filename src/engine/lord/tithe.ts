@@ -4,7 +4,7 @@
 // carries is set due in the goods rows: Loyal all of it, Grudging half, Defiant only the shares of
 // those who keep a Loyal will (and only they may carry it). At each later visit the reeve counts the
 // barn against what is owed, takes what is there and writes what is short. In a lean year (the
-// store will not last to the harvest) a cautious, pious or learned lord takes half, the others
+// store holds under `lean.days` days' eating at the visit) a cautious, pious or learned lord takes half, the others
 // all; either way the colony's standing falls and every grown-up remembers it against the law.
 // One visit in `search` (a draw from the lord's stream) he searches the houses for goods hidden
 // from the barn.
@@ -13,7 +13,7 @@ import { alive, removeEntity } from '../entity/index.ts';
 import { builtHome, houseName } from '../build/index.ts';
 import { addCause } from '../colony/index.ts';
 import { grown } from '../family/index.ts';
-import { hiddenOf, storeLasts, titheRows } from '../goods/index.ts';
+import { foodDays, hiddenOf, titheRows } from '../goods/index.ts';
 import { decree, settingOf, weigh } from '../law/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -130,7 +130,7 @@ export function takeTithe(ctx: SystemContext, causes: number[], to: EntityRow): 
   const lord = lordRow(world)!;
   const rows = titheRows(world);
   const rate = rateOf(ctx);
-  const lean = !storeLasts(world, content, 0);
+  const lean = foodDays(world, content, alive(world).length).days < content.lord.tithe.lean.days;
   const half = lean && content.lord.tithe.lean.half.includes(lord['temper'] as string);
   const owed: [string, number][] = [];
   const there: [string, number][] = [];
@@ -148,7 +148,16 @@ export function takeTithe(ctx: SystemContext, causes: number[], to: EntityRow): 
     took.push([kind, n]);
     brought.push([kind, r['brought'] as number]);
     cites.push(...(r['lines'] as number[]));
-    Object.assign(r, { barn: barn - n, brought: 0, due: 0, set: 0, by: [], going: [], lines: [] });
+    // What he leaves in the barn counts towards the next share, so the barn does not swell.
+    Object.assign(r, {
+      barn: barn - n,
+      brought: 0,
+      due: 0,
+      set: barn - n,
+      by: [],
+      going: [],
+      lines: [],
+    });
   }
   const sum = (xs: [string, number][]) => xs.reduce((n, [, c]) => n + c, 0);
   const short: [string, number][] = owed.map(([k, n], i) => [k, n - took[i]![1]]);
