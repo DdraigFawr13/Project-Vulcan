@@ -1,6 +1,6 @@
 // Shape of Vulcan's methods file (src/content/data/methods.json, 6C Slice 5, V-142, V-218): the
 // new ways of working colonists can find, the hints that lead to each and the words for them.
-import { list, map, num, obj, opt, ref, str } from './schema';
+import { list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, text } from './schema-fields';
 
 const days = num({ min: 1 });
@@ -22,11 +22,13 @@ export const METHODS_SCHEMAS = {
     work: num({ min: 1 }),
     // Short jobs counted from their lines: each such line is `hours` at `job` for its first actor.
     credit: list(obj({ event: str(), job: ref('jobs'), hours: num({ min: 1 }) })),
-    // At most one failure hint a person in `days`; a book hint in `days`.
+    // At most one failure hint a person in `days`; a book hint (an `event` line) in `days`.
     failure: obj({ days }),
-    book: obj({ days }),
+    book: obj({ days, event: str() }),
+    // A puzzle is put aside at midnight with under `hours` at its trade in the last `days`.
+    drop: obj({ days, hours: count }),
     // A stranger's coming: a seen hint at 1 in `odds` for each puzzler, at most `most` a way.
-    seen: obj({ odds: num({ min: 1 }), most: num({ min: 1 }) }),
+    seen: obj({ odds: num({ min: 1 }), most: num({ min: 1 }), event: str() }),
     // Hearing the tale (tales.json `id`) of a find in the same trade: a hint at 1 in `odds`.
     tale: obj({ odds: num({ min: 1 }), id: str() }),
     // Luck: 1 in `days` working days (`hours` or more at the trade), 1 in `lucky` for a byname
@@ -40,7 +42,8 @@ export const METHODS_SCHEMAS = {
       ...{ work: words, failure: words, seen: words, book: words },
       ...{ tale: words, luck: words, dream: words },
     }),
-    // A failure line's words, by event, filled from its data.
-    failed: map(text),
+    // A failure line's words, by event, filled from its data, and whose failure it is: `actor`,
+    // a puzzler named in the line; `trade`, a puzzler who worked the trade that day.
+    failed: map(obj({ words: text, by: oneOf('actor', 'trade') })),
   }),
 };

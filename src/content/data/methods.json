@@ -6,7 +6,7 @@
   {"id":"resting","name":"resting a field each third year","job":"farm","skill":"farming","from":4,"hints":3,"where":"fields","failures":["field.blight"]},
   {"id":"mill-wheel","name":"a better mill wheel","job":"mill","from":0,"hints":4,"where":"mill","failures":[]},
   {"id":"treadle-loom","name":"the treadle loom","job":"weave","skill":"crafting","from":5,"hints":4,"where":"loom","failures":[]},
-  {"id":"lime-mortar","name":"lime mortar","job":"mason","skill":"stoneworking","from":5,"hints":4,"where":"mason's bench","failures":["lime.broke"]},
+  {"id":"lime-mortar","name":"lime mortar","job":"mason","skill":"stoneworking","from":5,"hints":4,"where":"mason's bench","failures":[]},
   {"id":"remedies","name":"herb remedies","job":"heal","skill":"herbalism","from":4,"hints":4,"where":"sickbed","failures":["health.festered","health.died"]},
   {"id":"glazed-pots","name":"glazed pots","job":"potter","skill":"crafting","from":5,"hints":4,"where":"kiln","failures":["keep.spoiled","keep.spoiledOpen"]},
   {"id":"clamp","name":"a better charcoal clamp","job":"charcoal","skill":"woodcutting","from":4,"hints":3,"where":"clamp","failures":[]},
@@ -22,8 +22,9 @@
   {"event":"health.bound","job":"heal","hours":3}
 ],
 "failure": {"days":28},
-"seen": {"odds":8,"most":2},
-"book": {"days":56},
+"drop": {"days":28,"hours":8},
+"seen": {"odds":8,"most":2,"event":"people.strangerCame"},
+"book": {"days":56,"event":"skill.read"},
 "tale": {"odds":2,"id":"found-way"},
 "luck": {"days":100,"lucky":50,"bynames":["Lucky","Twice-spared"],"hours":4},
 "dream": {"nights":200,"days":112},
@@ -37,5 +38,14 @@
   "luck": {"how":"stumbled on something by luck at the {where}","short":"a lucky slip"},
   "dream": {"how":"dreamed the answer one night","short":"a dream"}
 },
-"failed": {"tool.broke":"a broken {what}","field.frostKilled":"the {crop} lost to frost","field.blight":"the {crop} lost to blight","flock.haySpoiled":"hay spoiled in the rain","lime.broke":"a boulder that broke badly","health.festered":"a wound that festered","health.died":"a death under their care","keep.spoiled":"food spoiled in the {place}","keep.spoiledOpen":"food spoiled in the open"}
+"failed": {
+  "tool.broke": {"words":"a broken {what}","by":"actor"},
+  "field.frostKilled": {"words":"the {crop} lost to frost","by":"trade"},
+  "field.blight": {"words":"the {crop} lost to blight","by":"trade"},
+  "flock.haySpoiled": {"words":"hay spoiled in the rain","by":"trade"},
+  "health.festered": {"words":"a wound that festered","by":"trade"},
+  "health.died": {"words":"a death in the valley","by":"trade"},
+  "keep.spoiled": {"words":"food spoiled in the {place}","by":"trade"},
+  "keep.spoiledOpen": {"words":"food spoiled in the open","by":"trade"}
+}
 }

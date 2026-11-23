@@ -28,14 +28,15 @@ export interface MethodsDef {
   work: number;
   credit: readonly { event: string; job: string; hours: number }[];
   failure: { days: number };
-  book: { days: number };
-  seen: { odds: number; most: number };
+  book: { days: number; event: string };
+  drop: { days: number; hours: number };
+  seen: { odds: number; most: number; event: string };
   tale: { odds: number; id: string };
   luck: { days: number; lucky: number; bynames: readonly string[]; hours: number };
   dream: { nights: number; days: number };
   memories: { found: string };
   kinds: Readonly<Record<HintKind, HintWords>>;
-  failed: Readonly<Record<string, string>>;
+  failed: Readonly<Record<string, { words: string; by: 'actor' | 'trade' }>>;
 }
 
 export interface MethodsDefs {

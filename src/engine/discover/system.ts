@@ -13,7 +13,13 @@ export const discoverSystem: System = {
   id: 'discover',
   every: 'hour',
   stream: 'discover',
-  emits: ['discover.puzzle', 'discover.hint', 'discover.found', 'discover.beaten'],
+  emits: [
+    'discover.puzzle',
+    'discover.hint',
+    'discover.found',
+    'discover.beaten',
+    'discover.dropped',
+  ],
   initialState: { seen: 0, tales: 0 },
   tables: DISCOVER_TABLES,
   run(ctx) {

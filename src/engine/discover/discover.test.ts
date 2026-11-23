@@ -33,10 +33,10 @@ function forge(c: EngineContent = content) {
   if (row) row['level'] = 7;
   else addEntity(w, 'skill', { person: smith.id, skill: 'smithing', level: 7, potential: 10 });
   const ctx = contextFor(w, sim, discoverSystem);
-  const hours = (n: number) => {
+  const hours = (n: number, doing = 'work') => {
     for (let h = 0; h < n; h += 1) {
       w.tick += TICKS_PER_HOUR;
-      Object.assign(smith, { doing: 'work', job: 'smith' });
+      Object.assign(smith, { doing, job: 'smith' });
       discoverSystem.run!(ctx);
     }
   };
@@ -84,5 +84,15 @@ describe('hints and breakthroughs', () => {
     addEntity(w, 'knows', { person: other.id, method: 'steel', how: 'found', line: 1, from: 0 });
     hours(3 * 24);
     expect(lines(w, 'discover.puzzle')).toEqual([]);
+  });
+
+  it('a puzzle left a month for other work is put aside', () => {
+    const { w, smith, hours } = forge();
+    hours(3 * 24);
+    hours(content.methods.drop.days * 24 + 24, '');
+    const [put] = lines(w, 'discover.dropped');
+    expect(put?.actors).toEqual([smith.id]);
+    expect(put?.causes).toEqual([lines(w, 'discover.puzzle')[0]!.id]);
+    expect(puzzleOf(w, smith.id)).toBeUndefined();
   });
 });

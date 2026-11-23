@@ -10,7 +10,6 @@ const years = Number(yearsArg);
 const YEAR = 336;
 const sim = createSim(content);
 const w = createWorld(sim, seed);
-const names = (id) => w.entities.person.find((p) => p.id === id)?.name ?? `#${id}`;
 const counts = {};
 const kinds = {};
 const shown = [];
@@ -23,7 +22,9 @@ for (let y = 0; y < years; y += 1)
         counts[line.type] = (counts[line.type] ?? 0) + 1;
         if (line.type === 'discover.hint') kinds[line.data.kind] = (kinds[line.data.kind] ?? 0) + 1;
         if (line.type !== 'discover.hint')
-          shown.push(`y${y + 1} d${d + 1} ${renderEvent(line, sim.templates, names)}`);
+          shown.push(
+            `y${y + 1} d${d + 1} ${renderEvent(line, sim.templates, (id) => w.entities.person.find((p) => p.id === id)?.name ?? '?')}`,
+          );
       }
 const alive = w.entities.person.filter((p) => p.status === 'alive').length;
 console.log(`${seed}, ${years} years (${Math.round((Date.now() - t0) / 1000)} s), ${alive} living`);

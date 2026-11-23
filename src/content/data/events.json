@@ -405,5 +405,6 @@
 {"id":"discover.puzzle","importance":1,"template":"{name} began to puzzle over {method}, after {hours} hours at the {where} this month."},
 {"id":"discover.hint","importance":2,"template":"{name} {how}: {n} of {of} hints towards {method}."},
 {"id":"discover.found","importance":3,"template":"{name} found {method} after {days} days of puzzling, from {hints}.","stop":"works","notable":{}},
+{"id":"discover.dropped","importance":1,"template":"{name} put aside puzzling over {method}: only {hours} hours at the {where} in four weeks."},
 {"id":"discover.beaten","importance":1,"template":"{name} gave up puzzling over {method}: {finder} found it first."}
 ]

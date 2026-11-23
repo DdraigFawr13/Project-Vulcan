@@ -1,6 +1,6 @@
 // Hints from what happens (6C Slice 5, V-218): each hour the new ledger lines are read. A short
 // job's line counts as hours at its trade; a failure in a way's trade teaches whoever is puzzling
-// over it (an actor of the line first, else the one most at the trade this month), at most once a
+// over it (`methods.failed` says whose failure it is), at most once a
 // person in `failure.days`; a stranger's coming may show each puzzler something (1 in `seen.odds`,
 // at most `seen.most` a way); reading a book of the puzzle's skill is a hint (once in
 // `book.days`). New tales are read too: hearing of a find in one's own trade, even odds.
@@ -9,16 +9,8 @@ import { alive, entityOf } from '../entity/index.ts';
 import { linesAfter } from '../log/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addHint, fill, wayOf } from './find.ts';
-import {
-  hintsOf,
-  knowsOf,
-  methodDef,
-  monthHours,
-  puzzleOf,
-  puzzlesNow,
-  tradeRow,
-} from './tables.ts';
-import { addHours } from './trade.ts';
+import { hintsOf, knowsOf, methodDef, puzzlesNow, tradeRow } from './tables.ts';
+import { addHours, hoursAt } from './trade.ts';
 
 /** Open puzzles of the living, oldest first. */
 function livePuzzles(ctx: SystemContext): EntityRow[] {
@@ -28,24 +20,37 @@ function livePuzzles(ctx: SystemContext): EntityRow[] {
 
 const since = (day: number, last: number, gap: number): boolean => last < 0 || day - last >= gap;
 
-/** A failure line: one puzzler in its trade learns from it. */
+/** Whether `person` worked at `job` today. */
+function workedToday(ctx: SystemContext, person: number, job: string): boolean {
+  const row = tradeRow(ctx.world, person, job);
+  const day = today(ctx.world);
+  const n = ctx.content.methods.start.days;
+  return row?.['day'] === day && ((row['hours'] as number[])[day % n] ?? 0) > 0;
+}
+
+/** A failure line: one puzzler in its trade learns from it: one named in the line (`by` `actor`),
+ * else (`trade`) whoever puzzling there worked the trade today and most this month. */
 function failure(ctx: SystemContext, e: SimEvent): void {
   const { world, content } = ctx;
   const day = today(world);
+  const rule = content.methods.failed[e.type];
+  if (!rule) return;
   const open = livePuzzles(ctx).filter(
     (q) =>
       wayOf(ctx, q).failures.includes(e.type) &&
       since(day, q['failed'] as number, content.methods.failure.days),
   );
-  const hours = (q: EntityRow) =>
-    monthHours(tradeRow(world, q['person'] as number, wayOf(ctx, q).job));
+  const job = (q: EntityRow) => wayOf(ctx, q).job;
+  const hours = (q: EntityRow) => hoursAt(ctx, q['person'] as number, job(q));
   const q =
-    open.find((x) => e.actors.includes(x['person'] as number)) ??
-    [...open].sort((a, b) => hours(b) - hours(a) || a.id - b.id)[0];
+    rule.by === 'actor'
+      ? open.find((x) => e.actors.includes(x['person'] as number))
+      : open
+          .filter((x) => workedToday(ctx, x['person'] as number, job(x)))
+          .sort((a, b) => hours(b) - hours(a) || a.id - b.id)[0];
   if (!q) return;
   q['failed'] = day;
-  const failed = fill(content.methods.failed[e.type] ?? e.type, e.data);
-  addHint(ctx, q, 'failure', [e.id], { failed });
+  addHint(ctx, q, 'failure', [e.id], { failed: fill(rule.words, e.data) });
 }
 
 /** A stranger's coming: each puzzler may see something new. */
@@ -62,7 +67,7 @@ function seen(ctx: SystemContext, e: SimEvent): void {
 /** A book read: a hint when it is of the puzzle's skill. */
 function book(ctx: SystemContext, e: SimEvent): void {
   const { world, content } = ctx;
-  const q = puzzleOf(world, e.actors[0] ?? 0);
+  const q = livePuzzles(ctx).find((x) => x['person'] === e.actors[0]);
   const skill = q && wayOf(ctx, q).skill;
   const word = skill && content.abilities.find((a) => a.id === skill)?.name.toLowerCase();
   if (!q || !word || e.data['skill'] !== word) return;
@@ -81,10 +86,10 @@ export function readLines(ctx: SystemContext): void {
   for (const e of fresh) {
     const credit = content.methods.credit.find((c) => c.event === e.type);
     const who = credit && alive(world).find((p) => p.id === e.actors[0]);
-    if (credit && who) addHours(ctx, who, credit.job, credit.hours);
+    if (credit && who) addHours(ctx, who, credit.job, credit.hours, e.id);
     if (failures.has(e.type)) failure(ctx, e);
-    if (e.type === 'people.strangerCame') seen(ctx, e);
-    if (e.type === 'skill.read') book(ctx, e);
+    if (e.type === content.methods.seen.event) seen(ctx, e);
+    if (e.type === content.methods.book.event) book(ctx, e);
   }
 }
 
@@ -99,7 +104,7 @@ export function readTales(ctx: SystemContext): void {
     if (story?.['tale'] !== content.methods.tale.id) continue;
     const find = knowsOf(world).find((k) => k['how'] === 'found' && k['line'] === story['event']);
     const m = find && methodDef(content, find['method'] as string);
-    const q = puzzleOf(world, t['person'] as number);
+    const q = livePuzzles(ctx).find((x) => x['person'] === t['person']);
     if (!m || !q || find['person'] === t['person'] || wayOf(ctx, q).job !== m.job) continue;
     if (ctx.rng().int(content.methods.tale.odds) !== 0) continue;
     const finder = entityOf(world, 'person', find['person'] as number);

@@ -1,12 +1,12 @@
 // The discovery tables and their reads (6C Slice 5, V-142, V-218): each person's puzzle and its
 // hints, the hours each works at a trade, and who knows each way.
 import type { EngineContent, EntityRow, MethodDef, WorldState } from '../core/index.ts';
-import { alive, type Schemas } from '../entity/index.ts';
+import { alive, tableOf, type Schemas } from '../entity/index.ts';
 
 export const DISCOVER_TABLES: Schemas = {
   /** Hours `person` worked at `job` on each of the last `methods.start.days` days (a ring by day
-   * number), and the day number last written. */
-  trade: { person: 'entity', job: 'text', hours: 'ints', day: 'int' },
+   * number), the day number last written and the line of the latest work there. */
+  trade: { person: 'entity', job: 'text', hours: 'ints', day: 'int', line: 'event' },
   /** A person's puzzle over a way: begun on `line` at `since`; `work` hours at its trade toward
    * the next work hint; the days of the last failure and book hints (-1 none); the tick of the
    * last hint; `ended` the line that ended it (a find, theirs or another's), 0 while it lasts. */
@@ -21,24 +21,22 @@ export const DISCOVER_TABLES: Schemas = {
   knows: { person: 'entity', method: 'text', how: 'text', line: 'event', from: 'entity' },
 };
 
-const rows = (world: WorldState, kind: string): EntityRow[] => world.entities[kind] ?? [];
-
 export const methodDef = (content: EngineContent, id: string): MethodDef | undefined =>
   content.methods.methods.find((m) => m.id === id);
 
 /** The puzzle `person` is on now. */
 export const puzzleOf = (world: WorldState, person: number): EntityRow | undefined =>
-  rows(world, 'puzzle').find((p) => p['person'] === person && !p['ended']);
+  tableOf(world, 'puzzle').find((p) => p['person'] === person && !p['ended']);
 
 /** Every puzzle open now. */
 export const puzzlesNow = (world: WorldState): EntityRow[] =>
-  rows(world, 'puzzle').filter((p) => !p['ended']);
+  tableOf(world, 'puzzle').filter((p) => !p['ended']);
 
 /** The hints gathered on a puzzle, oldest first. */
 export const hintsOf = (world: WorldState, puzzle: number): EntityRow[] =>
-  rows(world, 'hint').filter((h) => h['puzzle'] === puzzle);
+  tableOf(world, 'hint').filter((h) => h['puzzle'] === puzzle);
 
-export const knowsOf = (world: WorldState): EntityRow[] => rows(world, 'knows');
+export const knowsOf = (world: WorldState): EntityRow[] => tableOf(world, 'knows');
 
 /** Whether `person` knows the way. */
 export const knows = (world: WorldState, person: number, method: string): boolean =>
@@ -56,7 +54,7 @@ export function knowersOf(world: WorldState, method: string): EntityRow[] {
 
 /** A person's row of hours at a trade. */
 export const tradeRow = (world: WorldState, person: number, job: string): EntityRow | undefined =>
-  rows(world, 'trade').find((t) => t['person'] === person && t['job'] === job);
+  tableOf(world, 'trade').find((t) => t['person'] === person && t['job'] === job);
 
 /** Hours at a trade over the window. */
 export const monthHours = (row: EntityRow | undefined): number =>
