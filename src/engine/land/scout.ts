@@ -19,10 +19,10 @@ import { apart, kitFor, unpack } from './camp.ts';
 import { astray } from './trouble.ts';
 import { BEYOND, lastFound, spotPlaces } from './places.ts';
 import { sourceAt, type Good } from './sources.ts';
+import type { OreNeed } from './seams.ts';
 import { alongWord, spendWord, wordOf } from './word.ts';
-import { alongFaces, betterMiner, faceTarget, oreNeed, prospectHome } from './prospect.ts';
+import { alongFaces, betterMiner, faceTarget, oreAsNeed, prospectHome } from './prospect.ts';
 import { setOutProspecting, walkTrip } from './prospect.ts';
-import { oreWord, type OreNeed } from './seams.ts';
 
 /** What the colony is short of: the good, its stock name, and have, known and want. */
 export interface Need {
@@ -210,7 +210,7 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
   const last = world.map.finds.at(-1);
   const least = content.terrain.generator.known.least;
   if (last && last.count < least && world.tick - last.tick < def.wait * TICKS_PER_DAY) return false;
-  const need = needOf(ctx) ?? oreAsNeed(ctx) ?? beyond(ctx);
+  const need = needOf(ctx) ?? oreAsNeed(ctx, ...origin(ctx)) ?? beyond(ctx);
   if (!need) return false;
   if (!able(content, p, def.job)) {
     declineIfUnable(ctx, p, def.job);
@@ -219,7 +219,7 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
   // A prospector is the best miner free (V-215); other trips, the restless and hardy first.
   const first = need.ore ? betterMiner(ctx, p) : others(ctx, p);
   if (outranked(ctx, p, def.job, () => true) || first) return false;
-  const to = need.ore ? toFace(ctx, p, need.ore) : frontier(ctx, p, need);
+  const to = need.ore ? faceTarget(ctx, p, need.ore, ...origin(ctx)) : frontier(ctx, p, need);
   if (!to || !walkTo(ctx, p, to)) return false;
   const { due, kit } = kitFor(ctx, p, need.ore ? def.prospect.day : 0);
   p['took'] = need.ore ? setOutProspecting(ctx, p, need.ore, kit) : setOut(ctx, p, need, kit);
@@ -237,21 +237,6 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
   const leg = world.tick + def.leg * TICKS_PER_DAY;
   Object.assign(p, { job: def.job, task: 'out', what: need.def.good, target: -1, work: leg });
   return true;
-}
-
-/** An ore wanted and unknown, as a need (V-215). */
-function oreAsNeed(ctx: SystemContext): Need | undefined {
-  const [ox, oy] = origin(ctx);
-  const ore = oreNeed(ctx, ox, oy);
-  if (!ore) return undefined;
-  const def: Good = { good: ore.metal, kinds: [], find: '', unit: '' };
-  return { def, name: oreWord(ctx, ore.f), have: 0, known: 0, want: ore.short, ore };
-}
-
-/** A spot beside the face a prospector makes for first. */
-function toFace(ctx: SystemContext, p: EntityRow, ore: OreNeed): Spot | undefined {
-  const [ox, oy] = origin(ctx);
-  return faceTarget(ctx, p, ore, ox, oy);
 }
 
 /** With nothing short and no new find for `beyond.days` days, the colony wants to see what lies

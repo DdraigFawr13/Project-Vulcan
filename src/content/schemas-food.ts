@@ -94,7 +94,7 @@ export const CURE = obj({
   minutes: num({ min: 1 }),
   skilled: num({ min: 1 }),
   // With a smokehouse, no salt in the stores and `want` fresh meat, game and fish there, the mine
-  // plans a shaft by the nearest `item` stain; `why` is its reason ({fresh}, {word}, {far}, {dir}).
+  // plans a shaft by the nearest found `item` seam; `why` is its reason ({fresh}, {word}, {far}, {dir}).
   salt: obj({
     item: ref('items'),
     per: num({ min: 1 }),

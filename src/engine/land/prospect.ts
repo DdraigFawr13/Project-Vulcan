@@ -18,9 +18,18 @@ import { isDown } from '../health/index.ts';
 import { apart, unpack } from './camp.ts';
 import { miningOf, oreKnown, oresWanted, oreWord, seamOres, type OreNeed } from './seams.ts';
 import { alongWord, spendWord, wordOf } from './word.ts';
+import type { Need } from './scout.ts';
 
 const cheb = (ax: number, ay: number, bx: number, by: number): number =>
   Math.max(Math.abs(ax - bx), Math.abs(ay - by));
+
+/** An ore wanted and unknown, as a scouting need. */
+export function oreAsNeed(ctx: SystemContext, ox: number, oy: number): Need | undefined {
+  const ore = oreNeed(ctx, ox, oy);
+  if (!ore) return undefined;
+  const def = { good: ore.metal, kinds: [], find: '', unit: '' };
+  return { def, name: oreWord(ctx, ore.f), have: 0, known: 0, want: ore.short, ore };
+}
 
 /** The faces within `far` of the green nobody has walked. */
 function unwalked(ctx: SystemContext, ox: number, oy: number): number[] {

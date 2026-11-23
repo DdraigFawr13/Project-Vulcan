@@ -1,4 +1,4 @@
-// 6W Slice 7 (V-215): ores have no stains. When iron is wanted and no seam of it is known, a
+// 6W Slice 7 (V-215): ores show nothing on the ground. When iron is wanted and no seam of it is known, a
 // prospector goes out unordered, the best free miner, walks the rock faces and may spot a seam in
 // one; the line traces back to the want. Nobody is sent by name, to a tile or on a trip (V-041).
 import { describe, expect, it } from 'vitest';

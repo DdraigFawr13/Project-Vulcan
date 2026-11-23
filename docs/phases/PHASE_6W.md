@@ -11,7 +11,7 @@ A short phase between 6B and 6C that makes exploring a need, from Morgan's messa
 - [x] Slice 4, known land and scouting (engine)
 - [x] Slice 5, trips, camps and finds (engine)
 - [x] Slice 6, the known map on screen (screens)
-- [ ] Slice 7, hidden ores and prospecting (engine)
+- [x] Slice 7, hidden ores and prospecting (engine)
 - [ ] 6W balance and review
 
 ## Why

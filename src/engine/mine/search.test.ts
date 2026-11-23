@@ -10,7 +10,6 @@ import { openVein } from './index.ts';
 
 const content = withoutAccidents(game);
 const sim = createSim(content);
-const DAY = 1440;
 
 describe('search tunnels', () => {
   it('keeps a vein dark until a search tunnel passes beside it, then shows it with a line', () => {

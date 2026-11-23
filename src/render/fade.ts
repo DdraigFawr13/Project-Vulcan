@@ -1,7 +1,7 @@
 // Unseen surface (6W Slice 6, V-213): land nobody has seen draws faded, like an unfinished map.
 // Its ground and water tiles draw at `FADE` over a sheet of the page colour laid under the
 // surface, so the lie of the land shows (river, grass, rock, snow) and nothing on it (the worker
-// sends no features, stains or prints there). Below ground unknown rock stays black (V-030).
+// sends no features or prints there). Below ground unknown rock stays black (V-030).
 import type Phaser from 'phaser';
 import { TILE } from './frames.ts';
 

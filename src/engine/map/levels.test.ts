@@ -28,7 +28,7 @@ describe('levels below', () => {
     expect(veins).toBeGreaterThan(0);
     expect(near).toBeGreaterThan(radius);
     // A face shows a seam only where its vein lies within a tile below; nothing else marks it
-    // (V-215, no stains).
+    // (V-215, nothing on the ground).
     let seams = 0;
     map.faces.forEach((v, i) => {
       if (v < 2) return;
