@@ -99,6 +99,18 @@ describe('mishaps, New Ways, spreading and loss', () => {
     expect(waysOf(w, sim.content, smith.id).start).toBe(true);
   });
 
+  it('shares a work hint with a workmate puzzling over the same way, in one line', () => {
+    const { w, smiths, hours } = forge();
+    hours(3 * 24, smiths);
+    const begun = lines(w, 'discover.puzzle').filter((e) => e.data['method'] === 'steel');
+    expect(begun.map((e) => e.actors[0]).sort()).toEqual(smiths.map((p) => p.id).sort());
+    hours(content.methods.work, smiths);
+    const [hint] = lines(w, 'discover.hint').filter((e) => e.data['kind'] === 'work');
+    expect(hint?.actors).toEqual([smiths[0].id, smiths[1].id]);
+    const rows = (w.entities['hint'] ?? []).filter((h) => h['line'] === hint!.id);
+    expect(rows.length).toBe(2);
+  });
+
   it('teaches a way to someone working beside its knower', () => {
     const { w, smiths, hours } = forge();
     const [knower, learner] = smiths;

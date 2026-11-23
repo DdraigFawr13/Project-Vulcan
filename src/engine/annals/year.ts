@@ -24,7 +24,7 @@ import {
   type Group,
   type Sentence,
 } from './season.ts';
-import { cap, fill, noun, timesOf, type Words } from './words.ts';
+import { cap, fill, itemsOf, midSentence, noun, timesOf, type Words } from './words.ts';
 
 const lineOf = (r: EntityRow) => r['event'] as number;
 
@@ -32,11 +32,17 @@ const lineOf = (r: EntityRow) => r['event'] as number;
 function seasonsOf(world: WorldState, content: EngineContent, year: number): Sentence[] {
   const { perSeason } = content.annals.year;
   const texts = tableOf(world, 'annalText');
+  const listed = new Set<unknown>(
+    content.annals.sections.filter((s) => s.lines.some((l) => l.year)).map((s) => s.id),
+  );
   const out: Sentence[] = [];
   for (const a of tableOf(world, 'annal')) {
     if (a['kind'] !== 'season' || a['year'] !== year) continue;
     const season = content.calendar.seasons[a['season'] as number] ?? '';
-    const own = texts.filter((t) => t['annal'] === a.id && (t['weight'] as number) > 0);
+    // A section the year lists whole (`year` words: finds, ways lost) is not said again here.
+    const own = texts.filter(
+      (t) => t['annal'] === a.id && (t['weight'] as number) > 0 && !listed.has(t['section']),
+    );
     const best = [...own]
       .sort((x, y) => (y['weight'] as number) - (x['weight'] as number) || x.id - y.id)
       .slice(0, perSeason)
@@ -138,6 +144,20 @@ function foldedOf(content: EngineContent, groups: readonly Group[]): Sentence[] 
   return [{ section: 'troubles', text: fill(year.fold, { list: list(items) }), lines, weight: 0 }];
 }
 
+/** The kinds whose lines the year lists whole (`year` words): the year's finds and ways lost. */
+function listedOf(content: EngineContent, groups: readonly Group[]): Sentence[] {
+  const { sections, year } = content.annals;
+  return groups
+    .filter((g) => g.def.year !== undefined)
+    .sort((a, b) => a.rows[0]!.id - b.rows[0]!.id)
+    .map((g) => {
+      const items = g.words.map((w) => midSentence(fill(g.def.item ?? '', w)));
+      const text = fill(g.def.year!, { list: itemsOf(content, items) });
+      const lines = g.rows.slice(0, year.cite).map(lineOf);
+      return { section: sections[g.section]!.id, text, lines, weight: 0 };
+    });
+}
+
 /** The recap of the year just ended, written after its winter's; then its kept lines go. `said`
  * holds the levels stories were said at before winter's recap, which the year's stands in for. */
 export function writeYear(
@@ -156,6 +176,7 @@ export function writeYear(
   const lastRows = rows.filter((r) => r['season'] === last);
   const sentences = [
     ...seasonsOf(world, content, year),
+    ...listedOf(content, groups),
     ...foldedOf(content, groups),
     numbersOf(content, rows, line),
     ...says,

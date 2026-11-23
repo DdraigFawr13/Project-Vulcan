@@ -14,6 +14,7 @@ import { addHint, wayOf } from './find.ts';
 import { mishap } from './mishap.ts';
 import { waysOf } from './ways.ts';
 import { knowersOf, knows, monthHours, puzzleOf, puzzlesNow, tradeRow } from './tables.ts';
+export { workedToday } from './tables.ts';
 
 /** The trades some way belongs to. */
 export const tradesOf = (content: EngineContent): Set<string> =>
@@ -26,14 +27,6 @@ function roll(row: EntityRow, day: number, n: number): void {
   if (day - from >= n) hours.fill(0);
   else for (let d = from + 1; d <= day; d += 1) hours[d % n] = 0;
   row['day'] = day;
-}
-
-/** Whether `person` worked at `job` today. */
-export function workedToday(ctx: SystemContext, person: number, job: string): boolean {
-  const row = tradeRow(ctx.world, person, job);
-  const day = today(ctx.world);
-  const n = ctx.content.methods.start.days;
-  return row?.['day'] === day && ((row['hours'] as number[])[day % n] ?? 0) > 0;
 }
 
 /** The line of `person`'s latest work at `job` (0 for none). */

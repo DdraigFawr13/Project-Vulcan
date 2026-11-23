@@ -76,7 +76,7 @@ test('What stops play has a row per kind, opens from the tray and ⋯, and is ke
   await page.getByTestId('tray-stops').click();
   const panel = page.getByTestId('panel');
   await expect(panel).toContainText('What stops play');
-  await expect(panel.locator('.stoprow')).toHaveCount(11);
+  await expect(panel.locator('.stoprow')).toHaveCount(12);
   await expect(page.getByTestId('stop-death-note')).toHaveAttribute('aria-pressed', 'true');
   await page.getByTestId('stop-death-pause').click();
   await expect(page.getByTestId('stop-death-pause')).toHaveAttribute('aria-pressed', 'true');
