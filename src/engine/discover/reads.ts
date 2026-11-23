@@ -9,8 +9,9 @@ import { alive, entityOf } from '../entity/index.ts';
 import { linesAfter } from '../log/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addHint, fill, wayOf } from './find.ts';
-import { hintsOf, knowsOf, methodDef, puzzlesNow, tradeRow } from './tables.ts';
-import { addHours, hoursAt } from './trade.ts';
+import { hintsOf, knowsOf, methodDef, puzzlesNow } from './tables.ts';
+import { bookLearn } from './spread.ts';
+import { addHours, hoursAt, workedToday } from './trade.ts';
 
 /** Open puzzles of the living, oldest first. */
 function livePuzzles(ctx: SystemContext): EntityRow[] {
@@ -19,14 +20,6 @@ function livePuzzles(ctx: SystemContext): EntityRow[] {
 }
 
 const since = (day: number, last: number, gap: number): boolean => last < 0 || day - last >= gap;
-
-/** Whether `person` worked at `job` today. */
-function workedToday(ctx: SystemContext, person: number, job: string): boolean {
-  const row = tradeRow(ctx.world, person, job);
-  const day = today(ctx.world);
-  const n = ctx.content.methods.start.days;
-  return row?.['day'] === day && ((row['hours'] as number[])[day % n] ?? 0) > 0;
-}
 
 /** A failure line: one puzzler in its trade learns from it: one named in the line (`by` `actor`),
  * else (`trade`) whoever puzzling there worked the trade today and most this month. */
@@ -89,7 +82,10 @@ export function readLines(ctx: SystemContext): void {
     if (credit && who) addHours(ctx, who, credit.job, credit.hours, e.id);
     if (failures.has(e.type)) failure(ctx, e);
     if (e.type === content.methods.seen.event) seen(ctx, e);
-    if (e.type === content.methods.book.event) book(ctx, e);
+    if (e.type === content.methods.book.event) {
+      bookLearn(ctx, e);
+      book(ctx, e);
+    }
   }
 }
 

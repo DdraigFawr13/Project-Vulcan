@@ -1,6 +1,6 @@
 // Shape of Vulcan's methods file (src/content/data/methods.json, 6C Slice 5, V-142, V-218): the
 // new ways of working colonists can find, the hints that lead to each and the words for them.
-import { list, map, num, obj, oneOf, opt, ref, str } from './schema';
+import { bool, list, map, num, obj, oneOf, opt, ref, str } from './schema';
 import { count, text } from './schema-fields';
 
 const days = num({ min: 1 });
@@ -14,6 +14,8 @@ export const METHODS_SCHEMAS = {
       obj({
         ...{ id: str(), name: text, job: ref('jobs'), skill: opt(str()), from: count },
         ...{ hints: num({ min: 1 }), where: text, failures: list(str()) },
+        // What a mishap spoils (the first in store), and whether its work is at a fire.
+        ...{ ruins: list(ref('items')), hot: opt(bool()) },
       }),
     ),
     // A puzzle starts after `hours` at a trade in the last `days`.
@@ -36,7 +38,21 @@ export const METHODS_SCHEMAS = {
     luck: obj({ days, lucky: days, bynames: list(str()), hours: num({ min: 1 }) }),
     // A dream gives the last hint: 1 in `nights` once `days` have passed since the one before.
     dream: obj({ nights: days, days }),
-    memories: obj({ found: ref('memories') }),
+    memories: obj({ found: ref('memories'), learned: ref('memories'), mishap: ref('memories') }),
+    // A mishap at a work hint (the New Ways law's 1 in `mishap`): at a `hot` trade, a burned hand
+    // (`burn`, a wound) at `hand` per cent, a small fire at `fire` per cent, else spoiled
+    // materials; `nothing` when there are none to spoil; `words` for the line.
+    mishap: obj({
+      ...{ hand: count, fire: count, nothing: text },
+      burn: obj({ parts: list(str()), severity: str(), what: text, at: str() }),
+      words: obj({ ruined: text, hand: text, fire: text }),
+    }),
+    // Learning a way from a knower: `apprentice` hours at its trade as their apprentice in its
+    // skill, or `beside` hours at it on days a knower worked it too; a book by a knower teaches it.
+    spread: obj({
+      ...{ apprentice: num({ min: 1 }), beside: num({ min: 1 }) },
+      words: obj({ apprentice: text, book: text, beside: text }),
+    }),
     // The words for each kind of hint: in its own line (`how`) and in the find's list (`short`).
     kinds: obj({
       ...{ work: words, failure: words, seen: words, book: words },

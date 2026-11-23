@@ -12,6 +12,7 @@
     { "id": "woods-dangerous", "about": "place", "text": "the woods around the valley are dangerous" },
     { "id": "arts-lost", "about": "colony", "text": "the old skills are dying out here" },
     { "id": "valley-finders", "about": "colony", "text": "this valley finds new ways" },
+    { "id": "new-ways-risky", "about": "colony", "text": "new ways bring trouble" },
     { "id": "valley-deadly", "about": "colony", "text": "this valley kills its own" },
     { "id": "work-dangerous", "about": "colony", "text": "the work here maims people" },
     { "id": "strangers-hard", "about": "law", "text": "turning folk away is hard-hearted" },
@@ -133,6 +134,11 @@
       "{name} found {method}.",
       "{name} worked out {method} on {their} own.",
       "{name} found {method}, and nobody else in the valley could have."
+    ] },
+    { "id": "trying-mishap", "event": "discover.mishap", "truth": 1, "belief": "new-ways-risky", "from": 2, "levels": [
+      "{name} spoiled some work trying something new.",
+      "{name} tried something new at the {where} and {went}.",
+      "{name} nearly burned the valley down chasing some new notion."
     ] },
     { "id": "tavern-brawl", "event": "tavern.brawled", "truth": 1, "belief": "valley-blows", "from": 1, "song": ["The Night at {tavern}", "Fists at {tavern}", "The {Month} Night at {tavern}"], "bynames": ["", "", "Brawler"], "spares": [[], [], ["Hothead", "Ale-fist"]], "levels": [
       "{name} and {other} had words over their ale.",
