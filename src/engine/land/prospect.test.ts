@@ -4,7 +4,15 @@
 import { describe, expect, it } from 'vitest';
 import { content as game, type Content } from '../../content/index.ts';
 import { withoutAccidents } from '../health/index.ts';
-import { allLines, createSim, createWorld, step, submitCommand, whyOf } from '../index.ts';
+import {
+  allLines,
+  createSim,
+  createWorld,
+  step,
+  submitCommand,
+  TEST_TOOLS,
+  whyOf,
+} from '../index.ts';
 
 const DAY = 1440;
 type World = ReturnType<typeof createWorld>;
@@ -36,7 +44,10 @@ const lines = (w: World, type: string) => allLines(w).filter((l) => l.type === t
 describe('prospecting', () => {
   it('has no lever that sends anyone by name, to a tile or on a trip (V-041)', () => {
     const sim = createSim(game);
-    const kinds = sim.systems.flatMap((s) => Object.keys(s.commands ?? {}));
+    // Test mode's findSeam is refused outside test mode, as every test tool is.
+    const kinds = sim.systems
+      .flatMap((s) => Object.keys(s.commands ?? {}))
+      .filter((k) => !TEST_TOOLS.includes(k));
     expect(kinds.filter((k) => /prospect|seam|search|scout|trip/i.test(k))).toEqual([]);
     expect(kinds).toContain('sendBackShaft');
   });

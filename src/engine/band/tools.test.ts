@@ -1,12 +1,12 @@
-// Bundle 3 (V-088, V-041): tools and smithing. A fine pick works faster than a poor one; a
-// broken axe is replaced, unordered, by one made for whoever fells most; free tools go to the
-// person who works a kind most; smithing is drawn apart from the band, so a seed's band is as it
-// was; the band arrives with stone tools of each kind.
+// Bundle 3 (V-088, V-041): tools and smithing. A fine pick beats a poor one; a broken axe is
+// replaced, unordered, for whoever fells most; free tools go to who works a kind most; smithing is
+// drawn apart, so a seed's band is as it was; the band arrives with stone tools of each kind.
 import { describe, expect, it } from 'vitest';
 import { content as game } from '../../content/index.ts';
-import { withoutAccidents } from '../index.ts';
 import {
   allLines,
+  plantSeam,
+  withoutAccidents,
   createSim,
   createWorld,
   itemsOf,
@@ -241,7 +241,7 @@ describe('tools in use', () => {
   it('has a worn stone tool ask for bronze, so miners sink a shaft with no plate raised', () => {
     // Morgan's card (P4.9): a tool under its worn line wants the next material's ingots.
     const w = createWorld(sim, 'tallow');
-    // Six days: walking is half the Phase 4 speed (Morgan, Phase 4 review).
+    plantSeam(w, content, 'copper'); // V-215; six days, as walking is half P4's speed
     step(w, sim, 6 * DAY);
     expect(w.commandLog).toHaveLength(0);
     const worn = lines(w, 'tool.worn')[0]!;

@@ -148,6 +148,9 @@ describe('pasture', () => {
 
   it('takes the Pasture row and one send-back, then chooses again', () => {
     const w = sited;
+    // The whole valley known, so ground for a second pasture is seen: since hidden ores (V-215)
+    // no miners walk to a shaft north-west by day 5, and that is where the second one went.
+    w.map.known.fill(1);
     const first = pasturesOf(w)[0]!;
     submitCommand(w, { tick: w.tick + 1, kind: 'setBuild', data: { kind: 'pasture', level: 4 } });
     submitCommand(w, { tick: w.tick + 2, kind: 'sendBack', data: { pasture: first.id } });

@@ -11,6 +11,7 @@ import { fill, MINE_TABLES, metalsOf, oreShort, shaftFor, shaftsOf } from './sha
 import { saltCause, saltOf, saltShort, saltWhy } from './salt.ts';
 import { openVein, siteShaft } from './site.ts';
 import { nextDig } from './tunnel.ts';
+import { plantSeam } from './plant.ts';
 
 const capital = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -103,7 +104,12 @@ export const mineSystem: System = {
   // look, so the colony looks again once a day, when a plate changes or a seam is found.
   initialState: { sig: 0, day: -1 },
   tables: MINE_TABLES,
-  commands: { sendBackShaft: (ctx, command, cause) => sendBackShaft(ctx, command.data, cause) },
+  commands: {
+    sendBackShaft: (ctx, command, cause) => sendBackShaft(ctx, command.data, cause),
+    // Test mode only (V-041): the nearest seam of a metal found, as if someone had spotted it.
+    findSeam: (ctx, command, cause) =>
+      void plantSeam(ctx.world, ctx.content, String(command.data['metal']), cause),
+  },
   run(ctx) {
     const { world, content, state } = ctx;
     const metals = metalsOf(content);
