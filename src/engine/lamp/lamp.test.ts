@@ -56,8 +56,9 @@ describe('light after dusk', () => {
   };
 
   it('works a lit workshop after dusk and stops an unlit one with a line', () => {
-    // Whether someone is at the bench as dusk falls is the seed's first week: search a list.
-    const seeds = ['smoke', 'tallow', 'ledger', 'ledger-1'];
+    // Whether someone is at the bench as dusk falls is the seed's first week: search a list, led
+    // by the seed known to hold it (tallow since 6C Slice 5, 2026-11-23) so one seed's two worlds do.
+    const seeds = ['tallow', 'smoke', 'ledger', 'ledger-1'];
     const goneDark = (r: ReturnType<typeof afternoon>) =>
       r.world.log.filter((e) => e.type === 'lamp.dark');
     // The seed must also have someone at the lit bench: who carpenters that week is the seed's too.
