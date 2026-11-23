@@ -78,7 +78,7 @@ export class Overview {
     for (let y = y0; y < y1; y += 1)
       for (let x = x0; x < x1; x += 1) {
         const i = y * width + x;
-        const c = (z === 0 && this.fieldAt.get(i)) || overColour(this.colours, level, i);
+        const c = (z === 0 && this.fieldAt.get(i)) || overColour(this.colours, level, i, z === 0);
         data.set(c, i * 4);
       }
     p.dirty = true;

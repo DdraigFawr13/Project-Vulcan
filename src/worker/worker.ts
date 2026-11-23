@@ -42,6 +42,7 @@ import { withLying } from './places.ts';
 import { sunOf } from './lampview.ts';
 import { clockView, greenOf, weatherOf } from './views.ts';
 import { animalFeed, leftoversView } from './wild.ts';
+import { findFeed, knownFeed } from './finds.ts';
 
 /** How often the worker wakes (ms). Timing comes from the clock, not from this interval. */
 const WAKE_MS = 10;
@@ -76,6 +77,9 @@ let sentBuild = '';
 const peopleSent = peopleFeed();
 /** The animals go out only when one has moved. */
 const animals = animalFeed();
+/** Surface chunks go out again as known land grows; the flags only when they change (6W S6). */
+const knownSent = knownFeed();
+const findsSent = findFeed();
 /** Ledger lines written since the last snapshot, collected as they are written: sealing trims
  * the log's front, so a long run could otherwise seal lines before they were posted. */
 let unposted: SimEvent[] = [];
@@ -138,6 +142,27 @@ function jumpEndView(): JumpEndView | undefined {
 /** Line `e` for the page, as the running world sees it. */
 const line = (e: SimEvent | Stub): LedgerLine => lineOf(world, sim, e);
 
+/** Chunks changed since they were last sent, on every reached level; a surface chunk also when
+ * its known land grew (6W Slice 6). */
+function changedChunks(w: WorldState): ChunkView[] {
+  const chunks: ChunkView[] = [];
+  const across = chunksAcross(w.map);
+  const grown = knownSent.grown(w.map, w.tick);
+  for (let z = 0; z <= w.map.levels.length; z += 1) {
+    const layer = layerOf(w.map, z);
+    if (!layer) continue;
+    const seen = (sent[z] ??= []);
+    for (let cy = 0; cy < chunksDown(w.map); cy += 1)
+      for (let cx = 0; cx < across; cx += 1) {
+        const i = cy * across + cx;
+        if (seen[i] === layer.chunkVersions[i] && !(z === 0 && grown.has(i))) continue;
+        seen[i] = layer.chunkVersions[i]!;
+        chunks.push(chunkTiles(w.map, cx, cy, z, w.tick));
+      }
+  }
+  return chunks;
+}
+
 function snapshot(w: WorldState): void {
   const yesterday = yesterdayOf(w, content);
   // The Build view goes out only when it changes, like the chunks.
@@ -153,20 +178,8 @@ function snapshot(w: WorldState): void {
     post({ type: 'events', batch: unposted.map(line) });
     unposted = [];
   }
-  const chunks: ChunkView[] = [];
-  const across = chunksAcross(w.map);
-  for (let z = 0; z <= w.map.levels.length; z += 1) {
-    const layer = layerOf(w.map, z);
-    if (!layer) continue;
-    const seen = (sent[z] ??= []);
-    for (let cy = 0; cy < chunksDown(w.map); cy += 1)
-      for (let cx = 0; cx < across; cx += 1) {
-        const i = cy * across + cx;
-        if (seen[i] === layer.chunkVersions[i]) continue;
-        seen[i] = layer.chunkVersions[i]!;
-        chunks.push(chunkTiles(w.map, cx, cy, z, w.tick));
-      }
-  }
+  const chunks = changedChunks(w);
+  const finds = findsSent.next(w);
   post(
     {
       type: 'snapshot',
@@ -187,6 +200,7 @@ function snapshot(w: WorldState): void {
       timing: timing.view,
       walkers: withLying(w, walkersOf(w)),
       ...(moved && { animals: moved }),
+      ...(finds && { finds }),
       leftovers: leftoversView(w),
       goods: goodsOf(w),
       stock: stockView(w),
@@ -212,6 +226,8 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
   sentBuild = '';
   peopleSent.next(w);
   animals.reset();
+  knownSent.reset();
+  findsSent.reset();
   recapsSent.reset();
   unposted = [...w.log];
   clock.pace = createPace(performance.now());
