@@ -51,7 +51,7 @@ function ledgerWords(content: EngineContent, type: string): string {
 export const midSentence = (s: string): string => s.replace(/^(The|A|An) /, (w) => w.toLowerCase());
 
 /** The items said as a list: each once, with how often when it repeats, then how many more. */
-function itemsOf(content: EngineContent, items: readonly string[]): string {
+export function itemsOf(content: EngineContent, items: readonly string[]): string {
   const { annals } = content;
   const counted = new Map<string, number>();
   for (const i of items) counted.set(i, (counted.get(i) ?? 0) + 1);

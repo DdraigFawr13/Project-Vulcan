@@ -50,7 +50,7 @@ describe('the known map on screen', () => {
     );
   });
 
-  it('names on the Scouting row each ore wanted with no seam known, and how long (V-223)', () => {
+  it('names on the Scouting row each ore wanted with no seam known, and how long (V-224)', () => {
     const w = createWorld(sim, 'smoke');
     step(w, sim, 60);
     expect(scoutingWords(w)).toBe('nobody out; no trip yet');

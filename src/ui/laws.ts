@@ -7,6 +7,7 @@ import type { AnswerView, LawView, RuledLawView, StrangersLawView } from '../wor
 import { dayStrip } from './daystrip.ts';
 import { el } from './dom.ts';
 import { colonyRows } from './standingrows.ts';
+import { colonyWayRows } from './waysrows.ts';
 
 export interface LawActions {
   setLaw(law: string, setting: string): void;
@@ -245,7 +246,8 @@ export class LawSheet {
   }
 
   /** Rations, Sickness and Punishment (P6.5): the custom asks nothing of anyone. The Feasts law
-   * (6B) lists its feast days first, each with why it is kept and a why? to its asking. */
+   * (6B) lists its feast days first, each with why it is kept and a why? to its asking; the New
+   * Ways law (6C) ends with the ways the colony knows (V-221). */
   private ruled(view: RuledLawView): HTMLElement[] {
     const days = (view.days ?? []).map((d) => {
       const row = el('div', { class: 'memrow belief', 'data-testid': 'feastday' });
@@ -257,7 +259,7 @@ export class LawSheet {
       return row;
     });
     if (days.length) days.unshift(el('h4', {}, 'Feast days'));
-    return [...days, ...this.answersOf(view)];
+    return [...days, ...this.answersOf(view), ...colonyWayRows(view.ways)];
   }
 
   private answersOf(view: RuledLawView): HTMLElement[] {

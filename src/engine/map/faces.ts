@@ -4,7 +4,7 @@
 // world's truth, read only by whoever stands beside the face (land `seams.ts`). The levels are
 // laid out here only to read their veins (their own `veins` sub-streams, so `worldgen` is
 // untouched). Bit 128 marks a face a prospector has walked, so the next trip goes farther; land
-// `prospect.ts` keeps when and by what skill, and the face is fresh again after a year (V-223).
+// `prospect.ts` keeps when and by what skill, and the face is fresh again after a year (V-224).
 import type { EngineContent, MapState } from '../core/index.ts';
 import { makeLevel } from './underground.ts';
 

@@ -23,7 +23,6 @@
       { "event": "defy.left", "weight": 9, "title": "{name} left the valley" },
       { "event": "people.sentAway", "weight": 6, "title": "{name} was sent away sick" },
       { "event": "teach.lost", "weight": 6, "title": "the best {skill} went with {name}" },
-      { "event": "discover.lost", "weight": 6, "title": "the way of {method} was lost with {name}" },
       { "event": "school.bookLost", "weight": 5, "title": "{book} was lost" },
       { "event": "people.strangerTurnedAway", "weight": 4, "many": "{Times} strangers were turned away: {list}.", "item": "{names}" }
     ] },
@@ -47,7 +46,6 @@
       { "event": "tavern.named", "weight": 6, "title": "{name} opened its doors" },
       { "event": "calling.masterwork", "weight": 6, "title": "{name} made {title}" },
       { "event": "school.book", "weight": 5, "title": "{teacher} wrote {book}" },
-      { "event": "discover.found", "weight": 6, "title": "{name} found {method}" },
       { "event": "pasture.built", "weight": 5, "title": "the pasture was fenced" },
       { "event": "furniture.benchPlaced", "weight": 2 },
       { "event": "build.sited", "weight": 1, "one": "The colony planned a {size} {dir} of the green.", "many": "The colony planned {count} houses: {list}.", "item": "a {size} {dir} of the green" },
@@ -68,6 +66,12 @@
       { "event": "food.firstFine", "weight": 3, "title": "{name} cooked a fine meal", "many": "{Count} fine meals were cooked for the first time: {list}.", "item": "{what} by {name}" },
       { "event": "craft.firstFine", "weight": 3, "many": "{Count} pieces were made finer than ever before: {list}.", "item": "{what} by {name}", "title": "{name} made a {word} piece" },
       { "event": "self.fulfilled", "weight": 5, "many": "{Count} did what they set out to: {list}.", "item": "{name}", "title": "{name} did what {they} set out to" }
+    ] },
+    { "id": "ways", "max": 4, "lines": [
+      { "event": "discover.found", "weight": 6, "title": "{name} found {method}", "many": "{Count} new ways were found: {list}.", "item": "{method}, by {name}", "year": "New ways found this year: {list}." },
+      { "event": "discover.learned", "weight": 3, "many": "{Count} learnt a way from another: {list}.", "item": "{name}, {method} from {teacher}" },
+      { "event": "discover.mishap", "weight": 2, "many": "{Times} trying something new went wrong: {list}.", "item": "{name} at the {where}" },
+      { "event": "discover.lost", "weight": 6, "title": "the way of {method} was lost with {name}", "many": "{Count} ways were lost with their last knowers: {list}.", "item": "{method}, with {name}", "year": "Ways lost this year: {list}." }
     ] },
     { "id": "troubles", "max": 6, "order": "weight", "lines": [
       { "event": "land.late", "weight": 6, "title": "{name} was late home", "many": "{Count} were late home from the wild: {list}.", "item": "{name}" },
@@ -175,6 +179,7 @@
       "leads": "Who leads",
       "numbers": "In numbers",
       "gathered": "Feasts and faith",
+      "ways": "New ways",
       "ahead": "Looking ahead",
       "say": "What people say",
       "whose": "Whose year it was"
@@ -192,7 +197,7 @@
     },
     "whose": "It was {name}'s year: {they} had a hand in more of what happened than anyone else.",
     "cite": 12,
-    "titleFrom": ["lost", "troubles", "family", "leads", "came", "gathered", "built"],
+    "titleFrom": ["lost", "troubles", "family", "leads", "came", "gathered", "built", "ways"],
     "titleMin": 5,
     "fold": "Season after season, small troubles came back: {list}.",
     "foldItem": "{what} ({times})"

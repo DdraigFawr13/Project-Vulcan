@@ -5,7 +5,10 @@ type Files = Readonly<Record<string, unknown>>;
 
 interface Annals {
   skip: string[];
-  sections: { id: string; lines: { event: string; many?: string; item?: string }[] }[];
+  sections: {
+    id: string;
+    lines: { event: string; many?: string; item?: string; year?: string }[];
+  }[];
   page: { heads: Record<string, string> };
   year: { titleFrom: string[] };
 }
@@ -13,6 +16,17 @@ interface EventDef {
   id: string;
   importance: number;
   notable?: Record<string, string>;
+}
+
+type Line = Annals['sections'][number]['lines'][number];
+
+/** A section line names an event, and a joined (`many`) or year (`year`) sentence has its items. */
+function lineProblems(at: string, line: Line, ids: ReadonlySet<string>): string[] {
+  const out: string[] = [];
+  if (!ids.has(line.event)) out.push(`${at}: "${line.event}" is no event`);
+  if (line.many !== undefined && line.item === undefined) out.push(`${at}: many needs item`);
+  if (line.year !== undefined && line.item === undefined) out.push(`${at}: year needs item`);
+  return out;
 }
 
 export function checkAnnals(files: Files): string[] {
@@ -23,9 +37,7 @@ export function checkAnnals(files: Files): string[] {
   const errors: string[] = [];
   for (const s of a.sections)
     for (const line of s.lines) {
-      const at = `annals.sections[${s.id}].lines[${line.event}]`;
-      if (!ids.has(line.event)) errors.push(`${at}: "${line.event}" is no event`);
-      if (line.many !== undefined && line.item === undefined) errors.push(`${at}: many needs item`);
+      errors.push(...lineProblems(`annals.sections[${s.id}].lines[${line.event}]`, line, ids));
       told.add(line.event);
     }
   // The engine adds the elder to `leads` when no line says who leads.

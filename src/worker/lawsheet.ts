@@ -1,4 +1,5 @@
-// The 6A laws on the Laws page (P6.5, V-157): Rations, Punishment and Sickness, and 6B's Hearths and Feasts, each its setting,
+// The 6A laws on the Laws page (P6.5, V-157): Rations, Punishment and Sickness, 6B's Hearths and
+// Feasts and 6C's New Ways (with the ways the colony knows, V-221), each its setting,
 // what it does, since when and everyone's answer, refusals first. A pure read of the world; every
 // word is content (laws.json) or the engine's numbers.
 import { content } from '../content/index.ts';
@@ -13,6 +14,7 @@ import {
 } from '../engine/index.ts';
 import { answerView } from './law.ts';
 import { feastDaysView } from './faithview.ts';
+import { colonyWays } from './waysview.ts';
 import type { AnswerView, RuledLawView } from './protocol-law.ts';
 
 /** The laws shown this way, in the sheet's order. */
@@ -23,6 +25,7 @@ export const RULED = [
   'hearths',
   'feasts',
   'apprentices',
+  'new-ways',
 ] as const;
 
 const ORDER = ['refuses', 'grumbles', 'obeys'];
@@ -70,5 +73,6 @@ export function ruledView(world: WorldState, id: string): RuledLawView {
     why: row ? (row['line'] as number) : world.begunEvent,
     answers,
     ...(id === 'feasts' && { days: feastDaysView(world) }),
+    ...(id === 'new-ways' && { ways: colonyWays(world) }),
   };
 }

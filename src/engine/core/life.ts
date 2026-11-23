@@ -145,7 +145,7 @@ export interface WorkDef {
       clay: string;
       cellar: string;
     };
-    /** V-223: tiles from the green past which a miner packs food for `days` and a bedroll; days a
+    /** V-224: tiles from the green past which a miner packs food for `days` and a bedroll; days a
      * plan is held with nothing sunk before the next free miner may take it; why a plan not begun
      * in a season waits. */
     pack: number;
