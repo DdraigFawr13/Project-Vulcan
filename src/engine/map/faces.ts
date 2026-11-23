@@ -3,7 +3,8 @@
 // on the vein's level (the shallowest wins). Nothing on the ground marks it: the layer is the
 // world's truth, read only by whoever stands beside the face (land `seams.ts`). The levels are
 // laid out here only to read their veins (their own `veins` sub-streams, so `worldgen` is
-// untouched). Bit 128 marks a face a prospector has walked, so the next trip goes farther.
+// untouched). Bit 128 marks a face a prospector has walked, so the next trip goes farther; land
+// `prospect.ts` keeps when and by what skill, and the face is fresh again after a year (V-223).
 import type { EngineContent, MapState } from '../core/index.ts';
 import { makeLevel } from './underground.ts';
 
@@ -63,19 +64,24 @@ export const seamAt = (map: MapState, i: number): number => {
 /** Whether a prospector has walked face `i`. */
 export const faceWalked = (map: MapState, i: number): boolean => (map.faces[i]! & WALKED) > 0;
 
-/** Marks the faces within a tile of (x, y) walked; returns how many were new. */
-export function walkFaces(map: MapState, x: number, y: number): number {
-  let n = 0;
+/** Marks the faces within a tile of (x, y) that `fresh` passes walked; returns their tiles. */
+export function walkFaces(
+  map: MapState,
+  x: number,
+  y: number,
+  fresh: (i: number) => boolean = (i) => !faceWalked(map, i),
+): number[] {
+  const out: number[] = [];
   for (let dy = -1; dy <= 1; dy += 1)
     for (let dx = -1; dx <= 1; dx += 1) {
       const [fx, fy] = [x + dx, y + dy];
       if (fx < 0 || fy < 0 || fx >= map.width || fy >= map.height) continue;
       const i = fy * map.width + fx;
-      if (!isFace(map, i) || faceWalked(map, i)) continue;
+      if (!isFace(map, i) || !fresh(i)) continue;
       map.faces[i] = map.faces[i]! | WALKED;
-      n += 1;
+      out.push(i);
     }
-  return n;
+  return out;
 }
 
 /** Every face's tile index, in tile order: the faces never change, so they are listed once. */

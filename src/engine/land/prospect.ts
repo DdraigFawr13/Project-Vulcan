@@ -3,9 +3,10 @@
 // Scouting wants a prospector: of the free who put Scouting no lower, the one with most mining
 // skill (V-205's restless and hardy first does not apply). They pack and camp as a scout (V-206),
 // make for the nearest rock face nobody has walked, the ore's liked rocks first, walk along the
-// faces up to `prospect.day` minutes and come home. Faces walked are remembered (map `faces.ts`);
-// with every face within `scout.far` tiles walked, the want waits for a change.
-import { type EntityRow, type Find } from '../core/index.ts';
+// faces up to `prospect.day` minutes and come home. Faces walked are remembered (map `faces.ts`),
+// with when and by what mining skill: a face is fresh again a year on, or at once for a better
+// miner (V-223). With every face within `scout.far` tiles walked, the want waits for a change.
+import { counted, TICKS_PER_DAY, type EntityRow, type Find } from '../core/index.ts';
 import { greenOf } from '../build/index.ts';
 import { faceList, faceWalked, walkFaces } from '../map/index.ts';
 import { saltCause, seamsOf } from '../mine/index.ts';
@@ -28,14 +29,34 @@ export function oreAsNeed(ctx: SystemContext, ox: number, oy: number): Need | un
   return { def, name: oreWord(ctx, ore.f), have: 0, known: 0, want: ore.short, ore };
 }
 
-/** The faces within `far` of the green nobody has walked. */
-function unwalked(ctx: SystemContext, ox: number, oy: number): number[] {
+/** Each walked face's tile: the tick it was walked times 16, plus the walker's mining level. */
+const walksOf = (ctx: SystemContext) => (ctx.world.systems['faces'] ??= {});
+
+/** Whether face `i` is fresh for a prospector of mining level `skill` (V-223): never walked,
+ * walked a year ago or more, or walked by a less skilled miner. A face marked walked with no
+ * record of it stays walked. */
+export function faceFresh(ctx: SystemContext, i: number, skill: number): boolean {
+  const { world, content } = ctx;
+  if (!faceWalked(world.map, i)) return true;
+  const walk = walksOf(ctx)[i];
+  if (walk === undefined) return false;
+  const year = content.calendar.daysPerMonth * content.calendar.monthsPerYear * TICKS_PER_DAY;
+  return world.tick - Math.floor(walk / 16) >= year || Math.min(15, skill) > walk % 16;
+}
+
+/** The faces within `far` of the green fresh for a prospector of mining level `skill`. */
+function unwalked(ctx: SystemContext, ox: number, oy: number, skill: number): number[] {
   const map = ctx.world.map;
   const far = ctx.content.work.scout.far;
   return faceList(map).filter(
-    (i) => !faceWalked(map, i) && apart(i % map.width, Math.floor(i / map.width), ox, oy) <= far,
+    (i) =>
+      apart(i % map.width, Math.floor(i / map.width), ox, oy) <= far && faceFresh(ctx, i, skill),
   );
 }
+
+/** The best mining level among the living. */
+const bestMining = (ctx: SystemContext): number =>
+  Math.max(0, ...people(ctx.world).map((q) => (q['status'] === 'alive' ? miningOf(ctx, q) : 0)));
 
 /** The first ore wanted and unknown while faces within reach are still unwalked; kept a tick. */
 const NEEDS = new WeakMap<object, { tick: number; need: OreNeed | undefined }>();
@@ -43,7 +64,8 @@ export function oreNeed(ctx: SystemContext, ox: number, oy: number): OreNeed | u
   const kept = NEEDS.get(ctx.world);
   if (kept?.tick === ctx.world.tick) return kept.need;
   const wanted = oresWanted(ctx);
-  const need = wanted.length && unwalked(ctx, ox, oy).length ? wanted[0] : undefined;
+  const need =
+    wanted.length && unwalked(ctx, ox, oy, bestMining(ctx)).length ? wanted[0] : undefined;
   NEEDS.set(ctx.world, { tick: ctx.world.tick, need });
   return need;
 }
@@ -78,10 +100,11 @@ function sideOf(ctx: SystemContext, p: EntityRow, i: number): Spot | undefined {
   return undefined;
 }
 
-/** The unwalked faces within `far` of (ox, oy), best first for `metal`: a rock the ore likes
- * first, then the nearest to (cx, cy), less `lean` along the word's way. */
+/** The faces within `far` of (ox, oy) fresh for `p`, best first for `metal`: a rock the ore
+ * likes first, then the nearest to (cx, cy), less `lean` along the word's way. */
 function ranked(
   ctx: SystemContext,
+  p: EntityRow,
   metal: string,
   [ox, oy]: readonly [number, number],
   [cx, cy]: readonly [number, number],
@@ -93,7 +116,7 @@ function ranked(
   const ids = content.terrain.kinds.map((k) => k.id);
   const word = wordOf(ctx, content.work.scout.goods.length + seamOres(ctx).indexOf(metal));
   const scored: [number, number][] = [];
-  for (const i of unwalked(ctx, ox, oy)) {
+  for (const i of unwalked(ctx, ox, oy, miningOf(ctx, p))) {
     const [x, y] = [i % map.width, Math.floor(i / map.width)];
     const d = apart(x, y, cx, cy);
     if (d > far) continue;
@@ -114,7 +137,7 @@ export function faceTarget(
   oy: number,
 ): Spot | undefined {
   const far = ctx.content.work.scout.far;
-  for (const i of ranked(ctx, need.metal, [ox, oy], [ox, oy], far)) {
+  for (const i of ranked(ctx, p, need.metal, [ox, oy], [ox, oy], far)) {
     const side = sideOf(ctx, p, i);
     if (side) return side;
   }
@@ -156,7 +179,7 @@ export function alongFaces(ctx: SystemContext, p: EntityRow, trip: Find): boolea
   const here: [number, number] = [p['x'] as number, p['y'] as number];
   // The faces along from here first; with none, on to the next unwalked face wherever it is.
   for (const reach of [def.along, 2 * content.work.scout.far])
-    for (const i of ranked(ctx, trip.good, [g.x, g.y], here, reach).slice(0, 8)) {
+    for (const i of ranked(ctx, p, trip.good, [g.x, g.y], here, reach).slice(0, 8)) {
       const side = sideOf(ctx, p, i);
       if (side && (side.x !== here[0] || side.y !== here[1]) && walkTo(ctx, p, side)) return true;
     }
@@ -170,11 +193,16 @@ const SIDES = [
   [0, -1],
 ] as const;
 
-/** Each minute of an ore trip on the surface: the faces beside them are walked. */
+/** Each minute of an ore trip on the surface: the faces beside them fresh for them are walked,
+ * and when and by what skill is kept. */
 export function walkTrip(ctx: SystemContext, p: EntityRow, trip: Find): void {
   if (p['z'] !== 0) return;
-  const n = walkFaces(ctx.world.map, p['x'] as number, p['y'] as number);
-  if (n) trip.faces = (trip.faces ?? 0) + n;
+  const skill = miningOf(ctx, p);
+  const fresh = (i: number) => faceFresh(ctx, i, skill);
+  const walked = walkFaces(ctx.world.map, p['x'] as number, p['y'] as number, fresh);
+  const walks = walksOf(ctx);
+  for (const i of walked) walks[i] = ctx.world.tick * 16 + Math.min(15, skill);
+  if (walked.length) trip.faces = (trip.faces ?? 0) + walked.length;
 }
 
 /** Home from prospecting: the seam they found (told of, citing it), or no word and the faces
@@ -200,7 +228,13 @@ export function prospectHome(ctx: SystemContext, p: EntityRow, trip: Find): void
     : ctx.emit('land.noSeam', {
         causes: [trip.line],
         actors: [p.id],
-        data: { name: p['name'] as string, ore: oreWord(ctx, f), faces: trip.faces ?? 0 },
+        data: {
+          name: p['name'] as string,
+          ore: oreWord(ctx, f),
+          faces: trip.faces ?? 0,
+          walked: counted(trip.faces ?? 0, 'rock faces'),
+          them: trip.faces === 1 ? 'it' : 'them',
+        },
       });
   Object.assign(trip, { count: 0, line, tick: world.tick });
 }
