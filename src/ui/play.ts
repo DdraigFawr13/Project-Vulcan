@@ -22,6 +22,8 @@ export interface PlayActions {
 
 export class Play {
   private readonly strip = el('div', { class: 'strip', 'data-testid': 'strip' });
+  /** The faces, which scroll sideways in a colony too large for the screen; Names stays put. */
+  private readonly row = el('div', { class: 'facerow' });
   private readonly plate = el('button', {
     type: 'button',
     class: 'alertplate',
@@ -57,6 +59,8 @@ export class Play {
       this.names.setAttribute('aria-pressed', String(on));
       actions.names(on);
     });
+    this.row.addEventListener('scroll', () => this.edge(), { passive: true });
+    this.strip.append(this.row, this.names);
     bar.append(this.strip, this.plate);
   }
 
@@ -66,7 +70,7 @@ export class Play {
     this.people = people;
     this.faces.clear();
     const faces = people.filter((p) => p.status !== 'stranger');
-    this.strip.replaceChildren(
+    this.row.replaceChildren(
       ...faces.map((p) => {
         const slot = el('button', {
           type: 'button',
@@ -85,9 +89,9 @@ export class Play {
         this.faces.set(p.id, slot);
         return slot;
       }),
-      this.names,
     );
     this.strip.hidden = !faces.length;
+    this.edge();
     if (keep) return;
     this.list = [];
     this.unread = 0;
@@ -96,6 +100,7 @@ export class Play {
 
   /** Mood rings from this snapshot: green content, amber under the warning line, red at the worst. */
   setWalkers(walkers: readonly WalkerView[]): void {
+    let gone = false;
     for (const w of walkers) {
       const slot = this.faces.get(w.id);
       if (!slot) continue;
@@ -103,7 +108,10 @@ export class Play {
       slot.classList.toggle('bad', w.mood.low && w.mood.share < 20);
       // Hurt: a red "+"; dead until buried: a greyed face and a "†"; the buried leave (P5.6, P5.8).
       const badge = w.health?.badge;
-      slot.hidden = !!w.health?.buried;
+      if (slot.hidden !== !!w.health?.buried) {
+        slot.hidden = !!w.health?.buried;
+        gone = true;
+      }
       slot.classList.toggle('hurt', badge === 'hurt');
       slot.classList.toggle('dead', badge === 'dead');
       const mark = slot.querySelector<HTMLElement>('.hbadge');
@@ -114,11 +122,20 @@ export class Play {
       const state = badge === 'dead' ? 'dead' : badge === 'hurt' ? 'hurt' : w.mood.word;
       slot.setAttribute('aria-label', `${slot.dataset['name'] ?? ''}, ${state}`);
     }
+    if (gone) this.edge();
+  }
+
+  /** Fade the row's end while faces lie past it. */
+  private edge(): void {
+    const r = this.row;
+    r.classList.toggle('more', r.scrollLeft + r.clientWidth < r.scrollWidth - 1);
   }
 
   /** The person whose sheet is open is ringed in ember. */
   select(id: number | undefined): void {
     for (const [k, slot] of this.faces) slot.classList.toggle('sel', k === id);
+    // In a colony too large for the screen, the strip scrolls to the ringed face.
+    this.faces.get(id ?? -1)?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
   }
 
   /** New ledger lines: the notable ones become alerts, unread unless the world just loaded. */
