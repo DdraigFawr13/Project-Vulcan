@@ -250,6 +250,8 @@ describe('fields', () => {
     const levers = [
       ...['setStock', 'setPriority', 'setLaw', 'setBuild', 'sendBack', 'sendBackShaft'],
       'letStand',
+      // The asks (6C Slice 3): the colony takes an ask up at a priority or lets it pass, naming nobody.
+      ...['takeAsk', 'passAsk'],
     ];
     const kinds = SYSTEMS.flatMap((s) => Object.keys(s.commands ?? {}));
     expect(kinds.filter((k) => !levers.includes(k) && !TEST_TOOLS.includes(k))).toEqual([]);
