@@ -83,6 +83,7 @@ export function addPerson(
     ...{
       making: '',
       ask: 0,
+      guest: 0,
       fine: 0,
       fineMeal: 0,
       lit: 0,

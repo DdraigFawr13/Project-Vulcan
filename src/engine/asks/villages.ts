@@ -101,7 +101,13 @@ export function strangersAsk(ctx: SystemContext, seen: number): number {
 }
 
 /** Moves village `place`'s regard by `by` with a line citing `cause`. */
-function moveRegard(ctx: SystemContext, place: string, by: number, cause: number, text: string) {
+export function moveRegard(
+  ctx: SystemContext,
+  place: string,
+  by: number,
+  cause: number,
+  text: string,
+) {
   const row = regardOf(ctx, place);
   row['regard'] = Math.max(0, Math.min(100, (row['regard'] as number) + by));
   return ctx.emit('ask.regard', {
@@ -117,7 +123,8 @@ function moveRegard(ctx: SystemContext, place: string, by: number, cause: number
 export function villagesDue(ctx: SystemContext): void {
   const r = ctx.content.asks.regard;
   for (const a of liveAsks(ctx.world)) {
-    if (a['source'] !== 'neighbour' || ctx.world.tick < (a['due'] as number)) continue;
+    if (a['source'] !== 'neighbour' || a['good'] === 'guest') continue;
+    if (ctx.world.tick < (a['due'] as number)) continue;
     const place = a['of'] as string;
     const comes = r.comes.replace('{place}', place);
     const who = comes.charAt(0).toUpperCase() + comes.slice(1);

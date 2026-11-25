@@ -40,5 +40,19 @@
     "wealth": {"what": "two ingots", "good": "copper-ingot|tin-ingot|bronze-ingot|iron-ingot", "count": 2},
     "freedom": {"what": "a cask for the shrine", "good": "barrel", "count": 1}
   }
+},
+"guests": {"what": "a bed in the hall for a season", "feud": "a bed for a season, away from their village's feud", "answer": 1, "against": "guest-against"},
+"dreams": {
+  "days": 56, "answer": 28, "backed": "dream-backed", "unbacked": "dream-unbacked",
+  "house": {"what": "timber for {name}'s own house", "good": "logs", "count": 30},
+  "skills": {
+    "smithing": {"what": "ingots for {name} to work at the forge", "good": "copper-ingot|tin-ingot|bronze-ingot|iron-ingot", "count": 4},
+    "crafting": {"what": "wood for {name} to work", "good": "logs", "count": 10},
+    "cooking": {"what": "food for {name} to cook with", "good": "food", "count": 40},
+    "building": {"what": "timber for {name} to build with", "good": "logs", "count": 20},
+    "stoneworking": {"what": "stone for {name} to dress", "good": "stone", "count": 20},
+    "herbalism": {"what": "herbs for {name} to learn from", "good": "herbs", "count": 5},
+    "farming": {"what": "seed for {name} to sow", "good": "seed", "count": 20}
+  }
 }
 }

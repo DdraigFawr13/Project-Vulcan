@@ -8,6 +8,7 @@ import { qualityOf } from '../build/index.ts';
 import { fitsAsk, layTool, restOf } from '../goods/index.ts';
 import { weigh } from '../law/index.ts';
 import { creedOf } from '../faith/index.ts';
+import { skillOf } from '../band/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { firstFine } from './fine.ts';
 
@@ -25,10 +26,18 @@ function lordWill(ctx: SystemContext, p: EntityRow): number {
   return loyal ? weigh(world, content, p.id, loyal).will : content.laws.answer.start;
 }
 
-/** Whether `p` will work ask `a`: anyone, but a lord's ask not by one who would refuse him, and
- * a shrine's only by its own faithful. */
+/** Whether `p` will work dream ask `a`: the dreamer, or (but for a house) one of their trade. */
+function dreamMate(ctx: SystemContext, p: EntityRow, a: EntityRow): boolean {
+  const row = (ctx.world.entities['ambition'] ?? []).find((r) => `dream:${r.id}` === a['of']);
+  const skill = row?.['skill'] as string | undefined;
+  return row?.['person'] === p.id || !skill || skillOf(ctx.world, p, skill) > 0;
+}
+
+/** Whether `p` will work ask `a`: anyone, but a lord's ask not by one who would refuse him, a
+ * shrine's only by its own faithful, a dream's by the dreamer and their trade-mates. */
 export function willWork(ctx: SystemContext, p: EntityRow, a: EntityRow): boolean {
   if (a['source'] === 'faith') return String(creedOf(ctx.world, p.id)?.id ?? '') === a['of'];
+  if (a['source'] === 'dream') return dreamMate(ctx, p, a);
   return a['source'] !== 'lord' || lordWill(ctx, p) >= ctx.content.laws.answer.grumble;
 }
 

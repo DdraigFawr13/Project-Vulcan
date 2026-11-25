@@ -10,6 +10,7 @@ import {
   createSim,
   createWorld,
   emit,
+  itemsOf,
   restOf,
   step,
   submitCommand,
@@ -21,6 +22,7 @@ import {
 import { contextFor } from '../sim/system.ts';
 import { willWork } from '../crafts/askmade.ts';
 import { asksSystem } from './system.ts';
+import { sendBack } from '../band/index.ts';
 
 const content = withoutAccidents(game);
 type World = ReturnType<typeof createWorld>;
@@ -136,5 +138,96 @@ describe("the shrine's priest", () => {
     );
     expect(sour.map((m) => m['person'])).toEqual([priest!.id]);
     expect(sour[0]!['line']).toBe(passed!.id);
+  });
+});
+
+describe('a turned-away stranger', () => {
+  it('asks to stay a season citing the turning away; taken up, they stay, then are talked over', () => {
+    const { sim, w, ctx } = start();
+    const [guest, against, ...rest] = people(w);
+    const came = emit(w, sim.templates, 'people.strangerCame', {
+      causes: [w.begunEvent],
+      data: { names: 'Wyn', place: 'Oakby', dir: 'east', bundle: '', words: '', draw: '' },
+    });
+    // The rest spoke for them; `against` did not.
+    const away = emit(w, sim.templates, 'people.strangerTurnedAway', {
+      causes: [came],
+      actors: [guest!.id],
+      data: {
+        ...{ names: 'Wyn of Oakby', spoke: '', why: '', verb: 'was', dir: 'east' },
+        spokeFor: rest.map((p) => p.id).join('|'),
+      },
+    });
+    Object.assign(guest!, { status: 'stranger', stranger: came, waits: -1, guest: 0 });
+    Object.assign(guest!, { reason: 'hunger', home: 'Oakby', homeDir: 'east', partner: 0 });
+    sendBack(ctx, [guest!]);
+    step(w, sim, 2);
+    const [asked] = lines(w, 'guest.asked');
+    expect(asked!.causes).toContain(away);
+    const ask = asks(w).find((x) => x['source'] === 'guest')!;
+    submitCommand(w, { tick: w.tick + 1, kind: 'takeAsk', data: { ask: ask.id, level: 2 } });
+    step(w, sim, 3);
+    const [stays] = lines(w, 'guest.stays');
+    expect(stays!.actors).toEqual([guest!.id]);
+    expect(guest!['status']).toBe('alive');
+    const sour = (w.entities['memory'] ?? []).filter(
+      (m) => m['memory'] === content.asks.guests.against,
+    );
+    expect(sour.map((m) => m['person'])).toEqual([against!.id]);
+    // The season ends: a tale, then the colony's word on them again.
+    ask['due'] = w.tick + 1;
+    step(w, sim, 5);
+    const [tale] = lines(w, 'guest.tale');
+    expect(tale!.causes).toContain(asked!.id);
+    const word = [...lines(w, 'people.strangerStays'), ...lines(w, 'people.strangerTurnedAway')];
+    expect(word.some((e) => e.id > tale!.id && e.actors.includes(guest!.id))).toBe(true);
+  });
+});
+
+describe('a dream long unfulfilled', () => {
+  it('asks to be backed citing the ambition, worked by its trade; passing sours the dreamer', () => {
+    const { sim, w, ctx } = start();
+    const [dreamer, mate, other] = people(w);
+    w.entities['skill'] = (w.entities['skill'] ?? []).filter((s) => s['skill'] !== 'herbalism');
+    addEntity(w, 'skill', { person: mate!.id, skill: 'herbalism', level: 3, xp: 0 });
+    const since = w.tick - (content.asks.dreams.days + 1) * 1440;
+    addEntity(w, 'ambition', {
+      ...{ person: dreamer!.id, ambition: 'trade', skill: 'herbalism', since, done: 0 },
+      line: w.begunEvent,
+    });
+    step(w, sim, TICKS_PER_HOUR);
+    const [asked] = lines(w, 'dream.asked');
+    expect(asked!.causes).toContain(w.begunEvent);
+    const ask = asks(w).find((x) => x['source'] === 'dream')!;
+    expect(ask['good']).toBe('herbs');
+    expect(willWork(ctx, dreamer!, ask)).toBe(true);
+    expect(willWork(ctx, mate!, ask)).toBe(true);
+    expect(willWork(ctx, other!, ask)).toBe(false);
+    submitCommand(w, { tick: w.tick + 1, kind: 'passAsk', data: { ask: ask.id } });
+    step(w, sim, TICKS_PER_HOUR);
+    const [passed] = lines(w, 'ask.passed');
+    expect(passed!.causes).toContain(asked!.id);
+    const sour = (w.entities['memory'] ?? []).filter(
+      (m) => m['memory'] === content.asks.dreams.unbacked,
+    );
+    expect(sour.map((m) => [m['person'], m['line']])).toEqual([[dreamer!.id, passed!.id]]);
+    // A house dream taken up and all set apart is backed, and the timber laid out again.
+    addEntity(w, 'ambition', {
+      ...{ person: mate!.id, ambition: 'house', skill: '', since, done: 0 },
+      line: w.begunEvent,
+    });
+    step(w, sim, TICKS_PER_HOUR);
+    const house = asks(w).find((x) => x['source'] === 'dream' && x['good'] === 'logs')!;
+    submitCommand(w, { tick: w.tick + 1, kind: 'takeAsk', data: { ask: house.id, level: 1 } });
+    step(w, sim, 2);
+    Object.assign(house, { got: house['count'], held: `logs=${house['count'] as number}` });
+    step(w, sim, TICKS_PER_HOUR);
+    const done = lines(w, 'ask.done').at(-1)!;
+    expect(done.causes).toContain(house['line']);
+    const backed = (w.entities['memory'] ?? []).find(
+      (m) => m['memory'] === content.asks.dreams.backed,
+    );
+    expect(backed?.['person']).toBe(mate!.id);
+    expect(itemsOf(w).some((i) => i['made'] === done.id && i['kind'] === 'logs')).toBe(true);
   });
 });

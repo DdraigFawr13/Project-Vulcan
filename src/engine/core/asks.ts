@@ -40,6 +40,19 @@ export interface AsksDef {
   gifts: Readonly<Record<string, { kind: string; count: number }>>;
   /** The shrine's yearly ask by its faith's first sacred tag, and the faithful's memories. */
   shrine: { done: string; passed: string; asks: Readonly<Record<string, GoodAskDef>> };
+  /** A turned-away stranger's ask to stay a season (`feud` its words for one fleeing a feud), open
+   * `answer` days; those who spoke against them gain `against`. */
+  guests: { what: string; feud: string; answer: number; against: string };
+  /** A dream `days` unfulfilled asks to be backed, open `answer` days; the goods it wants for a
+   * house or by its skill (`{name}` the dreamer); the dreamer's memories. */
+  dreams: {
+    days: number;
+    answer: number;
+    backed: string;
+    unbacked: string;
+    house: GoodAskDef;
+    skills: Readonly<Record<string, GoodAskDef>>;
+  };
 }
 
 export interface AsksDefs {
