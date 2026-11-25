@@ -9,7 +9,7 @@ import type { EntityRow, WorldState } from '../core/index.ts';
 import { benchOf } from '../build/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { barrelsAt, dailyOf } from '../keep/index.ts';
-import { depotAt, haveOf, itemsOf, layItem, takeFrom, wantOf } from '../goods/index.ts';
+import { depotAt, haveOf, itemDef, itemsOf, layItem, takeFrom, wantOf } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, canStandBeside, declineIfUnable, fetchKind, goBeside } from '../band/index.ts';
 import { layAll, outranked, people, practise, priorityLine, reachableOf } from '../band/index.ts';
@@ -30,7 +30,7 @@ function foodIn(world: WorldState, ctx: SystemContext): EntityRow[] {
     (i) =>
       !i['holder'] &&
       dailyOf(content, i['kind'] as string) > 0 &&
-      !content.items.find((d) => d.id === i['kind'])?.cooked &&
+      !itemDef(content, i['kind'])?.cooked &&
       !content.work.potter.kinds.includes(i['kind'] as string) &&
       !!depotAt(world, i['x'] as number, i['y'] as number, i['z'] as number),
   );

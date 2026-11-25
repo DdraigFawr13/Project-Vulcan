@@ -6,11 +6,11 @@
 // Region ids are fixed by place (level, chunk, order of first tile), never by when they were
 // made, so a loaded world searches exactly as the running one did.
 import type { EngineContent, MapState } from '../core/index.ts';
-import { CHUNK, chunksAcross, chunksDown, layerOf } from '../map/index.ts';
+import { CHUNK, chunkEpoch, chunksAcross, chunksDown, layerOf } from '../map/index.ts';
 import { costAt, downAt, leadsDown } from './grid.ts';
 
 /** Up to 128 regions fit in a 16 by 16 chunk (a checkerboard), so 256 ids a chunk is enough. */
-const PER_CHUNK = 256;
+export const PER_CHUNK = 256;
 
 export interface Region {
   id: number;
@@ -41,6 +41,10 @@ export interface Regions {
    * made: only their links are made again, unless there are many (`relink`). */
   pending: Set<number>;
   linked: boolean;
+  /** The map's `chunkEpoch` and how many levels below were reached when the versions were last
+   * read: while both are the same, no version has changed and nothing is read again. */
+  epoch: number;
+  depth: number;
 }
 
 const cache = new WeakMap<MapState, Regions>();
@@ -60,9 +64,15 @@ export function regionsOf(content: EngineContent, map: MapState): Regions {
       downs: [],
       pending: new Set(),
       linked: false,
+      epoch: -1,
+      depth: -1,
     };
     cache.set(map, r);
   }
+  const reached = map.levels.filter(Boolean).length;
+  if (r.epoch === chunkEpoch(map) && r.depth === reached) return r;
+  r.epoch = chunkEpoch(map);
+  r.depth = reached;
   const across = chunksAcross(map);
   const chunks = across * chunksDown(map);
   let changed = false;

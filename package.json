@@ -35,6 +35,7 @@
     "callings": "node tools/callings.mjs",
     "decade": "node tools/decade.mjs",
     "timeuse": "node tools/timeuse.mjs",
+    "speed": "node tools/speed.mjs",
     "discover": "node tools/discover.mjs",
     "test": "vitest run",
     "test:related": "vitest related --run",

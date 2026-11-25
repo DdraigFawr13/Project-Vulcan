@@ -4,7 +4,7 @@
 // Raw food that is turning (P5.7: spoiling at `sick.turning` a day or more where it lies),
 // eaten hungry, is an exposure to a griping belly.
 import { TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
-import { eatFrom } from '../goods/index.ts';
+import { eatFrom, itemDef } from '../goods/index.ts';
 import { expose } from '../health/index.ts';
 import { floorsOf, rateOf } from '../keep/index.ts';
 import { ateFood } from '../law/index.ts';
@@ -13,7 +13,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { tallyAdd } from './tally.ts';
 
 export const cooked = (ctx: SystemContext, i: EntityRow): boolean =>
-  !!ctx.content.items.find((d) => d.id === i['kind'])?.cooked;
+  !!itemDef(ctx.content, i['kind'])?.cooked;
 
 /** A hungry band ate seed (P4.7, V-089): one line a person a day, citing their hunger. */
 function saySeed(ctx: SystemContext, p: EntityRow, food: EntityRow): void {

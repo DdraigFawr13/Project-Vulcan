@@ -4,7 +4,7 @@
 // the store; a tool someone has taken is theirs (`owner`, `state` `held`) and lies on no tile.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { wayEffect } from '../entity/index.ts';
-import { itemsOf, layItem } from './stacks.ts';
+import { itemDef, itemsOf, layItem } from './stacks.ts';
 
 /** Where a tool someone holds "lies": on no tile of the map. */
 export const HELD = { x: -1, y: -1, z: 0 } as const;
@@ -20,7 +20,7 @@ export function restOf(world: WorldState, content: EngineContent) {
 
 /** The kind and material of a tool item, if it is one. */
 export const toolOf = (content: EngineContent, item: EntityRow) =>
-  content.items.find((i) => i.id === item['kind'])?.tool;
+  itemDef(content, item['kind'])?.tool;
 
 /** Whether the item is a tool someone holds. */
 export const isHeld = (item: EntityRow): boolean => item['state'] === 'held';
