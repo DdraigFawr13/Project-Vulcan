@@ -6,7 +6,7 @@
 // as none per meal or drink (V-036).
 import type { EntityRow } from '../core/index.ts';
 import { layItem, takeFrom } from '../goods/index.ts';
-import { eatPack, packOfPerson } from '../land/index.ts';
+import { eatPack, packOfPerson, packUp } from '../land/index.ts';
 import { needOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { lineOf } from '../band/index.ts';
@@ -33,7 +33,13 @@ export function takeBite(ctx: SystemContext, p: EntityRow, food: EntityRow, hour
   const walked = (p['eatWalk'] as number) ?? 0;
   p['eatWalk'] = 0;
   const bite = content.life.bite;
-  if (walked <= bite.far || !p['job'] || hours <= 0 || packFood(ctx, p)) return;
+  if (walked <= bite.far || !p['job'] || packFood(ctx, p)) return;
+  // A miner gone out with a pack fills it again for the days out there (V-231).
+  if (p['packed'] && p['job'] === content.work.mine.job) {
+    packUp(ctx, p, content.work.mine.days, false);
+    return;
+  }
+  if (hours <= 0) return;
   const def = content.life.needs.find((n) => n.id === 'food');
   const value = needOf(world, p.id, 'food')?.['value'] as number | undefined;
   const gives = content.life.eat[food['kind'] as string] ?? 0;

@@ -7,6 +7,8 @@ import { setOut } from '../land/minefar.ts';
 import { needOf } from '../needs/index.ts';
 import { createSim, createWorld } from '../index.ts';
 import { afield } from './afield.ts';
+import { takeBite } from './bite.ts';
+import { itemsOf } from '../goods/index.ts';
 
 const sim = createSim(content);
 const pack = content.work.mine.pack;
@@ -48,5 +50,10 @@ describe('far mining (V-231)', () => {
       if (content.life.eat[i['kind'] as string]) i['state'] = '';
     needOf(world, p.id, 'food')!['value'] = 1000;
     expect(afield(ctx, p, false)).toBe(false);
+    // Fed at the store after the long walk back, they fill the pack again for the days out.
+    const stack = itemsOf(world).find((i) => (content.life.eat[i['kind'] as string] ?? 0) > 0)!;
+    p['eatWalk'] = content.life.bite.far + 1;
+    takeBite(ctx, p, stack, 0);
+    expect(food(world, p)).toBeGreaterThan(0);
   });
 });
