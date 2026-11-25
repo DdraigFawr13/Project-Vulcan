@@ -16,7 +16,7 @@ Open [docs/RULES.md](docs/RULES.md), [docs/DECISIONS.md](docs/DECISIONS.md), [do
 ## Local checks (run before pushing)
 
 - While iterating: `npm run test:related -- <changed files>`.
-- Every push: `npm run check` (test-traps warnings, drift, format, types, boundaries, limits, shape ratchet, code map, reading, quick tests, build). Before ready: `npm run check:full` (all but the long files) and `npm run test:browser` once (VR-67). CI runs `npm run check:all`.
+- Every push: `npm run check` (test-traps warnings, drift, format, types, boundaries, limits, shape ratchet, code map, reading, quick tests, build). Before ready: `npm run check:all` on the final commit and `npm run test:browser` once (VR-67); a hook (`tools/ready-gate.mjs`) refuses to mark a PR ready until `check:all` has passed on HEAD with nothing uncommitted (V-229). CI runs `npm run check:all`.
 - Shape ratchet (`npm run shape`, `-- --list` names the offenders): long or tangled functions, copied helpers and contracts over 6 KB may not grow in number; after a refactor lowers one, run `npm run shape -- --update`. Before adding a helper, search for an existing one (the `refactor` skill).
 - Coverage: `npm run coverage` (full suite with V8 coverage, then one line per system) at each phase review; not part of `npm run check` or CI.
 - Test time budgets (VR-67): `npm run check` under 40 s; `npm run check:full` under 120 s (2026-11-21, 4-core container: 199 s with every file, 103.9 s without the long files, V-200).
