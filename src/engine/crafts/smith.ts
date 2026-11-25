@@ -223,6 +223,7 @@ export function takeUpSmithing(ctx: SystemContext, p: EntityRow): boolean {
     making: `${k.id}:${m.id}`,
     target: -1,
     work: -1,
+    ask: 0,
   });
   return smithing(ctx, p);
 }

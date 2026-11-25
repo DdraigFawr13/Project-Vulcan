@@ -10,12 +10,10 @@ import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { busy, same, spotOf } from './spots.ts';
 import { walkTo } from './walk.ts';
+import { free } from './tithehaul.ts';
 
 /** A load carried for an ask. */
 export const ASK = 'ask';
-
-const free = (i: EntityRow): boolean =>
-  !i['holder'] && !i['state'] && (i['x'] as number) >= 0 && (i['count'] as number) > 0;
 
 const apart = (a: Spot, b: Spot) =>
   a.z === b.z ? Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) : 999;

@@ -11,12 +11,12 @@ export const ASK_TABLES: Schemas = {
    * quality, how many, how many are set apart and of which kinds (`held`, "kind=n|kind=n"), the
    * line it came from and its own, the tick it is due by (0: the lord's next visit), its state
    * (open, taken, passed, done, late), the colony's priority 1 to 4 and the line that set it, who
-   * is on the way to carry some, and the line that settled it. */
+   * is on the way to carry some, the line that settled it, and how many pieces were made for it. */
   ask: {
     ...{ source: 'text', asker: 'text', what: 'text', tool: 'text', good: 'text' },
     ...{ quality: 'text', count: 'count', got: 'count', held: 'text', cite: 'event' },
     ...{ line: 'event', due: 'int', state: 'text', level: 'count', answer: 'event' },
-    ...{ going: 'ints', settled: 'event' },
+    ...{ going: 'ints', settled: 'event', made: 'count' },
   },
 };
 
@@ -108,7 +108,9 @@ export const emptyAsk = (a: EntityRow): void => setHeld(a, new Map());
  * carrying it is no longer on the way. */
 export function dropAsk(world: WorldState, load: EntityRow): void {
   if (load['state'] !== 'ask') return;
-  for (const a of asksOf(world))
-    if ((a['going'] as number[]).includes(load['holder'] as number)) a['going'] = [];
+  const holder = load['holder'] as number;
+  for (const a of asksOf(world)) if ((a['going'] as number[]).includes(holder)) a['going'] = [];
+  const p = (world.entities['person'] ?? []).find((q) => q.id === holder);
+  if (p) p['ask'] = 0;
   load['state'] = '';
 }

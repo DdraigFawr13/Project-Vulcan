@@ -2,6 +2,7 @@
 // priority of 1 to 4 (or moves a taken one), `passAsk {ask}` lets it pass. Both answer as the
 // colony and name nobody; both work while paused, as every lever does.
 import type { SystemContext } from '../sim/index.ts';
+import { giveBack } from './asks.ts';
 
 const live = (ctx: SystemContext, id: unknown) =>
   (ctx.world.entities['ask'] ?? []).find(
@@ -47,4 +48,6 @@ export function passAsk(
     data: { what: a['what'] as string, asker: a['asker'] as string },
   });
   Object.assign(a, { state: 'passed', level: 0, answer: line, going: [] });
+  // What was set apart goes back to the colony now, not on its day.
+  giveBack(ctx, a, line);
 }

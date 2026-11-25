@@ -55,6 +55,7 @@ export function madeForAsk(
     trail: tool.trail,
     maker: p.id,
   });
+  a['made'] = ((a['made'] as number) || 0) + 1;
   const fits = fitsAsk(content, a, item);
   const line = ctx.emit('ask.made', {
     causes: [p['took'] as number, a['line'] as number].filter((l) => l > 0),

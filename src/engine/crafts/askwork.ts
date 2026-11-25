@@ -37,9 +37,11 @@ function moreSkilled(ctx: SystemContext, p: EntityRow, a: EntityRow): boolean {
 }
 
 /** Whether ask `a`'s tool must still be made: nothing that fits lies free, nobody is carrying or
- * making one for it. */
+ * making one for it, and the smith has not yet had `count` + 1 tries (a piece short of the
+ * quality asked lies with the cart; the ask then goes late). */
 function toMake(ctx: SystemContext, a: EntityRow): boolean {
   const { world, content } = ctx;
+  if (((a['made'] as number) || 0) > (a['count'] as number)) return false;
   if ((a['going'] as number[]).length || people(world).some((q) => q['ask'] === a.id)) return false;
   return !itemsOf(world).some(
     (i) => !i['holder'] && !i['state'] && (i['x'] as number) >= 0 && fitsAsk(content, a, i),
@@ -68,7 +70,10 @@ function takeUpAskSmith(ctx: SystemContext, p: EntityRow, a: EntityRow): boolean
     ),
     actors: [p.id],
     data: {
-      ...{ name: p['name'] as string, work: `a ${m.name} ${k.name}` },
+      ...{
+        name: p['name'] as string,
+        work: `${/^[aeiou]/.test(m.name) ? 'an' : 'a'} ${m.name} ${k.name}`,
+      },
       ...{ asker: a['asker'] as string, what: a['what'] as string },
     },
   });

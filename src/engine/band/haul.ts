@@ -173,6 +173,12 @@ export function haulMinute(ctx: SystemContext, p: EntityRow): boolean {
   }
   if (item && walkTo(ctx, p, spotOf(item))) return true;
   p['target'] = -1;
+  // Gone for an ask's sake (6C Slice 3): no longer on the way.
+  if (p['ask']) {
+    for (const a of ctx.world.entities['ask'] ?? [])
+      if ((a['going'] as number[]).includes(p.id)) a['going'] = [];
+    p['ask'] = 0;
+  }
   return false;
 }
 
