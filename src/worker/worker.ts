@@ -11,6 +11,7 @@ import {
   lawHours,
   layerOf,
   makeRegion,
+  neighboursOf,
   siteOf,
   START_TICK,
   valleyOf,
@@ -230,6 +231,10 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
   findsSent.reset();
   recapsSent.reset();
   unposted = [...w.log];
+  // The neighbours come from the seed's Story Generator world, made once a worker (2.7 s here,
+  // 6 to 8 s on a loaded machine). A loaded save has not made it yet: made now, while the page
+  // shows the load, not at the strangers' first hour, which froze play (the smoke, 2026-11-25).
+  neighboursOf(w.seed, content);
   clock.pace = createPace(performance.now());
   delete clock.ended;
   run(0); // hands over any sealed days the world arrived with (never ticks: the pace is fresh)

@@ -21,6 +21,7 @@ Open [docs/RULES.md](docs/RULES.md), [docs/DECISIONS.md](docs/DECISIONS.md), [do
 - Coverage: `npm run coverage` (full suite with V8 coverage, then one line per system) at each phase review; not part of `npm run check` or CI.
 - Test time budgets (VR-67): `npm run check` under 40 s; `npm run check:full` under 120 s (2026-11-21, 4-core container: 199 s with every file, 103.9 s without the long files, V-200).
 - UI or render changes: also `npm run test:browser`.
+- After touching a browser test, the page's timers or saving, or before calling a flaky browser check fixed: `npm run test:stress -- <specs>` (repeats them beside busy loops, no retries; `tools/browser-stress.mjs`).
 - Map or terrain changes: `npm run map:stats` (the seed table against Phase 1's done-whens; seeds in `src/engine/map/seeds.ts`) and `npm run map:render` (PNGs in `tmp/maps/`, not committed), as the `map-check` skill says.
 - After adding or changing a module's `index.ts` or `MODULE.md`: `npm run codemap`.
 
