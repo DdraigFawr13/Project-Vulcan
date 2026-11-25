@@ -35,6 +35,15 @@ function campNow(ctx: SystemContext, p: EntityRow, night: boolean): boolean {
   return true;
 }
 
+/** A miner out of food: on the way to eat, or under their food line with the pack empty (a
+ * scout turns home instead, land `eatPack`). */
+function goingToEat(ctx: SystemContext, p: EntityRow): boolean {
+  if (p['job'] !== ctx.content.work.mine.job) return false;
+  if (p['doing'] === 'eat') return true;
+  const food = needOf(ctx.world, p.id, 'food')?.['value'] as number | undefined;
+  return food !== undefined && food < lineOf(ctx, p, 'food');
+}
+
 /** One minute's choice for someone packed for a trip; false when they are not on one (their
  * pack put down once they are home) and the ordinary round goes on. */
 export function afield(ctx: SystemContext, p: EntityRow, night: boolean): boolean {
@@ -46,8 +55,10 @@ export function afield(ctx: SystemContext, p: EntityRow, night: boolean): boolea
     breakCamp(ctx, p);
     p['doing'] = '';
   }
-  if (eatPack(ctx, p) || drinking(ctx, p) || campWarm(ctx, p) || campNow(ctx, p, night))
-    return true;
+  if (eatPack(ctx, p)) return true;
+  // Hungry with nothing left in the pack, a miner goes to eat as anyone does (V-231).
+  if (goingToEat(ctx, p)) return false;
+  if (drinking(ctx, p) || campWarm(ctx, p) || campNow(ctx, p, night)) return true;
   // The troubles of the way and a search are a scout's.
   if (p['job'] !== content.work.mine.job) {
     trouble(ctx, p);

@@ -24,7 +24,7 @@ import { cellarWork, dugCellar } from './cellar.ts';
 import { clayWork } from './clay.ts';
 import { ladderOf, laddered, sinking } from './shaft.ts';
 import { practiseMining, start, stop, takenBy, type Kind, type Task } from './minetask.ts';
-import { longPlanned, passedOver, planSeen, takingUp } from './minefar.ts';
+import { longPlanned, passedOver, planSeen, setOut, takingUp } from './minefar.ts';
 import { able, declineIfUnable, goBeside, layAround, outranked, people } from '../band/index.ts';
 import { couldHave, priorityLine, readyFor, spotOf, worked } from '../band/index.ts';
 
@@ -257,7 +257,7 @@ export function mining(ctx: SystemContext, p: EntityRow): boolean {
   if (p['task'] === 'mine' && !layer.features[i]) return stop(ctx, p);
   const here = spotOf(p);
   if (here.z !== z || Math.abs(here.x - x) + Math.abs(here.y - y) !== 1)
-    return goBeside(ctx, p, x, y, z) || stop(ctx, p);
+    return (goBeside(ctx, p, x, y, z) && setOut(ctx, p)) || stop(ctx, p);
   if (unseen) {
     // Nothing to dig: standing beside it shows it, and the way is found again.
     openAround(ctx, x, y, z, p['took'] as number);

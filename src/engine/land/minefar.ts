@@ -71,6 +71,16 @@ export function takingUp(ctx: SystemContext, p: EntityRow, t: Task): void {
     packUp(ctx, p, ctx.content.work.mine.days);
 }
 
+/** Setting off to mining work (V-231): a way over `mine.pack` steps is gone with a pack, as a
+ * far shaft is (anyone's sinker, tunneller, vein miner or clay digger), so they eat and camp out
+ * there rather than walk it back for each meal and night. Anvil's and tallow's miners walked
+ * four to five hours to a level-3 vein and mined minutes a day. Always true (the way is set). */
+export function setOut(ctx: SystemContext, p: EntityRow): true {
+  const mine = ctx.content.work.mine;
+  if (!p['packed'] && (p['path'] as number[]).length > mine.pack) packUp(ctx, p, mine.days);
+  return true;
+}
+
 /** Each minute of sinking: a holder who has had the plan `mine.wait` days and sunk nothing gives
  * it up (true), and the next free miner may take it. */
 export function heldTooLong(ctx: SystemContext, p: EntityRow, shaft: EntityRow): boolean {

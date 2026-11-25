@@ -33,7 +33,7 @@ export function takeBite(ctx: SystemContext, p: EntityRow, food: EntityRow, hour
   const walked = (p['eatWalk'] as number) ?? 0;
   p['eatWalk'] = 0;
   const bite = content.life.bite;
-  if (walked <= bite.far || !p['job'] || p['packed'] || hours <= 0 || packFood(ctx, p)) return;
+  if (walked <= bite.far || !p['job'] || hours <= 0 || packFood(ctx, p)) return;
   const def = content.life.needs.find((n) => n.id === 'food');
   const value = needOf(world, p.id, 'food')?.['value'] as number | undefined;
   const gives = content.life.eat[food['kind'] as string] ?? 0;
