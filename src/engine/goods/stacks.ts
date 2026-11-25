@@ -40,9 +40,24 @@ export const GOODS_TABLES: Schemas = {
 
 export const itemsOf = (world: WorldState): EntityRow[] => world.entities['item'] ?? [];
 
+type ItemDef = EngineContent['items'][number];
+const defsBy = new WeakMap<readonly ItemDef[], Map<string, ItemDef>>();
+
+/** The items.json entry of `kind` (the first with that id), looked up by id instead of a search
+ * of the list: items are read many times a minute. */
+export function itemDef(content: EngineContent, kind: unknown): ItemDef | undefined {
+  let by = defsBy.get(content.items);
+  if (!by) {
+    by = new Map();
+    for (const d of content.items) if (!by.has(d.id)) by.set(d.id, d);
+    defsBy.set(content.items, by);
+  }
+  return by.get(kind as string);
+}
+
 /** A tool never stacks: each has its own wear, quality and trail. */
 export const stackSize = (content: EngineContent, kind: string): number =>
-  content.items.find((i) => i.id === kind)?.tool
+  itemDef(content, kind)?.tool
     ? 1
     : (content.life.stacks[kind] ?? content.life.stacks['default'] ?? 25);
 

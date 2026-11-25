@@ -30,5 +30,8 @@
 
   /* Phone rules: tap targets and the bottom sheet's share of the screen. */
   --tap: 44px;
+  /* A portrait slot's least width: a name of eight letters fits it, and five faces with the
+     Names button fit 390 px. */
+  --slot-w: 60px;
   --sheet: 39vh;
 }

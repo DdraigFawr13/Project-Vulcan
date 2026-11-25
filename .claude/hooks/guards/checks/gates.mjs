@@ -1,4 +1,4 @@
-// The done-gate, run by the Stop hook: gate.page (WS-08), gate.handoff (CTX-03) and gate.ci (CI-07).
+// The done-gate, run by the Stop hook: gate.page (WS-08, and WS-03's question form), gate.handoff (CTX-03) and gate.ci (CI-07).
 // Each nudges once: on the stop that follows a nudge (stop_hook_active) all stay quiet, and
 // gate.handoff nudges once per commit (the session file's `nudged` list), gate.ci once per push
 // or ready mark (`ciNudged`).
@@ -115,6 +115,45 @@ export function lastPush(facts, since) {
   return best;
 }
 
+/** An ask to answer in chat ("reply in chat", "tell me which", "still waiting on you"). */
+const CHAT_ANSWER = /\b(?:reply|answer|respond)\s+(?:here\s+)?(?:in|via|on)\s+(?:the\s+|this\s+)?chat\b|\breply\s+here\b|\b(?:tell|let)\s+me\s+(?:know\s+)?(?:which|what\s+you|your\s+(?:answers?|choices?|picks?|pick))\b|\b(?:reply|answer|respond)\s+with\s+(?:a\s+|the\s+|your\s+)?(?:letters?|numbers?|options?|answers?|choices?)\b|\bwaiting\s+on\s+you\b/i;
+/** "Reply "confirmed, A"": an answer to type, checked before quotes are dropped. */
+const REPLY_QUOTE = /\b(?:reply|answer|say)\s+["“]/i;
+/**
+ * An offered option: a capital letter or "Option n" at a line start, after a bullet or in bold,
+ * then an optional "(recommended)" and ")", ".", ":" or a closing "**". "(B)" counts too.
+ */
+const OPTION = /(?:^|\n)\s*(?:[-*]\s+)?(?:\*\*)?(?:\(([A-H])\)|([A-H])(?:\s*\([^)\n]{1,30}\))?\s*(?:[).:]|\*\*\s)|[Oo]ption\s+([A-H1-9])\b)/g;
+/** A question label: Q1, Q2, … */
+const Q_LABEL = /\bQ([1-9]\d?)\b/g;
+/** "The page asks five questions": questions on a linked page. */
+const PAGE_QUESTIONS = /\b(?:asks|has|holds|lists)\s+(?:[2-9]|1\d|two|three|four|five|six|seven|eight|nine|ten)\s+(?:open\s+)?questions\b/i;
+/** The reply names a default it will take without an answer. */
+const DEFAULT = /\bunless\s+you\s+(?:say|object|prefer|tell|want)|\bby\s+default\b|\bdefaults?\s+to\b|\bI(?:'|’)ll\s+(?:go\s+with|proceed\s+with|pick|take|use)\b|\bgoing\s+with\b/i;
+
+/**
+ * Why a reply's questions should have been on a fillable form (WS-03), or null. It fires on an ask
+ * (a chat-answer phrase, an answer to type, or a line ending in "?") with 2 or more distinct
+ * options or question labels, or on a chat ask about questions on a linked page. One question with
+ * a default may stay in chat; a reply that links an artifact and calls it a form passes. Quoted and
+ * inline-code text is dropped first: it names a phrase rather than asking it.
+ */
+export function formReason(message) {
+  if (ARTIFACT.test(message) && /\bform\b/i.test(message)) return null;
+  const bare = withoutFences(message).replace(URL_RE, ' ');
+  const text = bare.replace(/`[^`\n]*`|"[^"\n]*"|“[^”\n]*”/g, ' ');
+  const lines = text.split('\n');
+  const asked = lines.filter((l) => /\?\s*(?:\*\*)?\s*$/.test(l)).length;
+  const chat = CHAT_ANSWER.test(text) || REPLY_QUOTE.test(bare.replace(/`[^`\n]*`/g, ' '));
+  if (chat && ARTIFACT.test(message) && PAGE_QUESTIONS.test(text)) return 'asks Morgan to answer a page\'s questions in chat';
+  if (!chat && asked === 0) return null;
+  const options = new Set([...text.matchAll(OPTION)].map((m) => m[1] ?? m[2] ?? m[3])).size;
+  const labels = new Set([...text.matchAll(Q_LABEL)].map((m) => m[1])).size;
+  if (options < 2 && labels < 2) return null;
+  if (Math.max(labels, asked) <= 1 && DEFAULT.test(text)) return null;
+  return labels >= 2 ? `asks ${labels} questions to answer in chat` : `offers ${options} options to answer in chat`;
+}
+
 const hhmm = (ts) => new Date(ts * 1000).toISOString().slice(11, 16);
 
 export const checks = [
@@ -126,7 +165,10 @@ export const checks = [
       // Headless runs (evals, scripts) have no one reading on a phone.
       if (facts.env.AI_MASTER_HEADLESS === '1') return null;
       const message = input.last_assistant_message;
-      if (typeof message !== 'string' || ARTIFACT.test(message)) return null;
+      if (typeof message !== 'string') return null;
+      const form = formReason(message);
+      if (form) return `the reply ${form}: put questions with options on a fillable form that saves answers (planning-interview form.html, db capability) and link it (WS-03)`;
+      if (ARTIFACT.test(message)) return null;
       const reason = pageReason(message);
       return reason && `the reply ${reason} and no artifact link: publish what Morgan must read as a page and link it`;
     },

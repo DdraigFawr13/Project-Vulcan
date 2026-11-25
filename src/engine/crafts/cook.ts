@@ -15,7 +15,7 @@
 import { streamFor, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { furnitureOf } from '../build/index.ts';
 import { fireOf, firesOf, pieceOfFire, placeOf } from '../fire/index.ts';
-import { inStore, itemsOf, layItem, loadOf, takeFrom } from '../goods/index.ts';
+import { inStore, itemDef, itemsOf, layItem, loadOf, takeFrom } from '../goods/index.ts';
 import { addMemory } from '../needs/index.ts';
 import { canReach, reachFrom } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -46,7 +46,7 @@ function stop(p: EntityRow): false {
 /** Cooked meals anywhere (stored, lying, carried). */
 export const mealsOf = (world: WorldState, content: EngineContent): number =>
   itemsOf(world)
-    .filter((i) => content.items.find((d) => d.id === i['kind'])?.cooked)
+    .filter((i) => itemDef(content, i['kind'])?.cooked)
     .reduce((n, i) => n + (i['count'] as number), 0);
 
 /** Meals wanted for tomorrow, and those there are plus those other cooks are making. */

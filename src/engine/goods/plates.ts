@@ -2,13 +2,13 @@
 // stores hold its plate; past it, goods go only to a store of their own kind, and without one stay
 // where they lie (a lever that bounds making a good also bounds what is stored of it, LESSONS).
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
-import { itemsOf, stackSize } from './stacks.ts';
+import { itemDef, itemsOf, stackSize } from './stacks.ts';
 import { inStore, wantOf } from './store.ts';
 
 /** The Stock plate a kind counts towards: its own, else its good's. */
 function plateOf(content: EngineContent, kind: string): string | undefined {
   if (content.work.stock.some((s) => s.good === kind)) return kind;
-  const g = content.items.find((d) => d.id === kind)?.good;
+  const g = itemDef(content, kind)?.good;
   return g && content.work.stock.some((s) => s.good === g) ? g : undefined;
 }
 

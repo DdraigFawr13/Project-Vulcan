@@ -18,7 +18,7 @@ One page. Everything else is read only at the section a reading list names.
 1. The coordinator starts a **design thread** per milestone or bundle and names its phase spec and milestone. It reads AGENTS "Start here" and the reading list, logs its setup time (VR-46), runs the mock-up round and posts Morgan's form. Then it **stops**: no build code, no other thread (VR-74).
 2. When Morgan answers the form, the coordinator starts a **fresh build thread** naming the form and the answers. It reads the same lists and logs its setup time.
 3. The build thread builds in even slices (VR-69) on a branch from `main`, quick check, draft PR (no CI runs on drafts, VR-54).
-4. Review (`reviewer`, plus `design-reviewer` for engine or content diffs) and fixes while still a draft; tick the milestone in the spec; full check (VR-67); mark ready, which runs CI once; squash-merge; the branch is deleted.
+4. Review (`reviewer`, plus `design-reviewer` for engine or content diffs) and fixes while still a draft; tick the milestone in the spec; `npm run check:all` on the final commit (VR-67; the ready gate refuses otherwise, V-229); mark ready, which runs CI once; squash-merge; the branch is deleted.
 5. After merge: update the project plan's phase table and add the thread-times line. The CHANGELOG line goes in the PR.
 6. After a phase's last milestone: the `phase-review` skill, then hand the phase to Morgan.
 

@@ -89,7 +89,7 @@ After approval:
 
 ## 8. Build, slice by slice
 
-- **One build session.** Build the slices in a session other than the one that wrote the spec, or give a slice to the `implementer` agent with a DEL-04 brief made from it: goal, files, checks, commands. After a slice merges, start the next approved slice in the same session without being asked, while its context is under 300k tokens (an assumption under test, D-065); past that, update HANDOFF and start the next slice in a new session yourself.
+- **A fresh session per slice.** The session that wrote the spec or a slice's mock-up stops there and never builds it (WS-02). Each slice is built in a fresh session, or by the `implementer` agent with a DEL-04 brief made from it: goal, files, checks, commands. The brief says it is a build session and names the approved spec, form and answers. After a slice merges, whoever starts sessions (the owner or a coordinator) starts the next approved slice in a fresh session without asking (D-077, replacing D-065's same-session rule).
 - **Re-check before each slice.** If the spec or the merged code changed since the last check, run the zero-decision check (with its cross-slice part) on the sections the slice touches, against what earlier slices actually merged. Ask Morgan any gap before building.
 - **Screen changes.** A slice that adds a screen, changes a screen's layout or controls, or changes a style token starts with a mock-up made with `ui-mockups`, approved by Morgan before code.
 - **Checks fail first.** Before writing code, run the slice's checks and confirm they fail.

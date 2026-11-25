@@ -1,7 +1,7 @@
 {
-  "version": "v4.18.0",
-  "commit": "b27b4f5fddd2617b4a11196d99da0d1b5c792c95",
-  "manifest": "cb405d349341f5710a98dbbee47e0c1d8961d3c4b03acb6c10e70a3654979c17",
+  "version": "v5.1.0",
+  "commit": "5e6c5b760a4c44f9701f54da86cbadb11d74d9d6",
+  "manifest": "4e8c59bbd454961118e432c065b5a2e3699ea506a50362626ea8302c766b28f9",
   "budget": {
     "lines": 200,
     "bytes": 24576
@@ -19,7 +19,7 @@
     ".claude/agents/test-runner.md": "27ae2ea7b06b8f632330c35e449ee3433f70aa7f73bf604f6403476f8e130ffc",
     ".claude/hooks/guards/checks/ci.mjs": "6230c98cdea1648d97a18729584fbb41d5a25da8499e15cf7245a4ae33d2ea9f",
     ".claude/hooks/guards/checks/edits.mjs": "2f83f79baaecde4427c686d60a875db0d39a6533acae4a8e782e3761e468438d",
-    ".claude/hooks/guards/checks/gates.mjs": "8b85214f4ead1a8880c1d9b770195e5e7f022b61c2a22af07111a2aa470bb90a",
+    ".claude/hooks/guards/checks/gates.mjs": "c84361de9e565a5639aafa2a2901a45b76ddb741c3ef0939ba333bb51dc9e91e",
     ".claude/hooks/guards/checks/git.mjs": "55f89108aa4857dd2bc1d964aed970813f4cb7cbdbdc0c247e6a802b3376d96e",
     ".claude/hooks/guards/checks/secrets.mjs": "9417a0f8210b5d770463dafc2a698f88f187fc0c0a30e6b5526649eb5365a276",
     ".claude/hooks/guards/checks/shell.mjs": "0e835da54d49f693bbd6c122bda3caec1107a18e2730ab8c88853f8b4d6968e8",
@@ -34,7 +34,7 @@
     ".claude/hooks/guards/pre-tool-use.mjs": "01601a586de20da7206a611be58b370421175d63e6b45026d551c1fa7c510f86",
     ".claude/hooks/guards/stop.mjs": "2dbefa7a08c2e1698f8066e4d90d2cdf5c22c58e3628f1db4c6466f4b43fa488",
     ".claude/hooks/session-start.sh": "aa2ec0740032c732917ef500bc16cd7a4afb7b15d78f9bfcaaf5cb40279d690f",
-    ".claude/master/RULES.md": "3b5df293b1cbe8177d36ec208a0f5f7fee6166a292693fe116afffc5bab2c042",
+    ".claude/master/RULES.md": "78c957d02c353a177203dcb27ee90d70e07d81b9a3a0d509cadf6cdd0e3a7491",
     ".claude/master/sync.mjs": "acb49ec0bf70165a66e6cecc152cf4523e85b4101f8457c365036208134a2838",
     ".claude/skills/audit/assets/report.md": "2a19661a5343fcf354e0f720435214f398a4f57d31d2e960d0869a98d6620e41",
     ".claude/skills/audit/references/design.md": "745fec1d297a493cc688e831d705972ca350749d719983b4c2a34807ed8e8c20",
@@ -53,7 +53,7 @@
     ".claude/skills/efficient-github-actions/scripts/ci-scope.template.sh": "de79d6f9ef4dd62a1a8b9465e3168eb0b2bc0cbbeb1aff2d4110d6ee02137fac",
     ".claude/skills/efficient-github-actions/SKILL.md": "6ab75516774045bdeb89e35d19e306f1d54d5273a189deb35787bcf50ff0ae3d",
     ".claude/skills/planning-interview/assets/form.html": "0c71044d9031a494513eaa5b21bfc1abcb278528ff5059a63770fe286ceacdd5",
-    ".claude/skills/planning-interview/SKILL.md": "aa1509a032459bc961d502a0347765a5120017ba9bb3c6786610d5006a9c180d",
+    ".claude/skills/planning-interview/SKILL.md": "6871dd953e183b03182a4225145b57bcb756a8b2c371feb179c437bc7f3c4435",
     ".claude/skills/refactor/scripts/hotspots.mjs": "92ca0454da1345b7b8b5be29442ba0913c01358dfc5aea0033490a0ad93f54a3",
     ".claude/skills/refactor/SKILL.md": "a47d9ac4f1eb416e46bae5f817d0db4f1d05b801901ebd45f5a9ebf28448f864",
     ".claude/skills/routing/SKILL.md": "896d0f7221ca1255850a21b65746e21e310479d9f74a83e251aa3df022edac37",
@@ -63,12 +63,12 @@
     ".claude/skills/ui-mockups/assets/zoom-viewer.html": "caaf5b82822d2d335bc8d48a548b26d16216651000e0c69f6d6f65a0cb41556a",
     ".claude/skills/ui-mockups/scripts/add-zoom.mjs": "a0a3890293136f7c8d1eab49a7cf4d41f7bed98bfeddc7446c15747c9d2da252",
     ".claude/skills/ui-mockups/scripts/mockup-lint.mjs": "b9f40c6dbe527c33f168188e672505525240a2c9bbfb826a20b71694580a8887",
-    ".claude/skills/ui-mockups/SKILL.md": "b7c665c599cb1918e9da04196e42cad7e313c8acc322e0b8dece0b75a7c57469",
+    ".claude/skills/ui-mockups/SKILL.md": "20914d53a7e0616d482fe8ead47125654b9ec0be5972b97afc829e212d989d91",
     ".claude/skills/ui-style/assets/UI_STYLE.md": "6c0856ee3b836b8a9f6a8408c9f54f8e2cf738c9a109e566ab6c848a37019b32",
-    ".claude/skills/ui-style/references/avoid.md": "a18249653151b899aa5b0329a45809af6b293646bed8da6b764601be6031b913",
+    ".claude/skills/ui-style/references/avoid.md": "9453f25eb0a105874cd392ab68e55cd39f31d8c49de831ff57da110a4429cc50",
     ".claude/skills/ui-style/SKILL.md": "90463b07da9bcda47f8ce6aef900a94627b543922e4e19f7f5dde65857e0e649",
     ".claude/skills/write-spec/assets/SPEC.md": "445828f6b430bd9d1fa2d8ba1573019d4e2a7d8b9b74185c909fb5ca09f0a26a",
-    ".claude/skills/write-spec/SKILL.md": "257ce8a2f4da36ab04baaaa5e9a344b358512f3c4897e53540f6317138cbd88b",
+    ".claude/skills/write-spec/SKILL.md": "184686b15276a27b606f0f81b948769925a96aca03b0e11ed4b289a8a9406442",
     ".github/workflows/prune-merged-branches.yml": "64ef1fe4d4cdfa044caf1ff390284fc916db7489d9ef0fd5da81a3b0ec938e6e"
   },
   "settings": [

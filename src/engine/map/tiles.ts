@@ -136,14 +136,23 @@ export function setTile(
   layer.tileCauses[i] = cause;
   if (z > 0 && !def.stone) layer.features[i] = 0;
   layer.chunkVersions[Math.floor(y / CHUNK) * chunksAcross(map) + Math.floor(x / CHUNK)]! += 1;
+  chunkEpochs.set(map, chunkEpoch(map) + 1);
 }
+
+const chunkEpochs = new WeakMap<MapState, number>();
+
+/** A number that changes whenever any chunk version of any level is raised (`setTile`,
+ * `raiseChunk`, the only writers of a version), so a reader of the versions knows at once when
+ * none has changed. */
+export const chunkEpoch = (map: MapState): number => chunkEpochs.get(map) ?? 0;
 
 /** Raises the version of the chunk holding (x, y) on level `z`, so the worker resends it: for
  * changes that are not a new kind, such as a lake tile freezing. */
 export function raiseChunk(map: MapState, x: number, y: number, z = 0): void {
   const layer = layerOf(map, z);
-  if (layer)
-    layer.chunkVersions[Math.floor(y / CHUNK) * chunksAcross(map) + Math.floor(x / CHUNK)]! += 1;
+  if (!layer) return;
+  layer.chunkVersions[Math.floor(y / CHUNK) * chunksAcross(map) + Math.floor(x / CHUNK)]! += 1;
+  chunkEpochs.set(map, chunkEpoch(map) + 1);
 }
 
 /** The only writer of what is built on a surface tile (P3.1): 0 for nothing, else 1 + a part
@@ -161,7 +170,18 @@ export function setBuilt(
   map.built[i] = part;
   map.tileCauses[i] = cause;
   raiseChunk(map, x, y);
+  raiseBuilt(map);
 }
+
+const builtEpochs = new WeakMap<MapState, number>();
+
+/** A number that changes whenever anything built on the surface changes (`setBuilt`,
+ * `withBuiltAll`), so what is worked out from `map.built` alone can be kept until then. */
+export const builtEpoch = (map: MapState): number => builtEpochs.get(map) ?? 0;
+
+const raiseBuilt = (map: MapState): void => {
+  builtEpochs.set(map, builtEpoch(map) + 1);
+};
 
 /** What `check` says with `part` built on surface tile (x, y) for its length only; the tile is
  * then as it was. For asking whether a part would cut a way, never for building it. */
@@ -177,8 +197,10 @@ export function withBuiltAll<T>(
   check: () => T,
 ): T {
   const was = tiles.map((i) => map.built[i]!);
-  const raise = () =>
+  const raise = () => {
     tiles.forEach((i) => raiseChunk(map, i % map.width, Math.floor(i / map.width)));
+    raiseBuilt(map);
+  };
   for (const i of tiles) map.built[i] = part;
   raise();
   try {

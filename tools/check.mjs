@@ -6,6 +6,7 @@
 import { appendFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { root } from './lib.mjs';
+import { writeStamp } from './ready-gate.mjs';
 
 const all = process.argv.includes('--all');
 const full = all || process.argv.includes('--full');
@@ -39,6 +40,8 @@ for (const [name, command] of steps) {
 const total = (Date.now() - start) / 1000;
 const line = `${full ? `${tier} ` : ''}check passed in ${total.toFixed(1)}s: ${times.join(', ')}`;
 process.stdout.write(`\n${line}\n`);
+// The ready gate (tools/ready-gate.mjs) lets a PR be marked ready only after this on its commit.
+if (all && !process.env.CI) process.stdout.write(`${writeStamp()}\n`);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${line}\n`);
 if (total > budgetSeconds)
   process.stdout.write(

@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import { createSim, createWorld, step, submitCommand } from '../index.ts';
+import { raiseChunk } from '../map/index.ts';
 import { canReach, findPath, pack, stepCost, unpack, walkAt, type Spot } from './index.ts';
 
 describe('paths', () => {
@@ -70,9 +71,7 @@ describe('paths', () => {
       (f, i) => f > 0 && content.features[f - 1]!.blocks === true && open(i - 1),
     );
     map.features[tree] = 0;
-    map.chunkVersions[
-      Math.floor(tree / W / 16) * Math.ceil(W / 16) + Math.floor((tree % W) / 16)
-    ]! += 1;
+    raiseChunk(map, tree % W, Math.floor(tree / W));
     const running = findPath(content, map, start, goal);
     const loaded = structuredClone(map);
     expect(findPath(content, loaded, start, goal)).toEqual(running);
