@@ -10,9 +10,9 @@ import { LEDGER_LINES, type Panel } from './panel.ts';
 /** Real time between autosaves while the game runs (ms); hiding the tab also autosaves. A game
  * day at 3x is under 15 s, so a per-day autosave would write the whole world four times a minute. */
 export const AUTOSAVE_MS = 60_000;
-/** Real time between the standby copies the page holds while the game runs (ms). Closing or
- * reloading the tab writes the newest copy at once, so at most this much play is lost: the page
- * has no time left then to ask the worker for a fresh one. */
+/** Real time between the standby copies written while the game runs (ms): closing or reloading the
+ * tab loses at most about this much play. Each copy is written when it comes, not as the page
+ * goes: a write begun as the page unloads was lost in 3 of 8 reloads under load (2026-11-25). */
 export const STANDBY_MS = 5_000;
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
@@ -40,11 +40,7 @@ export class Saves {
   loading = false;
   private readonly deps: SavesDeps;
   private readonly store: Promise<SaveStore>;
-  /** The store once open, for writing while the page unloads, when there is no time to wait. */
-  private opened: SaveStore | undefined;
-  /** The newest standby copy of the running world, not yet written. */
-  private standby: Extract<FromWorker, { type: 'saved' }> | undefined;
-  /** How many standby copies have come back since the page opened. */
+  /** How many standby copies have been written since the page opened. */
   private standbyCopies = 0;
   private lastStandbyTick = -1;
   /** Why saves are unavailable, or why the last save failed; shown in the save panel. */
@@ -52,9 +48,16 @@ export class Saves {
   /** Why ledger days could not be archived; kept until the page reloads, since those days are
    * gone from the running world and a later save cannot bring them back. */
   private archiveProblem = '';
-  /** The newest standby copy, kept after it is written as the page hides: the rescue's source. */
+  /** The newest standby copy: the rescue's source. */
   private lastCopy: Extract<FromWorker, { type: 'saved' }> | undefined;
+  /** The tick of the last autosave asked of the worker: nothing to ask again until play moves. */
   private lastAutoTick = -1;
+  /** The newest tick a write to the autosave slot has begun for: an autosave waiting on its
+   * picture must not overwrite a newer standby copy written meanwhile (the store keeps writes in
+   * the order they begin). */
+  private lastWrittenTick = -1;
+  /** The last picture drawn for a save, which standby copies reuse rather than draw every 5 s. */
+  private picture = '';
   /** The speed to go back to if a load is refused. */
   private resume: Speed = 0;
   /** Sealed ledger days being archived, in order; a save waits for them, so it never names a day
@@ -67,10 +70,7 @@ export class Saves {
     this.deps = deps;
     this.store = openSaves();
     // The game carries on without saves; the panel says why they are missing.
-    this.store.then(
-      (store) => (this.opened = store),
-      (error: unknown) => (this.problem = message(error)),
-    );
+    this.store.catch((error: unknown) => (this.problem = message(error)));
     this.timer = setInterval(() => {
       if (deps.speed() !== 0 && !document.hidden) this.autosave();
     }, AUTOSAVE_MS);
@@ -80,19 +80,6 @@ export class Saves {
       this.lastStandbyTick = this.tick;
       deps.send({ type: 'save', auto: true, standby: true });
     }, STANDBY_MS);
-  }
-
-  /**
-   * The page is going away (closed, reloaded or hidden): writes the newest standby copy into the
-   * autosave slot now, unless a save as new is already written. The write starts before this
-   * returns, so it lands even though the page has no time to wait for it.
-   */
-  flush(): void {
-    const copy = this.standby;
-    if (!copy || !this.opened || copy.save.tick <= this.lastAutoTick) return;
-    this.standby = undefined;
-    this.lastAutoTick = copy.save.tick;
-    void this.opened.put(this.metaOf(copy, ''), copy.save).catch(() => (this.lastAutoTick = -1));
   }
 
   /**
@@ -140,9 +127,8 @@ export class Saves {
   /** The worker's answers about saves and exports. */
   handle(m: FromWorker): void {
     if (m.type === 'saved' && m.standby) {
-      this.standby = this.lastCopy = m;
-      // Counted on the page so a browser test can wait for a copy rather than sleep past one.
-      document.documentElement.dataset['standby'] = String(++this.standbyCopies);
+      this.lastCopy = m;
+      void this.write(m, true);
     } else if (m.type === 'saved') void this.write(m);
     else if (m.type === 'exported') void this.export(m);
     else if (m.type === 'segments') {
@@ -202,9 +188,10 @@ export class Saves {
     this.loading = false;
     this.ledger = [];
     this.lastAutoTick = -1;
+    this.lastWrittenTick = -1;
     this.lastStandbyTick = -1;
-    this.standby = undefined;
     this.lastCopy = undefined;
+    this.picture = '';
     this.startTick = undefined;
   }
 
@@ -258,7 +245,7 @@ export class Saves {
     const copy = this.lastCopy;
     if (!copy) return undefined;
     try {
-      // A copy: the standby itself may still become the autosave as the page closes.
+      // A copy: the standby itself stays as it was written.
       const save = structuredClone(copy.save);
       const { state } = save;
       const last = state.commandLog.at(-1)?.seq ?? 0;
@@ -278,21 +265,27 @@ export class Saves {
     }
   }
 
-  private async write(m: Extract<FromWorker, { type: 'saved' }>): Promise<void> {
+  /** Writes a save the worker handed over; a standby copy goes in quietly, with the last picture. */
+  private async write(m: Extract<FromWorker, { type: 'saved' }>, standby = false): Promise<void> {
     try {
       await this.archive;
-      // A hidden tab may be closing: write at once, without waiting on a picture.
-      const thumbnail = document.hidden ? '' : await this.deps.renderer.thumbnail();
-      await (await this.store).put(this.metaOf(m, thumbnail), m.save);
-      // A standby copy older than this save must not replace it as the newest when the tab closes.
-      this.lastAutoTick = Math.max(this.lastAutoTick, m.save.tick);
+      // A hidden tab may be closing: write at once, without waiting on a picture. A standby copy
+      // never waits on one either: it takes the last picture drawn, if any.
+      if (!standby && !document.hidden) this.picture = await this.deps.renderer.thumbnail();
+      const store = await this.store;
+      if (m.auto && m.save.tick <= this.lastWrittenTick) return;
+      if (m.auto) this.lastWrittenTick = m.save.tick;
+      await store.put(this.metaOf(m, this.picture), m.save);
       this.problem = '';
+      // Counted on the page so a browser test can wait for a copy rather than sleep past one.
+      if (standby) document.documentElement.dataset['standby'] = String(++this.standbyCopies);
+      else this.lastAutoTick = Math.max(this.lastAutoTick, m.save.tick);
     } catch (error) {
       this.problem = message(error);
-      if (m.auto) this.lastAutoTick = -1;
+      if (m.auto) this.lastAutoTick = this.lastWrittenTick = -1;
     }
     // An autosave must not rebuild the list under a half-typed seed (and drop a phone's keyboard).
     const typing = document.activeElement instanceof HTMLInputElement;
-    if (this.deps.panel.kind === 'saves' && !typing) await this.showList();
+    if (this.deps.panel.kind === 'saves' && !typing && !standby) await this.showList();
   }
 }

@@ -335,9 +335,8 @@ const onKey = (e: KeyboardEvent): void =>
 let hiddenAt: typeof pace.speed | undefined;
 function onVisibility(): void {
   if (document.hidden && hiddenAt === undefined) {
-    // Hiding is the last sure moment before a tab is closed or discarded: write the standby copy
-    // now, and ask for a fresh autosave in case the tab is only switched away.
-    saves.flush();
+    // The standby copies are written as they come; ask for a fresh autosave too, which lands if
+    // the tab is only switched away.
     saves.autosave();
     hiddenAt = pace.speed;
     if (pace.speed !== 0 || pace.skipping) send({ type: 'setSpeed', speed: 0 });
@@ -349,7 +348,6 @@ function onVisibility(): void {
 
 // A page kept in the back-forward cache keeps its worker; only a real unload stops it.
 const onPageHide = (e: PageTransitionEvent): void => {
-  saves.flush();
   if (!e.persisted) stop();
 };
 
