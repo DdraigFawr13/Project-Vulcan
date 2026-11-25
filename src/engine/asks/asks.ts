@@ -3,10 +3,10 @@
 // a person (V-041): it takes an ask up at a priority of 1 to 4, or lets it pass. A taken-up ask is
 // work (crafts askwork.ts); what it wants is set apart in the tithe barn (goods asks.ts). On its day
 // the asker's side settles it: done, late, or passed, each a line; what that costs is theirs.
-import type { EntityRow } from '../core/index.ts';
-import { addEntity } from '../entity/index.ts';
+import type { EntityRow, GoodAskDef } from '../core/index.ts';
+import { addEntity, alive } from '../entity/index.ts';
 import { barnSpot } from '../build/index.ts';
-import { emptyAsk, heldOf, layItem, layTool, restOf } from '../goods/index.ts';
+import { emptyAsk, foodDays, heldOf, layItem, layTool, restOf } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
 /** A new ask, open until the colony answers it. */
@@ -22,8 +22,27 @@ export interface NewAsk {
   cite: number;
   /** Its own line (the asker's words). */
   line: number;
-  /** The tick it is due by; 0 for the lord's next visit. */
+  /** The tick it is due by; 0 for the asker's next coming (the lord's visit, a harvest home). */
   due: number;
+  /** Whose it is among its kind: a village's name, a creed's row id. */
+  of?: string;
+}
+
+/** What content ask `def` wants, now: its tool or goods, quality, and how many (a `share` in 100
+ * of the food in store, at least one). */
+export function wantsOf(
+  ctx: SystemContext,
+  def: GoodAskDef,
+): Pick<NewAsk, 'what' | 'tool' | 'good' | 'quality' | 'count'> {
+  const { world, content } = ctx;
+  const store = def.count ? 0 : foodDays(world, content, alive(world).length).food;
+  return {
+    what: def.what,
+    count: def.count ?? Math.max(1, Math.ceil((store * (def.share ?? 0)) / 100)),
+    ...(def.tool && { tool: def.tool }),
+    ...(def.good && { good: def.good }),
+    ...(def.quality && { quality: def.quality }),
+  };
 }
 
 /** Adds an open ask; returns its row. */
@@ -32,6 +51,7 @@ export function addAsk(ctx: SystemContext, a: NewAsk): EntityRow {
     ...{ source: a.source, asker: a.asker, what: a.what, tool: a.tool ?? '', good: a.good ?? '' },
     ...{ quality: a.quality ?? '', count: a.count, got: 0, held: '', cite: a.cite, line: a.line },
     ...{ due: a.due, state: 'open', level: 0, answer: 0, going: [], settled: 0, made: 0 },
+    of: a.of ?? '',
   });
   return ctx.world.entities['ask']!.find((r) => r.id === id)!;
 }

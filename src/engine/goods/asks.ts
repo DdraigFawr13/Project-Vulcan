@@ -11,20 +11,24 @@ export const ASK_TABLES: Schemas = {
    * quality, how many, how many are set apart and of which kinds (`held`, "kind=n|kind=n"), the
    * line it came from and its own, the tick it is due by (0: the lord's next visit), its state
    * (open, taken, passed, done, late), the colony's priority 1 to 4 and the line that set it, who
-   * is on the way to carry some, the line that settled it, and how many pieces were made for it. */
+   * is on the way to carry some, the line that settled it, how many pieces were made for it, and
+   * whose it is among its kind (`of`: a village's name, a creed's row id). */
   ask: {
     ...{ source: 'text', asker: 'text', what: 'text', tool: 'text', good: 'text' },
     ...{ quality: 'text', count: 'count', got: 'count', held: 'text', cite: 'event' },
     ...{ line: 'event', due: 'int', state: 'text', level: 'count', answer: 'event' },
-    ...{ going: 'ints', settled: 'event', made: 'count' },
+    ...{ going: 'ints', settled: 'event', made: 'count', of: 'text' },
   },
 };
 
 export const asksOf = (world: WorldState): EntityRow[] => world.entities['ask'] ?? [];
 
-/** Asks not yet settled: open (unanswered), taken up, or let pass and waiting for their day. */
+/** Asks not yet settled: open (unanswered), taken up, or let pass and waiting for their day (a
+ * settled ask that passed keeps state `passed`, so its `settled` line tells them apart). */
 export const liveAsks = (world: WorldState): EntityRow[] =>
-  asksOf(world).filter((a) => ['open', 'taken', 'passed'].includes(a['state'] as string));
+  asksOf(world).filter(
+    (a) => !a['settled'] && ['open', 'taken', 'passed'].includes(a['state'] as string),
+  );
 
 /** Taken-up asks still short of what they want, by priority then age. */
 export const takenAsks = (world: WorldState): EntityRow[] =>
@@ -41,7 +45,7 @@ const rank = (content: EngineContent, word: string): number =>
   content.buildings.furniture.quality.findIndex((q) => q.id === word);
 
 /** Whether item `i` is what ask `a` wants: a tool of its kind at least as good, else goods of its
- * kind or good. */
+ * kind or good (or of one of several, joined by `|`). */
 export function fitsAsk(content: EngineContent, a: EntityRow, i: EntityRow): boolean {
   const def = content.items.find((d) => d.id === i['kind']);
   if (!def) return false;
@@ -50,7 +54,9 @@ export function fitsAsk(content: EngineContent, a: EntityRow, i: EntityRow): boo
     const want = a['quality'] as string;
     return !want || rank(content, (i['quality'] as string) || 'plain') <= rank(content, want);
   }
-  return def.id === a['good'] || def.good === a['good'];
+  return String(a['good'])
+    .split('|')
+    .some((g) => def.id === g || def.good === g);
 }
 
 /** What an ask holds in the barn, kind by kind. */

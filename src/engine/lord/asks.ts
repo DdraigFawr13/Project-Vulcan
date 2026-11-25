@@ -4,9 +4,8 @@
 // pass (or never answered), it falls; taken up and not ready, it falls more; a cruel lord doubles
 // both costs. Each is a favour cause for `favour.days` with a line.
 import { clockAt, TICKS_PER_DAY, TICKS_PER_HOUR, type EntityRow } from '../core/index.ts';
-import { alive } from '../entity/index.ts';
-import { addAsk, settleAsk } from '../asks/index.ts';
-import { foodDays, liveAsks } from '../goods/index.ts';
+import { addAsk, settleAsk, wantsOf } from '../asks/index.ts';
+import { liveAsks } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addFavour } from './favour.ts';
 import { lordName, lordRow } from './tables.ts';
@@ -51,23 +50,17 @@ export function askAtVisit(ctx: SystemContext, cause: number): void {
   if ((lord['visits'] as number) < content.asks.from - 1) return;
   const def = content.asks.lord.asks.find((d) => d.temper === lord['temper']);
   if (!def) return;
-  const store = foodDays(world, content, alive(world).length).food;
-  const count = def.count ?? Math.max(1, Math.ceil((store * (def.share ?? 0)) / 100));
+  const wants = wantsOf(ctx, def);
   const due = def.due === 'midwinter' ? midwinter(ctx) : 0;
   const line = ctx.emit('lord.asked', {
     causes: [cause],
     data: {
       ...{ reeve: lord['reeve'] as string, lord: lordName(lord), what: def.what },
       due: due ? 'by midwinter' : 'by his next visit',
-      count: String(count),
+      count: String(wants.count),
     },
   });
-  addAsk(ctx, {
-    ...{ source: 'lord', asker: lordName(lord), what: def.what, count, cite: cause, line, due },
-    ...(def.tool && { tool: def.tool }),
-    ...(def.good && { good: def.good }),
-    ...(def.quality && { quality: def.quality }),
-  });
+  addAsk(ctx, { ...wants, source: 'lord', asker: lordName(lord), cite: cause, line, due });
 }
 
 /** Each hour: a lord's ask due by a day (midwinter) is settled when the day comes. */

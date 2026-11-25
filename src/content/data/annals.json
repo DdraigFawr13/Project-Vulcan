@@ -19,7 +19,9 @@
       { "event": "lord.step", "weight": 4, "title": "{text}" },
       { "event": "lord.men", "weight": 5, "title": "the lord's men took {took} by force" },
       { "event": "lord.asked", "weight": 3, "title": "{lord} asked for {what}" },
-      { "event": "ask.late", "weight": 3, "title": "the ask of {asker} for {what} was not ready" }
+      { "event": "ask.late", "weight": 3, "title": "the ask of {asker} for {what} was not ready" },
+      { "event": "neighbour.asked", "weight": 3, "title": "{place} asked for {what}" },
+      { "event": "faith.asked", "weight": 2, "title": "the {title} asked for {what}" }
     ] },
     { "id": "lost", "max": 4, "lines": [
       { "event": "health.died", "weight": 10, "tally": "died", "per": "line", "title": "{name} died", "many": "{Count} died: {list}.", "item": "{name}" },

@@ -12,5 +12,33 @@
     {"temper": "pious", "what": "twenty candles", "good": "candles", "count": 20, "due": "visit"},
     {"temper": "learned", "what": "a book", "good": "book", "count": 1, "due": "visit"}
   ]
+},
+"regard": {"start": 50, "done": 10, "passed": -5, "late": -7, "days": 84, "comes": "someone from {place}, come by the home road,",
+  "words": {"done": "{what} given as they asked", "passed": "their ask for {what} let pass", "late": "their ask for {what} not ready by its day"}},
+"village": {
+  "hunger": {"what": "a tenth of your food", "good": "food", "share": 10},
+  "sickness": {"what": "five bundles of herbs", "good": "herbs", "count": 5},
+  "war": {"what": "two spears", "tool": "spear", "count": 2}
+},
+"gifts": {
+  "mine": {"kind": "copper-ore", "count": 10},
+  "hold": {"kind": "iron-ore", "count": 6},
+  "port": {"kind": "salt", "count": 6},
+  "temple": {"kind": "herbs", "count": 6},
+  "hamlet": {"kind": "wool", "count": 6},
+  "else": {"kind": "seed", "count": 20}
+},
+"shrine": {
+  "done": "shrine-honoured",
+  "passed": "shrine-slighted",
+  "asks": {
+    "war": {"what": "a fine spear for the shrine", "tool": "spear", "count": 1, "quality": "fine"},
+    "honour": {"what": "a fine blade to hang at the shrine", "tool": "blade", "count": 1, "quality": "fine"},
+    "kin": {"what": "food for a second feast", "good": "food", "share": 5},
+    "learning": {"what": "twenty candles", "good": "candles", "count": 20},
+    "order": {"what": "dressed stone to raise the shrine in stone", "good": "ashlar", "count": 12},
+    "wealth": {"what": "two ingots", "good": "copper-ingot|tin-ingot|bronze-ingot|iron-ingot", "count": 2},
+    "freedom": {"what": "a cask for the shrine", "good": "barrel", "count": 1}
+  }
 }
 }

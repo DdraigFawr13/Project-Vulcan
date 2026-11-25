@@ -7,6 +7,7 @@ import { streamFor, type EntityRow } from '../core/index.ts';
 import { qualityOf } from '../build/index.ts';
 import { fitsAsk, layTool, restOf } from '../goods/index.ts';
 import { weigh } from '../law/index.ts';
+import { creedOf } from '../faith/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { firstFine } from './fine.ts';
 
@@ -24,9 +25,12 @@ function lordWill(ctx: SystemContext, p: EntityRow): number {
   return loyal ? weigh(world, content, p.id, loyal).will : content.laws.answer.start;
 }
 
-/** Whether `p` will work ask `a`: anyone, but a lord's ask not by one who would refuse him. */
-export const willWork = (ctx: SystemContext, p: EntityRow, a: EntityRow): boolean =>
-  a['source'] !== 'lord' || lordWill(ctx, p) >= ctx.content.laws.answer.grumble;
+/** Whether `p` will work ask `a`: anyone, but a lord's ask not by one who would refuse him, and
+ * a shrine's only by its own faithful. */
+export function willWork(ctx: SystemContext, p: EntityRow, a: EntityRow): boolean {
+  if (a['source'] === 'faith') return String(creedOf(ctx.world, p.id)?.id ?? '') === a['of'];
+  return a['source'] !== 'lord' || lordWill(ctx, p) >= ctx.content.laws.answer.grumble;
+}
 
 /** Minutes in 100 `p` takes over ask `a`: a grumbler at the Lord law is slower on his asks. */
 export const askPace = (ctx: SystemContext, p: EntityRow, a: EntityRow): number =>
