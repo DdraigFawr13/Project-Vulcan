@@ -79,6 +79,8 @@ function standable(ctx: SystemContext, p: EntityRow, x: number, y: number): Spot
   return undefined;
 }
 
+const clamp = (v: number, size: number) => Math.max(1, Math.min(size - 2, v));
+
 /** Known sources of the need within 6 of (x, y): the land beyond looks likelier there. */
 function likely(ctx: SystemContext, def: Good, x: number, y: number): number {
   const map = ctx.world.map;
@@ -92,7 +94,10 @@ function likely(ctx: SystemContext, def: Good, x: number, y: number): number {
  * tiles past it, where they can stand. */
 function frontier(ctx: SystemContext, p: EntityRow, need: Need): Spot | undefined {
   const map = ctx.world.map;
-  const far = ctx.content.work.scout.far;
+  // A trip to see what lies beyond makes for the nearest unknown edge however far (V-234): once
+  // the land within `far` is all seen, it is the only trip that still finds the unseen.
+  const far =
+    need.def.good === BEYOND ? Math.max(map.width, map.height) : ctx.content.work.scout.far;
   const [ox, oy] = origin(ctx);
   // A newcomer's word of the good pulls the way it names (V-206).
   const word = wordOf(ctx, ctx.content.work.scout.goods.indexOf(need.def));
@@ -110,10 +115,10 @@ function frontier(ctx: SystemContext, p: EntityRow, need: Need): Spot | undefine
         far,
         d + (need.def.good === BEYOND ? ctx.content.work.scout.beyond.on : 6),
       );
+      // Past the edge of the map, they go to its edge.
+      const [sx, sy] = [ox + Math.round((dx * on) / 4), oy + Math.round((dy * on) / 4)];
       const spot =
-        s < score
-          ? standable(ctx, p, ox + Math.round((dx * on) / 4), oy + Math.round((dy * on) / 4))
-          : undefined;
+        s < score ? standable(ctx, p, clamp(sx, map.width), clamp(sy, map.height)) : undefined;
       if (spot) [best, score] = [spot, s];
       break;
     }
@@ -207,9 +212,17 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
     declineIfUnable(ctx, p, def.job);
     return false;
   }
-  // A prospector is the best miner free (V-215); other trips, the restless and hardy first.
-  const first = need.ore ? betterMiner(ctx, p) : others(ctx, p);
-  return !outranked(ctx, p, def.job, () => true) && !first && goOut(ctx, p, need);
+  return !outranked(ctx, p, def.job, () => true) && goFor(ctx, p, need);
+}
+
+/** Out for `need`: a prospector is the best miner free (V-215); other trips, the restless and
+ * hardy first. A want nobody can go out for (no face they can get to, no unseen land within
+ * `far`) leaves the season's scout free to go (V-234). */
+function goFor(ctx: SystemContext, p: EntityRow, need: Need): boolean {
+  if (need.ore ? betterMiner(ctx, p) : others(ctx, p)) return false;
+  if (goOut(ctx, p, need)) return true;
+  const trip = need.def.good === BEYOND ? undefined : beyond(ctx);
+  return !!trip && !others(ctx, p) && goOut(ctx, p, trip);
 }
 
 /** Sets them out on the trip for `need`, if there is a way to its first spot. */
