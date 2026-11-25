@@ -12,7 +12,7 @@ A short phase between 6B and 6C that makes exploring a need, from Morgan's messa
 - [x] Slice 5, trips, camps and finds (engine)
 - [x] Slice 6, the known map on screen (screens)
 - [x] Slice 7, hidden ores and prospecting (engine)
-- [ ] 6W balance and review
+- [x] 6W balance and review: reviewed 2026-11-23 (form answered, fix slices #206 and #223). Five years on main 3ec650e, plain seeds (alive at year 5 / seen at year 3 / walked at year 3 / trips beyond in 5 years / curios): anvil 10 / 77% / 7.5% / 14 / 13; smoke 6 / 70% / 6.9% / 11 / 15; tallow 3 / 67% / 6.2% / 11 / 13; ledger-1 7 / 82% / 8.2% / 16 / 11. A third seen by year 3 on every seed; tallow's colony dwindles (failure is fine).
 
 ## Why
 
