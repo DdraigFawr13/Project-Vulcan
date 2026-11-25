@@ -8,6 +8,7 @@ import { checkAnnals } from './validate-annals';
 import { checkSeedWords } from './validate-seeds';
 import { checkStrangers } from './validate-strangers';
 import { checkStops } from './validate-time';
+import { checkAsks } from './validate-asks';
 
 type Files = Readonly<Record<string, unknown>>;
 
@@ -94,6 +95,7 @@ export function validateContent(files: Files): string[] {
       ...checkTales(files),
       ...checkAnnals(files),
       ...checkPunish(files),
+      ...checkAsks(files),
     );
   errors.push(...checkBand(files), ...checkStops(files), ...checkSeedWords(files));
   return errors;

@@ -32,12 +32,14 @@ import { goBeside, heldMaterial, heldSpeed, materialSpeed, mostUsed } from '../b
 import { outranked, people, practise, priorityLine, reachableOf, skillOf } from '../band/index.ts';
 import { readyFor, scaled, spotOf, useHeld, worked } from '../band/index.ts';
 import { firstFine } from './fine.ts';
+import { askFor, askPace, madeForAsk } from './askmade.ts';
 
 const JOB = 'smith';
 
 /** The smith job (tools.json `job`): its workplace is the forge piece, its skill what they practise. */
-const jobOf = (ctx: SystemContext) => ctx.content.jobs.find((j) => j.id === ctx.content.tools.job)!;
-const forgeOf = (ctx: SystemContext) => piecesOf(ctx.world, jobOf(ctx).workplace ?? '')[0];
+export const jobOf = (ctx: SystemContext) =>
+  ctx.content.jobs.find((j) => j.id === ctx.content.tools.job)!;
+export const forgeOf = (ctx: SystemContext) => piecesOf(ctx.world, jobOf(ctx).workplace ?? '')[0];
 
 export interface ToolWant {
   person: EntityRow;
@@ -48,7 +50,7 @@ export interface ToolWant {
 
 /** The best material a tool of `kind` can be made of now from the ingots the colony holds
  * (charcoal is burned for it, not required to be on hand). */
-function makeable(ctx: SystemContext, kind: string): string | undefined {
+export function makeable(ctx: SystemContext, kind: string): string | undefined {
   const { content } = ctx;
   const k = content.tools.kinds.find((t) => t.id === kind)!;
   return [...content.tools.materials]
@@ -101,7 +103,7 @@ export const toolCharcoal = (ctx: SystemContext): number =>
     .reduce((n, w) => n + ctx.content.tools.kinds.find((k) => k.id === w.kind)!.charcoal, 0);
 
 function stop(p: EntityRow): false {
-  Object.assign(p, { job: '', plan: 0, target: -1, work: 0, making: '' });
+  Object.assign(p, { job: '', plan: 0, target: -1, work: 0, making: '', ask: 0 });
   return false;
 }
 
@@ -221,8 +223,36 @@ export function takeUpSmithing(ctx: SystemContext, p: EntityRow): boolean {
     making: `${k.id}:${m.id}`,
     target: -1,
     work: -1,
+    ask: 0,
   });
   return smithing(ctx, p);
+}
+
+type Kind = SystemContext['content']['tools']['kinds'][number];
+type Material = SystemContext['content']['tools']['materials'][number];
+
+/** Whom the tool is for: the person in `plan`, alive, or (6C Slice 3) the ask `p` works, still
+ * taken up; undefined when neither holds. */
+function forWhom(
+  ctx: SystemContext,
+  p: EntityRow,
+): { ask?: EntityRow; target?: EntityRow } | undefined {
+  if (p['ask']) {
+    const ask = askFor(ctx, p);
+    return ask ? { ask } : undefined;
+  }
+  const target = people(ctx.world).find((q) => q.id === p['plan']);
+  return target && target['status'] === 'alive' ? { target } : undefined;
+}
+
+/** The work minutes for the piece: slower for the less skilled, and for a grumbler at an ask. */
+function minutesOf(ctx: SystemContext, p: EntityRow, k: Kind, level: number, ask?: EntityRow) {
+  const tools = ctx.content.tools;
+  const pace = ask ? askPace(ctx, p, ask) : 100;
+  const minutes = Math.ceil(
+    (k.minutes * 2 * tools.skilled * pace) / (100 * (tools.skilled + level)),
+  );
+  return scaled(ctx, p, tools.job, minutes);
 }
 
 /** One minute of smithing; false when it is done or cannot go on (they look for work again). */
@@ -232,8 +262,8 @@ export function smithing(ctx: SystemContext, p: EntityRow): boolean {
   const [kindId, materialId] = String(p['making']).split(':');
   const k = content.tools.kinds.find((t) => t.id === kindId);
   const m = content.tools.materials.find((t) => t.id === materialId);
-  const target = people(world).find((q) => q.id === p['plan']);
-  if (!forge || !k || !m?.ingot || !target || target['status'] !== 'alive') return stop(p);
+  const whom = forWhom(ctx, p);
+  if (!forge || !k || !m?.ingot || !whom) return stop(p);
   // First fetch the ingots and charcoal from wherever they lie, and carry them.
   for (const [kind, need] of [
     [m.ingot, k.ingots],
@@ -248,28 +278,37 @@ export function smithing(ctx: SystemContext, p: EntityRow): boolean {
   const beside = at.z === 0 && Math.abs(at.x - fx) + Math.abs(at.y - fy) === 1;
   if (!beside) return goBeside(ctx, p, fx, fy) || stop(p);
   const level = skillOf(world, p, skillName(ctx));
-  if ((p['work'] as number) < 0) {
-    const tools = content.tools;
-    const minutes = Math.ceil((k.minutes * 2 * tools.skilled) / (tools.skilled + level));
-    p['work'] = scaled(ctx, p, tools.job, minutes);
-  }
+  if ((p['work'] as number) < 0) p['work'] = minutesOf(ctx, p, k, level, whom.ask);
   p['work'] = (p['work'] as number) - 1;
   worked(ctx, p, content.tools.job);
   practise(ctx, p, skillName(ctx), p['took'] as number);
   if ((p['work'] as number) > 0) return true;
-  // The tool is finished: the ingots and charcoal carried are used up.
-  const most = content.metal.trail.most;
-  const trails: Step[][] = [];
-  for (const [kind, n] of [
-    [m.ingot, k.ingots],
-    [content.tools.charcoal, k.charcoal],
-  ] as const)
-    for (const used of useHeld(ctx, p, kind, n)) trails.push(trailOf(used));
-  const step: Step = { s: 'made', who: p['name'] as string, tick: world.tick };
-  const trail = trailText(withStep(mergeTrails(trails, most), step, most));
-  made(ctx, p, target, { kind: k.id, material: m.id, level, trail });
+  finish(ctx, p, k, m, level, whom);
   stop(p);
   return true;
+}
+
+/** The tool is finished: the ingots and charcoal carried are used up, and it is made for whom. */
+function finish(
+  ctx: SystemContext,
+  p: EntityRow,
+  k: Kind,
+  m: Material,
+  level: number,
+  whom: { ask?: EntityRow; target?: EntityRow },
+): void {
+  const most = ctx.content.metal.trail.most;
+  const trails: Step[][] = [];
+  for (const [kind, n] of [
+    [m.ingot!, k.ingots],
+    [ctx.content.tools.charcoal, k.charcoal],
+  ] as const)
+    for (const used of useHeld(ctx, p, kind, n)) trails.push(trailOf(used));
+  const step: Step = { s: 'made', who: p['name'] as string, tick: ctx.world.tick };
+  const trail = trailText(withStep(mergeTrails(trails, most), step, most));
+  const tool = { kind: k.id, material: m.id, level, trail };
+  if (whom.ask) madeForAsk(ctx, p, whom.ask, tool);
+  else made(ctx, p, whom.target!, tool);
 }
 
 const skillName = (ctx: SystemContext): string => jobOf(ctx).skill ?? '';

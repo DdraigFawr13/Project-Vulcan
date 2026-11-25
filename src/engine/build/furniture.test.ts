@@ -204,6 +204,8 @@ describe('carpentry and furniture', () => {
     const levers = [
       ...['setStock', 'setPriority', 'setLaw', 'setBuild', 'sendBack', 'sendBackShaft'],
       'letStand',
+      // The asks (6C Slice 3): the colony takes an ask up at a priority or lets it pass, naming nobody.
+      ...['takeAsk', 'passAsk'],
     ];
     const tools = [
       'placeBuilding',

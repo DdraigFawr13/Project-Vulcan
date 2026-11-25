@@ -12,6 +12,7 @@ import { markCommands, MARK_TABLES } from './marks.ts';
 import { DEPOT_TABLES } from './depots.ts';
 import { rollTrips, TRIP_TABLES } from './trips.ts';
 import { TITHE_TABLES } from './tithe.ts';
+import { ASK_TABLES } from './asks.ts';
 import { dryAt, setStock, setUpStock, setUpStore, STORE_TABLES } from './store.ts';
 import { itemName } from '../core/index.ts';
 
@@ -59,6 +60,7 @@ export const goodsSystem: System = {
     ...TRIP_TABLES,
     ...MARK_TABLES,
     ...TITHE_TABLES,
+    ...ASK_TABLES,
   },
   commands: {
     setStock: (ctx, command, cause) => setStock(ctx, command.data, cause),

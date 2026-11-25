@@ -6,7 +6,7 @@
 // role stays while it has `at` and no unheld one beats it by `keep`. A change is a line citing
 // the memory that weighed most for a new role (else the line they came in on).
 import type { EngineContent, EntityRow, RoleDef, WorldState } from '../core/index.ts';
-import { addEntity, removeEntity } from '../entity/index.ts';
+import { addEntity, people, removeEntity } from '../entity/index.ts';
 import { bandOf, heldMemoriesOf } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { rolesOf } from './tables.ts';
@@ -51,7 +51,12 @@ export function scoresOf(world: WorldState, content: EngineContent, p: EntityRow
         const base = role.memories[id] ?? 0;
         if (!base) continue;
         if (bandOf(content, m['weight'] as number) === 'light') continue;
-        const text = content.memories.find((d) => d.id === id)?.text ?? id;
+        // A memory about someone names them, as the mood's causes do.
+        const about = people(world).find((q) => q.id === m['about'])?.['name'] as string;
+        const text = (content.memories.find((d) => d.id === id)?.text ?? id).replace(
+          '{about}',
+          about ?? 'someone',
+        );
         parts.push({ by: base, word: lower(text), line: m['line'] as number });
       }
       const best = skills

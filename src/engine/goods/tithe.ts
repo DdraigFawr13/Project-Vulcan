@@ -5,6 +5,7 @@
 // cooks or works them, and the store's counts leave them out.
 import type { EngineContent, EntityRow, WorldState } from '../core/index.ts';
 import { addEntity, type Schemas } from '../entity/index.ts';
+import { apartOf, dropAsk, fromAsks } from './asks.ts';
 
 export const TITHE_TABLES: Schemas = {
   /** One row a tithed kind: brought in since the reeve's last visit, still to carry to the barn,
@@ -52,15 +53,21 @@ export function broughtIn(
   row['lines'] = [...(row['lines'] as number[]), line].filter((l) => l > 0).slice(-MOST);
 }
 
-/** What lies in the tithe barn, kind by kind (the Stock sheet's reserved row, Slice 4). */
-export const barnOf = (world: WorldState): { kind: string; count: number }[] =>
-  titheRows(world)
-    .filter((r) => (r['barn'] as number) > 0)
-    .map((r) => ({ kind: r['kind'] as string, count: r['barn'] as number }));
+/** What lies in the tithe barn, kind by kind (the Stock sheet's reserved row, Slice 4): the
+ * lord's share and what is set apart for asks (Slice 3). */
+export function barnOf(world: WorldState): { kind: string; count: number }[] {
+  const all = apartOf(world);
+  for (const r of titheRows(world)) {
+    const k = r['kind'] as string;
+    all.set(k, (all.get(k) ?? 0) + (r['barn'] as number));
+  }
+  return [...all].filter(([, n]) => n > 0).map(([kind, count]) => ({ kind, count }));
+}
 
 /** A `tithe` load put down short of the barn (its hauler hurt, gone, sent back): the goods are the
  * colony's again and the share is due once more. Any other item is left as it is. */
 export function dropTithe(world: WorldState, load: EntityRow): void {
+  dropAsk(world, load);
   if (load['state'] !== 'tithe') return;
   const row = titheRow(world, load['kind'] as string);
   const n = load['count'] as number;
@@ -71,12 +78,13 @@ export function dropTithe(world: WorldState, load: EntityRow): void {
   load['state'] = '';
 }
 
-/** Takes up to `count` of `kind` out of the barn; how many were there to take. */
+/** Takes up to `count` of `kind` out of the barn, the lord's share first, then what is set apart
+ * for asks; how many were there to take. */
 export function fromBarn(world: WorldState, kind: string, count: number): number {
   const row = titheRow(world, kind);
   const n = Math.min(count, (row?.['barn'] as number | undefined) ?? 0);
   if (row && n > 0) row['barn'] = (row['barn'] as number) - n;
-  return n;
+  return n + (n < count ? fromAsks(world, kind, count - n) : 0);
 }
 
 /** Whether surface tile (x, y) lies in the lord's forest (6C Slice 2): within `forest.reach` of

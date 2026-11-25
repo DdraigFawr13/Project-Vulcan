@@ -11,13 +11,14 @@ import {
   childJobs,
   deliver,
   jobsInOrder,
+  levelOf,
   lineOf,
   LOOK_AGAIN,
   spotOf,
   takeUpHauling,
 } from '../band/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { takeUpChange, hearthFirst } from '../crafts/index.ts';
+import { askLevel, takeUpChange, hearthFirst } from '../crafts/index.ts';
 import { draughtFirst, nursing } from '../care/index.ts';
 import { endHunt, herding } from '../herding/index.ts';
 import { takeUpMarked } from '../land/index.ts';
@@ -117,7 +118,16 @@ function kindsFor(
   small: readonly string[] | undefined,
 ): string[] {
   const kinds = hearthFirst(ctx, p, jobsInOrder(ctx.world, ctx.content, p));
-  return kinds.filter((k) => mayDo(small, k));
+  return withAsks(ctx, p, kinds).filter((k) => mayDo(small, k));
+}
+
+/** A taken-up ask (6C Slice 3) goes in a grown-up's order at the colony's priority for it, before
+ * their own kinds at that level. */
+function withAsks(ctx: SystemContext, p: EntityRow, kinds: string[]): string[] {
+  const level = askLevel(ctx);
+  if (level === undefined) return kinds;
+  const at = kinds.findIndex((k) => levelOf(ctx.world, ctx.content, p.id, k) >= level);
+  return at < 0 ? [...kinds, 'ask'] : [...kinds.slice(0, at), 'ask', ...kinds.slice(at)];
 }
 
 /** Whether a child's allowed kinds (none for an adult) hold `job`. */
