@@ -21,7 +21,10 @@
     "defiant": {"by": -10, "text": "the valley defiant of the lord"},
     "fine": {"by": -10, "text": "the lord's fine unpaid"},
     "found": {"by": -8, "text": "{what} found hidden from the barn"},
-    "told": {"by": -4, "text": "poaching in the lord's forest told to the reeve"}
+    "told": {"by": -4, "text": "poaching in the lord's forest told to the reeve"},
+    "askDone": {"by": 6, "text": "{what} given as he asked"},
+    "askPassed": {"by": -4, "text": "his ask for {what} let pass"},
+    "askLate": {"by": -6, "text": "his ask for {what} taken up and not ready"}
   },
   "ladder": [
     {"id": "raised", "below": 35, "text": "the tithe is raised by half", "by": 50},

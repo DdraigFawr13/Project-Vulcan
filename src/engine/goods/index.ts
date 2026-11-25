@@ -78,6 +78,18 @@ export {
   titheRows,
   tithing,
 } from './tithe.ts';
+export {
+  apartOf,
+  ASK_TABLES,
+  asksOf,
+  emptyAsk,
+  fitsAsk,
+  heldOf,
+  liveAsks,
+  setApart,
+  stillWanted,
+  takenAsks,
+} from './asks.ts';
 export { daysToHarvest, eatFrom, foodDays, foodGoneLine, storeLasts } from './food.ts';
 export { isTree, markedTree, marksOf, unmark } from './marks.ts';
 export {

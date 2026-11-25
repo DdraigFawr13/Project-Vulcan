@@ -153,6 +153,15 @@ export function metalItems(p = readPalette()) {
       s.rect(11, 18, 17, 1, l);
       for (let x = 11; x < 28; x += 2) s.put(x, 22, d);
     },
+    // 6C Slice 3 (V-225): the blade made for the lord's asks, a short sword with a crossguard.
+    blade: (s, [l, m, d]) => {
+      handle(s, 5, 27, 10, 22);
+      s.line(7, 19, 13, 25, p['ui oak dark']);
+      s.line(11, 21, 26, 6, d);
+      s.line(11, 20, 25, 6, m);
+      s.line(12, 20, 25, 7, l);
+      s.put(26, 5, l);
+    },
   };
   const bone = [p['snow shade'], p.bone, p['dirt light']];
   for (const material of ['stone', 'bronze', 'iron'])

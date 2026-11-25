@@ -15,6 +15,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { lordName, lordRow, reeveRow } from './tables.ts';
 import { markForest } from './forest.ts';
 import { swear, takeTithe } from './tithe.ts';
+import { askAtVisit } from './asks.ts';
 
 const hourOf = (tick: number) => Math.floor((tick % TICKS_PER_DAY) / TICKS_PER_HOUR);
 const spot = (r: EntityRow): Spot => ({
@@ -112,7 +113,13 @@ function countTheStore(ctx: SystemContext, r: EntityRow, to: EntityRow): void {
       ...{ food, days, mouths },
     },
   });
-  takeTithe(ctx, [r['harvest'] as number, r['came'] as number, lord['named'] as number], to);
+  const tithed = takeTithe(
+    ctx,
+    [r['harvest'] as number, r['came'] as number, lord['named'] as number],
+    to,
+  );
+  // 6C Slice 3: the asks due at this visit are settled, and he brings the next.
+  askAtVisit(ctx, tithed);
 }
 
 /** Speaks to `to`, then turns for home. */

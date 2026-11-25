@@ -35,7 +35,7 @@ Types, `sfc32` RNG streams, scheduler, `emit` with template check, command queue
 
 Worker loop and protocol; speeds and pause; a flat 150 by 150 map drawn from snapshots; camera; `palette.gpl`, `tools/pack-sheet` and the `tiles-base` sheet. Mock-up: UI. Done when: 60 fps on the production build at 3x; pause stops the tick.
 
-- Reading list: `docs/ARCHITECTURE.md#worker-protocol`, `src/worker/MODULE.md`, `src/render/MODULE.md`, `src/render/index.ts`, `docs/ART.md`, `src/engine/index.ts`
+- Reading list: `docs/ARCHITECTURE.md#worker-protocol`, `src/worker/MODULE.md`, `src/render/MODULE.md`, `src/render/index.ts`, `docs/ART.md` (the engine's exports: CODEMAP)
 
 ### P0.5 Saves, export and debug inspector
 

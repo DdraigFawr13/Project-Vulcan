@@ -23,7 +23,8 @@ import { walkTo } from './walk.ts';
 /** A load carried for the lord. */
 export const TITHE = 'tithe';
 
-const free = (i: EntityRow): boolean =>
+/** A stack lying free on the map: nobody holds it and nothing is marked on it. */
+export const free = (i: EntityRow): boolean =>
   !i['holder'] && !i['state'] && (i['x'] as number) >= 0 && (i['count'] as number) > 0;
 
 const cheb = (a: Spot, b: Spot) =>
