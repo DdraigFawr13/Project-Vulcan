@@ -17,6 +17,7 @@ src/content/data/
 .claude/agents/reviewer.md
 .claude/agents/test-runner.md
 .claude/hooks/guards/checks/ci.mjs
+.claude/hooks/guards/checks/design.mjs
 .claude/hooks/guards/checks/edits.mjs
 .claude/hooks/guards/checks/gates.mjs
 .claude/hooks/guards/checks/git.mjs
@@ -25,6 +26,7 @@ src/content/data/
 .claude/hooks/guards/checks/synced.mjs
 .claude/hooks/guards/checks/tests.mjs
 .claude/hooks/guards/counts.mjs
+.claude/hooks/guards/design-session.mjs
 .claude/hooks/guards/glob.mjs
 .claude/hooks/guards/lib.mjs
 .claude/hooks/guards/modules.mjs

@@ -40,6 +40,7 @@
     "test": "vitest run",
     "test:related": "vitest related --run",
     "test:browser": "playwright test",
+    "test:stress": "node tools/browser-stress.mjs",
     "coverage": "vitest run --coverage && node tools/coverage-summary.mjs",
     "format": "prettier --write --cache .",
     "format:check": "prettier --check --cache ."

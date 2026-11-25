@@ -93,8 +93,10 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   // Save, export, reload the page, load: the clock picks up at the saved tick and keeps going.
   await page.getByTestId('open-saves').click();
   await panel.getByRole('button', { name: 'Save now' }).click();
-  await expect(panel.getByTestId('save')).toHaveCount(1);
-  await expect(panel.getByTestId('save')).toContainText('smoke/2 · Day 1 of Thawmonth, Year 1');
+  // Beside the autosave, which holds the standby copies written every 5 s of play.
+  const saved = panel.getByTestId('save').filter({ hasNotText: 'AUTO' });
+  await expect(saved).toHaveCount(1);
+  await expect(saved).toContainText('smoke/2 · Day 1 of Thawmonth, Year 1');
   // The Saves page carries the test mode switch, shown on since the URL has `?debug`.
   await expect(panel.getByTestId('test-switch')).toHaveAttribute('aria-pressed', 'true');
   const download = page.waitForEvent('download');
@@ -110,7 +112,9 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
 
   // A reload continues the newest save of this valley rather than beginning a new Day 1.
   await page.reload();
-  await expect.poll(() => tick(page)).toBe(paused);
+  // The load waits on the valley's Story Generator world, made afresh in the new worker, as the
+  // picker does (about 3 s here): hence the picker's wait.
+  await expect.poll(() => tick(page), { timeout: 20_000 }).toBe(paused);
   await expect(page.getByTestId('speed-0')).toHaveAttribute('aria-pressed', 'true');
   await page.getByTestId('open-saves').click();
   await panel.getByRole('button', { name: 'Load' }).first().click();
@@ -191,7 +195,7 @@ test('the game boots, runs, pauses, inspects, saves, reloads, loads and exports'
   let before = -1;
   await expect.poll(async () => before === (before = await tick(page))).toBe(true);
   await page.reload();
-  await expect.poll(() => tick(page)).toBeGreaterThan(paused);
+  await expect.poll(() => tick(page), { timeout: 20_000 }).toBeGreaterThan(paused);
   expect(await tick(page)).toBeLessThanOrEqual(before);
   await page.keyboard.press('>');
   await expect(page.getByTestId('unreached')).toBeHidden();

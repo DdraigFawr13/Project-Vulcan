@@ -40,7 +40,7 @@ export function targetDir(args) {
 const MV_CP_VALUED = new Set(['-t', '--target-directory', '-S', '--suffix']);
 
 /** The arguments a simple command writes, removes or moves. */
-function written(c) {
+export function written(c) {
   const ops = () => operands(c.args);
   switch (c.name) {
     case 'sed':
