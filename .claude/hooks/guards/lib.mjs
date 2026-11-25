@@ -15,6 +15,10 @@ export const PREFIX = 'ai-master-guard';
 export const DEFAULT_TESTS = ['**/*.test.*', '**/*.spec.*', '**/__tests__/**', 'tests/**', 'test/**', 'e2e/**'];
 export const DEFAULT_PROTECTED = ['secrets/**', '.env', '.env.*', '*.pem', 'id_rsa*'];
 export const NEVER_PROTECTED = ['.env.example', '.env.sample'];
+/** Paths a design session may not change (D-079): code and tests. */
+export const DEFAULT_BUILD = ['src/**', ...DEFAULT_TESTS];
+/** New files that make a session a design session (D-079): a spec, a phase plan or a mock-up. */
+export const DEFAULT_DESIGN = ['docs/specs/**', 'docs/phases/**', '**/mockups/**', '*mockup*', '*mock-up*'];
 
 export class GuardError extends Error {}
 
@@ -50,7 +54,7 @@ export function git(args, { cwd, clock, limit }) {
 
 /**
  * Facts about the project, each read lazily and once per call:
- * root, stateDir, session, synced, handoff, base, tests, protected, userEmail.
+ * root, stateDir, session, synced, handoff, base, tests, protected, build, design, userEmail.
  * Also env (the hook's environment). Helpers: git(args, dir, { limit }), rel(arg, dir), commands(), notes (config errors to show).
  */
 export function createFacts(input, clock, env = process.env) {
@@ -134,6 +138,12 @@ export function createFacts(input, clock, env = process.env) {
     },
     get protected() {
       return once('protected', () => guardList(facts, input, 'protected', DEFAULT_PROTECTED));
+    },
+    get build() {
+      return once('build', () => guardList(facts, input, 'build', DEFAULT_BUILD));
+    },
+    get design() {
+      return once('design', () => guardList(facts, input, 'design', DEFAULT_DESIGN));
     },
     get userEmail() {
       return once('userEmail', () => run(['config', 'user.email']) || null);
