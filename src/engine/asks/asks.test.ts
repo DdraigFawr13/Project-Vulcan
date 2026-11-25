@@ -69,7 +69,7 @@ describe("the lord's asks", () => {
     const [asked] = lines(w, 'lord.asked');
     const tithed = lines(w, 'lord.tithed').at(-1)!;
     expect(asked!.causes).toContain(tithed.id);
-    const ask = asks(w)[0]!;
+    const ask = asks(w).find((a) => a['source'] === 'lord')!;
     expect(ask['state']).toBe('open');
     expect(ask['line']).toBe(asked!.id);
     // The colony lets it pass: a lever naming no one.
@@ -86,6 +86,9 @@ describe("the lord's asks", () => {
     expect(String(cost.data['text'])).toContain(String(ask['what']));
     // His next ask came at the same visit.
     expect(lines(w, 'lord.asked')).toHaveLength(2);
+    // A settled ask is never settled again at a later visit.
+    visit(w, sim);
+    expect(lines(w, 'ask.passed').filter((e) => e.causes.includes(letPass!.id))).toHaveLength(1);
   });
 });
 
