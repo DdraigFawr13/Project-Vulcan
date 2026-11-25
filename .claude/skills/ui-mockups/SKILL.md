@@ -92,7 +92,7 @@ It holds:
 ## Publish and approve
 
 1. Only now publish the page with the Artifact tool (no link to Morgan before the record exists; Vulcan LESSONS:24). If the user said not to publish, or the tool isn't available, don't.
-2. Ask in chat, one question with the link: "Approve" / "Change (say what)" / "Rethink" (WS-03). Not published: ask the same question with the file's path.
+2. Ask on a fillable form that links the mock-up and saves the answer (the `planning-interview` form template, WS-08): "Approve" / "Change (say what)" / "Rethink", with a notes box. Not published: ask the same question in chat with the file's path.
 3. A change:
    - re-run the fact check and lint;
    - re-run the fresh check when that round changed a screen's layout, controls or tokens (not for wording-only fixes);
@@ -101,6 +101,7 @@ It holds:
 
 ## After approval
 
+- The session that made the mock-up stops here and does not build it; a fresh session builds the slice (WS-02).
 - Put the approved page's link in HANDOFF and in the slice's spec.
 - The build follows the style doc's new-screen checklist; its last item compares the built screen, screenshotted at the same width, with this mock-up and lists the differences for Morgan.
 
