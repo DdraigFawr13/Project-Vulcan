@@ -63,8 +63,14 @@ describe('the mill and harvest home', () => {
     expect(feasts[0]!.data['where']).toBe(
       hallAtFeast ? 'in the hall' : 'round the fire on the green',
     );
-    const alive = (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
-    expect(feasts[0]!.actors).toHaveLength(alive.length);
+    // Everyone but a scout out on a trip, who camps where night finds them (V-206).
+    const scout = (p: { [k: string]: unknown }) =>
+      p['packed'] && p['job'] === content.work.scout.job;
+    const home = (world.entities['person'] ?? []).filter(
+      (p) => p['status'] === 'alive' && !scout(p),
+    );
+    expect(home.length).toBeGreaterThan(1);
+    for (const p of home) expect(feasts[0]!.actors).toContain(p.id);
     for (const id of feasts[0]!.actors ?? [])
       expect(memoriesOf(world, id).some((m) => m['line'] === feasts[0]!.id)).toBe(true);
   }, 60000);

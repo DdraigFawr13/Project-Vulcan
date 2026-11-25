@@ -52,8 +52,9 @@ export interface LifeDef {
   eat: Readonly<Record<string, number>>;
   /** Kinds eaten only when hungry with nothing else to reach (seed grain, P4.7). */
   lastResort: readonly string[];
-  /** A person eats a kind of last resort only with Food at or under this. */
-  seedAt: number;
+  seedAt: number; // a kind of last resort is eaten only with Food at or under this
+  /** A bite taken along after a walk of over `far` steps to eat, at most `most` (V-230). */
+  bite: { far: number; most: number };
   /** Mood words, highest first. */
   mood: readonly { word: string; at: number }[];
   cart: {

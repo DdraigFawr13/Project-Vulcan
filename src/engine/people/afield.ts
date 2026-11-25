@@ -12,14 +12,18 @@ import { isDark } from '../lamp/index.ts';
 import { drinking } from './drink.ts';
 import { working } from './jobs.ts';
 
-/** Whether `p` is on a trip with their pack: a scout, or a miner gone to a far shaft (V-227).
- * Anyone else packed puts the pack down once home. */
+/** Whether `p` is on a trip with their pack: a scout, or a miner gone to far work (V-227,
+ * V-231) unless standing still at home, where they keep the pack but live as at home. Anyone
+ * else packed puts the pack down once home. */
 function onTrip(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
-  if (p['job'] === content.work.scout.job || p['job'] === content.work.mine.job) return true;
+  if (p['job'] === content.work.scout.job) return true;
   const g = greenOf(world);
   const near = Math.max(Math.abs((p['x'] as number) - g.x), Math.abs((p['y'] as number) - g.y));
-  if (near <= content.work.scout.home && p['z'] === 0) unpack(ctx, p);
+  const home = near <= content.work.scout.home && p['z'] === 0;
+  const still = !(p['path'] as number[]).length;
+  if (p['job'] === content.work.mine.job) return !(home && still);
+  if (home) unpack(ctx, p);
   return false;
 }
 
@@ -35,6 +39,15 @@ function campNow(ctx: SystemContext, p: EntityRow, night: boolean): boolean {
   return true;
 }
 
+/** A miner out of food: on the way to eat, or under their food line with the pack empty (a
+ * scout turns home instead, land `eatPack`). */
+function goingToEat(ctx: SystemContext, p: EntityRow): boolean {
+  if (p['job'] !== ctx.content.work.mine.job) return false;
+  if (p['doing'] === 'eat') return true;
+  const food = needOf(ctx.world, p.id, 'food')?.['value'] as number | undefined;
+  return food !== undefined && food < lineOf(ctx, p, 'food');
+}
+
 /** One minute's choice for someone packed for a trip; false when they are not on one (their
  * pack put down once they are home) and the ordinary round goes on. */
 export function afield(ctx: SystemContext, p: EntityRow, night: boolean): boolean {
@@ -46,8 +59,10 @@ export function afield(ctx: SystemContext, p: EntityRow, night: boolean): boolea
     breakCamp(ctx, p);
     p['doing'] = '';
   }
-  if (eatPack(ctx, p) || drinking(ctx, p) || campWarm(ctx, p) || campNow(ctx, p, night))
-    return true;
+  if (eatPack(ctx, p)) return true;
+  // Hungry with nothing left in the pack, a miner goes to eat as anyone does (V-231).
+  if (goingToEat(ctx, p)) return false;
+  if (drinking(ctx, p) || campWarm(ctx, p) || campNow(ctx, p, night)) return true;
   // The troubles of the way and a search are a scout's.
   if (p['job'] !== content.work.mine.job) {
     trouble(ctx, p);

@@ -18,6 +18,7 @@
 "eat":{"preserved":6000,"smoked":4000,"salted":4000,"berries":1500,"fish":4000,"game":4000,"meat":4000,"grain":3000,"turnips":2500,"seed":2000,"meal":4800,"stew":4800,"pottage":4800,"oats":3000,"beans":3000,"cabbages":2500,"bread":3600,"honey":2000},
 "lastResort":["seed"],
 "seedAt":0,
+"bite":{"far":20,"most":2},
 "mood":[{"word":"Content","at":6000},{"word":"Steady","at":4000},{"word":"Low","at":2000},{"word":"Miserable","at":0}],
 "cart":{"kind":"cart","goods":[{"kind":"preserved","count":640},{"kind":"seed","count":80},{"kind":"wool","count":5}],"bedroll":"bedroll"},
 "memory":{"weight":100,"heavy":3,"lasting":8,"lingerDays":84,"spellDays":7,"windowDays":28,"recentHours":6,"sameFood":{"days":14,"kinds":2,"memory":"same-food"},"thoughts":{"none":["Nothing much on my mind."],"good":["{memory}. That was good.","Still glad of it: {memory}."],"bad":["{memory}. I can't shake it.","I keep going back to it: {memory}."]}},
