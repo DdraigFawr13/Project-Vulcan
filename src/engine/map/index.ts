@@ -7,6 +7,8 @@ export {
   chunkTiles,
   diggable,
   layerOf,
+  builtEpoch,
+  chunkEpoch,
   raiseChunk,
   setBuilt,
   setTile,

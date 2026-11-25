@@ -1,6 +1,15 @@
 // Public surface of the goods system.
 export { goodsSystem } from './system.ts';
-export { GOODS_TABLES, itemsAt, itemsOf, layItem, loadOf, stackSize, takeFrom } from './stacks.ts';
+export {
+  GOODS_TABLES,
+  itemDef,
+  itemsAt,
+  itemsOf,
+  layItem,
+  loadOf,
+  stackSize,
+  takeFrom,
+} from './stacks.ts';
 export { storedEnough } from './plates.ts';
 export {
   garmentOf,

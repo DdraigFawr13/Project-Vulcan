@@ -61,20 +61,20 @@ export function wayFrom(world: WorldState, content: EngineContent, green: Spot, 
   let tail = 4 * n;
   queue[tail++] = start;
   trees[start] = 0;
+  const w = map.width;
+  // The four sides in the order they are tried: east, west, south, north.
+  const sides = [1, -1, w, -w];
   while (head < tail) {
     const i = queue[head++]!;
     if (done[i]) continue;
     done[i] = 1;
-    const [x, y] = [i % map.width, Math.floor(i / map.width)];
-    for (const [dx, dy] of [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ] as const) {
-      const [nx, ny] = [x + dx, y + dy];
-      if (nx < 0 || ny < 0 || nx >= map.width || ny >= map.height) continue;
-      const j = ny * map.width + nx;
+    const x = i % w;
+    const y = (i - x) / w;
+    for (let k = 0; k < 4; k += 1) {
+      const nx = k === 0 ? x + 1 : k === 1 ? x - 1 : x;
+      const ny = k === 2 ? y + 1 : k === 3 ? y - 1 : y;
+      if (nx < 0 || ny < 0 || nx >= w || ny >= map.height) continue;
+      const j = i + sides[k]!;
       if (block && inRect(block, nx, ny)) continue;
       const tree = isTreeAt(world, content, j);
       if (!tree && !walkAt(content, map, 0, j)) continue;

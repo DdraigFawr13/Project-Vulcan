@@ -15,9 +15,20 @@ export const isKnown = (map: MapState, i: number): boolean => map.known[i] === 1
 export const bareKnown = (map: MapState, i: number): boolean =>
   !map.features[i] && map.known[i] === 1;
 
+/** Squares already marked known, per known array: known ground never becomes unknown (a lost
+ * scout forgets only what was held, 2), so marking one again changes nothing and is skipped. */
+const marked = new WeakMap<Uint8Array, Set<number>>();
+
 /** Marks the square of `r` round (x, y): known, or (`away`) held for a scout where unseen. */
 function mark(map: MapState, x: number, y: number, r: number, away: boolean): void {
   const w = map.width;
+  if (!away) {
+    let done = marked.get(map.known);
+    if (!done) marked.set(map.known, (done = new Set()));
+    const key = (r * map.height + y) * w + x;
+    if (done.has(key)) return;
+    done.add(key);
+  }
   for (let yy = Math.max(0, y - r); yy <= Math.min(map.height - 1, y + r); yy += 1)
     for (let xx = Math.max(0, x - r); xx <= Math.min(w - 1, x + r); xx += 1) {
       const i = yy * w + xx;

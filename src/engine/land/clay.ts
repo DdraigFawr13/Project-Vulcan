@@ -64,12 +64,14 @@ export function clayWork(ctx: SystemContext, p: EntityRow): Task | undefined {
   const reach = reachFrom(content, map, here);
   let best: number | undefined;
   let score = Infinity;
+  // Only known tiles can be dug (`digsFor`), so the rest of the level is passed over at once.
   for (let i = 0; i < (layer?.tiles.length ?? 0); i += 1) {
+    if (layer!.known[i] !== 1) continue;
     const [x, y] = [i % map.width, Math.floor(i / map.width)];
-    const node = pack(map, { x, y, z: 1 });
     const d = Math.max(Math.abs(x - here.x), Math.abs(y - here.y)) * 1000000 + i;
-    if (d < score && !taken.has(node) && digsFor(world, content, reach, i, need.good))
-      [best, score] = [node, d];
+    if (d >= score) continue;
+    const node = pack(map, { x, y, z: 1 });
+    if (!taken.has(node) && digsFor(world, content, reach, i, need.good)) [best, score] = [node, d];
   }
   // A found clay bank on the surface (V-206), dug as the ground below is.
   for (const i of bankTiles(content, map)) {

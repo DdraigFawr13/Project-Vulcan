@@ -95,6 +95,9 @@ export function costAt(content: EngineContent, map: MapState, z: number, i: numb
 export const leadsDown = (content: EngineContent, kind: number): boolean =>
   !!kindsOf(content).down[kind];
 
+/** Per terrain kind, 1 where it leads down: `leadsDown` as a table, for the tile search. */
+export const downKinds = (content: EngineContent): Uint8Array => kindsOf(content).down;
+
 export function downAt(content: EngineContent, map: MapState, z: number, i: number): number {
   const top = layerOf(map, z);
   const below = layerOf(map, z + 1);
