@@ -38,5 +38,14 @@ export const ASKS_SCHEMAS = {
     gifts: map(obj({ kind: str(), count: num({ min: 1 }) })),
     // The shrine's yearly ask by its faith's first sacred tag; the faithful's memories.
     shrine: obj({ done: str(), passed: str(), asks: map(obj(want)) }),
+    // A turned-away stranger's ask to stay a season (`feud` for one fleeing a feud), open
+    // `answer` days; those who spoke against them gain the `against` memory.
+    guests: obj({ what: text, feud: text, answer: num({ min: 1 }), against: str() }),
+    // A dream `days` unfulfilled asks to be backed, open `answer` days: goods for a house or by
+    // the dream's skill ({name} the dreamer); the dreamer's memories.
+    dreams: obj({
+      ...{ days: num({ min: 1 }), answer: num({ min: 1 }), backed: str(), unbacked: str() },
+      ...{ house: obj(want), skills: map(obj(want)) },
+    }),
   }),
 } as const;

@@ -58,7 +58,7 @@ function spokeLine(
 }
 
 /** Someone who stays: one of the colony, with their bedroll laid at the green to carry in. */
-function admit(ctx: SystemContext, p: EntityRow, line: number): void {
+export function admit(ctx: SystemContext, p: EntityRow, line: number): void {
   const { world, content } = ctx;
   Object.assign(p, { status: 'alive', waits: 0, wantsFrom: world.tick, path: [] });
   seedPerson(world, content, p);
@@ -233,9 +233,14 @@ export function decide(ctx: SystemContext, lead: EntityRow, group: EntityRow[]):
   }
   for (const { q, st } of stances)
     if (st.for) addMemory(ctx, q.id, def.memories.turned, line, lead.id);
-  const back = edgeSpot(world, content, lead['homeDir'] as string);
+  sendBack(ctx, group);
+}
+
+/** Strangers turned away (or a guest whose stay ends so) walk back the way they came. */
+export function sendBack(ctx: SystemContext, group: readonly EntityRow[]): void {
+  const back = edgeSpot(ctx.world, ctx.content, group[0]!['homeDir'] as string);
   for (const p of group) {
-    p['waits'] = -1;
+    Object.assign(p, { status: 'stranger', waits: -1 });
     if (!back || !walkTo(ctx, p, back)) p['status'] = 'gone';
   }
 }

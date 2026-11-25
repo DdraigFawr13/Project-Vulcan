@@ -52,6 +52,7 @@ export {
   spotOf,
 } from './spots.ts';
 export { strangersSystem } from './strangers.ts';
+export { admit, namesOf, sendBack } from './verdict.ts';
 export { TALLY_START, rollTally, tallyAdd, yesterdayOf } from './tally.ts';
 export type { Tally } from './tally.ts';
 export {

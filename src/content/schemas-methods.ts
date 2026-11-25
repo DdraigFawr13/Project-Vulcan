@@ -32,8 +32,14 @@ export const METHODS_SCHEMAS = {
     book: obj({ days, event: str() }),
     // A puzzle is put aside at midnight with under `hours` at its trade in the last `days`.
     drop: obj({ days, hours: count }),
-    // A stranger's coming: a seen hint at 1 in `odds` for each puzzler, at most `most` a way.
-    seen: obj({ odds: num({ min: 1 }), most: num({ min: 1 }), event: str() }),
+    // A stranger's coming (or an `also` line, a guest's tale): a seen hint at 1 in `odds` for
+    // each puzzler, at most `most` a way.
+    seen: obj({
+      odds: num({ min: 1 }),
+      most: num({ min: 1 }),
+      event: str(),
+      also: opt(list(str())),
+    }),
     // Hearing the tale (tales.json `id`) of a find in the same trade: a hint at 1 in `odds`.
     tale: obj({ odds: num({ min: 1 }), id: str() }),
     // Luck: 1 in `days` working days (`hours` or more at the trade), 1 in `lucky` for a byname

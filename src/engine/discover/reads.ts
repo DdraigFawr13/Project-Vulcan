@@ -81,7 +81,8 @@ export function readLines(ctx: SystemContext): void {
     const who = credit && alive(world).find((p) => p.id === e.actors[0]);
     if (credit && who) addHours(ctx, who, credit.job, credit.hours, e.id);
     if (failures.has(e.type)) failure(ctx, e);
-    if (e.type === content.methods.seen.event) seen(ctx, e);
+    const s = content.methods.seen;
+    if (e.type === s.event || s.also?.includes(e.type)) seen(ctx, e);
     if (e.type === content.methods.book.event) {
       bookLearn(ctx, e);
       book(ctx, e);

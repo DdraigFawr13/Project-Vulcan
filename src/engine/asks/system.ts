@@ -8,6 +8,8 @@ import { alive } from '../entity/index.ts';
 import { liveAsks } from '../goods/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
 import { passAsk, takeAsk } from './levers.ts';
+import { dreamsHour } from './dreams.ts';
+import { guestsAsk, guestsMinute } from './guests.ts';
 import { harvestAfter, shrineAsks } from './shrine.ts';
 import { REGARD_TABLES, strangersAsk, villagesDue } from './villages.ts';
 
@@ -27,11 +29,12 @@ export const asksSystem: System = {
   emits: [
     ...['ask.taken', 'ask.letPass', 'neighbour.asked', 'ask.gift', 'ask.regard', 'faith.asked'],
     ...['ask.done', 'ask.late', 'ask.passed', 'ask.unanswered'],
+    ...['guest.asked', 'guest.stays', 'guest.tale', 'dream.asked'],
   ],
   tables: REGARD_TABLES,
   // `seen` the newest stranger's coming already heard; `home` the last harvest-home supper row
-  // the shrine asked at.
-  initialState: { seen: 0, home: 0 },
+  // the shrine asked at; `guest` the season of the last guest's ask (year × 4 + season).
+  initialState: { seen: 0, home: 0, guest: -1 },
   commands: {
     takeAsk: (ctx, command, cause) => takeAsk(ctx, command.data, cause),
     passAsk: (ctx, command, cause) => passAsk(ctx, command.data, cause),
@@ -39,9 +42,12 @@ export const asksSystem: System = {
   run(ctx) {
     const { state } = ctx;
     state['seen'] = strangersAsk(ctx, state['seen'] ?? 0);
+    state['guest'] = guestsAsk(ctx, state['guest'] ?? -1);
+    guestsMinute(ctx);
     if (ctx.world.tick % TICKS_PER_HOUR) return;
     letGo(ctx);
     villagesDue(ctx);
+    dreamsHour(ctx);
     const home = harvestAfter(ctx, state['home'] ?? 0);
     if (!home) return;
     state['home'] = home.id;
