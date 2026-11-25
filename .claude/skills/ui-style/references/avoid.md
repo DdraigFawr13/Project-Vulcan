@@ -19,6 +19,8 @@ Each item is tagged: `(lint)` items are flagged by `ui-mockups`' `mockup-lint.mj
 - (look) Invented example facts: a name, number or option not in the project's files [adventure-manager LESSONS:15]
 - (look) Copy tics: em-dash asides, "not X but Y", "seamless", "unlock", filler intros [Morgan 2026-11-03, D-050; artifact-design guidance "Writing the copy"]
 - (look) A control that gives no answer on the screen where it was used [Vulcan LESSONS:19]
+- (look) Stock or stand-in photos shown as the product, place or game world (another maker's keyboard, a real landscape for an invented world); draw it, or leave a marked slot for the owner's own picture [taste-skill trial 2026-11-19, D-076]
+- (look) Content hidden until a scroll or timer runs, so a still screenshot shows a blank band; every view is complete at rest [taste-skill trial 2026-11-19, D-076]
 
 ## Pitfalls
 

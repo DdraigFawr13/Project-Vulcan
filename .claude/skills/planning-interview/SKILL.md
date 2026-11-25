@@ -1,6 +1,6 @@
 ---
 name: planning-interview
-description: Plan a new project, phase or major feature with Morgan through rounds of fillable phone forms (published Artifacts that save answers), an honest review plus an independent adversarial review, and a final approval page, before any code. Use when starting a project, when asked to plan, deep-dive, scope or "get aligned" on something, when a wishlist of features arrives, or after a brainstorm (the `brainstorm` skill) and before bootstrapping a new repo. Not for one small decision; ask that in chat (WS-03).
+description: Plan a new project, phase or major feature with Morgan through rounds of fillable phone forms (published Artifacts that save answers), an honest review plus an independent adversarial review, and a final approval page, before any code. Use when starting a project, when asked to plan, deep-dive, scope or "get aligned" on something, when a wishlist of features arrives, or after a brainstorm (the `brainstorm` skill) and before bootstrapping a new repo. Also use its form template alone whenever questions with options go to Morgan outside planning, never a read-only page that says "reply in chat" (WS-03). Not for one small question with a default; ask that in chat.
 ---
 
 # Planning interview
@@ -18,7 +18,7 @@ The flow below ran the Project Terra planning on 2026-10-27/28: three question r
 
 ## Building a form
 
-Use the template `assets/form.html` (in this skill's folder). It works on a phone, saves each answer as you tap, falls back to the device when signed out, and supports every question type below.
+Use the template `assets/form.html` (in this skill's folder), also for any one-off set of questions with options outside a planning round (WS-03): steps 1 to 6 apply, the rest of this skill does not. It works on a phone, saves each answer as you tap, falls back to the device when signed out, and supports every question type below.
 
 1. Copy it to the scratchpad as `<project>-<round>.html`.
 2. Replace `%%TITLE%%` with a 2–4 word name (for example `Terra Round 2`).
