@@ -17,6 +17,8 @@ interface Asks {
   village: Record<string, Want>;
   gifts: Record<string, { kind: string }>;
   shrine: { done: string; passed: string; asks: Record<string, Want> };
+  guests: { against: string };
+  dreams: { backed: string; unbacked: string; house: Want; skills: Record<string, Want> };
 }
 
 /** The checks every ask shares. */
@@ -66,7 +68,11 @@ export function checkAsks(files: Files): string[] {
   for (const f of faiths)
     if (f.sacred[0] && !asks.shrine.asks[f.sacred[0]])
       errors.push(`asks.shrine.asks: no ask for "${f.sacred[0]}" (faith ${f.id})`);
-  for (const m of [asks.shrine.done, asks.shrine.passed])
-    if (!memories.includes(m)) errors.push(`asks.shrine: "${m}" is no memory`);
+  errors.push(...wantErrors(files, 'asks.dreams.house', asks.dreams.house));
+  for (const [skill, a] of Object.entries(asks.dreams.skills))
+    errors.push(...wantErrors(files, `asks.dreams.skills.${skill}`, a));
+  const mems = [asks.shrine.done, asks.shrine.passed, asks.guests.against];
+  for (const m of [...mems, asks.dreams.backed, asks.dreams.unbacked])
+    if (!memories.includes(m)) errors.push(`asks: "${m}" is no memory`);
   return errors;
 }

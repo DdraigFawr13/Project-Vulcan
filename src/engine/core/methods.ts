@@ -35,7 +35,7 @@ export interface MethodsDef {
   failure: { days: number };
   book: { days: number; event: string };
   drop: { days: number; hours: number };
-  seen: { odds: number; most: number; event: string };
+  seen: { odds: number; most: number; event: string; also?: readonly string[] };
   tale: { odds: number; id: string };
   luck: { days: number; lucky: number; bynames: readonly string[]; hours: number };
   share: { kinds: readonly string[]; words: string };

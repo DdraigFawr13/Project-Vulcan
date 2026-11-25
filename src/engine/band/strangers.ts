@@ -199,6 +199,8 @@ function strangersMinute(ctx: SystemContext): void {
     stepAlong(ctx, p);
     if ((p['path'] as number[]).length) continue;
     const waits = p['waits'] as number;
+    // Stopped on the way back, asking to stay a season as a guest (asks guests.ts).
+    if (waits === -2) continue;
     // Gone back the way they came, off the map.
     if (waits < 0) {
       p['status'] = 'gone';

@@ -23,6 +23,9 @@ export const JOB_FIELDS = {
   making: 'text',
   /** 6C Slice 3: the ask (asks table) whose work they are at, smithing or carrying; 0 for none. */
   ask: 'int',
+  /** 6C Slice 3: a guest's stay (asks guests.ts): the tick their season ends, -1 once they have
+   * asked to be a guest, 0 never. */
+  guest: 'int',
   fine: 'event',
   /** Cooking (P5.3): the line of their first fine meal, 0 until they cook one; `lit` the work
    * minutes left when they last worked at the fire, so a fire that went out mid-batch is seen. */

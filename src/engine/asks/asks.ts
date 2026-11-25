@@ -56,10 +56,11 @@ export function addAsk(ctx: SystemContext, a: NewAsk): EntityRow {
   return ctx.world.entities['ask']!.find((r) => r.id === id)!;
 }
 
-/** What an ask held goes back to the colony: laid at the barn (a tool with the cart). */
+/** What an ask held goes back to the colony: laid at the barn (a tool, or with no barn, with the
+ * cart). */
 export function giveBack(ctx: SystemContext, a: EntityRow, cause: number): void {
   const { world, content } = ctx;
-  const at = barnSpot(world);
+  const at = barnSpot(world) ?? restOf(world, content);
   for (const [kind, n] of heldOf(a)) {
     const def = content.items.find((d) => d.id === kind);
     if (def?.tool)
@@ -67,7 +68,7 @@ export function giveBack(ctx: SystemContext, a: EntityRow, cause: number): void 
         layTool(world, content, restOf(world, content), {
           ...{ kind: def.tool.kind, material: def.tool.material, quality: 'plain', made: cause },
         });
-    else if (at) layItem(world, { kind, count: n, ...at, made: cause });
+    else layItem(world, { kind, count: n, ...at, made: cause });
   }
   emptyAsk(a);
 }
