@@ -1,5 +1,5 @@
 // 6W Slice 5 part 2 (V-206): finds laid on the map and found by whoever sees them, each a line
-// and a tale; curios far out, once a person a season; a scout to see what lies beyond when nothing
+// and a tale; curios far out, one a season for the colony (V-232); a scout to see what lies beyond when nothing
 // new has been found; a newcomer's word that steers the next scout for that good.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
@@ -63,19 +63,17 @@ describe('finds', () => {
     expect(story?.['tale']).toBe('found-place');
   });
 
-  it('anyone far out may come on a curio, at most one a person a season', () => {
+  it('anyone far out may come on a curio, at most one a season for the whole colony', () => {
     const def = calmContent.work.scout;
     const run = createSim({
       ...calmContent,
       work: { ...calmContent.work, scout: { ...def, curio: { ...def.curio, far: 0, per: 1 } } },
     });
     const w = createWorld(run, 'tallow');
-    // Everyone is out past the green; each hour is sure to bring one, once.
+    // Everyone is out past the green and each hour is sure to bring one: one comes, and no more.
     step(w, run, 6 * HOUR);
     const got = lines(w, 'land.curio');
-    const who = got.map((e) => e.actors[0]);
-    expect(new Set(who).size).toBe(who.length);
-    expect(got.length).toBeGreaterThan(0);
+    expect(got).toHaveLength(1);
     const mem = (w.entities['memory'] ?? []).filter((m) =>
       ['wonder', 'unease'].includes(m['memory'] as string),
     );
@@ -98,6 +96,56 @@ describe('finds', () => {
     expect(out).toBeDefined();
     expect(home?.causes).toContain(out!.id);
     expect(home!.data['far']).toBeGreaterThan(content.work.scout.reach);
+  });
+
+  it('goes to see what lies beyond while an ore is wanted that nobody free can prospect for', () => {
+    const def = calmContent.work.scout;
+    const run = createSim({
+      ...calmContent,
+      work: { ...calmContent.work, scout: { ...def, beyond: { ...def.beyond, days: 1 } } },
+    });
+    const w = createWorld(run, 'anvil');
+    submitCommand(w, {
+      tick: w.tick + 1,
+      kind: 'setStock',
+      data: { good: 'iron-ingot', level: 'some' },
+    });
+    // The best miner is below ground, and every face was walked today by a miner the rest cannot
+    // better: the faces are fresh to that one alone (V-227), who cannot walk them from there.
+    const [best, ...rest] = people(w);
+    const mining = content.jobs.find((j) => j.id === content.work.mine.job)!.skill!;
+    for (const s of w.entities['skill'] ?? [])
+      if (s['skill'] === mining) s['level'] = s['person'] === best!.id ? 15 : 0;
+    const walks = (w.systems['faces'] ??= {});
+    w.map.faces.forEach((v, i) => v && ((w.map.faces[i] = v | 128), (walks[i] = w.tick * 16 + 10)));
+    const below = () => Object.assign(best!, { z: 1, job: '', task: '', path: [] });
+    for (let t = 0; t < 6 * DAY && !lines(w, 'land.beyond').length; t += 30) {
+      below();
+      step(w, run, 30);
+    }
+    expect(lines(w, 'work.tookUpProspecting')).toHaveLength(0);
+    const [out] = lines(w, 'work.tookUpScoutingBeyond');
+    expect(rest.map((p) => p.id)).toContain(out?.actors[0]);
+    expect(lines(w, 'land.beyond')[0]?.causes).toContain(out!.id);
+  });
+
+  it('goes beyond the land within `far` once all of it has been seen', () => {
+    const def = calmContent.work.scout;
+    const run = createSim({
+      ...calmContent,
+      work: { ...calmContent.work, scout: { ...def, beyond: { ...def.beyond, days: 1 } } },
+    });
+    const w = createWorld(run, 'anvil');
+    w.map.faces.forEach((v, i) => v && (w.map.faces[i] = v | 128));
+    const s = storeOf(w)[0];
+    const [ox, oy] = s ? [s['x'] as number, s['y'] as number] : [w.map.startX, w.map.startY];
+    w.map.known.forEach((_, i) => {
+      const near = cheb(i % w.map.width, Math.floor(i / w.map.width), ox, oy) <= def.far + 10;
+      w.map.known[i] = near ? 1 : 0;
+    });
+    for (let t = 0; t < 6 * DAY && !lines(w, 'land.beyond').length; t += 30) step(w, run, 30);
+    expect(lines(w, 'work.tookUpScoutingBeyond')).toHaveLength(1);
+    expect(lines(w, 'land.beyond')).toHaveLength(1);
   });
 
   it('a newcomer tells of what they passed on the road in', () => {

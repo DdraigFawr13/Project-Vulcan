@@ -88,7 +88,7 @@ export function lastFound(ctx: SystemContext): { tick: number; line: number } {
 /** The good a trip to see what lies beyond goes for. */
 export const BEYOND = 'beyond';
 
-/** Each hour: anyone far out may come on a curio, once a season. */
+/** Each hour: anyone far out may come on a curio, one a season for the whole colony (V-232). */
 export function curioHour(ctx: SystemContext): void {
   const { world, content } = ctx;
   if (world.tick % 60 !== 0) return;
@@ -96,12 +96,12 @@ export function curioHour(ctx: SystemContext): void {
   const clock = clockAt(world.tick, content.calendar);
   const season = clock.year * 100 + clock.season + 1;
   const state = (world.systems['curio'] ??= {});
+  if (state['season'] === season) return;
   for (const p of people(world)) {
     if (p['status'] !== 'alive' || p['z'] !== 0 || isDown(world, p.id)) continue;
-    if (state[`p${p.id}`] === season) continue;
     const { far, dir } = awayFrom(ctx, p);
     if (far <= def.far || streamFor(world, 'trips').int(def.per) !== 0) continue;
-    state[`p${p.id}`] = season;
+    state['season'] = season;
     // One of the least found so far.
     const counts = def.list.map((_, j) => state[`c${j}`] ?? 0);
     const least = Math.min(...counts);
@@ -114,6 +114,7 @@ export function curioHour(ctx: SystemContext): void {
       data: { name: p['name'] as string, what: curio.what, far, dir, curio: curio.id },
     });
     if (curio.memory) addMemory(ctx, p.id, curio.memory, line);
+    return;
   }
 }
 
