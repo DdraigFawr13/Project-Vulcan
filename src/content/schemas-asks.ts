@@ -1,7 +1,13 @@
 // Shape of Vulcan's asks file (src/content/data/asks.json, 6C Slice 3, V-225): what the colony is
 // asked for, by whom and by when.
-import { list, num, obj, oneOf, opt, str } from './schema';
+import { list, map, num, obj, oneOf, opt, str } from './schema';
 import { text } from './schema-fields';
+
+// What an ask wants: a tool kind or goods (item kinds or goods joined by `|`), a count or a share.
+const want = {
+  ...{ what: text, tool: opt(str()), good: opt(str()) },
+  ...{ count: opt(num({ min: 1 })), share: opt(num({ min: 1, max: 100 })), quality: opt(str()) },
+};
 
 export const ASKS_SCHEMAS = {
   asks: obj({
@@ -17,13 +23,20 @@ export const ASKS_SCHEMAS = {
       // The lord's ask by his temper: its words, either a tool kind the smith makes (`count` of
       // at least `quality`) or goods of an item kind or good (`count`, or `share` in 100 of the
       // store), due by his next visit or by midwinter.
-      asks: list(
-        obj({
-          ...{ temper: str(), what: text, tool: opt(str()), good: opt(str()) },
-          ...{ count: opt(num({ min: 1 })), share: opt(num({ min: 1, max: 100 })) },
-          ...{ quality: opt(str()), due: oneOf('visit', 'midwinter') },
-        }),
-      ),
+      asks: list(obj({ temper: str(), ...want, due: oneOf('visit', 'midwinter') })),
     }),
+    // A village's regard from `start`, moved by an ask done, passed or late; its asks are due in
+    // `days`; `comes` is who comes by the home road for one ({place}).
+    regard: obj({
+      ...{ start: num({ min: 0, max: 100 }), done: num(), passed: num(), late: num() },
+      ...{ days: num({ min: 1 }), comes: text },
+      words: obj({ done: text, passed: text, late: text }),
+    }),
+    // A village's ask by the trouble its stranger carries.
+    village: map(obj(want)),
+    // The gift sent back for an ask done, by the village's kind (`else` for the rest).
+    gifts: map(obj({ kind: str(), count: num({ min: 1 }) })),
+    // The shrine's yearly ask by its faith's first sacred tag; the faithful's memories.
+    shrine: obj({ done: str(), passed: str(), asks: map(obj(want)) }),
   }),
 } as const;

@@ -88,7 +88,7 @@ export function lastFound(ctx: SystemContext): { tick: number; line: number } {
 /** The good a trip to see what lies beyond goes for. */
 export const BEYOND = 'beyond';
 
-/** Each hour: anyone far out may come on a curio, one a season for the whole colony (V-233). */
+/** Each hour: anyone far out may come on a curio, one a season for the whole colony (V-234). */
 export function curioHour(ctx: SystemContext): void {
   const { world, content } = ctx;
   if (world.tick % 60 !== 0) return;

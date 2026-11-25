@@ -94,7 +94,7 @@ function likely(ctx: SystemContext, def: Good, x: number, y: number): number {
  * tiles past it, where they can stand. */
 function frontier(ctx: SystemContext, p: EntityRow, need: Need): Spot | undefined {
   const map = ctx.world.map;
-  // A trip to see what lies beyond makes for the nearest unknown edge however far (V-233): once
+  // A trip to see what lies beyond makes for the nearest unknown edge however far (V-234): once
   // the land within `far` is all seen, it is the only trip that still finds the unseen.
   const far =
     need.def.good === BEYOND ? Math.max(map.width, map.height) : ctx.content.work.scout.far;
@@ -217,7 +217,7 @@ export function takeUpScouting(ctx: SystemContext, p: EntityRow): boolean {
 
 /** Out for `need`: a prospector is the best miner free (V-215); other trips, the restless and
  * hardy first. A want nobody can go out for (no face they can get to, no unseen land within
- * `far`) leaves the season's scout free to go (V-233). */
+ * `far`) leaves the season's scout free to go (V-234). */
 function goFor(ctx: SystemContext, p: EntityRow, need: Need): boolean {
   if (need.ore ? betterMiner(ctx, p) : others(ctx, p)) return false;
   if (goOut(ctx, p, need)) return true;

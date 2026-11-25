@@ -79,7 +79,7 @@ Mock-up: Engine, answered 2026-11-23 (every ★, V-215). Done when: no stain lay
 
 ### 6W balance and review
 
-The `balance-check` skill over five years on four seeds, then the `phase-review` skill. Done when: on every seed, colonists have seen at least a third of the valley by year 3 (the walked share stays in the balance table as a number to watch; changed by the 6W review, V-233), and at least one seed's colony struggles for want of something it has not yet found, with its line (failure is fine; the colonies should differ).
+The `balance-check` skill over five years on four seeds, then the `phase-review` skill. Done when: on every seed, colonists have seen at least a third of the valley by year 3 (the walked share stays in the balance table as a number to watch; changed by the 6W review, V-234), and at least one seed's colony struggles for want of something it has not yet found, with its line (failure is fine; the colonies should differ).
 
 ## Phase done (playtest)
 

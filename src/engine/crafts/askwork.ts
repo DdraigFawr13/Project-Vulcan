@@ -82,11 +82,17 @@ function takeUpAskSmith(ctx: SystemContext, p: EntityRow, a: EntityRow): boolean
   return smithing(ctx, p);
 }
 
+/** A village's ask is its own people's first: whether one from there, other than `p`, is free. */
+const ownFirst = (ctx: SystemContext, p: EntityRow, a: EntityRow): boolean =>
+  a['source'] === 'neighbour' &&
+  p['home'] !== a['of'] &&
+  people(ctx.world).some((q) => q.id !== p.id && q['home'] === a['of'] && freeNow(ctx, q));
+
 /** The `ask` row of the job table: the taken-up asks in priority order, carrying what fits
  * first, else making it. */
 export function takeUpAsk(ctx: SystemContext, p: EntityRow): boolean {
   for (const a of takenAsks(ctx.world)) {
-    if (!willWork(ctx, p, a)) continue;
+    if (!willWork(ctx, p, a) || ownFirst(ctx, p, a)) continue;
     if (takeUpAskHaul(ctx, p, a)) return true;
     if (a['tool'] && takeUpAskSmith(ctx, p, a)) return true;
   }

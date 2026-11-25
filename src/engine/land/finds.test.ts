@@ -1,5 +1,5 @@
 // 6W Slice 5 part 2 (V-206): finds laid on the map and found by whoever sees them, each a line
-// and a tale; curios far out, one a season for the colony (V-233); a scout to see what lies beyond when nothing
+// and a tale; curios far out, one a season for the colony (V-234); a scout to see what lies beyond when nothing
 // new has been found; a newcomer's word that steers the next scout for that good.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';

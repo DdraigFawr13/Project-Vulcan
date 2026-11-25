@@ -2,12 +2,10 @@
 // priority of 1 to 4 (or moves a taken one), `passAsk {ask}` lets it pass. Both answer as the
 // colony and name nobody; both work while paused, as every lever does.
 import type { SystemContext } from '../sim/index.ts';
+import { liveAsks } from '../goods/index.ts';
 import { giveBack } from './asks.ts';
 
-const live = (ctx: SystemContext, id: unknown) =>
-  (ctx.world.entities['ask'] ?? []).find(
-    (a) => a.id === id && ['open', 'taken', 'passed'].includes(a['state'] as string),
-  );
+const live = (ctx: SystemContext, id: unknown) => liveAsks(ctx.world).find((a) => a.id === id);
 
 const refuse = (ctx: SystemContext, kind: string, reason: string, cause: number) =>
   ctx.emit('command.refused', { causes: [cause], data: { kind, reason } });
