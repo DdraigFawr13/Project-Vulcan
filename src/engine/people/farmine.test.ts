@@ -9,6 +9,7 @@ import { createSim, createWorld } from '../index.ts';
 import { afield } from './afield.ts';
 import { takeBite } from './bite.ts';
 import { itemsOf } from '../goods/index.ts';
+import { greenOf } from '../build/index.ts';
 
 const sim = createSim(content);
 const pack = content.work.mine.pack;
@@ -42,7 +43,9 @@ describe('far mining (V-231)', () => {
     const { world, ctx, p } = setUp();
     p['path'] = Array.from({ length: pack + 1 }, () => 0);
     setOut(ctx, p);
-    p['path'] = [];
+    // Out at the work, far from the green.
+    const g = greenOf(world);
+    Object.assign(p, { x: g.x + content.work.scout.home + 5, y: g.y, z: 0, path: [] });
     needOf(world, p.id, 'food')!['value'] = 1000;
     expect(afield(ctx, p, false)).toBe(true);
     expect(needOf(world, p.id, 'food')!['value']).toBeGreaterThan(1000);
@@ -55,5 +58,17 @@ describe('far mining (V-231)', () => {
     p['eatWalk'] = content.life.bite.far + 1;
     takeBite(ctx, p, stack, 0);
     expect(food(world, p)).toBeGreaterThan(0);
+  });
+
+  it('lives as at home standing at home, and is on the trip walking out from there', () => {
+    const { world, ctx, p } = setUp();
+    const g = greenOf(world);
+    Object.assign(p, { x: g.x, y: g.y, z: 0 });
+    p['path'] = Array.from({ length: pack + 1 }, () => 0);
+    setOut(ctx, p);
+    afield(ctx, p, false);
+    expect(p['packed']).toBe(1);
+    Object.assign(p, { x: g.x, y: g.y, z: 0, path: [] });
+    expect(afield(ctx, p, false)).toBe(false);
   });
 });

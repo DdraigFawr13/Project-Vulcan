@@ -12,14 +12,18 @@ import { isDark } from '../lamp/index.ts';
 import { drinking } from './drink.ts';
 import { working } from './jobs.ts';
 
-/** Whether `p` is on a trip with their pack: a scout, or a miner gone to a far shaft (V-227).
- * Anyone else packed puts the pack down once home. */
+/** Whether `p` is on a trip with their pack: a scout, or a miner gone to far work (V-227,
+ * V-231) unless standing still at home, where they keep the pack but live as at home. Anyone
+ * else packed puts the pack down once home. */
 function onTrip(ctx: SystemContext, p: EntityRow): boolean {
   const { world, content } = ctx;
-  if (p['job'] === content.work.scout.job || p['job'] === content.work.mine.job) return true;
+  if (p['job'] === content.work.scout.job) return true;
   const g = greenOf(world);
   const near = Math.max(Math.abs((p['x'] as number) - g.x), Math.abs((p['y'] as number) - g.y));
-  if (near <= content.work.scout.home && p['z'] === 0) unpack(ctx, p);
+  const home = near <= content.work.scout.home && p['z'] === 0;
+  const still = !(p['path'] as number[]).length;
+  if (p['job'] === content.work.mine.job) return !(home && still);
+  if (home) unpack(ctx, p);
   return false;
 }
 

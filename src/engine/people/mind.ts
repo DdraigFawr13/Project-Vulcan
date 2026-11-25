@@ -173,6 +173,7 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
       takeBite(ctx, p, item, day.workTo - hour);
     }
     p['doing'] = '';
+    p['eatWalk'] = 0;
   }
   // A tamer sits far from the store, so goes back sooner (flock.json `tame.back`, herdtask.ts).
   const taming = p['job'] === content.flock.job && p['task'] === 'tame';

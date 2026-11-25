@@ -63,9 +63,11 @@ describe('the mill and harvest home', () => {
     expect(feasts[0]!.data['where']).toBe(
       hallAtFeast ? 'in the hall' : 'round the fire on the green',
     );
-    // Everyone at home: someone out on a trip with a pack (V-206) camps where night finds them.
+    // Everyone but a scout out on a trip, who camps where night finds them (V-206).
+    const scout = (p: { [k: string]: unknown }) =>
+      p['packed'] && p['job'] === content.work.scout.job;
     const home = (world.entities['person'] ?? []).filter(
-      (p) => p['status'] === 'alive' && !p['packed'],
+      (p) => p['status'] === 'alive' && !scout(p),
     );
     expect(home.length).toBeGreaterThan(1);
     for (const p of home) expect(feasts[0]!.actors).toContain(p.id);
