@@ -13,16 +13,39 @@
 .strip {
   flex: 1 0 100%;
   display: flex;
-  gap: 4px;
+  gap: 2px;
+  min-width: 0; /* else the faces' full row sets the strip's least width */
   max-width: 480px;
 }
-#hud button.pslot {
+/* A large colony's faces scroll sideways rather than squeezing each to a sliver and its name to a
+   letter (Morgan, 2026-11-23, 17 colonists). The padding, taken back by the margin, keeps the
+   hurt badge and the ember ring inside the scroll box. */
+.facerow {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  touch-action: pan-x;
+  padding-top: 4px;
+  margin-top: -4px;
+}
+.facerow::-webkit-scrollbar {
+  display: none;
+}
+/* More faces past the edge: the last one fades out, so the row reads as one that scrolls. */
+.facerow.more {
+  mask-image: linear-gradient(to right, var(--ink) calc(100% - 32px), transparent);
+}
+#hud button.pslot {
+  flex: 1 0 var(--slot-w);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  min-width: 0;
+  min-width: var(--slot-w);
   min-height: var(--tap);
   padding: 0;
   border: 0;
@@ -544,6 +567,7 @@ table.grid th small {
   flex: 0 0 auto;
   align-self: flex-start;
   height: var(--tap);
+  padding: 0 2px;
 }
 
 /* Memories and thoughts (P6.2, V-154): the Thinking line under Doing now, in the reading face;
