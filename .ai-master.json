@@ -1,5 +1,5 @@
 {
-  "version": "v5.1.0",
+  "version": "v5.2.0",
   "layers": ["core", "stacks/node-web", "project-types/game"],
   "overrides": [
     {
