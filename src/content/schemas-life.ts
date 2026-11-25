@@ -72,11 +72,12 @@ export const LIFE_SCHEMAS = {
     relax: obj({ from: count, gain: count, company: count, reach: count }),
     // Food each item gives when one is eaten.
     eat: map(count, 'items'),
-    // Foods eaten only when a person is under the food warning line and no other can be reached
-    // (P4.7: seed grain).
+    // Eaten only under the food warning line with no other food in reach (P4.7: seed grain).
     lastResort: list(ref('items')),
     // They eat it only with Food at or under `seedAt`.
     seedAt: count,
+    // A bite taken along after a walk of over `far` steps to eat, at most `most` (V-230).
+    bite: obj({ far: count, most: num({ min: 1 }) }),
     // Mood words, highest first: the first whose `at` the mood reaches.
     mood: list(obj({ word: text, at: count })),
     // The band's handcart and what it carries; each person also brings a `bedroll`.

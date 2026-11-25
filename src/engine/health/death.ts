@@ -66,6 +66,18 @@ function kinGrief(content: SystemContext['content'], p: EntityRow, q: EntityRow)
   return '';
 }
 
+/** A pocketed stash (P6.7) and food in a pack (a bite taken along, V-230; a trip's, V-206) are
+ * dropped where they fall, food for whoever finds it (6A review). */
+function dropCarried(ctx: SystemContext, p: EntityRow): void {
+  const at = { holder: 0, owner: 0, state: '', x: p['x'], y: p['y'], z: p['z'] };
+  for (const i of itemsOf(ctx.world)) {
+    const stash = i['holder'] === p.id && i['state'] === 'hid';
+    const pack =
+      i['owner'] === p.id && i['state'] === 'pack' && ctx.content.life.eat[i['kind'] as string];
+    if (stash || pack) Object.assign(i, at);
+  }
+}
+
 /** `p` dies of `cause` (a sentence), citing `causes`. */
 export function die(ctx: SystemContext, p: EntityRow, cause: string, causes: number[]): number {
   const { world, content } = ctx;
@@ -78,10 +90,7 @@ export function die(ctx: SystemContext, p: EntityRow, cause: string, causes: num
     data: { name: p['name'] as string, where, cause },
   });
   stopFor(ctx, p, false);
-  // A pocketed stash (P6.7) is dropped where they fall, food for whoever finds it (6A review).
-  for (const i of itemsOf(world))
-    if (i['holder'] === p.id && i['state'] === 'hid')
-      Object.assign(i, { holder: 0, owner: 0, state: '', x: p['x'], y: p['y'], z: p['z'] });
+  dropCarried(ctx, p);
   const away = p['status'] === 'away' ? 1 : 0;
   Object.assign(p, { status: 'dead', doing: '', path: [], stride: 0 });
   Object.assign(body, {

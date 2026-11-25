@@ -20,6 +20,7 @@ import { toolsDaily, WALK_FIELDS } from '../band/index.ts';
 import { FORAGE_TABLES, findsMinute, regrowWoods, tripHour } from '../land/index.ts';
 import { JOB_FIELDS } from './jobfields.ts';
 import { DRINK_FIELDS } from './drink.ts';
+import { BITE_FIELDS } from './bite.ts';
 import { hourNow, MIND_FIELDS, think } from './mind.ts';
 import { markUsed } from '../crafts/index.ts';
 import { risk, apartHour, careMinute } from '../care/index.ts';
@@ -54,6 +55,7 @@ export const PEOPLE_TABLES: Schemas = {
     ...WALK_FIELDS,
     ...MIND_FIELDS,
     ...DRINK_FIELDS,
+    ...BITE_FIELDS,
     ...JOB_FIELDS,
   },
   /** `xp`: minutes practised towards the next level (P2.5, learn.ts). */

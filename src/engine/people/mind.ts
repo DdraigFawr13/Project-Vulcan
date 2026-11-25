@@ -30,7 +30,8 @@ import { trying } from '../discover/index.ts';
 import { reading, scribing } from '../teach/index.ts';
 import { lateUntil, watching } from '../herding/index.ts';
 import { pilfer } from '../defy/index.ts';
-import { departing, eatStash, extraWork, inStocks, raiding, slacking } from './defy.ts';
+import { eatCarried, takeBite } from './bite.ts';
+import { departing, extraWork, inStocks, raiding, slacking } from './defy.ts';
 
 export const MIND_FIELDS = {
   /** `eat`, `drink` (drink.ts), `sleep`, `moveBed` (home.ts), `work` (jobs.ts), `warm` (warm.ts), `hurt` (lying
@@ -168,6 +169,8 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
       eat(ctx, p, item);
       // At the ladder's `take` step they pocket more from the store (P6.7).
       pilfer(ctx, p, item);
+      // A long walk from work, they take some along for the rest of the day (V-230).
+      takeBite(ctx, p, item, day.workTo - hour);
     }
     p['doing'] = '';
   }
@@ -177,11 +180,13 @@ export function think(ctx: SystemContext, p: EntityRow, hour: number): void {
   // Keeping the Rations law (P6.5), they eat no more once today's share is eaten.
   const held = rationed(world, content, p);
   // A stash pocketed from the store is eaten first, where they stand (P6.7).
-  if (valueOf(ctx, p, 'food') < seek && !held && eatStash(ctx, p)) return;
+  // So is food in the pack, taken along from the store (V-230).
+  if (valueOf(ctx, p, 'food') < seek && !held && eatCarried(ctx, p)) return;
   if (valueOf(ctx, p, 'food') < seek && !held && world.tick >= (p['retry'] as number)) {
     // Seed grain only when under the warning line with nothing else to reach (P4.7).
     if (goEat(ctx, p, false) || (valueOf(ctx, p, 'food') <= life.seedAt && goEat(ctx, p, true))) {
       p['doing'] = 'eat';
+      p['eatWalk'] = (p['path'] as number[]).length;
       return;
     }
     p['retry'] = world.tick + RETRY;
