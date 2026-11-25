@@ -50,6 +50,7 @@ import tools from './data/tools.json';
 import tavern from './data/tavern.json';
 import lord from './data/lord.json';
 import methods from './data/methods.json';
+import asks from './data/asks.json';
 import traits from './data/traits.json';
 import weather from './data/weather.json';
 import wild from './data/wild.json';
@@ -117,6 +118,7 @@ export const rawContent: Readonly<Record<ContentFile, unknown>> = {
   tavern,
   lord,
   methods,
+  asks,
   weather,
   wild,
   work,

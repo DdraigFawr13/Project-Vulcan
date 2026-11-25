@@ -19,3 +19,4 @@ export { TRADE_JOBS, takeUpChange } from './trades.ts';
 export { takeUpThatching, thatching } from './thatch.ts';
 export { masonry, takeUpMasonry } from './mason.ts';
 export { limeBurning, takeUpLime } from './lime.ts';
+export { askLevel, takeUpAsk } from './askwork.ts';

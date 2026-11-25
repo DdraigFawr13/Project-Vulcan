@@ -11,6 +11,7 @@ import { takeUpChandling, takeUpCharcoal, takeUpCooking, takeUpHearth } from '..
 import { takeUpSmelting, takeUpSmithing, takeUpStation, takeUpTending } from '../crafts/index.ts';
 import { takeUpThatching, tending, thatching, TRADE_JOBS } from '../crafts/index.ts';
 import { limeBurning, masonry, takeUpLime, takeUpMasonry } from '../crafts/index.ts';
+import { takeUpAsk } from '../crafts/index.ts';
 import { burying, takeUpBurial, takeUpNursing } from '../care/index.ts';
 import { farming, foraging, gatherMinute, mining, takeUpFarming } from '../land/index.ts';
 import { takeUpForaging, takeUpGathering, takeUpMarked, takeUpMining } from '../land/index.ts';
@@ -85,6 +86,9 @@ export const JOBS: Readonly<Record<string, JobRow>> = {
   // The schoolroom (V-189 q7): the teacher at lessons, and a child at them (teach `school.ts`).
   teach: { work: teaching },
   lesson: { work: atLessons },
+  // 6C Slice 3 (V-225): a taken-up ask, at the colony's priority for it (jobs.ts `kindsFor`); its
+  // work goes on as carrying or smithing.
+  ask: { takeUp: takeUpAsk },
   ...LARDER_JOBS,
   ...MILL_JOBS,
   ...TRADE_JOBS,

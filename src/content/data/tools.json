@@ -12,7 +12,8 @@
 {"id":"sickle","name":"sickle","serves":["reap","thatch"],"ingots":1,"charcoal":1,"minutes":90,"cart":1},
 {"id":"chisel","name":"chisel","serves":["dress"],"needed":["dress"],"stops":"dressing stone","ingots":1,"charcoal":1,"minutes":90,"cart":1},
 {"id":"line","name":"fishing line","serves":["fish"],"ingots":1,"charcoal":1,"minutes":60,"cart":1},
-{"id":"saw","name":"saw","serves":["carpentry"],"ingots":2,"charcoal":1,"minutes":180,"cart":1}],
+{"id":"saw","name":"saw","serves":["carpentry"],"ingots":2,"charcoal":1,"minutes":180,"cart":1},
+{"id":"blade","name":"blade","serves":[],"ingots":2,"charcoal":1,"minutes":240,"cart":0}],
 "materials":[
 {"id":"stone","name":"stone","speed":100,"life":1800},
 {"id":"bronze","name":"bronze","speed":130,"life":12000,"ingot":"bronze-ingot"},

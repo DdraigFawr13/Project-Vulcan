@@ -82,6 +82,7 @@ export function addPerson(
     ...{ job: '', target: -1, work: 0, took: 0, next: 0, plan: 0, make: '' },
     ...{
       making: '',
+      ask: 0,
       fine: 0,
       fineMeal: 0,
       lit: 0,

@@ -8,6 +8,7 @@ export { cooked, eat } from './eat.ts';
 export { edgeSpot, toGreen } from './edge.ts';
 export { fetchKind, reachableOf, useHeld } from './fetch.ts';
 export { LOOK_AGAIN, deliver, haulMinute, takeUpHauling } from './haul.ts';
+export { askItem, takeUpAskHaul } from './askhaul.ts';
 export {
   capOf,
   gain,

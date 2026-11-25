@@ -10,6 +10,7 @@ import type { System, SystemContext } from '../sim/index.ts';
 import { reeveMinute, sendReeve, soughtOf } from './reeve.ts';
 import { LORD_TABLES, lordRow, reeveRow, titleOf } from './tables.ts';
 import { setDue } from './tithe.ts';
+import { lordAsksDue } from './asks.ts';
 
 /** The first harvest-home supper called after feast `done` (a supper with no couple and no feast
  * day), eaten or not (V-220): the reeve comes for the harvest, not the supper. */
@@ -43,7 +44,7 @@ function copyLord(ctx: SystemContext, lord: Lord): void {
     ...{ line: lord.temperLine, byname: lord.byname, realm: lord.realm, kind: lord.kind },
     ...{ title: titleOf(content, lord.kind, lord.sex), home: lord.home, culture: lord.culture },
     ...{ dir: lord.dir, reeve: reeveName(ctx, names, lord.name), named: 0 },
-    ...{ steps: [], fine: 0, free: 0, granted: 0, fx: -1, fy: -1 },
+    ...{ steps: [], fine: 0, free: 0, granted: 0, fx: -1, fy: -1, visits: 0 },
   });
 }
 
@@ -82,12 +83,16 @@ export const lordSystem: System = {
   emits: [
     ...['lord.reeveCame', 'lord.named', 'lord.counted', 'lord.reeveLeft', 'lord.tithed'],
     ...['lord.barned', 'lord.carried', 'lord.searched', 'lord.found', 'lord.favour'],
-    ...['lord.step', 'lord.men', 'lord.told', 'health.hurt'],
+    ...['lord.step', 'lord.men', 'lord.told', 'health.hurt', 'lord.asked'],
+    ...['ask.done', 'ask.late', 'ask.passed', 'ask.unanswered'],
   ],
   initialState: { done: 0, none: 0 },
   tables: LORD_TABLES,
   run(ctx) {
-    if (ctx.world.tick % TICKS_PER_HOUR === 0) setDue(ctx);
+    if (ctx.world.tick % TICKS_PER_HOUR === 0) {
+      setDue(ctx);
+      lordAsksDue(ctx);
+    }
     const r = reeveRow(ctx.world);
     if (r) reeveMinute(ctx, r);
     else if (!ctx.state['none']) maybeSend(ctx);
