@@ -13,7 +13,7 @@ A short phase after 6W and before magic (Phase 7): a liege lord who takes a tith
 - [x] Slice 5, hints and breakthroughs (engine). Mock-up answered 2026-11-23, every recommendation (V-218, https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u); parts 1 to 3 (ways, hints, finds, mishaps, New Ways, spreading, loss, knowers' work) built 2026-11-23 (V-219)
 - [x] Slice 6, discoveries on screen (screens). Mock-up answered 2026-11-23, every recommendation (V-221, https://claude.ai/artifact/GRvQNoFM1D1viLSPMnoaif); built 2026-11-23 (V-223)
 - [x] Slice 7, the lord comes, petitions, wandering masters, contests, the charter (engine and screens). Mock-up answered 2026-11-26, every recommendation (V-236, https://claude.ai/artifact/Y4AuimHtSHHBfxgDuDiqTt); built in four parts: masters (V-239), the lord's visit (V-240), contests (V-241), the charter (V-242)
-- [ ] 6C balance and review: reviewed 2026-11-26, 5 bugs fixed (#235); balance on Morgan's form
+- [x] 6C balance and review: reviewed 2026-11-26, 5 bugs fixed (#235); Morgan's review form answered 2026-11-26, every recommendation (V-243, https://claude.ai/artifact/KjeRMHQAtcP3ydNMaRjgNo); answers built 2026-11-26 (late asks cost less than passing, plea gate 50, the learned lord's book from the shelf, byname on any three wins). Idle time carried to 6D
 
 ## The rule all of this keeps (V-041)
 
@@ -84,3 +84,5 @@ Mock-up: Engine and UI. Done when: a lord's visit with its feast moves favour wi
 ### 6C balance and review
 
 Ten years on anvil, smoke, tallow and ledger-1: favour paths, tithes, asks, breakthroughs. Balance aims for divergent, story-rich runs; a colony crushed by its lord is a story (design north star, 2026-11-20). Then the `phase-review` skill.
+
+Balance valleys (V-243): anvil/1, smoke/2, tallow/1 and ledger/1 (all bold lords), plus crow/1 (learned) and glen/1 (cruel); the synced `balance-check` skill names only the first, so later phases take this list from here.
