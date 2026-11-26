@@ -92,6 +92,22 @@ describe("the lord's asks", () => {
     visit(w, sim);
     expect(lines(w, 'ask.passed').filter((e) => e.causes.includes(letPass!.id))).toHaveLength(1);
   });
+
+  it('counts an ask given at a visit before the ladder is climbed (6C review)', () => {
+    const sim = createSim(content);
+    const w = createWorld(sim, 'smoke/1');
+    step(w, sim, TICKS_PER_HOUR);
+    visit(w, sim);
+    visit(w, sim);
+    const ask = asks(w).find((a) => a['source'] === 'lord')!;
+    Object.assign(ask, { state: 'taken', level: 1, got: ask['count'], held: '' });
+    addEntity(w, 'favour', { cause: 'test', by: 30, text: 'test', line: 0, until: 1e9 });
+    visit(w, sim);
+    const given = lines(w, 'lord.favour').find((e) => e.data['cause'] === 'askDone')!;
+    const stepped = lines(w, 'lord.step');
+    expect(stepped.length).toBeGreaterThan(0);
+    expect(stepped.every((e) => e.id > given.id)).toBe(true);
+  });
 });
 
 /** A plain-seed world with a standing forge beside the cart, bronze and charcoal in the store, an
