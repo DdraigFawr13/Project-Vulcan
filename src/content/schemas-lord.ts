@@ -70,5 +70,34 @@ export const LORD_SCHEMAS = {
     // The lord's forest: the find of kind `place` farthest from the green, and every tile within
     // `reach` of it.
     forest: obj({ place: str(), reach: num({ min: 1 }) }),
+    // 6C Slice 7 part 2 (V-236, V-240): the lord comes himself every `every`th harvest home with
+    // `men` of his men, for the supper. `table` by Feasts law setting: the portions over one each
+    // laid for every eater (his party eats one more) and cups of ale each where a cask is ready;
+    // favour cause `table-<setting>`. `pleases` by temper: what he looks for (contest, table,
+    // rite, book, store) and the words when it is there or not (causes `pleased`, `displeased`).
+    // `hothead`: in 100 per point of grievance (`reasons`), at most `most`, one may speak out
+    // (`says`, drawn); everyone there keeps `memory`; a `beat` lord has them beaten. `petition`:
+    // in a lean year, at most once in `every` years; the tempers that forgive the tithe whole, those
+    // that halve it from `favour`, the rest refuse (cause `plea`); the memories of the answer.
+    visit: obj({
+      every: num({ min: 1 }),
+      men: num({ min: 0 }),
+      table: map(obj({ extra: num({ min: 0 }), ale: num({ min: 0 }) })),
+      pleases: map(obj({ wants: str(), yes: text, no: text })),
+      hothead: obj({
+        odds: num({ min: 0, max: 100 }),
+        most: num({ min: 0, max: 100 }),
+        reasons: map(num({ min: 0 })),
+        says: list(text),
+        memory: ref('memories'),
+        beat: list(str()),
+      }),
+      petition: obj({
+        every: num({ min: 1 }),
+        whole: list(str()),
+        half: obj({ tempers: list(str()), favour: num({ min: 0, max: 100 }) }),
+        memories: obj({ heard: ref('memories'), refused: ref('memories') }),
+      }),
+    }),
   }),
 };

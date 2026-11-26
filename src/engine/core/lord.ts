@@ -30,6 +30,35 @@ export interface LordDef {
   favour: FavourDef;
   /** The lord's forest: the find of kind `place` farthest from the green, `reach` tiles round. */
   forest: { place: string; reach: number };
+  /** The lord's own visit (6C Slice 7 part 2, V-236, V-240). */
+  visit: VisitDef;
+}
+
+export interface VisitDef {
+  /** He comes himself every `every`th harvest home, with `men` of his men. */
+  every: number;
+  men: number;
+  /** By Feasts law setting: portions over one each, and cups of ale each where a cask is ready. */
+  table: Readonly<Record<string, { extra: number; ale: number }>>;
+  /** By temper: what pleases him (contest, table, rite, book, store) and the words for it. */
+  pleases: Readonly<Record<string, { wants: string; yes: string; no: string }>>;
+  hothead: {
+    /** In 100 per point of grievance, at most `most`. */
+    odds: number;
+    most: number;
+    /** Points for each grievance: stash, will, lean, bitter. */
+    reasons: Readonly<Record<string, number>>;
+    says: readonly string[];
+    memory: string;
+    /** Tempers that have the speaker beaten. */
+    beat: readonly string[];
+  };
+  petition: {
+    every: number;
+    whole: readonly string[];
+    half: { tempers: readonly string[]; favour: number };
+    memories: { heard: string; refused: string };
+  };
 }
 
 export interface FavourStep {

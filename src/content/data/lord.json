@@ -24,7 +24,14 @@
     "told": {"by": -4, "text": "poaching in the lord's forest told to the reeve"},
     "askDone": {"by": 6, "text": "{what} given as he asked"},
     "askPassed": {"by": -4, "text": "his ask for {what} let pass"},
-    "askLate": {"by": -6, "text": "his ask for {what} taken up and not ready"}
+    "askLate": {"by": -6, "text": "his ask for {what} taken up and not ready"},
+    "table-few": {"by": -2, "text": "a plain table at his harvest-home supper"},
+    "table-customary": {"by": 1, "text": "a good table at his harvest-home supper"},
+    "table-many": {"by": 2, "text": "a grand feast at his harvest-home supper"},
+    "pleased": {"by": 4, "text": "{what}"},
+    "displeased": {"by": -4, "text": "{what}"},
+    "hothead": {"by": -4, "text": "{name} spoke against him at his table"},
+    "plea": {"by": -2, "text": "the elder pleaded against his tithe in a lean year"}
   },
   "ladder": [
     {"id": "raised", "below": 35, "text": "the tithe is raised by half", "by": 50},
@@ -35,5 +42,34 @@
   ],
   "men": {"kinds": ["break", "cut"], "parts": ["head", "body", "left-arm", "right-arm"], "severity": "light", "what": "was beaten by the lord's men"}
 },
-"forest": {"place": "wood", "reach": 12}
+"forest": {"place": "wood", "reach": 12},
+"visit": {
+  "every": 3, "men": 4,
+  "table": {
+    "few": {"extra": 0, "ale": 0},
+    "customary": {"extra": 1, "ale": 1},
+    "many": {"extra": 3, "ale": 2}
+  },
+  "pleases": {
+    "bold": {"wants": "contest", "yes": "a fair contest at his supper", "no": "no contest worth his watching at his supper"},
+    "greedy": {"wants": "table", "yes": "a full table laid for him", "no": "a table laid too thin for him"},
+    "pious": {"wants": "rite", "yes": "a shrine standing in the valley for the rite", "no": "no shrine in the valley for the rite"},
+    "learned": {"wants": "book", "yes": "a book on the valley's shelf to show him", "no": "not one book in the valley to show him"},
+    "cautious": {"wants": "store", "yes": "a full store for the winter", "no": "a store too thin for the winter"},
+    "cruel": {"wants": "store", "yes": "a full store for the winter", "no": "a store too thin for the winter"}
+  },
+  "hothead": {
+    "odds": 20, "most": 80,
+    "reasons": {"stash": 3, "will": 2, "lean": 1, "bitter": 1},
+    "says": ["called the tithe theft across the table", "asked aloud what the lord had ever sown in this valley", "would not drink to the lord, and said why"],
+    "memory": "hothead-spoke",
+    "beat": ["cruel"]
+  },
+  "petition": {
+    "every": 3,
+    "whole": ["cautious", "pious", "learned"],
+    "half": {"tempers": ["bold", "greedy"], "favour": 60},
+    "memories": {"heard": "plea-heard", "refused": "plea-refused"}
+  }
+}
 }

@@ -7,7 +7,8 @@ import { addEntity, people } from '../entity/index.ts';
 import { edgeSpot, nameFrom } from '../band/index.ts';
 import { lordOf, namesOf, type Lord } from '../region/index.ts';
 import type { System, SystemContext } from '../sim/index.ts';
-import { reeveMinute, sendReeve, soughtOf } from './reeve.ts';
+import { hallSpot, reeveMinute, sendReeve, soughtOf } from './reeve.ts';
+import { lordComes } from './visit.ts';
 import { LORD_TABLES, lordRow, reeveRow, titleOf } from './tables.ts';
 import { setDue } from './tithe.ts';
 import { lordAsksDue } from './asks.ts';
@@ -85,6 +86,7 @@ export const lordSystem: System = {
     ...['lord.barned', 'lord.carried', 'lord.searched', 'lord.found', 'lord.favour'],
     ...['lord.step', 'lord.men', 'lord.told', 'health.hurt', 'lord.asked'],
     ...['ask.done', 'ask.late', 'ask.passed', 'ask.unanswered'],
+    ...['lord.came', 'lord.supper', 'lord.hothead', 'lord.beaten', 'lord.plea', 'lord.rodeOut'],
   ],
   initialState: { done: 0, none: 0 },
   tables: LORD_TABLES,
@@ -95,6 +97,14 @@ export const lordSystem: System = {
     }
     const r = reeveRow(ctx.world);
     if (r) reeveMinute(ctx, r);
-    else if (!ctx.state['none']) maybeSend(ctx);
+    else if (ctx.state['none']) return;
+    else if (
+      !lordComes(
+        ctx,
+        (c) => sendReeve(ctx, c, true),
+        () => hallSpot(ctx.world),
+      )
+    )
+      maybeSend(ctx);
   },
 };
