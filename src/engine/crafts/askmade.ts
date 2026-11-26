@@ -69,6 +69,8 @@ export function madeForAsk(
     maker: p.id,
   });
   a['made'] = ((a['made'] as number) || 0) + 1;
+  a['pieces'] = [...((a['pieces'] as number[] | undefined) ?? []), item.id];
+  a['tried'] = world.tick;
   const fits = fitsAsk(content, a, item);
   const line = ctx.emit('ask.made', {
     causes: [p['took'] as number, a['line'] as number].filter((l) => l > 0),

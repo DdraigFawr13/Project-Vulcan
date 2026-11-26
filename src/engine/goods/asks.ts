@@ -12,12 +12,13 @@ export const ASK_TABLES: Schemas = {
    * line it came from and its own, the tick it is due by (0: the lord's next visit), its state
    * (open, taken, passed, done, late), the colony's priority 1 to 4 and the line that set it, who
    * is on the way to carry some, the line that settled it, how many pieces were made for it, and
-   * whose it is among its kind (`of`: a village's name, a creed's row id). */
+   * whose it is among its kind (`of`: a village's name, a creed's row id), the pieces made for it
+   * (item ids, kept for it alone) and the tick of the last try at one. */
   ask: {
     ...{ source: 'text', asker: 'text', what: 'text', tool: 'text', good: 'text' },
     ...{ quality: 'text', count: 'count', got: 'count', held: 'text', cite: 'event' },
     ...{ line: 'event', due: 'int', state: 'text', level: 'count', answer: 'event' },
-    ...{ going: 'ints', settled: 'event', made: 'count', of: 'text' },
+    ...{ going: 'ints', settled: 'event', made: 'count', of: 'text', pieces: 'ints', tried: 'int' },
   },
 };
 
@@ -58,6 +59,13 @@ export function fitsAsk(content: EngineContent, a: EntityRow, i: EntityRow): boo
     .split('|')
     .some((g) => def.id === g || def.good === g);
 }
+
+/** Whether item `i` was made for a live ask other than `a` that still wants it: a piece made for
+ * the lord's blade is his, never the shrine's (6C Slice 4 build note). */
+export const madeForOther = (world: WorldState, a: EntityRow, i: EntityRow): boolean =>
+  takenAsks(world).some(
+    (b) => b.id !== a.id && ((b['pieces'] as number[] | undefined) ?? []).includes(i.id),
+  );
 
 /** What an ask holds in the barn, kind by kind. */
 export function heldOf(a: EntityRow): Map<string, number> {

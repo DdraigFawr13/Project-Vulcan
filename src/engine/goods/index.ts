@@ -84,6 +84,7 @@ export {
   asksOf,
   emptyAsk,
   fitsAsk,
+  madeForOther,
   heldOf,
   liveAsks,
   setApart,

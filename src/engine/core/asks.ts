@@ -22,6 +22,8 @@ export interface AsksDef {
   midwinter: { month: number; day: number };
   /** Minutes in 100 a grumbler at the Lord law takes over the lord's ask. */
   grumble: number;
+  /** Days between further tries at an ask's tool once `count` + 1 fell short. */
+  retry: number;
   lord: { double: readonly string[]; asks: readonly LordAskDef[] };
   /** A neighbouring village's regard, from `start`: what done, passed and late asks move it by;
    * a village's ask is due in `days`; `comes` names who comes for it; `words` say why it moved. */

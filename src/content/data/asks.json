@@ -2,6 +2,7 @@
 "from": 2,
 "midwinter": {"month": 10, "day": 15},
 "grumble": 125,
+"retry": 28,
 "lord": {
   "double": ["cruel"],
   "asks": [

@@ -17,6 +17,8 @@ export const ASKS_SCHEMAS = {
     midwinter: obj({ month: num({ min: 0, max: 11 }), day: num({ min: 1, max: 28 }) }),
     // Minutes in 100 a grumbler at the Lord law takes over the lord's ask.
     grumble: num({ min: 100 }),
+    // Days between further tries at an ask's tool once `count` + 1 tries fell short (V-238).
+    retry: num({ min: 1 }),
     lord: obj({
       // Tempers whose lord doubles what a passed or late ask costs.
       double: list(str()),
