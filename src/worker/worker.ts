@@ -1,5 +1,6 @@
 // The simulation worker: owns the one engine instance, runs it at the chosen speed and answers
 // the page. The only place the engine is instantiated (MODULE.md).
+import { asksView } from './asksview.ts';
 import { content, contentHash } from '../content/index.ts';
 import {
   applyDue,
@@ -42,6 +43,8 @@ import { peopleFeed, peopleOf, walkersOf } from './people.ts';
 import { withLying } from './places.ts';
 import { sunOf } from './lampview.ts';
 import { clockView, greenOf, weatherOf } from './views.ts';
+import { regionDetail } from './lordview.ts';
+import { reeveView, titheView } from './reeveview.ts';
 import { animalFeed, leftoversView } from './wild.ts';
 import { findFeed, knownFeed } from './finds.ts';
 
@@ -181,6 +184,7 @@ function snapshot(w: WorldState): void {
   }
   const chunks = changedChunks(w);
   const finds = findsSent.next(w);
+  const [reeve, tithe] = [reeveView(w), titheView(w)];
   post(
     {
       type: 'snapshot',
@@ -193,6 +197,7 @@ function snapshot(w: WorldState): void {
       landings: landingsOf(w.tick),
       day: { ...lawHours(w, content), ...sunOf(w.tick) },
       law: lawsOf(w),
+      asks: asksView(w, line),
       clock: clockView(w.tick),
       chunks,
       reached: w.map.levels.map((level) => level !== null),
@@ -202,7 +207,8 @@ function snapshot(w: WorldState): void {
       walkers: withLying(w, walkersOf(w)),
       ...(moved && { animals: moved }),
       ...(finds && { finds }),
-      leftovers: leftoversView(w),
+      ...(reeve && { reeve }),
+      leftovers: { ...leftoversView(w), ...(tithe && { tithe }) },
       goods: goodsOf(w),
       stock: stockView(w),
       mining: miningShown(w),
@@ -287,7 +293,7 @@ const CONTROLS: { [K in Control['type']]: (m: Extract<Control, { type: K }>) => 
     post({
       type: 'region',
       ...(at && { region: regionView(makeRegion(at.region, content, true)) }),
-      site: at?.site ?? 0,
+      ...{ site: at?.site ?? 0, ...regionDetail(world) },
     });
   },
   load(m) {

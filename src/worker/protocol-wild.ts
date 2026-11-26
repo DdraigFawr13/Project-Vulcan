@@ -2,6 +2,7 @@
 // map draws, the page an animal opens, and the leftovers the Stock sheet counts.
 import type { LedgerLine } from './protocol.ts';
 import type { FlockPlate } from './protocol-flock.ts';
+import type { TitheView } from './protocol-lord.ts';
 
 /** A live animal on the surface, sent when any of them moves (like the walkers, V-110). */
 export interface AnimalView {
@@ -35,4 +36,6 @@ export interface LeftoversView {
   fish: number;
   /** The tame flock and its hay, once a pasture stands (Bundle 3). */
   flock?: FlockPlate;
+  /** The tithe block at the top of Stock, once the lord is named (6C Slice 4). */
+  tithe?: TitheView;
 }

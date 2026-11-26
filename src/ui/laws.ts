@@ -6,6 +6,7 @@
 import type { AnswerView, LawView, RuledLawView, StrangersLawView } from '../worker/index.ts';
 import { dayStrip } from './daystrip.ts';
 import { el } from './dom.ts';
+import { lordRows } from './lordrows.ts';
 import { colonyRows } from './standingrows.ts';
 import { colonyWayRows } from './waysrows.ts';
 
@@ -245,7 +246,8 @@ export class LawSheet {
     ];
   }
 
-  /** Rations, Sickness and Punishment (P6.5): the custom asks nothing of anyone. The Feasts law
+  /** Rations, Sickness and Punishment (P6.5): the custom asks nothing of anyone. The Lord law (6C
+   * Slice 4) opens on who the lord is and his favour. The Feasts law
    * (6B) lists its feast days first, each with why it is kept and a why? to its asking; the New
    * Ways law (6C) ends with the ways the colony knows (V-221). */
   private ruled(view: RuledLawView): HTMLElement[] {
@@ -259,7 +261,8 @@ export class LawSheet {
       return row;
     });
     if (days.length) days.unshift(el('h4', {}, 'Feast days'));
-    return [...days, ...this.answersOf(view), ...colonyWayRows(view.ways)];
+    const lord = view.lord ? lordRows(view.lord) : [];
+    return [...lord, ...days, ...this.answersOf(view), ...colonyWayRows(view.ways)];
   }
 
   private answersOf(view: RuledLawView): HTMLElement[] {

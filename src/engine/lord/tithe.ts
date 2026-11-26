@@ -8,7 +8,7 @@
 // all; either way the colony's standing falls and every grown-up remembers it against the law.
 // One visit in `search` (a draw from the lord's stream) he searches the houses for goods hidden
 // from the barn.
-import { list, type EntityRow } from '../core/index.ts';
+import { list, type EngineContent, type EntityRow, type WorldState } from '../core/index.ts';
 import { alive, removeEntity } from '../entity/index.ts';
 import { builtHome, houseName } from '../build/index.ts';
 import { addCause } from '../colony/index.ts';
@@ -17,15 +17,18 @@ import { foodDays, hiddenOf, titheRows } from '../goods/index.ts';
 import { decree, settingOf, weigh } from '../law/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { addFavour, climb, favourFor, poachTold, shareOf } from './favour.ts';
+import { addFavour, climb, favourFor, poachTold, shareIn } from './favour.ts';
 import { lordName, lordRow } from './tables.ts';
 
 /** The lord's share in 100 of what is brought in: his temper's, as the favour ladder makes it
  * (raised, a fine owed, a free year). */
-export function rateOf(ctx: SystemContext): number {
-  const t = ctx.content.lord.tithe;
-  const plain = t.tempers[lordRow(ctx.world)?.['temper'] as string] ?? t.rate;
-  return Math.floor((plain * shareOf(ctx)) / 100);
+export const rateOf = (ctx: SystemContext): number => rateIn(ctx.world, ctx.content);
+
+/** `rateOf` for a read-only view. */
+export function rateIn(world: WorldState, content: EngineContent): number {
+  const t = content.lord.tithe;
+  const plain = t.tempers[lordRow(world)?.['temper'] as string] ?? t.rate;
+  return Math.floor((plain * shareIn(world, content)) / 100);
 }
 
 const itemWord = (ctx: SystemContext, kind: string): string =>
@@ -193,6 +196,10 @@ export function takeTithe(ctx: SystemContext, causes: number[], to: EntityRow): 
       took: goodsWords(ctx, took),
       ...{ owedN: sum(owed), thereN: sum(there), shortN, tookN: sum(took) },
     },
+  });
+  const short2 = shortN ? `, ${goodsWords(ctx, short)} short` : '';
+  Object.assign(lord, {
+    ...{ tithed: line, tookAt: world.tick, took: `${goodsWords(ctx, took)}${short2}` },
   });
   if (lean && sum(took) > 0) leanYear(ctx, line);
   const words = { owed: goodsWords(ctx, owed), there: goodsWords(ctx, there) };
