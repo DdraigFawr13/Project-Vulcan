@@ -23,6 +23,7 @@ export const discoverSystem: System = {
     'discover.resumed',
     'discover.mishap',
     'discover.learned',
+    'discover.brought',
     'discover.lost',
   ],
   initialState: { seen: 0, tales: 0 },

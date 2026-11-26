@@ -47,6 +47,10 @@ export const NEWCOMER_FIELDS = {
    * 1 once the family system has weighed whether they leave one. */
   left: 'event',
   weighed: 'int',
+  /** A wandering master (6C Slice 7, V-236): the noun of their kind ("mason"), '' for anyone
+   * else; and the way (methods.json id) they bring. */
+  master: 'text',
+  way: 'text',
 } as const;
 
 /** Adds `p` standing at (x, y) with `status`, their skills (smithing drawn apart) and traits. */
@@ -117,6 +121,8 @@ export function addPerson(
       fostered: 0,
       left: 0,
       weighed: 0,
+      master: '',
+      way: '',
       ...extra,
     },
   });

@@ -198,6 +198,21 @@ function loseUnfinished(ctx: SystemContext, book: EntityRow): void {
   });
 }
 
+/** A finished book brought from elsewhere (a wandering scholar's, 6C Slice 7, V-236), put on the
+ * schoolroom shelf on `line`; false when no shelf stands to keep it. */
+export function shelveBook(
+  ctx: SystemContext,
+  master: EntityRow,
+  book: { skill: string; level: number; line: number },
+): boolean {
+  if (!shelved(ctx)) return false;
+  addEntity(ctx.world, 'book', {
+    ...{ master: master.id, skill: book.skill, level: book.level, scribe: master.id },
+    ...{ state: 'kept', minutes: 0, begun: book.line, line: book.line, lost: 0 },
+  });
+  return true;
+}
+
 /** Each hour: a book half-written for a master now gone is lost, and books on a shelf that no
  * longer stands are lost. */
 export function loseBooks(ctx: SystemContext): void {

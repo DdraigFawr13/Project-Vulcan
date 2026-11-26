@@ -43,6 +43,8 @@ export interface AsksDef {
   /** A turned-away stranger's ask to stay a season (`feud` its words for one fleeing a feud), open
    * `answer` days; those who spoke against them gain `against`. */
   guests: { what: string; feud: string; answer: number; against: string };
+  /** Wandering masters (6C Slice 7, V-236): who may come, when and how often, and what they ask. */
+  masters: MastersDef;
   /** A dream `days` unfulfilled asks to be backed, open `answer` days; the goods it wants for a
    * house or by its skill (`{name}` the dreamer); the dreamer's memories. */
   dreams: {
@@ -53,6 +55,28 @@ export interface AsksDef {
     house: GoodAskDef;
     skills: Readonly<Record<string, GoodAskDef>>;
   };
+}
+
+/** One kind of master: the noun, the skill and the ways of it they may know; the scholar (`book`)
+ * takes another kind's skill and ways and brings a book. */
+export interface MasterTradeDef {
+  noun: string;
+  skill?: string;
+  ways?: readonly string[];
+  book?: boolean;
+}
+
+export interface MastersDef {
+  from: number;
+  months: readonly number[];
+  odds: number;
+  fame: number;
+  answer: number;
+  level: readonly number[];
+  reach: number;
+  far: number;
+  what: string;
+  trades: readonly MasterTradeDef[];
 }
 
 export interface AsksDefs {

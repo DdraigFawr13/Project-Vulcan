@@ -4,7 +4,7 @@
 // `guests.against`; at the season's end they tell of their village (a line a puzzler may take a
 // seen hint from, discover reads.ts) and the colony talks them over again (band verdict.ts). Let
 // pass or unanswered, they walk on home. One fleeing a feud asks it as their village's ask, and
-// its regard moves as a village's does.
+// its regard moves as a village's does. A wandering master's ask (masters.ts) is settled here too.
 import { clockAt, TICKS_PER_DAY, type EntityRow, type SimEvent } from '../core/index.ts';
 import { admit, namesOf, sendBack } from '../band/index.ts';
 import { alive, people } from '../entity/index.ts';
@@ -12,9 +12,12 @@ import { liveAsks } from '../goods/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addAsk, settleAsk } from './asks.ts';
+import { masterIn, masterTaught } from './masters.ts';
 import { moveRegard } from './villages.ts';
 
 const FEUD = 'feud';
+/** A wandering master's ask (masters.ts), settled as a guest's. */
+const MASTER = 'wanderer';
 
 /** The stranger and the partner who came with them. */
 function groupOf(ctx: SystemContext, p: EntityRow): EntityRow[] {
@@ -90,8 +93,12 @@ function takeIn(ctx: SystemContext, a: EntityRow, group: EntityRow[]): void {
     admit(ctx, q, line);
     Object.assign(q, { guest: world.tick + season, wantsFrom: world.tick + season * 4 });
   }
-  for (const q of band) addMemory(ctx, q.id, content.asks.guests.against, line, group[0]!.id);
+  // A master was never talked over, so nobody spoke against them (masters.ts).
+  const master = a['source'] === MASTER;
+  if (!master)
+    for (const q of band) addMemory(ctx, q.id, content.asks.guests.against, line, group[0]!.id);
   Object.assign(a, { got: 1, due: world.tick + season });
+  if (master) masterIn(ctx, group[0]!, line);
 }
 
 /** A feud's guest ask moves its village's regard, as a village's ask does. */
@@ -118,7 +125,17 @@ function turnAway(ctx: SystemContext, a: EntityRow, group: EntityRow[]): void {
 /** A guest's season over: a tale of home settles the ask, and the colony talks them over again. */
 function seasonOver(ctx: SystemContext, a: EntityRow, group: EntityRow[]): void {
   const here = group.filter((q) => q['status'] === 'alive');
-  const tale = ctx.emit('guest.tale', {
+  const tale = a['source'] === MASTER ? masterTaught(ctx, a, group[0]!) : guestTale(ctx, a, group);
+  Object.assign(a, { state: 'done', settled: tale, going: [] });
+  feudRegard(ctx, a, 'done', tale);
+  for (const q of here)
+    Object.assign(q, { status: 'stranger', waits: ctx.world.tick, path: [], job: '', guest: -1 });
+}
+
+/** A guest's tale of home at the season's end. */
+function guestTale(ctx: SystemContext, a: EntityRow, group: EntityRow[]): number {
+  const here = group.filter((q) => q['status'] === 'alive');
+  return ctx.emit('guest.tale', {
     causes: [a['line'] as number],
     actors: here.map((q) => q.id),
     data: {
@@ -126,10 +143,6 @@ function seasonOver(ctx: SystemContext, a: EntityRow, group: EntityRow[]): void 
       place: group[0]?.['home'] as string,
     },
   });
-  Object.assign(a, { state: 'done', settled: tale, going: [] });
-  feudRegard(ctx, a, 'done', tale);
-  for (const q of here)
-    Object.assign(q, { status: 'stranger', waits: ctx.world.tick, path: [], job: '', guest: -1 });
 }
 
 /** Each minute: guest asks as the colony answers them, and guests whose season is over. */

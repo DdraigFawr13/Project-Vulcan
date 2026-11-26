@@ -1,5 +1,4 @@
-// World state and event shapes. The whole world is plain data (numbers, strings, arrays and typed
-// arrays), so the worker can post it, P0.5 can save it and tests can compare it.
+// World state and event shapes, all plain data so the worker can post, save and compare it (P0.5).
 import type { AuraDials, AuraSpot } from './climate.ts';
 import type { UndergroundDials, ValleyDials, WalkingDef, WearDef } from './ground.ts';
 import type { RngState } from './rng.ts';
@@ -34,6 +33,7 @@ export const STREAMS = [
   'inn',
   'lord',
   'discover',
+  'asks',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 

@@ -25,7 +25,7 @@ export interface HintWords {
   short: string;
 }
 
-export type HintKind = 'work' | 'failure' | 'seen' | 'book' | 'tale' | 'luck' | 'dream';
+export type HintKind = 'work' | 'failure' | 'seen' | 'book' | 'tale' | 'luck' | 'dream' | 'master';
 
 export interface MethodsDef {
   methods: readonly MethodDef[];
@@ -36,6 +36,8 @@ export interface MethodsDef {
   book: { days: number; event: string };
   drop: { days: number; hours: number };
   seen: { odds: number; most: number; event: string; also?: readonly string[] };
+  /** A master's season-end line (6C Slice 7): a hint for each puzzler on one of its `ways`. */
+  master: { event: string };
   tale: { odds: number; id: string };
   luck: { days: number; lucky: number; bynames: readonly string[]; hours: number };
   share: { kinds: readonly string[]; words: string };
@@ -66,7 +68,7 @@ export interface MethodsScreen {
   hint: string;
   left: string;
   knows: string;
-  how: Readonly<Record<'found' | 'apprentice' | 'book' | 'beside', string>>;
+  how: Readonly<Record<'found' | 'apprentice' | 'book' | 'beside' | 'master', string>>;
   known: string;
   found: string;
   learnt: string;

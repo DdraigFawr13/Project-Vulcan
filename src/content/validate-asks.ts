@@ -19,6 +19,28 @@ interface Asks {
   shrine: { done: string; passed: string; asks: Record<string, Want> };
   guests: { against: string };
   dreams: { backed: string; unbacked: string; house: Want; skills: Record<string, Want> };
+  masters: {
+    level: number[];
+    trades: { noun: string; skill?: string; ways?: string[]; book?: boolean }[];
+  };
+}
+
+/** Each master's ways are methods of their skill; a scholar (`book`) names neither. */
+function masterErrors(files: Files, asks: Asks): string[] {
+  const methods = (files['methods'] as { methods: { id: string; skill?: string }[] }).methods;
+  const errors: string[] = [];
+  const [lo, hi] = asks.masters.level;
+  if (asks.masters.level.length !== 2 || lo! > hi!)
+    errors.push('asks.masters.level: give [low, high]');
+  for (const t of asks.masters.trades) {
+    const at = `asks.masters.trades.${t.noun}`;
+    if (t.book && (t.skill || t.ways)) errors.push(`${at}: a scholar takes another's skill`);
+    if (!t.book && (!t.skill || !t.ways?.length)) errors.push(`${at}: give a skill and ways`);
+    for (const w of t.ways ?? [])
+      if (methods.find((m) => m.id === w)?.skill !== t.skill)
+        errors.push(`${at}.ways: "${w}" is no way of ${t.skill ?? 'its skill'}`);
+  }
+  return errors;
 }
 
 /** The checks every ask shares. */
@@ -74,5 +96,6 @@ export function checkAsks(files: Files): string[] {
   const mems = [asks.shrine.done, asks.shrine.passed, asks.guests.against];
   for (const m of [...mems, asks.dreams.backed, asks.dreams.unbacked])
     if (!memories.includes(m)) errors.push(`asks: "${m}" is no memory`);
+  errors.push(...masterErrors(files, asks));
   return errors;
 }

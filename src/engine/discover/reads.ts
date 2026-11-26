@@ -9,6 +9,7 @@ import { alive, entityOf } from '../entity/index.ts';
 import { linesAfter } from '../log/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addHint, fill, wayOf } from './find.ts';
+import { broughtWays, masterHints } from './brought.ts';
 import { hintsOf, knowsOf, methodDef, puzzlesNow } from './tables.ts';
 import { bookLearn } from './spread.ts';
 import { addHours, hoursAt, workedToday } from './trade.ts';
@@ -18,6 +19,9 @@ function livePuzzles(ctx: SystemContext): EntityRow[] {
   const living = new Set(alive(ctx.world).map((p) => p.id));
   return puzzlesNow(ctx.world).filter((q) => living.has(q['person'] as number));
 }
+
+/** The band's word that lets a stranger stay (band verdict.ts): a master keeps their way. */
+const STAYS = 'people.strangerStays';
 
 const since = (day: number, last: number, gap: number): boolean => last < 0 || day - last >= gap;
 
@@ -83,6 +87,8 @@ export function readLines(ctx: SystemContext): void {
     if (failures.has(e.type)) failure(ctx, e);
     const s = content.methods.seen;
     if (e.type === s.event || s.also?.includes(e.type)) seen(ctx, e);
+    if (e.type === content.methods.master.event) masterHints(ctx, e);
+    if (e.type === STAYS) broughtWays(ctx, e);
     if (e.type === content.methods.book.event) {
       bookLearn(ctx, e);
       book(ctx, e);

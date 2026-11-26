@@ -1,6 +1,6 @@
 // Shape of Vulcan's asks file (src/content/data/asks.json, 6C Slice 3, V-225): what the colony is
 // asked for, by whom and by when.
-import { list, map, num, obj, oneOf, opt, str } from './schema';
+import { bool, list, map, num, obj, oneOf, opt, str } from './schema';
 import { text } from './schema-fields';
 
 // What an ask wants: a tool kind or goods (item kinds or goods joined by `|`), a count or a share.
@@ -41,6 +41,23 @@ export const ASKS_SCHEMAS = {
     // A turned-away stranger's ask to stay a season (`feud` for one fleeing a feud), open
     // `answer` days; those who spoke against them gain the `against` memory.
     guests: obj({ what: text, feud: text, answer: num({ min: 1 }), against: str() }),
+    // Wandering masters (6C Slice 7, V-236): from year `from`, at the strangers' hour on the first
+    // day of each of `months` (0-based), 1 in 100 `odds` (plus `fame` per cent of the road's
+    // fame) a master comes, at most one a year; skill drawn in `level`, potential `reach` above;
+    // from a neighbour known for the skill, else the lord's seat `far` days off. At the green they
+    // ask for `what`, open `answer` days. Each of `trades`: a `noun`, the `skill` and the `ways`
+    // of it they may know; a `book` one (the scholar) takes another trade's and brings a book.
+    masters: obj({
+      ...{ from: num({ min: 1 }), months: list(num({ min: 0, max: 11 })) },
+      ...{ odds: num({ min: 0, max: 100 }), fame: num({ min: 0 }), answer: num({ min: 1 }) },
+      ...{ level: list(num({ min: 1 })), reach: num({ min: 0 }), far: num({ min: 1 }), what: text },
+      trades: list(
+        obj({
+          ...{ noun: str(), skill: opt(str()), ways: opt(list(str())) },
+          book: opt(bool()),
+        }),
+      ),
+    }),
     // A dream `days` unfulfilled asks to be backed, open `answer` days: goods for a house or by
     // the dream's skill ({name} the dreamer); the dreamer's memories.
     dreams: obj({
