@@ -14,15 +14,7 @@ import type { SystemContext } from '../sim/index.ts';
 import { addFavour } from './favour.ts';
 import { lordName, lordRow, pronounsOf } from './tables.ts';
 
-/** The words for each grievance, strongest first. */
-const WHY: readonly [string, string][] = [
-  ['stash', 'who hid goods from the tithe barn'],
-  ['will', 'who would defy the Lord law'],
-  ['lean', "who remembers the lean year's tithe"],
-  ['bitter', 'who will not have a lord not of their people'],
-];
-
-/** A person's grievances against the lord, as `WHY` keys. */
+/** A person's grievances against the lord, as `hothead.reasons` keys, strongest first. */
 function grievances(ctx: SystemContext, p: EntityRow): string[] {
   const { world, content } = ctx;
   const held = new Set(memoriesOf(world, p.id).map((m) => m['memory'] as string));
@@ -33,7 +25,7 @@ function grievances(ctx: SystemContext, p: EntityRow): string[] {
     lean: held.has(content.lord.tithe.lean.memory),
     bitter: held.has(content.lord.memories.bitter),
   };
-  return WHY.map(([k]) => k).filter((k) => has[k]);
+  return Object.keys(content.lord.visit.hothead.reasons).filter((k) => has[k]);
 }
 
 /** The one most aggrieved among `there` (grown, up and about), drawn on a tie; their points. */
@@ -42,12 +34,12 @@ function mostAggrieved(
   there: readonly number[],
 ): { p: EntityRow; why: string[]; points: number } | undefined {
   const { world, content } = ctx;
-  const points = content.lord.visit.hothead.reasons;
+  const reasons = content.lord.visit.hothead.reasons;
   const rows = alive(world)
     .filter((p) => there.includes(p.id) && grown(world, content, p) && !isDown(world, p.id))
     .map((p) => {
       const why = grievances(ctx, p);
-      return { p, why, points: why.reduce((n, k) => n + (points[k] ?? 0), 0) };
+      return { p, why, points: why.reduce((n, k) => n + (reasons[k]?.points ?? 0), 0) };
     })
     .filter((x) => x.points > 0);
   const top = Math.max(0, ...rows.map((x) => x.points));
@@ -87,7 +79,7 @@ export function hothead(ctx: SystemContext, there: readonly number[], cause: num
   if (!who || ctx.rng().int(100) >= Math.min(h.most, who.points * h.odds)) return;
   const lord = lordRow(world)!;
   const says = h.says[ctx.rng().int(h.says.length)]!;
-  const why = WHY.find(([k]) => k === who.why[0])![1];
+  const why = h.reasons[who.why[0]!]!.why;
   const line = ctx.emit('lord.hothead', {
     causes: [cause],
     actors: [who.p.id],

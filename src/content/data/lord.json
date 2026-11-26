@@ -60,7 +60,12 @@
   },
   "hothead": {
     "odds": 20, "most": 80,
-    "reasons": {"stash": 3, "will": 2, "lean": 1, "bitter": 1},
+    "reasons": {
+      "stash": {"points": 3, "why": "who hid goods from the tithe barn"},
+      "will": {"points": 2, "why": "who would defy the Lord law"},
+      "lean": {"points": 1, "why": "who remembers the lean year's tithe"},
+      "bitter": {"points": 1, "why": "who will not have a lord not of their people"}
+    },
     "says": ["called the tithe theft across the table", "asked aloud what the lord had ever sown in this valley", "would not drink to the lord, and said why"],
     "memory": "hothead-spoke",
     "beat": ["cruel"]
@@ -69,6 +74,7 @@
     "every": 3,
     "whole": ["cautious", "pious", "learned"],
     "half": {"tempers": ["bold", "greedy"], "favour": 60},
+    "answers": {"whole": "forgives the tithe this year.", "half": "takes half the tithe this year.", "no": "refuses: the tithe stands."},
     "memories": {"heard": "plea-heard", "refused": "plea-refused"}
   }
 }

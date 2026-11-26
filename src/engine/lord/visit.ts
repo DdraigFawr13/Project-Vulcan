@@ -3,7 +3,7 @@
 // stays the night and leaves after the reeve has taken the tithe in the morning. The Feasts law sets
 // how grand his table is (and what it costs the store); what pleases him follows his temper; each
 // is a favour cause with its line. Nobody is sent to meet him and no lever moves him (V-041).
-import { list, TICKS_PER_DAY, today, type EntityRow } from '../core/index.ts';
+import { list, TICKS_PER_DAY, TICKS_PER_HOUR, today, type EntityRow } from '../core/index.ts';
 import { alive } from '../entity/index.ts';
 import { walkTo } from '../band/index.ts';
 import type { Spot } from '../paths/index.ts';
@@ -63,7 +63,7 @@ export function lordComes(
     lord: line,
     came: line,
     feast: f.id,
-    wait: next + ctx.content.lord.reeve.arrive * 60,
+    wait: next + ctx.content.lord.reeve.arrive * TICKS_PER_HOUR,
   });
   r['favourIn'] = favourOf(ctx);
   walkTo(ctx, r, hall());
@@ -142,6 +142,9 @@ function judge(ctx: SystemContext, r: EntityRow, f: EntityRow): void {
     alive(world).some((p) => p.id === id),
   );
   const party = 2 + v.men;
+  // What pleases him is judged as he finds the valley, before his own table is laid.
+  const p = v.pleases[lord['temper'] as string];
+  const yes = p && pleased(ctx, p.wants);
   const food = lay(ctx, there.length * t.extra + party * (1 + t.extra));
   const cups = t.ale ? pour(ctx, (there.length + party) * t.ale) : 0;
   const laid = [...food.names, ...(cups ? ['ale'] : [])];
@@ -157,8 +160,6 @@ function judge(ctx: SystemContext, r: EntityRow, f: EntityRow): void {
     },
   });
   addFavour(ctx, `table-${setting.id}`, [line]);
-  const p = v.pleases[lord['temper'] as string];
-  const yes = p && pleased(ctx, p.wants);
   if (p && yes !== undefined)
     addFavour(ctx, yes ? 'pleased' : 'displeased', [line], { what: yes ? p.yes : p.no });
   hothead(ctx, there, line);

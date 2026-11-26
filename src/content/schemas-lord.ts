@@ -76,7 +76,7 @@ export const LORD_SCHEMAS = {
     // favour cause `table-<setting>`. `pleases` by temper: what he looks for (contest, table,
     // rite, book, store) and the words when it is there or not (causes `pleased`, `displeased`).
     // `hothead`: in 100 per point of grievance (`reasons`), at most `most`, one may speak out
-    // (`says`, drawn); everyone there keeps `memory`; a `beat` lord has them beaten. `petition`:
+    // (`says`, drawn; each grievance's words `why`, in the order checked); everyone there keeps `memory`; a `beat` lord has them beaten. `petition`:
     // in a lean year, at most once in `every` years; the tempers that forgive the tithe whole, those
     // that halve it from `favour`, the rest refuse (cause `plea`); the memories of the answer.
     visit: obj({
@@ -87,7 +87,7 @@ export const LORD_SCHEMAS = {
       hothead: obj({
         odds: num({ min: 0, max: 100 }),
         most: num({ min: 0, max: 100 }),
-        reasons: map(num({ min: 0 })),
+        reasons: map(obj({ points: num({ min: 0 }), why: text })),
         says: list(text),
         memory: ref('memories'),
         beat: list(str()),
@@ -96,6 +96,7 @@ export const LORD_SCHEMAS = {
         every: num({ min: 1 }),
         whole: list(str()),
         half: obj({ tempers: list(str()), favour: num({ min: 0, max: 100 }) }),
+        answers: obj({ whole: text, half: text, no: text }),
         memories: obj({ heard: ref('memories'), refused: ref('memories') }),
       }),
     }),

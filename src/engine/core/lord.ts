@@ -46,8 +46,8 @@ export interface VisitDef {
     /** In 100 per point of grievance, at most `most`. */
     odds: number;
     most: number;
-    /** Points for each grievance: stash, will, lean, bitter. */
-    reasons: Readonly<Record<string, number>>;
+    /** Each grievance (stash, will, lean, bitter), strongest first: its points and words. */
+    reasons: Readonly<Record<string, { points: number; why: string }>>;
     says: readonly string[];
     memory: string;
     /** Tempers that have the speaker beaten. */
@@ -57,6 +57,8 @@ export interface VisitDef {
     every: number;
     whole: readonly string[];
     half: { tempers: readonly string[]; favour: number };
+    /** The lord's answer in words, after "He" or "She". */
+    answers: { whole: string; half: string; no: string };
     memories: { heard: string; refused: string };
   };
 }

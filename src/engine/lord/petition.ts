@@ -24,12 +24,6 @@ function answerOf(ctx: SystemContext, temper: string): Eased {
   return undefined;
 }
 
-const ANSWER: Readonly<Record<string, string>> = {
-  whole: 'forgives the tithe this year.',
-  half: 'takes half the tithe this year.',
-  no: 'refuses: the tithe stands.',
-};
-
 /** Before the tithe is taken at a visit (`r`, citing `cause`): the elder may plead. */
 export function plead(ctx: SystemContext, r: EntityRow, cause: number): Eased {
   const { world, content } = ctx;
@@ -50,7 +44,7 @@ export function plead(ctx: SystemContext, r: EntityRow, cause: number): Eased {
     data: {
       ...{ name: elder['name'] as string, lord: lordName(lord), days: String(days) },
       through: r['lord'] ? '' : `, through ${lord['reeve'] as string}`,
-      answer: ANSWER[eased ?? 'no']!,
+      answer: p.answers[eased ?? 'no'],
       He: pronounsOf(lord).He,
       eased: eased ?? 'no',
     },
