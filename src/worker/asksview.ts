@@ -58,7 +58,8 @@ function dueOf(world: WorldState, a: EntityRow): string {
       ? 'by his next visit (the morning after harvest home)'
       : 'by the next harvest home';
   const days = Math.max(0, Math.ceil((due - world.tick) / TICKS_PER_DAY));
-  return `by ${dayWords(Math.floor(due / TICKS_PER_DAY))} (${days === 1 ? '1 day' : `${days} days`})`;
+  const left = days === 0 ? 'due now' : days === 1 ? '1 day' : `${days} days`;
+  return `by ${dayWords(Math.floor(due / TICKS_PER_DAY))} (${left})`;
 }
 
 /** A guest's open ask, yes or no: "Answer by 18:00 tomorrow, or they go on their way." */

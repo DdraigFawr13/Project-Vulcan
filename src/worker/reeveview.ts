@@ -128,7 +128,7 @@ export function reevePage(world: WorldState, lineOf: LineOf): ReevePage | undefi
   if (lord['named'])
     rows.push({
       name: "The lord's favour",
-      text: `${favourAt(world, content)} of 100 ${r['going'] ? 'after' : 'before'} this visit`,
+      text: `${favourAt(world, content)} of 100 now`,
     });
   return {
     title: 'The reeve',

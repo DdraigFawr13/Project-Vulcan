@@ -29,7 +29,7 @@ const plate = (label: string, test: string, onClick: () => void): HTMLElement =>
 
 function heading(text: string, count: number, test: string, hot = false): HTMLElement {
   const h = el('h3', { class: 'askhead', 'data-testid': test }, text);
-  if (count) h.append(el('span', { class: hot ? 'tally hot' : 'tally' }, String(count)));
+  if (count) h.append(el('span', { class: hot ? 'askn hot' : 'askn' }, String(count)));
   return h;
 }
 
