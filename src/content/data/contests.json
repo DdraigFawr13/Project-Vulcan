@@ -1,0 +1,73 @@
+{
+  "each": 1,
+  "lord": 2,
+  "least": 2,
+  "enter": {
+    "base": 50,
+    "traits": {
+      "hot-tempered": 25,
+      "sociable": 20,
+      "restless": 15,
+      "cheerful": 10,
+      "steady": 0,
+      "greedy": 10,
+      "solitary": -35,
+      "melancholic": -25,
+      "devout": -10
+    },
+    "rival": 40,
+    "won": 15
+  },
+  "roll": 8,
+  "wins": 3,
+  "beaten": 2,
+  "memories": {
+    "won": "contest-won",
+    "lost": "contest-lost",
+    "rival": "contest-rival"
+  },
+  "kinds": [
+    {
+      "id": "arm",
+      "name": "the trial of strength",
+      "needs": "none",
+      "attribute": "strength",
+      "won": "lifted the hall's stone highest",
+      "byname": "Strongarm",
+      "spares": [
+        "Oak-arm",
+        "Ox-back"
+      ],
+      "prize": "axe"
+    },
+    {
+      "id": "plough",
+      "name": "the ploughing match",
+      "needs": "field",
+      "skill": "farming",
+      "least": 1,
+      "attribute": "endurance",
+      "won": "cut the straightest furrow",
+      "byname": "Straightfurrow",
+      "spares": [
+        "Furrow-true"
+      ],
+      "prize": "hoe"
+    },
+    {
+      "id": "ale",
+      "name": "the judging of the ale",
+      "needs": "brewer",
+      "skill": "cooking",
+      "least": 2,
+      "attribute": "perception",
+      "won": "brewed the ale all agreed was best",
+      "byname": "Alewife",
+      "m": "Aleman",
+      "spares": [
+        "Good-cask"
+      ],
+      "prize": "sickle"
+    }
+  ]
+}

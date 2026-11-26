@@ -44,7 +44,7 @@
 },
 "forest": {"place": "wood", "reach": 12},
 "visit": {
-  "every": 3, "men": 4,
+  "every": 3, "men": 4, "prize": {"material": "iron", "quality": "fine"},
   "table": {
     "few": {"extra": 0, "ale": 0},
     "customary": {"extra": 1, "ale": 1},
