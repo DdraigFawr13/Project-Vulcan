@@ -11,6 +11,7 @@ import {
   type FindMark,
   type GoodsView,
   type PersonView,
+  type ReeveView,
   type Speed,
   type WalkerView,
 } from '../worker/index.ts';
@@ -23,6 +24,7 @@ import { ShaftSprites } from './shafts.ts';
 import { GoodsSprites } from './goods.ts';
 import { GreenSprites } from './green.ts';
 import { PeopleSprites } from './people.ts';
+import { ReeveSprite } from './reeve.ts';
 import { WorkBars } from './progress.ts';
 import { Bubbles } from './bubbles.ts';
 import { Finder } from './finder.ts';
@@ -67,6 +69,10 @@ export interface Renderer {
   setAnimals(animals: readonly AnimalView[]): void;
   /** The animal standing on a tile of the surface, if any: its id. */
   animalAt(x: number, y: number): number | undefined;
+  /** Draws the lord's reeve while he is in the valley, with his cart; none takes him off (6C). */
+  setReeve(reeve: ReeveView | undefined): void;
+  /** Whether the reeve or his cart stands on a tile of the level on screen. */
+  reeveAt(x: number, y: number): boolean;
   /** Flags the found places (6W Slice 6). */
   setFinds(marks: readonly FindMark[]): void;
   /** Moves the people to where the latest snapshot (its tick and speed) stands them (P2.3); they
@@ -112,6 +118,7 @@ export function startRenderer(
   });
   const l = layersOf(game, scene, parent);
   watchAnimalFinder(l);
+  watchReeveFinder(l);
   watchWorkFinder(l);
   return { ...viewHandle(l), ...peopleHandle(l), ...goodsHandle(l) };
 }
@@ -130,6 +137,7 @@ function layersOf(game: Phaser.Game, scene: ValleyScene, parent: HTMLElement) {
   const light = new Firelight(game, scene);
   const bars = new WorkBars(game, scene);
   const wild = new WildSprites(game, scene, clock);
+  const reeve = new ReeveSprite(game, scene, clock);
   const wear = new WearLayer(scene);
   const canopy = new CanopyLayer(scene);
   const flags = new FlagLayer(game, scene);
@@ -139,7 +147,7 @@ function layersOf(game: Phaser.Game, scene: ValleyScene, parent: HTMLElement) {
   const bubbles = new Bubbles(game, scene, parent, () => people.spots());
   return {
     ...{ game, scene, parent, clock, people, goods, build, fields, shafts, burial, furniture },
-    ...{ green, light, bars, wild, wear, canopy, flags, finder, bubbles },
+    ...{ green, light, bars, wild, reeve, wear, canopy, flags, finder, bubbles },
   };
 }
 
@@ -168,6 +176,21 @@ function watchAnimalFinder({ game, scene, parent, wild }: Layers): void {
       const at = wild.first(kind) ?? first;
       parent.dataset['animalAt'] = onScreen(scene, at);
       parent.dataset['animalMap'] = `${at.x},${at.y}`;
+    });
+  });
+}
+
+/** For the lord's browser check: centres on the drawn reeve and writes his canvas px to
+ * `data-reeve-at`; none drawn clears it. */
+function watchReeveFinder({ game, scene, parent, reeve }: Layers): void {
+  parent.addEventListener('vulcan:find-reeve', () => {
+    delete parent.dataset['reeveAt'];
+    const first = reeve.spot();
+    if (!first) return;
+    scene.controls?.lookAt(first.x, first.y);
+    game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+      const at = reeve.spot();
+      if (at) parent.dataset['reeveAt'] = onScreen(scene, at);
     });
   });
 }
@@ -221,7 +244,7 @@ function viewHandle(l: Layers) {
       scene.setLevel(z);
       for (const layer of [l.people, l.goods, build, fields, l.shafts, l.burial, l.furniture])
         layer.setLevel(z);
-      for (const layer of [l.green, light, l.bars, wild, wear, l.canopy, l.flags])
+      for (const layer of [l.green, light, l.bars, wild, l.reeve, wear, l.canopy, l.flags])
         layer.setLevel(z);
     },
     focus: (x: number, y: number, below: number) =>
@@ -234,7 +257,8 @@ function viewHandle(l: Layers) {
 }
 
 /** The people and animals on screen, and finding them. */
-function peopleHandle({ game, scene, parent, clock, people, wild, finder, bubbles }: Layers) {
+function peopleHandle(l: Layers) {
+  const { game, scene, parent, clock, people, wild, finder, bubbles } = l;
   return {
     placeOf: (id: number) => people.place(id),
     follow: (id: number | undefined, pulse?: boolean) => {
@@ -264,6 +288,11 @@ function peopleHandle({ game, scene, parent, clock, people, wild, finder, bubble
       parent.dataset['animals'] = String(list.length);
     },
     animalAt: (x: number, y: number) => wild.at(x, y),
+    setReeve: (view: ReeveView | undefined) => {
+      l.reeve.set(view);
+      parent.dataset['reeve'] = view ? '1' : '0';
+    },
+    reeveAt: (x: number, y: number) => l.reeve.at(x, y),
   };
 }
 

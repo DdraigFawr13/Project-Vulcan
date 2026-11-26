@@ -13,6 +13,7 @@ import {
   type WorldState,
 } from '../engine/index.ts';
 import { answerView } from './law.ts';
+import { lordView, namedLord } from './lordview.ts';
 import { feastDaysView } from './faithview.ts';
 import { colonyWays } from './waysview.ts';
 import type { AnswerView, RuledLawView } from './protocol-law.ts';
@@ -27,6 +28,10 @@ export const RULED = [
   'apprentices',
   'new-ways',
 ] as const;
+
+/** The laws on the sheet now: the Lord law joins once his reeve has named him (6C Slice 4). */
+export const ruledIds = (world: WorldState): string[] =>
+  namedLord(world) ? [...RULED, content.lord.tithe.law] : [...RULED];
 
 const ORDER = ['refuses', 'grumbles', 'obeys'];
 const fill = (t: string, vars: Record<string, string | number>): string =>
@@ -56,6 +61,7 @@ export function ruledView(world: WorldState, id: string): RuledLawView {
   const row = (world.entities['law'] ?? []).find((r) => r['law'] === id);
   const tick = row ? (row['changed'] as number) : undefined;
   const store = def.settings.some((x) => x.share) ? ` ${storeLine(world, s.share)}` : '';
+  const lord = id === content.lord.tithe.law ? lordView(world) : undefined;
   const answers: AnswerView[] = (world.entities['answer'] ?? [])
     .filter((a) => a['law'] === id)
     .flatMap((a) => answerView(world, a) ?? [])
@@ -64,7 +70,7 @@ export function ruledView(world: WorldState, id: string): RuledLawView {
     id,
     name: def.name,
     setting: s.id,
-    settings: def.settings.map((x) => ({ id: x.id, name: x.name })),
+    settings: def.settings.filter((x) => !x.unset).map((x) => ({ id: x.id, name: x.name })),
     about: [s.about, def.note].filter(Boolean).join(' ') + store,
     since:
       tick === undefined
@@ -74,5 +80,6 @@ export function ruledView(world: WorldState, id: string): RuledLawView {
     answers,
     ...(id === 'feasts' && { days: feastDaysView(world) }),
     ...(id === 'new-ways' && { ways: colonyWays(world) }),
+    ...(lord && { lord }),
   };
 }

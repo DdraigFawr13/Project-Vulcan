@@ -2,11 +2,13 @@
 // person sheet, the Work and Build sheets, the Alerts sheet and the dawn page (P2.9). Levers go out as commands for the next tick;
 // Show on an alert moves the camera to the place, never a person (V-015).
 import type {
+  AsksView,
   BuildView,
   FromWorker,
   LawView,
   MoodView,
   AnimalPage,
+  ReevePage,
   ItemView,
   LedgerLine,
   PersonView,
@@ -16,6 +18,8 @@ import type {
 } from '../worker/index.ts';
 import { content } from '../content/index.ts';
 import { animalRows, goneRows } from './animalsheet.ts';
+import { AsksSheet } from './askssheet.ts';
+import { reeveGone, reeveRows } from './reevesheet.ts';
 import { BuildSheet } from './build.ts';
 import { itemRows } from './itemsheet.ts';
 import { Dawn } from './dawn.ts';
@@ -52,6 +56,8 @@ export interface SheetDeps {
   names(on: boolean): void;
   /** Sets the speed, as the bar does: a recap's Carry on (V-191). */
   speed(speed: Speed): void;
+  /** The red count of asks waiting (6C Slice 4), for Asks and ⋯. */
+  asks(waiting: number): void;
 }
 
 export class Sheets {
@@ -65,6 +71,8 @@ export class Sheets {
   private lawKey = '';
   private moodView: MoodView | undefined;
   private moodKey = '';
+  private asksView: AsksView | undefined;
+  private readonly asks: AsksSheet;
   /** The item page open: its id, what it shows (as JSON) and whether a fresh copy is asked for. */
   private itemOpen: { id: number; key: string; asked: boolean } | undefined;
   /** A world just began or loaded; its first batch of lines is not news. */
@@ -98,6 +106,7 @@ export class Sheets {
       sendBack: (kind, id) => command('sendBack', { [kind]: id }),
       refresh: () => this.refreshBuild(),
     });
+    this.asks = new AsksSheet(command);
     this.laws = new LawSheet({
       setLaw: (law, setting) => command('setLaw', { law, setting }),
       letStand: (faction) => command('letStand', { faction }),
@@ -184,9 +193,18 @@ export class Sheets {
 
   /** The herd or pack page of a tapped animal (Bundle 2); view only. */
   showAnimal(page: AnimalPage | undefined): void {
-    const { panel } = this.deps;
-    const rows = page ? animalRows(page, (line) => panel.lineRow(line)) : goneRows();
-    panel.showView('animal', page?.title ?? 'Animal', rows);
+    const row = (line: LedgerLine) => this.deps.panel.lineRow(line);
+    this.viewOnly(page?.title ?? 'Animal', page ? animalRows(page, row) : goneRows());
+  }
+
+  /** The lord's reeve, tapped on the map (6C Slice 4); view only. */
+  showReeve(page: ReevePage | undefined): void {
+    const row = (line: LedgerLine) => this.deps.panel.lineRow(line);
+    this.viewOnly(page?.title ?? 'The reeve', page ? reeveRows(page, row) : reeveGone());
+  }
+
+  private viewOnly(title: string, rows: HTMLElement[]): void {
+    this.deps.panel.showView('animal', title, rows);
     this.select(undefined);
     this.deps.opened();
   }
@@ -196,8 +214,9 @@ export class Sheets {
     this.refresh(true);
   }
 
-  /** ⋯ → Work, Build, Laws or Yesterday (the dawn page at any time), or the mood word. */
-  open(kind: 'work' | 'build' | 'laws' | 'dawn' | 'mood'): void {
+  /** ⋯ → Asks, Work, Build, Laws or Yesterday (the dawn page at any time), or the mood word. */
+  open(kind: 'asks' | 'work' | 'build' | 'laws' | 'dawn' | 'mood'): void {
+    if (kind === 'asks') return this.refreshAsks(true);
     if (kind === 'mood') {
       this.moodKey = '';
       return this.refreshMood(true);
@@ -277,6 +296,8 @@ export class Sheets {
     this.day = day;
     this.lawView = law;
     this.moodView = law.colony.mood;
+    this.asksView = message.asks;
+    this.deps.asks(message.asks.waiting);
     // A recap opening at a season's turn holds the dawn page back that night (V-191).
     this.recaps.snapshot(message);
     const food = message.stock.find((s) => s.good === content.work.forage.good)?.have;
@@ -291,6 +312,7 @@ export class Sheets {
     this.refreshBuild();
     this.refreshLaws();
     this.refreshMood();
+    this.refreshAsks();
     // The item page redraws from each snapshot (its wear and holder move), one ask in flight.
     const item = this.itemOpen;
     if (item && panel.kind === 'item' && !item.asked) {
@@ -340,6 +362,12 @@ export class Sheets {
     this.lawKey = key;
     this.deps.panel.showView('laws', 'Laws', this.laws.rows(view));
     this.select(undefined);
+  }
+
+  /** Redraws an open Asks sheet when what it shows has changed (or `open`s it). Its levers go
+   * out as commands for the next tick, applied at once while paused. */
+  private refreshAsks(open = false): void {
+    if (this.asks.draw(this.deps.panel, this.asksView, open)) this.select(undefined);
   }
 
   /** Redraws an open mood page when its causes change (or `open`s it). */

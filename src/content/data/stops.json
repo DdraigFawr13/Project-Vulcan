@@ -2,6 +2,7 @@
 {"id":"death","name":"Deaths and bad wounds","hint":"died, festering, a grave wound","default":"pause"},
 {"id":"attack","name":"Attacks","hint":"a beast strikes a person or the flock","default":"pause"},
 {"id":"food","name":"Food running out","hint":"no food, seed eaten, a hungry winter ahead","default":"pause"},
+{"id":"asks","name":"Asks","hint":"the lord, a village, the shrine, a guest or a dream asks the colony","default":"pause"},
 {"id":"family","name":"Births and weddings","hint":"a child born, a couple wed","default":"slow"},
 {"id":"comings","name":"Comings and goings","hint":"a stranger, someone leaving or coming back","default":"slow"},
 {"id":"sickness","name":"Sickness","hint":"someone falls sick, a sickness spreads","default":"slow"},

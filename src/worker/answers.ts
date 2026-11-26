@@ -1,5 +1,5 @@
 // The page's questions that only read the world, between ticks: save, export, inspect, item,
-// animal, why and trips. Each is one row here; none steps the world, writes a line or draws from an RNG
+// animal, reeve, why and trips. Each is one row here; none steps the world, writes a line or draws from an RNG
 // stream. With no world (stopped) the worker leaves them unanswered.
 import { contentHash } from '../content/index.ts';
 import { toNdjson, whyOf, type SimEvent, type Stub, type WorldState } from '../engine/index.ts';
@@ -8,11 +8,12 @@ import type { FromWorker, LedgerLine, ToWorker } from './protocol.ts';
 import { saveOf } from './save.ts';
 import { clockView, tileView } from './views.ts';
 import { tripsView } from './trips.ts';
+import { reevePage } from './reeveview.ts';
 import { animalPage } from './wild.ts';
 
 type Read = Extract<
   ToWorker,
-  { type: 'save' | 'export' | 'inspect' | 'item' | 'animal' | 'why' | 'trips' }
+  { type: 'save' | 'export' | 'inspect' | 'item' | 'animal' | 'reeve' | 'why' | 'trips' }
 >;
 type LineOf = (e: SimEvent | Stub) => LedgerLine;
 type Answers = {
@@ -44,6 +45,7 @@ export const ANSWERS: Answers = {
   }),
   item: (world, m, line) => ({ type: 'item', item: itemView(world, m.id, line) }),
   animal: (world, m, line) => ({ type: 'animalPage', page: animalPage(world, m.id, line) }),
+  reeve: (world, _m, line) => ({ type: 'reevePage', page: reevePage(world, line) }),
   trips: (world, _m, line) => ({ type: 'trips', trips: tripsView(world, line) }),
   why: (world, m, line) => ({
     type: 'causes',

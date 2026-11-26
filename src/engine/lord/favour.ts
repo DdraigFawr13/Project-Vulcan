@@ -5,22 +5,39 @@
 // reached is a line and takes hold once (the tithe raised while favour stays low, a fine or a free
 // year owed at the next visit, the lord's men at once, the forest granted for good); a step left
 // behind may be reached again.
-import { clamp, list, TICKS_PER_DAY, type EntityRow } from '../core/index.ts';
+import {
+  clamp,
+  list,
+  TICKS_PER_DAY,
+  type EngineContent,
+  type EntityRow,
+  type WorldState,
+} from '../core/index.ts';
 import { addEntity, alive, removeEntity } from '../entity/index.ts';
 import { weigh, settingOf } from '../law/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { lordMen } from './men.ts';
 import { lordName, lordRow } from './tables.ts';
 
-const causesOf = (ctx: SystemContext) =>
-  (ctx.world.entities['favour'] ?? []).filter((c) => (c['until'] as number) > ctx.world.tick);
+/** The favour causes still counting (read-only, for the page too). */
+export const favourCauses = (world: WorldState): EntityRow[] =>
+  (world.entities['favour'] ?? []).filter((c) => (c['until'] as number) > world.tick);
 
 /** The causes' sum, unclamped. */
 const rawOf = (ctx: SystemContext): number =>
-  ctx.content.lord.favour.start + causesOf(ctx).reduce((n, c) => n + (c['by'] as number), 0);
+  ctx.content.lord.favour.start +
+  favourCauses(ctx.world).reduce((n, c) => n + (c['by'] as number), 0);
 
 /** The lord's favour now. */
 export const favourOf = (ctx: SystemContext): number => clamp(rawOf(ctx), 0, 100);
+
+/** The lord's favour in `world` now, for a read-only view. */
+export const favourAt = (world: WorldState, content: EngineContent): number =>
+  clamp(
+    content.lord.favour.start + favourCauses(world).reduce((n, c) => n + (c['by'] as number), 0),
+    0,
+    100,
+  );
 
 const fill = (text: string, vars: Readonly<Record<string, string>>): string =>
   text.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? '');
@@ -59,12 +76,15 @@ export function addFavour(
 
 /** The share the ladder makes of the plain tithe, in 100: raised while that step holds, a fine
  * or a free year owed now. */
-export function shareOf(ctx: SystemContext): number {
-  const lord = lordRow(ctx.world);
+export const shareOf = (ctx: SystemContext): number => shareIn(ctx.world, ctx.content);
+
+/** `shareOf` for a read-only view. */
+export function shareIn(world: WorldState, content: EngineContent): number {
+  const lord = lordRow(world);
   if (!lord) return 100;
   const steps = (lord['steps'] as number[] | undefined) ?? [];
   let n = 100;
-  ctx.content.lord.favour.ladder.forEach((s, k) => {
+  content.lord.favour.ladder.forEach((s, k) => {
     if (s.id === 'raised' && steps.includes(k)) n += s.by;
     if ((s.id === 'fine' || s.id === 'free') && lord[s.id]) n += s.by;
   });

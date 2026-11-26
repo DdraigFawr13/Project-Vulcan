@@ -70,6 +70,18 @@
   height: 100%;
   background: var(--ember);
 }
+.fticks {
+  position: relative;
+  height: 16px;
+  margin: 0 0 4px;
+}
+.fticks span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font: 12px/16px var(--label);
+  color: var(--ink-soft);
+}
 .scause {
   margin: 2px 0;
 }
@@ -90,4 +102,68 @@
 }
 .petition .row button {
   min-height: var(--tap);
+}
+
+/* The Asks sheet (6C Slice 4, V-237): a red count on Asks and on ⋯, then each ask as a card. */
+#hud button .askcount {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  padding: 0 4px;
+  border-radius: 10px;
+  background: var(--rubric);
+  color: var(--bone);
+  font: 400 11px/1 var(--label);
+  vertical-align: middle;
+}
+#hud button.more {
+  position: relative;
+}
+#hud button.more .askcount {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  margin: 0;
+}
+.askhead .askn {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  margin-left: 8px;
+  padding: 0 5px;
+  border-radius: 11px;
+  background: var(--iron);
+  color: var(--bone);
+  font: 400 11px/1 var(--label);
+  vertical-align: middle;
+}
+.askhead .askn.hot {
+  background: var(--rubric);
+}
+.ask {
+  padding: 10px 0 12px;
+  border-top: 1px solid var(--rule);
+}
+.ask p {
+  margin: 2px 0;
+}
+.askwho i {
+  color: var(--ink-soft);
+}
+.asksays {
+  font-size: 17px;
+}
+.askbtns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.askbtns button.word {
+  min-height: var(--tap);
+  padding: 0 14px;
 }

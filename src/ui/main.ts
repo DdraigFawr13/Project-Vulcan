@@ -64,6 +64,7 @@ const renderer = startRenderer(parent, {
     const person = renderer.personAt(tile.x, tile.y);
     const animal = person ? undefined : renderer.animalAt(tile.x, tile.y);
     if (animal !== undefined) return send({ type: 'animal', id: animal });
+    if (!person && renderer.reeveAt(tile.x, tile.y)) return send({ type: 'reeve' });
     if (!person) return send({ type: 'inspect', ...tile, z: level });
     sheets.showPerson(person);
     renderer.mark(tile);
@@ -133,6 +134,7 @@ const sheets = new Sheets({
   opened: (kind) => hud.showPanel(kind),
   drawPeople: (list) => renderer.setPeople(list),
   speed: setSpeed,
+  asks: (waiting) => hud.showAsks(waiting),
   ...finding(renderer, panel, (z) => setLevel(z, true)),
 });
 stops.more = () => sheets.recapRows();
@@ -222,6 +224,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       renderer.applyChunks(message.chunks);
       renderer.movePeople(message.walkers, message);
       if (message.animals) renderer.setAnimals(message.animals);
+      renderer.setReeve(message.reeve);
       if (message.finds) renderer.setFinds(message.finds);
       // The worker changes speed itself (a jump ends, a line stops play); the bar follows it.
       pace.snapshot(message);
@@ -263,12 +266,13 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       }
     } else if (message.type === 'item') sheets.showItem(message.item);
     else if (message.type === 'animalPage') sheets.showAnimal(message.page);
+    else if (message.type === 'reevePage') sheets.showReeve(message.page);
     else if (message.type === 'trips') panel.showTrips(message.trips);
     else if (message.type === 'picker') {
       hud.hideScreen();
       picker.show(message);
     } else if (message.type === 'region') {
-      if (message.region) panel.showRegion(message.region, message.site);
+      if (message.region) panel.showRegion(message.region, message.site, message);
       else
         panel.showNote(
           'Region',
@@ -276,8 +280,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
         );
     } else if (message.type === 'causes') panel.showCauses(message.id, message.lines);
     else if (message.type === 'loadRefused' && !ready) {
-      // The save to continue from no longer loads: the title offers New game alone and says why
-      // (another version, or the check's own reason); a reloaded valley begins afresh instead.
+      // The save no longer loads: the title offers New game alone and says why; a reload begins afresh.
       saves.loading = false;
       titleWaits = false;
       if (title) title.empty(message.old ? OLD_SAVE : refusedNote(message.reason));

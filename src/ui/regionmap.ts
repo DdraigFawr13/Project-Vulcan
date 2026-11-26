@@ -2,8 +2,9 @@
 // the game's muted palette with peaks, trees and rivers, then names, site glyphs and valley markers
 // as an SVG layer with tap areas of about 40 px. A picture only; it computes no game rule (GAME-02).
 import { content } from '../content/index.ts';
-import type { RegionView } from '../worker/index.ts';
+import type { RegionDetail, RegionView } from '../worker/index.ts';
 import { el } from './dom.ts';
+import { why } from './standingrows.ts';
 
 type RegionSite = RegionView['sites'][number];
 
@@ -281,7 +282,11 @@ export const siteWords = (site: RegionSite): string =>
 
 /** The Region sheet's rows: the map with the settled valley marked, a note that shows who lives at
  * a tapped site, and the neighbours. */
-export function regionRows(region: RegionView, site: number): HTMLElement[] {
+export function regionRows(
+  region: RegionView,
+  site: number,
+  detail: RegionDetail = {},
+): HTMLElement[] {
   const valley = region.valleys[site - 1];
   const note = el('p', { class: 'note' }, 'Tap a settlement to see who lives there.');
   const map = regionMap(region, {
@@ -290,14 +295,27 @@ export function regionRows(region: RegionView, site: number): HTMLElement[] {
     onSite: (s) => (note.textContent = siteWords(s)),
   });
   const near = el('ul');
-  for (const n of valley?.near ?? [])
-    near.append(el('li', {}, `${n.name}, ${n.culture} ${n.kind}, ${n.days} days ${n.dir}`));
+  for (const n of valley?.near ?? []) {
+    const item = el('li', {}, `${n.name}, ${n.culture} ${n.kind}, ${n.days} days ${n.dir}`);
+    // 6C Slice 4: a village's regard for the colony, once an ask of theirs has been answered.
+    const regard = detail.regard?.find((r) => r.place === n.name);
+    if (regard) item.setAttribute('data-line', String(regard.why));
+    if (regard) item.append('. ', regard.text, ' ', ...(regard.why ? [why(regard.why)] : []));
+    near.append(item);
+  }
+  // 6C Slice 4: the lord, once his reeve has named him, on the settled valley's card.
+  const held = el('p', {
+    'data-testid': 'region-lord',
+    'data-line': String(detail.lord?.why ?? 0),
+  });
+  if (detail.lord) held.append(`${detail.lord.text} `, why(detail.lord.why));
   return [
     el(
       'p',
       {},
       valley ? `Your valley: ${valley.name}${valley.range ? `, under ${valley.range}` : ''}.` : '',
     ),
+    ...(detail.lord ? [held] : []),
     map,
     raceLegend(region),
     note,
