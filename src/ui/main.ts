@@ -280,8 +280,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
         );
     } else if (message.type === 'causes') panel.showCauses(message.id, message.lines);
     else if (message.type === 'loadRefused' && !ready) {
-      // The save to continue from no longer loads: the title offers New game alone and says why
-      // (another version, or the check's own reason); a reloaded valley begins afresh instead.
+      // The save no longer loads: the title offers New game alone and says why; a reload begins afresh.
       saves.loading = false;
       titleWaits = false;
       if (title) title.empty(message.old ? OLD_SAVE : refusedNote(message.reason));
