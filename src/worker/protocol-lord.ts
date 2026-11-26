@@ -40,6 +40,8 @@ export interface ReeveView {
   y: number;
   z: number;
   race: string;
+  /** The lord rides with him (6C Slice 7): drawn beside him. */
+  lord: boolean;
 }
 
 /** The reeve's page (as a stranger's, view only): who, rows and his lines this visit. */

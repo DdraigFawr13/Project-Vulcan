@@ -78,7 +78,8 @@ export function reeveView(world: WorldState): ReeveView | undefined {
   const r = reeveRow(world);
   const lord = lordRow(world);
   if (!r || !lord) return undefined;
-  return { x: r['x'] as number, y: r['y'] as number, z: r['z'] as number, race: raceOf(lord) };
+  const [x, y, z] = [r['x'] as number, r['y'] as number, r['z'] as number];
+  return { x, y, z, race: raceOf(lord), lord: !!r['lord'] };
 }
 
 const personName = (world: WorldState, id: unknown): string =>
@@ -86,6 +87,8 @@ const personName = (world: WorldState, id: unknown): string =>
 
 /** What he is doing: riding in to find whom he seeks, or riding home. */
 function doingNow(world: WorldState, r: EntityRow, lord: EntityRow): string {
+  if (r['lord'] && !r['going'] && world.tick < (r['wait'] as number))
+    return `Staying by the hall with ${lordName(lord)} for the harvest-home supper; speaks for the lord in the morning`;
   return r['going']
     ? `Riding back to ${lord['home'] as string} by the road he came`
     : `Riding in to find ${personName(world, r['seeks'])}, to speak for the lord`;
@@ -123,8 +126,20 @@ export function reevePage(world: WorldState, lineOf: LineOf): ReevePage | undefi
       text: `${came ? cameWords(world, came.tick) : 'Today'}, up the road from ${home}`,
       why: r['came'] as number,
     },
-    { name: 'Leaves', text: `By ${String(leave).padStart(2, '0')}:00, back down the same road` },
+    {
+      name: 'Leaves',
+      text:
+        r['lord'] && world.tick < (r['wait'] as number)
+          ? 'Tomorrow, once the tithe is counted, with the lord'
+          : `By ${String(leave).padStart(2, '0')}:00, back down the same road`,
+    },
   ];
+  if (r['lord'])
+    rows.splice(1, 0, {
+      name: 'With him',
+      text: `${lordName(lord)} and ${content.lord.visit.men} of the lord's men, come for the harvest-home supper`,
+      why: r['lord'] as number,
+    });
   if (lord['named'])
     rows.push({
       name: "The lord's favour",

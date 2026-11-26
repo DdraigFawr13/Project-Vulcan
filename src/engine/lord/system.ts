@@ -46,6 +46,7 @@ function copyLord(ctx: SystemContext, lord: Lord): void {
     ...{ title: titleOf(content, lord.kind, lord.sex), home: lord.home, culture: lord.culture },
     ...{ dir: lord.dir, reeve: reeveName(ctx, names, lord.name), named: 0 },
     ...{ steps: [], fine: 0, free: 0, granted: 0, fx: -1, fy: -1, visits: 0 },
+    ...{ tithed: 0, tookAt: 0, took: '', came: 0, plea: 0 },
   });
 }
 

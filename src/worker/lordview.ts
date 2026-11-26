@@ -31,6 +31,11 @@ function whoIs(lord: EntityRow): string {
 }
 
 const his = (lord: EntityRow): string => (lord['sex'] === 'f' ? 'Her' : 'His');
+const heOf = (lord: EntityRow): string => (lord['sex'] === 'f' ? 'she' : 'he');
+const selfOf = (lord: EntityRow): string => (lord['sex'] === 'f' ? 'herself' : 'himself');
+/** "third" for 3 (the lord's visit, 6C Slice 7). */
+const ordinal = (n: number): string =>
+  ['', 'first', 'second', 'third', 'fourth', 'fifth'][n] ?? `${n}th`;
 
 /** The ladder in one line, from content, then how long a cause counts. */
 function ladderLine(): string {
@@ -68,7 +73,8 @@ export function lordView(world: WorldState): LordView | undefined {
   return {
     who:
       `The valley is held by ${whoIs(lord)}. ${his(lord)} reeve ${lord['reeve'] as string} ` +
-      `comes the morning after each harvest home.`,
+      `comes the morning after each harvest home; every ${ordinal(content.lord.visit.every)} ` +
+      `harvest home ${heOf(lord)} comes ${selfOf(lord)} for the supper.`,
     whoWhy: lord['named'] as number,
     favour: favourAt(world, content),
     steps: content.lord.favour.ladder.map((s) => s.below ?? s.above ?? 0).sort((a, b) => a - b),

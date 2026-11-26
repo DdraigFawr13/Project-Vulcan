@@ -84,6 +84,7 @@ Set by Morgan 2026-10-17. These sit on top of the shared AI-Master-Instructions 
 - **VR-70** Nothing built may seal what the green reaches (LESSONS x2: a wood yard sealed the pasture gate; a house sealed the granary door). Every siting of a store, house or other walled building runs `shutsOff` (build `site.ts`) before it is planned.
 - **VR-71** Carrying a surplus is a last-resort job (LESSONS x2: a log surplus kept the band hauling all year; a turnip heap past its plate stopped all building on anvil). Goods past their plate are hauled only by someone with nothing else to take up, after the Work-sheet loop; a year run counts unbuilt plans by day 200.
 - **VR-72** A gathering's deadline allows for the longest walk (LESSONS x2: the harvest-home supper ate before people walking from work arrived, twice). Whoever is already on the way is waited for, up to a hard stop so it can never hang.
+- **VR-76** A row is born whole (LESSONS x2: lambs without `hurt`; a lord copied without his last take's fields, so saves between his first and second visit were refused). Adding a field to a table means adding it at every `addEntity` site of that kind and to the save mend; the test of that kind's system runs `checkSave` (or `tablesProblem`) on a world it has added a row to, never only `structuredClone`.
 
 ## 9. Lessons
 
