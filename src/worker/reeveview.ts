@@ -11,6 +11,7 @@ import {
   lordName,
   lordRow,
   list,
+  pronounsOf,
   rateIn,
   recordOf,
   reeveRow,
@@ -58,10 +59,11 @@ export function titheView(world: WorldState): TitheView | undefined {
   const apart = goodsWords(apartOf(world));
   return {
     lord: lordName(lord),
+    head: `For ${lordName(lord)}, counted by ${pronounsOf(lord).his} reeve the morning after harvest home.`,
     took,
     why: (lord['tithed'] as number) || 0,
     owed,
-    barn: `In the barn for him now: ${barn || 'nothing'}.`,
+    barn: `In the barn for ${pronounsOf(lord).him} now: ${barn || 'nothing'}.`,
     apart: apart
       ? `Set apart in the barn for asks: ${apart}.`
       : 'Nothing is set apart in the barn for asks.',

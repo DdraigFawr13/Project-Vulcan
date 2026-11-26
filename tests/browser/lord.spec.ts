@@ -101,7 +101,7 @@ test('the lord shows on Laws, Stock and the map once his reeve has named him', a
   );
   await expect(tithe.getByTestId('tithe-took')).toContainText(/took|has taken nothing yet/);
   await expect(tithe).toContainText('Owed for the next harvest home');
-  await expect(tithe.getByTestId('tithe-barn')).toContainText('In the barn for him now:');
+  await expect(tithe.getByTestId('tithe-barn')).toContainText('In the barn for her now:');
   await expect(tithe.getByTestId('tithe-apart')).toContainText(/asks\.$/);
   expect(await phoneRules(page)).toEqual([]);
   await shot(page, 'stock-tithe');

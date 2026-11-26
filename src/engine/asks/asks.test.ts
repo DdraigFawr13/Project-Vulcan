@@ -86,6 +86,8 @@ describe("the lord's asks", () => {
     expect(cost.causes).toContain(passed!.id);
     expect(cost.data['way']).toBe('falls');
     expect(String(cost.data['text'])).toContain(String(ask['what']));
+    // smoke/1's lord is a queen: her ask, for her hall (6C review).
+    expect(String(cost.data['text'])).toMatch(/^Her ask for /);
     // His next ask came at the same visit.
     expect(lines(w, 'lord.asked')).toHaveLength(2);
     // A settled ask is never settled again at a later visit.

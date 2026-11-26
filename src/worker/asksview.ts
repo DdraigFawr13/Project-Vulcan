@@ -10,6 +10,7 @@ import {
   clockAt,
   liveAsks,
   lordRow,
+  pronounsOf,
   recordOf,
   TICKS_PER_DAY,
   type EntityRow,
@@ -55,7 +56,7 @@ function dueOf(world: WorldState, a: EntityRow): string {
   const due = a['due'] as number;
   if (!due)
     return a['source'] === 'lord'
-      ? 'by his next visit (the morning after harvest home)'
+      ? `by ${lordHis(world)} next visit (the morning after harvest home)`
       : 'by the next harvest home';
   const days = Math.max(0, Math.ceil((due - world.tick) / TICKS_PER_DAY));
   const left = days === 0 ? 'due now' : days === 1 ? '1 day' : `${days} days`;
@@ -73,13 +74,19 @@ function answerByOf(world: WorldState, a: EntityRow): string {
   return `Answer by ${at}, or they go on their way.`;
 }
 
+/** "his" or "her", for the lord. */
+const lordHis = (world: WorldState): string => {
+  const lord = lordRow(world);
+  return lord ? pronounsOf(lord).his : 'his';
+};
+
 /** The lord's favour moves: doubled for a temper that doubles the costs. */
 function lordCosts(world: WorldState): string {
   const c = content.lord.favour.causes;
   const times = content.asks.lord.double.includes(lordRow(world)?.['temper'] as string) ? 2 : 1;
   const now = favourAt(world, content);
   return (
-    `Done: his favour ${signed(c['askDone']?.by ?? 0)}, from ${now}. Let pass: ${signed((c['askPassed']?.by ?? 0) * times)}. ` +
+    `Done: ${lordHis(world)} favour ${signed(c['askDone']?.by ?? 0)}, from ${now}. Let pass: ${signed((c['askPassed']?.by ?? 0) * times)}. ` +
     `Not ready by then: ${signed((c['askLate']?.by ?? 0) * times)}.`
   );
 }
@@ -153,7 +160,7 @@ function workOf(world: WorldState, a: EntityRow): string {
         )
         .map((r) => ids.get(r['person'] as number)!);
       const who = refuse.length
-        ? `${refuse.join(' and ')} refuse${refuse.length > 1 ? '' : 's'} the Lord law and will not work his asks. `
+        ? `${refuse.join(' and ')} refuse${refuse.length > 1 ? '' : 's'} the Lord law and will not work ${lordHis(world)} asks. `
         : '';
       return `Lord law: ${who}Anyone who grumbles at it works them a quarter slower.`;
     }

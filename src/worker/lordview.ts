@@ -10,6 +10,7 @@ import {
   favourCauses,
   lordName,
   lordRow,
+  pronounsOf,
   TICKS_PER_DAY,
   type EntityRow,
   type WorldState,
@@ -39,8 +40,11 @@ const ordinal = (n: number): string =>
   ['', 'first', 'second', 'third', 'fourth', 'fifth'][n] ?? `${n}th`;
 
 /** The ladder in one line, from content, then how long a cause counts. */
-function ladderLine(): string {
+function ladderLine(lord: EntityRow): string {
   const f = content.lord.favour;
+  const words = pronounsOf(lord);
+  const said = (text: string) =>
+    text.replace(/\{(\w+)\}/g, (_, k: string) => words[k as 'his'] ?? '');
   const { least, years: old } = content.lord.charter;
   const when = (id: string) =>
     id === 'charter' ? `, once ${least} or more live here and ${old} years have passed` : '';
@@ -49,8 +53,8 @@ function ladderLine(): string {
     .sort((a, b) => (a.above ?? 0) - (b.above ?? 0))
     .map((s) =>
       s.below !== undefined
-        ? `At ${s.below} or less, ${s.text}.`
-        : `At ${s.above ?? 0} or more, ${s.text}${when(s.id)}.`,
+        ? `At ${s.below} or less, ${said(s.text)}.`
+        : `At ${s.above ?? 0} or more, ${said(s.text)}${when(s.id)}.`,
     );
   const years = Math.round(
     f.days / (content.calendar.daysPerMonth * content.calendar.monthsPerYear),
@@ -85,7 +89,8 @@ export function lordView(world: WorldState): LordView | undefined {
     whoWhy: lord['named'] as number,
     favour: favourAt(world, content),
     steps: content.lord.favour.ladder.map((s) => s.below ?? s.above ?? 0).sort((a, b) => a - b),
-    ladder: ladderLine(),
+    ladder: ladderLine(lord),
+    head: `${his(lord)} favour`,
     causes: causesView(world),
   };
 }

@@ -14,7 +14,7 @@ export function fillTithe(box: Element, t: TitheView): Element {
   took.append(`${t.took} `);
   if (t.why) took.append(why(t.why));
   box.replaceChildren(
-    el('p', {}, `For ${t.lord}, counted by his reeve the morning after harvest home.`),
+    el('p', {}, t.head),
     took,
     el('p', { class: 'aside' }, t.owed),
     el('p', { class: 'aside', 'data-testid': 'tithe-barn' }, t.barn),

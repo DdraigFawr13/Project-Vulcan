@@ -10,7 +10,7 @@ export function lordRows(view: LordView): HTMLElement[] {
   const who = el('p', { 'data-line': String(view.whoWhy), 'data-testid': 'lord-who' });
   who.append(`${view.who} `, why(view.whoWhy));
   const head = el('div', { class: 'standing', 'data-testid': 'favour' });
-  head.append(el('h3', {}, 'His favour'), el('span', { class: 'sword' }, `${view.favour} of 100`));
+  head.append(el('h3', {}, view.head), el('span', { class: 'sword' }, `${view.favour} of 100`));
   const bar = el('div', {
     class: 'sbar',
     role: 'img',
