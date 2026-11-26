@@ -4,7 +4,8 @@
 // is made by whoever free is able to smith, the most skilled first, at the forge (smith.ts).
 // Nobody is picked (V-041).
 import type { EntityRow } from '../core/index.ts';
-import { fitsAsk, itemsOf, takenAsks } from '../goods/index.ts';
+import { fitsAsk, itemsOf, madeForOther, takenAsks } from '../goods/index.ts';
+import { TICKS_PER_DAY } from '../core/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { able, canStandBeside, people, reachableOf, readyFor, skillOf } from '../band/index.ts';
 import { takeUpAskHaul } from '../band/index.ts';
@@ -36,15 +37,22 @@ function moreSkilled(ctx: SystemContext, p: EntityRow, a: EntityRow): boolean {
   );
 }
 
-/** Whether ask `a`'s tool must still be made: nothing that fits lies free, nobody is carrying or
- * making one for it, and the smith has not yet had `count` + 1 tries (a piece short of the
- * quality asked lies with the cart; the ask then goes late). */
+/** Whether ask `a`'s tool must still be made: nothing that fits lies free (but a piece made for
+ * another ask), nobody is carrying or making one for it, and either the smith has not yet had
+ * `count` + 1 tries or `asks.retry` days have passed since the last (a piece short of the quality
+ * asked lies with the cart; 6C Slice 4 build note: they try again rather than give up). */
 function toMake(ctx: SystemContext, a: EntityRow): boolean {
   const { world, content } = ctx;
-  if (((a['made'] as number) || 0) > (a['count'] as number)) return false;
+  const rested = world.tick - ((a['tried'] as number) || 0) >= content.asks.retry * TICKS_PER_DAY;
+  if (((a['made'] as number) || 0) > (a['count'] as number) && !rested) return false;
   if ((a['going'] as number[]).length || people(world).some((q) => q['ask'] === a.id)) return false;
   return !itemsOf(world).some(
-    (i) => !i['holder'] && !i['state'] && (i['x'] as number) >= 0 && fitsAsk(content, a, i),
+    (i) =>
+      !i['holder'] &&
+      !i['state'] &&
+      (i['x'] as number) >= 0 &&
+      fitsAsk(content, a, i) &&
+      !madeForOther(world, a, i),
   );
 }
 
