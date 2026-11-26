@@ -75,6 +75,12 @@
   height: 16px;
   margin: 0 0 4px;
 }
+.fticks.two {
+  height: 30px;
+}
+.fticks span.low {
+  top: 14px;
+}
 .fticks span {
   position: absolute;
   top: 0;
