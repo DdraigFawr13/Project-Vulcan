@@ -23,7 +23,8 @@
       { "event": "neighbour.asked", "weight": 3, "title": "{place} asked for {what}" },
       { "event": "faith.asked", "weight": 2, "title": "the {title} asked for {what}" },
       { "event": "guest.asked", "weight": 2, "title": "{names} asked to stay a season" },
-      { "event": "dream.asked", "weight": 2, "title": "{name} asked the colony to back a dream" }
+      { "event": "dream.asked", "weight": 2, "title": "{name} asked the colony to back a dream" },
+      { "event": "master.asked", "weight": 2, "title": "{name}, a master {noun}, asked to stay a season" }
     ] },
     { "id": "lost", "max": 4, "lines": [
       { "event": "health.died", "weight": 10, "tally": "died", "per": "line", "title": "{name} died", "many": "{Count} died: {list}.", "item": "{name}" },
