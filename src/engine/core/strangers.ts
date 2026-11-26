@@ -22,8 +22,9 @@ export interface StrangersDef {
     eat: number;
     hour: number;
     first: { month: string; day: number };
-    /** Percent a song made here and a living byname holder add, to at most `most` (V-214). */
-    fame: { song: number; byname: number; most: number };
+    /** Percent a song made here and a living byname holder add, to at most `most` (V-214); a
+     * charter adds `charter` more, named in a newcomer's line by `words` (V-242). */
+    fame: { song: number; byname: number; most: number; charter: number; words: string };
   };
   /** With no neighbours on record: the road's place `days` away (lowest, highest), its site
    * kind, and the words naming the songs in a newcomer's line (V-214). */

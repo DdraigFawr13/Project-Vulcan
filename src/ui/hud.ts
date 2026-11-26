@@ -176,6 +176,8 @@ export class Hud {
     jump?: JumpView;
     jumpEnd?: JumpEndView;
     landings: LandingsView;
+    /** The colony's view, for the valley's name by its charter (V-242), once it has one. */
+    colony?: { charter?: { name: string } };
   }): void {
     const { clock, tick, at, weather, mood } = s;
     const pad = (n: number) => String(n).padStart(2, '0');
@@ -189,7 +191,11 @@ export class Hud {
       this.clock.append(
         el('span', { class: 'testbadge', 'data-testid': 'test-badge' }, 'TEST MODE'),
       );
-    const line = el('small', {}, `${season}${sky} · ${this.where}`);
+    const line = el(
+      'small',
+      {},
+      `${s.colony?.charter ? `${s.colony.charter.name} · ` : ''}${season}${sky} · ${this.where}`,
+    );
     line.prepend(this.version);
     if (mood) {
       this.mood.hidden = false;

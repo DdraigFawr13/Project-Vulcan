@@ -4,6 +4,7 @@
 // nothing is shown before his reeve has named him.
 import { content } from '../content/index.ts';
 import {
+  charterOf,
   clockAt,
   favourAt,
   favourCauses,
@@ -40,11 +41,17 @@ const ordinal = (n: number): string =>
 /** The ladder in one line, from content, then how long a cause counts. */
 function ladderLine(): string {
   const f = content.lord.favour;
-  const steps = f.ladder.map((s) =>
-    s.below !== undefined
-      ? `At ${s.below} or less, ${s.text}.`
-      : `At ${s.above ?? 0} or more, ${s.text}.`,
-  );
+  const { least, years: old } = content.lord.charter;
+  const when = (id: string) =>
+    id === 'charter' ? `, once ${least} or more live here and ${old} years have passed` : '';
+  // The falls first, as listed, then the rises from the lowest (the charter at 80, V-242).
+  const steps = [...f.ladder]
+    .sort((a, b) => (a.above ?? 0) - (b.above ?? 0))
+    .map((s) =>
+      s.below !== undefined
+        ? `At ${s.below} or less, ${s.text}.`
+        : `At ${s.above ?? 0} or more, ${s.text}${when(s.id)}.`,
+    );
   const years = Math.round(
     f.days / (content.calendar.daysPerMonth * content.calendar.monthsPerYear),
   );
@@ -95,7 +102,9 @@ export function regionDetail(world: WorldState): RegionDetail & { regard: Regard
       why: r['line'] as number,
     };
   });
+  const charter = charterOf(world);
   return {
+    ...(charter && { charter: { name: charter.name, why: charter.line } }),
     ...(lord && {
       lord: {
         text: `Held by ${whoIs(lord)}. ${his(lord)} favour: ${favourAt(world, content)} of 100.`,

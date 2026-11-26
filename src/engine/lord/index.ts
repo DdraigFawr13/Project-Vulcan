@@ -3,3 +3,4 @@ export { lordSystem } from './system.ts';
 export { lordName, lordRow, reeveRow } from './tables.ts';
 export { favourAt, favourCauses, shareIn } from './favour.ts';
 export { rateIn } from './tithe.ts';
+export { charterOf } from './charter.ts';

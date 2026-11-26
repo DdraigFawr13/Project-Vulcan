@@ -1,6 +1,7 @@
 // 6B review q7 (V-214): a valley's songs carry. On a valley with no neighbours on record (a test
 // valley made from a seed word), a stranger comes by the road once songs are made there, giving
-// the songs as their reason, and their coming says so. With no song, nobody comes.
+// the songs as their reason, and their coming says so. With no song, nobody comes. A chartered
+// valley (V-242) is spoken of the same way, with the charter as the reason.
 import { describe, expect, it } from 'vitest';
 import { content as game } from '../../content/index.ts';
 import { addEntity, allLines, createSim, createWorld, step, TICKS_PER_DAY } from '../index.ts';
@@ -10,7 +11,10 @@ const d = game.strangers.draw;
 // Every song draws someone, so the first month's first day is enough.
 const content = {
   ...game,
-  strangers: { ...game.strangers, draw: { ...d, fame: { song: 100, byname: 0, most: 100 } } },
+  strangers: {
+    ...game.strangers,
+    draw: { ...d, fame: { ...d.fame, song: 100, byname: 0, most: 100, charter: 100 } },
+  },
 };
 const sim = createSim(content);
 // Smoke draws a newcomer by its spare food on day 28 since V-227, and tallow's song draws nobody in
@@ -40,5 +44,18 @@ describe('the songs draw newcomers', () => {
     expect(came.data['draw']).toContain(game.strangers.way.words);
     const lead = (w.entities['person'] ?? []).find((p) => came.actors.includes(p.id))!;
     expect(lead['reason']).toBe('song');
+  });
+
+  it('by the road for a chartered valley, with the charter as their reason', () => {
+    const w = createWorld(sim, SEED);
+    w.entities['lord'] = [{ id: 1, charter: 'Kararby', chartered: w.begunEvent }];
+    let days = 0;
+    for (; days < 32 && !lines(w, 'people.strangerCame').length; days += 1)
+      step(w, sim, TICKS_PER_DAY);
+    const came = lines(w, 'people.strangerCame')[0]!;
+    expect(came).toBeDefined();
+    expect(came.data['words']).toBe(game.strangers.kinds.find((k) => k.id === 'charter')!.words);
+    expect(came.data['draw']).toContain(game.strangers.draw.fame.words);
+    expect(came.data['draw']).not.toContain(game.strangers.way.words);
   });
 });

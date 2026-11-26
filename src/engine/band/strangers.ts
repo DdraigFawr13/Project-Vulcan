@@ -23,7 +23,7 @@ import { addPerson } from './row.ts';
 import { drawSmithing } from './smithing.ts';
 import { stepAlong } from './walk.ts';
 import { decide, namesOf } from './verdict.ts';
-import { famePercent, quietReason, roadOf } from './road.ts';
+import { famePercent, fameWords, quietReason, roadOf } from './road.ts';
 import { edgeSpot, toGreen } from './edge.ts';
 import { people, alive } from '../entity/index.ts';
 
@@ -73,7 +73,7 @@ function come(ctx: SystemContext, rng: RngStream, near: readonly Neighbour[]): v
   const s = content.strangers;
   const odds = oddsOf(ctx);
   const n = rng.weighted(near.map((h) => [h, Math.max(1, Math.floor(60 / h.days))] as const));
-  const reason = n.reasons.length ? rng.pick(n.reasons) : quietReason(odds.fame);
+  const reason = n.reasons.length ? rng.pick(n.reasons) : quietReason(world);
   const settled = (world.entities['colony'] ?? [])[0]?.['settled'] as number | undefined;
   const from = [settled || world.begunEvent];
   const record = reason.line
@@ -168,7 +168,7 @@ function arrive(ctx: SystemContext, lead: EntityRow, group: EntityRow[]): void {
     odds.days >= (content.strangers.draw.food[1]?.days ?? 0) ? 'food' : '',
     odds.beds || odds.floor ? 'a bed' : '',
     state['stayed'] ? 'others who stayed' : '',
-    odds.fame ? content.strangers.way.words : '',
+    odds.fame ? fameWords(world, content) : '',
   ].filter(Boolean);
   const brings = lead['brings'] as string;
   const kd = content.flock.kinds.find((k) => k.species === brings);

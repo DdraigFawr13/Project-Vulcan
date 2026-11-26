@@ -161,6 +161,12 @@ describe('recaps for the page', () => {
     expect(year.kicker).toBe('The chronicle · Year 1');
     expect(year.sections[0]).toMatchObject({ id: 'spring' });
     expect(year.sections[0]).not.toHaveProperty('head');
+    // Recaps written once the valley has its charter carry its name (V-242).
+    const chartered = structuredClone(world);
+    const at = recaps[4]!['tick'] as number;
+    chartered.entities['lord'] = [{ id: 1, charter: 'Kararby', chartered: 1, charterAt: at }];
+    expect(recapView(chartered, recaps[0]!, line).kicker).toBe('The chronicle · Spring, year 1');
+    expect(recapView(chartered, recaps[4]!, line).kicker).toBe('The chronicle · Year 1 · Kararby');
   });
 
   it('pauses play for a recap whose switch is on, the year turn for either', () => {

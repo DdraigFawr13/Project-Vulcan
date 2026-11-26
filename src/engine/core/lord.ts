@@ -30,6 +30,9 @@ export interface LordDef {
   favour: FavourDef;
   /** The lord's forest: the find of kind `place` farthest from the green, `reach` tiles round. */
   forest: { place: string; reach: number };
+  /** The charter (6C Slice 7 part 4, V-242): the `charter` step needs `least` living and more
+   * than `years` years settled; everyone living keeps `memory`. */
+  charter: { least: number; years: number; memory: string };
   /** The lord's own visit (6C Slice 7 part 2, V-236, V-240). */
   visit: VisitDef;
 }

@@ -60,7 +60,16 @@ function mendLord(world: WorldState): void {
         if (row && typeof row === 'object')
           for (const [k, v] of Object.entries(fields)) if (!(k in row)) row[k] = v;
   };
-  add('lord', { tithed: 0, tookAt: 0, took: '', came: 0, plea: 0 });
+  add('lord', {
+    tithed: 0,
+    tookAt: 0,
+    took: '',
+    came: 0,
+    plea: 0,
+    charter: '',
+    chartered: 0,
+    charterAt: 0,
+  });
   add('reeve', { lord: 0, feast: 0, wait: 0, judged: 0, favourIn: 0 });
 }
 

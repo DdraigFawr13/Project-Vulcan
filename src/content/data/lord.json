@@ -38,11 +38,13 @@
     {"id": "fine", "below": 20, "text": "the valley is fined one more tithe, due at the next harvest home", "by": 100},
     {"id": "men", "below": 10, "text": "the lord's men come to take what is owed by force", "by": 100},
     {"id": "free", "above": 70, "text": "the lord grants a year free of the tithe", "by": -100},
-    {"id": "forest", "above": 85, "text": "the lord grants the valley his forest", "by": 0}
+    {"id": "forest", "above": 85, "text": "the lord grants the valley his forest", "by": 0},
+    {"id": "charter", "above": 80, "text": "the lord grants the valley its charter", "by": 0}
   ],
   "men": {"kinds": ["break", "cut"], "parts": ["head", "body", "left-arm", "right-arm"], "severity": "light", "what": "was beaten by the lord's men"}
 },
 "forest": {"place": "wood", "reach": 12},
+"charter": {"least": 10, "years": 5, "memory": "charter-read"},
 "visit": {
   "every": 3, "men": 4, "prize": {"material": "iron", "quality": "fine"},
   "table": {

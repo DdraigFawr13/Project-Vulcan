@@ -116,6 +116,7 @@
   {"id":"mishap","mood":-4,"decayDays":14,"text":"Something new went wrong in my hands","thoughts":["That should have worked.","I will not try that again in a hurry."]},
   {"id":"lean-tithe","mood":-6,"decayDays":168,"text":"Saw the lord's tithe taken in a lean year","thoughts":["The reeve took grain we needed.","We go short so the lord eats."]},
   {"id":"hothead-spoke","mood":-1,"decayDays":28,"text":"Heard someone speak against the lord at his table","thoughts":["Someone said aloud what many think.","Words like that at the lord's own table."]},
+  {"id":"charter-read","mood":4,"decayDays":112,"text":"Heard the valley's charter read","thoughts":["The valley has its own name now, and it is ours.","Held of the lord by our own folk, written and sealed."]},
   {"id":"plea-heard","mood":3,"decayDays":56,"text":"The lord heard the elder's plea in a lean year","thoughts":["The lord eased the tithe when we asked.","The elder spoke for us, and was heard."]},
   {"id":"plea-refused","mood":-4,"decayDays":84,"text":"The lord refused the elder's plea in a lean year","thoughts":["We asked for mercy and got none.","The lord takes his share though we go short."]},
   {"id":"grumbled-lord","mood":-2,"decayDays":7,"text":"Carried the lord's share against their will"},

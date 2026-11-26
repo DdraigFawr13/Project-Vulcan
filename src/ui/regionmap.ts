@@ -309,12 +309,17 @@ export function regionRows(
     'data-line': String(detail.lord?.why ?? 0),
   });
   if (detail.lord) held.append(`${detail.lord.text} `, why(detail.lord.why));
+  // 6C Slice 7 (V-242): the name the valley's charter gave it, the old name beside it.
+  const own = el('p', { 'data-testid': 'region-valley' });
+  const under = valley?.range ? `, under ${valley.range}` : '';
+  if (valley && detail.charter)
+    own.append(
+      `Your valley: ${detail.charter.name}${under}, by its charter; ${valley.name} on the old maps. `,
+      why(detail.charter.why),
+    );
+  else if (valley) own.append(`Your valley: ${valley.name}${under}.`);
   return [
-    el(
-      'p',
-      {},
-      valley ? `Your valley: ${valley.name}${valley.range ? `, under ${valley.range}` : ''}.` : '',
-    ),
+    own,
     ...(detail.lord ? [held] : []),
     map,
     raceLegend(region),

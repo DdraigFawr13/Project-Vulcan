@@ -5,6 +5,7 @@
 import { content } from '../content/index.ts';
 import {
   annalsOf,
+  charterOf,
   recordOf,
   tableOf,
   type EntityRow,
@@ -19,11 +20,15 @@ const { calendar, annals } = content;
 const seasonName = (n: number): string => calendar.seasons[n] ?? '';
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** `{Season}` and `{year}` in a page template. */
-const kickerOf = (a: EntityRow): string =>
-  (a['kind'] === 'year' ? annals.page.kickerYear : annals.page.kicker)
+/** `{Season}` and `{year}` in a page template; a recap written once the valley has its charter
+ * names it (V-242). */
+function kickerOf(world: WorldState, a: EntityRow): string {
+  const kicker = (a['kind'] === 'year' ? annals.page.kickerYear : annals.page.kicker)
     .replace('{Season}', cap(seasonName(a['season'] as number)))
     .replace('{year}', String(a['year']));
+  const charter = charterOf(world);
+  return charter && (a['tick'] as number) >= charter.at ? `${kicker} · ${charter.name}` : kicker;
+}
 
 /** Recap `a` in words; `line` turns a cited ledger line into the page's line. */
 export function recapView(
@@ -50,7 +55,7 @@ export function recapView(
   return {
     id: a.id,
     kind: a['kind'] === 'year' ? 'year' : 'season',
-    kicker: kickerOf(a),
+    kicker: kickerOf(world, a),
     title: cap(a['head'] as string),
     sections,
   };

@@ -17,6 +17,7 @@
       { "event": "lord.named", "weight": 8, "title": "the reeve named {lord} the valley's lord" },
       { "event": "lord.tithed", "weight": 3, "title": "the reeve took {took} for {lord}" },
       { "event": "lord.step", "weight": 4, "title": "{text}" },
+      { "event": "lord.charter", "weight": 9, "title": "{lord} gave the valley its charter: it is {name}" },
       { "event": "lord.men", "weight": 5, "title": "the lord's men took {took} by force" },
       { "event": "lord.asked", "weight": 3, "title": "{lord} asked for {what}" },
       { "event": "lord.came", "weight": 7, "title": "{lord} came himself to the harvest home" },

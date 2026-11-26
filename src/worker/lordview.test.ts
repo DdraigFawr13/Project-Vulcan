@@ -1,7 +1,7 @@
 // 6C Slice 4 (V-237): the lord on screen. Nothing shows before his reeve has named him; after, the
 // Laws sheet's Lord block (who, favour with every step, its causes), the Stock sheet's tithe block
 // (his last take outlives the sealed day), the reeve on the map and his page, and the Region
-// sheet's lord and regards; Slice 7, the lord riding with him to his supper. Worlds as the engine's lord test makes them (smoke/1).
+// sheet's lord and regards; Slice 7, the lord riding with him to his supper, and the charter. Worlds as the engine's lord test makes them (smoke/1).
 import { describe, expect, it } from 'vitest';
 import { content, contentHash } from '../content/index.ts';
 import {
@@ -20,6 +20,7 @@ import {
   withoutAccidents,
   yearNow,
 } from '../engine/index.ts';
+import { colonyView } from './colonyview.ts';
 import { ruledIds, ruledView } from './lawsheet.ts';
 import { regionDetail } from './lordview.ts';
 import type { LedgerLine } from './protocol.ts';
@@ -135,6 +136,19 @@ describe('the lord on screen', () => {
         text: 'Its regard for the colony: 60. A gift waits for their next stranger.',
       },
     ]);
+  });
+
+  it('shows the charter: its step on the ladder, the name on the top bar and Region sheet', () => {
+    const { lord } = ruledView(named, 'lord');
+    expect(lord!.ladder).toContain(
+      'At 70 or more, the lord grants a year free of the tithe. At 80 or more, the lord grants the valley its charter, once 10 or more live here and 5 years have passed. At 85 or more',
+    );
+    expect(colonyView(named).charter).toBeUndefined();
+    expect(regionDetail(named).charter).toBeUndefined();
+    const world = structuredClone(named);
+    Object.assign(lordRow(world)!, { charter: 'Kararby', chartered: 9, charterAt: world.tick });
+    expect(colonyView(world).charter).toEqual({ name: 'Kararby', why: 9 });
+    expect(regionDetail(world).charter).toEqual({ name: 'Kararby', why: 9 });
   });
 
   it('keeps his last take and its favour cause on the sheets after its day is sealed', () => {

@@ -236,7 +236,7 @@ worker.onmessage = (e: MessageEvent<FromWorker>) => {
       hud.showLevel(level, depth, reached);
       hud.fps = Math.round(renderer.fps());
       if (debug) hud.showTiming(message.timing);
-      hud.showClock({ ...message, mood: message.law.colony.mood });
+      hud.showClock({ ...message, mood: message.law.colony.mood, colony: message.law.colony });
       saves.seen(message.tick);
       const date = `Day ${message.clock.day} of ${message.clock.monthName}, Year ${message.clock.year}`;
       if (title && titleWaits) {

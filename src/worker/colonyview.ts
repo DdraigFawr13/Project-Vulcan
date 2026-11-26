@@ -4,6 +4,7 @@
 import { content } from '../content/index.ts';
 import {
   causesOf,
+  charterOf,
   colonyMood,
   colonyRow,
   elderOf,
@@ -92,6 +93,7 @@ export function colonyView(world: WorldState): ColonyView {
     ? `It leans every answer ${Math.abs(by)} point${Math.abs(by) === 1 ? '' : 's'} ${by > 0 ? 'towards keeping the law' : 'towards refusing'}.`
     : '';
   const elder = elderView(world);
+  const charter = charterOf(world);
   return {
     standing,
     word: standingWord(content, standing),
@@ -99,6 +101,7 @@ export function colonyView(world: WorldState): ColonyView {
     causes: causes(world),
     ...(elder && { elder }),
     mood: moodView(world),
+    ...(charter && { charter: { name: charter.name, why: charter.line } }),
     factions: factionsOf(world)
       .filter((f) => settingOf(world, content, f['law'] as string).id === f['setting'])
       .map((f) => factionView(world, f)),

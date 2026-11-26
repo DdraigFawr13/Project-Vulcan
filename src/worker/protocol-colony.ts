@@ -14,6 +14,8 @@ export interface ColonyView {
   factions: FactionView[];
   /** The colony's mood word under the clock, and its causes. */
   mood: MoodView;
+  /** The valley's name by its charter, for the top bar, once the lord has granted one (V-242). */
+  charter?: { name: string; why: number };
 }
 
 /** A faction and its petition. */
