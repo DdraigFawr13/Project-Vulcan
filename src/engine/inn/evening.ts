@@ -7,7 +7,7 @@
 // someone in a low mood): a cup is the `evening.cup` memory. With no ale or no innkeeper they
 // leave after `evening.leave` minutes. Nobody is sent: there is no lever but the Work sheet.
 import { clockAt, today, type EntityRow, type WorldState } from '../core/index.ts';
-import { spotOf, walkTo } from '../band/index.ts';
+import { spotOf, traitsOf, walkTo } from '../band/index.ts';
 import { roomAt, tavernHouse, rectOf, furnitureOf } from '../build/index.ts';
 import { addEntity } from '../entity/index.ts';
 import { grown } from '../family/index.ts';
@@ -19,11 +19,6 @@ import { inTavern, keeperOf, nightOf, readyKeg, tavernOf } from './tables.ts';
 
 /** Minutes between looks for a place in the tavern, spread across people by id. */
 const LOOK = 10;
-
-const traitsOf = (ctx: SystemContext, p: EntityRow): string[] =>
-  (ctx.world.entities['trait'] ?? [])
-    .filter((t) => t['person'] === p.id)
-    .map((t) => t['trait'] as string);
 
 /** Each hour: everyone whose work has ended and who has not yet chosen tonight chooses. */
 export function chooseEvenings(ctx: SystemContext): void {
@@ -37,7 +32,7 @@ export function chooseEvenings(ctx: SystemContext): void {
     if (p['status'] !== 'alive' || !grown(world, content, p)) continue;
     const row = nightOf(world, p.id);
     if (row?.['day'] === day || hour < hoursOf(world, content, p.id).workTo) continue;
-    const odds = traitsOf(ctx, p).reduce((n, t) => n + (ev.traits[t] ?? 0), ev.go);
+    const odds = traitsOf(ctx.world, p).reduce((n, t) => n + (ev.traits[t] ?? 0), ev.go);
     const go = p.id === keeper || ctx.rng().int(100) < odds ? 1 : 0;
     const fresh = { day, go, came: 0, going: 0, cups: 0, leave: 0, brawled: 0, hung: 0 };
     if (row) Object.assign(row, fresh);

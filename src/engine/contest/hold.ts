@@ -4,14 +4,14 @@
 // the lord sits at the supper, the last of them his. Each grown-up at the supper stands up or not
 // by their traits (a rival standing, a past win of it, push them on); the best score wins (skill,
 // attribute and a roll). The winner is proud, the rest sour; a third win of one contest gives its
-// byname; one beaten twice by the same winner holds them a rival. Nobody is picked (V-041).
+// byname; the runner-up beaten twice by the same winner holds them a rival. Nobody is picked (V-041).
 import { list, type EntityRow, type ContestKindDef } from '../core/index.ts';
 import { addEntity, alive } from '../entity/index.ts';
 import { grown } from '../family/index.ts';
 import { liveFields } from '../build/index.ts';
 import { kegsOf } from '../inn/index.ts';
 import { isDown } from '../health/index.ts';
-import { skillOf } from '../band/index.ts';
+import { skillOf, traitsOf } from '../band/index.ts';
 import { addMemories, addMemory } from '../needs/index.ts';
 import { bestow, bynameOf, freeWord } from '../tales/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -48,18 +48,13 @@ function draw(ctx: SystemContext, feast: number, n: number): ContestKindDef[] {
   return picks;
 }
 
-const traitsOf = (ctx: SystemContext, p: EntityRow): string[] =>
-  (ctx.world.entities['trait'] ?? [])
-    .filter((t) => t['person'] === p.id)
-    .map((t) => t['trait'] as string);
-
 const winsOf = (ctx: SystemContext, p: number, kind: string): number =>
   contestsOf(ctx.world).filter((c) => c['winner'] === p && c['kind'] === kind).length;
 
 /** In 100, whether `p` stands up for `k` among `able`. */
 function chance(ctx: SystemContext, p: EntityRow, k: ContestKindDef, able: EntityRow[]): number {
   const e = ctx.content.contests.enter;
-  const traits = traitsOf(ctx, p).reduce((n, t) => n + (e.traits[t] ?? 0), 0);
+  const traits = traitsOf(ctx.world, p).reduce((n, t) => n + (e.traits[t] ?? 0), 0);
   const rival = able.some((q) => q.id !== p.id && rivals(ctx.world, p.id, q.id)) ? e.rival : 0;
   const won = winsOf(ctx, p.id, k.id) > 0 ? e.won : 0;
   return e.base + traits + rival + won;
@@ -82,14 +77,15 @@ function maybeByname(ctx: SystemContext, w: EntityRow, k: ContestKindDef, line: 
   bestow(ctx, w, word, `${name} has won ${k.name} ${TIMES[wins] ?? `${wins} times`}.`, line);
 }
 
-/** Each beaten by the winner `beaten` times holds them a rival, once. */
-function maybeRivals(ctx: SystemContext, w: EntityRow, lost: EntityRow[], line: number): void {
+/** The runner-up `l`, beaten into second place by the winner `beaten` times, holds them a
+ * rival, once. */
+function maybeRival(ctx: SystemContext, w: EntityRow, l: EntityRow | undefined, line: number) {
   const c = ctx.content.contests;
-  for (const l of lost) {
+  if (l) {
     const times = contestsOf(ctx.world).filter(
-      (x) => x['winner'] === w.id && (x['entered'] as number[]).includes(l.id),
+      (x) => x['winner'] === w.id && (x['entered'] as number[])[1] === l.id,
     ).length;
-    if (times !== c.beaten || rivals(ctx.world, l.id, w.id)) continue;
+    if (times !== c.beaten || rivals(ctx.world, l.id, w.id)) return;
     const said = ctx.emit('contest.rival', {
       causes: [line],
       actors: [l.id, w.id],
@@ -98,6 +94,14 @@ function maybeRivals(ctx: SystemContext, w: EntityRow, lost: EntityRow[], line: 
     addEntity(ctx.world, 'rival', { person: l.id, of: w.id, line: said });
     addMemory(ctx, l.id, c.memories.rival, said, w.id);
   }
+}
+
+/** "Brokin and Modin", or "Brokin, Modin and 5 others" past `SHOWN` names. */
+const SHOWN = 3;
+function othersOf(lost: readonly EntityRow[]): string {
+  const names = lost.map((p) => p['name'] as string);
+  if (names.length <= SHOWN) return list(names);
+  return `${names.slice(0, SHOWN - 1).join(', ')} and ${names.length - SHOWN + 1} others`;
 }
 
 /** Holds contest `k` among `there` at supper `f`, unless too few stand up. */
@@ -123,7 +127,7 @@ function holdOne(
     actors: ranked.map((p) => p.id),
     data: {
       ...{ count: String(ranked.length), contest: k.name, name: w['name'] as string, won: k.won },
-      others: list(lost.map((p) => p['name'] as string)),
+      others: othersOf(lost),
       lord: lord.here ? " The lord's party watched." : '',
     },
   });
@@ -140,7 +144,7 @@ function holdOne(
     w.id,
   );
   maybeByname(ctx, w, k, line);
-  maybeRivals(ctx, w, lost, line);
+  maybeRival(ctx, w, lost[0], line);
 }
 
 /** The contests of harvest-home supper `f`, just eaten; `lordHere` when the lord sits at it. */

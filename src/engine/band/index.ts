@@ -49,6 +49,7 @@ export {
   people,
   same,
   skillOf,
+  traitsOf,
   spotOf,
 } from './spots.ts';
 export { famePercent } from './road.ts';

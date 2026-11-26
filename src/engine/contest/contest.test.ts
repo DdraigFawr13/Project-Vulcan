@@ -75,7 +75,7 @@ describe('contests at the harvest home', () => {
     expect(lines(w, 'contest.held')).toHaveLength(1);
   });
 
-  it('makes rivals of the twice beaten, and names the winner on the third win', () => {
+  it('makes a rival of the twice runner-up, and names the winner on the third win', () => {
     const w = createWorld(sim, SEED);
     step(w, sim, TICKS_PER_HOUR);
     for (let k = 0; k < 3; k += 1) {
@@ -85,8 +85,8 @@ describe('contests at the harvest home', () => {
     const winner = contestsOf(w)[0]!['winner'] as number;
     expect(contestsOf(w).map((c) => c['winner'])).toEqual([winner, winner, winner]);
     const rival = lines(w, 'contest.rival');
-    expect(rival).toHaveLength(living(w).length - 1);
-    expect(rival.every((e) => e.actors[1] === winner)).toBe(true);
+    const second = (contestsOf(w)[1]!['entered'] as number[])[1];
+    expect(rival.map((e) => e.actors)).toEqual([[second, winner]]);
     expect(rival[0]!.causes).toEqual([contestsOf(w)[1]!['line']]);
     const named = lines(w, 'tale.byname').find((e) => e.actors[0] === winner);
     expect(named!.causes).toEqual([contestsOf(w)[2]!['line']]);

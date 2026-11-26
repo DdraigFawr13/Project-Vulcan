@@ -15,7 +15,7 @@ export const CONTESTS_SCHEMAS = {
     enter: obj({ base: num(), traits: map(num(), 'traits'), rival: num(), won: num() }),
     // A contestant's score: skill level plus attribute plus a roll of 0 to `roll`.
     roll: count,
-    // Wins of one contest that give its byname; times beaten by the same winner that make rivals.
+    // Wins of one contest that give its byname; times runner-up to the same winner that make rivals.
     wins: num({ min: 1 }),
     beaten: num({ min: 1 }),
     memories: obj({ won: ref('memories'), lost: ref('memories'), rival: ref('memories') }),
