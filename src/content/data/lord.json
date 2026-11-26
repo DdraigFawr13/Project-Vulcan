@@ -24,7 +24,7 @@
     "told": {"by": -4, "text": "poaching in the lord's forest told to the reeve"},
     "askDone": {"by": 6, "text": "{what} given as {he} asked"},
     "askPassed": {"by": -4, "text": "{his} ask for {what} let pass"},
-    "askLate": {"by": -6, "text": "{his} ask for {what} taken up and not ready"},
+    "askLate": {"by": -2, "text": "{his} ask for {what} taken up and not ready"},
     "table-few": {"by": -2, "text": "a plain table at {his} harvest-home supper"},
     "table-customary": {"by": 1, "text": "a good table at {his} harvest-home supper"},
     "table-many": {"by": 2, "text": "a grand feast at {his} harvest-home supper"},
@@ -75,7 +75,7 @@
   "petition": {
     "every": 3,
     "whole": ["cautious", "pious", "learned"],
-    "half": {"tempers": ["bold", "greedy"], "favour": 60},
+    "half": {"tempers": ["bold", "greedy"], "favour": 50},
     "answers": {"whole": "forgives the tithe this year.", "half": "takes half the tithe this year.", "no": "refuses: the tithe stands."},
     "memories": {"heard": "plea-heard", "refused": "plea-refused"}
   }

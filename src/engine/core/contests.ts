@@ -13,7 +13,7 @@ export interface ContestKindDef {
   attribute: string;
   /** The winner's words: "cut the straightest furrow". */
   won: string;
-  /** The byname a winner of `wins` earns, `m` for a man where it differs, then the spares. */
+  /** The byname won by the `wins`th contest won in all, if this one, `m` for a man where it differs, then the spares. */
   byname: string;
   m?: string;
   spares: readonly string[];

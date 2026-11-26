@@ -233,3 +233,26 @@ describe('a dream long unfulfilled', () => {
     expect(itemsOf(w).some((i) => i['made'] === done.id && i['kind'] === 'logs')).toBe(true);
   });
 });
+
+describe("a neighbouring village's regard (6C review q2)", () => {
+  it('falls less for an ask taken up and not ready than for one let pass', () => {
+    const { sim, w } = start();
+    const [a] = people(w);
+    const came = emit(w, sim.templates, 'people.strangerCame', {
+      causes: [w.begunEvent],
+      data: { names: 'Wyn', place: 'Oakby', dir: 'east', bundle: '', words: '', draw: '' },
+    });
+    Object.assign(a!, { stranger: came, reason: 'sickness', home: 'Oakby' });
+    step(w, sim, 2);
+    const ask = asks(w).find((x) => x['source'] === 'neighbour')!;
+    Object.assign(ask, { state: 'taken', level: 1, got: 0, due: w.tick + 1 });
+    step(w, sim, TICKS_PER_HOUR);
+    const [late] = lines(w, 'ask.late');
+    const [fell] = lines(w, 'ask.regard');
+    expect(fell!.causes).toContain(late!.id);
+    const r = content.asks.regard;
+    const now = Number(fell!.data['regard']);
+    expect(now).toBeLessThan(r.start);
+    expect(now).toBeGreaterThan(r.start + r.passed);
+  });
+});

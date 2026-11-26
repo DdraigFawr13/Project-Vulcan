@@ -438,6 +438,7 @@
 {"id":"ask.tookUp","importance":1,"template":"{name} took up making {work} for the ask of {asker}: {what}."},
 {"id":"ask.made","importance":2,"template":"{name} made {what} for {asker}{fit}."},
 {"id":"ask.ready","importance":2,"template":"All that {asker} asked for is set apart in the tithe barn: {what}."},
+{"id":"ask.bookTaken","importance":3,"template":"{who} takes {book} from the schoolroom shelf for {asker}.","stop":"comings","notable":{}},
 {"id":"ask.done","importance":2,"template":"{who} took {what} for {asker}, as was asked."},
 {"id":"ask.late","importance":3,"template":"The ask of {asker} for {what} was not ready by its day{got}.","stop":"comings","notable":{}},
 {"id":"ask.passed","importance":2,"template":"The ask of {asker} for {what} passed, as the colony let it."},

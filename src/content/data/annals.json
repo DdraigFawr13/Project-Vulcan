@@ -26,6 +26,7 @@
       { "event": "lord.hothead", "weight": 5, "title": "{name} spoke against the lord at his table" },
       { "event": "lord.beaten", "weight": 5, "title": "{name} was beaten by the lord's men" },
       { "event": "ask.late", "weight": 3, "title": "the ask of {asker} for {what} was not ready" },
+      { "event": "ask.bookTaken", "weight": 4, "title": "{book} went to {asker}" },
       { "event": "neighbour.asked", "weight": 3, "title": "{place} asked for {what}" },
       { "event": "faith.asked", "weight": 2, "title": "the {title} asked for {what}" },
       { "event": "guest.asked", "weight": 2, "title": "{names} asked to stay a season" },

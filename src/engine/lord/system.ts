@@ -95,7 +95,7 @@ export const lordSystem: System = {
     ...['lord.reeveCame', 'lord.named', 'lord.counted', 'lord.reeveLeft', 'lord.tithed'],
     ...['lord.barned', 'lord.carried', 'lord.searched', 'lord.found', 'lord.favour'],
     ...['lord.step', 'lord.men', 'lord.told', 'health.hurt', 'lord.asked'],
-    ...['ask.done', 'ask.late', 'ask.passed', 'ask.unanswered'],
+    ...['ask.done', 'ask.late', 'ask.passed', 'ask.unanswered', 'ask.bookTaken'],
     ...['lord.came', 'lord.supper', 'lord.hothead', 'lord.beaten', 'lord.plea', 'lord.rodeOut'],
     ...['lord.prize', 'tool.taken', 'lord.charter'],
   ],

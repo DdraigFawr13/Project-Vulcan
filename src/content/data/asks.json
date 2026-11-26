@@ -14,7 +14,7 @@
     {"temper": "learned", "what": "a book", "good": "book", "count": 1, "due": "visit"}
   ]
 },
-"regard": {"start": 50, "done": 10, "passed": -5, "late": -7, "days": 84, "comes": "someone from {place}, come by the home road,",
+"regard": {"start": 50, "done": 10, "passed": -5, "late": -3, "days": 84, "comes": "someone from {place}, come by the home road,",
   "words": {"done": "{what} given as they asked", "passed": "their ask for {what} let pass", "late": "their ask for {what} not ready by its day"}},
 "village": {
   "hunger": {"what": "a tenth of your food", "good": "food", "share": 10},

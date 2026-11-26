@@ -21,6 +21,7 @@ import { colonyRow } from '../colony/index.ts';
 import { addMemory } from '../needs/index.ts';
 import { contextFor } from '../sim/system.ts';
 import { lordRow, reeveRow } from './index.ts';
+import { favourOf } from './favour.ts';
 import { lordSystem } from './system.ts';
 
 type World = ReturnType<typeof createWorld>;
@@ -136,11 +137,12 @@ describe("the lord's visit", () => {
         (m) => m['line'] === plea!.id && m['memory'] === 'plea-heard',
       ),
     ).toBe(true);
-    // A bold lord at plain favour refuses, and it costs favour; the next lean year is too soon.
+    // A bold lord below the half gate refuses, and it costs favour; the next lean year is too soon.
     const later = before(base, 2);
     colonyRow(later)!['elder'] = elder.id;
     lordRow(later)!['temper'] = 'bold';
     emptyStore(later);
+    addEntity(later, 'favour', { cause: 'test', by: -10, text: 'test', line: 0, until: 1e9 });
     for (let k = 0; k < 2; k += 1) {
       harvestHome(later, sim, true);
       step(later, sim, TICKS_PER_DAY - (later.tick % TICKS_PER_DAY));
@@ -151,6 +153,28 @@ describe("the lord's visit", () => {
     expect(pleas[0]!.data['eased']).toBe('no');
     const cost = lines(later, 'lord.favour').find((e) => e.data['cause'] === 'plea');
     expect(cost!.causes).toEqual([pleas[0]!.id]);
+  });
+
+  it('halves the tithe for a bold lord once his favour is at the gate of 50 (6C review q3)', () => {
+    const w = before(base, 2);
+    colonyRow(w)!['elder'] = (w.entities['person'] ?? []).find((p) => p['status'] === 'alive')!.id;
+    lordRow(w)!['temper'] = 'bold';
+    emptyStore(w);
+    const ctx = contextFor(w, sim, lordSystem);
+    // Favour exactly 50, the approved gate (it was 60).
+    addEntity(w, 'favour', {
+      cause: 'test',
+      by: 50 - favourOf(ctx),
+      text: 't',
+      line: 0,
+      until: 1e9,
+    });
+    harvestHome(w, sim, true);
+    step(w, sim, TICKS_PER_DAY - (w.tick % TICKS_PER_DAY));
+    untilGone(w, sim);
+    const [plea] = lines(w, 'lord.plea');
+    expect(plea!.data['eased']).toBe('half');
+    expect(lines(w, 'lord.favour').some((e) => e.data['cause'] === 'plea')).toBe(false);
   });
 
   it('lets a hothead speak out at his table, and a cruel lord has them beaten', () => {

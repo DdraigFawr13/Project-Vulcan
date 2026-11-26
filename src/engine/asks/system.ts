@@ -29,7 +29,7 @@ export const asksSystem: System = {
   every: 'minute',
   emits: [
     ...['ask.taken', 'ask.letPass', 'neighbour.asked', 'ask.gift', 'ask.regard', 'faith.asked'],
-    ...['ask.done', 'ask.late', 'ask.passed', 'ask.unanswered'],
+    ...['ask.done', 'ask.late', 'ask.passed', 'ask.unanswered', 'ask.bookTaken'],
     ...['guest.asked', 'guest.stays', 'guest.tale', 'dream.asked'],
     ...['master.came', 'master.asked', 'master.book', 'master.taught'],
   ],

@@ -47,6 +47,15 @@ describe('the Asks sheet', () => {
     );
   });
 
+  it('says a taken book ask comes off the schoolroom shelf (6C review q4)', () => {
+    const { w, ask } = world();
+    ask({ state: 'taken', level: 2, tool: '', good: 'book', quality: '', what: 'a book' });
+    addEntity(w, 'book', { master: 0, skill: 'smithing', level: 4, state: 'kept', line: 0 });
+    expect(asksView(w, line).taken[0]!.progress).toBe(
+      'Taken from the schoolroom shelf on the day: 1 book there now.',
+    );
+  });
+
   it('gives a guest a yes or no with its deadline, and lists a settled ask’s line', () => {
     const { sim, w, ask } = world();
     ask({ source: 'guest', asker: 'Varguz', what: 'a bed in the hall for a season' });
