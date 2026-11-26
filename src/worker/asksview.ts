@@ -4,6 +4,7 @@
 // only: the levers are the engine's `takeAsk` and `passAsk`.
 import { content } from '../content/index.ts';
 import {
+  alive,
   asksOf,
   clockAt,
   liveAsks,
@@ -18,9 +19,6 @@ import {
 import { dayWords } from './memoryview.ts';
 import type { AskCardView, AsksView } from './protocol-asks.ts';
 import type { LedgerLine } from './protocol.ts';
-
-const living = (world: WorldState): EntityRow[] =>
-  (world.entities['person'] ?? []).filter((p) => p['status'] === 'alive');
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const signed = (n: number) => (n > 0 ? `+${n}` : `−${Math.abs(n)}`);
@@ -39,7 +37,7 @@ function aboutOf(world: WorldState, a: EntityRow): string {
       return 'turned away at the gate';
     case 'faith': {
       const creed = (world.entities['creed'] ?? []).find((c) => String(c.id) === a['of']);
-      const priest = living(world).find((p) => p.id === creed?.['priest']);
+      const priest = alive(world).find((p) => p.id === creed?.['priest']);
       return priest
         ? `${priest['name'] as string}, its ${creed!['title'] as string}`
         : 'the shrine';
@@ -120,7 +118,7 @@ function costsOf(world: WorldState, a: EntityRow): string {
 function triesOf(world: WorldState, a: EntityRow): string {
   const made = (a['made'] as number) || 0;
   const count = a['count'] as number;
-  const at = living(world).find((p) => p['ask'] === a.id && p['job'] !== 'haul');
+  const at = alive(world).find((p) => p['ask'] === a.id && p['job'] !== 'haul');
   if (at) return ` ${at['name'] as string} is at the forge for it now.`;
   if (!made) return ' Whoever free can smith makes it at the forge, the most skilled first.';
   if (made <= count) return '';
@@ -147,7 +145,7 @@ function workOf(world: WorldState, a: EntityRow): string {
   switch (a['source']) {
     case 'lord': {
       const law = content.lord.tithe.law;
-      const ids = new Map(living(world).map((p) => [p.id, p['name'] as string]));
+      const ids = new Map(alive(world).map((p) => [p.id, p['name'] as string]));
       const refuse = (world.entities['answer'] ?? [])
         .filter(
           (r) => r['law'] === law && r['answer'] === 'refuses' && ids.has(r['person'] as number),

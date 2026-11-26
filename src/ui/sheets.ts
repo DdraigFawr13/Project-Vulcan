@@ -17,7 +17,7 @@ import type {
 } from '../worker/index.ts';
 import { content } from '../content/index.ts';
 import { animalRows, goneRows } from './animalsheet.ts';
-import { asksRows } from './askssheet.ts';
+import { showAsks } from './askssheet.ts';
 import { BuildSheet } from './build.ts';
 import { itemRows } from './itemsheet.ts';
 import { Dawn } from './dawn.ts';
@@ -364,16 +364,8 @@ export class Sheets {
     const key = JSON.stringify(view);
     if (key === this.asksKey) return;
     this.asksKey = key;
-    const send = (kind: string, data: Record<string, number>) =>
-      this.deps.send({ type: 'command', tick: this.deps.tick() + 1, kind, data });
-    panel.showView(
-      'asks',
-      'Asks',
-      asksRows(view, {
-        take: (ask, level) => send('takeAsk', { ask, level }),
-        pass: (ask) => send('passAsk', { ask }),
-        lineRow: (line) => panel.lineRow(line),
-      }),
+    showAsks(panel, view, (kind, data) =>
+      this.deps.send({ type: 'command', tick: this.deps.tick() + 1, kind, data }),
     );
     this.select(undefined);
   }

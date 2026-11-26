@@ -4,6 +4,7 @@
 // ask is yes or no. Nothing here names who works it. Every word is the worker's `AsksView`.
 import type { AskCardView, AsksView, LedgerLine } from '../worker/index.ts';
 import { el } from './dom.ts';
+import type { Panel } from './panel.ts';
 import { stepper, WORDS } from './stepper.ts';
 
 export interface AsksActions {
@@ -85,4 +86,22 @@ export function asksRows(view: AsksView, act: AsksActions): HTMLElement[] {
     rows.push(el('p', { class: 'aside' }, 'Older asks are in the Ledger.'));
   }
   return rows;
+}
+
+/** Draws the sheet in the panel; its levers go out through `send` as commands for the next tick,
+ * applied at once while paused. */
+export function showAsks(
+  panel: Panel,
+  view: AsksView,
+  send: (kind: string, data: Record<string, number>) => void,
+): void {
+  panel.showView(
+    'asks',
+    'Asks',
+    asksRows(view, {
+      take: (ask, level) => send('takeAsk', { ask, level }),
+      pass: (ask) => send('passAsk', { ask }),
+      lineRow: (line) => panel.lineRow(line),
+    }),
+  );
 }
