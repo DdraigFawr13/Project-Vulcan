@@ -1,7 +1,7 @@
 // Shape of Vulcan's contests file (src/content/data/contests.json, 6C Slice 7 part 3, V-236,
 // V-241): the contests held at each harvest home, who stands up for them, and what a win leaves.
-import { list, map, num, obj, opt, ref, str } from './schema';
-import { count, text, texts } from './schema-fields';
+import { list, map, num, obj, oneOf, opt, ref, str } from './schema';
+import { attribute, count, text, texts } from './schema-fields';
 
 export const CONTESTS_SCHEMAS = {
   contests: obj({
@@ -20,16 +20,17 @@ export const CONTESTS_SCHEMAS = {
     beaten: num({ min: 1 }),
     memories: obj({ won: ref('memories'), lost: ref('memories'), rival: ref('memories') }),
     // Each contest: what the valley must do for it (`none`, `field`: a field laid out, `brewer`:
-    // a cask brewed), the skill (at least `least`) and attribute it is won by, the winner's words,
-    // the byname (`m` for a man where it differs) and spares, and the lord's prize (a tool kind).
+    // a cask brewed; a new need is engine code, hold.ts `canHold`), the skill (at least `least`) and attribute it is won by, the winner's words,
+    // the byname (`m` for a man where it differs) and spares, each also in tales.json `byname.proud`,
+    // and the lord's prize (a tools.json kind).
     kinds: list(
       obj({
         id: str(),
         name: text,
-        needs: str(),
+        needs: oneOf('none', 'field', 'brewer'),
         skill: opt(ref('abilities')),
         least: opt(count),
-        attribute: str(),
+        attribute,
         won: text,
         byname: text,
         m: opt(text),

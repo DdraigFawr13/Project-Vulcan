@@ -91,6 +91,8 @@ describe('contests at the harvest home', () => {
     const named = lines(w, 'tale.byname').find((e) => e.actors[0] === winner);
     expect(named!.causes).toEqual([contestsOf(w)[2]!['line']]);
     expect(['Strongarm', 'Oak-arm', 'Ox-back']).toContain(bynameOf(w, winner)!['word']);
+    const felt = (w.entities['memory'] ?? []).find((m) => m['line'] === named!.id);
+    expect(felt!['memory']).toBe('byname-proud');
   });
 
   it('pleases a bold lord at his supper, and its winner takes his prize', () => {

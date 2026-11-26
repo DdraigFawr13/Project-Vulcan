@@ -7,7 +7,7 @@
   "strength": ["Doubts that", "Thinks", "Is sure", "Is certain"],
   "ordinals": ["First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh", "Eighth", "Ninth", "Tenth", "Eleventh", "Twelfth"],
   "evening": { "mend": 6 },
-  "byname": { "share": 50, "told": 8, "proud": ["Lucky", "Twice-spared", "Wolf-dodger"] },
+  "byname": { "share": 50, "told": 8, "proud": ["Lucky", "Twice-spared", "Wolf-dodger", "Strongarm", "Oak-arm", "Ox-back", "Straightfurrow", "Furrow-true", "Alewife", "Aleman", "Good-cask"] },
   "beliefs": [
     { "id": "woods-dangerous", "about": "place", "text": "the woods around the valley are dangerous" },
     { "id": "lord-greedy", "about": "colony", "text": "the lord takes the bread from our mouths" },

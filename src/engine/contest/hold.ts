@@ -1,7 +1,7 @@
 // The harvest-home contests (6C Slice 7 part 3, V-236, V-241): once the harvest-home supper is
 // eaten, the valley holds a contest drawn from what it does (the trial of strength always, the
 // ploughing match once a field is laid out, the judging of the ale once a cask is brewed), two when
-// the lord sits at the supper, the last of them his. Each grown-up at the supper stands up or not
+// the lord sits at the supper, the last of them held his. Each grown-up at the supper stands up or not
 // by their traits (a rival standing, a past win of it, push them on); the best score wins (skill,
 // attribute and a roll). The winner is proud, the rest sour; a third win of one contest gives its
 // byname; the runner-up beaten twice by the same winner holds them a rival. Nobody is picked (V-041).
@@ -110,7 +110,7 @@ function holdOne(
   f: EntityRow,
   k: ContestKindDef,
   there: EntityRow[],
-  lord: { here: boolean; his: boolean },
+  lordHere: boolean,
 ): void {
   const c = ctx.content.contests;
   const able = there.filter((p) => !k.skill || skillOf(ctx.world, p, k.skill) >= (k.least ?? 0));
@@ -128,12 +128,12 @@ function holdOne(
     data: {
       ...{ count: String(ranked.length), contest: k.name, name: w['name'] as string, won: k.won },
       others: othersOf(lost),
-      lord: lord.here ? " The lord's party watched." : '',
+      lord: lordHere ? " The lord's party watched." : '',
     },
   });
   addEntity(ctx.world, 'contest', {
     ...{ kind: k.id, year: f['year'] as number, feast: f.id, winner: w.id },
-    ...{ entered: ranked.map((p) => p.id), line, lord: lord.his ? 1 : 0 },
+    ...{ entered: ranked.map((p) => p.id), line, lord: 0 },
   });
   addMemory(ctx, w.id, c.memories.won, line);
   addMemories(
@@ -160,7 +160,8 @@ export function holdContests(ctx: SystemContext, f: EntityRow, lordHere: boolean
       !((p['waits'] as number) > 0),
   );
   const kinds = draw(ctx, f.id, lordHere ? content.contests.lord : content.contests.each);
-  kinds.forEach((k, i) =>
-    holdOne(ctx, f, k, there, { here: lordHere, his: lordHere && i === kinds.length - 1 }),
-  );
+  for (const k of kinds) holdOne(ctx, f, k, there, lordHere);
+  // The last contest held before the lord is his, for the prize.
+  const his = contestsAt(world, f.id).at(-1);
+  if (lordHere && his) his['lord'] = 1;
 }

@@ -140,11 +140,11 @@ function prize(ctx: SystemContext, f: EntityRow, cause: number): void {
   const his = contestsAt(world, f.id).find((c) => c['lord']);
   const k = his && content.contests.kinds.find((x) => x.id === his['kind']);
   const p = his && alive(world).find((q) => q.id === his['winner']);
-  if (!k || !p) return;
-  const lord = lordRow(world)!;
   const { material, quality } = content.lord.visit.prize;
-  const tool = content.tools.kinds.find((t) => t.id === k.prize)!;
-  const metal = content.tools.materials.find((m) => m.id === material)!;
+  const tool = content.tools.kinds.find((t) => t.id === k?.prize);
+  const metal = content.tools.materials.find((m) => m.id === material);
+  if (!k || !p || !tool || !metal) return;
+  const lord = lordRow(world)!;
   const line = ctx.emit('lord.prize', {
     causes: [his['line'] as number, cause],
     actors: [p.id],
