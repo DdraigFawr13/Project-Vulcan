@@ -7,6 +7,7 @@ import {
   alive,
   favourAt,
   asksOf,
+  keptBooks,
   clockAt,
   liveAsks,
   lordRow,
@@ -140,6 +141,10 @@ function triesOf(world: WorldState, a: EntityRow): string {
 function progressOf(world: WorldState, a: EntityRow): string {
   if (a['state'] !== 'taken' || yesNo(a)) return '';
   const [got, count] = [a['got'] as number, a['count'] as number];
+  if (a['good'] === 'book') {
+    const kept = keptBooks(world).length;
+    return `Taken from the schoolroom shelf on the day: ${kept} book${kept === 1 ? '' : 's'} there now.`;
+  }
   const where = a['source'] === 'faith' ? ' It is laid at the shrine on the day.' : '';
   if (got >= count) return `Ready: ${got} of ${count} set apart in the tithe barn.${where}`;
   const head = a['tool']
