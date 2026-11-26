@@ -19,7 +19,17 @@ import { versionTag } from './version.ts';
 
 /** The panels the bar opens. */
 export type PanelButton =
-  'ledger' | 'work' | 'build' | 'laws' | 'stock' | 'saves' | 'region' | 'dawn' | 'mood' | 'stops';
+  | 'ledger'
+  | 'asks'
+  | 'work'
+  | 'build'
+  | 'laws'
+  | 'stock'
+  | 'saves'
+  | 'region'
+  | 'dawn'
+  | 'mood'
+  | 'stops';
 
 export interface HudActions {
   setSpeed(speed: Speed): void;
@@ -99,6 +109,7 @@ export class Hud {
     more.addEventListener('click', () => this.showMenu(!menu.classList.contains('open')));
     for (const [kind, label] of [
       ['ledger', 'Ledger'],
+      ['asks', 'Asks'],
       ['work', 'Work'],
       ['build', 'Build'],
       ['laws', 'Laws'],
@@ -234,6 +245,27 @@ export class Hud {
     );
   }
 
+  /** The red count of asks waiting for an answer, on Asks and on ⋯ (6C Slice 4); none at 0. */
+  showAsks(waiting: number): void {
+    for (const button of [this.panels.get('asks'), this.menu.button]) {
+      if (!button) continue;
+      let badge = button.querySelector<HTMLElement>('.askcount');
+      if (!waiting) {
+        badge?.remove();
+        continue;
+      }
+      if (!badge) {
+        badge = el('span', { class: 'askcount', 'data-testid': 'asks-badge' });
+        button.append(badge);
+      }
+      if (badge.textContent !== String(waiting)) badge.textContent = String(waiting);
+    }
+    this.menu.button.setAttribute(
+      'aria-label',
+      waiting ? `More, ${waiting} ask${waiting === 1 ? '' : 's'} waiting` : 'More',
+    );
+  }
+
   /** Opens or folds the ⋯ menu. */
   showMenu(open: boolean): void {
     if (open) this.time.fold();
@@ -248,7 +280,8 @@ export class Hud {
     this.menu.button.setAttribute(
       'aria-pressed',
       String(
-        kind === 'work' ||
+        kind === 'asks' ||
+          kind === 'work' ||
           kind === 'build' ||
           kind === 'laws' ||
           kind === 'dawn' ||

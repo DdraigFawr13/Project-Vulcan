@@ -1,5 +1,6 @@
 // The simulation worker: owns the one engine instance, runs it at the chosen speed and answers
 // the page. The only place the engine is instantiated (MODULE.md).
+import { asksView } from './asksview.ts';
 import { content, contentHash } from '../content/index.ts';
 import {
   applyDue,
@@ -193,6 +194,7 @@ function snapshot(w: WorldState): void {
       landings: landingsOf(w.tick),
       day: { ...lawHours(w, content), ...sunOf(w.tick) },
       law: lawsOf(w),
+      asks: asksView(w, line),
       clock: clockView(w.tick),
       chunks,
       reached: w.map.levels.map((level) => level !== null),

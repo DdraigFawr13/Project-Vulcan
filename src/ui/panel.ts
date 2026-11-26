@@ -31,6 +31,7 @@ export type PanelKind =
   | 'work'
   | 'build'
   | 'laws'
+  | 'asks'
   | 'item'
   | 'animal'
   | 'alerts'

@@ -2,6 +2,7 @@
 // Speed and pause are worker settings, not game commands, so they never enter the command log.
 // Saving, exporting and the inspector's questions only read the world: answering them never
 // steps it, writes a ledger line or draws from an RNG stream.
+import type { AsksView } from './protocol-asks.ts';
 import type { Command, EventData } from '../engine/index.ts';
 import type { RegionView, ValleyPreview } from './protocol-region.ts';
 import type { SaveFile } from './save.ts';
@@ -326,6 +327,8 @@ export type FromWorker =
       day: HoursView;
       /** The Laws page (P4.8). */
       law: LawView;
+      /** The Asks sheet and its red count (6C Slice 4). */
+      asks: AsksView;
       clock: ClockView;
       /** Chunks changed since the last snapshot, on every reached level; the first one after
        * `ready`, and the first after a level is reached, carry all of that level's. */

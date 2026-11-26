@@ -133,6 +133,7 @@ const sheets = new Sheets({
   opened: (kind) => hud.showPanel(kind),
   drawPeople: (list) => renderer.setPeople(list),
   speed: setSpeed,
+  asks: (waiting) => hud.showAsks(waiting),
   ...finding(renderer, panel, (z) => setLevel(z, true)),
 });
 stops.more = () => sheets.recapRows();

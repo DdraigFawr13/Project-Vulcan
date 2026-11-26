@@ -25,7 +25,7 @@ export const stopsAll = (
   page.addInitScript(
     ([a, but, on]) => {
       const kinds = ['death', 'attack', 'food', 'family', 'comings', 'sickness', 'quarrel'];
-      const all = [...kinds, 'danger', 'mood', 'works', 'ways', 'world'];
+      const all = [...kinds, 'asks', 'danger', 'mood', 'works', 'ways', 'world'];
       localStorage.setItem(
         'vulcan.stops',
         JSON.stringify({ ...Object.fromEntries(all.map((k) => [k, a])), ...but }),

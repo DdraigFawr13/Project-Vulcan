@@ -3,6 +3,7 @@ import type { ToWorker } from './protocol.ts';
 export { SPEEDS, TICKS_PER_SECOND } from './protocol-time.ts';
 // Every view type of the protocol files, passed on whole: a new view needs no line here.
 export type * from './protocol.ts';
+export type * from './protocol-asks.ts';
 export type * from './protocol-build.ts';
 export type * from './protocol-colony.ts';
 export type * from './protocol-flock.ts';
