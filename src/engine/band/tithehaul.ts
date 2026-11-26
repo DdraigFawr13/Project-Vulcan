@@ -11,6 +11,7 @@ import {
   inStore,
   itemsOf,
   layItem,
+  madeForOther,
   takeFrom,
   titheRow,
   titheRows,
@@ -48,7 +49,9 @@ export function takeUpTithe(ctx: SystemContext, p: EntityRow): boolean {
   let best: EntityRow | undefined;
   let far = Infinity;
   for (const i of itemsOf(world)) {
+    // A piece made for a taken ask is that ask's, never the lord's share.
     if (!kinds.has(i['kind'] as string) || !free(i) || taken.has(i.id)) continue;
+    if (madeForOther(world, undefined, i)) continue;
     const at = spotOf(i);
     const d = cheb(at, from) + (inStore(world, at.x, at.y, at.z) ? 0 : 1000);
     if (d >= far || !canReach(content, world.map, from, at)) continue;

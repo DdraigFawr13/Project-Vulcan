@@ -86,11 +86,29 @@ describe("the lord's asks", () => {
     expect(cost.causes).toContain(passed!.id);
     expect(cost.data['way']).toBe('falls');
     expect(String(cost.data['text'])).toContain(String(ask['what']));
+    // smoke/1's lord is a queen: her ask, for her hall (6C review).
+    expect(String(cost.data['text'])).toMatch(/^Her ask for /);
     // His next ask came at the same visit.
     expect(lines(w, 'lord.asked')).toHaveLength(2);
     // A settled ask is never settled again at a later visit.
     visit(w, sim);
     expect(lines(w, 'ask.passed').filter((e) => e.causes.includes(letPass!.id))).toHaveLength(1);
+  });
+
+  it('counts an ask given at a visit before the ladder is climbed (6C review)', () => {
+    const sim = createSim(content);
+    const w = createWorld(sim, 'smoke/1');
+    step(w, sim, TICKS_PER_HOUR);
+    visit(w, sim);
+    visit(w, sim);
+    const ask = asks(w).find((a) => a['source'] === 'lord')!;
+    Object.assign(ask, { state: 'taken', level: 1, got: ask['count'], held: '' });
+    addEntity(w, 'favour', { cause: 'test', by: 30, text: 'test', line: 0, until: 1e9 });
+    visit(w, sim);
+    const given = lines(w, 'lord.favour').find((e) => e.data['cause'] === 'askDone')!;
+    const stepped = lines(w, 'lord.step');
+    expect(stepped.length).toBeGreaterThan(0);
+    expect(stepped.every((e) => e.id > given.id)).toBe(true);
   });
 });
 

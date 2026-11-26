@@ -16,6 +16,7 @@ import { lordName, lordRow, reeveRow } from './tables.ts';
 import { markForest } from './forest.ts';
 import { swear, takeTithe } from './tithe.ts';
 import { askAtVisit } from './asks.ts';
+import { climb } from './favour.ts';
 import { plead } from './petition.ts';
 import { rideOut, stayMinute } from './visit.ts';
 
@@ -130,9 +131,11 @@ function countTheStore(ctx: SystemContext, r: EntityRow, to: EntityRow): void {
   });
   const cites = [r['harvest'] as number, r['came'] as number, lord['named'] as number];
   // 6C Slice 7: in a lean year the elder may first plead for a lower tithe.
-  const tithed = takeTithe(ctx, cites, to, plead(ctx, r, r['came'] as number));
+  const { line: tithed, owed } = takeTithe(ctx, cites, to, plead(ctx, r, r['came'] as number));
   // 6C Slice 3: the asks due at this visit are settled, and he brings the next.
   askAtVisit(ctx, tithed);
+  // Then the ladder, so an ask given at this visit counts at it (6C review).
+  climb(ctx, tithed, owed);
 }
 
 /** Speaks to `to`, then turns for home. */

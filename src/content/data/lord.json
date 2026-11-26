@@ -10,7 +10,7 @@
   "tempers": {"greedy": 15, "cruel": 15},
   "kinds": ["grain","turnips","oats","beans","cabbages","fleece","wool","iron-ingot","copper-ingot","tin-ingot","bronze-ingot","iron-axe","iron-kit","iron-pick","iron-spear","iron-hoe","iron-hammer","iron-needle","iron-sickle","iron-chisel","iron-line","iron-saw"],
   "barn": {"name": "Tithe barn", "start": 2, "size": "lean-to"},
-  "lean": {"days": 200, "half": ["cautious","pious","learned"], "memory": "lean-tithe", "standing": {"by": -4, "days": 168, "text": "the lord took his tithe in a lean year"}},
+  "lean": {"days": 200, "half": ["cautious","pious","learned"], "memory": "lean-tithe", "standing": {"by": -4, "days": 168, "text": "the lord's tithe taken in a lean year"}},
   "search": 3
 },
 "favour": {
@@ -22,23 +22,23 @@
     "fine": {"by": -10, "text": "the lord's fine unpaid"},
     "found": {"by": -8, "text": "{what} found hidden from the barn"},
     "told": {"by": -4, "text": "poaching in the lord's forest told to the reeve"},
-    "askDone": {"by": 6, "text": "{what} given as he asked"},
-    "askPassed": {"by": -4, "text": "his ask for {what} let pass"},
-    "askLate": {"by": -6, "text": "his ask for {what} taken up and not ready"},
-    "table-few": {"by": -2, "text": "a plain table at his harvest-home supper"},
-    "table-customary": {"by": 1, "text": "a good table at his harvest-home supper"},
-    "table-many": {"by": 2, "text": "a grand feast at his harvest-home supper"},
+    "askDone": {"by": 6, "text": "{what} given as {he} asked"},
+    "askPassed": {"by": -4, "text": "{his} ask for {what} let pass"},
+    "askLate": {"by": -6, "text": "{his} ask for {what} taken up and not ready"},
+    "table-few": {"by": -2, "text": "a plain table at {his} harvest-home supper"},
+    "table-customary": {"by": 1, "text": "a good table at {his} harvest-home supper"},
+    "table-many": {"by": 2, "text": "a grand feast at {his} harvest-home supper"},
     "pleased": {"by": 4, "text": "{what}"},
     "displeased": {"by": -4, "text": "{what}"},
-    "hothead": {"by": -4, "text": "{name} spoke against him at his table"},
-    "plea": {"by": -2, "text": "the elder pleaded against his tithe in a lean year"}
+    "hothead": {"by": -4, "text": "{name} spoke against {him} at {his} table"},
+    "plea": {"by": -2, "text": "the elder pleaded against {his} tithe in a lean year"}
   },
   "ladder": [
     {"id": "raised", "below": 35, "text": "the tithe is raised by half", "by": 50},
     {"id": "fine", "below": 20, "text": "the valley is fined one more tithe, due at the next harvest home", "by": 100},
     {"id": "men", "below": 10, "text": "the lord's men come to take what is owed by force", "by": 100},
     {"id": "free", "above": 70, "text": "the lord grants a year free of the tithe", "by": -100},
-    {"id": "forest", "above": 85, "text": "the lord grants the valley his forest", "by": 0},
+    {"id": "forest", "above": 85, "text": "the lord grants the valley {his} forest", "by": 0},
     {"id": "charter", "above": 80, "text": "the lord grants the valley its charter", "by": 0}
   ],
   "men": {"kinds": ["break", "cut"], "parts": ["head", "body", "left-arm", "right-arm"], "severity": "light", "what": "was beaten by the lord's men"}
@@ -54,9 +54,9 @@
   },
   "pleases": {
     "bold": {"wants": "contest", "yes": "a fair contest at the supper", "no": "no contest worth watching at the supper"},
-    "greedy": {"wants": "table", "yes": "a full table laid for him", "no": "a table laid too thin for him"},
+    "greedy": {"wants": "table", "yes": "a full table laid for {him}", "no": "a table laid too thin for {him}"},
     "pious": {"wants": "rite", "yes": "a shrine standing in the valley for the rite", "no": "no shrine in the valley for the rite"},
-    "learned": {"wants": "book", "yes": "a book on the valley's shelf to show him", "no": "not one book in the valley to show him"},
+    "learned": {"wants": "book", "yes": "a book on the valley's shelf to show {him}", "no": "not one book in the valley to show {him}"},
     "cautious": {"wants": "store", "yes": "a full store for the winter", "no": "a store too thin for the winter"},
     "cruel": {"wants": "store", "yes": "a full store for the winter", "no": "a store too thin for the winter"}
   },

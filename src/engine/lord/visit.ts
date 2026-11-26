@@ -225,7 +225,7 @@ export function rideOut(ctx: SystemContext, r: EntityRow): void {
     causes: [r['lord'] as number],
     data: {
       ...{ lord: lordName(lord), reeve: lord['reeve'] as string, way },
-      ...{ his: pronounsOf(lord).his, His: pronounsOf(lord).His },
+      ...{ he: pronounsOf(lord).he, his: pronounsOf(lord).his, His: pronounsOf(lord).His },
     },
   });
 }

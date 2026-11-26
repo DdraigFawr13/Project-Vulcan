@@ -60,11 +60,12 @@ export function fitsAsk(content: EngineContent, a: EntityRow, i: EntityRow): boo
     .some((g) => def.id === g || def.good === g);
 }
 
-/** Whether item `i` was made for a live ask other than `a` that still wants it: a piece made for
- * the lord's blade is his, never the shrine's (6C Slice 4 build note). */
-export const madeForOther = (world: WorldState, a: EntityRow, i: EntityRow): boolean =>
+/** Whether item `i` was made for a live ask other than `a` (any taken ask, with no `a`) that still
+ * wants it: a piece made for the lord's blade is his, never the shrine's (6C Slice 4 build note),
+ * and never carried off as the tithe (6C review). */
+export const madeForOther = (world: WorldState, a: EntityRow | undefined, i: EntityRow): boolean =>
   takenAsks(world).some(
-    (b) => b.id !== a.id && ((b['pieces'] as number[] | undefined) ?? []).includes(i.id),
+    (b) => b.id !== a?.id && ((b['pieces'] as number[] | undefined) ?? []).includes(i.id),
   );
 
 /** What an ask holds in the barn, kind by kind. */

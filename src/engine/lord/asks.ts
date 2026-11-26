@@ -8,7 +8,7 @@ import { addAsk, settleAsk, wantsOf } from '../asks/index.ts';
 import { liveAsks } from '../goods/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { addFavour } from './favour.ts';
-import { lordName, lordRow } from './tables.ts';
+import { lordName, lordRow, pronounsOf } from './tables.ts';
 
 const lordAsks = (ctx: SystemContext): EntityRow[] =>
   liveAsks(ctx.world).filter((a) => a['source'] === 'lord');
@@ -48,15 +48,17 @@ export function askAtVisit(ctx: SystemContext, cause: number): void {
     if (!(a['due'] as number)) settle(ctx, a, cause, lord['reeve'] as string);
   lord['visits'] = ((lord['visits'] as number) || 0) + 1;
   if ((lord['visits'] as number) < content.asks.from - 1) return;
-  const def = content.asks.lord.asks.find((d) => d.temper === lord['temper']);
-  if (!def) return;
+  const found = content.asks.lord.asks.find((d) => d.temper === lord['temper']);
+  if (!found) return;
+  const words = pronounsOf(lord);
+  const def = { ...found, what: found.what.replace('{his}', words.his) };
   const wants = wantsOf(ctx, def);
   const due = def.due === 'midwinter' ? midwinter(ctx) : 0;
   const line = ctx.emit('lord.asked', {
     causes: [cause],
     data: {
       ...{ reeve: lord['reeve'] as string, lord: lordName(lord), what: def.what },
-      due: due ? 'by midwinter' : 'by his next visit',
+      due: due ? 'by midwinter' : `by ${words.his} next visit`,
       count: String(wants.count),
     },
   });

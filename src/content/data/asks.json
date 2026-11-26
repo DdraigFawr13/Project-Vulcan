@@ -6,8 +6,8 @@
 "lord": {
   "double": ["cruel"],
   "asks": [
-    {"temper": "bold", "what": "a fine blade for his hall", "tool": "blade", "count": 1, "quality": "fine", "due": "visit"},
-    {"temper": "cruel", "what": "a fine blade for his hall", "tool": "blade", "count": 1, "quality": "fine", "due": "midwinter"},
+    {"temper": "bold", "what": "a fine blade for {his} hall", "tool": "blade", "count": 1, "quality": "fine", "due": "visit"},
+    {"temper": "cruel", "what": "a fine blade for {his} hall", "tool": "blade", "count": 1, "quality": "fine", "due": "midwinter"},
     {"temper": "greedy", "what": "two good metal things over the tithe", "tool": "blade", "count": 2, "quality": "plain", "due": "visit"},
     {"temper": "cautious", "what": "a twentieth of the year's food", "good": "food", "share": 5, "due": "visit"},
     {"temper": "pious", "what": "twenty candles", "good": "candles", "count": 20, "due": "visit"},

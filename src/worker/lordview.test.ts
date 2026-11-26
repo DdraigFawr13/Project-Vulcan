@@ -22,7 +22,7 @@ import {
 } from '../engine/index.ts';
 import { colonyView } from './colonyview.ts';
 import { ruledIds, ruledView } from './lawsheet.ts';
-import { regionDetail } from './lordview.ts';
+import { lordView, regionDetail } from './lordview.ts';
 import type { LedgerLine } from './protocol.ts';
 import { reevePage, reeveView, titheView } from './reeveview.ts';
 import { checkSave, saveOf } from './save.ts';
@@ -122,7 +122,13 @@ describe('the lord on screen', () => {
     expect(tithe.owed).toMatch(
       /^Owed for the next harvest home: (a tenth|\d+ in 100) of every harvest/,
     );
-    expect(tithe.barn).toBe('In the barn for him now: nothing.');
+    // smoke/1's lord is a queen: her reeve, her barn, her favour (6C review).
+    expect(tithe.head).toMatch(
+      /^For Queen .+, counted by her reeve the morning after harvest home\.$/,
+    );
+    expect(tithe.barn).toBe('In the barn for her now: nothing.');
+    expect(lordView(named)!.head).toBe('Her favour');
+    expect(lordView(named)!.ladder).toContain('grants the valley her forest');
     expect(tithe.apart).toBe('Nothing is set apart in the barn for asks.');
     const world = structuredClone(named);
     addEntity(world, 'regard', { place: 'Kraghurnar', regard: 60, gift: 1, line: 7 });

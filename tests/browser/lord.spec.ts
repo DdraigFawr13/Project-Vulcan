@@ -79,7 +79,8 @@ test('the lord shows on Laws, Stock and the map once his reeve has named him', a
   await expect(panel.getByTestId('lord-who')).toContainText(
     /^The valley is held by .+ of the .+\. (His|Her) reeve .+ comes the morning after each harvest home;/,
   );
-  await expect(panel.getByTestId('favour')).toContainText(/His favour\s*\d+ of 100/);
+  // smoke/1's lord is a queen (6C review).
+  await expect(panel.getByTestId('favour')).toContainText(/Her favour\s*\d+ of 100/);
   const bar = panel.locator('.sbar[aria-label^="Favour"]');
   await expect(bar.locator('b')).toHaveCount(6);
   await expect(panel.locator('.fticks span')).toHaveText(['10', '20', '35', '70', '80', '85']);
@@ -101,7 +102,7 @@ test('the lord shows on Laws, Stock and the map once his reeve has named him', a
   );
   await expect(tithe.getByTestId('tithe-took')).toContainText(/took|has taken nothing yet/);
   await expect(tithe).toContainText('Owed for the next harvest home');
-  await expect(tithe.getByTestId('tithe-barn')).toContainText('In the barn for him now:');
+  await expect(tithe.getByTestId('tithe-barn')).toContainText('In the barn for her now:');
   await expect(tithe.getByTestId('tithe-apart')).toContainText(/asks\.$/);
   expect(await phoneRules(page)).toEqual([]);
   await shot(page, 'stock-tithe');

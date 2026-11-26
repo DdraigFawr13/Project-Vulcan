@@ -9,6 +9,8 @@ export interface LordView {
   who: string;
   /** The `lord.named` line, for "why?". */
   whoWhy: number;
+  /** "His favour" or "Her favour". */
+  head: string;
   /** 0 to 100. */
   favour: number;
   /** The ladder's steps, from content: the number each is taken at. */
@@ -22,6 +24,8 @@ export interface LordView {
 /** The Stock sheet's tithe block, once the lord is named. */
 export interface TitheView {
   lord: string;
+  /** "For Queen ..., counted by her reeve the morning after harvest home." */
+  head: string;
   /** His last take in words, and its line ("why?"); `why` 0 before his first. */
   took: string;
   why: number;

@@ -5,7 +5,9 @@ import type { SystemContext } from '../sim/index.ts';
 import { liveAsks } from '../goods/index.ts';
 import { giveBack } from './asks.ts';
 
-const live = (ctx: SystemContext, id: unknown) => liveAsks(ctx.world).find((a) => a.id === id);
+// A guest or master already taken in is the hall's for the season: no lever answers it again.
+const live = (ctx: SystemContext, id: unknown) =>
+  liveAsks(ctx.world).find((a) => a.id === id && !(a['good'] === 'guest' && a['got']));
 
 const refuse = (ctx: SystemContext, kind: string, reason: string, cause: number) =>
   ctx.emit('command.refused', { causes: [cause], data: { kind, reason } });

@@ -18,7 +18,7 @@ import { weigh, settingOf } from '../law/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 import { charterDue, grantCharter } from './charter.ts';
 import { lordMen } from './men.ts';
-import { lordName, lordRow } from './tables.ts';
+import { lordName, lordRow, pronounsOf } from './tables.ts';
 
 /** The favour causes still counting (read-only, for the page too). */
 export const favourCauses = (world: WorldState): EntityRow[] =>
@@ -56,7 +56,7 @@ export function addFavour(
   const lord = lordRow(world);
   if (!def || !lord) return 0;
   const by = def.by * times;
-  const text = fill(def.text, vars);
+  const text = fill(fill(def.text, { ...pronounsOf(lord), ...vars }), pronounsOf(lord));
   const now = clamp(rawOf(ctx) + by, 0, 100);
   const line = ctx.emit('lord.favour', {
     causes: causes.filter((c) => c > 0),
@@ -101,8 +101,8 @@ export interface Take {
   owed: [string, number][];
 }
 
-/** The causes of a visit's take: a Defiant valley, else paid in full or each tenth short; a fine
- * owed and not paid. The fine and the free year are then settled. */
+/** The causes of a visit's take: a Defiant valley, else paid in full (a free year counts) or each
+ * tenth short; a fine owed and not paid. The fine and the free year are then settled. */
 export function favourFor(ctx: SystemContext, t: Take): void {
   const { world, content } = ctx;
   const lord = lordRow(world)!;
@@ -111,7 +111,8 @@ export function favourFor(ctx: SystemContext, t: Take): void {
     addFavour(ctx, 'defiant', [t.line]);
   else if (t.shortN > 0)
     addFavour(ctx, 'tenth', [t.line], t.words, Math.ceil((10 * t.shortN) / t.owedN));
-  else if (t.owedN > 0) addFavour(ctx, 'full', [t.line]);
+  // A year he granted free owes nothing and is kept in full, so the gift does not cost the +6.
+  else if (t.owedN > 0 || lord['free']) addFavour(ctx, 'full', [t.line]);
   if (fined && t.shortN > 0) addFavour(ctx, 'fine', [t.line]);
   Object.assign(lord, { fine: 0, free: 0 });
 }
@@ -179,7 +180,7 @@ export function climb(ctx: SystemContext, cause: number, owed: [string, number][
         lord: lordName(lord),
         favour: f,
         reeve: lord['reeve'] as string,
-        text: s.text,
+        text: fill(s.text, pronounsOf(lord)),
         step: s.id,
       },
     });

@@ -51,13 +51,13 @@ export function lordName(row: EntityRow): string {
   return `${row['title'] as string} ${row['name'] as string}${byname ? ` ${byname}` : ''}`;
 }
 
-/** "he" and "his" (and capitalised), or "she" and "her", for the lord. */
+/** "he", "his" and "him" (and capitalised), or "she" and "her", for the lord. */
 export const pronounsOf = (
   row: EntityRow,
-): Readonly<Record<'he' | 'his' | 'He' | 'His', string>> =>
+): Readonly<Record<'he' | 'his' | 'him' | 'He' | 'His', string>> =>
   row['sex'] === 'f'
-    ? { he: 'she', his: 'her', He: 'She', His: 'Her' }
-    : { he: 'he', his: 'his', He: 'He', His: 'His' };
+    ? { he: 'she', his: 'her', him: 'her', He: 'She', His: 'Her' }
+    : { he: 'he', his: 'his', him: 'him', He: 'He', His: 'His' };
 
 /** The title a realm's kind gives its ruler (lord.json `titles`), for a woman where it differs. */
 export function titleOf(content: EngineContent, kind: string, sex: string): string {

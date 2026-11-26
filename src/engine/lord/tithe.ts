@@ -17,7 +17,7 @@ import { foodDays, hiddenOf, titheRows } from '../goods/index.ts';
 import { decree, settingOf, weigh } from '../law/index.ts';
 import { addMemory } from '../needs/index.ts';
 import type { SystemContext } from '../sim/index.ts';
-import { addFavour, climb, favourFor, poachTold, shareIn } from './favour.ts';
+import { addFavour, favourFor, poachTold, shareIn } from './favour.ts';
 import { lordName, lordRow } from './tables.ts';
 
 /** The lord's share in 100 of what is brought in: his temper's, as the favour ladder makes it
@@ -147,13 +147,14 @@ function leanOf(lean: boolean, take: 'whole' | 'half' | 'all'): string {
 }
 
 /** A later visit: the reeve counts the barn against the share of all brought in since he last
- * came, takes what is there (half, for some lords, in a lean year) and says what is short. */
+ * came, takes what is there (half, for some lords, in a lean year) and says what is short. Returns
+ * the line and what was owed; the ladder is climbed once the visit's asks are settled too. */
 export function takeTithe(
   ctx: SystemContext,
   causes: number[],
   to: EntityRow,
   eased?: 'whole' | 'half',
-): number {
+): { line: number; owed: [string, number][] } {
   const { world, content } = ctx;
   const lord = lordRow(world)!;
   const rows = titheRows(world);
@@ -223,6 +224,5 @@ export function takeTithe(
   });
   poachTold(ctx, line);
   search(ctx, lord['reeve'] as string, line);
-  climb(ctx, line, owed);
-  return line;
+  return { line, owed };
 }
