@@ -68,7 +68,7 @@ Form https://claude.ai/artifact/91We7kCTAGYGzkkTaCU8DD, every recommendation. Me
 - **Forest:** in this slice; woodcutters and hunters keep out unless hungry or set against the Lord law; someone Loyal who sees a poacher tells the reeve (−4, a line naming the deed).
 - **Estimated paths (five years):** Defiant meets the lord's men in year 5 on two valleys; Grudging is raised from year 4; Loyal stays 46 to 68. Source and runs: /mnt/project-files/vulcan/p6c-s2-mockup/.
 
-## Slice 4 mock-up answers (2026-11-26, V-236)
+## Slice 4 mock-up answers (2026-11-26, V-237)
 
 Form https://claude.ai/artifact/81Mo2DKThLjVRREKTm6Yk6, every recommendation. Pictures: the real game at 390 px with the new parts drawn in; numbers from three years on anvil/1, smoke/2 and tallow/1 on main c057683, once with every ask taken up and once with none answered (source, pictures and runs: project files `vulcan/p6c-s4-mockup/`).
 
