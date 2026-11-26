@@ -68,6 +68,21 @@ Form https://claude.ai/artifact/91We7kCTAGYGzkkTaCU8DD, every recommendation. Me
 - **Forest:** in this slice; woodcutters and hunters keep out unless hungry or set against the Lord law; someone Loyal who sees a poacher tells the reeve (−4, a line naming the deed).
 - **Estimated paths (five years):** Defiant meets the lord's men in year 5 on two valleys; Grudging is raised from year 4; Loyal stays 46 to 68. Source and runs: /mnt/project-files/vulcan/p6c-s2-mockup/.
 
+## Slice 4 mock-up answers (2026-11-26, V-236)
+
+Form https://claude.ai/artifact/81Mo2DKThLjVRREKTm6Yk6, every recommendation. Pictures: the real game at 390 px with the new parts drawn in; numbers from three years on anvil/1, smoke/2 and tallow/1 on main c057683, once with every ask taken up and once with none answered (source, pictures and runs: project files `vulcan/p6c-s4-mockup/`).
+
+- **Getting your eye (q1 A):** a new stop kind "Asks", default Pause, for every new ask (a guest's must be answered within a day, `guests.answer`); a red count of asks waiting on Asks and on ⋯.
+- **Taking up (q2 A):** one Take up button puts the ask in at second; the 1 to 4 stepper (the Work and Build sheets' − +) then moves it; Let pass stays on a taken card. A guest's ask is yes or no, with no stepper.
+- **Costs on the card (q3 A):** numbers, as standing shows them: the lord's favour (done +6, let pass −4, late −6, doubled by a cruel lord), a village's regard (+10, −5, −7, and the gift), the shrine's and a dream's in words (glad or soured). The card says what is set apart or made so far, and when tries fell short ("tried twice, both fell short of fine; nobody is trying now").
+- **Closed asks (q4 A):** the last three on the sheet, with why?; the rest in the Ledger.
+- **Favour (q5 A):** under the Lord law on the Laws sheet: who the lord is (name, realm, temper words, the reeve) with why?; the favour bar like standing, with all five steps marked (10, 20, 35, 70, 85) and what each does; then its causes with numbers.
+- **The tithe (q6 A):** its own block at the top of Stock: the last take, what is owed from now and what is in the barn, and what is set apart there for asks.
+- **The reeve (q7 A):** drawn with the people art (`person.<race>.v1.cloak`, the lord's people) and the items `cart` beside him; no new art. A tap opens his page: who he is, doing now, came, leaves, and his lines.
+- **Region (q8 A):** the valley's card names the lord, realm, temper and favour; each village's card its regard, with why?.
+- **Defaults:** Asks at the top of ⋯; an ask let pass stays listed until its day and can still be taken up; dream asks show like the others; every lever works while paused and names no one.
+- **Build notes (runs):** all three test lords are bold, so every lord's ask was a fine blade. On anvil a fine blade made for the lord's ask was set apart for the shrine's fine-blade ask, so the lord's was late (−6); on smoke two smiths made one plain blade each in the first four days and nobody tried again that year (late). Taking every ask up left smoke's favour at 39 against 50 with none answered, since late costs more than letting pass. Lord law answers changed 89 to 213 times in three years a valley, so the Laws tally moves a lot.
+
 ## Slice 3 mock-up answers (2026-11-23, V-225)
 
 Form https://claude.ai/artifact/RHuQLTHnr7pqrCYrjjoxKQ, every recommendation. Measured on main 59cbaef: five years on anvil/1, smoke/1, ledger-1/1, three on tallow/1 (6 to 22 people), default levers, no tithe or asks; the asks are estimated over the runs (source, runs and model: project files `vulcan/p6c-s3-mockup/`).
