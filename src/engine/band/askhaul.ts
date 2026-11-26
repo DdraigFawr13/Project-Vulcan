@@ -4,7 +4,8 @@
 // it is set apart on the ask and stops being an item. Nobody is sent (V-041).
 import type { EntityRow } from '../core/index.ts';
 import { barnSpot } from '../build/index.ts';
-import { fitsAsk, inStore, itemsOf, layItem, setApart, stillWanted } from '../goods/index.ts';
+import { fitsAsk, inStore, itemsOf, layItem, madeForOther, setApart } from '../goods/index.ts';
+import { stillWanted } from '../goods/index.ts';
 import { takeFrom } from '../goods/index.ts';
 import { canReach, type Spot } from '../paths/index.ts';
 import type { SystemContext } from '../sim/index.ts';
@@ -29,7 +30,8 @@ export function askItem(ctx: SystemContext, p: EntityRow, a: EntityRow): EntityR
   let best: EntityRow | undefined;
   let far = Infinity;
   for (const i of itemsOf(world)) {
-    if (!free(i) || taken.has(i.id) || !fitsAsk(content, a, i)) continue;
+    if (!free(i) || taken.has(i.id) || !fitsAsk(content, a, i) || madeForOther(world, a, i))
+      continue;
     const at = spotOf(i);
     const d = apart(at, from) + (inStore(world, at.x, at.y, at.z) ? 0 : 1000);
     if (d >= far || !canReach(content, world.map, from, at)) continue;

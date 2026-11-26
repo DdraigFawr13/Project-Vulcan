@@ -24,6 +24,8 @@ import {
   yearNow,
 } from '../index.ts';
 import { reeveRow } from '../lord/index.ts';
+import { askItem } from '../band/index.ts';
+import { layTool } from '../goods/index.ts';
 import { contextFor } from '../sim/system.ts';
 import { addAsk } from './index.ts';
 import { asksSystem } from './system.ts';
@@ -166,5 +168,46 @@ describe('working an ask', () => {
     const made = lines(w, 'ask.made')[0]!;
     expect(made.actors).toEqual([next.id]);
     expect(lines(w, 'ask.tookUp').every((e) => !e.actors.includes(best.id))).toBe(true);
+  });
+});
+
+// 6C Slice 4 build notes (V-238): on anvil a fine blade made for the lord's ask was set apart for
+// the shrine's; on smoke two plain blades fell short and nobody tried again that year.
+describe('a piece made for an ask', () => {
+  it("stays that ask's: another ask wanting the same makes its own", () => {
+    const { sim, w, best, ask, ctx } = blade('ledger');
+    const line = emit(w, sim.templates, 'neighbour.asked', {
+      causes: [w.begunEvent],
+      data: { name: 'Elsa', place: 'Hollin', words: 'is at war', what: 'a fine blade', days: '84' },
+    });
+    const other = addAsk(ctx, {
+      ...{ source: 'neighbour', asker: 'Hollin', what: 'a fine blade', of: 'Hollin' },
+      ...{ tool: 'blade', quality: 'fine', count: 1, cite: w.begunEvent, line, due: 0 },
+    });
+    // The other ask comes first in the work; the lord's fine blade already lies with the cart.
+    submitCommand(w, { tick: w.tick + 1, kind: 'takeAsk', data: { ask: other.id, level: 1 } });
+    submitCommand(w, { tick: w.tick + 1, kind: 'takeAsk', data: { ask: ask.id, level: 2 } });
+    step(w, sim, 2);
+    const piece = layTool(w, content, restOf(w, content), {
+      ...{ kind: 'blade', material: 'bronze', quality: 'fine', made: line },
+    });
+    Object.assign(ask, { made: 1, pieces: [piece.id], tried: w.tick });
+    expect(askItem(ctx, best, other)).toBeUndefined();
+    expect(askItem(ctx, best, ask)?.id).toBe(piece.id);
+    step(w, sim, 2 * TICKS_PER_DAY);
+    const took = lines(w, 'ask.tookUp');
+    expect(took.some((e) => e.causes.includes(line))).toBe(true);
+  });
+
+  it('is tried for again once the tries fell short and `retry` days have passed', () => {
+    const { sim, w, ask } = blade('ledger');
+    // Two tries fell short of fine (count + 1): nobody tries again at once...
+    Object.assign(ask, { made: 2, tried: w.tick });
+    step(w, sim, TICKS_PER_DAY);
+    expect(lines(w, 'ask.tookUp')).toEqual([]);
+    // ...but once `retry` days have passed since the last, the best free smith tries again.
+    ask['tried'] = w.tick - content.asks.retry * TICKS_PER_DAY;
+    step(w, sim, 2 * TICKS_PER_DAY);
+    expect(lines(w, 'ask.tookUp').length).toBeGreaterThan(0);
   });
 });

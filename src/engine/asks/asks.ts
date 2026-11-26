@@ -51,7 +51,7 @@ export function addAsk(ctx: SystemContext, a: NewAsk): EntityRow {
     ...{ source: a.source, asker: a.asker, what: a.what, tool: a.tool ?? '', good: a.good ?? '' },
     ...{ quality: a.quality ?? '', count: a.count, got: 0, held: '', cite: a.cite, line: a.line },
     ...{ due: a.due, state: 'open', level: 0, answer: 0, going: [], settled: 0, made: 0 },
-    of: a.of ?? '',
+    ...{ of: a.of ?? '', pieces: [], tried: 0 },
   });
   return ctx.world.entities['ask']!.find((r) => r.id === id)!;
 }
