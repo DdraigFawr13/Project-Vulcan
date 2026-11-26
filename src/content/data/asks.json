@@ -47,6 +47,12 @@
   "from": 2, "months": [0, 1, 2, 3, 4, 5], "odds": 25, "fame": 50, "answer": 2,
   "level": [12, 14], "reach": 3, "far": 12,
   "what": "a bed in the hall and food for a season",
+  "words": {
+    "seat": "{place} is where the {title} sits", "road": "they go where their work is wanted",
+    "carrying": ", carrying a book", "book": "the book of {skill}",
+    "shelf": "puts {book} on the schoolroom shelf", "kept": "keeps {book}: the valley has no schoolroom shelf to keep it on",
+    "taught": "taught {names} at {their} side", "nobody": "found nobody near enough in skill to teach"
+  },
   "trades": [
     {"noun": "smith", "skill": "smithing", "ways": ["steel", "cleaner-smelt"]},
     {"noun": "farmer", "skill": "farming", "ways": ["heavy-plough", "resting", "skeps"]},

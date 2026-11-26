@@ -36,8 +36,9 @@ export interface MethodsDef {
   book: { days: number; event: string };
   drop: { days: number; hours: number };
   seen: { odds: number; most: number; event: string; also?: readonly string[] };
-  /** A master's season-end line (6C Slice 7): a hint for each puzzler on one of its `ways`. */
-  master: { event: string };
+  /** A master's season-end line (6C Slice 7): a hint for each puzzler on one of its `ways`; the
+   * band's word that lets a master stay (`stays`), who keeps their way. */
+  master: { event: string; stays: string };
   tale: { odds: number; id: string };
   luck: { days: number; lucky: number; bynames: readonly string[]; hours: number };
   share: { kinds: readonly string[]; words: string };

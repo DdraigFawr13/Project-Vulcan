@@ -78,6 +78,9 @@ export interface MastersDef {
   reach: number;
   far: number;
   what: string;
+  words: Readonly<
+    Record<'seat' | 'road' | 'carrying' | 'book' | 'shelf' | 'kept' | 'taught' | 'nobody', string>
+  >;
   trades: readonly MasterTradeDef[];
 }
 

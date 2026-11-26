@@ -40,8 +40,9 @@ export const METHODS_SCHEMAS = {
       event: str(),
       also: opt(list(str())),
     }),
-    // A master's season-end line (`event`, 6C Slice 7): one hint for each puzzler on its ways.
-    master: obj({ event: str() }),
+    // A master's season-end line (`event`, 6C Slice 7): one hint for each puzzler on its ways;
+    // the band's word letting a stranger stay (`stays`): a master among them keeps their way.
+    master: obj({ event: str(), stays: str() }),
     // Hearing the tale (tales.json `id`) of a find in the same trade: a hint at 1 in `odds`.
     tale: obj({ odds: num({ min: 1 }), id: str() }),
     // Luck: 1 in `days` working days (`hours` or more at the trade), 1 in `lucky` for a byname

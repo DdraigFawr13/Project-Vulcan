@@ -126,7 +126,7 @@ function turnAway(ctx: SystemContext, a: EntityRow, group: EntityRow[]): void {
 function seasonOver(ctx: SystemContext, a: EntityRow, group: EntityRow[]): void {
   const here = group.filter((q) => q['status'] === 'alive');
   const tale = a['source'] === MASTER ? masterTaught(ctx, a, group[0]!) : guestTale(ctx, a, group);
-  Object.assign(a, { state: 'done', settled: tale, going: [] });
+  Object.assign(a, { state: 'done', settled: tale || (a['line'] as number), going: [] });
   feudRegard(ctx, a, 'done', tale);
   for (const q of here)
     Object.assign(q, { status: 'stranger', waits: ctx.world.tick, path: [], job: '', guest: -1 });

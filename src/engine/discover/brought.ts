@@ -14,7 +14,8 @@ export function masterHints(ctx: SystemContext, e: SimEvent): void {
   const ways = String(e.data['ways'] ?? '').split('|');
   const living = new Set(alive(ctx.world).map((p) => p.id));
   for (const q of puzzlesNow(ctx.world)) {
-    if (q['ended'] || !living.has(q['person'] as number)) continue;
+    const who = q['person'] as number;
+    if (q['ended'] || !living.has(who) || who === e.actors[0]) continue;
     if (ways.includes(q['method'] as string))
       addHint(ctx, q, 'master', [e.id], { names: e.data['name'] });
   }

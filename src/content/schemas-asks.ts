@@ -53,6 +53,11 @@ export const ASKS_SCHEMAS = {
       ...{ from: num({ min: 1 }), months: list(num({ min: 0, max: 11 })) },
       ...{ odds: num({ min: 0, max: 100 }), fame: num({ min: 0 }), answer: num({ min: 1 }) },
       ...{ level: list(num({ min: 1 })), reach: num({ min: 0 }), far: num({ min: 1 }), what: text },
+      // The words of their lines: a seat's or the road's reason, the scholar's book, whom they taught.
+      words: obj({
+        ...{ seat: text, road: text, carrying: text, book: text, shelf: text, kept: text },
+        ...{ taught: text, nobody: text },
+      }),
       trades: list(
         obj({
           ...{ noun: str(), skill: opt(str()), ways: opt(list(str())) },

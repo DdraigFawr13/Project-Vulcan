@@ -20,9 +20,6 @@ function livePuzzles(ctx: SystemContext): EntityRow[] {
   return puzzlesNow(ctx.world).filter((q) => living.has(q['person'] as number));
 }
 
-/** The band's word that lets a stranger stay (band verdict.ts): a master keeps their way. */
-const STAYS = 'people.strangerStays';
-
 const since = (day: number, last: number, gap: number): boolean => last < 0 || day - last >= gap;
 
 /** A failure line: one puzzler in its trade learns from it: one named in the line (`by` `actor`),
@@ -88,7 +85,7 @@ export function readLines(ctx: SystemContext): void {
     const s = content.methods.seen;
     if (e.type === s.event || s.also?.includes(e.type)) seen(ctx, e);
     if (e.type === content.methods.master.event) masterHints(ctx, e);
-    if (e.type === STAYS) broughtWays(ctx, e);
+    if (e.type === content.methods.master.stays) broughtWays(ctx, e);
     if (e.type === content.methods.book.event) {
       bookLearn(ctx, e);
       book(ctx, e);

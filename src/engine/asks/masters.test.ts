@@ -103,4 +103,17 @@ describe('a wandering master', () => {
     const knows = (w.entities['knows'] ?? []).filter((k) => k['person'] === master.id);
     expect(knows.map((k) => [k['method'], k['how']])).toEqual([[master['way'], 'master']]);
   });
+
+  it('dead during the stay, leaves no line and no hint', () => {
+    const { sim, w, master } = arrived();
+    const ask = askOf(w);
+    submitCommand(w, { tick: w.tick + 1, kind: 'takeAsk', data: { ask: ask.id, level: 1 } });
+    step(w, sim, 3);
+    expect(master['status']).toBe('alive');
+    master['status'] = 'dead';
+    ask['due'] = w.tick + 1;
+    step(w, sim, 3);
+    expect(lines(w, 'master.taught')).toEqual([]);
+    expect(ask['state']).toBe('done');
+  });
 });
