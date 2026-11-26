@@ -14,6 +14,7 @@ import type { WalkerView } from './protocol-people.ts';
 export type { HealthView, NeedView, StrangerView, WalkerView } from './protocol-people.ts';
 import type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 import type { FindMark, FindView, TripsView } from './protocol-land.ts';
+import type { RegionDetail, ReevePage, ReeveView } from './protocol-lord.ts';
 export type { AnimalPage, AnimalView, LeftoversView } from './protocol-wild.ts';
 import type {
   BuildView,
@@ -74,6 +75,8 @@ export type ToWorker =
   | { type: 'item'; id: number }
   /** The herd or pack page of an animal tapped on the map (Bundle 2). */
   | { type: 'animal'; id: number }
+  /** The page of the lord's reeve tapped on the map (6C Slice 4). */
+  | { type: 'reeve' }
   /** The Ledger's Trips tab (6W Slice 6). */
   | { type: 'trips' };
 
@@ -344,6 +347,8 @@ export type FromWorker =
       walkers: WalkerView[];
       /** The live animals on the surface, only when one has moved since the last snapshot. */
       animals?: AnimalView[];
+      /** The lord's reeve while he is in the valley (6C Slice 4); absent when he is not. */
+      reeve?: ReeveView;
       /** The flags on found places, when they changed (6W Slice 6). */
       finds?: FindMark[];
       /** The Stock sheet's Leftovers block and the game and fish counted as food. */
@@ -378,13 +383,16 @@ export type FromWorker =
   | { type: 'item'; item: ItemView | undefined }
   /** The animal page for an `animal` request; none when the animal is gone. */
   | { type: 'animalPage'; page: AnimalPage | undefined }
+  /** The reeve's page for a `reeve` request; none once he has gone. */
+  | { type: 'reevePage'; page: ReevePage | undefined }
   | { type: 'trips'; trips: TripsView }
   /** The causes of line `id`, nearest first, each with its depth (1 is a direct cause). */
   | { type: 'causes'; id: number; lines: (LedgerLine & { depth: number })[] }
   /** The region of a plain seed and its valleys on offer, before any world begins. */
   | { type: 'picker'; seed: string; region: RegionView; valleys: ValleyPreview[] }
   /** The running world's region and which valley it settled; none for a world from a plain seed. */
-  | { type: 'region'; region?: RegionView; site: number }
+  /** The region, with the lord and the villages' regard once there are any (6C Slice 4). */
+  | ({ type: 'region'; region?: RegionView; site: number } & RegionDetail)
   /** The engine stopped. `commands` is the running world's whole command log, so the page can
    * add the levers given since its last standby copy to the rescue save. */
   | { type: 'error'; message: string; tick?: number; commands?: Command[] };

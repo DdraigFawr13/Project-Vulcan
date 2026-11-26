@@ -148,9 +148,9 @@ export class Panel {
   }
 
   /** The region map, read-only, with the settled valley marked; a tapped site shows who lives there. */
-  showRegion(region: RegionView, site: number): void {
+  showRegion(region: RegionView, site: number, detail?: Parameters<typeof regionRows>[2]): void {
     this.open('region', 'Region');
-    this.body.replaceChildren(...regionRows(region, site));
+    this.body.replaceChildren(...regionRows(region, site, detail));
   }
 
   /** The Stock sheet (P2.4): how much of each good the colony keeps, a level button for each. */

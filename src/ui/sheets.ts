@@ -8,6 +8,7 @@ import type {
   LawView,
   MoodView,
   AnimalPage,
+  ReevePage,
   ItemView,
   LedgerLine,
   PersonView,
@@ -17,7 +18,8 @@ import type {
 } from '../worker/index.ts';
 import { content } from '../content/index.ts';
 import { animalRows, goneRows } from './animalsheet.ts';
-import { showAsks } from './askssheet.ts';
+import { AsksSheet } from './askssheet.ts';
+import { reeveGone, reeveRows } from './reevesheet.ts';
 import { BuildSheet } from './build.ts';
 import { itemRows } from './itemsheet.ts';
 import { Dawn } from './dawn.ts';
@@ -70,7 +72,7 @@ export class Sheets {
   private moodView: MoodView | undefined;
   private moodKey = '';
   private asksView: AsksView | undefined;
-  private asksKey = '';
+  private readonly asks: AsksSheet;
   /** The item page open: its id, what it shows (as JSON) and whether a fresh copy is asked for. */
   private itemOpen: { id: number; key: string; asked: boolean } | undefined;
   /** A world just began or loaded; its first batch of lines is not news. */
@@ -104,6 +106,7 @@ export class Sheets {
       sendBack: (kind, id) => command('sendBack', { [kind]: id }),
       refresh: () => this.refreshBuild(),
     });
+    this.asks = new AsksSheet(command);
     this.laws = new LawSheet({
       setLaw: (law, setting) => command('setLaw', { law, setting }),
       letStand: (faction) => command('letStand', { faction }),
@@ -190,9 +193,18 @@ export class Sheets {
 
   /** The herd or pack page of a tapped animal (Bundle 2); view only. */
   showAnimal(page: AnimalPage | undefined): void {
-    const { panel } = this.deps;
-    const rows = page ? animalRows(page, (line) => panel.lineRow(line)) : goneRows();
-    panel.showView('animal', page?.title ?? 'Animal', rows);
+    const row = (line: LedgerLine) => this.deps.panel.lineRow(line);
+    this.viewOnly(page?.title ?? 'Animal', page ? animalRows(page, row) : goneRows());
+  }
+
+  /** The lord's reeve, tapped on the map (6C Slice 4); view only. */
+  showReeve(page: ReevePage | undefined): void {
+    const row = (line: LedgerLine) => this.deps.panel.lineRow(line);
+    this.viewOnly(page?.title ?? 'The reeve', page ? reeveRows(page, row) : reeveGone());
+  }
+
+  private viewOnly(title: string, rows: HTMLElement[]): void {
+    this.deps.panel.showView('animal', title, rows);
     this.select(undefined);
     this.deps.opened();
   }
@@ -204,10 +216,7 @@ export class Sheets {
 
   /** ⋯ → Asks, Work, Build, Laws or Yesterday (the dawn page at any time), or the mood word. */
   open(kind: 'asks' | 'work' | 'build' | 'laws' | 'dawn' | 'mood'): void {
-    if (kind === 'asks') {
-      this.asksKey = '';
-      return this.refreshAsks(true);
-    }
+    if (kind === 'asks') return this.refreshAsks(true);
     if (kind === 'mood') {
       this.moodKey = '';
       return this.refreshMood(true);
@@ -358,16 +367,7 @@ export class Sheets {
   /** Redraws an open Asks sheet when what it shows has changed (or `open`s it). Its levers go
    * out as commands for the next tick, applied at once while paused. */
   private refreshAsks(open = false): void {
-    const view = this.asksView;
-    const { panel } = this.deps;
-    if (!view || (!open && panel.kind !== 'asks')) return;
-    const key = JSON.stringify(view);
-    if (key === this.asksKey) return;
-    this.asksKey = key;
-    showAsks(panel, view, (kind, data) =>
-      this.deps.send({ type: 'command', tick: this.deps.tick() + 1, kind, data }),
-    );
-    this.select(undefined);
+    if (this.asks.draw(this.deps.panel, this.asksView, open)) this.select(undefined);
   }
 
   /** Redraws an open mood page when its causes change (or `open`s it). */

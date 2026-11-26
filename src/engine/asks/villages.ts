@@ -15,7 +15,7 @@ import { addAsk, settleAsk, wantsOf } from './asks.ts';
 export const REGARD_TABLES: Schemas = {
   /** A village's regard for the colony, 0 to 100, and the line of an ask done whose gift waits
    * for the village's next stranger (0 for none). */
-  regard: { place: 'text', regard: 'int', gift: 'event' },
+  regard: { place: 'text', regard: 'int', gift: 'event', line: 'event' },
 };
 
 /** Village `place`'s regard row, made at `regard.start` the first time it is needed. */
@@ -24,7 +24,7 @@ export function regardOf(ctx: SystemContext, place: string): EntityRow {
   const found = rows().find((r) => r['place'] === place);
   if (found) return found;
   const start = ctx.content.asks.regard.start;
-  const id = addEntity(ctx.world, 'regard', { place, regard: start, gift: 0 });
+  const id = addEntity(ctx.world, 'regard', { place, regard: start, gift: 0, line: 0 });
   return rows().find((r) => r.id === id)!;
 }
 
@@ -110,13 +110,15 @@ export function moveRegard(
 ) {
   const row = regardOf(ctx, place);
   row['regard'] = Math.max(0, Math.min(100, (row['regard'] as number) + by));
-  return ctx.emit('ask.regard', {
+  const line = ctx.emit('ask.regard', {
     causes: [cause],
     data: {
       ...{ place, way: by > 0 ? 'rises' : 'falls' },
       ...{ regard: String(row['regard'] as number), text },
     },
   });
+  row['line'] = line;
+  return line;
 }
 
 /** Each hour: a village's ask whose day has come is fetched and settled, and its regard moves. */

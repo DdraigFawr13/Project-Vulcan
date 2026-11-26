@@ -9,6 +9,7 @@ export type * from './protocol-colony.ts';
 export type * from './protocol-flock.ts';
 export type * from './protocol-goods.ts';
 export type * from './protocol-land.ts';
+export type * from './protocol-lord.ts';
 export type * from './protocol-law.ts';
 export type * from './protocol-people.ts';
 export type * from './protocol-region.ts';

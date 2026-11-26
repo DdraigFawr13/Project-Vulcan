@@ -5,6 +5,7 @@
 import { content } from '../content/index.ts';
 import {
   alive,
+  favourAt,
   asksOf,
   clockAt,
   liveAsks,
@@ -75,8 +76,7 @@ function answerByOf(world: WorldState, a: EntityRow): string {
 function lordCosts(world: WorldState): string {
   const c = content.lord.favour.causes;
   const times = content.asks.lord.double.includes(lordRow(world)?.['temper'] as string) ? 2 : 1;
-  const favour = (world.entities['favour'] ?? []).reduce((s, f) => s + (f['by'] as number), 0);
-  const now = Math.max(0, Math.min(100, content.lord.favour.start + favour));
+  const now = favourAt(world, content);
   return (
     `Done: his favour ${signed(c['askDone']?.by ?? 0)}, from ${now}. Let pass: ${signed((c['askPassed']?.by ?? 0) * times)}. ` +
     `Not ready by then: ${signed((c['askLate']?.by ?? 0) * times)}.`

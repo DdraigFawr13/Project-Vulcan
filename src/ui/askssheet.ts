@@ -88,20 +88,31 @@ export function asksRows(view: AsksView, act: AsksActions): HTMLElement[] {
   return rows;
 }
 
-/** Draws the sheet in the panel; its levers go out through `send` as commands for the next tick,
- * applied at once while paused. */
-export function showAsks(
-  panel: Panel,
-  view: AsksView,
-  send: (kind: string, data: Record<string, number>) => void,
-): void {
-  panel.showView(
-    'asks',
-    'Asks',
-    asksRows(view, {
-      take: (ask, level) => send('takeAsk', { ask, level }),
-      pass: (ask) => send('passAsk', { ask }),
-      lineRow: (line) => panel.lineRow(line),
-    }),
-  );
+/** The sheet in the panel, redrawn when what it shows has changed; its levers go out through
+ * `send` as commands for the next tick, applied at once while paused. */
+export class AsksSheet {
+  private key = '';
+  private readonly send: (kind: string, data: Record<string, number>) => void;
+
+  constructor(send: (kind: string, data: Record<string, number>) => void) {
+    this.send = send;
+  }
+
+  /** Draws `view` if the sheet is open (or `open`s it) and it changed; whether it drew. */
+  draw(panel: Panel, view: AsksView | undefined, open: boolean): boolean {
+    if (!view || (!open && panel.kind !== 'asks')) return false;
+    const key = JSON.stringify(view);
+    if (!open && key === this.key) return false;
+    this.key = key;
+    panel.showView(
+      'asks',
+      'Asks',
+      asksRows(view, {
+        take: (ask, level) => this.send('takeAsk', { ask, level }),
+        pass: (ask) => this.send('passAsk', { ask }),
+        lineRow: (line) => panel.lineRow(line),
+      }),
+    );
+    return true;
+  }
 }

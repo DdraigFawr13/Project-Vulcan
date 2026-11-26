@@ -11,14 +11,15 @@ export const LORD_TABLES: Schemas = {
    * the reeve's name and the line the colony first heard of them on. 6C Slice 2: the favour
    * ladder's steps reached (indices), a fine and a free year owed at the next visit (1), whether
    * the forest is the colony's (1), and the forest's middle (-1 for none). 6C Slice 3: the visits
-   * he has counted the store at (for his asks). */
+   * he has counted the store at (for his asks). 6C Slice 4: his last take (the `lord.tithed`
+   * line, when and in words), kept because that day is sealed a week on. */
   lord: {
     ...{ ruler: 'int', name: 'text', sex: 'text', born: 'int', age: 'int', child: 'count' },
     ...{ temper: 'text', word: 'text', line: 'text', byname: 'text', realm: 'text' },
     ...{ kind: 'text', title: 'text', home: 'text', culture: 'text', dir: 'text' },
     ...{ reeve: 'text', named: 'event' },
     ...{ steps: 'ints', fine: 'count', free: 'count', granted: 'count', fx: 'int', fy: 'int' },
-    visits: 'count',
+    ...{ visits: 'count', tithed: 'event', tookAt: 'int', took: 'text' },
   },
   /** The lord's favour's causes (V-222), as standing's: the cause, its worth, words, line and the
    * tick it stops counting. */

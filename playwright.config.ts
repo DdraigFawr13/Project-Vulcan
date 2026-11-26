@@ -11,7 +11,7 @@ const chromium = {
 
 /** Specs whose jumps run weeks of play at once, or that time the page against the wall clock:
  * they run on their own, after the rest. */
-const ALONE = /(hunger|discover|loadhitch|asks)\.spec\.ts$/;
+const ALONE = /(hunger|discover|loadhitch|asks|lord)\.spec\.ts$/;
 
 export default defineConfig({
   testDir: './tests/browser',

@@ -19,9 +19,11 @@ const SIZE = 1.25;
 /** Giants stand a third taller again (Morgan's look form, 2026-11-20: "everything the right
  * scale / height"); a picture choice only. */
 const TALLER: Readonly<Record<string, number>> = { giant: 4 / 3 };
+/** How many times a tile a person of `race` is drawn. */
+export const scaleOf = (race: string): number => SIZE * (TALLER[race] ?? 1);
 /** Where the sprite's corner sits from its tile's corner, for a person drawn `scale` times a
  * tile: centred across the tile with their feet on its lower edge. */
-const liftOf = (scale: number) => ({ x: -(TILE * (scale - 1)) / 2, y: -TILE * (scale - 1) });
+export const liftOf = (scale: number) => ({ x: -(TILE * (scale - 1)) / 2, y: -TILE * (scale - 1) });
 /** Milliseconds per walk frame: the drawn two-frame walk, and the whole villagers' PixelLab walks
  * (Morgan's walk form, Q3 A: steady, 140 ms a step). */
 const STRIDE = 160;
@@ -222,7 +224,7 @@ export class PeopleSprites {
               .setTint(colour(p.look.hairColour))
           : undefined;
       // Over the features and the aura glow, under the selection marks.
-      const scale = SIZE * (TALLER[p.race] ?? 1);
+      const scale = scaleOf(p.race);
       const lift = liftOf(scale);
       const box = this.scene.add
         .container(0, 0, hair ? [body, clothes, hair] : [body, clothes])

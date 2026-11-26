@@ -4,6 +4,7 @@
 import { content } from '../content/index.ts';
 import type { FlockPlate, LeftoversView, StockView } from '../worker/index.ts';
 import { el } from './dom.ts';
+import { fillTithe, titheBlock } from './tithe.ts';
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -53,6 +54,7 @@ export function stockRows(
     return block;
   });
   return [
+    ...(leftovers.tithe ? [titheBlock(leftovers.tithe)] : []),
     el('p', {}, 'How much the colony keeps in its stores. Whoever is free and able does the work.'),
     ...rows,
     ...(leftovers.flock ? [flockBlock(leftovers.flock)] : []),
@@ -142,18 +144,25 @@ function fillLeftovers(p: Element, l: LeftoversView): Element {
   return p;
 }
 
-/** Each snapshot: the counts change in place, so a level button never slips out from under a tap. */
-export function fillStock(
-  body: HTMLElement,
-  stock: readonly StockView[],
-  leftovers: LeftoversView,
-): void {
+/** The blocks that are not a good (tithe, flock, leftovers, food mix) fill in place. */
+function fillPlates(body: HTMLElement, leftovers: LeftoversView): void {
+  const tithe = body.querySelector('[data-tithe]');
+  if (tithe && leftovers.tithe) fillTithe(tithe, leftovers.tithe);
   const flock = body.querySelector('[data-flock]');
   if (flock && leftovers.flock) fillFlock(flock, leftovers.flock);
   const kept = body.querySelector('[data-leftovers]');
   if (kept) fillLeftovers(kept, leftovers);
   const mix = body.querySelector<HTMLElement>('[data-testid="food-mix"]');
   if (mix) foodMix(mix, leftovers);
+}
+
+/** Each snapshot: the counts change in place, so a level button never slips out from under a tap. */
+export function fillStock(
+  body: HTMLElement,
+  stock: readonly StockView[],
+  leftovers: LeftoversView,
+): void {
+  fillPlates(body, leftovers);
   for (const s of stock) {
     const head = body.querySelector(`[data-testid="stock-${s.good}"] > p`);
     if (head?.lastChild) head.lastChild.textContent = `: ${haveLine(s)}`;
@@ -183,6 +192,7 @@ export function drawStock(
   const key = JSON.stringify([
     stock.map((s) => [s.good, s.level, s.want, s.levels]),
     !!leftovers.flock,
+    !!leftovers.tithe,
   ]);
   if (key === drawn) fillStock(body, stock, leftovers);
   else body.replaceChildren(...stockRows(stock, set, leftovers));

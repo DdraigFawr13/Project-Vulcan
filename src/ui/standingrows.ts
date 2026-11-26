@@ -10,10 +10,10 @@ export interface StandingActions {
   letStand(faction: number): void;
 }
 
-const why = (line: number): HTMLElement =>
+export const why = (line: number): HTMLElement =>
   el('button', { type: 'button', class: 'why', 'data-why': String(line) }, 'why?');
 
-const signed = (n: number): string => (n > 0 ? `+${n}` : `−${-n}`);
+export const signed = (n: number): string => (n > 0 ? `+${n}` : `−${-n}`);
 
 /** Standing as a number, a word and a bar, then its causes, biggest first. */
 function standing(view: ColonyView): HTMLElement[] {

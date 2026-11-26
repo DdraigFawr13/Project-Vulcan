@@ -63,6 +63,8 @@ describe('a neighbouring village', () => {
     expect(fell!.data['regard']).toBe(
       String(content.asks.regard.start + content.asks.regard.passed),
     );
+    // The row keeps its last move's line, for the Region sheet's "why?" (Slice 4).
+    expect(w.entities['regard']![0]!['line']).toBe(fell!.id);
     // A year on (the first ask set back a year), the next ask is done: the regard rises and the
     // village's next stranger brings a gift.
     ask['due'] = -400 * 1440;
