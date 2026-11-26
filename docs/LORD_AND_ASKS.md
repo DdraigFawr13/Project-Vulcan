@@ -114,3 +114,8 @@ Form https://claude.ai/artifact/Y4AuimHtSHHBfxgDuDiqTt, every recommendation (an
 - **Charter (h1, h2):** its own ladder step at favour 80 (between `free` 70 and `forest` 85, which stay), with 10 or more living and 5 years settled, once a run. The valley is named in the founders' tongue as the world names places; the name shows on the top bar, recaps and Region map, and strangers and masters come a little more often. The tithe stays.
 - **Build (b1):** four parts in order: masters; the lord's visit with petitions and hotheads; contests; the charter. Screen rows (the master's ask, the name on the top bar) after Slice 4's Asks sheet.
 
+## Slice 7 part 1 build: wandering masters (2026-11-26, V-239)
+
+- **Content:** `asks.json` `masters` (`from`, `months`, `odds`, `fame`, `answer`, `level`, `reach`, `far`, `what`, `trades`: noun, skill, ways; the scholar `book`); `methods.json` `master.event` and hint kind `master`, screen `how.master`; events `master.came`, `master.asked`, `master.book`, `master.taught`, `discover.brought`.
+- **Engine:** asks `masters.ts` (the draw, hourly; the ask at the green; the scholar's book; the season's end line), settled by `guests.ts` as a guest's ask (source `wanderer`, good `guest`); band `wander.ts` `walkIn` (one alone walking in to stand at the green, person fields `master`, `way`); discover `brought.ts` (the hints, and the way kept by one let stay); teach `shelveBook`. Teaching beside is the band's existing master pace (`teach.json` `master` 8, `ahead` 3).
+- **Not yet:** the Asks sheet card for a master (Slice 4's sheet, then Slice 7's screen pieces).

@@ -23,7 +23,8 @@
       { "event": "neighbour.asked", "weight": 3, "title": "{place} asked for {what}" },
       { "event": "faith.asked", "weight": 2, "title": "the {title} asked for {what}" },
       { "event": "guest.asked", "weight": 2, "title": "{names} asked to stay a season" },
-      { "event": "dream.asked", "weight": 2, "title": "{name} asked the colony to back a dream" }
+      { "event": "dream.asked", "weight": 2, "title": "{name} asked the colony to back a dream" },
+      { "event": "master.asked", "weight": 2, "title": "{name}, a master {noun}, asked to stay a season" }
     ] },
     { "id": "lost", "max": 4, "lines": [
       { "event": "health.died", "weight": 10, "tally": "died", "per": "line", "title": "{name} died", "many": "{Count} died: {list}.", "item": "{name}" },
@@ -79,6 +80,7 @@
     { "id": "ways", "max": 4, "lines": [
       { "event": "discover.found", "weight": 6, "title": "{name} found {method}", "many": "{Count} new ways were found: {list}.", "item": "{method}, by {name}", "year": "New ways found this year: {list}." },
       { "event": "discover.learned", "weight": 3, "many": "{Count} learnt a way from another: {list}.", "item": "{name}, {method} from {teacher}" },
+      { "event": "discover.brought", "weight": 4, "title": "{name} stayed, bringing {method}", "many": "{Count} masters stayed and brought their ways: {list}.", "item": "{name}, {method}", "year": "Ways masters brought this year: {list}." },
       { "event": "discover.mishap", "weight": 2, "many": "{Times} trying something new went wrong: {list}.", "item": "{name} at the {where}" },
       { "event": "discover.lost", "weight": 6, "title": "the way of {method} was lost with {name}", "many": "{Count} ways were lost with their last knowers: {list}.", "item": "{method}, with {name}", "year": "Ways lost this year: {list}." }
     ] },

@@ -1,5 +1,5 @@
 // Public surface of the band system.
-export { drawBand, nameFrom, tradeOf } from './band.ts';
+export { drawBand, knownOf, nameFrom, tradeOf } from './band.ts';
 export { drawChild, type Inherited } from './child.ts';
 export type { Home, Person } from './band.ts';
 export { dayOf } from './day.ts';
@@ -51,7 +51,9 @@ export {
   skillOf,
   spotOf,
 } from './spots.ts';
+export { famePercent } from './road.ts';
 export { strangersSystem } from './strangers.ts';
+export { walkIn, type Walker } from './wander.ts';
 export { admit, namesOf, sendBack } from './verdict.ts';
 export { TALLY_START, rollTally, tallyAdd, yesterdayOf } from './tally.ts';
 export type { Tally } from './tally.ts';

@@ -93,7 +93,8 @@ export function hoursAt(ctx: SystemContext, person: number, job: string): number
 }
 
 /** The way `p` would puzzle over: in the trade they worked most this month (at least
- * `start.hours`), the first they have the skill for, don't know, and no living colonist knows. */
+ * `start.hours`), the first they have the skill for, don't know (nor brought as a master), and no
+ * living colonist knows. */
 function wayFor(ctx: SystemContext, p: EntityRow) {
   const { world, content } = ctx;
   const [top] = [...tradesOf(content)]
@@ -105,6 +106,7 @@ function wayFor(ctx: SystemContext, p: EntityRow) {
       w.job === top.job &&
       (!w.skill || ((skillRow(world, p.id, w.skill)?.['level'] as number) ?? 0) >= w.from) &&
       !knows(world, p.id, w.id) &&
+      w.id !== p['way'] &&
       !knowersOf(world, w.id).length,
   );
   return m && { m, hours: top.hours };

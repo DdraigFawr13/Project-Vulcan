@@ -43,6 +43,28 @@
   }
 },
 "guests": {"what": "a bed in the hall for a season", "feud": "a bed for a season, away from their village's feud", "answer": 1, "against": "guest-against"},
+"masters": {
+  "from": 2, "months": [0, 1, 2, 3, 4, 5], "odds": 25, "fame": 50, "answer": 2,
+  "level": [12, 14], "reach": 3, "far": 12,
+  "what": "a bed in the hall and food for a season",
+  "words": {
+    "seat": "{place} is where the {title} sits", "road": "they go where their work is wanted",
+    "carrying": ", carrying a book", "book": "the book of {skill}",
+    "shelf": "puts {book} on the schoolroom shelf", "kept": "keeps {book}: the valley has no schoolroom shelf to keep it on",
+    "taught": "taught {names} at {their} side", "nobody": "found nobody near enough in skill to teach"
+  },
+  "trades": [
+    {"noun": "smith", "skill": "smithing", "ways": ["steel", "cleaner-smelt"]},
+    {"noun": "farmer", "skill": "farming", "ways": ["heavy-plough", "resting", "skeps"]},
+    {"noun": "mason", "skill": "stoneworking", "ways": ["lime-mortar"]},
+    {"noun": "healer", "skill": "herbalism", "ways": ["remedies"]},
+    {"noun": "woodsman", "skill": "woodcutting", "ways": ["clamp"]},
+    {"noun": "weaver", "skill": "crafting", "ways": ["treadle-loom"]},
+    {"noun": "potter", "skill": "crafting", "ways": ["glazed-pots"]},
+    {"noun": "tanner", "skill": "crafting", "ways": ["bark-tanning"]},
+    {"noun": "scholar", "book": true}
+  ]
+},
 "dreams": {
   "days": 56, "answer": 28, "backed": "dream-backed", "unbacked": "dream-unbacked",
   "house": {"what": "timber for {name}'s own house", "good": "logs", "count": 30},

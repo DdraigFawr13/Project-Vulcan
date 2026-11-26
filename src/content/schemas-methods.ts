@@ -40,6 +40,9 @@ export const METHODS_SCHEMAS = {
       event: str(),
       also: opt(list(str())),
     }),
+    // A master's season-end line (`event`, 6C Slice 7): one hint for each puzzler on its ways;
+    // the band's word letting a stranger stay (`stays`): a master among them keeps their way.
+    master: obj({ event: str(), stays: str() }),
     // Hearing the tale (tales.json `id`) of a find in the same trade: a hint at 1 in `odds`.
     tale: obj({ odds: num({ min: 1 }), id: str() }),
     // Luck: 1 in `days` working days (`hours` or more at the trade), 1 in `lucky` for a byname
@@ -68,7 +71,7 @@ export const METHODS_SCHEMAS = {
     // The words for each kind of hint: in its own line (`how`) and in the find's list (`short`).
     kinds: obj({
       ...{ work: words, failure: words, seen: words, book: words },
-      ...{ tale: words, luck: words, dream: words },
+      ...{ tale: words, luck: words, dream: words, master: words },
     }),
     // A failure line's words, by event, filled from its data, and whose failure it is: `actor`,
     // a puzzler named in the line; `trade`, a puzzler who worked the trade that day.
@@ -79,7 +82,7 @@ export const METHODS_SCHEMAS = {
     screen: obj({
       effects: map(text),
       ...{ puzzle: text, hint: text, left: text, knows: text, known: text },
-      how: obj({ found: text, apprentice: text, book: text, beside: text }),
+      how: obj({ found: text, apprentice: text, book: text, beside: text, master: text }),
       ...{ found: text, learnt: text, only: text, kept: text, puzzled: text, puzzler: text },
       ...{ puzzlerWho: text, nobody: text, none: text },
     }),

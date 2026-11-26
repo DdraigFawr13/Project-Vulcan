@@ -24,6 +24,7 @@
 "failure": {"days":28},
 "drop": {"days":28,"hours":8},
 "seen": {"odds":8,"most":2,"event":"people.strangerCame","also":["guest.tale"]},
+"master": {"event": "master.taught", "stays": "people.strangerStays"},
 "book": {"days":56,"event":"skill.read"},
 "tale": {"odds":2,"id":"found-way"},
 "luck": {"days":100,"lucky":50,"bynames":["Lucky","Twice-spared"],"hours":4},
@@ -36,7 +37,7 @@
   "hint": "Hint {n}: {short}.",
   "left": "{left} to go. More work at the {where}, a failure, something seen on a stranger, a book or a lucky day can each bring one.",
   "knows": "Knows {method}",
-  "how": {"found":"Found it","apprentice":"Learnt as {from}'s apprentice","book":"Learnt from {from}'s book","beside":"Learnt working beside {from}"},
+  "how": {"found":"Found it","apprentice":"Learnt as {from}'s apprentice","book":"Learnt from {from}'s book","beside":"Learnt working beside {from}","master":"Brought it to the valley as a master"},
   "known": "{how}. {Effect}.",
   "found": "{names} found it",
   "learnt": "{names} learnt it",
@@ -57,7 +58,8 @@
   "book": {"how":"read something in {book}","short":"{book}"},
   "tale": {"how":"heard how {finder} found {found}","short":"the tale of {finder}'s find"},
   "luck": {"how":"stumbled on something by luck at the {where}","short":"a lucky slip"},
-  "dream": {"how":"dreamed the answer one night","short":"a dream"}
+  "dream": {"how":"dreamed the answer one night","short":"a dream"},
+  "master": {"how":"watched {names} at work","short":"watching {names}"}
 },
 "failed": {
   "tool.broke": {"words":"a broken {what}","by":"actor"},
