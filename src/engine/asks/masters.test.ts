@@ -66,6 +66,13 @@ describe('a wandering master', () => {
     const [stays] = lines(w, 'guest.stays');
     expect(stays!.actors).toEqual([master.id]);
     expect(master['status']).toBe('alive');
+    // Taken in, the ask is the hall's for the season: no lever answers it again (6C review).
+    submitCommand(w, { tick: w.tick + 1, kind: 'passAsk', data: { ask: ask.id } });
+    submitCommand(w, { tick: w.tick + 1, kind: 'takeAsk', data: { ask: ask.id, level: 3 } });
+    step(w, sim, 2);
+    expect(lines(w, 'ask.letPass')).toEqual([]);
+    expect(lines(w, 'command.refused').map((e) => e.data['kind'])).toEqual(['passAsk', 'takeAsk']);
+    expect([ask['state'], ask['level']]).toEqual(['taken', 1]);
     // Nobody spoke against a master, so nobody is sour at sharing the hall.
     const sour = (w.entities['memory'] ?? []).filter(
       (m) => m['memory'] === content.asks.guests.against,

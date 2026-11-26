@@ -50,7 +50,10 @@ function card(c: AskCardView, act: AsksActions): HTMLElement {
     );
   else if (c.state !== 'taken')
     row.append(plate('Take up', 'ask-take', () => act.take(c.id, TAKE_AT)));
-  if (c.state !== 'passed') row.append(plate('Let pass', 'ask-pass', () => act.pass(c.id)));
+  // A guest taken in stays the season: nothing left to answer (6C review).
+  const hosted = c.state === 'taken' && c.yesNo;
+  if (c.state !== 'passed' && !hosted)
+    row.append(plate('Let pass', 'ask-pass', () => act.pass(c.id)));
   box.append(row);
   return box;
 }

@@ -101,8 +101,8 @@ export interface Take {
   owed: [string, number][];
 }
 
-/** The causes of a visit's take: a Defiant valley, else paid in full or each tenth short; a fine
- * owed and not paid. The fine and the free year are then settled. */
+/** The causes of a visit's take: a Defiant valley, else paid in full (a free year counts) or each
+ * tenth short; a fine owed and not paid. The fine and the free year are then settled. */
 export function favourFor(ctx: SystemContext, t: Take): void {
   const { world, content } = ctx;
   const lord = lordRow(world)!;
@@ -111,7 +111,8 @@ export function favourFor(ctx: SystemContext, t: Take): void {
     addFavour(ctx, 'defiant', [t.line]);
   else if (t.shortN > 0)
     addFavour(ctx, 'tenth', [t.line], t.words, Math.ceil((10 * t.shortN) / t.owedN));
-  else if (t.owedN > 0) addFavour(ctx, 'full', [t.line]);
+  // A year he granted free owes nothing and is kept in full, so the gift does not cost the +6.
+  else if (t.owedN > 0 || lord['free']) addFavour(ctx, 'full', [t.line]);
   if (fined && t.shortN > 0) addFavour(ctx, 'fine', [t.line]);
   Object.assign(lord, { fine: 0, free: 0 });
 }

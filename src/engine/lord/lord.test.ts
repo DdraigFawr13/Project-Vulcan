@@ -27,6 +27,7 @@ import { lordSystem } from './system.ts';
 import { defySystem, keepsOut, poached, poaches } from '../defy/index.ts';
 import { stopFor } from '../health/index.ts';
 import { contextFor } from '../sim/system.ts';
+import { takeUpTithe } from '../band/tithehaul.ts';
 import { rateOf } from './tithe.ts';
 import { favourOf } from './favour.ts';
 import { alive } from '../entity/index.ts';
@@ -331,6 +332,38 @@ describe('the lord and the reeve', () => {
     expect(load['state']).toBe('');
     expect(load['holder']).toBe(0);
     expect(titheRow(later, 'turnips')).toMatchObject({ due: 20, set: 0 });
+  });
+
+  it('never carries a piece made for a taken ask off as the tithe (6C review)', () => {
+    const later = structuredClone(w);
+    const p = (later.entities['person'] ?? []).find((q) => q['status'] === 'alive')!;
+    const [x, y] = [p['x'] as number, p['y'] as number];
+    addEntity(later, 'house', {
+      ...{ size: 'lean-to', x: x - 1, y: y - 1, w: 3, h: 3, door: -1, of: 0, state: 'built' },
+      ...{ line: 0, why: '', sent: 0, built: 0, inn: 3 },
+    });
+    const made = later.begunEvent;
+    const spear = layItem(later, { kind: 'iron-spear', count: 1, x: x + 3, y, z: 0, made });
+    broughtIn(later, content, 'iron-spear', 10, made);
+    titheRow(later, 'iron-spear')!['due'] = 1;
+    const before = structuredClone(later);
+    expect(takeUpTithe(contextFor(before, sim, lordSystem), alive(before)[0]!)).toBe(true);
+    addEntity(later, 'ask', {
+      ...{ state: 'taken', level: 1, got: 0, count: 2, tool: 'spear', pieces: [spear] },
+      ...{ what: 'two spears', asker: 'x', source: 'village', line: 0, due: 1e9, held: '' },
+      ...{ going: [], tried: 0 },
+    });
+    expect(takeUpTithe(contextFor(later, sim, lordSystem), p)).toBe(false);
+  });
+
+  it('counts a year he granted free as kept in full (6C review)', () => {
+    const later = shortVisit(0, (x) => {
+      lordRow(x)!['free'] = 1;
+    });
+    const [tithed] = lines(later, 'lord.tithed');
+    expect(tithed!.data['owedN']).toBe(0);
+    const full = lines(later, 'lord.favour').filter((e) => e.data['cause'] === 'full');
+    expect(full.map((e) => e.causes)).toEqual([[tithed!.id]]);
   });
 
   it('grants the charter at favour 80 only to a valley big and old enough, once (V-242)', () => {
