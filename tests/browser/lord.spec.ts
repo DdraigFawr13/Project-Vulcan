@@ -79,7 +79,8 @@ test('the lord shows on Laws, Stock and the map once his reeve has named him', a
   await expect(panel.getByTestId('lord-who')).toContainText(
     /^The valley is held by .+ of the .+\. (His|Her) reeve .+ comes the morning after each harvest home;/,
   );
-  await expect(panel.getByTestId('favour')).toContainText(/His favour\s*\d+ of 100/);
+  // smoke/1's lord is a queen (6C review).
+  await expect(panel.getByTestId('favour')).toContainText(/Her favour\s*\d+ of 100/);
   const bar = panel.locator('.sbar[aria-label^="Favour"]');
   await expect(bar.locator('b')).toHaveCount(6);
   await expect(panel.locator('.fticks span')).toHaveText(['10', '20', '35', '70', '80', '85']);
