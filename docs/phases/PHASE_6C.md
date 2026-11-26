@@ -12,7 +12,7 @@ A short phase after 6W and before magic (Phase 7): a liege lord who takes a tith
 - [x] Slice 4, the lord and asks on screen (screens). Mock-up answered 2026-11-26, every recommendation (V-237, https://claude.ai/artifact/81Mo2DKThLjVRREKTm6Yk6); part 1 (engine fixes) built 2026-11-26 (V-238, #229); part 2 (the Asks sheet, the Lord block, tithe, region, the reeve) built 2026-11-26 (V-238)
 - [ ] Slice 5, hints and breakthroughs (engine). Mock-up answered 2026-11-23, every recommendation (V-218, https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u); part 1 (ways, hints, finds) and part 2 (mishaps, New Ways, spreading, loss) built 2026-11-23 (V-219), part 3 (effects on knowers' work) built
 - [x] Slice 6, discoveries on screen (screens). Mock-up answered 2026-11-23, every recommendation (V-221, https://claude.ai/artifact/GRvQNoFM1D1viLSPMnoaif); built 2026-11-23 (V-223)
-- [x] Slice 7, the lord comes, petitions, wandering masters, contests, the charter (engine and screens). Mock-up answered 2026-11-26, every recommendation (V-236, https://claude.ai/artifact/Y4AuimHtSHHBfxgDuDiqTt); four build parts; part 1, masters, built (V-239); part 2, the lord's visit, built (V-240); part 3, contests, built (V-241); part 4, the charter, built (V-242)
+- [x] Slice 7, the lord comes, petitions, wandering masters, contests, the charter (engine and screens). Mock-up answered 2026-11-26, every recommendation (V-236, https://claude.ai/artifact/Y4AuimHtSHHBfxgDuDiqTt); built in four parts: masters (V-239), the lord's visit (V-240), contests (V-241), the charter (V-242)
 - [ ] 6C balance and review
 
 ## The rule all of this keeps (V-041)
