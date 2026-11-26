@@ -70,6 +70,9 @@ export const LORD_SCHEMAS = {
     // The lord's forest: the find of kind `place` farthest from the green, and every tile within
     // `reach` of it.
     forest: obj({ place: str(), reach: num({ min: 1 }) }),
+    // 6C Slice 7 part 4 (V-236, V-242): the `charter` ladder step needs `least` living and more
+    // than `years` years settled; everyone living then keeps `memory`.
+    charter: obj({ least: count, years: num({ min: 0 }), memory: ref('memories') }),
     // 6C Slice 7 part 2 (V-236, V-240): the lord comes himself every `every`th harvest home with
     // `men` of his men, for the supper. `table` by Feasts law setting: the portions over one each
     // laid for every eater (his party eats one more) and cups of ale each where a cask is ready;

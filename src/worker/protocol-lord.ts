@@ -67,5 +67,7 @@ export interface RegardView {
 /** What the Region sheet adds: the lord once named, and each village's regard. */
 export interface RegionDetail {
   lord?: RegionLordView;
+  /** The valley's name by its charter (V-242): "Kararby", and the line it was granted on. */
+  charter?: { name: string; why: number };
   regard?: RegardView[];
 }

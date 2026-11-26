@@ -1,6 +1,7 @@
 // 6C Slice 1 (V-216): the colony's lord is the ruler of the nearest valley neighbour's realm that
 // still stands; the reeve comes the morning after each harvest home, names the lord the first time
-// and counts the store after; a save carries the lord; a fallen realm is skipped.
+// and counts the store after; a save carries the lord; a fallen realm is skipped. 6C Slice 7 part 4
+// (V-242): the charter.
 import { describe, expect, it } from 'vitest';
 import { content } from '../../content/index.ts';
 import {
@@ -28,6 +29,8 @@ import { stopFor } from '../health/index.ts';
 import { contextFor } from '../sim/system.ts';
 import { rateOf } from './tithe.ts';
 import { favourOf } from './favour.ts';
+import { alive } from '../entity/index.ts';
+import { memoriesOf } from '../needs/index.ts';
 
 type World = ReturnType<typeof createWorld>;
 const SEED = 'smoke/1';
@@ -161,18 +164,18 @@ describe('the lord and the reeve', () => {
 
   /** A world after the first visit with 400 turnips brought in and 5 in the barn, favour
    * moved by `by` beforehand; runs the next visit. */
-  function shortVisit(by: number, more?: (w: World) => void): World {
+  function shortVisit(by: number, more?: (w: World) => void, run = sim): World {
     const later = structuredClone(w);
     more?.(later);
-    const reaped = emit(later, sim.templates, 'field.harvested', {
+    const reaped = emit(later, run.templates, 'field.harvested', {
       causes: [later.begunEvent],
       data: { crop: 'turnips', count: 400, what: 'turnips', kept: 0, x: 1, y: 1, dir: 'east' },
     });
     broughtIn(later, content, 'turnips', 400, reaped);
     titheRow(later, 'turnips')!['barn'] = 5;
     if (by) addEntity(later, 'favour', { cause: 'test', by, text: 'test', line: 0, until: 1e9 });
-    harvestHome(later, sim);
-    untilGone(later, sim);
+    harvestHome(later, run);
+    untilGone(later, run);
     return later;
   }
 
@@ -328,6 +331,27 @@ describe('the lord and the reeve', () => {
     expect(load['state']).toBe('');
     expect(load['holder']).toBe(0);
     expect(titheRow(later, 'turnips')).toMatchObject({ due: 20, set: 0 });
+  });
+
+  it('grants the charter at favour 80 only to a valley big and old enough, once (V-242)', () => {
+    const steps = (x: World) => lines(x, 'lord.step').map((e) => e.data['step']);
+    const plain = shortVisit(50);
+    expect(steps(plain)).toContain('forest');
+    expect(lines(plain, 'lord.charter')).toHaveLength(0); // five living, year 1
+    const lord = { ...content.lord, charter: { ...content.lord.charter, least: 1, years: 0 } };
+    const small = createSim(withoutAccidents({ ...content, lord }));
+    const later = shortVisit(50, undefined, small);
+    const [charter] = lines(later, 'lord.charter');
+    expect(charter!.causes).toEqual([lines(later, 'lord.tithed')[0]!.id]);
+    const name = lordRow(later)!['charter'] as string;
+    expect(name.length).toBeGreaterThan(2);
+    expect(charter!.data['name']).toBe(name);
+    for (const p of alive(later))
+      expect(memoriesOf(later, p.id).map((m) => m['memory'])).toContain('charter-read');
+    harvestHome(later, small);
+    untilGone(later, small);
+    expect(lines(later, 'lord.charter')).toHaveLength(1);
+    expect(lordRow(later)!['charter']).toBe(name);
   });
 
   it('skips a realm that fell in history for the next that stands', () => {

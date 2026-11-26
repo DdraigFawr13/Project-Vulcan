@@ -133,3 +133,10 @@ Form https://claude.ai/artifact/Y4AuimHtSHHBfxgDuDiqTt, every recommendation (an
 - **Engine:** the new `contest` system (contest MODULE.md), before the lord's; tales `bestow` and `freeWord` (a byname for a deed with no story); lord `visit.ts`: a bold lord is pleased when a contest was held at his supper, and gives the winner of the one held for him his prize.
 - **Bynames:** the contest bynames live in `contests.json` beside their contest (not `tales.json` entries, which need a told story), and are listed in tales.json `byname.proud`. A bold lord is pleased by any contest held at his supper; the last held is his, for the prize.
 - **Not yet:** contests on screen beyond the ledger and the person's byname (Slice 7's screen pieces).
+
+## Slice 7 part 4 build: the charter (2026-11-26, V-242)
+
+- **Content:** `lord.json` ladder step `charter` (above 80) and `charter` (`least` 10, `years` 5, `memory` `charter-read`); `memories.json` `charter-read`; event `lord.charter` (in the recaps' Who came); `strangers.json` `draw.fame.charter` 6 and `words`, kind `charter`.
+- **Engine:** lord `charter.ts` (`charterDue`, `grantCharter`, `charterOf`), reached in `climb` and kept like the forest; band `road.ts` (`foundersOf`, the charter's fame and words, `quietReason` by the world).
+- **Screen:** the name before the season on the top bar's second line, after the charter in the recaps' kicker, on the Region sheet beside the old name with its "why?"; the Laws sheet's ladder lists the rises from the lowest and says what the charter also needs.
+- **Not yet:** the master's ask on the Asks sheet and contests on screen beyond the ledger (the 6C review).

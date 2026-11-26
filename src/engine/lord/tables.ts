@@ -13,7 +13,8 @@ export const LORD_TABLES: Schemas = {
    * the forest is the colony's (1), and the forest's middle (-1 for none). 6C Slice 3: the visits
    * he has counted the store at (for his asks). 6C Slice 4: his last take (the `lord.tithed`
    * line, when and in words), kept because that day is sealed a week on. 6C Slice 7: the line he
-   * last came himself on (0 never) and the year of the elder's last plea (0 none). */
+   * last came himself on (0 never) and the year of the elder's last plea (0 none); the valley's
+   * chartered name ('' none), the line it was granted on and its tick (V-242). */
   lord: {
     ...{ ruler: 'int', name: 'text', sex: 'text', born: 'int', age: 'int', child: 'count' },
     ...{ temper: 'text', word: 'text', line: 'text', byname: 'text', realm: 'text' },
@@ -21,7 +22,7 @@ export const LORD_TABLES: Schemas = {
     ...{ reeve: 'text', named: 'event' },
     ...{ steps: 'ints', fine: 'count', free: 'count', granted: 'count', fx: 'int', fy: 'int' },
     ...{ visits: 'count', tithed: 'event', tookAt: 'int', took: 'text' },
-    ...{ came: 'event', plea: 'int' },
+    ...{ came: 'event', plea: 'int', charter: 'text', chartered: 'event', charterAt: 'int' },
   },
   /** The lord's favour's causes (V-222), as standing's: the cause, its worth, words, line and the
    * tick it stops counting. */

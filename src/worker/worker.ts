@@ -4,6 +4,7 @@ import { asksView } from './asksview.ts';
 import { content, contentHash } from '../content/index.ts';
 import {
   applyDue,
+  charterOf,
   chunksAcross,
   chunksDown,
   chunkTiles,
@@ -253,7 +254,8 @@ function adopt(w: WorldState, from: 'seed' | 'save'): void {
     width: w.map.width,
     height: w.map.height,
     depth: w.map.levels.length,
-    place: (w.entities['colony']?.[0]?.['name'] as string | undefined) ?? w.seed,
+    place:
+      charterOf(w)?.name ?? (w.entities['colony']?.[0]?.['name'] as string | undefined) ?? w.seed,
     fresh: w.tick === START_TICK,
     people: peopleOf(w),
     ...greenOf(w, sim.templates),

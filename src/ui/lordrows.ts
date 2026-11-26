@@ -18,9 +18,14 @@ export function lordRows(view: LordView): HTMLElement[] {
   });
   bar.append(el('span', { style: `width:${view.favour}%` }));
   const ticks = el('div', { class: 'fticks' });
+  // A step close to the one before (the charter's 80 by the forest's 85) drops to a second row.
+  let prev = -100;
   for (const at of view.steps) {
     bar.append(el('b', { style: `left:${at}%` }));
-    ticks.append(el('span', { style: `left:${at}%` }, String(at)));
+    const low = at - prev < 8;
+    ticks.append(el('span', { style: `left:${at}%`, ...(low && { class: 'low' }) }, String(at)));
+    if (low) ticks.classList.add('two');
+    prev = low ? -100 : at;
   }
   const causes = view.causes.map((c) => {
     const row = el('p', { class: 'scause', 'data-line': String(c.why) });

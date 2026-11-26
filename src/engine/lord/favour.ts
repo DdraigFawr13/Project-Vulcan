@@ -16,6 +16,7 @@ import {
 import { addEntity, alive, removeEntity } from '../entity/index.ts';
 import { weigh, settingOf } from '../law/index.ts';
 import type { SystemContext } from '../sim/index.ts';
+import { charterDue, grantCharter } from './charter.ts';
 import { lordMen } from './men.ts';
 import { lordName, lordRow } from './tables.ts';
 
@@ -151,8 +152,12 @@ export function poachTold(ctx: SystemContext, cause: number): void {
   }
 }
 
+/** Steps that, once reached, are kept for the run. */
+const KEPT = ['forest', 'charter'];
+
 /** Once a visit's causes are in: each step favour has reached and had not is a line and takes
- * hold; a step favour has left is let go (the forest stays granted). */
+ * hold; a step favour has left is let go (the forest and the charter stay granted). The charter
+ * waits, too, on the valley's size and age (charter.ts) and is its own line. */
 export function climb(ctx: SystemContext, cause: number, owed: [string, number][]): void {
   const { world, content } = ctx;
   const lord = lordRow(world)!;
@@ -161,9 +166,13 @@ export function climb(ctx: SystemContext, cause: number, owed: [string, number][
   content.lord.favour.ladder.forEach((s, k) => {
     const at = s.below !== undefined ? f <= s.below : s.above !== undefined && f >= s.above;
     const had = steps.includes(k);
-    if (!at && had && s.id !== 'forest') steps.splice(steps.indexOf(k), 1);
-    if (!at || had) return;
+    if (!at && had && !KEPT.includes(s.id)) steps.splice(steps.indexOf(k), 1);
+    if (!at || had || (s.id === 'charter' && !charterDue(ctx))) return;
     steps.push(k);
+    if (s.id === 'charter') {
+      grantCharter(ctx, cause, f);
+      return;
+    }
     const line = ctx.emit('lord.step', {
       causes: [cause],
       data: {

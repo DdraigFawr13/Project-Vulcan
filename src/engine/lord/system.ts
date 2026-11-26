@@ -46,7 +46,16 @@ function copyLord(ctx: SystemContext, lord: Lord): void {
     ...{ title: titleOf(content, lord.kind, lord.sex), home: lord.home, culture: lord.culture },
     ...{ dir: lord.dir, reeve: reeveName(ctx, names, lord.name), named: 0 },
     ...{ steps: [], fine: 0, free: 0, granted: 0, fx: -1, fy: -1, visits: 0 },
-    ...{ tithed: 0, tookAt: 0, took: '', came: 0, plea: 0 },
+    ...{
+      tithed: 0,
+      tookAt: 0,
+      took: '',
+      came: 0,
+      plea: 0,
+      charter: '',
+      chartered: 0,
+      charterAt: 0,
+    },
   });
 }
 
@@ -88,7 +97,7 @@ export const lordSystem: System = {
     ...['lord.step', 'lord.men', 'lord.told', 'health.hurt', 'lord.asked'],
     ...['ask.done', 'ask.late', 'ask.passed', 'ask.unanswered'],
     ...['lord.came', 'lord.supper', 'lord.hothead', 'lord.beaten', 'lord.plea', 'lord.rodeOut'],
-    ...['lord.prize', 'tool.taken'],
+    ...['lord.prize', 'tool.taken', 'lord.charter'],
   ],
   initialState: { done: 0, none: 0 },
   tables: LORD_TABLES,

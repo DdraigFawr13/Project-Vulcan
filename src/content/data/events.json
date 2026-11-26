@@ -420,6 +420,7 @@
 {"id":"defy.poached","importance":2,"template":"{name} {deed} in the lord's forest ({why}).","stop":"quarrel","notable":{}},
 {"id":"lord.favour","importance":2,"template":"{text}: the favour of {lord} {way} to {favour}."},
 {"id":"lord.step","importance":3,"template":"The favour of {lord} stands at {favour}, and {reeve} brings his word: {text}.","stop":"comings","notable":{}},
+{"id":"lord.charter","importance":3,"template":"{lord} has set {his} seal on a charter, and {reeve} read it out: the valley is {name} from this day, held of the {title} by its own folk. {heard} heard it read.","stop":"comings","notable":{}},
 {"id":"lord.men","importance":3,"template":"Men of {lord} came with {reeve} and took {took} from the tithe barn and the store by force.","stop":"comings","notable":{}},
 {"id":"lord.told","importance":2,"template":"{seer} told {reeve} that {name} {deed} in the forest of {lord}."},
 {"id":"lord.asked","importance":3,"template":"{reeve} brings an ask from {lord}: {what}, {due}.","stop":"asks","notable":{}},

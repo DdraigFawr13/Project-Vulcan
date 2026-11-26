@@ -52,7 +52,7 @@ export {
   traitsOf,
   spotOf,
 } from './spots.ts';
-export { famePercent } from './road.ts';
+export { famePercent, foundersOf } from './road.ts';
 export { strangersSystem } from './strangers.ts';
 export { walkIn, type Walker } from './wander.ts';
 export { admit, namesOf, sendBack } from './verdict.ts';
