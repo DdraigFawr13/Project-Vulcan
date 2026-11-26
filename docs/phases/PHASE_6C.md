@@ -10,10 +10,10 @@ A short phase after 6W and before magic (Phase 7): a liege lord who takes a tith
 - [x] Slice 2, the tithe, the Lord law and favour (engine). Mock-up answered 2026-11-23, every recommendation (V-222, https://claude.ai/artifact/91We7kCTAGYGzkkTaCU8DD); part 1 (tithe barn, the reeve's take, Lord law, hiding, lean year) built 2026-11-23 (V-226, #207); part 2 (favour, ladder, the lord's men, the lord's forest and poaching) built 2026-11-23 (V-226)
 - [x] Slice 3, asks (engine). Mock-up answered 2026-11-23, every recommendation (V-225, https://claude.ai/artifact/RHuQLTHnr7pqrCYrjjoxKQ); part 1 (the lord's asks, levers, work) built 2026-11-25 (V-232, #222); part 2a (neighbours' asks and regard, the shrine's yearly ask) built 2026-11-25 (V-233, #224); part 2b (guests, a feud's bed, dreams) built 2026-11-25 (V-235)
 - [x] Slice 4, the lord and asks on screen (screens). Mock-up answered 2026-11-26, every recommendation (V-237, https://claude.ai/artifact/81Mo2DKThLjVRREKTm6Yk6); part 1 (engine fixes) built 2026-11-26 (V-238, #229); part 2 (the Asks sheet, the Lord block, tithe, region, the reeve) built 2026-11-26 (V-238)
-- [ ] Slice 5, hints and breakthroughs (engine). Mock-up answered 2026-11-23, every recommendation (V-218, https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u); part 1 (ways, hints, finds) and part 2 (mishaps, New Ways, spreading, loss) built 2026-11-23 (V-219), part 3 (effects on knowers' work) built
+- [x] Slice 5, hints and breakthroughs (engine). Mock-up answered 2026-11-23, every recommendation (V-218, https://claude.ai/artifact/3BKNdjhaQvjpUZpT8d9i3u); part 1 (ways, hints, finds) and part 2 (mishaps, New Ways, spreading, loss) built 2026-11-23 (V-219), part 3 (effects on knowers' work) built
 - [x] Slice 6, discoveries on screen (screens). Mock-up answered 2026-11-23, every recommendation (V-221, https://claude.ai/artifact/GRvQNoFM1D1viLSPMnoaif); built 2026-11-23 (V-223)
 - [x] Slice 7, the lord comes, petitions, wandering masters, contests, the charter (engine and screens). Mock-up answered 2026-11-26, every recommendation (V-236, https://claude.ai/artifact/Y4AuimHtSHHBfxgDuDiqTt); built in four parts: masters (V-239), the lord's visit (V-240), contests (V-241), the charter (V-242)
-- [ ] 6C balance and review
+- [ ] 6C balance and review. Review 2026-11-26: six-year runs on anvil/1, smoke/2, tallow/1, ledger/1 (default levers and every ask taken), two fresh reviews, the lord and asks screens at 390 px; five bugs fixed (#235); the balance questions are on Morgan's review form
 
 ## The rule all of this keeps (V-041)
 
