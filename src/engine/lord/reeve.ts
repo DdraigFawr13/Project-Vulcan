@@ -16,6 +16,8 @@ import { lordName, lordRow, reeveRow } from './tables.ts';
 import { markForest } from './forest.ts';
 import { swear, takeTithe } from './tithe.ts';
 import { askAtVisit } from './asks.ts';
+import { plead } from './petition.ts';
+import { rideOut, stayMinute } from './visit.ts';
 
 const hourOf = (tick: number) => Math.floor((tick % TICKS_PER_DAY) / TICKS_PER_HOUR);
 const spot = (r: EntityRow): Spot => ({
@@ -27,7 +29,7 @@ const apart = (a: Spot, b: Spot) =>
   a.z === b.z ? Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) : Infinity;
 
 /** The middle of the hall, else the green. */
-function hallSpot(world: WorldState): Spot {
+export function hallSpot(world: WorldState): Spot {
   const h = hallOf(world);
   if (!h) return greenOf(world);
   const r = rectOf(h);
@@ -45,24 +47,37 @@ export function soughtOf(world: WorldState): EntityRow | undefined {
   return best;
 }
 
-/** Sets the reeve on the road at the map's edge on the lord's side; false when there is no way
- * in. `causes` are the harvest-home line he comes after, then its supper's line if it was eaten. */
-export function sendReeve(ctx: SystemContext, causes: readonly number[]): boolean {
+/** Sets the reeve on the road at the map's edge on the lord's side; none when there is no way
+ * in. `causes` are the harvest-home line he comes after, then its supper's line if it was eaten.
+ * With the lord (`withLord`, Slice 7) the lord's line tells of his coming, not the reeve's. */
+export function sendReeve(
+  ctx: SystemContext,
+  causes: readonly number[],
+  withLord = false,
+): EntityRow | undefined {
   const { world, content } = ctx;
   const lord = lordRow(world)!;
   const at = edgeSpot(world, content, lord['dir'] as string);
   const sought = soughtOf(world);
-  if (!at || !sought) return false;
-  const came = ctx.emit('lord.reeveCame', {
-    causes,
-    data: { reeve: lord['reeve'] as string, lord: lordName(lord), home: lord['home'] as string },
-  });
+  if (!at || !sought) return undefined;
+  const came = withLord
+    ? 0
+    : ctx.emit('lord.reeveCame', {
+        causes,
+        data: {
+          reeve: lord['reeve'] as string,
+          lord: lordName(lord),
+          home: lord['home'] as string,
+        },
+      });
   addEntity(world, 'reeve', {
     ...{ ...at, path: [], stride: 0, going: 0, harvest: causes[0]!, came },
-    ...{ seeks: sought.id, looked: world.tick },
+    ...{ seeks: sought.id, looked: world.tick, lord: 0, feast: 0, wait: 0, judged: 0 },
+    favourIn: 0,
   });
-  walkTo(ctx, reeveRow(world)!, spot(sought));
-  return true;
+  const r = reeveRow(world)!;
+  walkTo(ctx, r, spot(sought));
+  return r;
 }
 
 /** The words the reeve speaks in: in the lord's name, or for a child lord and their regents. */
@@ -113,11 +128,9 @@ function countTheStore(ctx: SystemContext, r: EntityRow, to: EntityRow): void {
       ...{ food, days, mouths },
     },
   });
-  const tithed = takeTithe(
-    ctx,
-    [r['harvest'] as number, r['came'] as number, lord['named'] as number],
-    to,
-  );
+  const cites = [r['harvest'] as number, r['came'] as number, lord['named'] as number];
+  // 6C Slice 7: in a lean year the elder may first plead for a lower tithe.
+  const tithed = takeTithe(ctx, cites, to, plead(ctx, r, r['came'] as number));
   // 6C Slice 3: the asks due at this visit are settled, and he brings the next.
   askAtVisit(ctx, tithed);
 }
@@ -134,6 +147,7 @@ function speak(ctx: SystemContext, r: EntityRow, to: EntityRow): void {
 /** Gone home: down the road and out of the valley. */
 function leave(ctx: SystemContext, r: EntityRow): void {
   const lord = lordRow(ctx.world)!;
+  if (r['lord']) rideOut(ctx, r);
   ctx.emit('lord.reeveLeft', {
     causes: [r['harvest'] as number, r['came'] as number],
     data: { reeve: lord['reeve'] as string, home: lord['home'] as string },
@@ -151,6 +165,7 @@ export function reeveMinute(ctx: SystemContext, r: EntityRow): void {
     if (!(r['path'] as number[]).length || hour >= dials.leave) leave(ctx, r);
     return;
   }
+  if (r['lord'] && stayMinute(ctx, r)) return;
   let sought = alive(world).find((p) => p.id === r['seeks']);
   if (!sought || world.tick - (r['looked'] as number) >= dials.look) {
     sought = soughtOf(world);

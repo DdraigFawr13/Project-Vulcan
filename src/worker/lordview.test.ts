@@ -1,9 +1,9 @@
 // 6C Slice 4 (V-237): the lord on screen. Nothing shows before his reeve has named him; after, the
 // Laws sheet's Lord block (who, favour with every step, its causes), the Stock sheet's tithe block
 // (his last take outlives the sealed day), the reeve on the map and his page, and the Region
-// sheet's lord and regards. Worlds as the engine's lord test makes them (smoke/1).
+// sheet's lord and regards; Slice 7, the lord riding with him to his supper. Worlds as the engine's lord test makes them (smoke/1).
 import { describe, expect, it } from 'vitest';
-import { content } from '../content/index.ts';
+import { content, contentHash } from '../content/index.ts';
 import {
   addEntity,
   broughtIn,
@@ -24,21 +24,23 @@ import { ruledIds, ruledView } from './lawsheet.ts';
 import { regionDetail } from './lordview.ts';
 import type { LedgerLine } from './protocol.ts';
 import { reevePage, reeveView, titheView } from './reeveview.ts';
+import { checkSave, saveOf } from './save.ts';
 
 type Sim = ReturnType<typeof createSim>;
 type World = ReturnType<typeof createWorld>;
 
 const line = (e: { id: number; type: string }): LedgerLine => e as unknown as LedgerLine;
 
-/** A harvest home brought in today with its supper eaten (as the engine's lord test does). */
-function harvestHome(w: World, sim: Sim): void {
+/** A harvest home brought in today with its supper eaten (as the engine's lord test does), or
+ * (`eaten` false) called for tonight. */
+function harvestHome(w: World, sim: Sim, eaten = true): void {
   const home = emit(w, sim.templates, 'farm.harvestHome', {
     causes: [w.begunEvent],
     data: { names: 'the band', crop: 'turnips', count: 2000, what: 'turnips' },
   });
   addEntity(w, 'feast', {
-    ...{ line: home, year: yearNow(w, content), state: 'eaten', start: 0, there: [] },
-    ...{ eaten: home, couple: [], on: today(w), holy: 0, lean: 0 },
+    ...{ line: home, year: yearNow(w, content), state: eaten ? 'eaten' : 'called', start: 0 },
+    ...{ there: [], eaten: eaten ? home : 0, couple: [], on: today(w), holy: 0, lean: 0 },
   });
 }
 
@@ -101,7 +103,7 @@ describe('the lord on screen', () => {
     expect(view.settings.map((s) => s.id)).toEqual(['defiant', 'grudging', 'loyal']);
     const { lord } = view;
     expect(lord!.who).toMatch(
-      /^The valley is held by .+ of the .+\. (His|Her) reeve .+ comes the morning after each harvest home\.$/,
+      /^The valley is held by .+ of the .+\. (His|Her) reeve .+ comes the morning after each harvest home; every third harvest home (he|she) comes (him|her)self for the supper\.$/,
     );
     expect(lord!.whoWhy).toBe(lordRow(named)!['named']);
     expect([lord!.favour, lord!.causes]).toEqual([content.lord.favour.start, []]);
@@ -159,5 +161,32 @@ describe('the lord on screen', () => {
     expect(cause!.text).toMatch(/, Year \d+$/);
     expect(Math.abs(cause!.by)).toBeGreaterThan(0);
     expect(cause!.why).toBeGreaterThan(0);
+  });
+
+  it('draws the lord beside the reeve when he comes himself, and says he stays the night', () => {
+    const w = structuredClone(named);
+    lordRow(w)!['visits'] = 1;
+    step(w, sim, TICKS_PER_HOUR);
+    harvestHome(w, sim, false);
+    step(w, sim, TICKS_PER_HOUR);
+    expect(reeveView(w)).toMatchObject({ lord: true });
+    const page = reevePage(w, line)!;
+    expect(page.rows.map((r) => r.name)).toEqual([
+      ...['Doing now', 'With him', 'Came', 'Leaves'],
+      "The lord's favour",
+    ]);
+    expect(page.rows[0]!.text).toMatch(/^Staying by the hall with /);
+    expect(page.rows[1]!.why).toBe(reeveRow(w)!['lord']);
+    expect(page.rows[3]!.text).toMatch(/^Tomorrow/);
+    // A save of the lord's stay loads, and so does one made before Slice 7 (the rows mended).
+    const check = (x: World) =>
+      checkSave(structuredClone(saveOf(x, contentHash)), contentHash, content, sim.tables);
+    expect(check(w)).toEqual(w);
+    // Between his first visit and his first take (refused before the lord's rows were mended).
+    expect(check(named)).toEqual(named);
+    const old = structuredClone(w);
+    for (const k of ['tithed', 'tookAt', 'took', 'came', 'plea']) delete lordRow(old)![k];
+    for (const k of ['lord', 'feast', 'wait', 'judged', 'favourIn']) delete reeveRow(old)![k];
+    expect(lordRow(check(old))!['plea']).toBe(0);
   });
 });

@@ -119,3 +119,10 @@ Form https://claude.ai/artifact/Y4AuimHtSHHBfxgDuDiqTt, every recommendation (an
 - **Content:** `asks.json` `masters` (`from`, `months`, `odds`, `fame`, `answer`, `level`, `reach`, `far`, `what`, `trades`: noun, skill, ways; the scholar `book`); `methods.json` `master.event` and hint kind `master`, screen `how.master`; events `master.came`, `master.asked`, `master.book`, `master.taught`, `discover.brought`.
 - **Engine:** asks `masters.ts` (the draw, hourly; the ask at the green; the scholar's book; the season's end line), settled by `guests.ts` as a guest's ask (source `wanderer`, good `guest`); band `wander.ts` `walkIn` (one alone walking in to stand at the green, person fields `master`, `way`); discover `brought.ts` (the hints, and the way kept by one let stay); teach `shelveBook`. Teaching beside is the band's existing master pace (`teach.json` `master` 8, `ahead` 3).
 - **Not yet:** the Asks sheet card for a master (Slice 4's sheet, then Slice 7's screen pieces).
+
+## Slice 7 part 2 build: the lord's visit, petitions, hotheads (2026-11-26, V-240)
+
+- **Content:** `lord.json` `visit` (`every`, `men`, `table` by Feasts setting, `pleases` by temper, `hothead`, `petition`) and favour causes `table-*`, `pleased`, `displeased`, `hothead`, `plea`; `memories.json` `hothead-spoke`, `plea-heard`, `plea-refused`; events `lord.came`, `lord.supper`, `lord.hothead`, `lord.beaten`, `lord.plea`, `lord.rodeOut`.
+- **Engine:** lord `visit.ts` (his coming, the table, what pleases him, riding out), `hothead.ts`, `petition.ts` (the tithe forgiven whole or halved through `takeTithe`).
+- **Screen:** the lord walks beside his reeve in the same people art, tinted gold; the reeve's page says who is with him and that they stay the night; the Laws sheet says the lord comes himself every third harvest home.
+- **Not yet:** contests (part 3), so a bold lord's liking counts nothing until then.

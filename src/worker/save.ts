@@ -46,6 +46,24 @@ function mendLambs(world: WorldState): void {
     if (row && typeof row === 'object' && !('hurt' in row)) row['hurt'] = 0;
 }
 
+/**
+ * Gives the lord's and the reeve's rows the fields they lack, at their starting values: the lord
+ * was copied without his last take's fields (6C Slice 4), so a save between the first visit and
+ * the second was refused; and 6C Slice 7 (V-240) added his own coming and the elder's plea, and the
+ * reeve's riding with him. The mended world plays on as it would have.
+ */
+function mendLord(world: WorldState): void {
+  const add = (table: string, fields: Readonly<Record<string, number | string>>) => {
+    const rows = world.entities[table];
+    if (Array.isArray(rows))
+      for (const row of rows)
+        if (row && typeof row === 'object')
+          for (const [k, v] of Object.entries(fields)) if (!(k in row)) row[k] = v;
+  };
+  add('lord', { tithed: 0, tookAt: 0, took: '', came: 0, plea: 0 });
+  add('reeve', { lord: 0, feast: 0, wait: 0, judged: 0, favourIn: 0 });
+}
+
 /** The world in `save`, or a throw naming why it cannot be loaded with this content. */
 export function checkSave(
   save: unknown,
@@ -67,6 +85,7 @@ export function checkSave(
   // Deeper checks a matching content hash makes cheap (savecheck.ts).
   if (!fitsContent(world, content)) throw new Error('The save is damaged.');
   mendLambs(world);
+  mendLord(world);
   const tablesWrong = tablesProblem(world, tables);
   if (tablesWrong) throw new Error(`The save is damaged: ${tablesWrong}.`);
   return world;

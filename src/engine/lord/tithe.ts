@@ -137,15 +137,30 @@ const termsOf = (lord: EntityRow): string =>
       ? ', with the fine'
       : '';
 
+/** What a lean year made of the take, for the reeve's line. */
+function leanOf(lean: boolean, take: 'whole' | 'half' | 'all'): string {
+  if (!lean) return '';
+  if (take === 'whole') return "; the year is lean, and at the elder's plea the lord forgives it";
+  return take === 'half'
+    ? '; the year is lean, so the lord takes half'
+    : '; the year is lean, but the lord takes all';
+}
+
 /** A later visit: the reeve counts the barn against the share of all brought in since he last
  * came, takes what is there (half, for some lords, in a lean year) and says what is short. */
-export function takeTithe(ctx: SystemContext, causes: number[], to: EntityRow): number {
+export function takeTithe(
+  ctx: SystemContext,
+  causes: number[],
+  to: EntityRow,
+  eased?: 'whole' | 'half',
+): number {
   const { world, content } = ctx;
   const lord = lordRow(world)!;
   const rows = titheRows(world);
   const rate = rateOf(ctx);
   const lean = foodDays(world, content, alive(world).length).days < content.lord.tithe.lean.days;
-  const half = lean && content.lord.tithe.lean.half.includes(lord['temper'] as string);
+  const half =
+    eased === 'half' || (lean && content.lord.tithe.lean.half.includes(lord['temper'] as string));
   const owed: [string, number][] = [];
   const there: [string, number][] = [];
   const took: [string, number][] = [];
@@ -154,7 +169,7 @@ export function takeTithe(ctx: SystemContext, causes: number[], to: EntityRow): 
   for (const r of rows) {
     const kind = r['kind'] as string;
     const full = Math.floor(((r['brought'] as number) * rate) / 100);
-    const want = half ? Math.floor(full / 2) : full;
+    const want = eased === 'whole' ? 0 : half ? Math.floor(full / 2) : full;
     const barn = r['barn'] as number;
     const n = Math.min(want, barn);
     owed.push([kind, want]);
@@ -177,11 +192,7 @@ export function takeTithe(ctx: SystemContext, causes: number[], to: EntityRow): 
   const short: [string, number][] = owed.map(([k, n], i) => [k, n - took[i]![1]]);
   const shortN = sum(short);
   const leanWords =
-    (!lean
-      ? ''
-      : half
-        ? '; the year is lean, so the lord takes half'
-        : '; the year is lean, but the lord takes all') + termsOf(lord);
+    leanOf(lean, eased === 'whole' ? 'whole' : half ? 'half' : 'all') + termsOf(lord);
   const line = ctx.emit('lord.tithed', {
     causes: [...causes, ...cites],
     actors: [to.id],

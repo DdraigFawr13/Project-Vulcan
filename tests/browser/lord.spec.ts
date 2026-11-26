@@ -77,7 +77,7 @@ test('the lord shows on Laws, Stock and the map once his reeve has named him', a
   await expect(panel.locator('.lawfold[data-law="lord"]')).toContainText('Loyal');
   await panel.getByRole('button', { name: 'Show the lord law' }).click();
   await expect(panel.getByTestId('lord-who')).toContainText(
-    /^The valley is held by .+ of the .+\. (His|Her) reeve .+ comes the morning after each harvest home\./,
+    /^The valley is held by .+ of the .+\. (His|Her) reeve .+ comes the morning after each harvest home;/,
   );
   await expect(panel.getByTestId('favour')).toContainText(/His favour\s*\d+ of 100/);
   const bar = panel.locator('.sbar[aria-label^="Favour"]');
