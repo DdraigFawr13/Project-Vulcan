@@ -95,6 +95,30 @@ describe('contests at the harvest home', () => {
     expect(felt!['memory']).toBe('byname-proud');
   });
 
+  it('names the winner on a third win across different contests (6C review q5)', () => {
+    // Two trials of strength by other names: the draw takes the one not held last time, so the
+    // strongest wins arm, lift, arm: two of one and one of the other.
+    const two = structuredClone(sure(content));
+    const arm = two.contests.kinds[0]!;
+    Object.assign(two.contests, {
+      kinds: [arm, { ...arm, id: 'lift', name: 'the lifting of the cask', byname: 'Cask-lifter' }],
+    });
+    const run = createSim(withoutAccidents(two));
+    const w = createWorld(run, SEED);
+    step(w, run, TICKS_PER_HOUR);
+    for (let k = 0; k < 3; k += 1) {
+      harvestHome(w, run, true);
+      step(w, run, TICKS_PER_DAY);
+    }
+    const held = contestsOf(w);
+    const winner = held[0]!['winner'] as number;
+    expect(held.map((c) => c['winner'])).toEqual([winner, winner, winner]);
+    expect(new Set(held.map((c) => c['kind'])).size).toBe(2);
+    const named = lines(w, 'tale.byname').find((e) => e.actors[0] === winner);
+    expect(named!.causes).toEqual([held[2]!['line']]);
+    expect(bynameOf(w, winner)).toBeDefined();
+  });
+
   it('pleases a bold lord at his supper, and its winner takes his prize', () => {
     const w = createWorld(sim, SEED);
     step(w, sim, TICKS_PER_HOUR);

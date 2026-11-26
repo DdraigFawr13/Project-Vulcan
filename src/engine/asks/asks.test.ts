@@ -27,7 +27,7 @@ import { reeveRow } from '../lord/index.ts';
 import { askItem } from '../band/index.ts';
 import { layTool } from '../goods/index.ts';
 import { contextFor } from '../sim/system.ts';
-import { addAsk } from './index.ts';
+import { addAsk, settleAsk } from './index.ts';
 import { asksSystem } from './system.ts';
 import { willWork } from '../crafts/askmade.ts';
 import { addMemory } from '../needs/index.ts';
@@ -109,6 +109,80 @@ describe("the lord's asks", () => {
     const stepped = lines(w, 'lord.step');
     expect(stepped.length).toBeGreaterThan(0);
     expect(stepped.every((e) => e.id > given.id)).toBe(true);
+  });
+});
+
+describe('trying counts (6C review q2)', () => {
+  it("costs the lord's favour less for an ask taken up and not ready than one let pass", () => {
+    const sim = createSim(content);
+    const w = createWorld(sim, 'smoke/1');
+    step(w, sim, TICKS_PER_HOUR);
+    visit(w, sim);
+    visit(w, sim);
+    const ask = asks(w).find((a) => a['source'] === 'lord')!;
+    Object.assign(ask, { state: 'taken', level: 1, got: 0, held: '' });
+    visit(w, sim);
+    const [late] = lines(w, 'ask.late');
+    const cost = lines(w, 'lord.favour').find((e) => e.data['cause'] === 'askLate')!;
+    expect(cost.causes).toContain(late!.id);
+    const row = (w.entities['favour'] ?? []).find((c) => c['line'] === cost.id)!;
+    const passed = content.lord.favour.causes['askPassed']!.by;
+    expect(row['by']).toBeLessThan(0);
+    expect(row['by']).toBeGreaterThan(passed);
+  });
+});
+
+describe("the learned lord's book (6C review q4)", () => {
+  const sim = createSim(content);
+  const book = (w: World, level: number) =>
+    addEntity(w, 'book', {
+      ...{ master: 0, skill: 'smithing', level, scribe: 0, state: 'kept', minutes: 0 },
+      ...{ begun: w.begunEvent, line: w.begunEvent, lost: 0 },
+    });
+  const bookAsk = (w: World, state: string) => {
+    const ctx = contextFor(w, sim, asksSystem);
+    const line = emit(w, sim.templates, 'lord.asked', {
+      causes: [w.begunEvent],
+      data: {
+        reeve: 'Osric',
+        lord: 'Lord Ban',
+        what: 'a book',
+        due: 'by his next visit',
+        count: '1',
+      },
+    });
+    const a = addAsk(ctx, {
+      ...{ source: 'lord', asker: 'Lord Ban', what: 'a book', good: 'book', count: 1 },
+      ...{ cite: w.begunEvent, line, due: 0 },
+    });
+    a['state'] = state;
+    return { ctx, a };
+  };
+
+  it('is met at the visit by the reeve taking the best book from the shelf, with a line', () => {
+    const w = createWorld(sim, 'smoke/1');
+    const plain = book(w, 3);
+    const best = book(w, 5);
+    const { ctx, a } = bookAsk(w, 'taken');
+    const { how, line } = settleAsk(ctx, a, [w.begunEvent], { who: 'Osric' });
+    expect(how).toBe('done');
+    const [taken] = lines(w, 'ask.bookTaken');
+    expect(taken!.causes).toContain(a['line']);
+    expect(lines(w, 'ask.done')[0]!.id).toBe(line);
+    expect(allLines(w).find((e) => e.id === line)!.causes).toContain(taken!.id);
+    const books = w.entities['book']!;
+    expect(books.find((b) => b.id === best)).toMatchObject({ state: 'lost', lost: taken!.id });
+    expect(books.find((b) => b.id === plain)!['state']).toBe('kept');
+    expect(String(taken!.data['book'])).toContain('the book of smithing');
+  });
+
+  it('leaves the shelf alone when the ask was let pass', () => {
+    const w = createWorld(sim, 'smoke/1');
+    book(w, 3);
+    const { ctx, a } = bookAsk(w, 'passed');
+    expect(settleAsk(ctx, a, [w.begunEvent], { who: 'Osric' }).how).toBe('passed');
+    expect(lines(w, 'ask.bookTaken')).toEqual([]);
+    expect(w.entities['book']![0]!['state']).toBe('kept');
   });
 });
 

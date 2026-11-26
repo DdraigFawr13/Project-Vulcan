@@ -7,6 +7,7 @@ import type { EntityRow, GoodAskDef } from '../core/index.ts';
 import { addEntity, alive } from '../entity/index.ts';
 import { barnSpot } from '../build/index.ts';
 import { emptyAsk, foodDays, heldOf, layItem, layTool, restOf } from '../goods/index.ts';
+import { bookName, keptBooks } from '../teach/index.ts';
 import type { SystemContext } from '../sim/index.ts';
 
 /** A new ask, open until the colony answers it. */
@@ -76,8 +77,30 @@ export function giveBack(ctx: SystemContext, a: EntityRow, cause: number): void 
 const causesOf = (a: EntityRow, more: readonly number[]): number[] =>
   [a['line'] as number, a['answer'] as number, ...more].filter((l) => l > 0);
 
+/** A taken ask for books (good `book`, 6C review q4) is met on its day from the schoolroom shelf:
+ * books are table rows, not things to carry, so whoever fetches it takes the best kept books (the
+ * highest level, then the oldest), each lost to the valley with a line naming it. Returns the
+ * lines. */
+function fromShelf(ctx: SystemContext, a: EntityRow, causes: readonly number[], who: string) {
+  const { world, content } = ctx;
+  if (a['good'] !== 'book' || a['state'] !== 'taken') return [];
+  const best = [...keptBooks(world)].sort(
+    (x, y) => (y['level'] as number) - (x['level'] as number) || x.id - y.id,
+  );
+  const want = Math.max(0, (a['count'] as number) - (a['got'] as number));
+  return best.slice(0, want).map((book) => {
+    const line = ctx.emit('ask.bookTaken', {
+      causes: causesOf(a, causes),
+      data: { who, book: bookName(world, content, book), asker: a['asker'] as string },
+    });
+    Object.assign(book, { state: 'lost', lost: line });
+    a['got'] = (a['got'] as number) + 1;
+    return line;
+  });
+}
+
 /** Settles ask `a` on its day: done if it has all it asked for (handed over), late if taken up and
- * short (what there is is handed over), passed if let pass or never answered (anything set apart
+ * short (what there is is handed over; books come off the shelf, `fromShelf`), passed if let pass or never answered (anything set apart
  * goes back). The line, citing `causes` (a visit, a deadline); the cost is the asker side's. */
 export function settleAsk(
   ctx: SystemContext,
@@ -86,6 +109,7 @@ export function settleAsk(
   data: Readonly<Record<string, string>> = {},
 ): { how: 'done' | 'late' | 'passed'; line: number } {
   const words = { what: a['what'] as string, asker: a['asker'] as string, ...data };
+  causes = [...causes, ...fromShelf(ctx, a, causes, data['who'] ?? 'the asker')];
   const got = a['got'] as number;
   let how: 'done' | 'late' | 'passed';
   let line: number;

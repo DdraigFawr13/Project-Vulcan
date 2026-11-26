@@ -3,8 +3,9 @@
 // ploughing match once a field is laid out, the judging of the ale once a cask is brewed), two when
 // the lord sits at the supper, the last of them held his. Each grown-up at the supper stands up or not
 // by their traits (a rival standing, a past win of it, push them on); the best score wins (skill,
-// attribute and a roll). The winner is proud, the rest sour; a third win of one contest gives its
-// byname; the runner-up beaten twice by the same winner holds them a rival. Nobody is picked (V-041).
+// attribute and a roll). The winner is proud, the rest sour; a third contest won in all gives the
+// byname of the one just won; the runner-up beaten twice by the same winner holds them a rival.
+// Nobody is picked (V-041).
 import { list, type EntityRow, type ContestKindDef } from '../core/index.ts';
 import { addEntity, alive } from '../entity/index.ts';
 import { grown } from '../family/index.ts';
@@ -66,15 +67,21 @@ function score(ctx: SystemContext, p: EntityRow, k: ContestKindDef): number {
   return skill + ((p[k.attribute] as number) || 0) + ctx.rng().int(ctx.content.contests.roll + 1);
 }
 
-/** A third win of one contest names the winner, unless they have a byname. */
+/** A third contest won in all (6C review q5: any contests, not one) names the winner by the one
+ * just won, unless they have a byname. */
 function maybeByname(ctx: SystemContext, w: EntityRow, k: ContestKindDef, line: number): void {
-  const wins = winsOf(ctx, w.id, k.id);
+  const wins = contestsOf(ctx.world).filter((c) => c['winner'] === w.id).length;
   if (wins !== ctx.content.contests.wins || bynameOf(ctx.world, w.id)) return;
   const first = w['sex'] === 'm' && k.m ? k.m : k.byname;
   const word = freeWord(ctx, [first, ...k.spares]);
   if (!word) return;
   const name = w['name'] as string;
-  bestow(ctx, w, word, `${name} has won ${k.name} ${TIMES[wins] ?? `${wins} times`}.`, line);
+  const times = TIMES[wins] ?? `${wins} times`;
+  const how =
+    winsOf(ctx, w.id, k.id) === wins
+      ? `${k.name} ${times}`
+      : `at the harvest home ${times}, the last ${k.name}`;
+  bestow(ctx, w, word, `${name} has won ${how}.`, line);
 }
 
 /** The runner-up `l`, beaten into second place by the winner `beaten` times, holds them a
