@@ -88,6 +88,7 @@ export const lordSystem: System = {
     ...['lord.step', 'lord.men', 'lord.told', 'health.hurt', 'lord.asked'],
     ...['ask.done', 'ask.late', 'ask.passed', 'ask.unanswered'],
     ...['lord.came', 'lord.supper', 'lord.hothead', 'lord.beaten', 'lord.plea', 'lord.rodeOut'],
+    ...['lord.prize', 'tool.taken'],
   ],
   initialState: { done: 0, none: 0 },
   tables: LORD_TABLES,

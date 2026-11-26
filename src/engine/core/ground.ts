@@ -158,3 +158,19 @@ export interface ValleyDials {
     least: number;
   };
 }
+
+/** How a valley's mountains are placed and shaped (terrain.json `generator.layouts`). */
+export interface MountainLayout {
+  count: Range;
+  radius: Range;
+  height: Range;
+  rimShare: number;
+  rim: Range;
+  inside: number;
+  /** The chance a mountain's long axis follows the valley's, so rim ranges run along the walls. */
+  align: number;
+  rough: Range;
+  stretch: Range;
+  warp: number;
+  warpCell: number;
+}

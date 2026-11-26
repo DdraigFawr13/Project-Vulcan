@@ -82,6 +82,7 @@ export const LORD_SCHEMAS = {
     visit: obj({
       every: num({ min: 1 }),
       men: num({ min: 0 }),
+      prize: obj({ material: str(), quality: str() }),
       table: map(obj({ extra: num({ min: 0 }), ale: num({ min: 0 }) })),
       pleases: map(obj({ wants: str(), yes: text, no: text })),
       hothead: obj({

@@ -2,6 +2,7 @@
 export { talesSystem } from './system.ts';
 export { songsOf } from './songs.ts';
 export { feedBelief } from './belief.ts';
+export { bestow, freeWord } from './bynames.ts';
 export {
   beliefsOf,
   bynameOf,

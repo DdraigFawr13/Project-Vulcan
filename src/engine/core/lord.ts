@@ -38,6 +38,8 @@ export interface VisitDef {
   /** He comes himself every `every`th harvest home, with `men` of his men. */
   every: number;
   men: number;
+  /** The tool he gives the winner of the contest held for him (contests.json `prize`). */
+  prize: { material: string; quality: string };
   /** By Feasts law setting: portions over one each, and cups of ale each where a cask is ready. */
   table: Readonly<Record<string, { extra: number; ale: number }>>;
   /** By temper: what pleases him (contest, table, rite, book, store) and the words for it. */

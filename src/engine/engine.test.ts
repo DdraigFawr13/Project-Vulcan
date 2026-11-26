@@ -56,6 +56,7 @@ const fixtureContent: EngineContent = {
   teach: content.teach,
   tavern: content.tavern,
   lord: content.lord,
+  contests: content.contests,
   methods: content.methods,
   asks: content.asks,
   defy: content.defy,

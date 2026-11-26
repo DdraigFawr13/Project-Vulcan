@@ -17,6 +17,7 @@ import type { CallingsDefs } from './callings.ts';
 import type { DefyDefs } from './defy.ts';
 import type { TavernDefs } from './tavern.ts';
 import type { LordDefs } from './lord.ts';
+import type { ContestsDefs } from './contests.ts';
 import type { MethodsDefs } from './methods.ts';
 import type { AsksDefs } from './asks.ts';
 import type { BiomesDef, SeasonsDef, WeatherDef } from './climate.ts';
@@ -45,6 +46,7 @@ export interface EngineContent
     CallingsDefs,
     TavernDefs,
     LordDefs,
+    ContestsDefs,
     MethodsDefs,
     AsksDefs,
     DefyDefs {

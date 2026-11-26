@@ -2,13 +2,15 @@
 // rides in with the reeve and a few of his men as soon as the colony calls the supper, sits at it,
 // stays the night and leaves after the reeve has taken the tithe in the morning. The Feasts law sets
 // how grand his table is (and what it costs the store); what pleases him follows his temper; each
-// is a favour cause with its line. Nobody is sent to meet him and no lever moves him (V-041).
+// is a favour cause with its line; the winner of the contest held for him takes his prize (part 3,
+// V-241). Nobody is sent to meet him and no lever moves him (V-041).
 import { list, TICKS_PER_DAY, TICKS_PER_HOUR, today, type EntityRow } from '../core/index.ts';
 import { alive } from '../entity/index.ts';
-import { walkTo } from '../band/index.ts';
 import type { Spot } from '../paths/index.ts';
 import { feastOf } from '../build/index.ts';
-import { foodDays, itemsOf, takeFrom } from '../goods/index.ts';
+import { foodDays, itemsOf, layTool, restOf, takeFrom } from '../goods/index.ts';
+import { giveTool, walkTo } from '../band/index.ts';
+import { contestsAt } from '../contest/index.ts';
 import { kegsOf } from '../inn/index.ts';
 import { settingOf } from '../law/index.ts';
 import { creedsOf, shrineOf } from '../faith/index.ts';
@@ -117,10 +119,11 @@ function pour(ctx: SystemContext, n: number): number {
   return poured;
 }
 
-/** Whether what pleases a lord of his temper is there; undefined when the valley cannot yet show
- * it (contests come with Slice 7's part 3). */
-function pleased(ctx: SystemContext, wants: string): boolean | undefined {
+/** Whether what pleases a lord of his temper is there at supper `f`: a contest held at it, the
+ * Many table, a built shrine, a kept book, a store over the lean mark. */
+function pleased(ctx: SystemContext, wants: string, f: EntityRow): boolean | undefined {
   const { world, content } = ctx;
+  if (wants === 'contest') return contestsAt(world, f.id).length > 0;
   if (wants === 'table') return settingOf(world, content, 'feasts').id === 'many';
   if (wants === 'rite')
     return creedsOf(world).some((c) => shrineOf(world, c)?.['state'] === 'built');
@@ -128,6 +131,33 @@ function pleased(ctx: SystemContext, wants: string): boolean | undefined {
   if (wants === 'store')
     return foodDays(world, content, alive(world).length).days >= content.lord.tithe.lean.days;
   return undefined;
+}
+
+/** The winner of the contest held for him takes a fine iron tool from his hand (`visit.prize`,
+ * the contest's `prize` kind). */
+function prize(ctx: SystemContext, f: EntityRow, cause: number): void {
+  const { world, content } = ctx;
+  const his = contestsAt(world, f.id).find((c) => c['lord']);
+  const k = his && content.contests.kinds.find((x) => x.id === his['kind']);
+  const p = his && alive(world).find((q) => q.id === his['winner']);
+  const { material, quality } = content.lord.visit.prize;
+  const tool = content.tools.kinds.find((t) => t.id === k?.prize);
+  const metal = content.tools.materials.find((m) => m.id === material);
+  if (!k || !p || !tool || !metal) return;
+  const lord = lordRow(world)!;
+  const line = ctx.emit('lord.prize', {
+    causes: [his['line'] as number, cause],
+    actors: [p.id],
+    data: {
+      ...{ lord: lordName(lord), name: p['name'] as string, contest: k.name },
+      ...{ what: `${/^[aeiou]/.test(quality) ? 'an' : 'a'} ${quality} ${metal.name} ${tool.name}` },
+      his: pronounsOf(lord).his,
+    },
+  });
+  const item = layTool(world, content, restOf(world, content), {
+    ...{ kind: k.prize, material, quality, made: line },
+  });
+  giveTool(ctx, item, p, "it was the lord's prize");
 }
 
 /** The table laid for him: what the Feasts law asks over the supper itself, for those who ate
@@ -144,7 +174,7 @@ function judge(ctx: SystemContext, r: EntityRow, f: EntityRow): void {
   const party = 2 + v.men;
   // What pleases him is judged as he finds the valley, before his own table is laid.
   const p = v.pleases[lord['temper'] as string];
-  const yes = p && pleased(ctx, p.wants);
+  const yes = p && pleased(ctx, p.wants, f);
   const food = lay(ctx, there.length * t.extra + party * (1 + t.extra));
   const cups = t.ale ? pour(ctx, (there.length + party) * t.ale) : 0;
   const laid = [...food.names, ...(cups ? ['ale'] : [])];
@@ -162,6 +192,7 @@ function judge(ctx: SystemContext, r: EntityRow, f: EntityRow): void {
   addFavour(ctx, `table-${setting.id}`, [line]);
   if (p && yes !== undefined)
     addFavour(ctx, yes ? 'pleased' : 'displeased', [line], { what: yes ? p.yes : p.no });
+  prize(ctx, f, line);
   hothead(ctx, there, line);
 }
 

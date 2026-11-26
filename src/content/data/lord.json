@@ -44,14 +44,14 @@
 },
 "forest": {"place": "wood", "reach": 12},
 "visit": {
-  "every": 3, "men": 4,
+  "every": 3, "men": 4, "prize": {"material": "iron", "quality": "fine"},
   "table": {
     "few": {"extra": 0, "ale": 0},
     "customary": {"extra": 1, "ale": 1},
     "many": {"extra": 3, "ale": 2}
   },
   "pleases": {
-    "bold": {"wants": "contest", "yes": "a fair contest at his supper", "no": "no contest worth his watching at his supper"},
+    "bold": {"wants": "contest", "yes": "a fair contest at the supper", "no": "no contest worth watching at the supper"},
     "greedy": {"wants": "table", "yes": "a full table laid for him", "no": "a table laid too thin for him"},
     "pious": {"wants": "rite", "yes": "a shrine standing in the valley for the rite", "no": "no shrine in the valley for the rite"},
     "learned": {"wants": "book", "yes": "a book on the valley's shelf to show him", "no": "not one book in the valley to show him"},

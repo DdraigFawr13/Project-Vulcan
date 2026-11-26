@@ -125,4 +125,11 @@ Form https://claude.ai/artifact/Y4AuimHtSHHBfxgDuDiqTt, every recommendation (an
 - **Content:** `lord.json` `visit` (`every`, `men`, `table` by Feasts setting, `pleases` by temper, `hothead`, `petition`) and favour causes `table-*`, `pleased`, `displeased`, `hothead`, `plea`; `memories.json` `hothead-spoke`, `plea-heard`, `plea-refused`; events `lord.came`, `lord.supper`, `lord.hothead`, `lord.beaten`, `lord.plea`, `lord.rodeOut`.
 - **Engine:** lord `visit.ts` (his coming, the table, what pleases him, riding out), `hothead.ts`, `petition.ts` (the tithe forgiven whole or halved through `takeTithe`).
 - **Screen:** the lord walks beside his reeve in the same people art, tinted gold; the reeve's page says who is with him and that they stay the night; the Laws sheet says the lord comes himself every third harvest home.
-- **Not yet:** contests (part 3), so a bold lord's liking counts nothing until then.
+- **Not yet:** contests (part 3), so a bold lord's liking counts nothing until then (done in part 3, V-241).
+
+## Slice 7 part 3 build: contests at the harvest home (2026-11-26, V-241)
+
+- **Content:** `contests.json` (`each` 1, `lord` 2, `least` 2; `enter` base 50 in 100 with each trait's push, `rival` +40, `won` +15; `roll` 8; `wins` 3; `beaten` 2; memories `contest-won`, `contest-lost`, `contest-rival`; `kinds`: the trial of strength (always, strength), the ploughing match (a field, farming 1, endurance), the judging of the ale (a cask brewed, cooking 2, perception), each with its byname and spares and the lord's `prize` tool); `lord.json` `visit.prize` (fine iron); events `contest.held`, `contest.rival`, `lord.prize`.
+- **Engine:** the new `contest` system (contest MODULE.md), before the lord's; tales `bestow` and `freeWord` (a byname for a deed with no story); lord `visit.ts`: a bold lord is pleased when a contest was held at his supper, and gives the winner of the one held for him his prize.
+- **Bynames:** the contest bynames live in `contests.json` beside their contest (not `tales.json` entries, which need a told story), and are listed in tales.json `byname.proud`. A bold lord is pleased by any contest held at his supper; the last held is his, for the prize.
+- **Not yet:** contests on screen beyond the ledger and the person's byname (Slice 7's screen pieces).

@@ -39,6 +39,7 @@ export * from './teach.ts';
 export * from './callings.ts';
 export * from './tavern.ts';
 export * from './lord.ts';
+export * from './contests.ts';
 export * from './methods.ts';
 export * from './asks.ts';
 export * from './defy.ts';

@@ -26,6 +26,25 @@ function latestTelling(ctx: SystemContext, story: EntityRow): number {
   return lines.length ? Math.max(...lines) : (story['event'] as number);
 }
 
+/** `person` is called `word` from now on, for `tale` (the words why; the story that gave it, 0 for
+ * a deed with none, such as a third contest won), because of line `cause`. */
+export function bestow(
+  ctx: SystemContext,
+  person: EntityRow,
+  word: string,
+  tale: string,
+  cause: number,
+  story = 0,
+): void {
+  const line = ctx.emit('tale.byname', {
+    causes: [cause],
+    actors: [person.id],
+    data: { name: person['name'] as string, word, tale },
+  });
+  addEntity(ctx.world, 'byname', { person: person.id, word, story, line });
+  addMemory(ctx, person.id, feeling(ctx, word), line);
+}
+
 /** `person` is called `word` from now on, for `story` told at `level`, because of line `cause`. */
 export function giveByname(
   ctx: SystemContext,
@@ -35,13 +54,18 @@ export function giveByname(
   level: number,
   cause: number,
 ): void {
-  const line = ctx.emit('tale.byname', {
-    causes: [cause],
-    actors: [person.id],
-    data: { name: person['name'] as string, word, tale: taleText(ctx.content, story, level) },
-  });
-  addEntity(ctx.world, 'byname', { person: person.id, word, story: story.id, line });
-  addMemory(ctx, person.id, feeling(ctx, word), line);
+  bestow(ctx, person, word, taleText(ctx.content, story, level), cause, story.id);
+}
+
+/** The first of `words` no living person holds as their byname. */
+export function freeWord(ctx: SystemContext, words: readonly string[]): string | undefined {
+  const living = new Set(alive(ctx.world).map((p) => p.id));
+  const held = new Set(
+    (ctx.world.entities['byname'] ?? [])
+      .filter((b) => living.has(b['person'] as number))
+      .map((b) => b['word'] as string),
+  );
+  return words.find((w) => w && !held.has(w));
 }
 
 /** The byname `level` of `story` would give, if its person is alive and has none yet: the
@@ -56,13 +80,7 @@ export function bynameFor(
   const first = def?.bynames?.[level] ?? '';
   const person = (world.entities['person'] ?? []).find((p) => p.id === story['about']);
   if (!first || !person || person['status'] !== 'alive' || bynameOf(world, person.id)) return;
-  const living = new Set(alive(world).map((p) => p.id));
-  const held = new Set(
-    (world.entities['byname'] ?? [])
-      .filter((b) => living.has(b['person'] as number))
-      .map((b) => b['word'] as string),
-  );
-  const word = [first, ...(def?.spares?.[level] ?? [])].find((w) => !held.has(w));
+  const word = freeWord(ctx, [first, ...(def?.spares?.[level] ?? [])]);
   return word ? { person, word } : undefined;
 }
 

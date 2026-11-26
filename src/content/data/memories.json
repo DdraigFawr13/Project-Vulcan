@@ -118,5 +118,8 @@
   {"id":"hothead-spoke","mood":-1,"decayDays":28,"text":"Heard someone speak against the lord at his table","thoughts":["Someone said aloud what many think.","Words like that at the lord's own table."]},
   {"id":"plea-heard","mood":3,"decayDays":56,"text":"The lord heard the elder's plea in a lean year","thoughts":["The lord eased the tithe when we asked.","The elder spoke for us, and was heard."]},
   {"id":"plea-refused","mood":-4,"decayDays":84,"text":"The lord refused the elder's plea in a lean year","thoughts":["We asked for mercy and got none.","The lord takes his share though we go short."]},
-  {"id":"grumbled-lord","mood":-2,"decayDays":7,"text":"Carried the lord's share against their will"}
+  {"id":"grumbled-lord","mood":-2,"decayDays":7,"text":"Carried the lord's share against their will"},
+{"id":"contest-won","mood":4,"decayDays":14,"text":"Won a contest at the harvest home","thoughts":["They'll talk of that one a while.","I beat them all, fair and square."]},
+{"id":"contest-lost","mood":-2,"decayDays":7,"text":"Lost a contest at the harvest home","thoughts":["Next year.","I should have had that."]},
+{"id":"contest-rival","mood":-3,"decayDays":56,"text":"Beaten twice by the same one at the harvest home","thoughts":["Not a third time.","Always them, every year."]}
 ]

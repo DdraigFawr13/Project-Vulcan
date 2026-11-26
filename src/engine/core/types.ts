@@ -1,6 +1,12 @@
 // World state and event shapes, all plain data so the worker can post, save and compare it (P0.5).
 import type { AuraDials, AuraSpot } from './climate.ts';
-import type { UndergroundDials, ValleyDials, WalkingDef, WearDef } from './ground.ts';
+import type {
+  MountainLayout,
+  UndergroundDials,
+  ValleyDials,
+  WalkingDef,
+  WearDef,
+} from './ground.ts';
 import type { RngState } from './rng.ts';
 export type { CalendarDef } from './clock.ts';
 
@@ -34,6 +40,7 @@ export const STREAMS = [
   'lord',
   'discover',
   'asks',
+  'contest',
 ] as const;
 export type StreamName = (typeof STREAMS)[number];
 
@@ -257,22 +264,6 @@ export interface LevelState {
 export const WATER = ['', 'stream', 'river', 'lake', 'spring'] as const;
 
 export type Range = readonly number[];
-
-/** How a valley's mountains are placed and shaped (terrain.json `generator.layouts`). */
-export interface MountainLayout {
-  count: Range;
-  radius: Range;
-  height: Range;
-  rimShare: number;
-  rim: Range;
-  inside: number;
-  /** The chance a mountain's long axis follows the valley's, so rim ranges run along the walls. */
-  align: number;
-  rough: Range;
-  stretch: Range;
-  warp: number;
-  warpCell: number;
-}
 
 /** Ground kinds, the surface map's size and the generator's dials (src/content/data/terrain.json). */
 export interface TerrainDef {

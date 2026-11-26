@@ -41,6 +41,12 @@ export const skillOf = (world: WorldState, p: EntityRow, skill: string): number 
     'level'
   ] as number) ?? 0;
 
+/** The traits `p` has (traits.json ids). */
+export const traitsOf = (world: WorldState, p: EntityRow): string[] =>
+  (world.entities['trait'] ?? [])
+    .filter((t) => t['person'] === p.id)
+    .map((t) => t['trait'] as string);
+
 /** Standing on the surface on a side (not a corner) of tile x, y: where surface work is done from. */
 export const besideOnSurface = (p: EntityRow, x: number, y: number): boolean =>
   (p['z'] as number) === 0 &&
