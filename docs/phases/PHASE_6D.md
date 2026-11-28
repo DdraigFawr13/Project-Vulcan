@@ -1,13 +1,13 @@
 # Phase 6D: The growing town
 
-A short phase after 6C and before magic (Phase 7): the town gains a plan as it grows. Stages from camp to market town, a hall for the elder, the moot and the lord, a market on the green, homes that line up into streets, works that answer the strains of a bigger place, and a town that can shrink and fall to ruin. From Morgan's message of 2026-11-20 (a hall for meetings and the lord, a marketplace in front of it, streets and works that change with size). Morgan took every recommendation on the design form https://claude.ai/artifact/XJoia4VWd2cYTvzRYCWVrm (V-244). The spec's own forks are on the spec form (V-245).
+A short phase after 6C and before magic (Phase 7): the town gains a plan as it grows. Stages from camp to market town, a hall for the elder, the moot and the lord, a market on the green, homes that line up into streets, works that answer the strains of a bigger place, and a town that can shrink and fall to ruin. From Morgan's message of 2026-11-20 (a hall for meetings and the lord, a marketplace in front of it, streets and works that change with size). Morgan took every recommendation on the design form https://claude.ai/artifact/XJoia4VWd2cYTvzRYCWVrm (V-244). The spec's own forks are on the spec form https://claude.ai/artifact/9MaE7Ewton5wvaN96bLFK5, answered with every recommendation (V-245).
 
 It also carries three problems found since: the town layout does not work (Morgan, 2026-11-23); far workers walk most of the day, anvil's haulers walking to a clay bank 100 to 145 steps out for every load (V-231's leftovers); and grown-ups stand idle 14 to 59% of their work hours, 99.9% of it "looked for work, found none" (time-use audit #214, carried here by V-243 q8).
 
 ## Status
 
 - [x] Design form answered, 2026-11-20 (V-244)
-- [ ] Spec form answered (V-245)
+- [x] Spec form answered, 2026-11-28, every recommendation (V-245, https://claude.ai/artifact/9MaE7Ewton5wvaN96bLFK5)
 - [ ] Slice 1, stages and streets (engine)
 - [ ] Slice 2, work by its ground (engine)
 - [ ] Slice 3, the hall and the moot (engine)
@@ -26,9 +26,9 @@ The player never places a building or marks a tile. The town grows because colon
 
 Detail, with what each system owns, reads, fails on and tests: `docs/GROWING_TOWN.md`.
 
-- **Stages and streets (Slice 1).** Camp, Hamlet, Village, Market town, reached by what stands and who lives there (`town.json`); a stage opens wants, never builds. From Hamlet or Village (spec form q2) homes look for a door on a road and a neighbour beside them; lanes when no road-side plot is left; a High Street; the Town ways law.
+- **Stages and streets (Slice 1).** Camp, Hamlet, Village, Market town, reached by what stands and who lives there (`town.json`); a stage opens wants, never builds. From Hamlet (spec form q2) homes look for a door on a road and a neighbour beside them; lanes when no road-side plot is left; a High Street; the Town ways law.
 - **Work by its ground (Slice 2).** Trades in quarters; far work set up by its ground (the clay yard, spec form q1).
-- **The hall and the moot (Slice 3).** The hall in three steps; the weekly moot (spec form q4) counts the elder vote and hears grudges and petitions; the elder's chair; slack-season works (spec form q5).
+- **The hall and the moot (Slice 3).** The hall in three steps; the moot every seventh evening (spec form q4) counts the elder vote and hears grudges and petitions; the elder's chair; slack-season works (spec form q5).
 - **Growing pains (Slice 5).** Felt strains bring works: a second well, cesspits and a drain, gaps between rows, a pound, lamps, stepping stones and a bridge.
 - **The pedlar and the market (Slice 6).** A pedlar swapping above stock levels; the lord's market right; market days, the square, stalls, the cross and stocks, settlers.
 - **Names, ruin and the fall (Slice 7).** The town names itself (spec form q3), street names; stages drop back, empty homes go to ruin.
@@ -92,4 +92,4 @@ Mock-up: UI at 390 px (strains on the Build sheet, the market page, street names
 
 ### 6D balance and review
 
-Three years on the six balance valleys (V-243) with `npm run timeuse` beside the counts, against the 6C baseline (spec form q6). Balance aims for divergent, story-rich runs; a town that never earns a market, or falls back to a hamlet, is a story (north star, 2026-11-20). Then the `phase-review` skill.
+Three years on the six balance valleys (V-243) with `npm run timeuse` beside the counts, against the 6C numbers: idle under 30% of work hours on every valley and walking down at least 10 points (spec form q6). Balance aims for divergent, story-rich runs; a town that never earns a market, or falls back to a hamlet, is a story (north star, 2026-11-20). Then the `phase-review` skill.
