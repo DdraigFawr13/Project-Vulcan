@@ -26,15 +26,15 @@ The player never places a building or marks a tile. The town grows because colon
 
 Detail, with what each system owns, reads, fails on and tests: `docs/GROWING_TOWN.md`.
 
-- **Stages and streets (Slice 1).** A `town` system holds the stage: Camp, Hamlet, Village, Market town, each reached by what stands and who lives there (content `town.json`). A stage opens wants, never builds. From the stage the spec form q2 picks, siting a home adds a door on a road or lane and a wall beside a neighbour, so homes line up; with no road-side plot left the colony plans a lane; the most walked road from the home road to the green becomes the High Street. The Town ways law (Wherever suits / Along the lanes / Set out from the square) is weighed by builders like every law.
-- **Work by its ground (Slice 2).** Trades gather in quarters: noisy and smelly ones at the edge, crafts near those who work them, and work whose ground is far (clay, spec form q1) set up by that ground, so only finished goods walk to town.
-- **The hall and the moot (Slice 3).** The hall grows in three steps (first house, an added room when the moot overflows, a built hall on the edge of the green facing it). The moot meets weekly (spec form q4): the elder vote is counted there, grudges and petitions are heard, a changed law is talked over; who stays away and why is a line. The elder's chair (a heard grudge fades faster); the charter and chronicle on the hall's shelf. Slack-season works (spec form q5).
-- **Growing pains (Slice 5).** Strains colonists feel bring works: a queue at the well, a second well; the midden's smell, cesspits then a drain; thatch too close, a gap between rows; strays in a field, a pound; dark lanes, lamps at the hall door and the market cross; a crossing walked many times a day, stepping stones then a bridge. Each want cites its strain; the player's Build rows decide the order.
-- **The pedlar and the market (Slice 6).** First a pedlar's pitch on the green a few times a year, swapping what the store holds above the stock levels for what the colony lacks. Then the lord's market right (a new favour ladder step): a market day, more carts, travellers who ask to stay (answered by the Strangers law), the green paved as the square with stalls and a market cross where the stocks stand. Coin waits for Phase 9.
-- **Names, ruin and the fall (Slice 7).** The town names itself at Village from its own story (spec form q3); lanes take names from what is on them. A town can shrink: the stage drops back with a line, empty homes stand cold then fall to ruin (a place remembered in tales), a market right taken back empties the square, a hall nobody meets in goes quiet.
-- **On screen (Slices 4 and 8).** The stage under the colony's name and in recaps; the Town ways row; the Build sheet's new rows with their strains; the hall page (who came to the moot, who stayed away, why); street names on the map; the market page; art for the hall, square, stalls, cross, lanes, wells, cesspits, pound, lamps, stepping stones, bridge and ruins.
+- **Stages and streets (Slice 1).** Camp, Hamlet, Village, Market town, reached by what stands and who lives there (`town.json`); a stage opens wants, never builds. From Hamlet or Village (spec form q2) homes look for a door on a road and a neighbour beside them; lanes when no road-side plot is left; a High Street; the Town ways law.
+- **Work by its ground (Slice 2).** Trades in quarters; far work set up by its ground (the clay yard, spec form q1).
+- **The hall and the moot (Slice 3).** The hall in three steps; the weekly moot (spec form q4) counts the elder vote and hears grudges and petitions; the elder's chair; slack-season works (spec form q5).
+- **Growing pains (Slice 5).** Felt strains bring works: a second well, cesspits and a drain, gaps between rows, a pound, lamps, stepping stones and a bridge.
+- **The pedlar and the market (Slice 6).** A pedlar swapping above stock levels; the lord's market right; market days, the square, stalls, the cross and stocks, settlers.
+- **Names, ruin and the fall (Slice 7).** The town names itself (spec form q3), street names; stages drop back, empty homes go to ruin.
+- **On screen (Slices 4 and 8).** Stage, Town ways, the Build sheet's new rows and strains, the hall and market pages, street names, new art.
 
-Levers (V-041): the Town ways law (new, Laws sheet); the Build sheet's rows (Hall, Wells, Lanes and works, Market, each 1 to 4); stock levels (what the pedlar may take); the Strangers, Punishment and Feasts laws; trade priorities. Nobody is picked to go to the moot, trade or build.
+Levers (V-041): the Town ways law (new, Laws sheet); the Build sheet's rows (new: Hall, Lanes, Market, each 1 to 4; the works from strains under the rows that build them today, such as Roads); stock levels (what the pedlar may take); the Strangers, Punishment and Feasts laws; trade priorities. Nobody is picked to go to the moot, trade or build.
 
 Left out on purpose: drawing the plan or placing plots (breaks V-041), a fixed grid of plots, colonists' own stalls selling to each other (V-148), coin and prices (Phase 9). Later: beating the bounds, a bell, old lanes against new (form x6 to x8).
 
@@ -44,7 +44,7 @@ Each slice gets a mock-up form answered by Morgan, then a fresh build thread (VR
 
 ### Slice 1: stages and streets
 
-Mock-up: Engine (four years on the six balance valleys: stage reached and when, homes on a road, gaps between homes, lanes and High Street laid, Town ways answers; layout pictures from `npm run map:render`). Done when: a home sited at the street stage has its door on a road or lane, with its line; the stage line cites what it waited on; Town ways answers are law events; `npm run check` green.
+Mock-up: Engine (four years on the six balance valleys: stage reached and when, homes on a road, gaps between homes, lanes and High Street laid, Town ways answers; layout pictures from `npm run map:render`). Done when: a home sited at the street stage has its door on a road or lane, with its line; the stage line cites what it waited on; Town ways answers are law events; `npm run check` green. Over 1,200 lines it splits: stages and streets; then lanes, the High Street and the Town ways law.
 
 - Reading list: `docs/DECISIONS.md` V-041 V-049 V-050 V-054 V-124 V-244; `src/engine/build/MODULE.md`; `src/engine/law/MODULE.md`; `docs/GROWING_TOWN.md`
 
@@ -56,7 +56,7 @@ Mock-up: Engine (anvil/1 and two more valleys, three years: haul walking, the cl
 
 ### Slice 3: the hall and the moot
 
-Mock-up: Engine (three years on four valleys: moots held, who came, who stayed away and why, petitions heard, the hall's steps). Done when: the elder vote is counted at a moot with a line; someone with a grudge may stay home, with a line; the hall want cites the moot's overflow.
+Mock-up: Engine (three years on four valleys: moots held, who came, who stayed away and why, petitions heard, the hall's steps). Done when: the elder vote is counted at a moot with a line; someone with a grudge may stay home, with a line; the hall want cites the moot's overflow. Over 1,200 lines it splits: the moot, the vote and the chair; then the hall's steps and slack-season works.
 
 - Reading list: `docs/DECISIONS.md` V-119 V-146 V-158 V-159 V-160; `src/engine/colony/MODULE.md`; `docs/STRANGERS_AND_HOMES.md` (the hall); `docs/GROWING_TOWN.md`
 
@@ -74,9 +74,9 @@ Mock-up: Engine (six years on the balance valleys: each strain felt, what it bro
 
 ### Slice 6: the pedlar and the market
 
-Mock-up: Engine (six years on four valleys: pedlars, what was swapped, the market right, market days, settlers). Done when: a pedlar swaps only above the stock level, with a line naming both sides; the market right is a favour ladder step.
+Mock-up: Engine (six years on four valleys: pedlars, what was swapped, the market right, market days, settlers). Done when: a pedlar swaps only above the stock level, with a line naming both sides; the market right is a favour ladder step. Over 1,200 lines it splits: the pedlar; then the market right, market days, the square, the cross and settlers.
 
-- Reading list: `docs/DECISIONS.md` V-148 V-173 V-236 V-242; `src/engine/lord/MODULE.md`; `src/engine/goods/MODULE.md`; `src/engine/band/MODULE.md` (strangers); `docs/LORD_AND_ASKS.md`; `docs/GROWING_TOWN.md`
+- Reading list: `docs/DECISIONS.md` V-148 V-173 V-236 V-242; `src/engine/lord/MODULE.md`; `src/engine/goods/MODULE.md`; `docs/LORD_AND_ASKS.md`; `docs/GROWING_TOWN.md`
 
 ### Slice 7: names, ruin and the fall
 
