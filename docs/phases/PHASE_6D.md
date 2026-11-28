@@ -76,7 +76,7 @@ Mock-up: Engine (six years on the balance valleys: each strain felt, what it bro
 
 Mock-up: Engine (six years on four valleys: pedlars, what was swapped, the market right, market days, settlers). Done when: a pedlar swaps only above the stock level, with a line naming both sides; the market right is a favour ladder step. Over 1,200 lines it splits: the pedlar; then the market right, market days, the square, the cross and settlers.
 
-- Reading list: `docs/DECISIONS.md` V-148 V-173 V-236 V-242; `src/engine/lord/MODULE.md`; `src/engine/goods/MODULE.md`; `docs/LORD_AND_ASKS.md`; `docs/GROWING_TOWN.md`
+- Reading list: `docs/DECISIONS.md` V-148 V-173 V-236 V-242; `src/engine/lord/MODULE.md`; `src/engine/goods/MODULE.md`; `docs/GROWING_TOWN.md`
 
 ### Slice 7: names, ruin and the fall
 
